@@ -1,0 +1,37 @@
+# Large build products stay outside the source repository.
+/build/
+/output/
+/artifacts/
+/cache/
+/sources/
+/rootfs/
+/staging/
+/logs/
+/tmp/
+*.iso
+*.img
+*.qcow2
+*.vhd
+*.vhdx
+*.avhdx
+*.vdi
+*.pkg.tar.*
+*.deb
+*.rpm
+*.tar.xz
+*.tar.zst
+
+# Machine-local state and secrets.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+.claude/settings.local.json
+__pycache__/
+*.pyc
+.venv/
+Thumbs.db
+.DS_Store

@@ -1,0 +1,455 @@
+# alpbahOS — LFS ana geliştirme planı
+
+Sürüm: 1.0 — uygulamaya hazırlık ana planı, 21 Eylül 2026.
+
+Bu belge kullanıcının cevaplarına göre ürün hedeflerini, seçilen başlangıç mimarisini, aşamaları ve tamamlanma ölçütlerini tanımlar. Çalışan bir sistemin raporu değildir. Kullanıcı tercihleri ve teknik seçimler [karar kaydında](DECISIONS.md), işlerin gerçek durumu [iş kaydında](WORKLOG.md) tutulur. Teknik prototip gerektiren seçimler ölçüm kapılarıyla sınırlandırılmıştır.
+
+## 1. Ürün hedefi ve ilk sürüm sınırı
+
+alpbahOS, Windows'tan geçen insanların günlük kullanabileceği, x86_64 mimarisinde, LFS tabanı kaynak koddan üretilen bir Linux masaüstüdür. Masaüstü ve uygulamalar hazır açık kaynak projelerden seçilip özelleştirilir.
+
+Kullanıcının kabul ettiği deneyim:
+
+- Yazarken terminalde soluk komut tahminleri, tamamlama ve yazım düzeltme yardımı.
+- `pkg install`, `pkg remove`, `pkg update` etrafında basit komut ailesi ve grafik uygulama mağazası.
+- Alt+Tab ve Win+D dahil Windows'a tanıdık kısayollar.
+- Varsayılan masaüstü ve kilit ekranında Atatürk teması.
+- alpbahOS dağ/terminal logosu ve koyu lacivert, cyan, turuncu marka renkleri.
+- Uygun cihazlarda cam ve liquid glass görsel seçenekleri.
+- İlk dağıtılabilir sürümde çalışan sanal makine masaüstü ve USB'den denenebilir canlı sistem.
+- Diske grafik kurucu sonraki aşamada.
+- Düşük RAM tüketimi ve eski x86_64 bilgisayarları kapsayan test matrisi.
+- Türkçe arayüz, Türkçe Q klavye; mevcut mockup yerleşimi korunur.
+- Premium, minimalist, opak temel profil; kişiselleştirilebilir akıcı animasyonlar.
+- Steam ve Wine; Office 2016/2019/2021 ailesi için sürüm bazlı uyumluluk testleri.
+- Legacy BIOS ve UEFI; daha sonraki kurucuda internetsiz kurulum ve Windows yanında kurulum.
+- Yerel Hyper-V geliştirme, 300 GB depolama bütçesi; bulut derleme/depolama kullanılmaz.
+- Günde 1–2 saat kullanıcı katkısı; Claude Code ve Codex için özel Git deposunda ayrı çalışma alanları.
+
+Önceki canlı USB/VM tercihi ilk alfayı tanımlar. Sonraki “hepsi olsun” yanıtı grafik, çevrimdışı ve Windows yanında kurulum özelliklerini genel yol haritasına ekler; ilk alfa ile kurulabilir beta ayrı teslimlerdir.
+
+İlk aşamanın kapsamına kendiliğinden girmeyenler: yeni kernel yazımı, yeni masaüstü compositor'ü, yeni tarayıcı, sıfırdan bağımlılık çözücü, tam Windows uygulama uyumluluğu ve tüm Windows kısayollarının her uygulamada birebir kopyalanması. Windows alışkanlıkları için ölçülebilir bir uyum listesi hazırlanır; uygulama ve güvenlik modeli kaynaklı farklar açıklanır.
+
+## 2. Mevcut durum ve kaynaklar
+
+Mevcut Windows bilgisayarı: Ryzen 7 5700, yaklaşık 24 GiB RAM, RTX 5060. F: sürücüsü ST500LT012 SATA HDD ve yaklaşık 350 GiB boş alana sahip. Kullanıcı 300 GB proje bütçesi ayırdı; fiziksel bölüm oluşturulmadı. HDD erişim süresi özellikle çok küçük dosyalı build'leri etkileyebilir; ölçüme göre iş sayısı ayarlanacak.
+
+Hyper-V PowerShell modülü mevcut, fakat mevcut oturumda VM hostunu okuma yetkisi yok. Özelliğin etkinliği ve VM oluşturma yetkisi kurulum aşamasında doğrulanacak. Bu kontrol için yetki engeli, plan/doküman/Git çalışmasını engellemez. Rootlu, SSH erişimli Mi 9 telefonu yardımcı cihaz olarak mevcut; x86_64 ana derleme hostu veya uyumluluk kanıtı olarak kullanılmayacak.
+
+Mevcut dosyalar tasarım belgeleri ve logo varlıklarıdır. Linux host, rootfs, paket deposu, boot eden imaj veya ISO henüz yoktur. Tasarım mockup'ındaki sürümler, paket sayıları, CPU/RAM ve `pacman` satırları örnek metindir.
+
+Başlangıç kaynakları: [LFS 13.1-systemd](https://www.linuxfromscratch.org/lfs/view/13.1-systemd/) ve [BLFS 13.1](https://www.linuxfromscratch.org/blfs/view/13.1-systemd/). Steam için gereken multilib uzantısı aşağıdaki karar kapısında sabitlenecek. Kitap sürümleri ve kullanılan düzeltmeler birlikte sabitlenecek; yalnız bir paketi rastgele en yeni sürüme geçirmek standart süreç olmayacak.
+
+## 3. Seçilen başlangıç mimarisi
+
+Kullanıcı teknik seçimleri devrettiği için aşağıdaki başlangıç mimarisi seçildi. Her seçim, belirtilen entegrasyon testinden geçmek zorundadır; başarısız deneyde alternatif ve gerekçesi karar kaydına işlenir.
+
+| Katman | Aday / yaklaşım | Doğrulama |
+|---|---|---|
+| Temel sistem | LFS 13.1-systemd + Steam için sabitlenecek multilib uzantısı | Host kontrolü; ELF32/ELF64, linker ve test logları |
+| Ek sistem bileşenleri | Eşleşen BLFS; ağ, TLS sertifikaları, ses, grafik, oturum | Gerçek işlev testleri |
+| Masaüstü | KDE Plasma / KWin | İlk sanal masaüstü oturumu ve donanım testi |
+| Görüntü protokolü | Wayland öncelikli; eski GPU/Hyper-V için ölçüme bağlı X11 uyumluluk oturumu | Seçilen Plasma sürümünde her iki oturumun sağlanabilirliği doğrulanır |
+| Terminal | Konsole + etkileşimli Zsh | Öneri, düzeltme, Unicode ve kısayol testleri |
+| Paket deneyimi | pacman/libalpm + ince `pkg` arayüzü + kendi imzalı yerel depomuz | Bootstrap ve işlem testleri; Arch deposu kullanılmaz |
+| Uygulama mağazası | Discover + PackageKit alpm backend + AppStream metadata | Aynı libalpm veritabanı ve kilit; entegrasyon prototipi zorunlu |
+| Ses/ağ | PipeWire + WirePlumber; NetworkManager; Bluetooth için BlueZ | Ses, ağ geçişi ve cihaz testleri |
+| Kurucu | Sonraki sürümde Calamares özelleştirmesi | Offline, BIOS/UEFI, boş disk ve dual-boot sanal disk senaryoları |
+| Marka/tema | alpbahOS görünüm ve varsayılan ayar paketleri | Temiz kullanıcı hesabında görünüm doğrulaması |
+| Dağıtım çıktısı | Sanal disk imajı ve canlı ISO | Boot, ağ, oturum, yeniden başlatma |
+
+Plasma, tema ve efekt altyapısı nedeniyle uygun adaydır. BLFS'de [Plasma derleme bölümü](https://www.linuxfromscratch.org/blfs/view/13.1-systemd/kde/plasma-all.html) vardır; bu bölümün bulunması tek başına tüm alpbahOS entegrasyonlarının hazır olduğu anlamına gelmez.
+
+Grafik uygulamalarda önce mevcut dosya yöneticisi, ayarlar, terminal, ağ ve ses bileşenleri kullanılır. GTK/Qt/Flatpak uygulamalarında tema kapsamı ayrı ayrı test edilir; tek tema paketinin tüm arayüzleri aynı şekilde değiştireceği varsayılmaz.
+
+### 3.1 Steam ve 32-bit uyumluluk kapısı
+
+[Standart LFS x86_64](https://www.linuxfromscratch.org/lfs/view/13.1-systemd/prologue/architecture.html) saf 64-bit sistem üretir. [Valve gereksinimleri](https://github.com/ValveSoftware/steam-for-linux) Steam için 32/64-bit glibc ve grafik kullanıcı alanı desteğini belirtir. Bu nedenle Steam sonradan rastgele birkaç paket eklenerek çözülecek iş olarak ertelenmez.
+
+M02'de LFS belgesinin bağladığı [multilib dalının](https://www.linuxfromscratch.org/~thomas/multilib/index.html) kullanılabilir sürüm/commit'i incelenir. LFS 13.1 ile eşleşme doğrulanmadan sürüm numarası uydurulmaz. Başlangıç kararı x86_64 kernel + i686 kullanıcı alanı uyumluluğudur; ayrı 32-bit dağıtım değildir. Dizilim, libc/derleyici seçenekleri ve lib32 grafik paketleri manifestte açıkça tanımlanır. 32-bit çalıştırılabilir test ve loader doğrulaması geçmeden M03 tam derlemesi başlamaz. Gerekirse uyumlu sabit kitap çifti ADR ile revize edilir.
+
+### 3.2 Eski PC ve RAM bütçesi
+
+Test hedefleri garanti edilmiş minimumlar değildir; ölçümden sonra yayımlanır:
+
+| Profil | Test makinesi | Ölçülecek hedef |
+|---|---|---|
+| Düşük kaynak | 2 CPU, 4 GiB RAM, eski x86_64, Solid | Oturum açılışından 2 dk sonra `MemTotal - MemAvailable` <= 1 GiB hedefi; swap thrashing yok |
+| Genel masaüstü | 4 CPU, 8 GiB RAM, iGPU | Günlük uygulamalar + Glass; düşük giriş gecikmesi |
+| Güçlü cihaz | Mevcut Ryzen/RTX masaüstü | NVIDIA, Steam/Proton ve deneysel Liquid |
+| 2 GiB deneysel | 2 CPU, 2 GiB RAM | Masaüstü açılışı incelenir; başlangıç destek garantisi yok |
+
+Tarayıcı, Steam, Wine, dosya indeksleme ve mağaza arka planda otomatik başlatılmaz. Çok uygulamanın kurulu olması hepsinin RAM'de çalışması anlamına gelmez. Gereksiz sürekli servisler kapalı, erişilebilirlik bileşenleri talebe göre etkin olur. Kullanılan RAM/CPU, süreçlerin PSS toplamı ve bellek baskısı aynı yöntemle raporlanır. Solid bütçesi geçmezse önce servis/tema optimizasyonu yapılır; bu yetmezse ayrı hafif masaüstü profili ölçülmüş alternatif olarak ele alınır.
+
+Genel taban için `-march=native` kullanılmaz; x86_64 uyumluluk tabanı korunur. Steam/Chrome gibi uygulamaların ek CPU talimat gereksinimleri ayrı kontrol edilir. Eski 32-bit CPU'lar, Mi 9 gibi ARM cihazlar ve desteği kesilmiş tüm GPU'lar hedef dışı/ayrı test sınıfıdır; “hepsinde” isteği geniş x86_64 uyumluluk matrisi olarak uygulanır.
+
+## 4. Terminal deneyimi
+
+### 4.1 Kullanıcı davranışı
+
+Kullanıcı yazarken önerilen devam metni imlecin arkasında soluk renkte görünür. Bu görünüm terminalin arka plan saydamlığından bağımsızdır; sade profilde de çalışır.
+
+- Yerel geçmiş ve tamamlama bilgileri öneri kaynağıdır.
+- Sağ ok veya End öneriyi komut satırına alır; ayrı Enter komutu çalıştırır.
+- Tab komut, dosya ve desteklenen paket adlarını tamamlar.
+- Ctrl+R geçmiş aramasına gider; ayrıntılı görünüm seçilen mevcut eklentiye bağlıdır.
+- Tanınmayan komut için anlaşılır geri bildirim verilir.
+- Yazım düzeltme kullanıcının kabul edeceği öneri olarak sunulur.
+- Dosya adı ve tüm argümanları sessizce değiştiren davranış varsayılan yapılmaz.
+- İnternet veya AI hesabı olmadan çalışır. Bulut tabanlı tahmin bu gereksinimin parçası değildir.
+
+Teknik adaylar: [zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions), [zsh-syntax-highlighting](https://github.com/zsh-users/zsh-syntax-highlighting), Zsh tamamlama sistemi ve komut düzeltme seçenekleri. Zsh'nin komut düzeltmesi ile tüm argüman düzeltmesi farklı seçeneklerdir; yapılandırma [resmî seçenek belgesine](https://zsh.sourceforge.io/Doc/Release/Options.html) göre sınanır.
+
+### 4.2 Sistem shell'inden ayrım
+
+Etkileşimli Zsh kullanımı build scriptlerinin yorumlayıcısını veya `/bin/sh` bağlantısını değiştirmez. Build tarifleri Bash/POSIX gereksinimlerini açıkça belirtir; kullanıcı eklentilerinden etkilenmeyen ortamda yürür.
+
+### 4.3 Tamamlanma koşulları
+
+1. Temiz kullanıcıda yazarken öneri görünür; ağ bağlantısı gerekmez.
+2. Öneriyi kabul etme komutu çalıştırmaz; Enter gerekir.
+3. Hatalı komut düzeltmesi açıklanır ve reddedilebilir.
+4. Paket adı tamamlama seçilen paket indeksiyle çalışır; yazarken gereksiz root/ağ işlemi yapılmaz.
+5. Terminalde Ctrl+C işlem kesme davranışını korur; kopyalama/yapıştırma görünür şekilde anlatılır.
+6. Logo çıktısı gerçek terminalde doğru renklerle çizilir. Mevcut Python/ANSI önizleme varlıkları ayrıca doğrulanır; PNG önizlemesi çalışan terminal kanıtı sayılmaz.
+
+## 5. Paket ve mağaza deneyimi
+
+### 5.1 Kullanıcıya sunulacak komut ailesi
+
+Aşağıdakiler planlanan arayüzdür; henüz çalışan komutlar değildir.
+
+| Komut | Önerilen anlam |
+|---|---|
+| `pkg search <ad>` | Paketleri arar; kurulum yapmaz. |
+| `pkg info <ad>` | Sürüm, kaynak, boyut, bağımlılık ve açıklamayı gösterir. |
+| `pkg install <ad>` | İşlem planını gösterir, yetkilendirmeden sonra kurar. |
+| `pkg remove <ad>` | Etkilenen paketleri gösterip kaldırır; kullanıcı belgelerini silmez. |
+| `pkg update` | Depo indekslerini yeniler ve mevcut güncellemeleri listeler. |
+| `pkg upgrade` | Güncelleme planını gösterip onaylanan paketleri günceller. |
+| `pkg list` | Kurulu paketleri ve sürümlerini gösterir. |
+| `pkg help` | Kısa, örnekli yardım sunar. |
+
+`update` ile `upgrade` farkı yardımda ve mağazada açık olmalıdır. Kullanıcı bunların farklı anlamda birleşmesini isterse semantik karar kaydı güncellenir.
+
+### 5.2 Altyapı seçimi
+
+LFS belirli bir paket yöneticisi sağlamaz. [LFS paket yönetimi bölümü](https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter08/pkgmgt.html) temel yöntemleri açıklar. Sistem dosyaları ilk kurulduğunda sahiplik ve sürüm bilgisi yakalanmalıdır; bu yüzden motor/manifest yaklaşımı nihai LFS sistem kurulumundan önce seçilir.
+
+Başlangıç tercihi pacman/libalpm'dir; [pacman kılavuzu](https://man.archlinux.org/man/pacman.8) ve [depo yapılandırması](https://man.archlinux.org/man/pacman.conf.5) esas alınır. Mağaza için [Discover](https://apps.kde.org/discover/) ile [PackageKit alpm backend](https://github.com/PackageKit/PackageKit/tree/main/backends/alpm) entegrasyonu test edilir. Backend'in kaynak ağacında olması seçilen sürümlerin uyumlu olduğunu kanıtlamaz. M02 başarısızsa dpkg/APT + PackageKit alternatifine gerekçeli geçiş değerlendirilir. Deney ölçütleri:
+
+- LFS üzerinde bootstrap ve paket üretim zorluğu.
+- Bağımlılık çözümü, dosya sahipliği, yapılandırma korunması, imza ve transaction kilidi.
+- Kendi depomuzu üretme ve sürümleme maliyeti.
+- Kullanıcıya anlaşılır hata/ilerleme iletme yeteneği.
+- Seçilecek hazır mağazayla gerçek entegrasyon yolu.
+- Yarım kalan işlem, disk dolması ve eşzamanlı istemcilerde davranış.
+
+`pkg` komutları motorun üzerine ince, testli bir arayüz olur; ikinci bir paket veri tabanı veya sıfırdan bağımlılık çözücü oluşturmaz. Debian/Ubuntu/Arch taban depoları alpbahOS sistem paketlerine doğrudan karıştırılmaz. APT gibi bir araç seçilmesi yabancı dağıtım paketleriyle otomatik uyumluluk sağlamaz.
+
+Başlangıçta tek native paket yöneticisi pacman'dır. `apt`, `pacman` ve `pkg` ayrı ayrı bağımsız veri tabanlarıyla aynı sisteme kurulmaz. Kullanıcının kolaylık isteği `pkg` ile karşılanır; pacman uzman erişimi belgelenir. APT seçilmiş bir kullanıcı zorunluluğu değildir.
+
+İlk depo yerel `file://` kaynağı ve canlı/kurulum medyasındaki paket deposudur. İnternetten kendiliğinden güncellenen genel bir alpbahOS sunucusu varsayılmaz. Kullanıcı bulut depolama istemediğinden ISO/paketler yerelde tutulur; özel GitHub deposu yalnız kaynak/belge eşgüdümü içindir.
+
+Pacman tam sistem güncellemesi gerektiren kütüphane geçişlerinde kısmi yükseltmeye izin verilmez. `pkg update` indeks/plan yeniler; sonrasında install/upgrade güvenli, tutarlı işlem planı üretir. AppStream metadata ve paket manifestleri aynı sürüm kümesine bağlıdır.
+
+### 5.3 Mağaza sözleşmesi
+
+- CLI ve mağaza aynı motoru, aynı veri tabanını ve aynı işlem kilidini kullanır.
+- Root yetkisi tüm mağazaya verilmez; ayrı yetkili işlem mekanizması kullanılır.
+- Kurulumdan önce toplam indirme, disk ihtiyacı, kaynak ve etkilenmiş paketler gösterilir.
+- Uydurma puan, güvenlik rozeti veya indirme sayısı gösterilmez.
+- Birden fazla paket kaynağı varsa kaynak ve kapsam kullanıcıya görünürdür.
+- Flatpak gibi ek uygulama kanalları ayrıca seçilir; taban sistemin paket yönetiminin yerine geçmez.
+- Discover seçimi backend entegrasyon deneyi geçmeden uygulanmış/çalışır sayılmaz.
+
+## 6. Windows'a tanıdık kısayol profili
+
+`Win`, Linux üzerinde genellikle `Meta` adıyla görünen tuştur. Aşağıdaki tablo önerilen alpbahOS profilidir; upstream varsayılanları olduğu iddia edilmez. Alt+Tab ve Win+D kullanıcı tarafından açıkça istenmiştir.
+
+| Tuş | Hedef davranış | Test kapsamı |
+|---|---|---|
+| Alt+Tab / Alt+Shift+Tab | Pencereler arasında ileri/geri geçiş | Çoklu pencere ve çoklu ekran |
+| Win+D | Masaüstünü göster / geri dön | Minimize durumlarının korunması |
+| Win+E | Dosya yöneticisi | Tekrarlı çağrı davranışı |
+| Win+L | Oturumu kilitle | Kilit ekranından güvenli dönüş |
+| Win+R | Komut/uygulama başlatıcı | Arama alanına doğru odak |
+| Win | Uygulama menüsü | Diğer Win kombinasyonlarıyla çakışmama |
+| Win+I | Ayarlar | Doğru ayarlar uygulaması |
+| Win+Sol / Sağ | Pencereyi ekran kenarına yerleştir | Çoklu ekran ve ölçekleme |
+| Win+Yukarı / Aşağı | Büyüt / geri yükle / küçült | Tutarlı durum sırası |
+| Win+Tab | Pencere/masaüstü genel görünümü | Seçilen masaüstü eylemiyle eşleşme |
+| Alt+F4 | Aktif pencereyi kapat | Kaydedilmemiş belge uyarısı |
+| Ctrl+Shift+Esc | Sistem izleyicisi | Kısayol çakışması olmaması |
+| Win+Shift+S | Bölge ekran görüntüsü | Wayland izin ve seçim akışı |
+| Ctrl+C / V / X / Z | GUI uygulamasının kopyala/yapıştır/kes/geri al davranışı | Uygulama bağlamı; terminal istisnası |
+
+Kısayollar tek tanım dosyasından üretilir; ayarlarda düzenlenebilir ve varsayılana dönebilir. VM hostunun yakaladığı Win kısayolları ile misafir sistemin davranışı ayrı kaydedilir. “Tüm Windows kısayolları çalışıyor” ifadesi ancak tanımlı kapsam ve test listesiyle kullanılabilir.
+
+## 7. Marka, Atatürk teması ve cam profilleri
+
+### 7.1 Varsayılan görsel kimlik
+
+Atatürk görselleri masaüstü ve kilit ekranının varsayılanında yer alır. alpbahOS dağ/terminal logosu ürün kimliğini korur. Boot ekranının Atatürk temalı olması henüz istenmiş bir karar değildir.
+
+Tema üretiminde:
+
+- Kaynağı belli Atatürk görseli seçilir; dağıtım için kullanım bilgisi kaydedilir.
+- Görsele uydurma imza veya söz eklenmez.
+- 16:9, 16:10 ve ultrawide kırpımlarda yüz, logo ve metin güvenli alanda kalır.
+- Kilit ekranında şifre alanı ve kullanıcı adı okunaklıdır.
+- Masaüstü ikonları için düşük detaylı alan bırakılır.
+- Kullanıcı arka planı ve temayı değiştirebilir.
+
+Mevcut [tasarım dokümanı](alpbahOS-design-mockups.md) renk ve bileşen referansıdır. Önceki genel dağ duvar kâğıdı konsepti, yeni varsayılan Atatürk kararına göre revize edilecek; alternatif olarak korunabilir.
+
+Kullanıcı mevcut mockup yerleşiminin tamamını sevdiğini belirtti: üst panel, dock ve pencere düzeni korunur. Windows kısayolları eklemek için düzen zorla Windows görev çubuğuna çevrilmez. Varsayılan ad `alpbah-solid`; arayüz dili `tr_TR.UTF-8`, klavye Türkçe Q, varsayılan saat dilimi mevcut kullanıcı bağlamıyla `Europe/Istanbul` seçildi ve değiştirilebilir.
+
+### 7.2 Görünüm profilleri
+
+| Profil | Görünüm | Hedef |
+|---|---|---|
+| Solid (varsayılan) | Premium minimalist opak yüzeyler, ölçülü animasyon | VM, eski PC ve genel kullanım |
+| Glass | Kontrollü saydamlık, arka plan bulanıklığı, okunaklı yüzeyler | Donanım hızlandırmalı standart masaüstü |
+| Liquid | Cam kenarı, ışık ve mümkünse kırılma davranışı | Güçlü cihazlarda ölçülmüş deneysel seçenek |
+
+KWin'in [tema/efekt altyapısı](https://develop.kde.org/docs/plasma/) normal cam yaklaşımının ve özel efekt araştırmasının adayıdır. [KWin efekt belgeleri](https://develop.kde.org/docs/plasma/kwineffect/) özelleştirme altyapısını tarif eder; hazır, sorunsuz bir liquid glass çözümünü garanti etmez.
+
+Liquid için önce küçük bir prototip hazırlanır. Ekran örnekleme/kırılma yöntemi, shader ihtiyacı ve seçilen KWin sürümündeki uygulanabilirlik değerlendirilir. Yalnız blur uygulanmışsa özellik Glass olarak adlandırılır. İlk sürümde normal cam kabul edilebilir; gerçek liquid etkisi prototip sonuçlarına bağlıdır.
+
+### 7.3 Performans ve erişilebilirlik
+
+- Profil yalnız GPU adına bakılarak seçilmez; renderer, sürücü, ekran ölçeği ve gerçek frame süreleri ölçülür.
+- Yazılım rendering veya grafik hatasında sade görünüm kullanılabilir.
+- 1080p/60 Hz için 16,7 ms kare süresi tasarım hedefidir; hedef donanım ve ölçüm yöntemi belirlenmeden başarı ilan edilmez.
+- Efekt açık/kapalı karşılaştırmasında gecikme, GPU/bellek tüketimi ve okunabilirlik kaydedilir.
+- Kullanıcı manuel profil seçebilir; azaltılmış hareket ve düşük saydamlık tercihi korunur.
+- Metin için kontrast, klavye odağı ve hata durumlarının renkten bağımsız anlatımı kontrol edilir.
+
+## 8. Derleme ortamı ve tekrar üretilebilirlik
+
+Seçilen ortam Hyper-V'dir. Bir Gen2 Linux builder, bir Gen2 UEFI test tanımı ve bir Gen1 Legacy test tanımı hazırlanacak. Builder için minimal Ubuntu 24.04 LTS amd64 host seçildi; ISO checksum ve LFS host koşulları kurulumda doğrulanır. [Hyper-V Gen1/Gen2 ayrımı](https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/plan/should-i-create-a-generation-1-or-2-virtual-machine-in-hyper-v) iki boot yolunun ayrı testini gerektirir. WSL bu planın ana ortamı değildir.
+
+Linux build ağacı Linux dosya sisteminde tutulur. Windows'taki `C:\alpbahOS` belgeleri ve repo kopyası doğrudan Linux rootfs kurulum hedefi değildir. VM disk dosyası NTFS üzerinde bulunabilir; VM içindeki rootfs yine Linux dosya sisteminde olur.
+
+Builder: 6 vCPU, 12 GiB sabit RAM; başlangıç build paralelliği 4, ölçüme göre 6. Test VMs: 2 vCPU ve 4 GiB RAM, sırayla çalışır. Ağ için mevcut uygun Hyper-V sanal anahtarı seçilir; Windows ağını bozacak yeni köprü otomatik kurulmaz. Hostta editör/ajanlar için RAM bırakılır. Hyper-V framebuffer ile fiziksel NVIDIA GPU performansı eşit sayılmaz; GPU passthrough ilk kurulumun önkoşulu değildir.
+
+Depolama kökü planı: `F:\alpbahOS-build`. Kullanıcının 300 GB sınırı decimal bütçe olarak ele alınır (yaklaşık 279 GiB). Plan: builder VHDX üst sınırı 210 GB; sırayla kullanılan test diskleri toplam 40 GB; ISO/çıktı 20 GB; checkpoint ve büyüme payı 30 GB. Kaynak cache'i builder alanına dahildir. Checkpoint'ler bu payı aşabilir; gerçek tüketim izlenir ve bütçeyi aşacak işlem durur. Sürekli snapshot biriktirilmez. NTFS üzerinde symlink/izin gerektiren Linux rootfs açılmaz.
+
+Derleme girdileri:
+
+- Kitap sürümü ve erişim tarihi.
+- Host araç sürümleri ve LFS host kontrolü sonucu.
+- Kaynak URL, checksum, upstream imza bilgisi varsa doğrulaması.
+- Yama seti, tarif sürümü, bağımlılıklar ve derleyici seçenekleri.
+- Locale, umask, kullanıcı, çalışma dizini ve job sınırı.
+- Başlama/bitme zamanı, çıkış kodu, test raporu ve çıktı kimliği.
+
+Tarif değişince bağımlı sonuçlar geçersiz sayılabilir; eski stamp dosyası tek başına devam etmek için yeterli değildir. Kaynak arşivleri ile build/staging/artifact dizinleri ayrı tutulur. Kesilen paket için temiz yeniden derleme yolu bulunur.
+
+Bit düzeyinde yeniden üretilebilirlik ayrı hedef olarak ölçülür. Kaynakları ve tarifleri sabitlemek tek başına byte-for-byte aynı ISO çıktısını garanti etmez.
+
+## 9. Önerilen repo düzeni
+
+Aşağıdaki yeni dizinlerin çoğu henüz oluşturulmadı; görevler geldikçe eklenir.
+
+```text
+alpbahOS/
+  AGENTS.md
+  CLAUDE.md
+  docs/
+    MASTER_PLAN.md
+    DECISIONS.md
+    WORKLOG.md
+    alpbahOS-design-mockups.md
+    assets/
+  manifests/           # kaynak, sürüm, checksum, bağımlılık
+  recipes/
+    bootstrap/
+    base/
+    desktop/
+    applications/
+  scripts/
+    host-check/
+    build/
+    image/
+    test/
+  profiles/
+    system/
+    shell/
+    shortcuts/
+    desktop/
+  branding/
+    logo/
+    wallpapers/
+    themes/
+  packaging/
+    backend/
+    pkg-cli/
+    repository/
+  live/
+  tests/
+  reports/
+```
+
+Kaynak cache'i, rootfs, derleme dizinleri, sanal diskler ve büyük ISO'lar Git dışında tutulur. Manifest, tarif, küçük test kanıtı ve yapılandırmalar sürümlenir. Özel anahtar, erişim token'ı veya kullanıcı parolası repoya girmez.
+
+## 10. Aşamalar, bağımlılıklar ve çıkış koşulları
+
+Aşamalar oturum planına bağlanır; gerçek derleme ölçümleri olmadan takvim günü taahhüt edilmez. Günlük kullanıcı zamanı 1–2 saattir.
+
+| Aşama | İş ve çıktı | Önkoşul | Tamamlandı kanıtı |
+|---|---|---|---|
+| M00 | Gereksinimler, teknik seçimler, özel repo ve görev paylaşımı | Kullanıcı cevapları | Bu plan + ajan dosyaları + repo doğrulaması |
+| M01 | Linux host, disk alanı, ağ, LFS araç kontrolü, log düzeni | Ortam ve alan tercihi | Host kontrolü geçer; kontrollü dosya sistemi ve build kökü |
+| M02 | Kaynak manifesti, tarif şablonu, paket motoru/mağaza prototipi | M01 | Küçük paketi üret/kur/güncelle/kaldır; sahiplik ve GUI yolu kanıtı |
+| M03 | Multilib cross-toolchain ve geçici araçlar | M01, M02 ABI kararı, sabit kaynaklar | ELF32/64 dahil kitap sırasındaki doğrulamalar geçer |
+| M04 | Chroot ve nihai LFS temel sistemi | M02 kararları, M03 | Paket kayıtları, kritik testler, linker ve dosya sistemi doğrulaması |
+| M05 | Kernel, init, bootloader ve ilk VM açılışı | M04 | Hedef imajdan giriş, gerçek kernel, ağ, yeniden başlatma |
+| M06 | BLFS altyapısı: grafik, ses, oturum, ağ ve sertifikalar | M05 | Grafik test oturumu; ağ/TLS/ses doğrulaması |
+| M07 | Hazır masaüstü ve temel uygulama profili | M06 | Temiz kullanıcıda çalışan masaüstü, ayarlar ve dosya yöneticisi |
+| M08 | Terminal yardımı, pkg+mağaza, kısayollar ve Atatürk/Glass temaları | M02, M07 | İstenen özelliklerin kullanıcı senaryoları geçer |
+| M09 | Canlı rootfs, initramfs, canlı ISO ve VM imajı paketleme | M08 | Canlı medyadan açılış ve oturum; kurulumsuz kullanım |
+| M10 | Alfa doğrulaması, yayın adayının hazırlanması | M09 | Test matrisi, bilinen sorunlar, checksum ve kullanım yönergesi |
+| M11 | Calamares grafik/offline kurucu, BIOS+UEFI ve Windows yanında kurulum | Canlı alfa M10 | Önce sanal disk kurulum/kurtarma testleri; sonra yetkilendirilmiş gerçek disk |
+| M12 | Kurulabilir beta, bakım ve sürüm paketi | M11 | Donanım matrisi, güncelleme/kurtarma ve kullanıcı kabul testleri |
+
+Bağımlılık zinciri korunur. Tasarım, terminal yapılandırma taslağı ve kısayol listesi M03 derlemesi sürerken ayrı ortamda geliştirilebilir. İki ajan aynı rootfs'ye eşzamanlı paket kuramaz. Masaüstü prototipinin başka dağıtımda çalışması LFS entegrasyon testinin yerine geçmez.
+
+### 10.1 M03–M05 kritik kontrol noktaları
+
+- Kitapta açıklanan cross-toolchain/temporary tools/chroot sınırları korunur.
+- Host kütüphanelerine istenmeyen bağlantılar denetlenir.
+- Geçici sistem tamamlandığında geri yüklenebilir kontrol noktası alınır.
+- Nihai temel sistemde paket dosya sahipliği kaydı üretildiği doğrulanır.
+- Kernel, rootfs sürücüsü, initramfs ihtiyacı ve bootloader yapılandırması birlikte test edilir.
+- Boot testi host kernel altında chroot açmayı değil hedef kernel ile yeniden açılışı kapsar.
+
+### 10.2 M09 canlı sistem davranışı
+
+- Salt okunur sistem katmanı ve geçici yazılabilir katman için uygulama yöntemi seçilir; örneğin sıkıştırılmış rootfs + overlay.
+- Legacy BIOS ve UEFI ikisi de kabul koşuludur. GRUB'un BIOS/EFI bileşenleri ve aynı ISO'nun iki boot yolu hazırlanır. Secure Boot ayrı imzalama işidir; ilk sürüm koşulu değildir.
+- Secure Boot kapalı test edilen imaj destekliyormuş gibi etiketlenmez.
+- İlk sürüm grafik kurucu içermez; USB'den deneme ile diske kurulum karıştırılmaz.
+- Varsayılan canlı oturumun kimlik/yetki modeli açıkça belgelenir.
+- Kalıcı veri bölümü/persistence ayrı seçimdir; var olduğu söylenmez.
+- İç Windows disklerine otomatik yazma yapılmaz. Canlı oturumun açılması disk bölümleme tetiklemez.
+- Her cihazın kimlikleri/anahtarları gerekiyorsa ilk açılışta oluşturulur; build makinesinin kimlikleri dağıtılmaz.
+
+## 11. Uygulamalar, sürücüler ve Windows uyumluluğu
+
+| İhtiyaç | Başlangıç seçimi | Kabul senaryosu |
+|---|---|---|
+| Dosyalar | Dolphin | Kopyala, geri al, arşiv aç, USB çıkar |
+| Terminal | Konsole + Zsh | Öneri/düzeltme ve pkg tamamlama |
+| Not Defteri | KWrite | Türkçe UTF-8 ve Windows satır sonlu dosya |
+| PDF | Okular | PDF aç, ara, yazdır |
+| Görseller | Gwenview | Yaygın biçimler, döndürme |
+| Arşivler | Ark | ZIP/tar açma ve oluşturma |
+| Ekran görüntüsü | Spectacle | Bölge/pencere/ekran, kısayol |
+| Medya | VLC | Ses/video ve ses çıkışı seçimi |
+| Hesap makinesi | KCalc | Günlük işlemler |
+| Sistem ve disk | Plasma System Monitor, disk kullanım aracı | Süreç/bellek/disk bilgisi |
+| Tarayıcı | Firefox hazır; Chrome için doğrulanmış kurulum seçeneği | İnternet/TLS, indirme, varsayılan ilişki |
+| Ofis | LibreOffice Writer/Calc/Impress | DOCX/XLSX/PPTX örnekleri; birebir Word garantisi yok |
+| Mağaza | Özelleştirilmiş Discover | Kendi depomuzdan uygulama işlemi |
+| Windows uygulamaları | Wine + ayarlardan prefix/uyumluluk erişimi | 32/64-bit test programı; seçili Office sürümü |
+| Oyun | Steam istemcisi ve Proton kullanım yolu | Giriş/indirme ve seçilmiş test oyunu |
+
+“Google” isteği Chrome erişimi olarak yorumlandı; Chrome açık kaynak projesi değildir ve LFS resmî destek listesinde varsayılmaz. [Chrome gereksinimleri](https://support.google.com/chrome/answer/95346?co=GENIE.Platform%3DDesktop&hl=en) ve dağıtım koşulları doğrulanarak resmî kaynaktan kurulabilir; çevrimdışı varsayılan tarayıcı Firefox olur. Chrome'un ISO'ya gömülmesi doğrulanmadan vaat edilmez.
+
+Wine kurulu gelir. Kullanıcı Office 2016/2019/2021 ailesini belirtti; tam sürüm, lisanslı kurulum medyası ve Click-to-Run/MSI ayrımı uyumluluk testi sırasında kaydedilecek. Her sürüm temiz ayrı Wine prefix'inde açma/kaydetme/yazdırma senaryolarıyla denenir. Hiçbiri çalıştırılmadan “Word çalışıyor” denmez. Microsoft Office ISO'ya gömülmez; kullanıcı lisanslı medyasıyla kurar. LibreOffice günlük belge işlerini ilk günden sağlar; Microsoft Word ile aynı uygulama diye sunulmaz.
+
+Steam'in ilk kurulum/hesap ve oyun indirmesi internet gerektirir; offline sistem kurulumu bunu değiştirmez. Native multilib grafik yığını test edilir; kapalı anti-cheat kullanan her oyunun çalışacağı iddia edilmez. Özel oyun listesi sonraki test genişletmesidir.
+
+### 11.1 Sürücü matrisi
+
+- Kernel'in Intel/AMD depolama, USB, HID, Ethernet, ses ve grafik modülleri + gerekli firmware sınıfları.
+- Intel/AMD grafik için Mesa; NVIDIA için donanım ve kernel ile uyumlu vendor sürücü dalı, fallback ve kullanıcı alanı araçları.
+- RTX 5060 gerçek donanım testi; Hyper-V sonucu bu testin yerine geçmez.
+- Yaygın Wi-Fi/Bluetooth firmware, yazıcı için CUPS ve ihtiyaç varsa tarama entegrasyonu.
+- `hv_vmbus`, depolama/ağ ve uygun Hyper-V framebuffer desteği; Gen1/Gen2 için gerekli boot sürücüleri.
+- Eski GPU'larda vendor legacy sürücü ile yeni kernel çatışmaları ayrı uyumluluk satırlarıdır; bütün sürücü dalları aynı anda kurulmaz.
+
+Sürücü seçimi, mevcut sürüm ve güncelleme durumu Ayarlar'dan erişilir. Başlangıçta mevcut sistem bileşenlerine bağlantı veren ince bir karşılama/ayar kısayolu tercih edilir. “Tüm sürücüler” donanım algılama + yaygın sürücü/firmware kapsamı + eksik cihaz raporu olarak uygulanır; her cihaz için evrensel destek garantisi değildir.
+
+## 12. Güncelleme, bakım ve yayın
+
+Seçim: sabitlenmiş stable paket kümesi + yerel testing kanalı. Sürekli rolling yerine test edilmiş sürümler ve güvenlik güncellemeleri. Otomatik arka plan kurulum yok; Ayarlar/mağazadan güncelleme bildirimi ve kullanıcı başlatmalı işlem. Geri dönüş için önce eski kernel ve kurtarma USB'si; atomik sistem güncellemesi sonraki araştırma konusu.
+
+- Sistem paketi ve yapılandırma sürümleri birlikte izlenir.
+- Paylaşılan kütüphane değişince etkilenen bağımlı paketler yeniden değerlendirilir.
+- Paket kaldırma kullanıcı ayarlarını/belgelerini gelişigüzel silmez.
+- Eski kernel veya kurtarma ortamı gibi geri dönüş yolları değerlendirilir.
+- Snapshot/atomik geri dönüş vaat edilmeden önce dosya sistemi ve güncelleme mimarisi seçilir.
+- ISO ve depo yayınında doğrulanabilir checksum/imza, kaynak manifesti ve bilinen sorunlar sağlanır.
+- Dağıtılan yazılımlar ve görseller için kaynak/lisans kayıtları tutulur; seçilen lisansların gerektirdiği kaynak teslimi yayın kontrolüne dahil edilir.
+- Bulut paket/ISO depolama ve ücretli sunucu yok. Kod/belgeler özel GitHub deposunda, build/ISO/paketler yerelde. Dış kullanıcılara güncelleme sunucusu kurmak gelecekte ayrı kapsam olur.
+
+Gizlilik/sürücü/uyumluluk seçenekleri Ayarlar'dan erişilebilir. Telemetri ve bulut hesap zorunluluğu varsayılan kapalıdır; bu proje tercihi üçüncü taraf uygulamalarının kendi veri işleyişini değiştirmez. Şifreleme kurucu fazında seçenek olarak incelenir; Secure Boot kapalı test, Secure Boot desteği sayılmaz.
+
+## 13. Kullanıcı senaryoları ve test matrisi
+
+| Alan | Senaryo | Başarı kanıtı |
+|---|---|---|
+| Boot | ISO'dan başla, masaüstüne gir, yeniden başlat | Boot logu, oturum görüntüsü, kernel bilgisi |
+| Ağ | Bağlan, HTTPS sayfası aç, bağlantıyı kes/geri getir | DNS/TLS ve masaüstü ağ durumu |
+| Paket | CLI'den kur, mağazada gör, mağazadan kaldır | Aynı paket veri tabanı, log, dosya sahipliği |
+| Paket hatası | Ağ kesintisi, disk dolması, ikinci işlem isteği | Anlaşılır hata ve kurtarılabilir işlem durumu |
+| Terminal | Öneri göster, kabul et, ayrı çalıştır, düzeltmeyi reddet | Tekrarlanabilir etkileşim kaydı |
+| Kısayol | Listedeki her tuş ve çakışma | Profil tablosunda tek tek geçti/kaldı |
+| Görsel | Atatürk masaüstü/kilit; marka/kontrast; farklı ölçekler | 100/125/150/200% örnekleri ve bulgu listesi |
+| Efekt | Sade/Glass/Liquid geçişi | Donanım ve sürücüyle birlikte performans ölçümü |
+| Günlük kullanım | Dosya aç/kopyala/sil/geri al, ses çal, tarayıcı kullan | Kullanıcı senaryosu sonucu |
+| Donanım | NVIDIA masaüstü; sonra seçilen diğer cihazlar | Ayrı cihaz listesi; denenmeyenler açıkça belirtilir |
+| Canlı oturum | İç disklere kurmadan dene; yeniden başlat | Oturumun kalıcılık ve disk davranışı açıklaması |
+
+Çıkış koşulları ilk sürüm kapsamına göre daraltılır; örneğin Liquid prototipi başarısızsa Glass ile alfa çıkışı mümkün olabilir. Bu durum bilinen sınırlama olarak yazılır, tamamlanmış Liquid özelliği gibi sunulmaz.
+
+## 14. Codex ve Claude iş bölümü
+
+Kullanıcının devrettiği rol seçimi: Codex build sistemi, LFS, multilib, paket entegrasyonu, Hyper-V/ISO ve entegrasyon sahibi; Claude Code masaüstü profilleri, terminal kullanıcı deneyimi, kısayollar, tema ve ikinci göz inceleme sahibi. Bu sahiplik planıdır; Claude işlemi başlatılmış değildir.
+
+Ana kaynak kökü `C:\alpbahOS`; Claude için ayrı Git worktree `C:\alpbahOS-claude`. Ortak `main` üzerinde eşzamanlı yazılmaz. Kod, küçük varlıklar ve Markdown dosyaları özel repoda; büyük çıktılar F: üzerinde. Claude aynı makinede değilse kendi clone/branch'inde aynı kuralları izler. İlk devir belgesi [CLAUDE_START.md](CLAUDE_START.md), görev listesi [BACKLOG.md](BACKLOG.md).
+
+Her görevde: ID, sahip, dosya sınırı, girdi/çıktı, bağımlılık, test yöntemi ve devir notu bulunur. Ortak dosya veya rootfs için tek yazıcı olur. Aynı anda iki build motoru tek paket veri tabanını değiştirmez.
+
+Önceden anlaşılacak entegrasyon sözleşmeleri:
+
+- Tema token'ları, profil adları ve kurulum hedefleri.
+- `pkg` CLI semantiği, hata kodları ve mağaza erişim yöntemi.
+- Kısayol tanımlarının tek kaynağı.
+- Paket manifesti ve build artifact yolları.
+- Test raporu, log ve görev devri biçimi.
+
+Ortak kurallar [AGENTS.md](../AGENTS.md), Claude başlangıç talimatları [CLAUDE.md](../CLAUDE.md) içindedir. Bağlantı veya ortak repo kurulmadan Claude'a iş gönderildiği varsayılmaz.
+
+## 15. Zaman ve kaynak tahmini yöntemi
+
+Önceki konuşmadaki gün/token tahminleri teslim taahhüdü değildir. Plan şu ölçümlerle takvime çevrilir:
+
+1. Host hazırlama ve ilk referans derleme süresi.
+2. Kullanılabilir RAM altında güvenilir paralellik seviyesi.
+3. Temel sistem, grafik yığını ve masaüstünün ayrı süreleri.
+4. Kaynak indirme, test ve yeniden derleme payı.
+5. Günlük makine erişimi ve insan test zamanı.
+
+Token miktarı derleyicinin çalışma süresini azaltmaz. İki ajan tasarım, tarif hazırlama ve incelemede paralel ilerleyebilir; bağımlı toolchain adımları ve tek rootfs işlemleri sıralı kalır. Başarı için ilk odak M05 boot, sonra M07 masaüstü, ardından M09 canlı ISO'dur.
+
+## 16. Günlük çalışma planı ve açık teknik kapılar
+
+Her 1–2 saatlik kullanıcı oturumu: 10 dk devir/log inceleme, 40–75 dk tek görev veya entegrasyon, 15–25 dk test, 5–10 dk kayıt/sonraki adım. Derleyicinin makine zamanı ayrı ölçülür; bilgisayarın gece açık kalması henüz belirtilmediğinden gece derlemesi zorunlu varsayılmaz.
+
+İlk beş oturumun hedef sırası:
+
+1. Plan/repo/devir düzeni ve Hyper-V yetki kontrolü.
+2. Builder hazırlığı, ağ/SSH ve LFS host-check.
+3. Kaynak/kitap sabitleme, multilib ve paket motoru küçük deneyleri.
+4. Geçici toolchain başlatma; Claude tarafında tema/kısayol dosyalarının hazırlanması.
+5. Sonuçları doğrulama ve ölçümlerle sonraki oturumları planlama.
+
+Bu sıra bir günde bir aşamanın kesin biteceği anlamına gelmez. Uzun derleme/test adımları birden fazla oturuma yayılabilir.
+
+Teknik kapılar: Hyper-V yönetim yetkisi; eşleşen multilib kaynak revizyonu; PackageKit/libalpm/Discover uyumu; Plasma düşük RAM hedefi; Hyper-V grafik oturumu; NVIDIA gerçek donanım; Office sürüm testleri. Bunlar genel planı bloke eden cevap bekleyen sorular değil, ilgili aşama başlamadan/bitmeden kanıtlanacak işlerdir.
+
+İlk sürümler: `0.1-dev` boot eden taban, `0.2-alpha` VM masaüstü + BIOS/UEFI canlı ISO, `0.3-beta` grafik/offline/dual-boot kurucu, `1.0` uyumluluk ve güncelleme testleri tamamlanmış günlük kullanım adayı. İlk sürümün sistem sürüm numarası ile plan belgesinin 1.0 sürümü karıştırılmamalı.
