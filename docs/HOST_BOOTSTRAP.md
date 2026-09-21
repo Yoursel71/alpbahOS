@@ -50,6 +50,15 @@ Gen 2 yalnızca builder içindir. alpbahOS canlı medyası daha sonra ayrı Gen 
 
 4. Betik VM'yi otomatik başlatmaz. Hyper-V Manager'da ilk açılışı yap ve Ubuntu'yu yalnızca builder VHDX'e kur.
 5. Ubuntu içinde repoyu klonla ve `scripts/host-check/lfs-version-check.sh` çalıştır. Bütün satırlar `OK`, hata sayısı `0` olmalıdır.
+6. LFS kaynaklarını yalnızca builder içinde indir ve resmi checksum ile doğrula:
+
+   ```bash
+   sudo mkdir -p /sources
+   sudo chown "$USER" /sources
+   /path/to/alpbahOS/scripts/sources/fetch-lfs-sources.sh /sources
+   ```
+
+   Kaynak sürümü ve doğrulama politikası `manifests/sources/lfs-13.1-systemd.json` dosyasındadır.
 
 ## Kurulum tercihleri
 

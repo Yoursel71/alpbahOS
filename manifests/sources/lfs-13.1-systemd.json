@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "project": "Linux From Scratch",
+  "release": "13.1-systemd",
+  "architecture": "x86_64",
+  "book": "https://www.linuxfromscratch.org/lfs/view/stable-systemd/",
+  "downloadRoot": "https://www.linuxfromscratch.org/lfs/downloads/stable-systemd/",
+  "sourceList": "https://www.linuxfromscratch.org/lfs/downloads/stable-systemd/wget-list",
+  "md5Sums": "https://www.linuxfromscratch.org/lfs/downloads/stable-systemd/md5sums",
+  "patchRoot": "https://www.linuxfromscratch.org/patches/lfs/13.1/",
+  "localSourceDirectory": "/sources",
+  "verification": {
+    "downloadList": true,
+    "officialMd5": true,
+    "sha256BeforeRelease": true,
+    "networkBuild": false
+  },
+  "notes": [
+    "The official list is downloaded as data and never executed as a script.",
+    "MD5 is retained because it is the checksum published by the LFS release; alpbahOS release artifacts also require SHA256.",
+    "The exact multilib source set is a separate gate and must not be silently mixed into this pure 64-bit base."
+  ]
+}
