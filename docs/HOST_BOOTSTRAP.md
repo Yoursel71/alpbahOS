@@ -48,6 +48,14 @@ Gen 2 yalnızca builder içindir. alpbahOS canlı medyası daha sonra ayrı Gen 
      -Confirm:$false
    ```
 
+   Anahtar listesini yönetici PowerShell'de görmek için:
+
+   ```powershell
+   Get-VMSwitch | Select-Object Name, SwitchType, NetAdapterName
+   ```
+
+   `Default Switch` yoksa komuttaki adı listede görünen mevcut anahtarla değiştir. Yeni bir sanal anahtar oluşturma işini bu runbook otomatik yapmaz; ağ yapılandırması kullanıcı tarafından doğrulanmalıdır.
+
 4. Betik VM'yi otomatik başlatmaz. Hyper-V Manager'da ilk açılışı yap ve Ubuntu'yu yalnızca builder VHDX'e kur.
 5. Ubuntu içinde repoyu klonla ve `scripts/host-check/lfs-version-check.sh` çalıştır. Bütün satırlar `OK`, hata sayısı `0` olmalıdır.
 6. LFS kaynaklarını yalnızca builder içinde indir ve resmi checksum ile doğrula:

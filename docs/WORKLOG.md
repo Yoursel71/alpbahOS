@@ -11,7 +11,7 @@ Kullanıcı cevapları ana plan 1.0'a işlendi. Özel repo ve ayrı Codex/Claude
 | PLAN-03: Ortak ajan ve Claude talimatları | Codex | Hazır | AGENTS.md, CLAUDE.md, CLAUDE_START.md |
 | REPO-01: Özel Git deposu | Codex | Tamamlandı | https://github.com/Yoursel71/alpbahOS; `main`, `codex/integration`, `claude/desktop-bootstrap` uzak dalları doğrulandı |
 | HOST-01: Windows/Hyper-V ön kontrolü | Codex | Ön kontrol geçti | Hyper-V ve servisler açık; 23,9 GiB RAM; F: üzerinde yaklaşık 350 GiB boş alan; JSON raporu üretildi |
-| HOST-02: Linux builder | Codex | Devam ediyor | Ubuntu 24.04.5 ISO/sha sabitlendi; indirme ve hash doğrulaması, ardından yönetici oturumunda VM oluşturma |
+| HOST-02: Linux builder | Codex | VM oluşturulmaya hazır | Ubuntu 24.04.5 ISO indirildi; beklenen ve bulunan SHA256 eşleşti; sıradaki işlem yönetici PowerShell'de ağ anahtarıyla VM oluşturma |
 | ABI-01: Steam multilib tasarımı | Codex | İlke kararı alındı | ADR 0002 hazır; LFS 13.1 ile eşleşen kaynak revizyonu sabitlenecek |
 | DESKTOP-01: Masaüstü prototipi | Claude rol planı / Codex entegrasyon | Bekliyor | Claude Code kuruldu ve hesap doğrulandı; haftalık kullanım sınırı 20:00'a kadar yeni çalışmayı engelliyor |
 
@@ -32,9 +32,10 @@ Kullanıcı cevapları ana plan 1.0'a işlendi. Özel repo ve ayrı Codex/Claude
 - GitHub repo görünürlüğü private olarak doğrulandı. Kimlik bilgileri repoya yazılmadı.
 - Host raporu `F:\alpbahOS-build\reports\host-preflight.json` konumuna yazıldı; engelleyici kontrol hatası yok.
 - Resmi Ubuntu Server 24.04.5 amd64 ISO adresi ve SHA256 değeri manifestte sabitlendi.
+- Ubuntu ISO indirildi ve tam SHA256 doğrulaması geçti: `97f3d7ffb032c3eb3b23d2c8be9cc76e60c2c1f2c0146ba5ba9fe01cafae0fd8`.
 - Claude Code 2.1.278 kuruldu ve Claude hesabı doğrulandı. UI-01/SHELL-01 oturumu kullanım sınırı nedeniyle kod üretmeden beklemeye geçti.
 - Linux boot, paket işlemleri ve GPU testleri henüz çalıştırılmadı.
 
 ## Sonraki adım
 
-Ubuntu ISO hash'ini doğrula. Ardından yönetici PowerShell oturumunda Gen 2 builder VM'yi oluştur ve Ubuntu host içinde LFS 13.1 sürüm kontrolünü çalıştır. Claude sınırı sıfırlandığında mevcut ayrı worktree'de UI-01/SHELL-01 yeniden başlatılabilir.
+Yönetici PowerShell'de Hyper-V sanal anahtar adını doğrula ve Gen 2 builder VM'yi oluştur. Ubuntu host içinde LFS 13.1 sürüm kontrolünü, sonra resmi kaynak indirme/doğrulamasını çalıştır. Claude sınırı sıfırlandığında mevcut ayrı worktree'de UI-01/SHELL-01 yeniden başlatılabilir.
