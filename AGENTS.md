@@ -1,6 +1,21 @@
 # alpbahOS — Ortak ajan çalışma talimatları
 
-Bu dosya projede çalışan tüm ajanların ortak talimatıdır. Kullanıcının yeni açık kararları önceliklidir; bunları karar kaydına yansıt. Ana plan 1.0 hazır, Linux uygulaması henüz başlamadı. Bu belge tek başına işletim sistemi kurma veya fiziksel disk değiştirme görevi değildir. Kullanıcının mevcut görev yetkisini ve kabul edilmiş tercihlerini tekrar sormadan kullan.
+Bu dosya projede çalışan tüm ajanların ortak talimatıdır. Kullanıcının yeni açık kararları önceliklidir; bunları karar kaydına yansıt. Ana plan 1.0 hazır, Ubuntu builder kurulumu sürüyor ve LFS uygulaması henüz başlamadı. Bu belge tek başına işletim sistemi kurma veya fiziksel disk değiştirme görevi değildir. Kullanıcının mevcut görev yetkisini ve kabul edilmiş tercihlerini tekrar sormadan kullan.
+
+## Güncel yürütme özeti
+
+Güncel durumun tek referansı kökteki `CURRENT.md` dosyasıdır. Aşağıdaki özet, ajanların yeni oturumda aynı bağlamla başlaması için burada da tutulur.
+
+- `alpbahOS` x86_64 LFS projesi için private repo, `codex/integration` dalı ve `C:\alpbahOS-claude` worktree hazırlandı.
+- Ubuntu Server 24.04.5 amd64 ISO'su indirildi ve SHA256 doğrulandı.
+- `alpbah-builder` adlı Hyper-V Gen2 VM oluşturuldu: `YRSLF`, `Default Switch`, 6 vCPU, 4 GiB RAM, 210 GiB dinamik VHDX.
+- 12 GiB başlangıç belleği host kaynakları nedeniyle ayarlanamadı; VM 4 GiB'a düşürüldü. Builder yavaş çalışabilir, bu nedenle ilk build düşük paralellikle ölçülecek.
+- VMConnect doğru hosta bağlandı. Ubuntu Server Minimal kurulum ekranı görüldü; Featured server snaps boş bırakılıyor ve OpenSSH Server kuruluyor.
+- SSH bağlantısı henüz doğrulanmadı. LFS toolchain, rootfs, paket veritabanı, masaüstü, Steam/Wine ve gerçek donanım testleri henüz yapılmadı.
+
+SSH bağlandıktan sonra sıra: Ubuntu/SSH/host doğrulaması; locale ve saat; LFS host gereksinimleri; resmi kaynak listesi/checksum; ayrı LFS hedefi; saf 64-bit toolchain; multilib kapısı; temel boot sistemi; BLFS masaüstü; `pacman/libalpm` + `pkg`; Discover/PackageKit; live ISO ve Gen1/Gen2 testleri.
+
+Ajan sahipliği: Codex build/toolchain/multilib/paket/ISO/Hyper-V/entegrasyon; Claude Code tema, KDE/uygulama UX, kısayollar ve Konsole/Zsh. Aynı rootfs, mount alanı ve paket veritabanına eşzamanlı yazılmaz. Kurulum ekranına ulaşmak, kurulumun tamamlandığı anlamına gelmez; her aşama kanıt ve log ile kaydedilir.
 
 ## Başlangıç
 

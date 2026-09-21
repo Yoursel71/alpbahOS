@@ -12,12 +12,27 @@
 
 ## Güncel bağlam
 
-- Ana plan 1.0 hazır. Çalışır dağıtım veya tamamlanmış toolchain yok.
+- Ana plan 1.0 hazır. Hyper-V builder VM oluşturuldu; Ubuntu Server Minimal kurulumu ve OpenSSH kurulumu sürüyor. Çalışır alpbahOS dağıtımı veya tamamlanmış toolchain yok.
 - LFS tabanı derlenecek, hazır açık kaynak masaüstü/uygulamalar özelleştirilecek.
 - Kullanıcı Windows'tan geçenler için kolay masaüstü, terminal önerileri, basit paket işlemleri, Windows kısayolları, Atatürk görselleri ve güçlü cihazlarda cam görünümü istiyor.
 - Başlangıç stack'i KDE/KWin, Konsole/Zsh, pacman/libalpm + pkg + Discover/PackageKit. Entegrasyon deneyi geçmeden çalışan kabul etme.
 - Claude Code kullanılacak; ayrı çalışma ağacı `C:\alpbahOS-claude`, dal `claude/desktop-bootstrap`. Başka hostta clone ve aynı görev sözleşmeleri kullanılır.
 - Hyper-V, 300 GB yerel alan, Türkçe Q, düşük RAM ve BIOS+UEFI hedefleri sabittir. Kullanıcı günde 1–2 saat ayırır.
+
+## Güncel yürütme özeti
+
+Güncel durumun tek referansı kökteki `CURRENT.md` dosyasıdır. Aşağıdaki özet, Claude oturumunun gerçek bağlamını korumak için burada da tutulur.
+
+- `alpbahOS` x86_64 LFS projesi için private repo, `codex/integration` dalı ve `C:\alpbahOS-claude` worktree hazırlandı.
+- Ubuntu Server 24.04.5 amd64 ISO'su indirildi ve SHA256 doğrulandı.
+- `alpbah-builder` Hyper-V Gen2 VM'si `YRSLF` hostunda `Default Switch` ile oluşturuldu. VM 6 vCPU, 4 GiB RAM ve 210 GiB dinamik VHDX kullanıyor.
+- Başlangıçtaki 12 GiB RAM isteği host kaynakları nedeniyle başarısız oldu; VM 4 GiB'a indirildi. Derleme sırasında düşük paralellik ve ölçüm şart.
+- VMConnect doğru hosta bağlandı. Ubuntu Server Minimal kurulum ekranı görüldü; Featured server snaps seçilmiyor ve OpenSSH Server kuruluyor.
+- SSH henüz doğrulanmadı. LFS, rootfs, Plasma, tema, terminal profili ve uygulama testleri tamamlanmış sayılmıyor.
+
+SSH bağlandıktan sonra Codex'in yapacağı sıra: Ubuntu/SSH/host doğrulaması; locale ve saat; LFS host gereksinimleri; resmi kaynak checksum'ı; ayrı LFS hedefi; toolchain ve multilib kapısı; temel sistem boot'u; BLFS masaüstü ve paketleme. Claude'ın ilk gerçek görevi, SSH/build durumu kaydedildikten sonra UI-01 ve SHELL-01 kapsamındaki tema token'ları, kısayollar, Konsole/Zsh profili ve uygulama UX taslaklarını ayrı dosyalarda hazırlamaktır.
+
+Kurulum ekranına ulaşmak kurulumun bittiği anlamına gelmez. Claude erişmediği dosyaları okumuş, komutları çalıştırmış veya testleri geçmiş gibi raporlamaz; her teslim commit, doğrulama ve açık sorunlarla yazılır.
 
 ## Rol ve ilk görev
 
