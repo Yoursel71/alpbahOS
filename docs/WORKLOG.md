@@ -12,6 +12,8 @@ Kullanıcı cevapları ana plan 1.0'a işlendi. Mevcut sonuçlar logo, kabul edi
 | REPO-01: Özel Git deposu | Codex | Oluşturuldu | https://github.com/Yoursel71/alpbahOS; isPrivate=true doğrulandı; ilk push hazırlanıyor |
 | BUILD-01: Linux derleme ortamı | Codex | Başlamadı | Hyper-V/300 GB seçildi; yönetim sorgusunda yetki hatası |
 | DESKTOP-01: Masaüstü prototipi | Claude rol planı / Codex entegrasyon | Başlamadı | Plasma seçildi; çalışma oturumu testi yok |
+| PKG-01/PKG-02: Paket motoru (`alp`) | Claude (D31 ile Codex'ten devraldı) | Prototip hazır, incelendi, 3 bulgu düzeltildi; gerçek Linux ortamında test edilmedi | [DECISIONS.md D31/P13](DECISIONS.md), [alpbahOS-alp](https://github.com/Yoursel71/alpbahOS-alp), `claude/desktop-bootstrap` dalı → `docs/handoffs/claude/001-alp-hybrid-pkg-proposal.md`, `003-alp-review-fixes.md` |
+| UI-01/UI-02/UI-03/SHELL-01 | Claude | `claude/desktop-bootstrap` dalında taslak hazır (doğrulanmamış) | `claude/desktop-bootstrap` dalı → `docs/handoffs/claude/001-desktop-bootstrap.md`, `002-ui02-ui03.md` |
 
 ## Ortam sahipliği
 
@@ -33,3 +35,10 @@ Kullanıcı cevapları ana plan 1.0'a işlendi. Mevcut sonuçlar logo, kabul edi
 ## Sonraki adım
 
 Belge bağlantıları ve Git kontrolü sonrası ilk commit/push; Codex ve Claude için ayrı dal/worktree. Sonraki uygulama görevi Hyper-V host ön kontrolü ve multilib kaynak sabitlemedir. Claude UI-01/SHELL-01 ile ayrı dosyalarda başlayabilir; bu turda Claude süreci başlatılmadı.
+
+## Güncelleme — 21 Eylül 2026: paket motoru pivotu (D31) ve Codex durumu
+
+- **Karar:** Kullanıcı, D11/P05'te seçilen pacman/libalpm + Discover/PackageKit alpm yaklaşımını M02 testini beklemeden terk etti; yerine Claude'un geliştirdiği `alp` hibrit paket yöneticisini (recipe/kaynaktan derleme + Flatpak sarmalayıcı + core `.tar.gz`) kabul edilen motor yaptı. Ayrıntı: [docs/DECISIONS.md](DECISIONS.md) D31/P13, [docs/MASTER_PLAN.md](MASTER_PLAN.md) §5 güncelleme notu, [docs/BACKLOG.md](BACKLOG.md) PKG-01/PKG-02 satırları.
+- **Bu ne demek:** Paket motoru sahipliği Codex'ten Claude'a geçti. `alp`'in prototipi çalışıyor (core yöntemi uçtan uca test edildi, checksum/kilit/dry-run doğrulandı) ama bağımlılık çözümü, config koruma ve PackageKit/Discover entegrasyonu **henüz yok** — bunlar dürüst eksiklik olarak proposal belgesinde kayıtlı, "tamamlanmış" değil. Gerçek bir Linux/BLFS ortamında (Codex'in M06+ aşaması) hiç çalıştırılmadı.
+- **Yeni repo:** [Yoursel71/alpbahOS-alp](https://github.com/Yoursel71/alpbahOS-alp) (private) — `alp`'in gerçek recipes/index/core içeriği için; şu an boş iskelet.
+- **Codex durumu:** Kullanıcı, Codex/GPT oturumunun haftalık kullanım limitinin dolduğunu ve Cumartesi'ye kadar geri dönmeyeceğini bildirdi. `alpbah-builder` Hyper-V VM'indeki LFS Chapter 8 (Systemd) ilerlemesi bu nedenle duraklamış durumda (bkz. yukarıdaki BUILD-01 satırı ve `claude/desktop-bootstrap` dalındaki Codex/Hyper-V notu). Codex döndüğünde bu belgedeki pivot kararını ve `alp` prototipini görüp değerlendirmesi gerekiyor — LFS temel sisteme `alp`'i (saf Python, stdlib-only) yerleştirmek ve PackageKit/Discover entegrasyonunun artık bu planın kapsamında olmadığını not etmek dahil.
