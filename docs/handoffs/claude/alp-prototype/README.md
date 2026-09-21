@@ -37,3 +37,13 @@ python3 alp.py --root /tmp/alp-test --index demo/index.json remove alpbah-theme-
 - Gerçek bir alpbahOS rootfs üzerinde `--root /` ile üretim testi — hiç denenmedi, denenmemeli (bu bir prototip, gerçek sisteme yazma yolu hiç egzersiz edilmedi).
 
 Bu ayrımın nedeni AGENTS.md'nin "Yapılmamış derleme, test, donanım doğrulaması ... yapılmış gibi raporlanamaz" kuralı — recipe ve flatpak yollarının kod yolu doğru yazılmıştır ama gerçek dış araçlarla hiç koşulmamıştır.
+
+## Bağımsız inceleme sonrası düzeltmeler (21 Eylül 2026)
+
+Claude tarafından yapılan bağımsız kod incelemesinde bulunan 3 sorun düzeltildi (bkz. [../003-alp-review-fixes.md](../003-alp-review-fixes.md)):
+
+1. **`--dry-run` artık gerçekten ağa çıkmıyor/diske yazmıyor.** Önceki sürümde `recipe`/`core` kurulumlarında `fetch()` (indirme+checksum) `dry_run` kontrolünden ÖNCE, koşulsuz çalışıyordu — CLI'nin kendi "touch nothing persistent" sözünü çiğniyordu. Artık dry-run erken çıkıyor, hiçbir ağ isteği veya kalıcı dosya yazımı yapmıyor. Yeniden test edildi: `--dry-run install htop/firefox/alpbah-theme-solid` sonrası `var/lib/alp/cache/` boş kalıyor.
+2. **`recipe` yöntemiyle kurulan paketler artık `remove` ile tam temizleniyor.** `_merge_destdir` artık dizinleri de `files[]`'e kaydediyor (öncesinde yalnız dosyalar kaydediliyordu, `make install`'ün oluşturduğu dizinler kalıcı olarak öksüz kalıyordu).
+3. **İndirmelerde 30 saniyelik zaman aşımı eklendi** (`urllib.request.urlopen(..., timeout=...)`), yanıt vermeyen bir kaynağın `alp install`'ı sonsuza kadar askıda bırakmasını önlemek için.
+
+Checksum reddi testi artık gerçek (dry-run olmayan) bir `install htop` çağrısıyla yeniden doğrulandı — davranış aynı: gerçek ağdan indirilen dosya checksum uyuşmazlığında silinip işlem durduruluyor.

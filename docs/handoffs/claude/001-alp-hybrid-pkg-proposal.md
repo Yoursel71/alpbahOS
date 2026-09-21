@@ -157,6 +157,8 @@ python3 alp.py --root <scratch> --index demo/index.json --dry-run install firefo
 
 Ayrıntılı yönergeler ve tam çıktı için [alp-prototype/README.md](alp-prototype/README.md).
 
+**21 Eylül 2026 güncellemesi:** Yukarıdaki tablo bu belgenin ilk yazıldığı andaki test durumunu kaydeder (tarihsel kayıt, değiştirilmedi). Ardından yapılan bağımsız bir kod incelemesinde 3 gerçek sorun bulundu ve düzeltildi — bkz. [003-alp-review-fixes.md](003-alp-review-fixes.md) ve [alp-prototype/README.md](alp-prototype/README.md)'nin "Bağımsız inceleme sonrası düzeltmeler" bölümü. Özet: `--dry-run` artık gerçekten ağa çıkmıyor/diske yazmıyor; `recipe` yöntemiyle kurulan paketler `remove` ile artık dizinleriyle birlikte tam temizleniyor; indirmelere zaman aşımı eklendi. Bu düzeltmeler bölüm 1'deki dört onay adımını gerçekleştirmez — öneri hâlâ değerlendirme aşamasındadır.
+
 ## 9. Sıradaki adım
 
 Bu belge tek başlı bir uygulama emri değildir. Önerilen sıra:
