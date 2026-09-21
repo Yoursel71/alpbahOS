@@ -9,8 +9,8 @@ Plan sürümü 1.0. Roller: Codex altyapı/entegrasyon; Claude Code masaüstü/U
 | HOST-01 | Codex | Hyper-V yönetim yetkisi | Salt okunur host raporu, kaynak bütçesi | Hyper-V etkinliği, alan, ağ ve Linux ISO checksum | Sırada |
 | HOST-02 | Codex | HOST-01 ve kurulum görevi | Gen2 builder + host-check | SSH/locale/toolchain gereksinimleri geçer | Başlamadı |
 | ABI-01 | Codex | Kaynak araştırması | Eşleşen LFS/multilib revizyon ve lib32 planı | Kaynaklar sabit; ELF32/64 test tasarımı | Sırada |
-| PKG-01 | Codex | HOST-02 | pacman/libalpm + test paketi ve yerel depo | Kur/güncelle/kaldır, config koruma, kilit | Başlamadı |
-| PKG-02 | Codex | PKG-01 | pkg ve PackageKit/Discover sözleşmesi | CLI/GUI aynı veritabanında, güvenli güncelleme | Başlamadı |
+| PKG-01 | Claude | — (D31 ile motor değişti) | `alp` (recipe+flatpak+core) — prototip hazır, incelendi, 3 bulgu düzeltildi | Kur/kaldır, tek db+kilit, checksum zorunlu — **dürüst eksik:** bağımlılık çözümü, config koruma yok (proposal §6) | Prototip tamam (`claude/desktop-bootstrap`, ayrı repo [alpbahOS-alp](https://github.com/Yoursel71/alpbahOS-alp)); gerçek Linux ortamında uçtan uca **test edilmedi** |
+| PKG-02 | Claude | PKG-01 | `alp` ve mağaza (Discover/PackageKit) sözleşmesi | CLI/GUI aynı veritabanında, güvenli güncelleme | **Başlamadı** — proposal §6'da açıkça "Yok" işaretli, PackageKit backend'i yazılmadı |
 | BUILD-01 | Codex | ABI-01, HOST-02 | Kaynak manifesti, indir/doğrula/tarif runner | Temiz yeniden deneme ve loglar | Başlamadı |
 | BUILD-02 | Codex | BUILD-01 | Geçici toolchain | Kitap sırası ve ELF/linker testleri | Başlamadı |
 | BUILD-03 | Codex | BUILD-02, PKG-01 | Chroot/temel LFS | Paket dosya sahipliği ve kritik testler | Başlamadı |
@@ -33,9 +33,9 @@ Plan sürümü 1.0. Roller: Codex altyapı/entegrasyon; Claude Code masaüstü/U
 
 ## Eşzamanlı çalışma sözleşmesi
 
-- Codex: `recipes/`, `manifests/`, `scripts/`, `packaging/`, `live/`, kernel/ISO ve Linux ortamı.
-- Claude: `profiles/desktop/`, `profiles/shortcuts/`, `profiles/shell/`, `branding/`, `docs/handoffs/claude/`.
-- Ana plan/kararlar/görev tablosu: entegratör sahipliğinde; Claude değişikliği kendi dalından önerir.
-- `pkg` tamamlama/shell profili arayüzü konusunda iki taraf yazılı sözleşme kullanır; backend'i Claude yeniden yazmaz.
-- Linux rootfs ve paket deposu tek yazıcı. Ayrı Git worktree bu kilidi ortadan kaldırmaz.
+- Codex: `recipes/` (LFS/BLFS build tarifleri — `alp`'in kendi tarifleriyle karıştırılmaz), `manifests/`, `scripts/`, `packaging/`, `live/`, kernel/ISO ve Linux ortamı.
+- Claude: `profiles/desktop/`, `profiles/shortcuts/`, `profiles/shell/`, `branding/`, `docs/handoffs/claude/`, **paket motoru (`alp` — bu repoda `docs/handoffs/claude/alp-prototype/`, gerçek recipes/index/core içeriği ayrı repoda: [alpbahOS-alp](https://github.com/Yoursel71/alpbahOS-alp))**.
+- Ana plan/kararlar/görev tablosu: entegratör sahipliğinde; Claude değişikliği kendi dalından önerir. **İstisna (21 Eylül 2026, D31):** paket motoru pivotu kullanıcının doğrudan talimatıyla main'e işlendi.
+- `alp` CLI semantiği (eski ad `pkg`) artık Claude'un sahipliğinde; Codex'in görevi `alp`'i (saf Python, stdlib-only) LFS temel sistemine yerleştirmek ve BLFS grafik/oturum zincirini ilerletmek.
+- Linux rootfs ve paket deposu tek yazıcı. Ayrı Git worktree bu kilidi ortadan kaldırmaz. `alp`'in recipes/index/core içeriği ayrı repoda olduğu için ana repodaki `recipes/`/`packaging/` (Codex) ile dosya çakışması yok.
 - Mevcut konu plan/başlangıç paketi hazırlığıdır. Ajan süreçleri ve Linux kurulumları henüz başlatılmadı.

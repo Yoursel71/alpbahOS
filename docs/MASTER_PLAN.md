@@ -115,11 +115,13 @@ Etkileşimli Zsh kullanımı build scriptlerinin yorumlayıcısını veya `/bin/
 
 ## 5. Paket ve mağaza deneyimi
 
-### 5.1 Kullanıcıya sunulacak komut ailesi
+> **21 Eylül 2026 güncellemesi (D31/P13):** Bu bölümün altyapı seçimi (§5.2, pacman/libalpm + Discover/PackageKit alpm) kullanıcının doğrudan talimatıyla **terk edildi** ve M02 testini beklemeden `alp` (recipe + Flatpak sarmalayıcı + core `.tar.gz` hibrit motoru) ile değiştirildi; sahiplik Codex'ten Claude'a geçti. §5.1 ve §5.2 aşağıda **tarihsel kayıt** olarak korunuyor (neden pacman seçildiği ve neden değiştiği anlaşılsın diye); güncel komut adı `pkg` değil `alp`'tir (`alp search/info/install/remove/list`). Ayrıntı: [docs/DECISIONS.md](DECISIONS.md) D31/P13, [docs/handoffs/claude/001-alp-hybrid-pkg-proposal.md](handoffs/claude/001-alp-hybrid-pkg-proposal.md), kod: [Yoursel71/alpbahOS-alp](https://github.com/Yoursel71/alpbahOS-alp) ve ana repodaki `docs/handoffs/claude/alp-prototype/`.
 
-Aşağıdakiler planlanan arayüzdür; henüz çalışan komutlar değildir.
+### 5.1 Kullanıcıya sunulacak komut ailesi (tarihsel — bkz. yukarıdaki güncelleme)
 
-| Komut | Önerilen anlam |
+Aşağıdakiler planlanan arayüzdür; henüz çalışan komutlar değildir. `pkg` adı, D31 pivotundan sonra `alp` ile değiştirildi; tablo eski adla korunuyor.
+
+| Komut (eski ad `pkg`, güncel ad `alp`) | Önerilen anlam |
 |---|---|
 | `pkg search <ad>` | Paketleri arar; kurulum yapmaz. |
 | `pkg info <ad>` | Sürüm, kaynak, boyut, bağımlılık ve açıklamayı gösterir. |
@@ -132,7 +134,7 @@ Aşağıdakiler planlanan arayüzdür; henüz çalışan komutlar değildir.
 
 `update` ile `upgrade` farkı yardımda ve mağazada açık olmalıdır. Kullanıcı bunların farklı anlamda birleşmesini isterse semantik karar kaydı güncellenir.
 
-### 5.2 Altyapı seçimi
+### 5.2 Altyapı seçimi (tarihsel — bkz. §5 başındaki 21 Eylül 2026 güncellemesi, D31/P13)
 
 LFS belirli bir paket yöneticisi sağlamaz. [LFS paket yönetimi bölümü](https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter08/pkgmgt.html) temel yöntemleri açıklar. Sistem dosyaları ilk kurulduğunda sahiplik ve sürüm bilgisi yakalanmalıdır; bu yüzden motor/manifest yaklaşımı nihai LFS sistem kurulumundan önce seçilir.
 
@@ -408,7 +410,9 @@ Gizlilik/sürücü/uyumluluk seçenekleri Ayarlar'dan erişilebilir. Telemetri v
 
 ## 14. Codex ve Claude iş bölümü
 
-Kullanıcının devrettiği rol seçimi: Codex build sistemi, LFS, multilib, paket entegrasyonu, Hyper-V/ISO ve entegrasyon sahibi; Claude Code masaüstü profilleri, terminal kullanıcı deneyimi, kısayollar, tema ve ikinci göz inceleme sahibi. Bu sahiplik planıdır; Claude işlemi başlatılmış değildir.
+Kullanıcının devrettiği rol seçimi: Codex build sistemi, LFS, multilib, Hyper-V/ISO ve entegrasyon sahibi; Claude Code masaüstü profilleri, terminal kullanıcı deneyimi, kısayollar, tema, **paket motoru (`alp`, bkz. D31/P13, 21 Eylül 2026)** ve ikinci göz inceleme sahibi. Bu sahiplik planıdır.
+
+**Not (21 Eylül 2026):** Önceki sürümde "paket entegrasyonu" Codex'in sahiplik alanındaydı (pacman/libalpm + PackageKit backend'i, PKG-01/PKG-02). Kullanıcı D31 ile bu kararı değiştirdi: motor artık `alp`, sahibi Claude. Codex'in rolü bu noktadan sonra LFS temel sistemine `alp`'i (saf Python, stdlib-only bir script; ek bağımlılık gerektirmez) yerleştirmek ve BLFS grafik/oturum zincirini ilerletmekle sınırlı; PackageKit/Discover backend'i artık bu planın kapsamında değildir (`alp`'in kendi GUI entegrasyon yolu ayrıca ele alınacak, proposal §6'da "Yok" olarak işaretli açık eksiklik).
 
 Ana kaynak kökü `C:\alpbahOS`; Claude için ayrı Git worktree `C:\alpbahOS-claude`. Ortak `main` üzerinde eşzamanlı yazılmaz. Kod, küçük varlıklar ve Markdown dosyaları özel repoda; büyük çıktılar F: üzerinde. Claude aynı makinede değilse kendi clone/branch'inde aynı kuralları izler. İlk devir belgesi [CLAUDE_START.md](CLAUDE_START.md), görev listesi [BACKLOG.md](BACKLOG.md).
 
@@ -417,7 +421,7 @@ Her görevde: ID, sahip, dosya sınırı, girdi/çıktı, bağımlılık, test y
 Önceden anlaşılacak entegrasyon sözleşmeleri:
 
 - Tema token'ları, profil adları ve kurulum hedefleri.
-- `pkg` CLI semantiği, hata kodları ve mağaza erişim yöntemi.
+- `alp` CLI semantiği (eski ad `pkg`), hata kodları ve mağaza erişim yöntemi.
 - Kısayol tanımlarının tek kaynağı.
 - Paket manifesti ve build artifact yolları.
 - Test raporu, log ve görev devri biçimi.
