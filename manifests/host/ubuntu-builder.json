@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "role": "alpbahOS LFS builder host",
+  "distribution": "Ubuntu Server",
+  "release": "24.04.5 LTS",
+  "architecture": "amd64",
+  "source": "https://releases.ubuntu.com/noble/ubuntu-24.04.5-live-server-amd64.iso",
+  "sha256": "97f3d7ffb032c3eb3b23d2c8be9cc76e60c2c1f2c0146ba5ba9fe01cafae0fd8",
+  "localPath": "F:\\alpbahOS-build\\iso\\ubuntu-24.04.5-live-server-amd64.iso",
+  "hyperV": {
+    "generation": 2,
+    "processors": 6,
+    "memoryGiB": 12,
+    "dynamicMemory": false,
+    "vhdxMaxGiB": 210,
+    "secureBootTemplate": "MicrosoftUEFICertificateAuthority",
+    "automaticCheckpoints": false
+  },
+  "buildDefaults": {
+    "makeJobs": 4,
+    "locale": "en_US.UTF-8",
+    "timezone": "Europe/Istanbul"
+  }
+}

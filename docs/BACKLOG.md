@@ -5,9 +5,9 @@ Plan sürümü 1.0. Roller: Codex altyapı/entegrasyon; Claude Code masaüstü/U
 | ID | Sahip | Önkoşul | İş / teslim | Kabul ölçütü | Durum |
 |---|---|---|---|---|---|
 | PLAN-01 | Codex | Kullanıcı cevapları | Ana plan, kararlar, AGENTS/CLAUDE | Yanıtlar kapsanmış; açık teknik kapılar belli | Tamamlandı |
-| REPO-01 | Codex | Git/GitHub erişimi | Private repo, main ve iki ayrı dal/worktree | Gizlilik ve uzak commit doğrulanır | Bu tur |
-| HOST-01 | Codex | Hyper-V yönetim yetkisi | Salt okunur host raporu, kaynak bütçesi | Hyper-V etkinliği, alan, ağ ve Linux ISO checksum | Sırada |
-| HOST-02 | Codex | HOST-01 ve kurulum görevi | Gen2 builder + host-check | SSH/locale/toolchain gereksinimleri geçer | Başlamadı |
+| REPO-01 | Codex | Git/GitHub erişimi | Private repo, main ve iki ayrı dal/worktree | Gizlilik ve uzak commit doğrulanır | Tamamlandı |
+| HOST-01 | Codex | Hyper-V erişimi | Salt okunur host raporu, kaynak bütçesi, ISO manifesti | Hyper-V etkinliği, alan ve sabit ISO checksum | Tamamlandı |
+| HOST-02 | Codex | HOST-01 ve yönetici VM oluşturma adımı | Gen2 builder + Linux host-check | SSH/locale/toolchain gereksinimleri geçer | Devam ediyor |
 | ABI-01 | Codex | Kaynak araştırması | Eşleşen LFS/multilib revizyon ve lib32 planı | Kaynaklar sabit; ELF32/64 test tasarımı | Sırada |
 | PKG-01 | Codex | HOST-02 | pacman/libalpm + test paketi ve yerel depo | Kur/güncelle/kaldır, config koruma, kilit | Başlamadı |
 | PKG-02 | Codex | PKG-01 | pkg ve PackageKit/Discover sözleşmesi | CLI/GUI aynı veritabanında, güvenli güncelleme | Başlamadı |
@@ -16,9 +16,9 @@ Plan sürümü 1.0. Roller: Codex altyapı/entegrasyon; Claude Code masaüstü/U
 | BUILD-03 | Codex | BUILD-02, PKG-01 | Chroot/temel LFS | Paket dosya sahipliği ve kritik testler | Başlamadı |
 | BOOT-01 | Codex | BUILD-03 | Gen2 ve Gen1 boot | Hedef kernel ile giriş/ağ/reboot | Başlamadı |
 | BLFS-01 | Codex | BOOT-01 | Ağ/ses/grafik/oturum bağımlılıkları | TLS/ses/renderer testleri | Başlamadı |
-| UI-01 | Claude | Belgeler | Tema token'ları ve mevcut mockup eşlemesi | Türkçe, Solid varsayılan, profil farkları | Sırada |
+| UI-01 | Claude | Belgeler ve kullanım limiti sıfırlanması | Tema token'ları ve mevcut mockup eşlemesi | Türkçe, Solid varsayılan, profil farkları | Bekliyor |
 | UI-02 | Claude | UI-01 | Kısayol tanımları ve kullanıcı yardımı | Çakışma listesi; Alt+Tab/Win+D dahil | Başlamadı |
-| SHELL-01 | Claude | Belgeler | Zsh/Konsole profil taslağı | Öneri kabul/çalıştır ayrımı, düzeltme, Türkçe | Sırada |
+| SHELL-01 | Claude | Belgeler ve kullanım limiti sıfırlanması | Zsh/Konsole profil taslağı | Öneri kabul/çalıştır ayrımı, düzeltme, Türkçe | Bekliyor |
 | UI-03 | Claude | UI-01 | Atatürk tema varlık planı ve kaynak kaydı | Görsel kaynağı, kırpım/kontrast, logo korunması | Başlamadı |
 | DESKTOP-01 | Codex | BLFS-01, UI/SHELL girdileri | LFS içinde Plasma oturumu | Temiz kullanıcı, düşük kaynak ölçümü | Başlamadı |
 | APPS-01 | Codex + Claude inceleme | DESKTOP-01 | Hazır temel uygulama profili | Dosya ilişkileri ve günlük senaryolar | Başlamadı |
@@ -38,4 +38,5 @@ Plan sürümü 1.0. Roller: Codex altyapı/entegrasyon; Claude Code masaüstü/U
 - Ana plan/kararlar/görev tablosu: entegratör sahipliğinde; Claude değişikliği kendi dalından önerir.
 - `pkg` tamamlama/shell profili arayüzü konusunda iki taraf yazılı sözleşme kullanır; backend'i Claude yeniden yazmaz.
 - Linux rootfs ve paket deposu tek yazıcı. Ayrı Git worktree bu kilidi ortadan kaldırmaz.
-- Mevcut konu plan/başlangıç paketi hazırlığıdır. Ajan süreçleri ve Linux kurulumları henüz başlatılmadı.
+- Claude ajanı ayrı worktree'de başlatıldı fakat haftalık kullanım sınırı nedeniyle değişiklik üretmedi; sınır sıfırlanınca aynı görev sürdürülecek.
+- Linux kurulumu başlamadı; builder ISO'su indirme ve hash doğrulama aşamasında.
