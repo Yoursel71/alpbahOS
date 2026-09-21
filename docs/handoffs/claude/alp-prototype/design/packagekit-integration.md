@@ -1,6 +1,8 @@
 # `alp` — PackageKit/Discover entegrasyon tasarımı
 
-Durum: **tasarım, kod yok.** Bu, proposal belgesinin (§6) kendi dürüst eksiklik listesindeki "Mağaza (Discover) entegrasyon yolu: Yok" maddesini kapatmak için yazıldı. PackageKit/D-Bus/polkit gerektirdiği için bu Windows host'ta hiçbir parçası çalıştırılamaz/test edilemez — bu belge yalnızca CLAUDE.md'nin istediği şeyi yapıyor: **"Paket motorunun API'si netleşmeden mağaza işlem mantığı yazma. Önce entegrasyon sözleşmesini belirle."** Aşağıdaki sözleşme belirlenmeden gerçek kod yazılmamalı.
+Durum: **kısmen koda döküldü (21 Eylül 2026).** §2'deki `--json` bayrağı ve `alp_packagekit_backend.py`'deki `alp_*` sarmalayıcı fonksiyonları gerçekten yazıldı ve **gerçekten test edildi** (`tests/test_packagekit_backend.py`, alp.py'ye karşı subprocess ile, mock yok). `AlpPackageKitBackend` sınıfının kendisi (gerçek `packagekit.backend` importu gerektiren kısım) **hâlâ hiç çalıştırılamadı/import edilemedi** — bu Windows host'ta `packagekit` modülü yok. Ayrıntı: `alp_packagekit_backend.py`'nin modül docstring'i.
+
+Bu, proposal belgesinin (§6) kendi dürüst eksiklik listesindeki "Mağaza (Discover) entegrasyon yolu: Yok" maddesini kapatmak için yazıldı. Aşağıdaki orijinal tasarım metni (§1-7) hâlâ geçerli sözleşmedir; §2 ve §3'ün "sarmalayıcı fonksiyon" kısmı artık kod olarak var, geri kalanı (gerçek PackageKit daemon testi) hâlâ yapılmadı.
 
 ## 1. Neden bu yaklaşım
 
@@ -81,4 +83,4 @@ Bu tasarım "kabul edilmiş" sayılmadan önce (proposal §6'daki PKG-02 kabul �
 4. §5'teki polkit action dosyası gerçek bir polkit kurulumunda test edilmeli.
 5. `GetUpdates`/`UpdatePackages` ancak [config-protection.md](config-protection.md)'deki `alp upgrade` tasarımı koda dönüştükten sonra eklenebilir.
 
-Hiçbiri bu turda yapılmadı — bu belge yalnızca §1-6'daki sözleşmeyi kayda geçiriyor, MASTER_PLAN §5.3 M02 kriterinin "entegrasyon testi" kısmını **henüz karşılamıyor**.
+**21 Eylül 2026 durumu:** Madde 1 (`--json`) ve madde 2'nin ilk yarısı (`alp_*` sarmalayıcılar) tamamlandı+test edildi. 2, 3, 4 tam olarak gerçekleşmedi — `AlpPackageKitBackend` yazıldı ama gerçek bir PackageKit daemon'una hiç yüklenmedi. MASTER_PLAN §5.3 M02 kriterinin "entegrasyon testi" kısmını **hâlâ karşılamıyor**; bunun için Codex'in gerçek BLFS/PackageKit ortamı gerekiyor.

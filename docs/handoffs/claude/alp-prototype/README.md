@@ -48,9 +48,15 @@ Claude tarafından yapılan bağımsız kod incelemesinde bulunan 3 sorun düzel
 
 Checksum reddi testi artık gerçek (dry-run olmayan) bir `install htop` çağrısıyla yeniden doğrulandı — davranış aynı: gerçek ağdan indirilen dosya checksum uyuşmazlığında silinip işlem durduruluyor.
 
-## Otomatik test seti (21 Eylül 2026)
+## `upgrade` komutu ve `--json` çıktı modu (21 Eylül 2026)
 
-`tests/test_alp.py` — pytest, gerçek ağa hiç çıkmaz (`urllib.request.urlopen` her yerde monkeypatch'li; yalnızca yerel/tmp_path dosyaları). 29 test, bu ortamda çalıştırıldı:
+- **`alp upgrade <ad>`** eklendi — kurulu bir `recipe`/`core` paketi yeni sürüme yükseltir, config dosyalarını pacman'ın `pacnew`/`pacsave`'i gibi korur (`.alpnew`/`.alpsave`). Tasarım ve durum: [design/config-protection.md](design/config-protection.md). `flatpak` yöntemi için `upgrade` reddedilir (flatpak kendi güncellemesini yönetir).
+- **`--json`** bayrağı eklendi (`search`/`list` için; `info` zaten JSON basıyordu) — bir PackageKit backend'inin veya başka bir aracın metin ayrıştırmadan güvenilir okuyabilmesi için. Tasarım: [design/packagekit-integration.md](design/packagekit-integration.md).
+- **`alp_packagekit_backend.py`** eklendi — `alp_*` sarmalayıcı fonksiyonları (gerçek `alp.py`'yi subprocess ile çağırıp JSON ayrıştırır) **gerçekten test edildi**; `AlpPackageKitBackend` sınıfının kendisi gerçek `packagekit` modülü olmadığı için **hiç import/test edilemedi** — modülün kendi docstring'inde bu ayrım açıkça yazılı.
+
+## Otomatik test seti (21 Eylül 2026, güncellendi)
+
+`tests/test_alp.py` + `tests/test_packagekit_backend.py` — pytest, gerçek ağa hiç çıkmaz. **48 test**, bu ortamda çalıştırıldı, hepsi geçti:
 
 ```bash
 cd docs/handoffs/claude/alp-prototype

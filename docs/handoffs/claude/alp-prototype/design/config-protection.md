@@ -1,6 +1,8 @@
 # `alp` — Yapılandırma koruma (`upgrade` + `.alpnew`/`.alpsave`) tasarımı
 
-Durum: **tasarım, kod yok.** Proposal belgesinin (§6) kendi karşılaştırma tablosundaki en büyük açık: *"Yapılandırma korunması: Yok — prototip güncelleme/upgrade akışını hiç ele almıyor, sadece install/remove."* Bu belge, pacman'ın `pacnew`/`pacsave` mekanizmasının (kullanıcıların zaten aşina olduğu, kanıtlanmış bir UX deseni) `alp` karşılığını tasarlıyor — sıfırdan bir mekanizma icat etmek yerine bilinen, iyi anlaşılmış deseni yeniden kullanmak, AGENTS.md'nin "hazır bileşenleri özelleştir, icat etme" ruhuna uygun (burada "bileşen" bir UX deseni).
+Durum: **koda döküldü ve test edildi (21 Eylül 2026).** `_config_aware_merge()`, `upgrade_recipe()`/`upgrade_core()`, `cmd_upgrade`, ve `remove_package`'ın `.alpsave` dalı `alp.py`'ye eklendi. 12 yeni test (`tests/test_alp.py`) bu davranışı gerçekten doğruladı: değiştirilmemiş config sessizce yükseltiliyor, değiştirilmiş config `.alpnew` üretip kullanıcının dosyasına dokunmuyor, `remove` değiştirilmiş config'i `.alpsave` olarak koruyor, düşen dosyalar temizleniyor. **Hâlâ test edilmeyen:** gerçek bir Linux ortamında `recipe` yöntemiyle (`configure/make` gerektiren) uçtan uca bir upgrade — bu hostta toolchain yok, yalnızca `core` yöntemiyle (yerel dosya tabanlı) uçtan uca doğrulandı.
+
+Proposal belgesinin (§6) kendi karşılaştırma tablosundaki en büyük açığı kapatmak için yazıldı: *"Yapılandırma korunması: Yok — prototip güncelleme/upgrade akışını hiç ele almıyor, sadece install/remove."* Aşağıdaki tasarım, pacman'ın `pacnew`/`pacsave` mekanizmasının (kullanıcıların zaten aşina olduğu, kanıtlanmış bir UX deseni) `alp` karşılığıdır — sıfırdan bir mekanizma icat etmek yerine bilinen, iyi anlaşılmış deseni yeniden kullanmak, AGENTS.md'nin "hazır bileşenleri özelleştir, icat etme" ruhuna uygun (burada "bileşen" bir UX deseni). Aşağıdaki metin orijinal tasarım olarak korunuyor; gerçekleşen kod bire bir bu tasarımı izledi.
 
 ## 1. Kapsam
 
@@ -119,4 +121,4 @@ Uygulandığında eklenecek testler (şimdiden tanımlanıyor, henüz yazılmad�
 
 ## 9. Kabul kriterleri
 
-Bu tasarım koda dönüştürüldüğünde "tamamlandı" sayılır ancak: §7'deki 5 test yazılıp geçtiğinde VE gerçek bir Linux ortamında en az bir paketin gerçek `upgrade` döngüsü (değiştirilmiş ve değiştirilmemiş config dosyasıyla) elle doğrulandığında. Hiçbiri bu turda yapılmadı.
+Bu tasarım koda dönüştürüldüğünde "tamamlandı" sayılır ancak: §7'deki testler (bu tur 12 test olarak `pytest`'te yazılıp **geçti** ✅) VE gerçek bir Linux ortamında en az bir paketin gerçek `upgrade` döngüsü (değiştirilmiş ve değiştirilmemiş config dosyasıyla, gerçek `configure/make` ile) elle doğrulandığında (❌ hâlâ yapılmadı — bu hostta toolchain yok, Codex'in ortamını bekliyor).

@@ -442,3 +442,202 @@ def test_cmd_search_finds_substring_case_insensitive(tmp_path: Path):
 def test_cmd_list_reports_no_packages_when_empty(paths: alp.Paths, capsys):
     assert alp.cmd_list(alp.load_db(paths)) == 0
     assert "Kurulu paket yok" in capsys.readouterr().out
+
+
+# --------------------------------------------------------------------------
+# --json output (design/packagekit-integration.md §2 precondition)
+# --------------------------------------------------------------------------
+
+def test_cmd_search_json_output_is_parseable(capsys):
+    index = {"entries": {"htop": {"method": "recipe"}, "firefox": {"method": "flatpak"}}}
+    assert alp.cmd_search(index, "top", as_json=True) == 0
+    out = json.loads(capsys.readouterr().out)
+    assert out == [{"name": "htop", "method": "recipe"}]
+
+
+def test_cmd_search_json_no_hits_returns_empty_array_and_exit_1(capsys):
+    index = {"entries": {"htop": {"method": "recipe"}}}
+    assert alp.cmd_search(index, "zzz", as_json=True) == 1
+    assert json.loads(capsys.readouterr().out) == []
+
+
+def test_cmd_list_json_output_is_parseable(paths: alp.Paths, capsys):
+    db = alp.load_db(paths)
+    db["packages"]["htop"] = {"version": "3.3.0", "method": "recipe", "status": "installed"}
+    assert alp.cmd_list(db, as_json=True) == 0
+    out = json.loads(capsys.readouterr().out)
+    assert out == [{"name": "htop", "version": "3.3.0", "method": "recipe", "status": "installed"}]
+
+
+# --------------------------------------------------------------------------
+# upgrade_core / upgrade_recipe -- config protection (.alpnew/.alpsave)
+# --------------------------------------------------------------------------
+
+def _install_core_v1_with_config(paths: alp.Paths, tmp_path: Path, config_content: bytes = b"dark=true\n"):
+    archive = _make_tar(tmp_path, "theme-1.0.0.tar.gz", {
+        "usr/share/themes/alpbah/theme.conf": config_content,
+        "usr/share/themes/alpbah/README": b"static, never changes\n",
+    })
+    entry = {
+        "name": "theme", "version": "1.0.0", "url": "theme-1.0.0.tar.gz",
+        "sha256": alp.sha256_of(archive),
+        "config_files": ["/usr/share/themes/alpbah/theme.conf"],
+    }
+    record = alp.install_core(paths, entry, tmp_path, dry_run=False)
+    return record
+
+
+def test_upgrade_core_overwrites_untouched_config(paths: alp.Paths, tmp_path: Path):
+    old = _install_core_v1_with_config(paths, tmp_path)
+    assert old["config_hashes"]["/usr/share/themes/alpbah/theme.conf"] == alp.sha256_of(
+        paths.root / "usr/share/themes/alpbah/theme.conf"
+    )
+
+    new_archive = _make_tar(tmp_path, "theme-2.0.0.tar.gz", {
+        "usr/share/themes/alpbah/theme.conf": b"dark=false\n",  # new upstream default
+        "usr/share/themes/alpbah/README": b"static, never changes\n",
+    })
+    entry = {
+        "name": "theme", "version": "2.0.0", "url": "theme-2.0.0.tar.gz",
+        "sha256": alp.sha256_of(new_archive),
+        "config_files": ["/usr/share/themes/alpbah/theme.conf"],
+    }
+
+    new_record = alp.upgrade_core(paths, entry, tmp_path, old, dry_run=False)
+
+    assert new_record["version"] == "2.0.0"
+    conf = paths.root / "usr/share/themes/alpbah/theme.conf"
+    assert conf.read_bytes() == b"dark=false\n"  # untouched -> silently upgraded
+    assert not conf.with_name("theme.conf.alpnew").exists()
+
+
+def test_upgrade_core_preserves_modified_config_as_alpnew(paths: alp.Paths, tmp_path: Path):
+    old = _install_core_v1_with_config(paths, tmp_path)
+    conf = paths.root / "usr/share/themes/alpbah/theme.conf"
+    conf.write_bytes(b"dark=true\naccent=orange\n")  # user edited it
+
+    new_archive = _make_tar(tmp_path, "theme-2.0.0.tar.gz", {
+        "usr/share/themes/alpbah/theme.conf": b"dark=false\n",
+        "usr/share/themes/alpbah/README": b"static, never changes\n",
+    })
+    entry = {
+        "name": "theme", "version": "2.0.0", "url": "theme-2.0.0.tar.gz",
+        "sha256": alp.sha256_of(new_archive),
+        "config_files": ["/usr/share/themes/alpbah/theme.conf"],
+    }
+
+    new_record = alp.upgrade_core(paths, entry, tmp_path, old, dry_run=False)
+
+    # user's file is completely untouched
+    assert conf.read_bytes() == b"dark=true\naccent=orange\n"
+    # new version written alongside as .alpnew
+    alpnew = conf.with_name("theme.conf.alpnew")
+    assert alpnew.read_bytes() == b"dark=false\n"
+    # recorded hash is UNCHANGED from the old install-time hash (not the
+    # user's current content, not upstream's new content) -- so the file
+    # stays "modified" on every future upgrade until the user deals with it
+    assert (
+        new_record["config_hashes"]["/usr/share/themes/alpbah/theme.conf"]
+        == old["config_hashes"]["/usr/share/themes/alpbah/theme.conf"]
+    )
+
+
+def test_upgrade_core_removes_files_dropped_in_new_version(paths: alp.Paths, tmp_path: Path):
+    old = _install_core_v1_with_config(paths, tmp_path)
+    assert (paths.root / "usr/share/themes/alpbah/README").exists()
+
+    new_archive = _make_tar(tmp_path, "theme-2.0.0.tar.gz", {
+        "usr/share/themes/alpbah/theme.conf": b"dark=false\n",
+        # README dropped in the new version
+    })
+    entry = {
+        "name": "theme", "version": "2.0.0", "url": "theme-2.0.0.tar.gz",
+        "sha256": alp.sha256_of(new_archive),
+        "config_files": ["/usr/share/themes/alpbah/theme.conf"],
+    }
+
+    alp.upgrade_core(paths, entry, tmp_path, old, dry_run=False)
+
+    assert not (paths.root / "usr/share/themes/alpbah/README").exists()
+    assert (paths.root / "usr/share/themes/alpbah/theme.conf").exists()
+
+
+def test_upgrade_dry_run_never_calls_fetch(paths: alp.Paths, tmp_path: Path):
+    old = {"version": "1.0.0", "method": "core", "files": [], "config_hashes": {}}
+    entry = {"name": "theme", "version": "2.0.0", "url": "theme.tar.gz", "sha256": "0" * 64}
+    with mock.patch.object(alp, "fetch") as fetch_mock:
+        record = alp.upgrade_core(paths, entry, tmp_path, old, dry_run=True)
+    fetch_mock.assert_not_called()
+    assert record["status"] == "would-upgrade"
+
+
+# --------------------------------------------------------------------------
+# remove_package -- .alpsave for modified config files
+# --------------------------------------------------------------------------
+
+def test_remove_unmodified_config_deletes_normally(paths: alp.Paths, tmp_path: Path):
+    record = _install_core_v1_with_config(paths, tmp_path)
+    db = {"schema_version": alp.SCHEMA_VERSION, "updated_at": None, "packages": {"theme": record}}
+
+    alp.remove_package(paths, db, "theme", dry_run=False)
+
+    assert not (paths.root / "usr/share/themes/alpbah").exists()
+
+
+def test_remove_modified_config_creates_alpsave(paths: alp.Paths, tmp_path: Path):
+    record = _install_core_v1_with_config(paths, tmp_path)
+    conf = paths.root / "usr/share/themes/alpbah/theme.conf"
+    conf.write_bytes(b"dark=true\naccent=orange\n")  # user edited it
+    db = {"schema_version": alp.SCHEMA_VERSION, "updated_at": None, "packages": {"theme": record}}
+
+    alp.remove_package(paths, db, "theme", dry_run=False)
+
+    saved = conf.with_name("theme.conf.alpsave")
+    assert saved.read_bytes() == b"dark=true\naccent=orange\n"
+    assert not conf.exists()  # original path gone, content preserved under .alpsave
+    assert not (paths.root / "usr/share/themes/alpbah/README").exists()  # non-config file removed normally
+
+
+# --------------------------------------------------------------------------
+# cmd_upgrade -- CLI-level dispatch
+# --------------------------------------------------------------------------
+
+def test_cmd_upgrade_rejects_not_installed(paths: alp.Paths, tmp_path: Path):
+    import argparse
+    args = argparse.Namespace(name="ghost", dry_run=False)
+    index, index_dir = _index(tmp_path, {})
+    with pytest.raises(alp.AlpError, match="Kurulu değil"):
+        alp.cmd_upgrade(args, paths, index, index_dir)
+
+
+def test_cmd_upgrade_rejects_flatpak_method(paths: alp.Paths, tmp_path: Path):
+    import argparse
+    db = alp.load_db(paths)
+    db["packages"]["firefox"] = {"version": "130.0", "method": "flatpak", "flatpak_ref": "org.mozilla.firefox"}
+    alp.save_db(paths, db)
+
+    args = argparse.Namespace(name="firefox", dry_run=False)
+    index, index_dir = _index(tmp_path, {"firefox": {"method": "flatpak", "flatpak_ref": "org.mozilla.firefox", "version": "131.0"}})
+    with pytest.raises(alp.AlpError, match="flatpak kendi güncellemesini yönetir"):
+        alp.cmd_upgrade(args, paths, index, index_dir)
+
+
+def test_cmd_upgrade_end_to_end_updates_db(paths: alp.Paths, tmp_path: Path):
+    import argparse
+    old_archive = _make_tar(tmp_path, "theme-1.0.0.tar.gz", {"usr/share/x": b"old"})
+    args = argparse.Namespace(name="theme", dry_run=False, reinstall=False)
+    index, index_dir = _index(tmp_path, {
+        "theme": {"method": "core", "name": "theme", "version": "1.0.0", "url": "theme-1.0.0.tar.gz", "sha256": alp.sha256_of(old_archive)}
+    })
+    alp.cmd_install(args, paths, index, index_dir)
+
+    new_archive = _make_tar(tmp_path, "theme-2.0.0.tar.gz", {"usr/share/x": b"new"})
+    index2, index_dir2 = _index(tmp_path, {
+        "theme": {"method": "core", "name": "theme", "version": "2.0.0", "url": "theme-2.0.0.tar.gz", "sha256": alp.sha256_of(new_archive)}
+    })
+    upgrade_args = argparse.Namespace(name="theme", dry_run=False)
+    assert alp.cmd_upgrade(upgrade_args, paths, index2, index_dir2) == 0
+
+    db = alp.load_db(paths)
+    assert db["packages"]["theme"]["version"] == "2.0.0"
+    assert (paths.root / "usr/share/x").read_bytes() == b"new"
