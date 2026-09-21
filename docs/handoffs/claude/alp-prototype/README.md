@@ -47,3 +47,16 @@ Claude tarafından yapılan bağımsız kod incelemesinde bulunan 3 sorun düzel
 3. **İndirmelerde 30 saniyelik zaman aşımı eklendi** (`urllib.request.urlopen(..., timeout=...)`), yanıt vermeyen bir kaynağın `alp install`'ı sonsuza kadar askıda bırakmasını önlemek için.
 
 Checksum reddi testi artık gerçek (dry-run olmayan) bir `install htop` çağrısıyla yeniden doğrulandı — davranış aynı: gerçek ağdan indirilen dosya checksum uyuşmazlığında silinip işlem durduruluyor.
+
+## Otomatik test seti (21 Eylül 2026)
+
+`tests/test_alp.py` — pytest, gerçek ağa hiç çıkmaz (`urllib.request.urlopen` her yerde monkeypatch'li; yalnızca yerel/tmp_path dosyaları). 29 test, bu ortamda çalıştırıldı:
+
+```bash
+cd docs/handoffs/claude/alp-prototype
+python3 -m pytest tests/ -v
+```
+
+Testlerin gerçekten anlamlı olduğu (yalnızca "her zaman geçen" testler olmadığı) şöyle doğrulandı: bu testler, düzeltmeden ÖNCEKİ `alp.py` sürümüne (`51f93b9`) karşı çalıştırıldı ve **tam olarak 3 düzeltmeye karşılık gelen 7 test başarısız oldu** (dry-run'ın gerçekten fetch çağırmadığını doğrulayan 3 test, `_merge_destdir`'in dizinleri kaydettiğini doğrulayan 2 test, indirme timeout'unu doğrulayan 2 test); diğer 22 test zaten geçiyordu. Bu, testlerin gerçek regresyon koruması sağladığının kanıtıdır — kozmetik/anlamsız testler değil.
+
+Kapsanmayan (bu hostta hâlâ test edilemeyen, testlerde de öyle işaretli): gerçek `configure/make/make install` çalıştırma, gerçek `flatpak install/uninstall`, gerçek internet üzerinden `htop`/`jq`/`zsh`/`tmux` indirme (o testler `alpbahOS-alp` reposunda elle doğrulandı, bu test setinde değil — burada network tamamen mock'lu tutuluyor, hız ve tekrarlanabilirlik için).
