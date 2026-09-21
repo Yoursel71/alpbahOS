@@ -44,6 +44,7 @@ SCHEMA_VERSION = 1
 ALP_VERSION = "0.1.0-proto"
 DEFAULT_STATE_DIR = "var/lib/alp"
 DEFAULT_LOG_DIR = "var/log/alp"
+DOWNLOAD_TIMEOUT_S = 30
 
 
 class AlpError(RuntimeError):
@@ -175,8 +176,11 @@ def resolve_source_url(url: str, base_dir: Path) -> str:
 def fetch(url: str, dest: Path, expected_sha256: str) -> None:
     dest.parent.mkdir(parents=True, exist_ok=True)
     if url.startswith(("http://", "https://")):
-        with urllib.request.urlopen(url) as resp, open(dest, "wb") as out:  # noqa: S310
-            shutil.copyfileobj(resp, out)
+        try:
+            with urllib.request.urlopen(url, timeout=DOWNLOAD_TIMEOUT_S) as resp, open(dest, "wb") as out:  # noqa: S310
+                shutil.copyfileobj(resp, out)
+        except OSError as exc:
+            raise AlpError(f"İndirme başarısız ({DOWNLOAD_TIMEOUT_S}s zaman aşımı dahil): {url}\n  {exc}") from exc
     else:
         shutil.copyfile(url, dest)
 
@@ -214,14 +218,24 @@ def _single_top_level_dir(extract_root: Path) -> Path:
 
 
 def _merge_destdir(destdir: Path, root: Path, dry_run: bool) -> list[str]:
-    """Copy a staged DESTDIR install into root, recording every file installed.
+    """Copy a staged DESTDIR install into root, recording every file AND
+    directory installed.
 
     This is the file-ownership-tracking mechanism AGENTS.md requires
     ("Temel paketlerin hangi dosyalara sahip olduğunu izleyecek yöntem ...
-    seçilmiş olmalı") for the recipe method.
+    seçilmiş olmalı") for the recipe method. Directories are recorded too
+    (not just files) so `remove_package` can clean them up on removal --
+    matching how the `core` method's `files[]` already includes directory
+    entries via `tarfile.getnames()`. Without this, every directory a
+    recipe's `make install` creates (e.g. /usr/share/doc/<pkg>/) would be
+    silently orphaned forever, since remove_package only ever acts on
+    entries present in `files[]`.
     """
     installed = []
     for dirpath, _dirnames, filenames in os.walk(destdir):
+        rel_dir = Path(dirpath).relative_to(destdir)
+        if str(rel_dir) != ".":
+            installed.append("/" + str(rel_dir).replace(os.sep, "/"))
         for fn in filenames:
             staged = Path(dirpath) / fn
             rel = staged.relative_to(destdir)
@@ -242,8 +256,38 @@ def install_recipe(paths: Paths, entry: dict, index_dir: Path, dry_run: bool) ->
     with open(recipe_path, "r", encoding="utf-8") as f:
         recipe = json.load(f)
 
+    source_url = resolve_source_url(recipe["source_url"], index_dir)
+    log_path = paths.log_dir / f"{recipe['name']}-{recipe['version']}.build.log"
+    steps = [
+        recipe["build"]["configure"],
+        recipe["build"]["make"],
+        recipe["build"]["make_install"] + ["DESTDIR=<destdir>"],
+    ]
+
+    if dry_run:
+        # No network request, no disk write below this point: --dry-run must
+        # "touch nothing persistent" (see build_parser()'s help text). The
+        # previous version called fetch()/safe_extract() unconditionally
+        # before this check, which silently downloaded the real source
+        # archive and extracted it to disk even in dry-run mode.
+        print(f"[dry-run] indirilecekti: {source_url} (sha256={recipe['sha256']})")
+        for step in steps:
+            print("[dry-run] $ " + " ".join(step))
+        return {
+            "name": recipe["name"],
+            "version": recipe["version"],
+            "method": "recipe",
+            "status": "would-install",
+            "installed_at": None,
+            "installed_by": f"alp/{ALP_VERSION}",
+            "source": {"url": recipe["source_url"], "sha256": recipe["sha256"], "recipe": entry["recipe"]},
+            "build": {"log_path": None},
+            "files": [],
+            "flatpak_ref": None,
+        }
+
     archive = paths.cache_dir / f"{recipe['name']}-{recipe['version']}.src"
-    fetch(resolve_source_url(recipe["source_url"], index_dir), archive, recipe["sha256"])
+    fetch(source_url, archive, recipe["sha256"])
 
     build_root = paths.cache_dir / f"build-{recipe['name']}-{recipe['version']}"
     if build_root.exists():
@@ -256,31 +300,23 @@ def install_recipe(paths: Paths, entry: dict, index_dir: Path, dry_run: bool) ->
         shutil.rmtree(destdir)
     destdir.mkdir(parents=True)
 
-    log_path = paths.log_dir / f"{recipe['name']}-{recipe['version']}.build.log"
-    steps = [
+    real_steps = [
         recipe["build"]["configure"],
         recipe["build"]["make"],
         recipe["build"]["make_install"] + [f"DESTDIR={destdir}"],
     ]
-
-    if dry_run:
+    for step in real_steps:
+        binary = step[0]
+        if shutil.which(binary) is None:
+            raise AlpError(
+                f"Gerekli araç bulunamadı: {binary!r}. Bu adım gerçek bir Linux "
+                "build ortamı (configure/make toolchain) gerektirir."
+            )
         with open(log_path, "a", encoding="utf-8") as log:
-            log.write(f"[dry-run {_now()}] adımlar çalıştırılmadı:\n")
-            for step in steps:
-                log.write("  $ " + " ".join(step) + "\n")
-    else:
-        for step in steps:
-            binary = step[0]
-            if shutil.which(binary) is None:
-                raise AlpError(
-                    f"Gerekli araç bulunamadı: {binary!r}. Bu adım gerçek bir Linux "
-                    "build ortamı (configure/make toolchain) gerektirir."
-                )
-            with open(log_path, "a", encoding="utf-8") as log:
-                log.write(f"$ {' '.join(step)}\n")
-                subprocess.run(step, cwd=src_dir, check=True, stdout=log, stderr=subprocess.STDOUT)
+            log.write(f"$ {' '.join(step)}\n")
+            subprocess.run(step, cwd=src_dir, check=True, stdout=log, stderr=subprocess.STDOUT)
 
-    installed_files = _merge_destdir(destdir, paths.root, dry_run)
+    installed_files = _merge_destdir(destdir, paths.root, dry_run=False)
 
     return {
         "name": recipe["name"],
@@ -341,17 +377,29 @@ def remove_flatpak(ref: str, dry_run: bool) -> None:
 
 def install_core(paths: Paths, entry: dict, index_dir: Path, dry_run: bool) -> dict:
     name, version = entry["name"], entry["version"]
-    archive = paths.cache_dir / f"{name}-{version}.tar.gz"
-    fetch(resolve_source_url(entry["url"], index_dir), archive, entry["sha256"])
+    source_url = resolve_source_url(entry["url"], index_dir)
 
     if dry_run:
-        with tarfile.open(archive) as tf:
-            names = tf.getnames()
-        print(f"[dry-run] {name} arşivi {paths.root} altına açılacaktı ({len(names)} girdi).")
-        files = ["/" + n for n in names]
-    else:
-        names = safe_extract(archive, paths.root)
-        files = ["/" + n for n in names]
+        # See install_recipe()'s comment: --dry-run must not touch the
+        # network or disk. The previous version fetched the real archive
+        # unconditionally before this check.
+        print(f"[dry-run] {name} indirilip {paths.root} altına açılacaktı: {source_url} (sha256={entry['sha256']})")
+        return {
+            "name": name,
+            "version": version,
+            "method": "core",
+            "status": "would-install",
+            "installed_at": None,
+            "installed_by": f"alp/{ALP_VERSION}",
+            "source": {"url": entry["url"], "sha256": entry["sha256"]},
+            "files": [],
+            "flatpak_ref": None,
+        }
+
+    archive = paths.cache_dir / f"{name}-{version}.tar.gz"
+    fetch(source_url, archive, entry["sha256"])
+    names = safe_extract(archive, paths.root)
+    files = sorted("/" + n for n in names)
 
     return {
         "name": name,
@@ -361,7 +409,7 @@ def install_core(paths: Paths, entry: dict, index_dir: Path, dry_run: bool) -> d
         "installed_at": _now(),
         "installed_by": f"alp/{ALP_VERSION}",
         "source": {"url": entry["url"], "sha256": entry["sha256"]},
-        "files": sorted(files),
+        "files": files,
         "flatpak_ref": None,
     }
 
