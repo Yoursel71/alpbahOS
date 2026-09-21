@@ -1,8 +1,8 @@
 # alpbahOS Tasarım Mockup Spesifikasyonu
 
-**Sürüm:** 0.1  
-**Tarih:** 21 Eylül 2026  
-**Platform:** alpbahOS 64-bit  
+**Sürüm:** 0.1<br>
+**Tarih:** 21 Eylül 2026<br>
+**Platform:** alpbahOS 64-bit<br>
 **Durum:** Konsept tasarım / uygulama öncesi tasarım sistemi
 
 > 21 Eylül 2026 güncellemesi: Güncel ürün kararları [ana plandadır](MASTER_PLAN.md). Mevcut ekran yerleşimleri korunur; varsayılan tema premium minimalist `alpbah-solid`, masaüstü/kilit arka planı Atatürk, dil Türkçe ve klavye Türkçe Q'dur. Glass/Liquid seçenek olarak kalır. Bu belgede geçen kernel, paket sayısı ve sistem bilgileri mockup örnekleridir; uygulanmış sistem bilgisi değildir. Terminal logo/ANSI varlıkları üretim öncesi gerçek terminalde yeniden doğrulanacaktır.
