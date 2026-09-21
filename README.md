@@ -4,7 +4,7 @@
 
 Windows'tan geçenler için kolay, Türkçe, kişiselleştirilebilir ve kaynak kullanımına dikkat eden LFS tabanlı x86_64 masaüstü projesi.
 
-**Durum:** Plan ve görev paylaşımı hazır. Linux derlemesi/ISO henüz üretilmedi. Repo özel kullanım içindir; test edilmemiş özellikler ürün desteği değildir.
+**Durum:** Plan hazır; Hyper-V builder ön kontrolü geçti ve ISO tabanı hazırlanıyor. alpbahOS Linux derlemesi/ISO'su henüz üretilmedi. Repo özel kullanım içindir; test edilmemiş özellikler ürün desteği değildir.
 
 Özel kaynak deposu: [Yoursel71/alpbahOS](https://github.com/Yoursel71/alpbahOS).
 
@@ -14,6 +14,7 @@ Windows'tan geçenler için kolay, Türkçe, kişiselleştirilebilir ve kaynak k
 - [Kullanıcı kararları ve teknik seçimler](docs/DECISIONS.md)
 - [Görev sırası ve sahiplik](docs/BACKLOG.md)
 - [Hyper-V ortam planı](docs/HYPERV_PLAN.md)
+- [Builder başlangıç ve doğrulama runbook'u](docs/HOST_BOOTSTRAP.md)
 - [Ortak ajan kuralları](AGENTS.md)
 - [Claude talimatları](CLAUDE.md) ve [ilk görev](docs/CLAUDE_START.md)
 - [İş kaydı](docs/WORKLOG.md)
