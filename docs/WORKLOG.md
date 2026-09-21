@@ -14,6 +14,8 @@ Kullanıcı cevapları ana plan 1.0'a işlendi. Mevcut sonuçlar logo, kabul edi
 | DESKTOP-01: Masaüstü prototipi | Claude rol planı / Codex entegrasyon | Başlamadı | Plasma seçildi; çalışma oturumu testi yok |
 | UI-01: Masaüstü tema token/eşleme taslağı | Claude | `claude/desktop-bootstrap` dalında taslak hazır (doğrulanmamış) | `profiles/desktop/`; bkz. docs/handoffs/claude/001-desktop-bootstrap.md |
 | SHELL-01: Zsh/Konsole profil taslağı | Claude | `claude/desktop-bootstrap` dalında taslak hazır (doğrulanmamış) | `profiles/shell/`; bkz. docs/handoffs/claude/001-desktop-bootstrap.md |
+| UI-02: Kısayol çakışma listesi ve kullanıcı yardımı | Claude | `claude/desktop-bootstrap` dalında taslak hazır (doğrulanmamış) | `profiles/shortcuts/conflicts.md`, `profiles/shortcuts/help.md`; bkz. docs/handoffs/claude/002-ui02-ui03.md |
+| UI-03: Atatürk tema varlık planı ve kaynak kaydı | Claude | `claude/desktop-bootstrap` dalında plan+kaynak adayları hazır; görsel indirilmedi | `branding/ataturk-theme/README.md`; kullanıcı onayı bekliyor |
 
 ## Ortam sahipliği
 
