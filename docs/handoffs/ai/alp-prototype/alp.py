@@ -223,7 +223,8 @@ def _file_sha256_or_none(path: Path) -> str | None:
 
 def _copy_entry(src: Path, dst: Path) -> None:
     """Copy a staged filesystem entry to its target, preserving symlinks as
-    symlinks instead of dereferencing them.
+    symlinks instead of dereferencing them, and preserving the source file's
+    permission bits (mode) on regular files.
 
     Found via real end-to-end testing on Ubuntu (GNU units 2.23): its
     staged tree includes intentionally dangling symlinks (e.g.
@@ -232,6 +233,12 @@ def _copy_entry(src: Path, dst: Path) -> None:
     shutil.copyfile() opens the symlink's *target* for reading and raises
     FileNotFoundError on a dangling link -- even though recreating the
     symlink itself (not its target's content) is the only correct action.
+
+    Also found via real end-to-end testing on Ubuntu (htop 3.3.0, LFS
+    chroot, Codex): shutil.copyfile() copies file *content* only, never
+    permission bits -- the installed /usr/bin/htop ELF came out mode 0644
+    (not executable) even though the staged binary was 0755. Every regular
+    file must have its mode explicitly carried over with shutil.copymode().
     """
     if src.is_symlink():
         if dst.exists() or dst.is_symlink():
@@ -239,6 +246,7 @@ def _copy_entry(src: Path, dst: Path) -> None:
         os.symlink(os.readlink(src), dst)
     else:
         shutil.copyfile(src, dst)
+        shutil.copymode(src, dst)
 
 
 def _tool_available(binary: str, cwd: Path) -> bool:

@@ -19,6 +19,7 @@ import hashlib
 import io
 import json
 import os
+import stat
 import subprocess
 import sys
 import tarfile
@@ -728,6 +729,45 @@ def test_copy_entry_preserves_dangling_symlink(tmp_path: Path):
 
     assert dst.is_symlink()
     assert os.readlink(dst) == "/usr/com/units/currency.units"
+
+
+def _posix_mode_bits_supported(tmp_path: Path) -> bool:
+    """Windows filesystems don't carry real POSIX permission bits -- chmod()
+    is a no-op beyond the read-only flag, so a 0o755 vs 0o644 distinction
+    can't round-trip there regardless of what the code under test does."""
+    probe = tmp_path / "_mode_probe"
+    probe.write_bytes(b"x")
+    probe.chmod(0o755)
+    is_755 = stat.S_IMODE(probe.stat().st_mode) == 0o755
+    probe.chmod(0o644)
+    is_644 = stat.S_IMODE(probe.stat().st_mode) == 0o644
+    probe.unlink()
+    return is_755 and is_644
+
+
+def test_copy_entry_preserves_executable_mode(tmp_path: Path):
+    """Regression test for the real bug found testing htop 3.3.0 in the
+    LFS chroot (Codex, alpbah-builder VM): _merge_destdir installed
+    /usr/bin/htop at mode 0644 (not executable) because shutil.copyfile()
+    copies file content only, never permission bits. shutil.copymode()
+    must be applied after every regular-file copy."""
+    if not _posix_mode_bits_supported(tmp_path):
+        pytest.skip("filesystem does not support real POSIX permission bits (e.g. Windows)")
+
+    src_dir = tmp_path / "src"
+    src_dir.mkdir()
+    src = src_dir / "htop"
+    src.write_bytes(b"\x7fELF-fake-binary")
+    src.chmod(0o755)
+
+    dst_dir = tmp_path / "dst"
+    dst_dir.mkdir()
+    dst = dst_dir / "htop"
+
+    alp._copy_entry(src, dst)
+
+    assert os.access(dst, os.X_OK)
+    assert stat.S_IMODE(dst.stat().st_mode) == 0o755
 
 
 def test_merge_destdir_handles_dangling_symlinks_in_staged_tree(paths: alp.Paths, tmp_path: Path):
