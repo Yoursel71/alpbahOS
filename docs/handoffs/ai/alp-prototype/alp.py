@@ -379,6 +379,54 @@ def _config_aware_merge(
     return MergeResult(installed=sorted(installed), config_hashes=new_hashes, alpnew=sorted(alpnew))
 
 
+def _check_recipe_requirements(recipe: dict) -> list[str]:
+    """Preflight check for a recipe's optional `requires_commands` /
+    `requires_libraries` fields, run before any network/build activity so
+    a missing system dependency fails fast with a clear message instead
+    of partway through a real ./configure or make (as htop/bc/less did
+    during real-Linux testing: ncursesw, ed, and ncurses/termcap were
+    each only discovered as missing after a real download + extract).
+
+    This is explicitly NOT dependency resolution (see
+    design/config-protection.md and the proposal's own gap list) -- it
+    never installs anything, and it can only report what it can detect:
+    - requires_commands: shutil.which(), exact match.
+    - requires_libraries: `pkg-config --exists <name>`. This can produce
+      a false "missing" for a library that's genuinely installed but
+      ships no .pc file (some older/minimal systems) -- it cannot
+      produce a false "present", since pkg-config only reports what it
+      can actually resolve. If pkg-config itself isn't installed, every
+      requires_libraries entry is conservatively reported missing.
+    """
+    missing: list[str] = []
+    for cmd in recipe.get("requires_commands", []):
+        if shutil.which(cmd) is None:
+            missing.append(f"komut: {cmd!r}")
+    for lib in recipe.get("requires_libraries", []):
+        try:
+            result = subprocess.run(
+                ["pkg-config", "--exists", lib],
+                capture_output=True, timeout=5,
+            )
+            found = result.returncode == 0
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            found = False
+        if not found:
+            missing.append(f"kütüphane (pkg-config): {lib!r}")
+    return missing
+
+
+def _require_recipe_dependencies(recipe: dict) -> None:
+    missing = _check_recipe_requirements(recipe)
+    if missing:
+        raise AlpError(
+            "Eksik sistem gereksinimleri (indirme/derleme denenmeden ÖNCE tespit edildi): "
+            + ", ".join(missing)
+            + ". alp bağımlılık çözümü yapmaz (bkz. design/config-protection.md ve "
+            "proposal §6); bu araç/kütüphaneleri sisteminize kurduktan sonra tekrar deneyin."
+        )
+
+
 # --------------------------------------------------------------------------
 # Method 1: System Build Recipes
 # --------------------------------------------------------------------------
@@ -387,6 +435,8 @@ def install_recipe(paths: Paths, entry: dict, index_dir: Path, dry_run: bool) ->
     recipe_path = index_dir / entry["recipe"]
     with open(recipe_path, "r", encoding="utf-8") as f:
         recipe = json.load(f)
+
+    _require_recipe_dependencies(recipe)
 
     source_url = resolve_source_url(recipe["source_url"], index_dir)
     log_path = paths.log_dir / f"{recipe['name']}-{recipe['version']}.build.log"
@@ -481,6 +531,8 @@ def upgrade_recipe(paths: Paths, entry: dict, index_dir: Path, old_record: dict,
     recipe_path = index_dir / entry["recipe"]
     with open(recipe_path, "r", encoding="utf-8") as f:
         recipe = json.load(f)
+
+    _require_recipe_dependencies(recipe)
 
     source_url = resolve_source_url(recipe["source_url"], index_dir)
     config_files = set(recipe.get("config_files", []))

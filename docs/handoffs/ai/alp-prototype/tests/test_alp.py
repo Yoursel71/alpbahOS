@@ -19,6 +19,7 @@ import hashlib
 import io
 import json
 import os
+import subprocess
 import sys
 import tarfile
 import time
@@ -745,3 +746,81 @@ def test_merge_destdir_handles_dangling_symlinks_in_staged_tree(paths: alp.Paths
     assert link.is_symlink()
     assert os.readlink(link) == "/usr/com/units/currency.units"
     assert (paths.root / "usr/share/units/definitions.units").read_bytes() == b"real content\n"
+
+
+# --------------------------------------------------------------------------
+# _check_recipe_requirements / _require_recipe_dependencies -- preflight
+# dependency checking (Seviye 1: not real resolution, just presence checks
+# that fail fast before any network/build activity). Added after real
+# testing on the alpbah-builder VM showed htop/bc/less each only revealed
+# their missing system dependency (libncursesw, ed, ncurses/termcap)
+# partway through a real download+extract+configure/make cycle.
+# --------------------------------------------------------------------------
+
+def test_check_recipe_requirements_missing_command_reported(monkeypatch):
+    monkeypatch.setattr(alp.shutil, "which", lambda cmd: None)
+    missing = alp._check_recipe_requirements({"requires_commands": ["ed"]})
+    assert any("ed" in m for m in missing)
+
+
+def test_check_recipe_requirements_present_command_not_reported(monkeypatch):
+    monkeypatch.setattr(alp.shutil, "which", lambda cmd: f"/usr/bin/{cmd}")
+    missing = alp._check_recipe_requirements({"requires_commands": ["ed"]})
+    assert missing == []
+
+
+def test_check_recipe_requirements_missing_library_reported(monkeypatch):
+    def fake_run(cmd, **kwargs):
+        return subprocess.CompletedProcess(cmd, returncode=1)
+    monkeypatch.setattr(alp.subprocess, "run", fake_run)
+    missing = alp._check_recipe_requirements({"requires_libraries": ["ncursesw"]})
+    assert any("ncursesw" in m for m in missing)
+
+
+def test_check_recipe_requirements_present_library_not_reported(monkeypatch):
+    def fake_run(cmd, **kwargs):
+        return subprocess.CompletedProcess(cmd, returncode=0)
+    monkeypatch.setattr(alp.subprocess, "run", fake_run)
+    missing = alp._check_recipe_requirements({"requires_libraries": ["ncursesw"]})
+    assert missing == []
+
+
+def test_check_recipe_requirements_pkgconfig_missing_is_conservative(monkeypatch):
+    def fake_run(cmd, **kwargs):
+        raise FileNotFoundError("pkg-config not installed")
+    monkeypatch.setattr(alp.subprocess, "run", fake_run)
+    missing = alp._check_recipe_requirements({"requires_libraries": ["ncursesw"]})
+    assert any("ncursesw" in m for m in missing)
+
+
+def test_check_recipe_requirements_no_fields_means_nothing_missing():
+    assert alp._check_recipe_requirements({}) == []
+
+
+def test_require_recipe_dependencies_raises_with_clear_message(monkeypatch):
+    monkeypatch.setattr(alp.shutil, "which", lambda cmd: None)
+    with pytest.raises(alp.AlpError, match="Eksik sistem gereksinimleri"):
+        alp._require_recipe_dependencies({"requires_commands": ["ed"]})
+
+
+def test_require_recipe_dependencies_silent_when_satisfied(monkeypatch):
+    monkeypatch.setattr(alp.shutil, "which", lambda cmd: f"/usr/bin/{cmd}")
+    alp._require_recipe_dependencies({"requires_commands": ["ed"]})  # must not raise
+
+
+def test_install_recipe_fails_preflight_before_any_network_call(paths: alp.Paths, tmp_path: Path, monkeypatch):
+    """The whole point of Seviye 1: fail before fetch(), not partway
+    through a real download+build cycle."""
+    monkeypatch.setattr(alp.shutil, "which", lambda cmd: None)
+    recipe = {
+        "name": "needs-ed", "version": "1.0",
+        "source_url": "https://example.invalid/wont-be-fetched.tar.gz", "sha256": "0" * 64,
+        "build": {"configure": ["./configure"], "make": ["make"], "make_install": ["make", "install"]},
+        "requires_commands": ["ed"],
+    }
+    (tmp_path / "needs-ed.recipe.json").write_text(json.dumps(recipe), encoding="utf-8")
+
+    with mock.patch.object(alp, "fetch") as fetch_mock:
+        with pytest.raises(alp.AlpError, match="Eksik sistem gereksinimleri"):
+            alp.install_recipe(paths, {"recipe": "needs-ed.recipe.json"}, tmp_path, dry_run=False)
+    fetch_mock.assert_not_called()

@@ -109,7 +109,7 @@ MASTER_PLAN.md kendi M02 değerlendirme ölçütlerini tanımlıyor; `alp` bu ö
 
 | Kriter | pacman/libalpm (P05) | `alp` prototipi | Not |
 |---|---|---|---|
-| Bağımlılık çözümü | Var, olgun | **Yok** | Recipe tarifleri doğrudan kaynak URL'sine bakar; paketler arası bağımlılık grafiği yok. Sıfırdan bağımlılık çözücü MASTER_PLAN tarafından zaten yasaklanmış — `alp` bunu "yok" diyerek karşılıyor, ekleyerek değil |
+| Bağımlılık çözümü | Var, olgun | **Kısmen — Seviye 1 var (22 Eylül 2026)** | Otomatik zincirleme kurulum/sürüm kısıtı/çakışma çözümü YOK (sıfırdan bağımlılık çözücü MASTER_PLAN tarafından zaten yasaklanmış). Ama `requires_commands`/`requires_libraries` alanlarıyla **ön kontrol** var: eksik sistem aracı/kütüphanesi, indirme/derleme denenmeden ÖNCE, hızlı ve net bir hatayla bildiriliyor (gerçek Linux'ta doğrulandı — `bc`→`ed`, `htop`→`ncursesw`). Ayrıntı: `006-alp-real-linux-test.md`, `007-alp-more-recipes-symlink-fix.md` |
 | Dosya sahipliği | Var, olgun | Var (recipe/core; DESTDIR + `files[]`) | Flatpak'ta yok — kasıtlı, flatpak kendi sahipliğini tutuyor |
 | Yapılandırma korunması | Var (pacnew/pacsave) | **Var (`.alpnew`/`.alpsave`), test edildi; core yöntemiyle uçtan uca, recipe yöntemiyle gerçek derleme testi yok** | `alp upgrade` eklendi. Tasarım+durum: [design/config-protection.md](alp-prototype/design/config-protection.md) |
 | İmza / kaynak doğrulama | Paket imzası (pacman -Sv) | Sadece sha256 checksum, **imza yok** | Bölüm 7'de ayrıca tartışılıyor — recipe = güvenilen kod çalıştırma |
