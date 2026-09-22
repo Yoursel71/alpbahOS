@@ -34,8 +34,8 @@ BOOT-01 Gen1 kolunu ayrı test VM'inde doğrula; ardından BLFS-01 için sertifi
 - Ortam: Windows host `C:\alpbahOS`, branch `main`; Builder Ubuntu `sa@172.28.174.11`; mevcut kaynak imaj M1 final VHDX.
 - Gen1 giriş istemi doğrulandı; VM `alpbahOS-M2-Gen1`, Generation 1, 2 GiB sabit RAM. Test kaynağı M1 VHDX'in ayrı `F:\alpbahOS-build\vms\alpbahOS-M2-Gen1\alpbahOS-M2-Gen1.vhdx` kopyasıdır.
 - `alp` (Claude prototipi, Python 3.13): LFS chroot'unda core yöntemi gerçek `/` altında test fixture'ını kurdu, DB'ye yazdı ve kaldırınca dosya/DB girdisi temizlendi. Recipe yöntemi htop checksum doğrulaması, configure ve make/install ile `/tmp/alp-root` test köküne kuruldu; **kritik hata bulundu:** htop ELF `/usr/bin/htop` modu `0644` oldu, çalıştırılamadı. Claude'un kod sahipliği nedeniyle motor dosyası burada değiştirilmedi. Ayrıntı ve log: `docs/WORKLOG.md`, Builder `/mnt/lfs/tmp/alp-root/var/log/alp/htop-3.3.0.build.log`.
-- BLFS sürüm eşleşmesi: M1 LFS 12.4-systemd olduğundan M2 için BLFS 12.4-systemd manifesti sabitlendi (`docs/M2_BLFS_MANIFEST.md`). Chroot DNS geçici resolver ile çözüldü; testte CA bundle Python vendored Certifi snapshot'ından geçici kullanıldı. Sistem CA/make-ca, curl/TLS, grafik, ses ve Plasma henüz kurulmadı.
-- Sonraki iş: alp dosya modu bulgusunu Claude'a düzeltme için devret; BLFS CA trust zincirini (libtasn1/p11-kit/make-ca) sırayla kur; sonra LFS curl/DNS/TLS testleri, grafik/ses ve Plasma.
+- BLFS ağ/TLS kesiti geçti: libtasn1, libunistring, libidn2, p11-kit (66/67 test; `test-path` SIGSEGV), make-ca, libpsl ve cURL LFS rootfs'ye kuruldu. CA bundle üretildi ve LFS chroot'unda gerçek `curl https://www.example.com/` doğrulandı. Ayrıntı `docs/M2_BLFS_MANIFEST.md` ve `docs/WORKLOG.md`.
+- Sonraki iş: alp dosya modu bulgusunu Claude'a düzeltme için devret; ardından D-Bus/PAM/polkit/logind, DRM/Mesa/Wayland, PipeWire ve Qt6/Plasma zincirine geç.
 
 Bu bölüm günlük konuşmadaki sprint adını kullanır. `docs/MASTER_PLAN.md` içindeki tarihsel M02 paket prototipi numarasıyla karıştırılmamalıdır; o işin `alp` prototipi Claude tarafından ayrı repoda başlatılmıştır.
 
