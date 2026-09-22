@@ -4,7 +4,7 @@
 
 Windows'tan geçenler için kolay, Türkçe, kişiselleştirilebilir ve kaynak kullanımına dikkat eden LFS tabanlı x86_64 masaüstü projesi.
 
-**Durum:** M01 derleme ortamı ve LFS 12.4-systemd tabanı hazırlandı. İlk önyüklenebilir VHDX, BIOS ve UEFI emülasyonunda gerçek kernel, systemd ve giriş istemine kadar doğrulandı. Grafik masaüstü, ISO, paket motoru entegrasyonu ve gerçek Hyper-V açılışı henüz tamamlanmadı.
+**Durum:** M1 temel sistem tamamlandı. LFS 12.4-systemd tabanı BIOS/UEFI emülasyonunda ve Hyper-V Gen2 üzerinde gerçek kernel, giriş istemi, DHCP ağı ve kontrollü yeniden başlatmayla doğrulandı. Grafik masaüstü, canlı ISO ve Hyper-V Gen1 testi sonraki aşamalardadır.
 
 Özel kaynak deposu: [Yoursel71/alpbahOS](https://github.com/Yoursel71/alpbahOS).
 
@@ -20,7 +20,7 @@ Windows'tan geçenler için kolay, Türkçe, kişiselleştirilebilir ve kaynak k
 - [M01 önyükleme doğrulaması](docs/M1_BOOT_VERIFICATION.md)
 - [Tasarım referansı](docs/alpbahOS-design-mockups.md)
 
-Başlangıç seçimleri: LFS/BLFS, KDE Plasma/KWin, Konsole/Zsh, pacman/libalpm + `pkg`, Discover, Solid/Glass profilleri, Atatürk masaüstü/kilit ekranı, Türkçe Q. Steam/Wine için 32-bit kullanıcı alanı uyumluluğu toolchain aşamasında planlanır.
+Başlangıç seçimleri: LFS/BLFS, KDE Plasma/KWin, Konsole/Zsh, `alp` paket motoru, grafik mağaza, Solid/Glass profilleri, Atatürk masaüstü/kilit ekranı, Türkçe Q. Steam/Wine için 32-bit kullanıcı alanı uyumluluğu toolchain aşamasında planlanır.
 
 Önce Hyper-V masaüstü ve Legacy+UEFI canlı ISO; sonra Calamares ile grafik/offline/Windows yanında kurulum. Düşük RAM bütçesi ve sürücü uyumluluğu test kapılarıdır.
 

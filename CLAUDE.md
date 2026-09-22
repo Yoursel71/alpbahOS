@@ -5,17 +5,18 @@
 ## Okuma sırası
 
 1. `AGENTS.md`
-2. `docs/DECISIONS.md`
-3. `docs/MASTER_PLAN.md`
-4. `docs/WORKLOG.md`
-5. Görsel bir görev için `docs/alpbahOS-design-mockups.md` ve `docs/assets/alpbahOS-logo.png`
+2. `CURRENT.md`
+3. `docs/DECISIONS.md`
+4. `docs/MASTER_PLAN.md`
+5. `docs/WORKLOG.md`
+6. Görsel bir görev için `docs/alpbahOS-design-mockups.md` ve `docs/assets/alpbahOS-logo.png`
 
 ## Güncel bağlam
 
-- Ana plan 1.0 hazır. Çalışır dağıtım veya tamamlanmış toolchain yok.
-- LFS tabanı derlenecek, hazır açık kaynak masaüstü/uygulamalar özelleştirilecek.
+- Ana plan 1.0 ve M1 LFS temel boot imajı hazır. `alpbahOS-m1-final-v2.vhdx`, Hyper-V Gen2 üzerinde giriş istemi, DHCP/ping ve kontrollü yeniden açılışla doğrulandı. Masaüstü/BLFS ve canlı ISO henüz yok.
+- LFS tabanı hazır; BLFS ile hazır açık kaynak masaüstü/uygulamalar özelleştirilecek.
 - Kullanıcı Windows'tan geçenler için kolay masaüstü, terminal önerileri, basit paket işlemleri, Windows kısayolları, Atatürk görselleri ve güçlü cihazlarda cam görünümü istiyor.
-- Başlangıç stack'i KDE/KWin, Konsole/Zsh, pacman/libalpm + pkg + Discover/PackageKit. Entegrasyon deneyi geçmeden çalışan kabul etme.
+- Başlangıç stack'i KDE/KWin, Konsole/Zsh ve D31 ile seçilen `alp` paket motorudur. Grafik mağaza entegrasyonunu test geçmeden çalışıyor kabul etme.
 - Claude Code kullanılacak; ayrı çalışma ağacı `C:\alpbahOS-claude`, dal `claude/desktop-bootstrap`. Başka hostta clone ve aynı görev sözleşmeleri kullanılır.
 - Hyper-V, 300 GB yerel alan, Türkçe Q, düşük RAM ve BIOS+UEFI hedefleri sabittir. Kullanıcı günde 1–2 saat ayırır.
 

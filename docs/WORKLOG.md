@@ -7,11 +7,12 @@
 - Ubuntu 24.04.5 builder VM üzerinde LFS **12.4-systemd** x86_64 temel sistem derlendi. Kaynak disk imajı 20 GiB GPT düzeniyle BIOS boot, EFI ve ext4 root bölümlerini içerir.
 - Kernel: `6.16.1-alpbahOS`; systemd, GRUB 2.12, Türkçe UTF-8/Türkçe Q varsayımları ve `sa` kullanıcı hesabı rootfs'e yerleştirildi.
 - İlk GRUB önyüklemesinde initramfs olmadığı için `root=UUID=...` çözülemiyordu. Kernel diski `/dev/sda3` olarak gördüğünden boot girdisi `root=/dev/sda3` olarak düzeltildi.
-- Son artifact: `artifacts/alpbahOS-m1-bootable.vhdx` — 20 GiB sanal boyut, yaklaşık 4.7 GiB fiziksel boyut. SHA-256: `5816717f6777595e924be419bd5117381d4cf129313ec3ecb6314c0a29c92b92`.
-- Doğrulama: QEMU BIOS ve OVMF UEFI testleri, VHDX → GRUB → Linux 6.16.1 → `/dev/sda3` ext4 mount → systemd → `alpbahos login:` zincirini geçti. Ayrıntı: `docs/M1_BOOT_VERIFICATION.md`.
-- Kalan M01/BOOT-01 kapısı: Aynı VHDX'in Hyper-V Gen1 ve Gen2 üzerinde gerçek açılışı; ağ ve yeniden başlatma kontrolü. Bu gerçekleştirilmeden masaüstü/ISO aşamasına geçilmeyecek.
+- Son artifact: `artifacts/alpbahOS-m1-final-v2.vhdx` — 20 GiB sanal boyut, 5.024.776.192 bayt fiziksel boyut. SHA-256: `07123bf1e653e8b735e6c68324fed20d2402f68ba39657d30a521738f37ade86`.
+- Doğrulama: QEMU BIOS/OVMF ve gerçek Hyper-V Gen2, VHDX → GRUB → Linux 6.16.1 → `/dev/sda3` → systemd → `alpbahos login:` zincirini geçti. Hyper-V Default Switch DHCP adresi ve hosttan ping, kontrollü kapatma ve yeniden açılış sonrası tekrar doğrulandı. Ayrıntı: `docs/M1_BOOT_VERIFICATION.md`.
+- Dosya sistemi: hatalı ara imaj bırakıldı; son imaj temiz tabandan yeniden üretildi. FAT ve ext4 çevrimdışı `fsck` kontrolleri hatasız geçti. `/etc/shadow`, root kurtarma hesabı, systemd servis kullanıcıları ve DHCP profili eklendi.
+- M1 temel boot imajı tamamlandı. BOOT-01'in Hyper-V Gen1 kolu sonraki test olarak açık kaldı.
 
-Kullanıcı cevapları ana plan 1.0'a işlendi. Mevcut sonuçlar logo, kabul edilmiş arayüz referansı, tasarım dokümanı, terminal logo varlıkları, görevler ve ajan talimatlarıdır. Linux derlemesi veya kurulum başlamadı.
+Kullanıcı cevapları ana plan 1.0'a işlendi. LFS temel sistem ve M1 Gen2 boot imajı çalışır durumda; masaüstü/BLFS ve canlı ISO henüz başlamadı.
 
 | İş | Sahip | Durum | Kanıt / sonraki adım |
 |---|---|---|---|
@@ -19,14 +20,14 @@ Kullanıcı cevapları ana plan 1.0'a işlendi. Mevcut sonuçlar logo, kabul edi
 | PLAN-02: Ana plan | Codex | 1.0 hazır | MASTER_PLAN.md |
 | PLAN-03: Ortak ajan ve Claude talimatları | Codex | Hazır | AGENTS.md, CLAUDE.md, CLAUDE_START.md |
 | REPO-01: Özel Git deposu | Codex | Oluşturuldu | https://github.com/Yoursel71/alpbahOS; isPrivate=true doğrulandı; ilk push hazırlanıyor |
-| BUILD-01: Linux derleme ortamı | Codex | Başlamadı | Hyper-V/300 GB seçildi; yönetim sorgusunda yetki hatası |
+| BUILD-01: Linux derleme ortamı | Codex | Tamamlandı | Ubuntu builder, SSH, LFS rootfs ve Hyper-V Gen2 test VM doğrulandı |
 | DESKTOP-01: Masaüstü prototipi | Claude rol planı / Codex entegrasyon | Başlamadı | Plasma seçildi; çalışma oturumu testi yok |
 | PKG-01/PKG-02: Paket motoru (`alp`) | Claude (D31 ile Codex'ten devraldı) | Prototip hazır, incelendi, 3 bulgu düzeltildi; gerçek Linux ortamında test edilmedi | [DECISIONS.md D31/P13](DECISIONS.md), [alpbahOS-alp](https://github.com/Yoursel71/alpbahOS-alp), `claude/desktop-bootstrap` dalı → `docs/handoffs/claude/001-alp-hybrid-pkg-proposal.md`, `003-alp-review-fixes.md` |
 | UI-01/UI-02/UI-03/SHELL-01 | Claude | `claude/desktop-bootstrap` dalında taslak hazır (doğrulanmamış) | `claude/desktop-bootstrap` dalı → `docs/handoffs/claude/001-desktop-bootstrap.md`, `002-ui02-ui03.md` |
 
 ## Ortam sahipliği
 
-- LFS rootfs: henüz yok; sahip ve kilit atanmadı.
+- LFS rootfs: builder VM'de hazır; tek yazıcı Codex, disk imajı çevrimdışıyken değiştirilir.
 - Tema prototip ortamı: henüz yok.
 - Claude Code seçildi; `C:\alpbahOS-claude` için ayrı Git worktree hazırlanacak.
 - Eşzamanlı derleme veya ortak dosya değişikliği başlatılmadı.

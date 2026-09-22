@@ -1,11 +1,11 @@
 # alpbahOS — Ortak ajan çalışma talimatları
 
-Bu dosya projede çalışan tüm ajanların ortak talimatıdır. Kullanıcının yeni açık kararları önceliklidir; bunları karar kaydına yansıt. Ana plan 1.0 hazır, Linux uygulaması henüz başlamadı. Bu belge tek başına işletim sistemi kurma veya fiziksel disk değiştirme görevi değildir. Kullanıcının mevcut görev yetkisini ve kabul edilmiş tercihlerini tekrar sormadan kullan.
+Bu dosya projede çalışan tüm ajanların ortak talimatıdır. Kullanıcının yeni açık kararları önceliklidir; bunları karar kaydına yansıt. Ana plan 1.0 ve M1 LFS temel boot imajı hazırdır; güncel çalışma durumu `CURRENT.md` içindedir. Bu belge tek başına fiziksel disk değiştirme görevi değildir. Kullanıcının mevcut görev yetkisini ve kabul edilmiş tercihlerini tekrar sormadan kullan.
 
 ## Başlangıç
 
 1. Bu dosyayı, `docs/DECISIONS.md` ve `docs/MASTER_PLAN.md` dosyalarını oku.
-2. `docs/WORKLOG.md` içindeki son durum ve sahipliği kontrol et.
+2. `CURRENT.md` ile `docs/WORKLOG.md` içindeki son durum ve sahipliği kontrol et.
 3. Görsel işlerde `docs/alpbahOS-design-mockups.md` ve mevcut logo referansını incele.
 4. Çalışma ağacındaki kullanıcı değişikliklerini koru. Git deposu yoksa varmış gibi davranma.
 5. Görev kapsamını, kullanılacak ortamı ve doğrulama yöntemini belirle; yalnız ilgili işe başla.
@@ -47,7 +47,7 @@ Bu dosya projede çalışan tüm ajanların ortak talimatıdır. Kullanıcının
 ## Paket ve terminal davranışı
 
 - Tek paket veri tabanı ve tek yazıcı/işlem kilidi kullan. CLI ve mağaza aynı işlem motorunu çağırmalı.
-- Başlangıç motoru pacman/libalpm; kullanıcı arayüzü pkg, mağaza Discover/PackageKit alpm. M02 entegrasyon testi zorunludur. Başka native paket motorunu aynı rootfs'de bağımsız kurma.
+- D31 ile seçilen başlangıç motoru `alp`tir; recipe, Flatpak sarmalayıcı ve core arşiv yolları tek veritabanı/kilit kullanır. Bağımlılık çözümü ve grafik mağaza entegrasyonu test edilmeden hazır sayılmaz. Başka native paket motorunu aynı rootfs'de bağımsız kurma.
 - Depo tutarlılığını koru; kısmi güncelleme üretme. Kendi paketlerimiz ve kendi manifestimiz kullanılmalı.
 - `apt` benzeri komut adı, Debian/Ubuntu depolarıyla ikili uyumluluk anlamına gelmez. Dış dağıtımın taban depolarını karıştırma.
 - Sistem paketleri için kaynak ve depo güvenini doğrula; ayrı uygulama formatları varsa kullanıcıya kaynaklarını göster.
