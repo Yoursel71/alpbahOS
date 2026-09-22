@@ -59,6 +59,13 @@
 - Doğrulama: LFS chroot'unda `/usr/bin/pipewire`, `pw-cli`, `pw-top`; `pkg-config` ALSA `1.2.14`, libpipewire `1.4.7`; `pipewire --version` başarıyla döndü.
 - Açık: PipeWire/WirePlumber session manager ve Hyper-V gerçek ses aygıtı testleri henüz yapılmadı.
 
+## M2 grafik tabanı kesiti — 22 Eylül 2026
+
+- libxml2 2.14.5: MD5 `59aac4e5d1d350ba2c4bddf1f7bc5098`; `make check` ve install geçti. Log `/mnt/lfs/tmp/alp-logs/libxml2-build.log`.
+- libdrm 2.4.125: MD5 `3baec8e685510892b3355a7074baa874`; Meson/Ninja `ninja test` ve install geçti. Log `/mnt/lfs/tmp/alp-logs/libdrm-build.log`.
+- Wayland 1.24.0: MD5 `fda0b2a73ea2716f61d75767e02008e1`; Meson/Ninja `ninja test` ve install geçti. İlk deneme libxml2 pkg-config eksikliğinde durdu; libxml2 kurulduktan sonra temiz tekrar başarıyla tamamlandı. Log `/mnt/lfs/tmp/alp-logs/wayland-build.log`.
+- Açık: Mesa/GL renderer, Xwayland, Qt6, KWin ve Plasma henüz kurulmadı; bu kesit yalnız DRM/Wayland kütüphane tabanını doğrular.
+
 ## M01 güncellemesi — LFS temel sistem ve boot imajı
 
 - Ubuntu 24.04.5 builder VM üzerinde LFS **12.4-systemd** x86_64 temel sistem derlendi. Kaynak disk imajı 20 GiB GPT düzeniyle BIOS boot, EFI ve ext4 root bölümlerini içerir.
