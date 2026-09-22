@@ -39,8 +39,8 @@ BOOT-01 Gen1 kolunu ayrı test VM'inde doğrula; ardından BLFS-01 için sertifi
 - PAM/systemd zinciri tamamlandı: Linux-PAM kuruldu; `pam_systemd.so`, systemd-logind ve systemd 257.8 yeniden kuruldu. Minimal `/etc/pam.d/system-*` yapılandırması mevcut.
 - Polkit zinciri tamamlandı: GLib 2.84.4, Duktape 2.7.0 ve Polkit 126 logind oturum takibiyle kuruldu; `polkitd` kullanıcısı, `pkcheck`/`pkaction` ve D-Bus servis dosyası doğrulandı. dbusmock/test suite henüz yok.
 - Ses kesiti tamamlandı: ALSA-lib 1.2.14 test/kurulum geçti; PipeWire 1.4.7 `session-managers=[]` ile test/kurulum geçti. `pipewire`, `pw-cli`, `pw-top` ve `libpipewire-0.3` doğrulandı.
-- Grafik tabanı kesiti tamamlandı: libxml2 2.14.5, libdrm 2.4.125 ve Wayland 1.24.0 test/kurulum geçti. Mesa, Xwayland/Qt6/KWin/Plasma henüz yok.
-- Mesa 25.1.8 softpipe yolu kuruldu: Mako/PyYAML Python bağımlılıkları eklendi; `platforms=[]`, `gallium-drivers=softpipe`, `vulkan-drivers=[]`, `glx=disabled`, `llvm=disabled` ile build/install geçti. `libEGL`, GLES ve `swrast_dri.so`/`kms_swrast_dri.so` doğrulandı.
+- Grafik tabanı kesiti tamamlandı: libxml2 2.14.5, libdrm 2.4.125 ve Wayland 1.24.0 test/kurulum geçti. Mesa Wayland softpipe tabanıyla kuruldu; Xwayland/Qt6/KWin/Plasma henüz yok.
+- Mesa 25.1.8 softpipe yolu kuruldu: Mako/PyYAML Python bağımlılıkları eklendi; `platforms=wayland`, `gallium-drivers=softpipe`, `vulkan-drivers=[]`, `glx=disabled`, `llvm=disabled` ile build/install geçti. Mesa EGL Wayland backend’i ve `swrast_dri.so`/`kms_swrast_dri.so` doğrulandı.
 - Sonraki iş: Xorg/Qt6/KWin/Plasma zinciri; PipeWire gerçek Hyper-V ses aygıtı ve Mesa renderer oturum testi henüz yapılmadı.
 
 Bu bölüm günlük konuşmadaki sprint adını kullanır. `docs/MASTER_PLAN.md` içindeki tarihsel M02 paket prototipi numarasıyla karıştırılmamalıdır; o işin `alp` prototipi Claude tarafından ayrı repoda başlatılmıştır.
