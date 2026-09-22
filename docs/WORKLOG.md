@@ -70,7 +70,9 @@
 
 - Rootfs kontrolü: `/dev/dri/card1` mevcut; kernel `CONFIG_DRM=y`, libdrm `2.4.125` pkg-config mevcut.
 - Mesa 25.1.8 BLFS 12.4 gereksinimleri kontrol edildi: Xorg Libraries, Mako 1.3.10 ve PyYAML 6.0.2. LFS rootfs’de `x11` pkg-config, Python Mako ve PyYAML eksik.
-- Mesa build başlatılmadı; eksik bağımlılıklarla sahte başarı üretmemek için grafik zinciri bu kapıda duruyor. Sonraki paket sırası Xorg proto/lib stack + Mako/PyYAML, ardından llvmpipe Mesa.
+- Mesa 25.1.8: MD5 `fe3eb39e8a3c6fbb36eb3da57be022e7`. Rootfs Python site-packages'e Mako 1.3.10 ve PyYAML 6.0.2 kuruldu. `platforms=[]`, `gallium-drivers=softpipe`, `vulkan-drivers=[]`, `glx=disabled`, `llvm=disabled` ile 962 adım build/install geçti. Log `/mnt/lfs/tmp/alp-logs/mesa-build.log`.
+- Doğrulama: `/usr/lib/libEGL.so`, GLES kitaplıkları, `/usr/lib/x86_64-linux-gnu/dri/swrast_dri.so` ve `kms_swrast_dri.so` mevcut. Bu software renderer kanıtıdır; gerçek Wayland/Plasma renderer oturumu henüz açılmadı.
+- Sonraki paket sırası: Qt6 temel kitaplıkları, KWin/Plasma; Xwayland ve giriş/oturum servisleri ayrıca doğrulanacak.
 
 ## M01 güncellemesi — LFS temel sistem ve boot imajı
 

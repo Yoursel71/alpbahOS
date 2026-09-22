@@ -15,7 +15,7 @@ Plan sürümü 1.0. Roller: Codex altyapı/entegrasyon; Claude Code masaüstü/U
 | BUILD-02 | Codex | BUILD-01 | Geçici toolchain | Kitap sırası ve ELF/linker testleri | Tamamlandı (geçici araçlar ve final toolchain) |
 | BUILD-03 | Codex | BUILD-02, PKG-01 | Chroot/temel LFS | Paket dosya sahipliği ve kritik testler | Tamamlandı (LFS 12.4-systemd temel rootfs) |
 | BOOT-01 | Codex | BUILD-03 | Gen2 ve Gen1 boot | Hedef kernel ile giriş/ağ/reboot | M1 Gen2 giriş, DHCP/ping ve kontrollü yeniden açılış geçti; 22.09.2026 ayrı Gen1 VM'de 2 GiB ile giriş istemi kullanıcı tarafından doğrulandı; Gen1 ağ/reboot açık |
-| BLFS-01 | Codex | BOOT-01 | Ağ/ses/grafik/oturum bağımlılıkları | TLS/ses/renderer testleri | Ağ/TLS, PAM/logind, Polkit, ALSA/PipeWire ve libxml2/libdrm/Wayland kesitleri geçti. p11-kit `test-path` SIGSEGV, Polkit dbusmock ve gerçek aygıt testleri açık; Mesa kapısında Xorg/Mako/PyYAML bekleniyor |
+| BLFS-01 | Codex | BOOT-01 | Ağ/ses/grafik/oturum bağımlılıkları | TLS/ses/renderer testleri | Ağ/TLS, PAM/logind, Polkit, ALSA/PipeWire, libxml2/libdrm/Wayland ve Mesa softpipe geçti. p11-kit `test-path` SIGSEGV, Polkit dbusmock ve gerçek aygıt/oturum testleri açık; Qt/KWin/Plasma sürüyor |
 | UI-01 | Claude | Belgeler | Tema token'ları ve mevcut mockup eşlemesi | Türkçe, Solid varsayılan, profil farkları | Sırada |
 | UI-02 | Claude | UI-01 | Kısayol tanımları ve kullanıcı yardımı | Çakışma listesi; Alt+Tab/Win+D dahil | Başlamadı |
 | SHELL-01 | Claude | Belgeler | Zsh/Konsole profil taslağı | Öneri kabul/çalıştır ayrımı, düzeltme, Türkçe | Sırada |
