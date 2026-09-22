@@ -1,6 +1,6 @@
 # alpbahOS — Güncel durum
 
-Son güncelleme: 22 Eylül 2026
+Son güncelleme: 23 Eylül 2026
 
 ## Tamamlanan M1
 
@@ -17,7 +17,7 @@ Son güncelleme: 22 Eylül 2026
 
 ## M1 kapanışındaki açık sınırlar (tarihsel kayıt)
 
-- Hyper-V Gen1 boot-to-login doğrulandı; Gen1 ağ/reboot kapsamı açık.
+- M1 kapanış anındaki tarihsel not: Hyper-V Gen1 boot-to-login doğrulanmış, ağ/reboot kapsamı açıktı. Bu açık nokta M2 testinde sonradan kapatıldı (aşağıdaki M05 kanıtı).
 - Secure Boot geliştirme VM'inde kapalı.
 - M1 kapanış anında grafik masaüstü, BLFS zinciri, canlı ISO ve kurucu henüz yoktu; sonraki BLFS ilerlemesi aşağıda sprint M2 altında kayıtlıdır.
 - Büyük VHDX/ISO/rootfs dosyaları Git'e eklenmez.
@@ -42,8 +42,8 @@ Plan, BOOT-01 Gen1 kolunu ayrı test VM'inde doğrulayıp ardından BLFS-01 sert
 - Yönetim araçları: `iproute2` zaten LFS rootfs'de (`/usr/sbin/ip`), eski M1 VHDX guest'inde yok. `sudo 1.9.17p2` derlenip test edildi; PAM, `%wheel` sudoers kuralı ve `visudo -c` geçti. Builder `/mnt/lfs` rootfs'sinde `sa` kullanıcı hesabı yok (M1 VHDX'te var); parolasını varsaymadan wheel grup üyeliği final imaj entegrasyonuna bırakıldı.
 - Grafik tabanı kesiti tamamlandı: libxml2 2.14.5, libdrm 2.4.125 ve Wayland 1.24.0 test/kurulum geçti. Mesa Wayland softpipe tabanıyla kuruldu. QtBase 6.9.2 `/opt/qt6` altına kuruldu; QtBase QImage ve QtDeclarative QQuickView offscreen smoke kontrolleri geçti. QtShaderTools, QtDeclarative ve QtWayland kuruldu; QtWayland configure özeti client/compositor + EGL/DRM EGL gösteriyor. Wayland gerçek oturumu, Xwayland, KWin ve Plasma henüz yok.
 - Mesa 25.1.8 softpipe yolu build/install edildi; son dosya sistemi incelemesinde `swrast_dri.so`/`kms_swrast_dri.so` bulunmadı. Buna rağmen gerçek surfaceless EGL/GLES smoke testi geçti: `GL_RENDERER=softpipe`, readback pikseli `64,128,191,255`. Gerçek Wayland/compositor oturumu hâlâ sınanmadı.
-- BLFS CMake 4.1.0 (MD5 `80ae27faba5068c8ec12c77bf00e6db3`) LFS chroot'unda derlenip kuruldu; `cmake --version` 4.1.0 döndürdü. Qt6 build'i başlamadı; temel doğrulama kapıları bekleniyor.
-- Qt6/KWin/Plasma beklemede: Gen1 guest DHCP/reboot çıkış koşulu tamamlandı. Kalan temel kapı PipeWire'ın gerçek PCM playback/capture testi; test için host/guest arasında ses yönlendirmesi veya PCM aygıtı gerekiyor.
+- BLFS CMake 4.1.0 (MD5 `80ae27faba5068c8ec12c77bf00e6db3`) LFS chroot'unda derlenip kuruldu; `cmake --version` 4.1.0 döndürdü. Qt 6.9.2 alt bileşenleri bu temel doğrulama çalışmalarından sonra kurulup test edildi; KWin/Plasma henüz yapılmadı.
+- QtBase, QtDeclarative, QtShaderTools ve QtWayland 6.9.2 ön hazırlık bileşenleri kurulup offscreen/QML smoke testleri geçti; KWin/Plasma henüz kurulmadı. PipeWire sanal sink graph'ında gerçek PCM playback/capture doğrulandı; fiziksel aygıt yönlendirmesi ayrı, açık kapsamdır. M05 ve M06 temel doğrulama kapılarının güncel dökümü aşağıdadır.
 
 Bu bölüm günlük konuşmadaki sprint adını kullanır. `docs/MASTER_PLAN.md` içindeki tarihsel M02 paket prototipi numarasıyla karıştırılmamalıdır; o işin `alp` prototipi Claude tarafından ayrı repoda başlatılmıştır.
 
@@ -59,21 +59,21 @@ Bu tablo `docs/MASTER_PLAN.md` §10'daki M00–M12 aşamalarını izler; yukarı
 | M03 — multilib | Kullanıcı kararıyla uygulanmayacak | D32/P01 saf 64-bit kararı; kod veya build değişikliği yapılmadı. ELF32 ölçütü tamamlanmış gibi gösterilmez. |
 | M04 — nihai LFS tabanı | Kısmi (LFS 12.4 rootfs hazır) | M1 rootfs, linker ve FAT/ext4 kontrolleri mevcut; fakat `/mnt/lfs/var/lib/alp/db.json` paket listesi boş. Ana plan §10.1'de istenen temel sistem dosya sahipliği kayıtları kanıtlanmadı. |
 | M05 — kernel/boot/VM | Tamamlandı | Gen2 DHCP/ping/reboot geçti. Gen1 guest login ve reboot öncesi DHCP lease (`172.28.165.181/20`) doğrulandı; kontrollü reboot + yeniden login sonrası aynı NIC MAC yeni `.171.186` IP'sinde ping 3/3, TTL 64 verdi. |
-| M06 — BLFS altyapısı | Kısmi | Ağ/TLS, PAM/logind, pkexec e2e, Mesa EGL ve ALSA sanal PCM roundtrip geçti. PipeWire üzerinden PCM I/O sessiz kaldı; fiziksel audio ve grafik oturumu yok. |
-| M07 — Plasma ve temel uygulamalar | Başlamadı | Qt6/KWin/Plasma derlemesi/oturumu yok; M06 kapılarını bekliyor. |
+| M06 — BLFS altyapısı | Kısmi | Ağ/TLS, PAM/logind, pkexec e2e, Mesa softpipe EGL çizim/readback, ALSA loopback ve PipeWire null-sink graph PCM roundtrip kanıtı var. Fiziksel ses aygıtı ve gerçek masaüstü oturumu henüz yok. |
+| M07 — Plasma ve temel uygulamalar | Hazırlık yapıldı | Qt 6.9.2 Base/Declarative/ShaderTools/Wayland kurulu ve smoke testli; KWin/Plasma kurulumu ve oturumu henüz başlamadı. |
 | M08 — ürün UX/terminal/tema | Başlamadı | Masaüstüne bağlı kullanıcı senaryoları tamamlanmadı. |
 | M09 — canlı imaj/ISO | Başlamadı | Live rootfs/ISO ve açılış kanıtı yok. |
 | M10 — alfa | Başlamadı | M09 yayın adayı/test matrisi yok. |
 | M11 — kurucu | Başlamadı | Calamares/offline/BIOS+UEFI kurulum testleri yok. |
 | M12 — beta | Başlamadı | Kurulabilir beta, donanım ve güncelleme/kurtarma kabulü yok. |
 
-Sprint adlarının resmî aşamaları atlayarak ilerlemiş gibi görünmesinin nedeni budur: M2 sprinti resmî M02'yi kapatmadı; esasen resmî M05'in Gen1 ek testini ve M06'nın bir bölümünü yürütüyor. Qt/Plasma resmî M07'dir ve şu anda başlamamalı.
+Sprint adlarının resmî aşamaları atlayarak ilerlemiş gibi görünmesinin nedeni budur: M2 sprinti resmî M02'yi kapatmadı; esasen resmî M05'in Gen1 ek testini ve M06'nın bir bölümünü yürütüyor. Qt alt bileşenleri kurulmuş olsa da KWin/Plasma oturumu M07'nin kalan işidir.
 
 M2 hedefi, M1'de açılan metin tabanlı LFS sistemini ilk kullanılabilir grafik oturuma taşımaktır:
 
 1. BOOT-01 Gen1 testini kapat (tamamlandı: DHCP, host ping ve reboot sonrası ping).
 2. Sertifika/TLS, indirme araçları, D-Bus/polkit ve temel ağ katmanını kur.
-3. Grafik, giriş, font ve PipeWire ses zincirini kurup ayrı ayrı doğrula.
+3. Grafik, giriş, font ve PipeWire ses zincirini kurup ayrı ayrı doğrula (EGL ve PipeWire sanal graph kanıtı var; fiziksel aygıt ve gerçek oturum açık).
 4. Claude'un `alp` paket motorunu gerçek LFS köküne yerleştir; örnek paket için kur/güncelle/kaldır, kilit, checksum ve dosya sahipliği testlerini geçir.
 5. Hafif KDE Plasma/KWin oturumunu Hyper-V'de aç; Türkçe Q, ağ, ses ve yeniden başlatma testlerini yap.
 6. Doğrulanmış `alpbahOS-m2.vhdx`, checksum ve M2 raporu üret.
@@ -90,10 +90,10 @@ Tahmin: ilk Plasma giriş ekranı için 4-7 takvim günü; test edilmiş M2 VHDX
 
 - **Kararlar:** P01 saf 64-bit olarak güncellendi (D32); mevcut LFS 12.4 tabanıyla eşleşen BLFS 12.4'te kalma gerekçesi D33 olarak kaydedildi. Multilib için kod/build değişikliği yapılmadı.
 - **M05:** Gen1 guest `networkctl status` DHCP lease'i `172.28.165.181/20`, gateway/DNS `172.28.160.1` olarak gösterdi; host ping 2/2, TTL 64 ve MAC `00-15-5D-00-02-06` ile doğrulandı. Kullanıcı kontrollü reboot sonrası yeniden login yaptı; host komşu kaydı aynı NIC MAC'i yeni `172.28.171.186` adresinde gösterdi ve ping 3/3, TTL 64 geçti. Gen1 ağ/reboot çıkış koşulu kapandı.
-- **p11-kit:** Orijinal 66/67 test koşusunda `test-path` SIGSEGV. LFS `/etc/passwd` içinde UID 1001/1000 yok; bu UID'lerle `/path/expand` çağrısı `getpwuid_r()` üzerinden olmayan kullanıcıyı arayıp testte null sonucu denetlemeden kullandığı için çöküyor. Aynı path testi target `tester` UID 101 ile tam 9/9 geçti. Trust store `trust list --filter=ca-anchors` çalıştı. Bu, build UID/target passwd eşleşmesi kaynaklı test ortamı sorunu; CA/trust store arızası kanıtı değil.
+- **p11-kit:** Orijinal 66/67 test koşusunda `test-path` SIGSEGV. Hedef `/etc/passwd`'de UID 1000 yok: aynı `common/test-path` ikilisi `tester` UID 101 ile 9/9 geçti; numeric UID 1000 ile kontrollü tekrar signal 11/exit 139 verdi. `trust list --filter=ca-anchors` 172 trust anchor döndürdü. Bu, build UID'nin hedefte kullanıcı kaydı olmadan test edilmesiyle sınırlı; gerçek trust-store hatası belirtisi bulunmadı. Karşılaştırma logu `/mnt/lfs/tmp/alp-logs/p11-kit-uid-compare.log`.
 - **Polkit:** geçici test system bus ve polkitd üzerinde, yalnız tester'ın `/usr/bin/id` çağrısını izinleyen geçici kural ile `pkexec --disable-internal-agent /usr/bin/id` `uid=0(root)` döndürdü ve exit 0 verdi. Geçici rule, `/etc/shells` ve bus socket temizlendi. Tam dbusmock suite ve auth-agent akışı çalıştırılmadı.
 - **Mesa:** `/mnt/lfs/tmp/alp-mesa-egl-smoke.c` ile derlenen EGL/GLES2 pbuffer testi softpipe renderer'da çizdi ve pikseli geri okudu. Log: `/mnt/lfs/tmp/alp-logs/mesa-egl-smoke.log`; test binary: `/mnt/lfs/tmp/alp-mesa-egl-smoke`. `swrast_dri.so` dosyaları mevcut kurulumda bulunmadı; bu test surfaceless EGL yolunu doğrular, Wayland compositor yolunu değil.
-- **Ses:** ALSA Utilities `1.2.14` (MD5 `d098c3d677ee80cf3d9f87783cce2e53`), libsndfile `1.2.2` (`04e2e6f726da7c5dc87f8cf72f250d04`), PipeWire `1.4.7` (`e151f5f67b2f09d0b37e0b9493111ca0`, `pw-cat=enabled`), Lua `5.4.8` (`81cf5265b8634967d8a7480d238168ce`) ve WirePlumber `0.5.10` (`2cbb662f91da2bdce31fa55bef5dfcf5`) kuruldu; testler geçti. Geçici `snd-aloop` ALSA playback/capture roundtrip geçti: 144000 kare, peak 12000, RMS 7046.61, SHA-256 `5d8f31349bd312226a5f4c60fe6a313b32311effdc5bee24c6751997c91c93eb`. PipeWire sanal null-sink monitor kaydı da geçti: 48 kHz stereo, 243712 kare, peak 12000, RMS 6522.08. Bu PipeWire graph PCM I/O'sunu doğrular, ALSA aygıt routing'i veya fiziksel sesi değil; M06'nın audio hardware alt sınırı açık.
+- **Ses:** ALSA Utilities `1.2.14` (MD5 `d098c3d677ee80cf3d9f87783cce2e53`), libsndfile `1.2.2` (`04e2e6f726da7c5dc87f8cf72f250d04`), PipeWire `1.4.7` (`e151f5f67b2f09d0b37e0b9493111ca0`, `pw-cat=enabled`), Lua `5.4.8` (`81cf5265b8634967d8a7480d238168ce`) ve WirePlumber `0.5.10` (`2cbb662f91da2bdce31fa55bef5dfcf5`) kuruldu; paket testleri geçti. `snd-aloop` üzerinden ALSA playback/capture ve PipeWire null-sink graph'ında `pw-play`→monitor `pw-record` roundtrip geçti: 48 kHz stereo, 243712 kare, peak 12000, RMS 6522.08, PCM SHA-256 `5c0547fd620ba0fd4e7128e9c11594d7128fa324ac450da0d63192263bc6e7b3`. Bu gerçek PipeWire graph PCM I/O kanıtıdır; ALSA aygıt routing'i veya fiziksel hoparlör/mikrofon doğrulanmış değildir.
 - **Yönetim araçları:** Rootfs'de `ip` var; M1 VHDX guest'i eski kaldığından guest'te `ip` komutu yok. `sudo 1.9.17p2` checksum `dcbf46f739ae06b076e1a11cbb271a10`, `make check` ve `visudo -c` geçti; PAM ile kuruldu, `/etc/sudoers.d/00-sudo` `%wheel` kuralı eklendi. Builder rootfs'sinde `sa` hesabı ve `/etc/shadow` yok; M1 imajında doğrulanmış hesabın grup üyeliği final imaj entegrasyonuna kaldı. Hesap/parola oluşturulmadı veya değiştirilmedi.
-- **`alp` htop:** `a82f872570c938dbd68d5b868070d72ffe437c27` içindeki güncel `alp.py` builder'a aktarıldı. Htop 3.3.0 checksum doğrulamasıyla geçici `--root` altına kuruldu; `/usr/bin/htop` modu `0755`, `htop 3.3.0` çıktısı doğrulandı; kaldırma sonrası binary ve DB paketi temizlendi. Log `/mnt/lfs/tmp/alp-a82f872-root/var/log/alp/htop-3.3.0.build.log`.
-- **Devam kapısı:** M05 Gen1 tamamlandı. PipeWire PCM I/O ve fiziksel audio doğrulanmadı; M06 kapısı tamamlanana kadar Qt6/KWin/Plasma build'ine geçilmeyecek.
+- **`alp` htop:** `a82f872570c938dbd68d5b868070d72ffe437c27` içindeki güncel `alp.py` Builder'a aktarıldı ve 23 Eylül'de tekrar test edildi. Htop 3.3.0 checksum doğrulamasıyla geçici `--root` altına kuruldu; `/usr/bin/htop` modu `0755`, `htop 3.3.0` çıktısı doğrulandı; kaldırma sonrası binary ve DB paketi temizlendi. Yeniden test logu `/mnt/lfs/tmp/alp-logs/alp-a82f872-rerun.log`; kaynak repo/commit ve özet WORKLOG'da.
+- **Devam kapısı (23 Eylül denetimi):** M05 Gen1 ve bu turdaki p11-kit, polkit, Mesa EGL, PipeWire graph PCM ve `alp` htop kontrolleri kanıtlandı. Qt temel alt bileşenleri zaten kurulu; KWin/Plasma çalışmasına devam edilebilir. Fiziksel ses ve gerçek Wayland/Plasma oturumu açık kabul ölçütleridir; tamamlandı diye raporlanmaz.
