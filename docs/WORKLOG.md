@@ -72,6 +72,12 @@
 - Mesa 25.1.8 BLFS 12.4 gereksinimleri kontrol edildi: Xorg Libraries, Mako 1.3.10 ve PyYAML 6.0.2. LFS rootfs’de `x11` pkg-config, Python Mako ve PyYAML eksik.
 - Mesa 25.1.8: MD5 `fe3eb39e8a3c6fbb36eb3da57be022e7`. Rootfs Python site-packages'e Mako 1.3.10 ve PyYAML 6.0.2 kuruldu. `platforms=[]`, `gallium-drivers=softpipe`, `vulkan-drivers=[]`, `glx=disabled`, `llvm=disabled` ile 962 adım build/install geçti. Log `/mnt/lfs/tmp/alp-logs/mesa-build.log`.
 - Doğrulama: `/usr/lib/libEGL.so`, GLES kitaplıkları, `/usr/lib/x86_64-linux-gnu/dri/swrast_dri.so` ve `kms_swrast_dri.so` mevcut. Bu software renderer kanıtıdır; gerçek Wayland/Plasma renderer oturumu henüz açılmadı.
+
+## M2 Mesa Wayland backend — 22 Eylül 2026
+
+- Mesa 25.1.8 softpipe build’i `platforms=wayland` ile yeniden yapılandırıldı; Wayland Protocols 1.41 fallback kaynağı kullanıldı.
+- 962 ninja adımı ve install başarıyla tamamlandı. `libEGL.so.1` Wayland client bağımlılığı ve protokol başlıkları doğrulandı; rootfs geçici DNS kaydı kaldırıldı.
+- Bu adım Qt6/KWin için EGL Wayland tabanını hazırlar. Qt6, KWin/Plasma ve gerçek Gen1 oturum testi hâlâ açık.
 - Sonraki paket sırası: Qt6 temel kitaplıkları, KWin/Plasma; Xwayland ve giriş/oturum servisleri ayrıca doğrulanacak.
 
 ## M01 güncellemesi — LFS temel sistem ve boot imajı
