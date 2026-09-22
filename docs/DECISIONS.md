@@ -39,12 +39,14 @@ Tarih: 21 Eylül 2026. Durum: Kullanıcı cevapları işlendi; uygulamaya hazır
 | D29 | Kabul | Claude Code kullanılacak; özel Git deposu ve ajan Markdown dosyaları isteniyor. | Cevap 25/27 |
 | D30 | Kabul | Güncelleme modeli tercihi teknik değerlendirmeye bırakıldı. | Cevap 21 |
 | D31 | Kabul | Paket motoru pivotu: `alp` (recipe/kaynaktan derleme + Flatpak sarmalayıcı + core `.tar.gz`) kabul edilen motor; pacman/libalpm + Discover/PackageKit alpm yaklaşımı (D11/P05) M02 testi geçmeden, kullanıcının doğrudan talimatıyla terk edildi. Paket motoru sahipliği Codex'ten Claude'a geçti. | Kullanıcı talimatı, 21 Eylül 2026 (\"bu bütün paket manajeri sende olsun\"); ayrıntı: [docs/handoffs/claude/001-alp-hybrid-pkg-proposal.md](handoffs/claude/001-alp-hybrid-pkg-proposal.md) |
+| D32 | Kabul | alpbahOS ilk sürümünde 32-bit kullanıcı alanı/multilib desteği olmayacak; saf x86_64/64-bit devam edilecek. M03'ün ELF32/multilib kabul ölçütü bu ürün kararıyla kapsam dışıdır; 32-bit Steam/Wine uyumluluğu vaat edilmez. | Kullanıcı kararı, 22 Eylül 2026 |
+| D33 | Teknik seçim | Mevcut doğrulanmış taban LFS 12.4-systemd olarak korunacak ve BLFS de 12.4-systemd ile eşleştirilecek. Ana plandaki 13.1 hedefinden sapma bilinçli sürüm sabitlemesidir: M1 rootfs, kernel/boot imajı ve tekrar kullanılacak mevcut sistem 12.4 ile üretildi; BLFS 13.1 paketlerini bu tabana karıştırmak kitap uyumluluğunu ve tekrarlanabilirliği zedeler. 13.1'e geçiş bu iş kapsamında tam temel sistemi yeniden üretmeyi gerektireceğinden, M2 için çalışan tabanı yeniden kurmak yerine uyumlu 12.4 BLFS seçildi. | Codex'in M2 sürüm uyumluluğu kararı, 22 Eylül 2026; uygulama kanıtı: `docs/M2_BLFS_MANIFEST.md`, M1/M2 kayıtları `docs/WORKLOG.md` |
 
 ## Teknik seçimler — uygulama ve test bekliyor
 
 | ID | Teknik seçim | Gerekçe / doğrulanması gereken |
 |---|---|---|
-| P01 | LFS 13.1-systemd + BLFS 13.1; uyumlu multilib uzantısı M02'de sabitlenecek | Steam 32-bit kullanıcı alanı ister; upstream saf 64-bit tarif doğrudan yeterli değil. |
+| P01 | Saf x86_64/64-bit; 32-bit kullanıcı alanı ve multilib desteklenmeyecek (D32). LFS/BLFS sürüm çifti için D33'e bak. | Kullanıcı 32-bit/multilib'i istemedi; uygulanacak taban mevcut LFS 12.4-systemd ve eşleşen BLFS 12.4-systemd. |
 | P02 | KDE Plasma / KWin, Wayland öncelikli | Eski GPU/Hyper-V için seçilen sürümün X11 uyumluluk yolu test edilecek. |
 | P03 | Konsole + Zsh + autosuggestions + syntax-highlighting | Öneri kabulü ayrı, çalıştırma ayrı. |
 | P04 | Varsayılan alpbah-solid, seçenek Glass ve deneysel Liquid | Üst panel/dock düzeni korunur; RAM bütçesi önce gelir. |

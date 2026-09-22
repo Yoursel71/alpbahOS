@@ -50,14 +50,14 @@
 - GLib 2.84.4: MD5 `5655d0ff809b98dd77c02490609fadde`; Meson build/install geçti (`introspection=disabled`, man pages disabled, sysprof disabled). GLib build logu `/mnt/lfs/tmp/alp-logs/glib-build.log`.
 - Polkit 126: MD5 `db4ce0a42d5bf8002061f8e34ee9bdd0`; `session_tracking=logind`, PAM ve `os_type=lfs`, testler kapalı (dbusmock kurulu değil). Build/install logu `/mnt/lfs/tmp/alp-logs/polkit-build.log`.
 - Doğrulama: `/usr/lib/polkit-1/polkitd`, `/usr/bin/pkcheck`, `/usr/bin/pkaction`, `/usr/share/dbus-1/system-services/org.freedesktop.PolicyKit1.service`, `uid=27(polkitd)` ve GLib `2.84.4` bulundu. Chroot geçici DNS dosyası işlem sonunda kaldırıldı.
-- Açık: Polkit `ninja test` çalıştırılmadı; dbusmock/D-Bus çalışan servis ve grafik authentication agent sonraki Plasma ortamında test edilecek.
+- Polkit uçtan uca kanıtı: chroot'ta geçici system D-Bus ve `polkitd` başlatıldı; geçici kural yalnız `tester` + `org.freedesktop.policykit.exec` + `/usr/bin/id` için izin verdi. `pkexec --disable-internal-agent /usr/bin/id` `uid=0(root) gid=0(root)` ve exit 0 verdi. Geçici kural, `/etc/shells` ve D-Bus socket temizlendi. Log: `/mnt/lfs/tmp/alp-logs/polkit-e2e.log` (SHA-256 `dcdd921e06d78179d14ed6a17e9524503c0bd7206f2c482aac14c0787ec6772b`). Kapsam tam dbusmock suite veya grafik auth-agent değildir.
 
 ## M2 ses kesiti — 22 Eylül 2026
 
 - ALSA-lib 1.2.14: MD5 `d0efd7930da31f0034baddc0b993fa03`. BLFS'nin GCC uyumluluk notuna göre `playmidi1` test kaydı çıkarılıp autoreconf çalıştırıldı; `make check` ve install geçti. Log `/mnt/lfs/tmp/alp-logs/alsa-lib-build.log`.
 - PipeWire 1.4.7: MD5 `e151f5f67b2f09d0b37e0b9493111ca0`. Meson `-D session-managers=[]`, `ninja`, `ninja test` ve install geçti. Log `/mnt/lfs/tmp/alp-logs/pipewire-build.log`.
 - Doğrulama: LFS chroot'unda `/usr/bin/pipewire`, `pw-cli`, `pw-top`; `pkg-config` ALSA `1.2.14`, libpipewire `1.4.7`; `pipewire --version` başarıyla döndü.
-- Açık: PipeWire/WirePlumber session manager ve Hyper-V gerçek ses aygıtı testleri henüz yapılmadı.
+- PipeWire gerçek PCM playback/capture testi yapılamadı: chroot'taki `/dev/snd` yalnız `seq` ve `timer` içeriyor, PCM node yok; `pw-cat` ve WirePlumber kurulu değil, PipeWire `session-managers=[]` ile derlendi. `ninja test` build testidir, gerçek ses kanıtı değildir. Ses kapısı açık.
 
 ## M2 grafik tabanı kesiti — 22 Eylül 2026
 
@@ -71,7 +71,7 @@
 - Rootfs kontrolü: `/dev/dri/card1` mevcut; kernel `CONFIG_DRM=y`, libdrm `2.4.125` pkg-config mevcut.
 - Mesa 25.1.8 BLFS 12.4 gereksinimleri kontrol edildi: Xorg Libraries, Mako 1.3.10 ve PyYAML 6.0.2. LFS rootfs’de `x11` pkg-config, Python Mako ve PyYAML eksik.
 - Mesa 25.1.8: MD5 `fe3eb39e8a3c6fbb36eb3da57be022e7`. Rootfs Python site-packages'e Mako 1.3.10 ve PyYAML 6.0.2 kuruldu. `platforms=[]`, `gallium-drivers=softpipe`, `vulkan-drivers=[]`, `glx=disabled`, `llvm=disabled` ile 962 adım build/install geçti. Log `/mnt/lfs/tmp/alp-logs/mesa-build.log`.
-- Doğrulama: `/usr/lib/libEGL.so`, GLES kitaplıkları, `/usr/lib/x86_64-linux-gnu/dri/swrast_dri.so` ve `kms_swrast_dri.so` mevcut. Bu software renderer kanıtıdır; gerçek Wayland/Plasma renderer oturumu henüz açılmadı.
+- Doğrulama düzeltmesi: son dosya sistemi aramasında `/usr/lib/x86_64-linux-gnu/dri/swrast_dri.so` ve `kms_swrast_dri.so` bulunmadı; önceki kayıt hatalıydı. Buna karşın EGL/GLES surfaceless smoke testi `EGL_PLATFORM=surfaceless LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=softpipe` ile çalıştı; `GL_RENDERER=softpipe`, çizim sonrası readback `64,128,191,255`. Kaynak `/mnt/lfs/tmp/alp-mesa-egl-smoke.c`, ikili `/mnt/lfs/tmp/alp-mesa-egl-smoke`; log `/mnt/lfs/tmp/alp-logs/mesa-egl-smoke.log` (SHA-256 `469b3f7a4289eb5ad2f42c82473a69c2b778028f9e6c04d7e5a6644a8464a666`). Bu EGL software render kanıtıdır; Wayland compositor yolu hâlâ açık.
 
 ## M2 Mesa Wayland backend — 22 Eylül 2026
 
@@ -85,7 +85,7 @@
 - Amaç: BLFS 12.4’e göre Wayland oturumu için Qt6 altkümesini, ardından KWin/Plasma’yı gerçek LFS rootfs’de kurmak. Qt’nin tam meta arşivi yerine gerekli Qt modülleri seçilecek; mevcut rootfs boş alanı 43 GiB, tam Qt talebi yaklaşık 47 GiB.
 - Sahip: Codex. Rootfs tek yazıcı kilidi bu oturumda tutuluyor; mevcut M1 VHDX değiştirilmiyor.
 - Qt 6.9.2 qtbase arşivi `/mnt/lfs/sources/qt/qtbase-everywhere-src-6.9.2.tar.xz`, SHA-256 `44be9c9ecfe04129c4dea0a7e1b36ad476c9cc07c292016ac98e7b41514f2440`.
-- Sonraki tek eylem: BLFS 12.4 CMake 4.1.0’ı LFS içine derle/kur; ardından gerekli Qt font, unicode, regex ve keyboard bağımlılıklarını manifestle.
+- CMake daha sonra build/install edilip doğrulandı (bu günlükteki M2 Qt/Plasma altyapısı kaydı). Qt6 bağımlılıklarına geçiş, bu WORKLOG'un sonundaki temel kapı denetimine bağlıdır: Gen1 guest DHCP/reboot ve gerçek PCM playback/capture kanıtı tamamlanmadan devam edilmez.
 - CMake 4.1.0 kaynağı MD5 `80ae27faba5068c8ec12c77bf00e6db3` eşleşti. LFS içinde `--system-libs`/bundled eksik opsiyonel kütüphanelerle bootstrap ve `make -j2` geçti; `make install` tamamlandı. LFS chroot'unda `cmake --version` 4.1.0 doğrulandı. Log: `/mnt/lfs/tmp/alp-logs/cmake-bootstrap.log`. BLFS ctest paketi çalıştırılmadı.
 - Geçici rootfs DNS yapılandırması kaldırıldı.
 - Sonraki paket sırası: Qt6 temel kitaplıkları, KWin/Plasma; Xwayland ve giriş/oturum servisleri ayrıca doğrulanacak.
@@ -140,3 +140,35 @@ Belge bağlantıları ve Git kontrolü sonrası ilk commit/push; Codex ve Claude
 - **Bu ne demek:** Paket motoru sahipliği Codex'ten Claude'a geçti. `alp`'in prototipi çalışıyor (core yöntemi uçtan uca test edildi, checksum/kilit/dry-run doğrulandı) ama bağımlılık çözümü, config koruma ve PackageKit/Discover entegrasyonu **henüz yok** — bunlar dürüst eksiklik olarak proposal belgesinde kayıtlı, "tamamlanmış" değil. Gerçek bir Linux/BLFS ortamında (Codex'in M06+ aşaması) hiç çalıştırılmadı.
 - **Yeni repo:** [Yoursel71/alpbahOS-alp](https://github.com/Yoursel71/alpbahOS-alp) (private) — `alp`'in gerçek recipes/index/core içeriği için. İlk 2 gerçek tarif eklendi: `htop` 3.3.0, `jq` 1.7.1 — `sha256` değerleri gerçek yayın arşivi indirilip hesaplandı (placeholder değil), `alp install` ile checksum doğrulaması bu host üzerinde gerçekten geçti; gerçek `configure/make` derlemesi bu makinede (Linux toolchain yok) hâlâ **çalıştırılmadı**.
 - **Codex durumu:** Kullanıcı, Codex/GPT oturumunun haftalık kullanım limitinin dolduğunu ve Cumartesi'ye kadar geri dönmeyeceğini bildirdi. `alpbah-builder` Hyper-V VM'indeki LFS Chapter 8 (Systemd) ilerlemesi bu nedenle duraklamış durumda (bkz. yukarıdaki BUILD-01 satırı ve `claude/desktop-bootstrap` dalındaki Codex/Hyper-V notu). Codex döndüğünde bu belgedeki pivot kararını ve `alp` prototipini görüp değerlendirmesi gerekiyor — LFS temel sisteme `alp`'i (saf Python, stdlib-only) yerleştirmek ve PackageKit/Discover entegrasyonunun artık bu planın kapsamında olmadığını not etmek dahil.
+
+## M2 temel kapı denetimi — 22 Eylül 2026
+
+- p11-kit 0.25.5 ilk Meson test koşusunda 66/67 geçti; `common/test-path` SIGSEGV verdi. Kök neden sınaması: hedef rootfs `/etc/passwd` içinde host/build UID 1000 ve 1001 yok; bu UID'lerde `/path/expand` testi `getpwuid_r()` ile kullanıcı kaydı bulamıyor, test null dönüşünü korumasız kullandığı için çöküyor. Aynı dokuz path alt testi hedef sistemdeki `tester` UID 101 ile 9/9 geçti. `trust list --filter=ca-anchors` da çalıştı. Kanıt logu: `/mnt/lfs/tmp/alp-logs/p11-kit-test-path-tester.log`. Bulgular test UID/target passwd eşleşmesi sorunudur; trust-store bug'ı olduğuna dair belirti yok.
+- Polkit: geçici system bus/polkitd koşusunda kısıtlı `pkexec /usr/bin/id` senaryosu root olarak exit 0 ile tamamlandı. Bu gerçek authorization e2e kanıtıdır; tam dbusmock suite veya etkileşimli auth-agent doğrulaması değildir.
+- Mesa 25.1.8: EGL/GLES2 pbuffer smoke testi `softpipe` ile gerçek draw/readback yaptı, renderer `softpipe`, piksel `64,128,191,255`. Bu gerçek software render kanıtıdır. Kurulumda swrast DRI modülleri yok ve Wayland compositor oturumu çalıştırılmadı; bu kapsamlar açık.
+- PipeWire/ALSA: build ve paket testleri geçti, fakat playback/capture çalıştırılmadı. Chroot'ta PCM device node, `pw-cat` ve WirePlumber yok. Hyper-V Builder'da gerçek ses aygıtı/PCM yönlendirmesi sağlanana kadar ses çıkış koşulu açık kalır.
+- `alp` htop tekrar testi: kaynak `a82f872570c938dbd68d5b868070d72ffe437c27` (`claude/desktop-bootstrap`) içindeki güncel `alp.py` kullanıldı. Htop 3.3.0 arşivi manifest SHA-256 `a69acf9b42ff592c4861010fce7d8006805f0d6ef0e8ee647a6ee6e59b743d5c` ile doğrulandı; geçici `--root` içine kurulum sonrası `/usr/bin/htop` modu `0755`, `htop --version` 3.3.0 verdi. `alp remove htop` sonrası binary silindi ve DB boş kaldı. Log `/mnt/lfs/tmp/alp-a82f872-root/var/log/alp/htop-3.3.0.build.log` (SHA-256 `0a834230d0ee3f96ff73cd9dfba1552689c241ea5b44ff9ecaef06aae6e1b4fe`). M1 rootfs ve VHDX'e dokunulmadı.
+- M05 Gen1: Hyper-V VMConnect ekran görüntüsündeki `networkctl status` `eth0` adresini `172.28.165.181/20`, gateway/DNS'i `172.28.160.1` ve DHCP edinimini gösterdi. Aynı adres için host ping 2/2, TTL 64; MAC `00-15-5D-00-02-06`. Guest SSH portu reddediyor. M1 imajında `ip` ve `sudo` komutları kurulu değil; guest reboot sonrası ping henüz doğrulanmadı. Kullanıcıya sudo yerine VMConnect Eylem → Ctrl+Alt+Delete üzerinden nazik reboot önerildi; VM açık kalacak.
+- Qt6/KWin/Plasma işine devam kapısı: Gen1 guest lease + guest reboot/ping kanıtı ve PipeWire gerçek PCM playback/capture kanıtı alınana kadar beklemede. Mesa EGL smoke testi geçti fakat Wayland oturumunu tek başına kapatmaz.
+
+## Resmî M00–M12 çıkış koşulu karşılaştırması — 22 Eylül 2026
+
+Kullanıcı sprint M1/M2 etiketleri, `docs/MASTER_PLAN.md` §10'daki M01/M02 aşamalarıyla aynı sıra değildir. Bu denetimde Master Plan ve Backlog'a göre durum:
+
+| Aşama | Durum | Kanıt / açık madde |
+|---|---|---|
+| M00 | Tamamlandı | Gereksinimler, kararlar, plan/ajan belgeleri ve private repo. |
+| M01 | Tamamlandı | Ubuntu Builder, SSH, LFS build kökü ve alan doğrulaması. |
+| M02 | Kısmi | D31 ile paket motoru `alp` olarak değişti. Htop için LFS Builder ortamında izole `--root` install/remove, checksum ve executable mode geçti. Update ve GUI yolu/mağaza yok; M02 tam kapalı değil. |
+| M03 | Uygulanmayacak | D32/P01 kullanıcı kararıyla multilib/ELF32 kapsamdan çıktı; toolchain/build yapılmadı. Bu özgün teknik çıkış koşulu yerine getirilmiş gibi raporlanmıyor. |
+| M04 | Kısmi | LFS 12.4 temel rootfs, linker ve M1 disk doğrulamaları var. Ancak Builder'da `/mnt/lfs/var/lib/alp/db.json` `packages: {}` içeriyor; §10.1'deki nihai sistem paket sahipliği kaydı koşulu sağlanmış değil. Geçici htop `--root` testi bu açığı kapatmıyor. |
+| M05 | Kısmi | M1 Gen2 ağ/reboot testleri geçti. M2 Gen1 login, guest iç DHCP lease (`172.28.165.181/20`) ve host ping 2/2 geçti; reboot sonrası tekrar ping bekliyor. |
+| M06 | Kısmi | Ağ/TLS, PAM/logind, Polkit e2e ve Mesa EGL softpipe render/readback geçti. Gerçek PCM audio I/O ve grafik test oturumu yok. |
+| M07 | Başlamadı | Qt6/KWin/Plasma kurulumu ve temiz kullanıcı oturumu yok. |
+| M08 | Başlamadı | Terminal, kısayol ve tema kullanıcı senaryoları yok. |
+| M09 | Başlamadı | Canlı rootfs/ISO yok. |
+| M10 | Başlamadı | Alfa test matrisi ve yayın adayı yok. |
+| M11 | Başlamadı | Kurucu ve sanal disk kurulum testleri yok. |
+| M12 | Başlamadı | Beta donanım, update/recovery ve kullanıcı kabul kanıtı yok. |
+
+BLFS 12.4, M1'in LFS 12.4 tabanıyla uyumluluk için D33 olarak seçildi. Builder hostunun `/dev/snd` kontrolünde yalnız `seq`/`timer` bulundu; gerçek PCM düğümü olmadığı için playback/capture doğrulaması mümkün olmadı. Bu sonuç ses katmanını başarılı saydırmaz.

@@ -8,21 +8,21 @@ Plan sürümü 1.0. Roller: Codex altyapı/entegrasyon; Claude Code masaüstü/U
 | REPO-01 | Codex | Git/GitHub erişimi | Private repo, main ve iki ayrı dal/worktree | Gizlilik ve uzak commit doğrulanır | Bu tur |
 | HOST-01 | Codex | Hyper-V yönetim yetkisi | Salt okunur host raporu, kaynak bütçesi | Hyper-V etkinliği, alan, ağ ve Linux ISO checksum | Tamamlandı (builder VM/SSH doğrulandı) |
 | HOST-02 | Codex | HOST-01 ve kurulum görevi | Gen2 builder + host-check | SSH/locale/toolchain gereksinimleri geçer | Tamamlandı (Ubuntu 24.04 builder, SSH ve LFS build kökü) |
-| ABI-01 | Codex | Kaynak araştırması | Eşleşen LFS/multilib revizyon ve lib32 planı | Kaynaklar sabit; ELF32/64 test tasarımı | Sırada |
-| PKG-01 | Claude | — (D31 ile motor değişti) | `alp` (recipe+flatpak+core) — prototip hazır, incelendi, 3 bulgu düzeltildi | Kur/kaldır, tek db+kilit, checksum zorunlu — **dürüst eksik:** bağımlılık çözümü, config koruma yok (proposal §6) | Prototip tamam (`claude/desktop-bootstrap`, ayrı repo [alpbahOS-alp](https://github.com/Yoursel71/alpbahOS-alp)); gerçek Linux ortamında uçtan uca **test edilmedi** |
+| ABI-01 | Codex | Kaynak araştırması | Eşleşen LFS/multilib revizyon ve lib32 planı | Kaynaklar sabit; ELF32/64 test tasarımı | D32/P01 kullanıcı kararıyla kapsam dışı; hiçbir 32-bit kod/build yapılmadı |
+| PKG-01 | Claude | — (D31 ile motor değişti) | `alp` (recipe+flatpak+core) — prototip hazır, incelendi, 3 bulgu düzeltildi | Kur/kaldır, tek db+kilit, checksum zorunlu — **dürüst eksik:** bağımlılık çözümü, config koruma yok (proposal §6) | Prototip tamam; `a82f872` recipe yolu Builder LFS ortamında izole `--root` ile htop 3.3.0 install/remove/checksum/mod testi geçti. Update, kilit ve GUI yolu bu doğrulamada geçmedi; kanıt WORKLOG |
 | PKG-02 | Claude | PKG-01 | `alp` ve mağaza (Discover/PackageKit) sözleşmesi | CLI/GUI aynı veritabanında, güvenli güncelleme | **Başlamadı** — proposal §6'da açıkça "Yok" işaretli, PackageKit backend'i yazılmadı |
 | BUILD-01 | Codex | ABI-01, HOST-02 | Kaynak manifesti, indir/doğrula/tarif runner | Temiz yeniden deneme ve loglar | LFS 12.4-systemd akışıyla ilerletildi |
 | BUILD-02 | Codex | BUILD-01 | Geçici toolchain | Kitap sırası ve ELF/linker testleri | Tamamlandı (geçici araçlar ve final toolchain) |
-| BUILD-03 | Codex | BUILD-02, PKG-01 | Chroot/temel LFS | Paket dosya sahipliği ve kritik testler | Tamamlandı (LFS 12.4-systemd temel rootfs) |
-| BOOT-01 | Codex | BUILD-03 | Gen2 ve Gen1 boot | Hedef kernel ile giriş/ağ/reboot | M1 Gen2 giriş, DHCP/ping ve kontrollü yeniden açılış geçti; 22.09.2026 ayrı Gen1 VM'de 2 GiB ile giriş istemi kullanıcı tarafından doğrulandı; Gen1 ağ/reboot açık |
-| BLFS-01 | Codex | BOOT-01 | Ağ/ses/grafik/oturum bağımlılıkları | TLS/ses/renderer testleri | Ağ/TLS, PAM/logind, Polkit, ALSA/PipeWire, libxml2/libdrm/Wayland ve Mesa softpipe + Wayland EGL backend geçti. p11-kit `test-path` SIGSEGV, Polkit dbusmock ve gerçek aygıt/oturum testleri açık; Qt/KWin/Plasma sürüyor |
+| BUILD-03 | Codex | BUILD-02, PKG-01 | Chroot/temel LFS | Paket dosya sahipliği ve kritik testler | LFS 12.4-systemd rootfs hazır; M1 doğrulamaları mevcut, ancak `/mnt/lfs/var/lib/alp/db.json` boş olduğundan ana plan §10.1 paket sahipliği çıkışı tamamlanmamış |
+| BOOT-01 | Codex | BUILD-03 | Gen2 ve Gen1 boot | Hedef kernel ile giriş/ağ/reboot | M1 Gen2 giriş, DHCP/ping ve kontrollü yeniden açılış geçti; Gen1 giriş, guest DHCP lease `172.28.165.181/20` ve host ping 2/2 doğrulandı; Gen1 reboot sonrası ping bekliyor |
+| BLFS-01 | Codex | BOOT-01 | Ağ/ses/grafik/oturum bağımlılıkları | TLS/ses/renderer testleri | Ağ/TLS, PAM/logind, pkexec e2e ve Mesa softpipe EGL readback kanıtı mevcut. p11-kit UID/test mismatch açıklandı. Gerçek PCM playback/capture ve Wayland masaüstü oturumu yok; BLFS-01 kısmi, Qt/KWin/Plasma beklemede |
 | UI-01 | Claude | Belgeler | Tema token'ları ve mevcut mockup eşlemesi | Türkçe, Solid varsayılan, profil farkları | Sırada |
 | UI-02 | Claude | UI-01 | Kısayol tanımları ve kullanıcı yardımı | Çakışma listesi; Alt+Tab/Win+D dahil | Başlamadı |
 | SHELL-01 | Claude | Belgeler | Zsh/Konsole profil taslağı | Öneri kabul/çalıştır ayrımı, düzeltme, Türkçe | Sırada |
 | UI-03 | Claude | UI-01 | Atatürk tema varlık planı ve kaynak kaydı | Görsel kaynağı, kırpım/kontrast, logo korunması | Başlamadı |
 | DESKTOP-01 | Codex | BLFS-01, UI/SHELL girdileri | LFS içinde Plasma oturumu | Temiz kullanıcı, düşük kaynak ölçümü | Başlamadı — BLFS-01 tamamlanmasını bekliyor |
 | APPS-01 | Codex + Claude inceleme | DESKTOP-01 | Hazır temel uygulama profili | Dosya ilişkileri ve günlük senaryolar | Başlamadı |
-| COMPAT-01 | Codex | Multilib + grafik | Wine/Steam/Proton doğrulaması | 32/64-bit grafik; bir test oyunu | Başlamadı |
+| COMPAT-01 | Codex | Multilib + grafik | Wine/Steam/Proton doğrulaması | 32/64-bit grafik; bir test oyunu | M03 multilib kısmı D32 ile kapsam dışı; bu uyumluluk hedefi yeniden karara bağlanmadan başlanmayacak |
 | OFFICE-01 | Claude plan / Codex test | Wine + lisanslı medya | Office sürüm bazlı rapor | Kur/aç/kaydet/yazdır; bilinen sorunlar | Başlamadı |
 | PERF-01 | Claude + Codex | DESKTOP-01 | RAM/frametime/efekt karşılaştırması | Solid bütçesi; Glass ölçümü; Liquid deney raporu | Başlamadı |
 | LIVE-01 | Codex | BOOT/APPS/PERF | Hybrid canlı ISO | Gen1/Gen2, ağ ve kurulumsuz oturum | Başlamadı |

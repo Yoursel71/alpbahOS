@@ -9,6 +9,11 @@ Durum: Başlangıç manifesti; yalnız `[verified-lfs-12.4]` olarak işaretlenen
 - Builder rootfs: `/mnt/lfs`; builder `/` Ubuntu 24.04 host'tur. Derleme komutları chroot'ta `/mnt/lfs` üzerinde, paket bazlı ayrı `/sources`/`build` ve log ile yürütülür.
 - Kaynak checksum'ları indirmeden önce kitap sayfasındaki doğrulama bilgisine göre kayıt altına alınır. Bu ilk manifest URL ve sürümleri tanımlar; checksum eksik olan paket indirilmez.
 
+## M1 Gen1 doğrulamasında görülen yönetim aracı açığı
+
+- Guest içinden `networkctl status` DHCP lease'i doğruladı; aynı ekranda `ip` ve `sudo` komutları yoktu. Bu, minimal M1 imajındaki mevcut durumdur; M2 son kullanıcı imajına bırakılmayacak.
+- M2 final paket kümesine `sudo` ve `iproute2` (sağladığı `ip` komutu) eklenecek. BLFS/LFS 12.4 sürümleri ve checksum'ları build öncesi bu manifestte sabitlenecek; M2 imajında `sa` yetki yapılandırması ve komutlar ayrıca çalıştırılarak doğrulanacak. Henüz indirilip kurulmadı.
+
 ## İlk ağ/TLS kesiti
 
 | Sıra | Paket | BLFS sürümü | Kaynak | Durum |
@@ -16,7 +21,7 @@ Durum: Başlangıç manifesti; yalnız `[verified-lfs-12.4]` olarak işaretlenen
 | 1 | libtasn1 | 4.20.0 | `https://ftp.gnu.org/gnu/libtasn1/libtasn1-4.20.0.tar.gz` | MD5 eşleşti; `make check` ve install geçti |
 | 2 | libunistring | 1.3 | `https://ftp.gnu.org/gnu/libunistring/libunistring-1.3.tar.xz` | MD5 eşleşti; tam `make check` ve install geçti |
 | 3 | libidn2 | 2.3.8 | `https://ftp.gnu.org/gnu/libidn/libidn2-2.3.8.tar.gz` | MD5 eşleşti; `make check` ve install geçti |
-| 4 | p11-kit | 0.25.5 | `https://github.com/p11-glue/p11-kit/releases/download/0.25.5/p11-kit-0.25.5.tar.xz` | MD5 eşleşti; 66/67 test geçti, `test-path` SIGSEGV istisnası; install geçti |
+| 4 | p11-kit | 0.25.5 | `https://github.com/p11-glue/p11-kit/releases/download/0.25.5/p11-kit-0.25.5.tar.xz` | MD5 ve install geçti; ilk 66/67 koşusundaki `test-path` çökmesi build UID'sinin hedef `/etc/passwd` içinde olmamasıyla açıklandı; hedef `tester` UID 101 ile alt testler 9/9 geçti; ayrıntı WORKLOG |
 | 5 | make-ca | 1.16.1 | `https://github.com/lfs-book/make-ca/archive/v1.16.1/make-ca-1.16.1.tar.gz` | MD5 eşleşti; install + `/usr/sbin/make-ca -g` CA bundle üretimi geçti |
 | 6 | libpsl | 0.21.5 | `https://github.com/rockdaboot/libpsl/releases/download/0.21.5/libpsl-0.21.5.tar.gz` | MD5 eşleşti; Meson/Ninja test ve install geçti |
 | 7 | cURL | 8.15.0 | `https://github.com/curl/curl/releases/download/curl-8_15_0/curl-8.15.0.tar.xz` | BLFS kaynağıyla aynı MD5; OpenSSL backend, `/etc/ssl/certs` CA yolu; build/install geçti |
@@ -46,10 +51,10 @@ Sürümler BLFS 12.4 kitabının paket ve bağımlılık tablolarından build ba
 - D-Bus: M1 rootfs'de `dbus-daemon 1.16.2` zaten mevcut.
 - Linux-PAM: `1.7.1`, MD5 `92812d7dd414d816fba8d649e84e68ca`; LFS chroot'unda Meson/Ninja build geçti. Install + PAM yapılandırması ve systemd/shadow yeniden kurulumu aynı bağlı adım olarak bekliyor.
 - Linux-PAM install tamamlandı; minimal `system-account`, `system-auth`, `system-session`, `system-password` ve restrictive `other` dosyaları oluşturuldu. Systemd 257.8 `-D pam=true` ile yeniden derlenip kuruldu; `/usr/lib/security/pam_systemd.so` ve `systemd-logind` doğrulandı.
-- Duktape `2.7.0` (MD5 `b3200b02ab80125b694bae887d7c1ca6`) ve GLib `2.84.4` (MD5 `5655d0ff809b98dd77c02490609fadde`) build/install geçti. Polkit `126` (MD5 `db4ce0a42d5bf8002061f8e34ee9bdd0`) `session_tracking=logind`, PAM ve LFS OS türüyle kuruldu. Polkit testleri dbusmock eksikliği nedeniyle çalıştırılmadı.
-- ALSA-lib `1.2.14` (MD5 `d0efd7930da31f0034baddc0b993fa03`) GCC uyumlu test düzeltmesiyle `make check` ve install geçti. PipeWire `1.4.7` (MD5 `e151f5f67b2f09d0b37e0b9493111ca0`) `session-managers=[]` ile `ninja test` ve install geçti. Gerçek aygıt/ses çıkışı testi sonraki Hyper-V oturumunda.
+- Duktape `2.7.0` (MD5 `b3200b02ab80125b694bae887d7c1ca6`) ve GLib `2.84.4` (MD5 `5655d0ff809b98dd77c02490609fadde`) build/install geçti. Polkit `126` (MD5 `db4ce0a42d5bf8002061f8e34ee9bdd0`) `session_tracking=logind`, PAM ve LFS OS türüyle kuruldu. Geçici system bus/polkitd ve test kuralıyla `tester` → `pkexec /usr/bin/id` uçtan uca senaryosu `uid=0(root)`, exit 0 verdi; tam dbusmock suite ve grafik auth-agent akışı henüz çalıştırılmadı. Ayrıntı/log: WORKLOG.
+- ALSA-lib `1.2.14` (MD5 `d0efd7930da31f0034baddc0b993fa03`) GCC uyumlu test düzeltmesiyle `make check` ve install geçti. PipeWire `1.4.7` (MD5 `e151f5f67b2f09d0b37e0b9493111ca0`) `session-managers=[]` ile `ninja test` ve install geçti. Gerçek PCM playback/capture doğrulanmadı: builder/chroot'ta PCM node yok; PipeWire session manager, WirePlumber ve `pw-cat` de kurulu değil. Bu kapı açık.
 - Grafik tabanı: libxml2 `2.14.5` (MD5 `59aac4e5d1d350ba2c4bddf1f7bc5098`), libdrm `2.4.125` (MD5 `3baec8e685510892b3355a7074baa874`) ve Wayland `1.24.0` (MD5 `fda0b2a73ea2716f61d75767e02008e1`) test/kurulum geçti. Mesa ve Qt/Plasma sonraki kesit.
-- Mesa 25.1.8: MD5 `fe3eb39e8a3c6fbb36eb3da57be022e7`; Mako 1.3.10 ve PyYAML 6.0.2 Python bağımlılıkları kuruldu. Wayland yazılım yolu için `platforms=wayland`, `gallium-drivers=softpipe`, `vulkan-drivers=[]`, `glx=disabled`, `llvm=disabled` build/install geçti. `libEGL`, GLES ve DRI software sürücüleri bulundu. Qt/KWin/Plasma sonraki kesit.
-- p11-kit test istisnası: 66/67 geçti; `common/test-path` SIGSEGV. Kurulum kanıtı logda tutuluyor.
+- Mesa 25.1.8: MD5 `fe3eb39e8a3c6fbb36eb3da57be022e7`; Mako 1.3.10, PyYAML 6.0.2; `platforms=wayland`, `gallium-drivers=softpipe`, `vulkan-drivers=[]`, `glx=disabled`, `llvm=disabled` build/install geçti. EGL/GLES surfaceless smoke testi software rendering/readback yaptı (`GL_RENDERER=softpipe`, pixel `64,128,191,255`); test Wayland compositor oturumunu doğrulamaz. Kurulu rootfs'de `swrast_dri.so`/`kms_swrast_dri.so` bulunmadı; eski manifest iddiası düzeltilmiştir. Log `/mnt/lfs/tmp/alp-logs/mesa-egl-smoke.log`.
+- p11-kit test istisnası kapatıldı: ilk `common/test-path` çökmesi gerçek trust-store arızası değil, build UID 1000/1001 için hedef passwd kaydı bulunmaması. `/path/expand` testinde `getpwuid_r()` kullanıcı bulamadıktan sonra test null sonucu korumasız kullandığı için SIGSEGV oluştu. Aynı dokuz path testi hedef `tester` UID 101 altında 9/9 geçti; `trust list --filter=ca-anchors` çalıştı. Log `/mnt/lfs/tmp/alp-logs/p11-kit-test-path-tester.log`.
 
 Plasma için M1 kernel grafik, DRM, input ve sound yapılandırması ayrıca kontrol edilmeden donanım desteği varsayılmaz.
