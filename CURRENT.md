@@ -9,22 +9,22 @@ Son güncelleme: 22 Eylül 2026
 - SHA-256: `07123bf1e653e8b735e6c68324fed20d2402f68ba39657d30a521738f37ade86`.
 - QEMU BIOS ve OVMF UEFI açılışları `alpbahos login:` istemine kadar geçti.
 - Hyper-V Gen2 açılışı, framebuffer konsolu ve `alpbahos login:` istemi kullanıcı görüntüsüyle doğrulandı.
-- M2/BOOT-01 Gen1 testi: ayrı `alpbahOS-M2-Gen1` Hyper-V Generation 1 VM'i 2 GiB sabit RAM ile çalıştırıldı; kullanıcı `alpbahos login:` istemini gördüğünü doğruladı (22 Eylül 2026). DHCP/ping/reboot bu Gen1 VM'inde henüz doğrulanmadı.
+- M2/BOOT-01 Gen1 testi: ayrı `alpbahOS-M2-Gen1` Hyper-V Generation 1 VM'i 2 GiB sabit RAM ile çalıştırıldı; kullanıcı `alpbahos login:` istemini ve `networkctl status` içindeki `eth0` DHCP adresini (`172.28.165.181/20`, gateway/DNS `172.28.160.1`) ekran görüntüsüyle doğruladı. Host ping şimdi 2/2 geçti (`TTL=64`, MAC `00-15-5D-00-02-06`). Kontrollü guest reboot sonrası ping doğrulaması hâlâ açık.
 - Hyper-V Default Switch üzerinden DHCP ve hosttan ping doğrulandı.
 - Kontrollü `Running -> Off -> Running` testi sonrası heartbeat, yeni DHCP adresi ve ping tekrar geçti.
 - FAT/ext4 bölümleri çevrimdışı `fsck` kontrolünden hatasız geçti.
 - `/etc/shadow`, root kurtarma hesabı, systemd ağ kullanıcıları ve DHCP profili tamamlandı.
 
-## Açık sınırlar
+## M1 kapanışındaki açık sınırlar (tarihsel kayıt)
 
 - Hyper-V Gen1 boot-to-login doğrulandı; Gen1 ağ/reboot kapsamı açık.
 - Secure Boot geliştirme VM'inde kapalı.
-- Grafik masaüstü, BLFS zinciri, canlı ISO ve kurucu henüz yok.
+- M1 kapanış anında grafik masaüstü, BLFS zinciri, canlı ISO ve kurucu henüz yoktu; sonraki BLFS ilerlemesi aşağıda sprint M2 altında kayıtlıdır.
 - Büyük VHDX/ISO/rootfs dosyaları Git'e eklenmez.
 
-## Sıradaki teknik iş
+## M1 kapanışında sıraya konan iş (tarihsel kayıt)
 
-BOOT-01 Gen1 kolunu ayrı test VM'inde doğrula; ardından BLFS-01 için sertifika, ağ, grafik ve ses bağımlılıklarına geç. Her çalışmaya başlamadan `AGENTS.md`, bu dosya, `docs/DECISIONS.md`, `docs/MASTER_PLAN.md` ve `docs/WORKLOG.md` okunur.
+Plan, BOOT-01 Gen1 kolunu ayrı test VM'inde doğrulayıp ardından BLFS-01 sertifika, ağ, grafik ve ses bağımlılıklarına geçmekti. Gerçek güncel durum aşağıdaki sprint M2 ve resmî M00–M12 tablolarında tutulur.
 
 ## Kullanıcı sprinti M2
 
@@ -33,18 +33,40 @@ BOOT-01 Gen1 kolunu ayrı test VM'inde doğrula; ardından BLFS-01 için sertifi
 - Sahip: Codex (LFS/BLFS, Gen1 doğrulaması, `alp` entegrasyonu ve Plasma); kullanıcı istemi M2 uygulamasına başladı.
 - Ortam: Windows host `C:\alpbahOS`, branch `main`; Builder Ubuntu `sa@172.28.174.11`; mevcut kaynak imaj M1 final VHDX.
 - Gen1 giriş istemi doğrulandı; VM `alpbahOS-M2-Gen1`, Generation 1, 2 GiB sabit RAM. Test kaynağı M1 VHDX'in ayrı `F:\alpbahOS-build\vms\alpbahOS-M2-Gen1\alpbahOS-M2-Gen1.vhdx` kopyasıdır.
-- `alp` (Claude prototipi, Python 3.13): LFS chroot'unda core yöntemi gerçek `/` altında test fixture'ını kurdu, DB'ye yazdı ve kaldırınca dosya/DB girdisi temizlendi. Recipe yöntemi htop checksum doğrulaması, configure ve make/install ile `/tmp/alp-root` test köküne kuruldu; **kritik hata bulundu:** htop ELF `/usr/bin/htop` modu `0644` oldu, çalıştırılamadı. Claude'un kod sahipliği nedeniyle motor dosyası burada değiştirilmedi. Ayrıntı ve log: `docs/WORKLOG.md`, Builder `/mnt/lfs/tmp/alp-root/var/log/alp/htop-3.3.0.build.log`.
-- BLFS ağ/TLS kesiti geçti: libtasn1, libunistring, libidn2, p11-kit (66/67 test; `test-path` SIGSEGV), make-ca, libpsl ve cURL LFS rootfs'ye kuruldu. CA bundle üretildi ve LFS chroot'unda gerçek `curl https://www.example.com/` doğrulandı. Ayrıntı `docs/M2_BLFS_MANIFEST.md` ve `docs/WORKLOG.md`.
+- `alp` htop recipe'i düzeltme commit'i `a82f872` ile test köküne yeniden kuruldu: ELF modu `0755`, `htop 3.3.0 --version` geçti; `alp remove` dosya ve DB kaydını temizledi. Ayrıntı/log ve checksum `docs/WORKLOG.md` içinde.
+- BLFS ağ/TLS kesiti geçti: libtasn1, libunistring, libidn2, make-ca, libpsl ve cURL LFS rootfs'ye kuruldu. `p11-kit` ilk test koşusundaki `test-path` SIGSEGV'in hedef rootfs'de bulunmayan build UID'sinden kaynaklandığı araştırıldı; mevcut `tester` kullanıcısıyla 9/9 path alt testi geçti. CA bundle üretildi, `trust list` çalıştı ve önceki LFS chroot TLS testi geçti. Ayrıntı `docs/M2_BLFS_MANIFEST.md` ve `docs/WORKLOG.md`.
 - D-Bus rootfs'de 1.16.2 mevcut. Linux-PAM 1.7.1 kaynağı MD5 doğrulandı ve Meson/Ninja build geçti; PAM install + systemd/shadow yeniden yapılandırması bağlı atomik adım olarak bekliyor.
 - PAM/systemd zinciri tamamlandı: Linux-PAM kuruldu; `pam_systemd.so`, systemd-logind ve systemd 257.8 yeniden kuruldu. Minimal `/etc/pam.d/system-*` yapılandırması mevcut.
-- Polkit zinciri tamamlandı: GLib 2.84.4, Duktape 2.7.0 ve Polkit 126 logind oturum takibiyle kuruldu; `polkitd` kullanıcısı, `pkcheck`/`pkaction` ve D-Bus servis dosyası doğrulandı. dbusmock/test suite henüz yok.
-- Ses kesiti tamamlandı: ALSA-lib 1.2.14 test/kurulum geçti; PipeWire 1.4.7 `session-managers=[]` ile test/kurulum geçti. `pipewire`, `pw-cli`, `pw-top` ve `libpipewire-0.3` doğrulandı.
+- Polkit zinciri kuruldu ve gerçek `pkexec` uçtan uca senaryosu geçti: geçici system D-Bus + polkitd, yalnız `tester` → `/usr/bin/id` için test kuralı; sonuç `uid=0(root)`, exit 0. Bu, test kuralıyla izin yolunu kanıtlar; etkileşimli auth agent/varsayılan kimlik doğrulama akışını kanıtlamaz.
+- Ses kesiti yalnız build/test seviyesinde: ALSA-lib 1.2.14 ve PipeWire 1.4.7 test/kurulum geçti. LFS chroot'unda `/dev/snd` yalnız `seq` ve `timer` içeriyor; PCM aygıtı, `pw-cat` ve WirePlumber yok. Gerçek ses çalma/kayıt testi yapılamadı; bu kapı açık.
 - Grafik tabanı kesiti tamamlandı: libxml2 2.14.5, libdrm 2.4.125 ve Wayland 1.24.0 test/kurulum geçti. Mesa Wayland softpipe tabanıyla kuruldu; Xwayland/Qt6/KWin/Plasma henüz yok.
-- Mesa 25.1.8 softpipe yolu kuruldu: Mako/PyYAML Python bağımlılıkları eklendi; `platforms=wayland`, `gallium-drivers=softpipe`, `vulkan-drivers=[]`, `glx=disabled`, `llvm=disabled` ile build/install geçti. Mesa EGL Wayland backend’i ve `swrast_dri.so`/`kms_swrast_dri.so` doğrulandı.
-- BLFS CMake 4.1.0 (MD5 `80ae27faba5068c8ec12c77bf00e6db3`) LFS chroot'unda derlenip kuruldu; `cmake --version` 4.1.0 döndürdü. Qt6 Wayland/Plasma altkümesi sürüyor.
-- Sonraki iş: Qt6/KWin/Plasma zinciri; PipeWire gerçek Hyper-V ses aygıtı ve Mesa renderer oturum testi henüz yapılmadı.
+- Mesa 25.1.8 softpipe yolu build/install edildi; son dosya sistemi incelemesinde `swrast_dri.so`/`kms_swrast_dri.so` bulunmadı. Buna rağmen gerçek surfaceless EGL/GLES smoke testi geçti: `GL_RENDERER=softpipe`, readback pikseli `64,128,191,255`. Gerçek Wayland/compositor oturumu hâlâ sınanmadı.
+- BLFS CMake 4.1.0 (MD5 `80ae27faba5068c8ec12c77bf00e6db3`) LFS chroot'unda derlenip kuruldu; `cmake --version` 4.1.0 döndürdü. Qt6 build'i başlamadı; temel doğrulama kapıları bekleniyor.
+- Qt6/KWin/Plasma beklemede: önce Gen1 guest DHCP/reboot kanıtı ve gerçek PipeWire PCM playback/capture gerekiyor. Hyper-V host komşu tablosundaki Gen1 adayı `.165.181` ping'e yanıt veriyor; guest SSH bağlantısı reddedildiğinden VM konsolunda reboot adımı gerekiyor.
 
 Bu bölüm günlük konuşmadaki sprint adını kullanır. `docs/MASTER_PLAN.md` içindeki tarihsel M02 paket prototipi numarasıyla karıştırılmamalıdır; o işin `alp` prototipi Claude tarafından ayrı repoda başlatılmıştır.
+
+## Resmî ana plan M00–M12 durumu — 22 Eylül 2026
+
+Bu tablo `docs/MASTER_PLAN.md` §10'daki M00–M12 aşamalarını izler; yukarıdaki kullanıcı sprint adlarıyla aynı numaralandırma değildir.
+
+| Ana plan aşaması | Durum | Kanıt / açık çıkış koşulu |
+|---|---|---|
+| M00 — Gereksinimler ve repo | Tamamlandı | Ana plan, kararlar, ajan talimatları ve private repo var. |
+| M01 — Linux build hostu | Tamamlandı | Ubuntu 24.04 Builder, SSH, LFS build kökü ve disk alanı doğrulandı. |
+| M02 — paket motoru prototipi | Kısmi | D31 ile pacman/Discover yolu bırakılıp `alp` seçildi. Güncel `alp` ile htop install/remove, checksum ve çalıştırma kanıtı var; update/GUI yolu ile paket motorunun tam kabul koşulları yok. |
+| M03 — multilib | Kullanıcı kararıyla uygulanmayacak | D32/P01 saf 64-bit kararı; kod veya build değişikliği yapılmadı. ELF32 ölçütü tamamlanmış gibi gösterilmez. |
+| M04 — nihai LFS tabanı | Kısmi (LFS 12.4 rootfs hazır) | M1 rootfs, linker ve FAT/ext4 kontrolleri mevcut; fakat `/mnt/lfs/var/lib/alp/db.json` paket listesi boş. Ana plan §10.1'de istenen temel sistem dosya sahipliği kayıtları kanıtlanmadı. |
+| M05 — kernel/boot/VM | Kısmi | Gen2 DHCP/ping ve kontrollü reboot geçti; Gen1 login, guest DHCP lease (`172.28.165.181/20`) ve host ping 2/2 geçti. Gen1 kontrollü guest reboot sonrası ağ doğrulaması kaldı. |
+| M06 — BLFS altyapısı | Kısmi | Ağ/TLS, PAM/logind, pkexec e2e ve Mesa softpipe EGL draw/readback geçti. Gerçek ses PCM playback/capture ve grafik oturumu yok; bu yüzden kapalı değil. |
+| M07 — Plasma ve temel uygulamalar | Başlamadı | Qt6/KWin/Plasma derlemesi/oturumu yok; M06 kapılarını bekliyor. |
+| M08 — ürün UX/terminal/tema | Başlamadı | Masaüstüne bağlı kullanıcı senaryoları tamamlanmadı. |
+| M09 — canlı imaj/ISO | Başlamadı | Live rootfs/ISO ve açılış kanıtı yok. |
+| M10 — alfa | Başlamadı | M09 yayın adayı/test matrisi yok. |
+| M11 — kurucu | Başlamadı | Calamares/offline/BIOS+UEFI kurulum testleri yok. |
+| M12 — beta | Başlamadı | Kurulabilir beta, donanım ve güncelleme/kurtarma kabulü yok. |
+
+Sprint adlarının resmî aşamaları atlayarak ilerlemiş gibi görünmesinin nedeni budur: M2 sprinti resmî M02'yi kapatmadı; esasen resmî M05'in Gen1 ek testini ve M06'nın bir bölümünü yürütüyor. Qt/Plasma resmî M07'dir ve şu anda başlamamalı.
 
 M2 hedefi, M1'de açılan metin tabanlı LFS sistemini ilk kullanılabilir grafik oturuma taşımaktır:
 
@@ -62,3 +84,14 @@ Tahmin: ilk Plasma giriş ekranı için 4-7 takvim günü; test edilmiş M2 VHDX
 - Windows'ta yalnız `artifacts/alpbahOS-m1-final-v2.vhdx` son M1 teslimi olarak tutulur.
 - Builder'da `alpbahOS-m1-clean.raw` düzenlenebilir temiz kaynak, `alpbahOS-m1-final-v2.vhdx` ise doğrulanmış teslim olarak tutulur.
 - Eski boot/debug/framebuffer denemeleri ve geçici loglar M1 kapanışında temizlenmiştir.
+
+## M2 temel kapıları — 22 Eylül 2026 denetimi
+
+- **Kararlar:** P01 saf 64-bit olarak güncellendi (D32); mevcut LFS 12.4 tabanıyla eşleşen BLFS 12.4'te kalma gerekçesi D33 olarak kaydedildi. Multilib için kod/build değişikliği yapılmadı.
+- **M05:** Gen1 guest `networkctl status` DHCP lease'i `172.28.165.181/20`, gateway/DNS `172.28.160.1` olarak gösterdi; host ping 2/2, TTL 64 ve MAC `00-15-5D-00-02-06` ile doğrulandı. Kontrollü guest reboot sonrası ping doğrulaması bekliyor; VM açık bırakıldı.
+- **p11-kit:** Orijinal 66/67 test koşusunda `test-path` SIGSEGV. LFS `/etc/passwd` içinde UID 1001/1000 yok; bu UID'lerle `/path/expand` çağrısı `getpwuid_r()` üzerinden olmayan kullanıcıyı arayıp testte null sonucu denetlemeden kullandığı için çöküyor. Aynı path testi target `tester` UID 101 ile tam 9/9 geçti. Trust store `trust list --filter=ca-anchors` çalıştı. Bu, build UID/target passwd eşleşmesi kaynaklı test ortamı sorunu; CA/trust store arızası kanıtı değil.
+- **Polkit:** geçici test system bus ve polkitd üzerinde, yalnız tester'ın `/usr/bin/id` çağrısını izinleyen geçici kural ile `pkexec --disable-internal-agent /usr/bin/id` `uid=0(root)` döndürdü ve exit 0 verdi. Geçici rule, `/etc/shells` ve bus socket temizlendi. Tam dbusmock suite ve auth-agent akışı çalıştırılmadı.
+- **Mesa:** `/mnt/lfs/tmp/alp-mesa-egl-smoke.c` ile derlenen EGL/GLES2 pbuffer testi softpipe renderer'da çizdi ve pikseli geri okudu. Log: `/mnt/lfs/tmp/alp-logs/mesa-egl-smoke.log`; test binary: `/mnt/lfs/tmp/alp-mesa-egl-smoke`. `swrast_dri.so` dosyaları mevcut kurulumda bulunmadı; bu test surfaceless EGL yolunu doğrular, Wayland compositor yolunu değil.
+- **Ses:** hedef chroot'un paylaşılan `/dev/snd` ağacında PCM device node yok; yalnız sequencer/timer var. PipeWire client/playback-capture testi gerçek aygıt yokluğundan çalıştırılmadı; WirePlumber ve `pw-cat` kurulu değil. Gerçek ses doğrulaması açık kaldı.
+- **`alp` htop:** `a82f872570c938dbd68d5b868070d72ffe437c27` içindeki güncel `alp.py` builder'a aktarıldı. Htop 3.3.0 checksum doğrulamasıyla geçici `--root` altına kuruldu; `/usr/bin/htop` modu `0755`, `htop 3.3.0` çıktısı doğrulandı; kaldırma sonrası binary ve DB paketi temizlendi. Log `/mnt/lfs/tmp/alp-a82f872-root/var/log/alp/htop-3.3.0.build.log`.
+- **Devam kapısı:** Gen1 guest reboot + guest içinden lease kanıtı ve gerçek ses aygıtı olmadan Qt6/KWin/Plasma build'ine geçilmeyecek.
