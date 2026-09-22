@@ -221,6 +221,26 @@ def _file_sha256_or_none(path: Path) -> str | None:
     return sha256_of(path) if path.is_file() else None
 
 
+def _copy_entry(src: Path, dst: Path) -> None:
+    """Copy a staged filesystem entry to its target, preserving symlinks as
+    symlinks instead of dereferencing them.
+
+    Found via real end-to-end testing on Ubuntu (GNU units 2.23): its
+    staged tree includes intentionally dangling symlinks (e.g.
+    currency.units -> /usr/com/units/currency.units, a convention for
+    admin-supplied data that legitimately may not exist at install time).
+    shutil.copyfile() opens the symlink's *target* for reading and raises
+    FileNotFoundError on a dangling link -- even though recreating the
+    symlink itself (not its target's content) is the only correct action.
+    """
+    if src.is_symlink():
+        if dst.exists() or dst.is_symlink():
+            dst.unlink()
+        os.symlink(os.readlink(src), dst)
+    else:
+        shutil.copyfile(src, dst)
+
+
 def _tool_available(binary: str, cwd: Path) -> bool:
     """Like shutil.which(), but path-relative binaries (./configure,
     ../foo/build.sh) are resolved against `cwd` -- the directory the build
@@ -263,7 +283,7 @@ def _merge_destdir(destdir: Path, root: Path, dry_run: bool) -> list[str]:
             if not dry_run:
                 target = root / rel
                 target.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copyfile(staged, target)
+                _copy_entry(staged, target)
     return sorted(installed)
 
 
@@ -330,23 +350,31 @@ def _config_aware_merge(
             installed.append(rel_str)
             target = target_root / rel
 
-            if rel_str in config_files:
+            if staged_file.is_symlink():
+                # Symlinks (e.g. GNU units' intentionally dangling data
+                # links, see _copy_entry's docstring) are preserved as-is
+                # and never subject to config-hash comparison -- that
+                # requires reading file content, which a dangling link
+                # doesn't have.
+                target.parent.mkdir(parents=True, exist_ok=True)
+                _copy_entry(staged_file, target)
+            elif rel_str in config_files:
                 current_hash = _file_sha256_or_none(target)
                 recorded_hash = old_config_hashes.get(rel_str)
                 if current_hash is None or current_hash == recorded_hash:
                     target.parent.mkdir(parents=True, exist_ok=True)
-                    shutil.copyfile(staged_file, target)
+                    _copy_entry(staged_file, target)
                     new_hashes[rel_str] = sha256_of(staged_file)
                 else:
                     new_path = target.with_name(target.name + ".alpnew")
                     new_path.parent.mkdir(parents=True, exist_ok=True)
-                    shutil.copyfile(staged_file, new_path)
+                    _copy_entry(staged_file, new_path)
                     alpnew.append(rel_str)
                     # recorded_hash intentionally left unchanged -- the
                     # user's on-disk file is still "modified" next upgrade.
             else:
                 target.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copyfile(staged_file, target)
+                _copy_entry(staged_file, target)
 
     return MergeResult(installed=sorted(installed), config_hashes=new_hashes, alpnew=sorted(alpnew))
 
