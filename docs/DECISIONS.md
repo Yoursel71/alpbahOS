@@ -46,7 +46,7 @@ Tarih: 21 Eylül 2026. Durum: Kullanıcı cevapları işlendi; uygulamaya hazır
 
 | ID | Teknik seçim | Gerekçe / doğrulanması gereken |
 |---|---|---|
-| P01 | Saf x86_64/64-bit; 32-bit kullanıcı alanı ve multilib desteklenmeyecek (D32). LFS/BLFS sürüm çifti için D33'e bak. | Kullanıcı 32-bit/multilib'i istemedi; uygulanacak taban mevcut LFS 12.4-systemd ve eşleşen BLFS 12.4-systemd. |
+| P01 | **Kapalı — kullanıcı kararı:** 32-bit desteği ve multilib yok; saf x86_64/64-bit devam. | Kullanıcı açıkça 32-bit/multilib istemedi. D32 ürün kararını, D33 LFS 12.4 + BLFS 12.4 sürüm eşleşmesinin gerekçesini kaydeder. M03 ELF32 ölçütü uygulanmayacak; bu karar kod veya build değişikliği gerektirmiyor. |
 | P02 | KDE Plasma / KWin, Wayland öncelikli | Eski GPU/Hyper-V için seçilen sürümün X11 uyumluluk yolu test edilecek. |
 | P03 | Konsole + Zsh + autosuggestions + syntax-highlighting | Öneri kabulü ayrı, çalıştırma ayrı. |
 | P04 | Varsayılan alpbah-solid, seçenek Glass ve deneysel Liquid | Üst panel/dock düzeni korunur; RAM bütçesi önce gelir. |
