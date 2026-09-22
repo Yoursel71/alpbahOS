@@ -78,3 +78,14 @@ Sürümler BLFS 12.4 kitabının paket ve bağımlılık tablolarından build ba
 - p11-kit test istisnası kapatıldı: ilk `common/test-path` çökmesi gerçek trust-store arızası değil, build UID 1000/1001 için hedef passwd kaydı bulunmaması. `/path/expand` testinde `getpwuid_r()` kullanıcı bulamadıktan sonra test null sonucu korumasız kullandığı için SIGSEGV oluştu. Aynı dokuz path testi hedef `tester` UID 101 altında 9/9 geçti; `trust list --filter=ca-anchors` çalıştı. Log `/mnt/lfs/tmp/alp-logs/p11-kit-test-path-tester.log`.
 
 Plasma için M1 kernel grafik, DRM, input ve sound yapılandırması ayrıca kontrol edilmeden donanım desteği varsayılmaz.
+
+## M2 Qt 6.9.2 küçük modül altkümesi
+
+| Modül | Kaynak | Resmî kaynak MD5 / SHA-256 | Durum |
+|---|---|---|---|
+| qtbase | `https://download.qt.io/official_releases/qt/6.9/6.9.2/submodules/qtbase-everywhere-src-6.9.2.tar.xz` | SHA-256 `44be9c9ecfe04129c4dea0a7e1b36ad476c9cc07c292016ac98e7b41514f2440` | Configure/build/install geçti; offscreen Qt GUI smoke geçti. `/opt/qt6` |
+| qtshadertools | aynı dizindeki `qtshadertools-everywhere-src-6.9.2.tar.xz` | MD5 `f84754703e08f2ab3a44be48abf8f4bb` | Resmî `md5sums.txt` ile doğrulandı; 84 hedef build/install geçti |
+| qtdeclarative | aynı dizindeki `qtdeclarative-everywhere-src-6.9.2.tar.xz` | MD5 `95cb51f5b8eb90feac825e31de555a4f` | Resmî `md5sums.txt` ile doğrulandı; configure geçti, build sürüyor |
+| qtwayland | aynı dizindeki `qtwayland-everywhere-src-6.9.2.tar.xz` | MD5 `4e609abb0639482f109a23df84edd734` | Resmî `md5sums.txt` ile doğrulandı; sırada |
+
+Tam Qt BLFS meta build'i 47 GiB geçici alan gerektirdiğinden, Plasma için gereken modüller ayrı ayrı configure/build/install ediliyor. Şimdiki QtBase yapılandırmasında EGLFS/LinuxFB vardır; XCB/Xorg ve QtWayland henüz yoktur.
