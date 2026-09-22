@@ -1,6 +1,17 @@
 # Atatürk tema varlık planı — UI-03
 
-Durum: **taslak / kaynak kaydı**. Hiçbir görsel indirilmedi veya repoya eklenmedi — bu bilinçli bir sınır: dosya indirme, bu oturumun güvenlik kurallarına göre kullanıcının açık onayını gerektiren bir eylemdir. Bu belge, kaynak adaylarını ve teknik planı kayda geçirir; nihai görsel seçimi ve indirme onayı kullanıcıdan beklenir.
+Durum (22 Eylül 2026): **kaynak seçildi, indirildi, kullanıcı onayıyla repoya eklendi.**
+
+- Dosya: [`source/Ataturk1930s.jpg`](source/Ataturk1930s.jpg)
+- Kaynak: [Wikimedia Commons — Ataturk1930s.jpg](https://commons.wikimedia.org/wiki/File:Ataturk1930s.jpg) (orijinal kaynağı mustafakemalim.com, 29 Mart 1932 tarihli)
+- Lisans: **PD-Turkey** — Türk telif yasasına göre koruma süresi dolmuş, kamu malı. Ayrıntı için Commons sayfasındaki lisans etiketine bakın.
+- Çözünürlük: 732×987 px
+- SHA-256: `f1dad1a903de0d8930b44020fc77e4aea647ddd3cb21d110d447f1fe63694bbf`
+- İndirme onayı: kullanıcı tarafından sohbette açıkça verildi ("evet indir").
+
+**Bilinçli olarak seçilmeyen alternatif:** ATAM'ın daha yüksek çözünürlüklü (806×1024/845×1024) portreleri araştırıldı ama "Tüm Hakları Saklıdır" ibaresiyle **telif korumalı** olduğu görüldü — kamu malı değil, kullanılmadı. AI ile görsel üretimi de değerlendirilip **reddedildi**: gerçek bir tarihi/kurucu figürün uydurma tasviri olur, Türkiye'de 5816 sayılı Atatürk'ü Koruma Kanunu'na göre hassas bir alan.
+
+**Hâlâ açık:** Bu düşük-orta çözünürlüklü fotoğraf 1080p/4K duvar kâğıdı için doğrudan yetersiz (büyütmek bulanıklaşmaya yol açar). §2.1'deki "stilize/vektör işleme" önerisi hâlâ geçerli bir sonraki adım; bu turda yalnızca kaynak fotoğraf temin edildi, üretim (kırpım/vektörleştirme) yapılmadı.
 
 Kapsam: yalnızca `branding/`. Kaynak: [docs/MASTER_PLAN.md](../../docs/MASTER_PLAN.md) §7.1, [docs/DECISIONS.md](../../docs/DECISIONS.md) D09, [docs/alpbahOS-design-mockups.md](../../docs/alpbahOS-design-mockups.md) §2.
 
