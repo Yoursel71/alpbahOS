@@ -66,6 +66,12 @@
 - Wayland 1.24.0: MD5 `fda0b2a73ea2716f61d75767e02008e1`; Meson/Ninja `ninja test` ve install geçti. İlk deneme libxml2 pkg-config eksikliğinde durdu; libxml2 kurulduktan sonra temiz tekrar başarıyla tamamlandı. Log `/mnt/lfs/tmp/alp-logs/wayland-build.log`.
 - Açık: Mesa/GL renderer, Xwayland, Qt6, KWin ve Plasma henüz kurulmadı; bu kesit yalnız DRM/Wayland kütüphane tabanını doğrular.
 
+## M2 Mesa kapısı — 22 Eylül 2026
+
+- Rootfs kontrolü: `/dev/dri/card1` mevcut; kernel `CONFIG_DRM=y`, libdrm `2.4.125` pkg-config mevcut.
+- Mesa 25.1.8 BLFS 12.4 gereksinimleri kontrol edildi: Xorg Libraries, Mako 1.3.10 ve PyYAML 6.0.2. LFS rootfs’de `x11` pkg-config, Python Mako ve PyYAML eksik.
+- Mesa build başlatılmadı; eksik bağımlılıklarla sahte başarı üretmemek için grafik zinciri bu kapıda duruyor. Sonraki paket sırası Xorg proto/lib stack + Mako/PyYAML, ardından llvmpipe Mesa.
+
 ## M01 güncellemesi — LFS temel sistem ve boot imajı
 
 - Ubuntu 24.04.5 builder VM üzerinde LFS **12.4-systemd** x86_64 temel sistem derlendi. Kaynak disk imajı 20 GiB GPT düzeniyle BIOS boot, EFI ve ext4 root bölümlerini içerir.
