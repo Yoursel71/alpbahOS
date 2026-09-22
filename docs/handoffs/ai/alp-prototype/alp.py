@@ -825,34 +825,89 @@ def cmd_list(db: dict, as_json: bool = False) -> int:
     return 0
 
 
+def _resolve_install_order(index: dict, target: str, already_installed: set[str]) -> list[str]:
+    """Seviye 2: resolve `target`'s `depends` chain -- but ONLY within
+    this local catalog (index.json's own entries). This is deliberately
+    not real dependency resolution (see design/config-protection.md and
+    the proposal's own gap list, and 008-alp-preflight-deps.md's Seviye
+    1/2/3 breakdown): no version constraints, no conflict resolution, no
+    reaching outside this index for an external universe of packages --
+    just "if X's index entry lists other alp catalog packages under
+    `depends`, install those first." System-level requirements
+    (libraries/tools not in this catalog) remain requires_commands /
+    requires_libraries (Seviye 1), checked separately inside
+    install_recipe/upgrade_recipe.
+
+    Returns an install order (dependencies before their dependents,
+    target last), skipping anything in `already_installed`. Raises
+    AlpError on an unknown package name anywhere in the chain, or a
+    dependency cycle (reports the exact cycle path).
+    """
+    order: list[str] = []
+    visiting: list[str] = []
+    visited: set[str] = set()
+
+    def visit(name: str) -> None:
+        if name in already_installed or name in visited:
+            return
+        if name in visiting:
+            cycle = " -> ".join(visiting[visiting.index(name):] + [name])
+            raise AlpError(f"Bağımlılık döngüsü tespit edildi: {cycle}")
+        entry = index["entries"].get(name)
+        if entry is None:
+            chain = " -> ".join(visiting + [name])
+            raise AlpError(f"Bilinmeyen bağımlılık: {name!r} ({chain} zincirinde)")
+        visiting.append(name)
+        for dep in entry.get("depends", []):
+            visit(dep)
+        visiting.pop()
+        visited.add(name)
+        order.append(name)
+
+    visit(target)
+    return order
+
+
+def _install_one(paths: Paths, name: str, entry: dict, index_dir: Path, dry_run: bool) -> dict:
+    method = entry["method"]
+    if method == "recipe":
+        return install_recipe(paths, entry, index_dir, dry_run)
+    if method == "flatpak":
+        return install_flatpak(entry, dry_run)
+    if method == "core":
+        return install_core(paths, entry, index_dir, dry_run)
+    raise AlpError(f"Tanımsız kurulum yöntemi: {method!r}")
+
+
 def cmd_install(args: argparse.Namespace, paths: Paths, index: dict, index_dir: Path) -> int:
-    entry = index["entries"].get(args.name)
-    if entry is None:
+    if args.name not in index["entries"]:
         raise AlpError(f"Bilinmeyen paket: {args.name!r}. Önce 'alp search {args.name}' ile denetleyin.")
 
     paths.ensure()
     with DbLock(paths.lock_file):
         db = load_db(paths)
-        if args.name in db["packages"] and not args.reinstall:
+        already_installed = set(db["packages"])
+        if args.reinstall:
+            already_installed.discard(args.name)
+
+        order = _resolve_install_order(index, args.name, already_installed)
+
+        if not order:
             print(f"{args.name} zaten kurulu (sürüm {db['packages'][args.name]['version']}).")
             return 0
 
-        method = entry["method"]
-        if method == "recipe":
-            record = install_recipe(paths, entry, index_dir, args.dry_run)
-        elif method == "flatpak":
-            record = install_flatpak(entry, args.dry_run)
-        elif method == "core":
-            record = install_core(paths, entry, index_dir, args.dry_run)
-        else:
-            raise AlpError(f"Tanımsız kurulum yöntemi: {method!r}")
+        if len(order) > 1:
+            print("Bağımlılık zinciri: " + " -> ".join(order))
 
-        if not args.dry_run:
-            db["packages"][args.name] = record
-            save_db(paths, db)
+        tag = "[dry-run] " if args.dry_run else ""
+        for name in order:
+            entry = index["entries"][name]
+            record = _install_one(paths, name, entry, index_dir, args.dry_run)
+            if not args.dry_run:
+                db["packages"][name] = record
+                save_db(paths, db)
+            print(f"{tag}{name} ({entry['method']}) -> {record.get('version')} kuruldu.")
 
-    tag = "[dry-run] " if args.dry_run else ""
-    print(f"{tag}{args.name} ({method}) -> {record.get('version')} kuruldu.")
     return 0
 
 
