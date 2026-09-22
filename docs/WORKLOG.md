@@ -79,6 +79,13 @@
 - 962 ninja adımı ve install başarıyla tamamlandı. `libEGL.so.1` Wayland client bağımlılığı ve protokol başlıkları doğrulandı; rootfs geçici DNS kaydı kaldırıldı.
 - Bu adım Qt6/KWin için EGL Wayland tabanını hazırlar. Qt6, KWin/Plasma ve gerçek Gen1 oturum testi hâlâ açık.
 - Qt 6.9.2 qtbase kaynağı rootfs `/sources/qt/` altında indirildi; SHA-256 `44be9c9ecfe04129c4dea0a7e1b36ad476c9cc07c292016ac98e7b41514f2440`. Qt derlemesi için BLFS bağımlılık zinciri sonraki adım.
+
+## M2 Qt/Plasma altyapısı — 22 Eylül 2026
+
+- Amaç: BLFS 12.4’e göre Wayland oturumu için Qt6 altkümesini, ardından KWin/Plasma’yı gerçek LFS rootfs’de kurmak. Qt’nin tam meta arşivi yerine gerekli Qt modülleri seçilecek; mevcut rootfs boş alanı 43 GiB, tam Qt talebi yaklaşık 47 GiB.
+- Sahip: Codex. Rootfs tek yazıcı kilidi bu oturumda tutuluyor; mevcut M1 VHDX değiştirilmiyor.
+- Qt 6.9.2 qtbase arşivi `/mnt/lfs/sources/qt/qtbase-everywhere-src-6.9.2.tar.xz`, SHA-256 `44be9c9ecfe04129c4dea0a7e1b36ad476c9cc07c292016ac98e7b41514f2440`.
+- Sonraki tek eylem: BLFS 12.4 CMake 4.1.0’ı LFS içine derle/kur; ardından gerekli Qt font, unicode, regex ve keyboard bağımlılıklarını manifestle.
 - Sonraki paket sırası: Qt6 temel kitaplıkları, KWin/Plasma; Xwayland ve giriş/oturum servisleri ayrıca doğrulanacak.
 
 ## M01 güncellemesi — LFS temel sistem ve boot imajı
