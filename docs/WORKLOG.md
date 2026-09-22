@@ -78,6 +78,7 @@
 - Mesa 25.1.8 softpipe build’i `platforms=wayland` ile yeniden yapılandırıldı; Wayland Protocols 1.41 fallback kaynağı kullanıldı.
 - 962 ninja adımı ve install başarıyla tamamlandı. `libEGL.so.1` Wayland client bağımlılığı ve protokol başlıkları doğrulandı; rootfs geçici DNS kaydı kaldırıldı.
 - Bu adım Qt6/KWin için EGL Wayland tabanını hazırlar. Qt6, KWin/Plasma ve gerçek Gen1 oturum testi hâlâ açık.
+- Qt 6.9.2 qtbase kaynağı rootfs `/sources/qt/` altında indirildi; SHA-256 `44be9c9ecfe04129c4dea0a7e1b36ad476c9cc07c292016ac98e7b41514f2440`. Qt derlemesi için BLFS bağımlılık zinciri sonraki adım.
 - Sonraki paket sırası: Qt6 temel kitaplıkları, KWin/Plasma; Xwayland ve giriş/oturum servisleri ayrıca doğrulanacak.
 
 ## M01 güncellemesi — LFS temel sistem ve boot imajı
