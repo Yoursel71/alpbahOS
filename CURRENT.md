@@ -36,7 +36,8 @@ BOOT-01 Gen1 kolunu ayrı test VM'inde doğrula; ardından BLFS-01 için sertifi
 - `alp` (Claude prototipi, Python 3.13): LFS chroot'unda core yöntemi gerçek `/` altında test fixture'ını kurdu, DB'ye yazdı ve kaldırınca dosya/DB girdisi temizlendi. Recipe yöntemi htop checksum doğrulaması, configure ve make/install ile `/tmp/alp-root` test köküne kuruldu; **kritik hata bulundu:** htop ELF `/usr/bin/htop` modu `0644` oldu, çalıştırılamadı. Claude'un kod sahipliği nedeniyle motor dosyası burada değiştirilmedi. Ayrıntı ve log: `docs/WORKLOG.md`, Builder `/mnt/lfs/tmp/alp-root/var/log/alp/htop-3.3.0.build.log`.
 - BLFS ağ/TLS kesiti geçti: libtasn1, libunistring, libidn2, p11-kit (66/67 test; `test-path` SIGSEGV), make-ca, libpsl ve cURL LFS rootfs'ye kuruldu. CA bundle üretildi ve LFS chroot'unda gerçek `curl https://www.example.com/` doğrulandı. Ayrıntı `docs/M2_BLFS_MANIFEST.md` ve `docs/WORKLOG.md`.
 - D-Bus rootfs'de 1.16.2 mevcut. Linux-PAM 1.7.1 kaynağı MD5 doğrulandı ve Meson/Ninja build geçti; PAM install + systemd/shadow yeniden yapılandırması bağlı atomik adım olarak bekliyor.
-- Sonraki iş: alp dosya modu bulgusunu Claude'a düzeltme için devret; PAM+systemd/logind zincirini tamamla, sonra polkit, DRM/Mesa/Wayland, PipeWire ve Qt6/Plasma.
+- PAM/systemd zinciri tamamlandı: Linux-PAM kuruldu; `pam_systemd.so`, systemd-logind ve systemd 257.8 yeniden kuruldu. Minimal `/etc/pam.d/system-*` yapılandırması mevcut.
+- Sonraki iş: alp dosya modu bulgusunu Claude'a düzeltme için devret; polkit, DRM/Mesa/Wayland, PipeWire ve Qt6/Plasma.
 
 Bu bölüm günlük konuşmadaki sprint adını kullanır. `docs/MASTER_PLAN.md` içindeki tarihsel M02 paket prototipi numarasıyla karıştırılmamalıdır; o işin `alp` prototipi Claude tarafından ayrı repoda başlatılmıştır.
 

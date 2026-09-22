@@ -37,6 +37,13 @@
 - PAM install kasıtlı olarak ertelendi: BLFS, yeni PAM ile `/etc/pam.d` yapılandırması ve Systemd-257.8/Shadow yeniden kurulumunu birlikte istiyor. Yarım kurulumun login/root erişimini bozma riski nedeniyle bu adım tek bağlı işlem olarak yapılacak.
 - Sonraki tek eylem: PAM install + minimal `/etc/pam.d` + systemd PAM rebuild ve boot/login doğrulaması; ardından polkit/logind.
 
+## M2 PAM/logind kesiti — 22 Eylül 2026
+
+- Linux-PAM-1.7.1 Meson/Ninja build logu `/mnt/lfs/tmp/alp-logs/linux-pam-build.log`; install logu `/mnt/lfs/tmp/alp-logs/linux-pam-install.log`. Paket rootfs'ye kuruldu ve `/usr/sbin/unix_chkpwd` setuid 4755 yapıldı.
+- `/etc/pam.d` ilk kez oluşturuldu; BLFS minimal dosyaları `system-account`, `system-auth`, `system-session`, `system-password` ve restrictive `other` ile yazıldı. Eski PAM dosyası olmadığı için yedeklenecek mevcut `pam.d` yoktu.
+- Systemd-257.8 kaynak ağacından `-D pam=true -D man=false -D tests=false` ile 1431 ninja adımı derlendi; build logu `/mnt/lfs/tmp/alp-logs/systemd-pam-build.log`, install logu `/mnt/lfs/tmp/alp-logs/systemd-pam-install.log`. Kurulum sonrası `/usr/lib/security/pam_systemd.so`, `/usr/lib/systemd/systemd-logind` ve `systemd 257.8` doğrulandı.
+- Bu kesitte boot VM'de yeniden login testi henüz yapılmadı; mevcut rootfs'yi M1 VHDX'e yeniden paketleme ve Gen1/Gen2 reboot doğrulaması sonraki adımdır.
+
 ## M01 güncellemesi — LFS temel sistem ve boot imajı
 
 - Ubuntu 24.04.5 builder VM üzerinde LFS **12.4-systemd** x86_64 temel sistem derlendi. Kaynak disk imajı 20 GiB GPT düzeniyle BIOS boot, EFI ve ext4 root bölümlerini içerir.
