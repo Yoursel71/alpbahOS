@@ -824,3 +824,129 @@ def test_install_recipe_fails_preflight_before_any_network_call(paths: alp.Paths
         with pytest.raises(alp.AlpError, match="Eksik sistem gereksinimleri"):
             alp.install_recipe(paths, {"recipe": "needs-ed.recipe.json"}, tmp_path, dry_run=False)
     fetch_mock.assert_not_called()
+
+
+# --------------------------------------------------------------------------
+# _resolve_install_order / cmd_install -- Seviye 2: dependency chains
+# WITHIN this local catalog only (index.json's own `depends` field). Not
+# real resolution: no version constraints, no reaching outside the index.
+# --------------------------------------------------------------------------
+
+def _core_entry(tmp_path: Path, name: str, content: bytes = b"x", depends: list[str] | None = None) -> dict:
+    archive = _make_tar(tmp_path, f"{name}.tar.gz", {f"usr/share/{name}/data": content})
+    entry = {"method": "core", "name": name, "version": "1.0.0", "url": f"{name}.tar.gz", "sha256": alp.sha256_of(archive)}
+    if depends:
+        entry["depends"] = depends
+    return entry
+
+
+def test_resolve_install_order_linear_chain(tmp_path: Path):
+    index = {"entries": {
+        "a": _core_entry(tmp_path, "a", depends=["b"]),
+        "b": _core_entry(tmp_path, "b"),
+    }}
+    assert alp._resolve_install_order(index, "a", already_installed=set()) == ["b", "a"]
+
+
+def test_resolve_install_order_diamond_fanout(tmp_path: Path):
+    index = {"entries": {
+        "a": _core_entry(tmp_path, "a", depends=["b", "c"]),
+        "b": _core_entry(tmp_path, "b"),
+        "c": _core_entry(tmp_path, "c"),
+    }}
+    order = alp._resolve_install_order(index, "a", already_installed=set())
+    assert order[-1] == "a"
+    assert set(order[:-1]) == {"b", "c"}
+
+
+def test_resolve_install_order_skips_already_installed(tmp_path: Path):
+    index = {"entries": {
+        "a": _core_entry(tmp_path, "a", depends=["b"]),
+        "b": _core_entry(tmp_path, "b"),
+    }}
+    assert alp._resolve_install_order(index, "a", already_installed={"b"}) == ["a"]
+
+
+def test_resolve_install_order_target_already_installed_is_empty(tmp_path: Path):
+    index = {"entries": {"a": _core_entry(tmp_path, "a")}}
+    assert alp._resolve_install_order(index, "a", already_installed={"a"}) == []
+
+
+def test_resolve_install_order_detects_cycle(tmp_path: Path):
+    index = {"entries": {
+        "a": _core_entry(tmp_path, "a", depends=["b"]),
+        "b": _core_entry(tmp_path, "b", depends=["a"]),
+    }}
+    with pytest.raises(alp.AlpError, match="Bağımlılık döngüsü"):
+        alp._resolve_install_order(index, "a", already_installed=set())
+
+
+def test_resolve_install_order_unknown_dependency_raises(tmp_path: Path):
+    index = {"entries": {"a": _core_entry(tmp_path, "a", depends=["ghost"])}}
+    with pytest.raises(alp.AlpError, match="Bilinmeyen bağımlılık"):
+        alp._resolve_install_order(index, "a", already_installed=set())
+
+
+def test_cmd_install_installs_dependency_chain_end_to_end(paths: alp.Paths, tmp_path: Path):
+    import argparse
+    index = {"entries": {
+        "app": _core_entry(tmp_path, "app", b"app-data", depends=["libfoo"]),
+        "libfoo": _core_entry(tmp_path, "libfoo", b"lib-data"),
+    }}
+    args = argparse.Namespace(name="app", dry_run=False, reinstall=False)
+
+    assert alp.cmd_install(args, paths, index, tmp_path) == 0
+
+    db = alp.load_db(paths)
+    assert set(db["packages"]) == {"app", "libfoo"}
+    assert (paths.root / "usr/share/app/data").read_bytes() == b"app-data"
+    assert (paths.root / "usr/share/libfoo/data").read_bytes() == b"lib-data"
+
+
+def test_cmd_install_does_not_reinstall_satisfied_dependency(paths: alp.Paths, tmp_path: Path):
+    import argparse
+    index = {"entries": {
+        "app": _core_entry(tmp_path, "app", depends=["libfoo"]),
+        "libfoo": _core_entry(tmp_path, "libfoo"),
+    }}
+    alp.cmd_install(argparse.Namespace(name="libfoo", dry_run=False, reinstall=False), paths, index, tmp_path)
+    db_before = alp.load_db(paths)
+    libfoo_installed_at = db_before["packages"]["libfoo"]["installed_at"]
+
+    alp.cmd_install(argparse.Namespace(name="app", dry_run=False, reinstall=False), paths, index, tmp_path)
+
+    db_after = alp.load_db(paths)
+    assert db_after["packages"]["libfoo"]["installed_at"] == libfoo_installed_at  # untouched, not reinstalled
+    assert "app" in db_after["packages"]
+
+
+def test_cmd_install_reinstall_only_affects_target_not_deps(paths: alp.Paths, tmp_path: Path):
+    import argparse
+    index = {"entries": {
+        "app": _core_entry(tmp_path, "app", depends=["libfoo"]),
+        "libfoo": _core_entry(tmp_path, "libfoo"),
+    }}
+    alp.cmd_install(argparse.Namespace(name="app", dry_run=False, reinstall=False), paths, index, tmp_path)
+    db_before = alp.load_db(paths)
+    libfoo_installed_at = db_before["packages"]["libfoo"]["installed_at"]
+
+    alp.cmd_install(argparse.Namespace(name="app", dry_run=False, reinstall=True), paths, index, tmp_path)
+
+    db_after = alp.load_db(paths)
+    assert db_after["packages"]["libfoo"]["installed_at"] == libfoo_installed_at  # dependency untouched
+
+
+def test_cmd_install_dry_run_chain_touches_nothing(paths: alp.Paths, tmp_path: Path, capsys):
+    import argparse
+    index = {"entries": {
+        "app": _core_entry(tmp_path, "app", depends=["libfoo"]),
+        "libfoo": _core_entry(tmp_path, "libfoo"),
+    }}
+    args = argparse.Namespace(name="app", dry_run=True, reinstall=False)
+
+    assert alp.cmd_install(args, paths, index, tmp_path) == 0
+
+    out = capsys.readouterr().out
+    assert "Bağımlılık zinciri: libfoo -> app" in out
+    assert alp.load_db(paths)["packages"] == {}  # dry-run: db never written
+    assert list(paths.cache_dir.iterdir()) == []  # nothing fetched/staged
