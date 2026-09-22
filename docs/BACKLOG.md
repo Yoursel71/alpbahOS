@@ -15,12 +15,12 @@ Plan sürümü 1.0. Roller: Codex altyapı/entegrasyon; Claude Code masaüstü/U
 | BUILD-02 | Codex | BUILD-01 | Geçici toolchain | Kitap sırası ve ELF/linker testleri | Tamamlandı (geçici araçlar ve final toolchain) |
 | BUILD-03 | Codex | BUILD-02, PKG-01 | Chroot/temel LFS | Paket dosya sahipliği ve kritik testler | LFS 12.4-systemd rootfs hazır; M1 doğrulamaları mevcut, ancak `/mnt/lfs/var/lib/alp/db.json` boş olduğundan ana plan §10.1 paket sahipliği çıkışı tamamlanmamış |
 | BOOT-01 | Codex | BUILD-03 | Gen2 ve Gen1 boot | Hedef kernel ile giriş/ağ/reboot | M1 Gen2 tam geçti; M2 Gen1 login + DHCP (`172.28.165.181/20`) doğrulandı, kontrollü reboot + relogin sonrası aynı MAC yeni `172.28.171.186` IP'sinde ping 3/3 geçti |
-| BLFS-01 | Codex | BOOT-01 | Ağ/ses/grafik/oturum bağımlılıkları | TLS/ses/renderer testleri | Ağ/TLS, PAM/logind, pkexec e2e, Mesa softpipe EGL readback, ALSA loopback, PipeWire null-sink graph ve QtBase/QML offscreen smoke geçti. Fiziksel/ALSA-routed audio ve gerçek masaüstü oturumu yok. BLFS-01 kısmi; QtWayland bekliyor |
+| BLFS-01 | Codex | BOOT-01 | Ağ/ses/grafik/oturum bağımlılıkları | TLS/ses/renderer testleri | Ağ/TLS, PAM/logind, pkexec e2e, Mesa softpipe EGL readback, ALSA loopback, PipeWire null-sink graph, QtBase/QML smoke ve QtWayland client/compositor build geçti. Fiziksel audio ve gerçek Wayland oturumu yok. BLFS-01 kısmi; DRM/KWin oturumu bekliyor |
 | UI-01 | Claude | Belgeler | Tema token'ları ve mevcut mockup eşlemesi | Türkçe, Solid varsayılan, profil farkları | Sırada |
 | UI-02 | Claude | UI-01 | Kısayol tanımları ve kullanıcı yardımı | Çakışma listesi; Alt+Tab/Win+D dahil | Başlamadı |
 | SHELL-01 | Claude | Belgeler | Zsh/Konsole profil taslağı | Öneri kabul/çalıştır ayrımı, düzeltme, Türkçe | Sırada |
 | UI-03 | Claude | UI-01 | Atatürk tema varlık planı ve kaynak kaydı | Görsel kaynağı, kırpım/kontrast, logo korunması | Başlamadı |
-| DESKTOP-01 | Codex | BLFS-01, UI/SHELL girdileri | LFS içinde Plasma oturumu | Temiz kullanıcı, düşük kaynak ölçümü | Başlamadı — QtWayland ve KDE Frameworks/Plasma henüz yok |
+| DESKTOP-01 | Codex | BLFS-01, UI/SHELL girdileri | LFS içinde Plasma oturumu | Temiz kullanıcı, düşük kaynak ölçümü | Başlamadı — QtWayland kurulu; KDE Frameworks, KWin ve Plasma henüz yok |
 | APPS-01 | Codex + Claude inceleme | DESKTOP-01 | Hazır temel uygulama profili | Dosya ilişkileri ve günlük senaryolar | Başlamadı |
 | COMPAT-01 | Codex | Multilib + grafik | Wine/Steam/Proton doğrulaması | 32/64-bit grafik; bir test oyunu | M03 multilib kısmı D32 ile kapsam dışı; bu uyumluluk hedefi yeniden karara bağlanmadan başlanmayacak |
 | OFFICE-01 | Claude plan / Codex test | Wine + lisanslı medya | Office sürüm bazlı rapor | Kur/aç/kaydet/yazdır; bilinen sorunlar | Başlamadı |
