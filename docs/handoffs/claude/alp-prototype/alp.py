@@ -221,6 +221,22 @@ def _file_sha256_or_none(path: Path) -> str | None:
     return sha256_of(path) if path.is_file() else None
 
 
+def _tool_available(binary: str, cwd: Path) -> bool:
+    """Like shutil.which(), but path-relative binaries (./configure,
+    ../foo/build.sh) are resolved against `cwd` -- the directory the build
+    step actually runs in (subprocess.run(..., cwd=cwd)) -- not the
+    interpreter's own working directory, which is what shutil.which()
+    checks and is usually a different place (wherever alp.py itself was
+    invoked from). Found via real end-to-end testing on Ubuntu: a real,
+    executable ./configure was reported "not found" because it happened to
+    not exist relative to alp.py's own cwd, even though it existed and was
+    executable at the real build location."""
+    if os.path.isabs(binary) or binary.startswith(("./", "../")) or os.sep in binary:
+        candidate = Path(binary) if os.path.isabs(binary) else (cwd / binary)
+        return candidate.is_file() and os.access(candidate, os.X_OK)
+    return shutil.which(binary) is not None
+
+
 def _merge_destdir(destdir: Path, root: Path, dry_run: bool) -> list[str]:
     """Copy a staged DESTDIR install into root, recording every file AND
     directory installed.
@@ -395,7 +411,7 @@ def install_recipe(paths: Paths, entry: dict, index_dir: Path, dry_run: bool) ->
     ]
     for step in real_steps:
         binary = step[0]
-        if shutil.which(binary) is None:
+        if not _tool_available(binary, src_dir):
             raise AlpError(
                 f"Gerekli araç bulunamadı: {binary!r}. Bu adım gerçek bir Linux "
                 "build ortamı (configure/make toolchain) gerektirir."
@@ -467,7 +483,7 @@ def upgrade_recipe(paths: Paths, entry: dict, index_dir: Path, old_record: dict,
     ]
     for step in steps:
         binary = step[0]
-        if shutil.which(binary) is None:
+        if not _tool_available(binary, src_dir):
             raise AlpError(
                 f"Gerekli araç bulunamadı: {binary!r}. Bu adım gerçek bir Linux "
                 "build ortamı (configure/make toolchain) gerektirir."

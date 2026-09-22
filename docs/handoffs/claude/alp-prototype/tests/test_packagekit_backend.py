@@ -6,6 +6,18 @@ PackageKit dependency; that's the whole point of separating them from
 AlpPackageKitBackend (which cannot be imported/tested here -- no
 `packagekit` module on this Windows host, see alp_packagekit_backend.py's
 module docstring).
+
+Known flakiness (Windows-only, environment/OS resource issue, not a code
+bug): when the full test suite runs many subprocess-spawning tests back
+to back on this Windows host, some runs hit `OSError: [WinError 6]`
+(invalid handle) inside CPython's own subprocess module during handle
+duplication. Every test in this file passes reliably when this file runs
+alone (`pytest tests/test_packagekit_backend.py`), and the module under
+test has no threads, no lingering handles, and no state that persists
+between calls -- the flakiness is Windows' process/handle table under
+rapid repeated subprocess creation in one pytest process, not alp.py or
+alp_packagekit_backend.py. Re-run the file alone or re-run the suite if
+you hit this.
 """
 
 from __future__ import annotations
