@@ -13,10 +13,14 @@ Durum: Başlangıç manifesti; yalnız `[verified-lfs-12.4]` olarak işaretlenen
 
 | Sıra | Paket | BLFS sürümü | Kaynak | Durum |
 |---:|---|---|---|---|
-| 1 | make-ca | 1.16.1 | `https://github.com/lfs-book/make-ca/archive/v1.16.1/make-ca-1.16.1.tar.gz` | Kurulmadı; CA verisi/build adımları ayrıca kontrol edilecek |
-| 2 | libpsl | 0.21.5 | BLFS 12.4 `postlfs/libpsl.html` | cURL için güvenlik açısından önerilen bağımlılık; henüz sabit checksum alınmadı |
-| 3 | cURL | 8.15.0 | `https://curl.se/download/curl-8.15.0.tar.xz` | Kitapta LFS 12.4 uyumlu; OpenSSL backend, `/etc/ssl/certs` CA yolu |
-| 4 | TLS doğrulama | — | `curl https://www.example.com/` | Henüz çalıştırılmadı |
+| 1 | libtasn1 | 4.20.0 | `https://ftp.gnu.org/gnu/libtasn1/libtasn1-4.20.0.tar.gz` | MD5 eşleşti; `make check` ve install geçti |
+| 2 | libunistring | 1.3 | `https://ftp.gnu.org/gnu/libunistring/libunistring-1.3.tar.xz` | MD5 eşleşti; tam `make check` ve install geçti |
+| 3 | libidn2 | 2.3.8 | `https://ftp.gnu.org/gnu/libidn/libidn2-2.3.8.tar.gz` | MD5 eşleşti; `make check` ve install geçti |
+| 4 | p11-kit | 0.25.5 | `https://github.com/p11-glue/p11-kit/releases/download/0.25.5/p11-kit-0.25.5.tar.xz` | MD5 eşleşti; 66/67 test geçti, `test-path` SIGSEGV istisnası; install geçti |
+| 5 | make-ca | 1.16.1 | `https://github.com/lfs-book/make-ca/archive/v1.16.1/make-ca-1.16.1.tar.gz` | MD5 eşleşti; install + `/usr/sbin/make-ca -g` CA bundle üretimi geçti |
+| 6 | libpsl | 0.21.5 | `https://github.com/rockdaboot/libpsl/releases/download/0.21.5/libpsl-0.21.5.tar.gz` | MD5 eşleşti; Meson/Ninja test ve install geçti |
+| 7 | cURL | 8.15.0 | `https://github.com/curl/curl/releases/download/curl-8_15_0/curl-8.15.0.tar.xz` | BLFS kaynağıyla aynı MD5; OpenSSL backend, `/etc/ssl/certs` CA yolu; build/install geçti |
+| 8 | TLS doğrulama | — | `curl --fail https://www.example.com/` | LFS chroot'unda geçti; log `curl-tls-test.log` |
 
 ## `alp` entegrasyon kanıtı
 

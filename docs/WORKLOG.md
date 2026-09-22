@@ -19,6 +19,17 @@
 - Gen1: Ayrı `alpbahOS-M2-Gen1` Generation 1 VM, `F:\alpbahOS-build\vms\alpbahOS-M2-Gen1\alpbahOS-M2-Gen1.vhdx` kopyasıyla oluşturuldu. İlk 4 GiB başlangıç RAM'i hostta OOM verdi; VM 2 GiB sabit RAM'e alındı. Kullanıcı VM'i başlattı ve `alpbahos login:` istemini gördüğünü doğruladı. Gen1 DHCP/ping/reboot test edilmedi.
 - Sonraki eylem: BLFS 12.4 bağımlılık zincirini checksum'lı manifest ve ayrı loglar ile inşa et; önce libtasn1/p11-kit/make-ca CA store, sonra libpsl/curl ve LFS DNS/TLS testi, ardından polkit/logind, DRM/Mesa/Wayland, PipeWire, Qt6/KDE Plasma. `alp` file-mode bulgusunu Claude sahibiyle düzeltip LFS'te yeniden test et.
 
+## M2 BLFS ağ/TLS kesiti — 22 Eylül 2026
+
+- Kaynaklar Builder hostunda indirildi ve BLFS kitabı MD5 değerleriyle eşleştirildi: libtasn1 `930f71d788cf37505a0327c1b84741be`, libunistring `57dfd9e4eba93913a564aa14eab8052e`, libidn2 `a8e113e040d57a523684e141970eea7a`, p11-kit `e9c5675508fcd8be54aa4c8cb8e794fc`, make-ca `bf9cea2d24fc5344d4951b49f275c595`, libpsl `870a798ee9860b6e77896548428dba7b`, cURL `b8872bb6cc5d18d03bea8ff5090b2b81`.
+- LFS `/mnt/lfs` chroot build yöntemi: `lfs` UID 1001 ile `chroot --userspec` altında configure/make/test, root ile install; her paketin logu `/mnt/lfs/tmp/alp-logs/` altında.
+- libtasn1 4.20.0: `make check` geçti, install geçti. libunistring 1.3: tam test suite geçti, install geçti. libidn2 2.3.8: `make check` geçti, install geçti.
+- p11-kit 0.25.5: Meson/Ninja build tamamlandı, 67 testten 66'sı geçti; `common/test-path` SIGSEGV ile başarısız oldu. Hata `/mnt/lfs/tmp/alp-logs/p11-kit-build.log` içinde korundu; kritik test hatası gizlenmedi. Kitap kurulum adımı yine uygulandı ve `trust`/p11-kit araçları kuruldu.
+- make-ca 1.16.1: kitap MD5'i eşleşti; install ve `/usr/sbin/make-ca -g` geçti. `/etc/ssl/certs/ca-bundle.crt` üretildi. Chroot DNS için geçici `nameserver 172.28.160.1` kullanıldı, test sonunda `/mnt/lfs/etc/resolv.conf` kaldırıldı.
+- libpsl 0.21.5: Meson/Ninja build, test ve install geçti; `pkg-config --modversion libpsl` 0.21.5 döndü.
+- cURL 8.15.0: OpenSSL 3.5.2 backend ve `/etc/ssl/certs` yolu ile build/install geçti. `curl 8.15.0`; `curl --fail --silent --show-error --max-time 20 https://www.example.com/` LFS chroot'unda geçti, çıktı SHA-256 ve log `/mnt/lfs/tmp/alp-logs/curl-tls-test.log` içinde.
+- Netice: BLFS M2 ağ/TLS önkoşulları kısmen kuruldu ve HTTPS kanıtlandı. p11-kit `test-path` SIGSEGV açık hata; polkit/logind, grafik, ses ve Plasma henüz başlamadı.
+
 ## M01 güncellemesi — LFS temel sistem ve boot imajı
 
 - Ubuntu 24.04.5 builder VM üzerinde LFS **12.4-systemd** x86_64 temel sistem derlendi. Kaynak disk imajı 20 GiB GPT düzeniyle BIOS boot, EFI ve ext4 root bölümlerini içerir.
