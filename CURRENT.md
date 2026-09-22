@@ -9,6 +9,7 @@ Son güncelleme: 22 Eylül 2026
 - SHA-256: `07123bf1e653e8b735e6c68324fed20d2402f68ba39657d30a521738f37ade86`.
 - QEMU BIOS ve OVMF UEFI açılışları `alpbahos login:` istemine kadar geçti.
 - Hyper-V Gen2 açılışı, framebuffer konsolu ve `alpbahos login:` istemi kullanıcı görüntüsüyle doğrulandı.
+- M2/BOOT-01 Gen1 testi: ayrı `alpbahOS-M2-Gen1` Hyper-V Generation 1 VM'i 2 GiB sabit RAM ile çalıştırıldı; kullanıcı `alpbahos login:` istemini gördüğünü doğruladı (22 Eylül 2026). DHCP/ping/reboot bu Gen1 VM'inde henüz doğrulanmadı.
 - Hyper-V Default Switch üzerinden DHCP ve hosttan ping doğrulandı.
 - Kontrollü `Running -> Off -> Running` testi sonrası heartbeat, yeni DHCP adresi ve ping tekrar geçti.
 - FAT/ext4 bölümleri çevrimdışı `fsck` kontrolünden hatasız geçti.
@@ -16,7 +17,7 @@ Son güncelleme: 22 Eylül 2026
 
 ## Açık sınırlar
 
-- Hyper-V Gen1 testi BOOT-01 altında açık.
+- Hyper-V Gen1 boot-to-login doğrulandı; Gen1 ağ/reboot kapsamı açık.
 - Secure Boot geliştirme VM'inde kapalı.
 - Grafik masaüstü, BLFS zinciri, canlı ISO ve kurucu henüz yok.
 - Büyük VHDX/ISO/rootfs dosyaları Git'e eklenmez.
@@ -26,6 +27,13 @@ Son güncelleme: 22 Eylül 2026
 BOOT-01 Gen1 kolunu ayrı test VM'inde doğrula; ardından BLFS-01 için sertifika, ağ, grafik ve ses bağımlılıklarına geç. Her çalışmaya başlamadan `AGENTS.md`, bu dosya, `docs/DECISIONS.md`, `docs/MASTER_PLAN.md` ve `docs/WORKLOG.md` okunur.
 
 ## Kullanıcı sprinti M2
+
+### Başladı — 22 Eylül 2026
+
+- Sahip: Codex (LFS/BLFS, Gen1 doğrulaması, `alp` entegrasyonu ve Plasma); kullanıcı istemi M2 uygulamasına başladı.
+- Ortam: Windows host `C:\alpbahOS`, branch `main`; Builder Ubuntu `sa@172.28.174.11`; mevcut kaynak imaj M1 final VHDX.
+- Gen1 giriş istemi doğrulandı; VM `alpbahOS-M2-Gen1`, Generation 1, 2 GiB sabit RAM. Test kaynağı M1 VHDX'in ayrı `F:\alpbahOS-build\vms\alpbahOS-M2-Gen1\alpbahOS-M2-Gen1.vhdx` kopyasıdır.
+- Sonraki iş: Builder root erişimini alıp LFS 12.4 ile eşleşen BLFS 12.4 altyapısını kur; ardından gerçek root üzerinde `alp`, grafik/ses/ağ ve hafif Plasma testlerine geç.
 
 Bu bölüm günlük konuşmadaki sprint adını kullanır. `docs/MASTER_PLAN.md` içindeki tarihsel M02 paket prototipi numarasıyla karıştırılmamalıdır; o işin `alp` prototipi Claude tarafından ayrı repoda başlatılmıştır.
 

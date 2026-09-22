@@ -2,6 +2,17 @@
 
 ## Durum: 22 Eylül 2026
 
+## M2 başlangıç — 22 Eylül 2026
+
+- Görev: M2 — Hyper-V Gen1 doğrulaması, BLFS ağ/TLS/grafik/ses katmanı, gerçek LFS üzerinde `alp` testi ve ilk hafif KDE Plasma oturumu.
+- Sahip: Codex. Dosya sınırı: Codex build/manifest/script/Linux rootfs ve entegrasyon; Claude'a atanmış tema/UX dosyalarına bu oturumda dokunulmayacak.
+- Bağımlılık: M1 final `artifacts/alpbahOS-m1-final-v2.vhdx` ve Ubuntu Builder `sa@172.28.174.11`.
+- Başlangıç kontrolü: çalışma ağacı temiz, `main` `origin/main` ile eşit; SSH ve `/mnt/lfs` mevcut; Builder kök dosya sistemi 98 GiB, 45 GiB boş. `artifacts` altında M1 VHDX mevcut.
+- Gen1: Ayrı `alpbahOS-M2-Gen1` Generation 1 VM, `F:\alpbahOS-build\vms\alpbahOS-M2-Gen1\alpbahOS-M2-Gen1.vhdx` kopyasıyla oluşturuldu. İlk 4 GiB başlangıç RAM'i hostta OOM verdi; VM 2 GiB sabit RAM'e alındı. Kullanıcı VM'i başlattı ve `alpbahos login:` istemini gördüğünü doğruladı. Gen1 DHCP/ping/reboot test edilmedi.
+- Builder erişim kapısı: `sa` SSH çalışıyor ancak `sudo -n` parola istiyor. Root işlemi gerektiren BLFS/rootfs kurulumları yönetici SSH bilgisi gelene kadar bekliyor; kaynak imaj korunuyor.
+- Doğrulamalar: M1/Gen2 önceki kanıtı `docs/M1_BOOT_VERIFICATION.md`; M2 testleri henüz çalıştırılmadı.
+- Sonraki eylem: Builder için root erişimi aç; sonra LFS 12.4 ile eşleşen BLFS 12.4 manifest/tariflerini kullanarak ağ/TLS, polkit/logind, grafik ve ses bağımlılıklarını sırayla kur.
+
 ## M01 güncellemesi — LFS temel sistem ve boot imajı
 
 - Ubuntu 24.04.5 builder VM üzerinde LFS **12.4-systemd** x86_64 temel sistem derlendi. Kaynak disk imajı 20 GiB GPT düzeniyle BIOS boot, EFI ve ext4 root bölümlerini içerir.
