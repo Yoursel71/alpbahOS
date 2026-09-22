@@ -86,6 +86,8 @@
 - Sahip: Codex. Rootfs tek yazıcı kilidi bu oturumda tutuluyor; mevcut M1 VHDX değiştirilmiyor.
 - Qt 6.9.2 qtbase arşivi `/mnt/lfs/sources/qt/qtbase-everywhere-src-6.9.2.tar.xz`, SHA-256 `44be9c9ecfe04129c4dea0a7e1b36ad476c9cc07c292016ac98e7b41514f2440`.
 - Sonraki tek eylem: BLFS 12.4 CMake 4.1.0’ı LFS içine derle/kur; ardından gerekli Qt font, unicode, regex ve keyboard bağımlılıklarını manifestle.
+- CMake 4.1.0 kaynağı MD5 `80ae27faba5068c8ec12c77bf00e6db3` eşleşti. LFS içinde `--system-libs`/bundled eksik opsiyonel kütüphanelerle bootstrap ve `make -j2` geçti; `make install` tamamlandı. LFS chroot'unda `cmake --version` 4.1.0 doğrulandı. Log: `/mnt/lfs/tmp/alp-logs/cmake-bootstrap.log`. BLFS ctest paketi çalıştırılmadı.
+- Geçici rootfs DNS yapılandırması kaldırıldı.
 - Sonraki paket sırası: Qt6 temel kitaplıkları, KWin/Plasma; Xwayland ve giriş/oturum servisleri ayrıca doğrulanacak.
 
 ## M01 güncellemesi — LFS temel sistem ve boot imajı

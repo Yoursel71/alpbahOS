@@ -41,6 +41,8 @@ Sürümler BLFS 12.4 kitabının paket ve bağımlılık tablolarından build ba
 
 ## 22 Eylül oturum kanıtı
 
+- CMake `4.1.0`: BLFS 12.4 kaynağı `https://cmake.org/files/v4.1/cmake-4.1.0.tar.gz`, MD5 `80ae27faba5068c8ec12c77bf00e6db3`; LFS chroot'unda build/install geçti, `cmake --version` doğrulandı. Log: `/mnt/lfs/tmp/alp-logs/cmake-bootstrap.log`.
+
 - D-Bus: M1 rootfs'de `dbus-daemon 1.16.2` zaten mevcut.
 - Linux-PAM: `1.7.1`, MD5 `92812d7dd414d816fba8d649e84e68ca`; LFS chroot'unda Meson/Ninja build geçti. Install + PAM yapılandırması ve systemd/shadow yeniden kurulumu aynı bağlı adım olarak bekliyor.
 - Linux-PAM install tamamlandı; minimal `system-account`, `system-auth`, `system-session`, `system-password` ve restrictive `other` dosyaları oluşturuldu. Systemd 257.8 `-D pam=true` ile yeniden derlenip kuruldu; `/usr/lib/security/pam_systemd.so` ve `systemd-logind` doğrulandı.
