@@ -43,6 +43,7 @@ Sürümler BLFS 12.4 kitabının paket ve bağımlılık tablolarından build ba
 
 - D-Bus: M1 rootfs'de `dbus-daemon 1.16.2` zaten mevcut.
 - Linux-PAM: `1.7.1`, MD5 `92812d7dd414d816fba8d649e84e68ca`; LFS chroot'unda Meson/Ninja build geçti. Install + PAM yapılandırması ve systemd/shadow yeniden kurulumu aynı bağlı adım olarak bekliyor.
+- Linux-PAM install tamamlandı; minimal `system-account`, `system-auth`, `system-session`, `system-password` ve restrictive `other` dosyaları oluşturuldu. Systemd 257.8 `-D pam=true` ile yeniden derlenip kuruldu; `/usr/lib/security/pam_systemd.so` ve `systemd-logind` doğrulandı.
 - p11-kit test istisnası: 66/67 geçti; `common/test-path` SIGSEGV. Kurulum kanıtı logda tutuluyor.
 
 Plasma için M1 kernel grafik, DRM, input ve sound yapılandırması ayrıca kontrol edilmeden donanım desteği varsayılmaz.
