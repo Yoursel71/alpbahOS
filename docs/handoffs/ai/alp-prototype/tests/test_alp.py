@@ -641,3 +641,47 @@ def test_cmd_upgrade_end_to_end_updates_db(paths: alp.Paths, tmp_path: Path):
     db = alp.load_db(paths)
     assert db["packages"]["theme"]["version"] == "2.0.0"
     assert (paths.root / "usr/share/x").read_bytes() == b"new"
+
+
+# --------------------------------------------------------------------------
+# _tool_available -- regression test for the real-Linux bug found via SSH
+# testing on the alpbah-builder VM: shutil.which("./configure") resolves
+# relative to the *interpreter's* cwd (wherever alp.py was invoked from),
+# not the build directory (cwd=src_dir) the step actually runs in. A real,
+# executable ./configure was reported "not found" purely because of this
+# mismatch -- confirmed and fixed against genuine htop 3.3.0 source on
+# Ubuntu 24.04 (configure got as far as its real ncursesw dependency check,
+# proving the fetch/checksum/extract/invoke pipeline is correct end to end).
+# --------------------------------------------------------------------------
+
+def test_tool_available_resolves_relative_path_against_given_cwd(tmp_path: Path):
+    """Regression test. Does NOT use os.chdir() -- mutating the live
+    process cwd inside a test corrupted Windows subprocess handle state for
+    later tests in the same pytest run (observed: WinError 6 in unrelated
+    subprocess-based tests further down the suite). Instead this asserts
+    the essential behavior directly: _tool_available resolves a
+    path-relative binary against the `cwd` argument it's given, not
+    against whatever directory happens to be the interpreter's cwd --
+    which is exactly the mismatch that made a real, executable
+    ./configure read as "not found" (see module docstring above)."""
+    real_dir = tmp_path / "real_build_dir"
+    real_dir.mkdir()
+    configure = real_dir / "configure"
+    configure.write_text("#!/bin/sh\necho fake configure\n", encoding="utf-8")
+    configure.chmod(0o755)
+
+    wrong_dir = tmp_path / "somewhere_else_entirely"
+    wrong_dir.mkdir()
+
+    assert alp._tool_available("./configure", real_dir) is True
+    assert alp._tool_available("./configure", wrong_dir) is False
+
+
+def test_tool_available_missing_relative_tool_returns_false(tmp_path: Path):
+    assert alp._tool_available("./does-not-exist", tmp_path) is False
+
+
+def test_tool_available_plain_command_still_searches_path(tmp_path: Path):
+    # Unaffected code path: a bare command name (no "/") still goes through
+    # the normal PATH search, same as before -- unrelated to the passed cwd.
+    assert alp._tool_available("a-command-that-almost-certainly-does-not-exist-xyz", tmp_path) is False

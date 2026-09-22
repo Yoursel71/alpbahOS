@@ -54,14 +54,22 @@ Checksum reddi testi artık gerçek (dry-run olmayan) bir `install htop` çağr�
 - **`--json`** bayrağı eklendi (`search`/`list` için; `info` zaten JSON basıyordu) — bir PackageKit backend'inin veya başka bir aracın metin ayrıştırmadan güvenilir okuyabilmesi için. Tasarım: [design/packagekit-integration.md](design/packagekit-integration.md).
 - **`alp_packagekit_backend.py`** eklendi — `alp_*` sarmalayıcı fonksiyonları (gerçek `alp.py`'yi subprocess ile çağırıp JSON ayrıştırır) **gerçekten test edildi**; `AlpPackageKitBackend` sınıfının kendisi gerçek `packagekit` modülü olmadığı için **hiç import/test edilemedi** — modülün kendi docstring'inde bu ayrım açıkça yazılı.
 
-## Otomatik test seti (21 Eylül 2026, güncellendi)
+## Otomatik test seti (22 Eylül 2026, güncellendi)
 
-`tests/test_alp.py` + `tests/test_packagekit_backend.py` — pytest, gerçek ağa hiç çıkmaz. **48 test**, bu ortamda çalıştırıldı, hepsi geçti:
+`tests/test_alp.py` + `tests/test_packagekit_backend.py` — pytest, gerçek ağa hiç çıkmaz. **51 test**, bu ortamda çalıştırıldı, hepsi geçti:
 
 ```bash
 cd docs/handoffs/claude/alp-prototype
 python3 -m pytest tests/ -v
 ```
+
+## Gerçek Linux'ta ilk uçtan uca test (22 Eylül 2026)
+
+`alp` ilk kez **gerçek bir Linux ortamında** (Codex'in `alpbah-builder` Ubuntu 24.04.5 VM'i, SSH ile, `sa@172.28.174.11`) test edildi — bkz. [006-alp-real-linux-test.md](../006-alp-real-linux-test.md) tam ayrıntı için. Özet:
+
+- **Gerçek bug bulundu ve düzeltildi:** `recipe` yönteminde `./configure` gerçekte var ve çalıştırılabilir olduğu hâlde "bulunamadı" hatası veriyordu. Sebep: `shutil.which("./configure")` yolu, adım `cwd=src_dir` ile çalıştırılsa bile, `alp.py`'nin kendi çalıştığı dizine göre arıyordu. `_tool_available()` yeni yardımcı fonksiyonu bunu doğru dizine (`src_dir`) göre çözüyor. Bu hata **yalnızca gerçek bir Linux'ta configure gerçekten mevcutken** ortaya çıkabilirdi — Windows'ta zaten `make` yoktu, hata her iki nedenden de aynı görünüyordu.
+- Düzeltmeden sonra `htop` tarifi gerçekten `./configure`'ı çalıştırdı, gerçek bir bağımlılık hatasıyla (`libncursesw` eksik) durdu — bu, prototipin kendi dürüst eksiklik listesindeki "bağımlılık çözümü yok" ile tam tutarlı, `alp`'in hatası değil.
+- `core` yöntemiyle **tam bir yaşam döngüsü** (kurulum → değiştirilmemiş config'in sessizce yükseltilmesi → değiştirilmiş config'in `.alpnew` üretmesi, kullanıcı dosyasına dokunmadan → `remove`'un değiştirilmiş config'i `.alpsave` olarak koruması) gerçek Linux'ta uçtan uca doğrulandı, tasarıma birebir uydu.
 
 Testlerin gerçekten anlamlı olduğu (yalnızca "her zaman geçen" testler olmadığı) şöyle doğrulandı: bu testler, düzeltmeden ÖNCEKİ `alp.py` sürümüne (`51f93b9`) karşı çalıştırıldı ve **tam olarak 3 düzeltmeye karşılık gelen 7 test başarısız oldu** (dry-run'ın gerçekten fetch çağırmadığını doğrulayan 3 test, `_merge_destdir`'in dizinleri kaydettiğini doğrulayan 2 test, indirme timeout'unu doğrulayan 2 test); diğer 22 test zaten geçiyordu. Bu, testlerin gerçek regresyon koruması sağladığının kanıtıdır — kozmetik/anlamsız testler değil.
 
