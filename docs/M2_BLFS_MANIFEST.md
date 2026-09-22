@@ -39,4 +39,10 @@ Sürümler BLFS 12.4 kitabının paket ve bağımlılık tablolarından build ba
 3. PipeWire/WirePlumber ve ALSA userspace.
 4. Qt6 ve Plasma/KWin; önce düşük paket kümesi, sonra temiz kullanıcıyla oturum ölçümü.
 
+## 22 Eylül oturum kanıtı
+
+- D-Bus: M1 rootfs'de `dbus-daemon 1.16.2` zaten mevcut.
+- Linux-PAM: `1.7.1`, MD5 `92812d7dd414d816fba8d649e84e68ca`; LFS chroot'unda Meson/Ninja build geçti. Install + PAM yapılandırması ve systemd/shadow yeniden kurulumu aynı bağlı adım olarak bekliyor.
+- p11-kit test istisnası: 66/67 geçti; `common/test-path` SIGSEGV. Kurulum kanıtı logda tutuluyor.
+
 Plasma için M1 kernel grafik, DRM, input ve sound yapılandırması ayrıca kontrol edilmeden donanım desteği varsayılmaz.

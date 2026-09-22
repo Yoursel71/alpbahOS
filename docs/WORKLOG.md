@@ -30,6 +30,13 @@
 - cURL 8.15.0: OpenSSL 3.5.2 backend ve `/etc/ssl/certs` yolu ile build/install geçti. `curl 8.15.0`; `curl --fail --silent --show-error --max-time 20 https://www.example.com/` LFS chroot'unda geçti, çıktı SHA-256 ve log `/mnt/lfs/tmp/alp-logs/curl-tls-test.log` içinde.
 - Netice: BLFS M2 ağ/TLS önkoşulları kısmen kuruldu ve HTTPS kanıtlandı. p11-kit `test-path` SIGSEGV açık hata; polkit/logind, grafik, ses ve Plasma henüz başlamadı.
 
+## M2 oturum/PAM başlangıcı — 22 Eylül 2026
+
+- Rootfs durum kontrolü: `dbus-daemon 1.16.2` ve `loginctl` mevcut; polkit kütüphane/ajanı yok; systemd binary'si chroot `/usr/bin` içinde görünür değil (M1 boot rootfs systemd PID1 olarak ayrı boot bağlamında çalışıyor).
+- Linux-PAM-1.7.1 kaynağı indirildi; BLFS MD5 `92812d7dd414d816fba8d649e84e68ca` eşleşti. Meson/Ninja build LFS chroot'unda geçti; log `/mnt/lfs/tmp/alp-logs/linux-pam-build.log`.
+- PAM install kasıtlı olarak ertelendi: BLFS, yeni PAM ile `/etc/pam.d` yapılandırması ve Systemd-257.8/Shadow yeniden kurulumunu birlikte istiyor. Yarım kurulumun login/root erişimini bozma riski nedeniyle bu adım tek bağlı işlem olarak yapılacak.
+- Sonraki tek eylem: PAM install + minimal `/etc/pam.d` + systemd PAM rebuild ve boot/login doğrulaması; ardından polkit/logind.
+
 ## M01 güncellemesi — LFS temel sistem ve boot imajı
 
 - Ubuntu 24.04.5 builder VM üzerinde LFS **12.4-systemd** x86_64 temel sistem derlendi. Kaynak disk imajı 20 GiB GPT düzeniyle BIOS boot, EFI ve ext4 root bölümlerini içerir.
