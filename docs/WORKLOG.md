@@ -52,6 +52,13 @@
 - Doğrulama: `/usr/lib/polkit-1/polkitd`, `/usr/bin/pkcheck`, `/usr/bin/pkaction`, `/usr/share/dbus-1/system-services/org.freedesktop.PolicyKit1.service`, `uid=27(polkitd)` ve GLib `2.84.4` bulundu. Chroot geçici DNS dosyası işlem sonunda kaldırıldı.
 - Açık: Polkit `ninja test` çalıştırılmadı; dbusmock/D-Bus çalışan servis ve grafik authentication agent sonraki Plasma ortamında test edilecek.
 
+## M2 ses kesiti — 22 Eylül 2026
+
+- ALSA-lib 1.2.14: MD5 `d0efd7930da31f0034baddc0b993fa03`. BLFS'nin GCC uyumluluk notuna göre `playmidi1` test kaydı çıkarılıp autoreconf çalıştırıldı; `make check` ve install geçti. Log `/mnt/lfs/tmp/alp-logs/alsa-lib-build.log`.
+- PipeWire 1.4.7: MD5 `e151f5f67b2f09d0b37e0b9493111ca0`. Meson `-D session-managers=[]`, `ninja`, `ninja test` ve install geçti. Log `/mnt/lfs/tmp/alp-logs/pipewire-build.log`.
+- Doğrulama: LFS chroot'unda `/usr/bin/pipewire`, `pw-cli`, `pw-top`; `pkg-config` ALSA `1.2.14`, libpipewire `1.4.7`; `pipewire --version` başarıyla döndü.
+- Açık: PipeWire/WirePlumber session manager ve Hyper-V gerçek ses aygıtı testleri henüz yapılmadı.
+
 ## M01 güncellemesi — LFS temel sistem ve boot imajı
 
 - Ubuntu 24.04.5 builder VM üzerinde LFS **12.4-systemd** x86_64 temel sistem derlendi. Kaynak disk imajı 20 GiB GPT düzeniyle BIOS boot, EFI ve ext4 root bölümlerini içerir.

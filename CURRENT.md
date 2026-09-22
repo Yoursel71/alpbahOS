@@ -38,7 +38,8 @@ BOOT-01 Gen1 kolunu ayrı test VM'inde doğrula; ardından BLFS-01 için sertifi
 - D-Bus rootfs'de 1.16.2 mevcut. Linux-PAM 1.7.1 kaynağı MD5 doğrulandı ve Meson/Ninja build geçti; PAM install + systemd/shadow yeniden yapılandırması bağlı atomik adım olarak bekliyor.
 - PAM/systemd zinciri tamamlandı: Linux-PAM kuruldu; `pam_systemd.so`, systemd-logind ve systemd 257.8 yeniden kuruldu. Minimal `/etc/pam.d/system-*` yapılandırması mevcut.
 - Polkit zinciri tamamlandı: GLib 2.84.4, Duktape 2.7.0 ve Polkit 126 logind oturum takibiyle kuruldu; `polkitd` kullanıcısı, `pkcheck`/`pkaction` ve D-Bus servis dosyası doğrulandı. dbusmock/test suite henüz yok.
-- Sonraki iş: alp dosya modu bulgusunu Claude'a devret; DRM/Mesa/Wayland, PipeWire ve Qt6/Plasma.
+- Ses kesiti tamamlandı: ALSA-lib 1.2.14 test/kurulum geçti; PipeWire 1.4.7 `session-managers=[]` ile test/kurulum geçti. `pipewire`, `pw-cli`, `pw-top` ve `libpipewire-0.3` doğrulandı.
+- Sonraki iş: alp dosya modu bulgusunu Claude'a devret; DRM/Mesa/Wayland ve Qt6/Plasma. PipeWire gerçek Hyper-V ses aygıtı testi henüz yapılmadı.
 
 Bu bölüm günlük konuşmadaki sprint adını kullanır. `docs/MASTER_PLAN.md` içindeki tarihsel M02 paket prototipi numarasıyla karıştırılmamalıdır; o işin `alp` prototipi Claude tarafından ayrı repoda başlatılmıştır.
 
