@@ -9,7 +9,7 @@ Son güncelleme: 22 Eylül 2026
 - SHA-256: `07123bf1e653e8b735e6c68324fed20d2402f68ba39657d30a521738f37ade86`.
 - QEMU BIOS ve OVMF UEFI açılışları `alpbahos login:` istemine kadar geçti.
 - Hyper-V Gen2 açılışı, framebuffer konsolu ve `alpbahos login:` istemi kullanıcı görüntüsüyle doğrulandı.
-- M2/BOOT-01 Gen1 testi: ayrı `alpbahOS-M2-Gen1` Hyper-V Generation 1 VM'i 2 GiB sabit RAM ile çalıştırıldı; kullanıcı `alpbahos login:` istemini ve `networkctl status` içindeki `eth0` DHCP adresini (`172.28.165.181/20`, gateway/DNS `172.28.160.1`) ekran görüntüsüyle doğruladı. Host ping şimdi 2/2 geçti (`TTL=64`, MAC `00-15-5D-00-02-06`). Kontrollü guest reboot sonrası ping doğrulaması hâlâ açık.
+- M2/BOOT-01 Gen1 testi: ayrı `alpbahOS-M2-Gen1` Hyper-V Generation 1 VM'i 2 GiB sabit RAM ile çalıştırıldı; kullanıcı `alpbahos login:` istemini ve reboot öncesi `networkctl status` içindeki `eth0` DHCP adresini (`172.28.165.181/20`, gateway/DNS `172.28.160.1`) ekran görüntüsüyle doğruladı. Kontrollü reboot + yeniden login sonrası hostta aynı VM NIC MAC (`00-15-5D-00-02-06`) yeni `172.28.171.186` adresinde göründü; ping 3/3, TTL 64 geçti. BOOT-01 Gen1 ağı/reboot'u doğrulandı.
 - Hyper-V Default Switch üzerinden DHCP ve hosttan ping doğrulandı.
 - Kontrollü `Running -> Off -> Running` testi sonrası heartbeat, yeni DHCP adresi ve ping tekrar geçti.
 - FAT/ext4 bölümleri çevrimdışı `fsck` kontrolünden hatasız geçti.
@@ -42,7 +42,7 @@ Plan, BOOT-01 Gen1 kolunu ayrı test VM'inde doğrulayıp ardından BLFS-01 sert
 - Grafik tabanı kesiti tamamlandı: libxml2 2.14.5, libdrm 2.4.125 ve Wayland 1.24.0 test/kurulum geçti. Mesa Wayland softpipe tabanıyla kuruldu; Xwayland/Qt6/KWin/Plasma henüz yok.
 - Mesa 25.1.8 softpipe yolu build/install edildi; son dosya sistemi incelemesinde `swrast_dri.so`/`kms_swrast_dri.so` bulunmadı. Buna rağmen gerçek surfaceless EGL/GLES smoke testi geçti: `GL_RENDERER=softpipe`, readback pikseli `64,128,191,255`. Gerçek Wayland/compositor oturumu hâlâ sınanmadı.
 - BLFS CMake 4.1.0 (MD5 `80ae27faba5068c8ec12c77bf00e6db3`) LFS chroot'unda derlenip kuruldu; `cmake --version` 4.1.0 döndürdü. Qt6 build'i başlamadı; temel doğrulama kapıları bekleniyor.
-- Qt6/KWin/Plasma beklemede: önce Gen1 guest DHCP/reboot kanıtı ve gerçek PipeWire PCM playback/capture gerekiyor. Hyper-V host komşu tablosundaki Gen1 adayı `.165.181` ping'e yanıt veriyor; guest SSH bağlantısı reddedildiğinden VM konsolunda reboot adımı gerekiyor.
+- Qt6/KWin/Plasma beklemede: Gen1 guest DHCP/reboot çıkış koşulu tamamlandı. Kalan temel kapı PipeWire'ın gerçek PCM playback/capture testi; test için host/guest arasında ses yönlendirmesi veya PCM aygıtı gerekiyor.
 
 Bu bölüm günlük konuşmadaki sprint adını kullanır. `docs/MASTER_PLAN.md` içindeki tarihsel M02 paket prototipi numarasıyla karıştırılmamalıdır; o işin `alp` prototipi Claude tarafından ayrı repoda başlatılmıştır.
 
@@ -57,7 +57,7 @@ Bu tablo `docs/MASTER_PLAN.md` §10'daki M00–M12 aşamalarını izler; yukarı
 | M02 — paket motoru prototipi | Kısmi | D31 ile pacman/Discover yolu bırakılıp `alp` seçildi. Güncel `alp` ile htop install/remove, checksum ve çalıştırma kanıtı var; update/GUI yolu ile paket motorunun tam kabul koşulları yok. |
 | M03 — multilib | Kullanıcı kararıyla uygulanmayacak | D32/P01 saf 64-bit kararı; kod veya build değişikliği yapılmadı. ELF32 ölçütü tamamlanmış gibi gösterilmez. |
 | M04 — nihai LFS tabanı | Kısmi (LFS 12.4 rootfs hazır) | M1 rootfs, linker ve FAT/ext4 kontrolleri mevcut; fakat `/mnt/lfs/var/lib/alp/db.json` paket listesi boş. Ana plan §10.1'de istenen temel sistem dosya sahipliği kayıtları kanıtlanmadı. |
-| M05 — kernel/boot/VM | Kısmi | Gen2 DHCP/ping ve kontrollü reboot geçti; Gen1 login, guest DHCP lease (`172.28.165.181/20`) ve host ping 2/2 geçti. Gen1 kontrollü guest reboot sonrası ağ doğrulaması kaldı. |
+| M05 — kernel/boot/VM | Tamamlandı | Gen2 DHCP/ping/reboot geçti. Gen1 guest login ve reboot öncesi DHCP lease (`172.28.165.181/20`) doğrulandı; kontrollü reboot + yeniden login sonrası aynı NIC MAC yeni `.171.186` IP'sinde ping 3/3, TTL 64 verdi. |
 | M06 — BLFS altyapısı | Kısmi | Ağ/TLS, PAM/logind, pkexec e2e ve Mesa softpipe EGL draw/readback geçti. Gerçek ses PCM playback/capture ve grafik oturumu yok; bu yüzden kapalı değil. |
 | M07 — Plasma ve temel uygulamalar | Başlamadı | Qt6/KWin/Plasma derlemesi/oturumu yok; M06 kapılarını bekliyor. |
 | M08 — ürün UX/terminal/tema | Başlamadı | Masaüstüne bağlı kullanıcı senaryoları tamamlanmadı. |
@@ -70,7 +70,7 @@ Sprint adlarının resmî aşamaları atlayarak ilerlemiş gibi görünmesinin n
 
 M2 hedefi, M1'de açılan metin tabanlı LFS sistemini ilk kullanılabilir grafik oturuma taşımaktır:
 
-1. BOOT-01'i Hyper-V Gen1 testiyle kapat.
+1. BOOT-01 Gen1 testini kapat (tamamlandı: DHCP, host ping ve reboot sonrası ping).
 2. Sertifika/TLS, indirme araçları, D-Bus/polkit ve temel ağ katmanını kur.
 3. Grafik, giriş, font ve PipeWire ses zincirini kurup ayrı ayrı doğrula.
 4. Claude'un `alp` paket motorunu gerçek LFS köküne yerleştir; örnek paket için kur/güncelle/kaldır, kilit, checksum ve dosya sahipliği testlerini geçir.
@@ -88,10 +88,10 @@ Tahmin: ilk Plasma giriş ekranı için 4-7 takvim günü; test edilmiş M2 VHDX
 ## M2 temel kapıları — 22 Eylül 2026 denetimi
 
 - **Kararlar:** P01 saf 64-bit olarak güncellendi (D32); mevcut LFS 12.4 tabanıyla eşleşen BLFS 12.4'te kalma gerekçesi D33 olarak kaydedildi. Multilib için kod/build değişikliği yapılmadı.
-- **M05:** Gen1 guest `networkctl status` DHCP lease'i `172.28.165.181/20`, gateway/DNS `172.28.160.1` olarak gösterdi; host ping 2/2, TTL 64 ve MAC `00-15-5D-00-02-06` ile doğrulandı. Kontrollü guest reboot sonrası ping doğrulaması bekliyor; VM açık bırakıldı.
+- **M05:** Gen1 guest `networkctl status` DHCP lease'i `172.28.165.181/20`, gateway/DNS `172.28.160.1` olarak gösterdi; host ping 2/2, TTL 64 ve MAC `00-15-5D-00-02-06` ile doğrulandı. Kullanıcı kontrollü reboot sonrası yeniden login yaptı; host komşu kaydı aynı NIC MAC'i yeni `172.28.171.186` adresinde gösterdi ve ping 3/3, TTL 64 geçti. Gen1 ağ/reboot çıkış koşulu kapandı.
 - **p11-kit:** Orijinal 66/67 test koşusunda `test-path` SIGSEGV. LFS `/etc/passwd` içinde UID 1001/1000 yok; bu UID'lerle `/path/expand` çağrısı `getpwuid_r()` üzerinden olmayan kullanıcıyı arayıp testte null sonucu denetlemeden kullandığı için çöküyor. Aynı path testi target `tester` UID 101 ile tam 9/9 geçti. Trust store `trust list --filter=ca-anchors` çalıştı. Bu, build UID/target passwd eşleşmesi kaynaklı test ortamı sorunu; CA/trust store arızası kanıtı değil.
 - **Polkit:** geçici test system bus ve polkitd üzerinde, yalnız tester'ın `/usr/bin/id` çağrısını izinleyen geçici kural ile `pkexec --disable-internal-agent /usr/bin/id` `uid=0(root)` döndürdü ve exit 0 verdi. Geçici rule, `/etc/shells` ve bus socket temizlendi. Tam dbusmock suite ve auth-agent akışı çalıştırılmadı.
 - **Mesa:** `/mnt/lfs/tmp/alp-mesa-egl-smoke.c` ile derlenen EGL/GLES2 pbuffer testi softpipe renderer'da çizdi ve pikseli geri okudu. Log: `/mnt/lfs/tmp/alp-logs/mesa-egl-smoke.log`; test binary: `/mnt/lfs/tmp/alp-mesa-egl-smoke`. `swrast_dri.so` dosyaları mevcut kurulumda bulunmadı; bu test surfaceless EGL yolunu doğrular, Wayland compositor yolunu değil.
 - **Ses:** hedef chroot'un paylaşılan `/dev/snd` ağacında PCM device node yok; yalnız sequencer/timer var. PipeWire client/playback-capture testi gerçek aygıt yokluğundan çalıştırılmadı; WirePlumber ve `pw-cat` kurulu değil. Gerçek ses doğrulaması açık kaldı.
 - **`alp` htop:** `a82f872570c938dbd68d5b868070d72ffe437c27` içindeki güncel `alp.py` builder'a aktarıldı. Htop 3.3.0 checksum doğrulamasıyla geçici `--root` altına kuruldu; `/usr/bin/htop` modu `0755`, `htop 3.3.0` çıktısı doğrulandı; kaldırma sonrası binary ve DB paketi temizlendi. Log `/mnt/lfs/tmp/alp-a82f872-root/var/log/alp/htop-3.3.0.build.log`.
-- **Devam kapısı:** Gen1 guest reboot + guest içinden lease kanıtı ve gerçek ses aygıtı olmadan Qt6/KWin/Plasma build'ine geçilmeyecek.
+- **Devam kapısı:** M05 Gen1 tamamlandı. Gerçek PCM playback/capture kanıtı olmadan Qt6/KWin/Plasma build'ine geçilmeyecek.

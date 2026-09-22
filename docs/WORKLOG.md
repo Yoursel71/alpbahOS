@@ -85,7 +85,7 @@
 - Amaç: BLFS 12.4’e göre Wayland oturumu için Qt6 altkümesini, ardından KWin/Plasma’yı gerçek LFS rootfs’de kurmak. Qt’nin tam meta arşivi yerine gerekli Qt modülleri seçilecek; mevcut rootfs boş alanı 43 GiB, tam Qt talebi yaklaşık 47 GiB.
 - Sahip: Codex. Rootfs tek yazıcı kilidi bu oturumda tutuluyor; mevcut M1 VHDX değiştirilmiyor.
 - Qt 6.9.2 qtbase arşivi `/mnt/lfs/sources/qt/qtbase-everywhere-src-6.9.2.tar.xz`, SHA-256 `44be9c9ecfe04129c4dea0a7e1b36ad476c9cc07c292016ac98e7b41514f2440`.
-- CMake daha sonra build/install edilip doğrulandı (bu günlükteki M2 Qt/Plasma altyapısı kaydı). Qt6 bağımlılıklarına geçiş, bu WORKLOG'un sonundaki temel kapı denetimine bağlıdır: Gen1 guest DHCP/reboot ve gerçek PCM playback/capture kanıtı tamamlanmadan devam edilmez.
+- CMake daha sonra build/install edilip doğrulandı (bu günlükteki M2 Qt/Plasma altyapısı kaydı). Qt6 bağımlılıklarına geçiş, bu WORKLOG'un sonundaki temel kapı denetimine bağlıdır: gerçek PCM playback/capture kanıtı tamamlanmadan devam edilmez. Gen1 DHCP/reboot kapandı.
 - CMake 4.1.0 kaynağı MD5 `80ae27faba5068c8ec12c77bf00e6db3` eşleşti. LFS içinde `--system-libs`/bundled eksik opsiyonel kütüphanelerle bootstrap ve `make -j2` geçti; `make install` tamamlandı. LFS chroot'unda `cmake --version` 4.1.0 doğrulandı. Log: `/mnt/lfs/tmp/alp-logs/cmake-bootstrap.log`. BLFS ctest paketi çalıştırılmadı.
 - Geçici rootfs DNS yapılandırması kaldırıldı.
 - Sonraki paket sırası: Qt6 temel kitaplıkları, KWin/Plasma; Xwayland ve giriş/oturum servisleri ayrıca doğrulanacak.
@@ -148,8 +148,8 @@ Belge bağlantıları ve Git kontrolü sonrası ilk commit/push; Codex ve Claude
 - Mesa 25.1.8: EGL/GLES2 pbuffer smoke testi `softpipe` ile gerçek draw/readback yaptı, renderer `softpipe`, piksel `64,128,191,255`. Bu gerçek software render kanıtıdır. Kurulumda swrast DRI modülleri yok ve Wayland compositor oturumu çalıştırılmadı; bu kapsamlar açık.
 - PipeWire/ALSA: build ve paket testleri geçti, fakat playback/capture çalıştırılmadı. Chroot'ta PCM device node, `pw-cat` ve WirePlumber yok. Hyper-V Builder'da gerçek ses aygıtı/PCM yönlendirmesi sağlanana kadar ses çıkış koşulu açık kalır.
 - `alp` htop tekrar testi: kaynak `a82f872570c938dbd68d5b868070d72ffe437c27` (`claude/desktop-bootstrap`) içindeki güncel `alp.py` kullanıldı. Htop 3.3.0 arşivi manifest SHA-256 `a69acf9b42ff592c4861010fce7d8006805f0d6ef0e8ee647a6ee6e59b743d5c` ile doğrulandı; geçici `--root` içine kurulum sonrası `/usr/bin/htop` modu `0755`, `htop --version` 3.3.0 verdi. `alp remove htop` sonrası binary silindi ve DB boş kaldı. Log `/mnt/lfs/tmp/alp-a82f872-root/var/log/alp/htop-3.3.0.build.log` (SHA-256 `0a834230d0ee3f96ff73cd9dfba1552689c241ea5b44ff9ecaef06aae6e1b4fe`). M1 rootfs ve VHDX'e dokunulmadı.
-- M05 Gen1: Hyper-V VMConnect ekran görüntüsündeki `networkctl status` `eth0` adresini `172.28.165.181/20`, gateway/DNS'i `172.28.160.1` ve DHCP edinimini gösterdi. Aynı adres için host ping 2/2, TTL 64; MAC `00-15-5D-00-02-06`. Guest SSH portu reddediyor. M1 imajında `ip` ve `sudo` komutları kurulu değil; guest reboot sonrası ping henüz doğrulanmadı. Kullanıcıya sudo yerine VMConnect Eylem → Ctrl+Alt+Delete üzerinden nazik reboot önerildi; VM açık kalacak.
-- Qt6/KWin/Plasma işine devam kapısı: Gen1 guest lease + guest reboot/ping kanıtı ve PipeWire gerçek PCM playback/capture kanıtı alınana kadar beklemede. Mesa EGL smoke testi geçti fakat Wayland oturumunu tek başına kapatmaz.
+- M05 Gen1: Hyper-V VMConnect ekran görüntüsündeki `networkctl status` `eth0` adresini `172.28.165.181/20`, gateway/DNS'i `172.28.160.1` ve DHCP edinimini gösterdi. Pre-reboot host ping 2/2, TTL 64; MAC `00-15-5D-00-02-06`. M1 imajında `ip` ve `sudo` komutları kurulu değil. Kullanıcı guest'i yeniden başlatıp tekrar login olduğunu bildirdi; post-reboot host neighbor aynı MAC'i `172.28.171.186` ile eşleştirdi ve ping 3/3, TTL 64 geçti. Gen1 reboot/ağ koşulu tamamlandı. SSH erişimi halen kapalı.
+- Qt6/KWin/Plasma işine devam kapısı: Gen1 guest lease + guest reboot/ping kanıtı geçti; gerçek PipeWire PCM playback/capture kanıtı hâlâ bekleniyor. Mesa EGL smoke testi geçti fakat Wayland oturumunu tek başına kanıtlamaz.
 
 ## Resmî M00–M12 çıkış koşulu karşılaştırması — 22 Eylül 2026
 
@@ -162,7 +162,7 @@ Kullanıcı sprint M1/M2 etiketleri, `docs/MASTER_PLAN.md` §10'daki M01/M02 aş
 | M02 | Kısmi | D31 ile paket motoru `alp` olarak değişti. Htop için LFS Builder ortamında izole `--root` install/remove, checksum ve executable mode geçti. Update ve GUI yolu/mağaza yok; M02 tam kapalı değil. |
 | M03 | Uygulanmayacak | D32/P01 kullanıcı kararıyla multilib/ELF32 kapsamdan çıktı; toolchain/build yapılmadı. Bu özgün teknik çıkış koşulu yerine getirilmiş gibi raporlanmıyor. |
 | M04 | Kısmi | LFS 12.4 temel rootfs, linker ve M1 disk doğrulamaları var. Ancak Builder'da `/mnt/lfs/var/lib/alp/db.json` `packages: {}` içeriyor; §10.1'deki nihai sistem paket sahipliği kaydı koşulu sağlanmış değil. Geçici htop `--root` testi bu açığı kapatmıyor. |
-| M05 | Kısmi | M1 Gen2 ağ/reboot testleri geçti. M2 Gen1 login, guest iç DHCP lease (`172.28.165.181/20`) ve host ping 2/2 geçti; reboot sonrası tekrar ping bekliyor. |
+| M05 | Tamamlandı | M1 Gen2 ağ/reboot testleri geçti. M2 Gen1 guest login + DHCP lease doğrulandı; kontrollü guest reboot ve yeniden login sonrası aynı NIC MAC için yeni IP `172.28.171.186` host ping 3/3, TTL 64 geçti. |
 | M06 | Kısmi | Ağ/TLS, PAM/logind, Polkit e2e ve Mesa EGL softpipe render/readback geçti. Gerçek PCM audio I/O ve grafik test oturumu yok. |
 | M07 | Başlamadı | Qt6/KWin/Plasma kurulumu ve temiz kullanıcı oturumu yok. |
 | M08 | Başlamadı | Terminal, kısayol ve tema kullanıcı senaryoları yok. |
