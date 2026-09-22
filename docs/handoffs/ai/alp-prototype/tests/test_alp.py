@@ -685,3 +685,63 @@ def test_tool_available_plain_command_still_searches_path(tmp_path: Path):
     # Unaffected code path: a bare command name (no "/") still goes through
     # the normal PATH search, same as before -- unrelated to the passed cwd.
     assert alp._tool_available("a-command-that-almost-certainly-does-not-exist-xyz", tmp_path) is False
+
+
+# --------------------------------------------------------------------------
+# _copy_entry -- regression test for the real-Linux bug found testing GNU
+# units 2.23 on the alpbah-builder VM: its staged tree contains
+# intentionally dangling symlinks (admin-supplied data files that don't
+# exist yet); shutil.copyfile() dereferences and raises FileNotFoundError.
+# skipif guards environments (e.g. an unprivileged Windows shell without
+# Developer Mode) where os.symlink() itself needs elevation to create --
+# that's a test-environment limitation, not something about the fix.
+# --------------------------------------------------------------------------
+
+def _symlinks_supported(tmp_path: Path) -> bool:
+    try:
+        target = tmp_path / "_symlink_probe_target"
+        target.write_text("x", encoding="utf-8")
+        link = tmp_path / "_symlink_probe_link"
+        os.symlink(target, link)
+        link.unlink()
+        target.unlink()
+        return True
+    except (OSError, NotImplementedError):
+        return False
+
+
+def test_copy_entry_preserves_dangling_symlink(tmp_path: Path):
+    if not _symlinks_supported(tmp_path):
+        pytest.skip("os.symlink() unavailable/unprivileged in this environment")
+
+    src_dir = tmp_path / "src"
+    src_dir.mkdir()
+    dangling_link = src_dir / "currency.units"
+    os.symlink("/usr/com/units/currency.units", dangling_link)  # target never created -- intentionally dangling
+
+    dst_dir = tmp_path / "dst"
+    dst_dir.mkdir()
+    dst = dst_dir / "currency.units"
+
+    alp._copy_entry(dangling_link, dst)  # must not raise FileNotFoundError
+
+    assert dst.is_symlink()
+    assert os.readlink(dst) == "/usr/com/units/currency.units"
+
+
+def test_merge_destdir_handles_dangling_symlinks_in_staged_tree(paths: alp.Paths, tmp_path: Path):
+    if not _symlinks_supported(tmp_path):
+        pytest.skip("os.symlink() unavailable/unprivileged in this environment")
+
+    destdir = tmp_path / "destdir"
+    (destdir / "usr/share/units").mkdir(parents=True)
+    (destdir / "usr/share/units/definitions.units").write_bytes(b"real content\n")
+    os.symlink("/usr/com/units/currency.units", destdir / "usr/share/units/currency.units")
+
+    installed = alp._merge_destdir(destdir, paths.root, dry_run=False)
+
+    assert "/usr/share/units/currency.units" in installed
+    link = paths.root / "usr/share/units/currency.units"
+    assert link.is_symlink()
+    assert os.readlink(link) == "/usr/com/units/currency.units"
+    assert (paths.root / "usr/share/units/definitions.units").read_bytes() == b"real content\n"
