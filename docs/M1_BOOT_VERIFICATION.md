@@ -3,7 +3,7 @@
 Tarih: 22 Eylül 2026  
 Builder: Ubuntu 24.04.5 LTS, Hyper-V misafiri, x86_64  
 Temel sistem: LFS 12.4-systemd x86_64  
-Artifact: `artifacts/alpbahOS-m1-bootable.vhdx`
+Son artifact: `artifacts/alpbahOS-m1-final-v2.vhdx`
 
 ## Disk ve önyükleme düzeni
 
@@ -12,7 +12,7 @@ Artifact: `artifacts/alpbahOS-m1-bootable.vhdx`
 İlk testte `root=UUID=...` kullanılmıştı. Bu imaj initramfs içermediği için kernel bu UUID değerini tek başına aygıta dönüştüremedi; disk bulunmasına rağmen root mount başarısız oldu. Hedef disk denetleyicisinde kök bölüm `sda3` olduğundan GRUB kernel satırı şu şekilde düzeltildi:
 
 ```text
-root=/dev/sda3 rootfstype=ext4 rootwait ro console=tty0 console=ttyS0,115200n8
+root=/dev/sda3 rootfstype=ext4 rootwait ro console=tty0
 ```
 
 ## Kanıtlanan sonuçlar
@@ -21,7 +21,12 @@ root=/dev/sda3 rootfstype=ext4 rootwait ro console=tty0 console=ttyS0,115200n8
 |---|---|
 | BIOS/QEMU, VHDX, IDE disk | Geçti: GRUB, kernel, ext4 root mount, systemd, `alpbahos login:` |
 | UEFI/OVMF, VHDX, ATA disk | Geçti: GRUB, kernel, ext4 root mount, systemd, `alpbahos login:` |
+| Hyper-V Gen2, UEFI/SCSI | Geçti: GRUB, `6.16.1-alpbahOS`, framebuffer konsolu ve `alpbahos login:` kullanıcı görüntüsüyle doğrulandı |
+| Hyper-V ağı | Geçti: Default Switch üzerinden DHCP; yeniden başlatma sonrası `172.28.166.77`; hosttan iki ICMP isteği başarılı |
+| Kontrollü kapatma/yeniden açma | Geçti: Hyper-V entegrasyonuyla `Running -> Off -> Running`; yeniden açılışta heartbeat `Tamam` ve ping başarılı |
 | Kök dosya sistemi | `/dev/sda3`, UUID `5ffe83c9-83e8-4955-8584-dc21a80d42ff`, ext4 mount kanıtlandı |
-| VHDX checksum | `5816717f6777595e924be419bd5117381d4cf129313ec3ecb6314c0a29c92b92` |
+| Son VHDX checksum | SHA-256 `07123bf1e653e8b735e6c68324fed20d2402f68ba39657d30a521738f37ade86` |
 
-QEMU testleri donanım emülasyonudur. Hyper-V Gen1 ve Gen2'de gerçek açılış, ağ ve yeniden başlatma henüz ayrı bir kabul kontrolüdür. Bu imaj grafik masaüstü, canlı ISO veya kurucu içermez; bunlar sonraki aşamalardadır.
+İlk Hyper-V denemesinde ağ önyüklemesi diskin önündeydi; firmware sırası `Drive,Network` olarak düzeltildi. Yazılmakta olan raw imajdan üretilen bir ara VHDX ext4 bitmap hataları verdi. Son imaj daha önce doğrulanmış tabandan yeniden üretildi; FAT ve ext4 bölümleri çevrimdışı `fsck` ile hatasız kontrol edildi. `/etc/shadow`, root kurtarma hesabı, systemd ağ kullanıcıları ve DHCP ağ profili tamamlandı. Otomatik Hyper-V checkpoint'leri test VM'inde kapatıldı.
+
+M1 temel boot imajı tamamlandı. BOOT-01'in Hyper-V Gen1 kolu ile grafik masaüstü, canlı ISO ve kurucu sonraki aşamalardadır. Secure Boot bu geliştirme imajında kapalıdır.
