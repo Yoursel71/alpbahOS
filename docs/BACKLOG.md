@@ -15,12 +15,12 @@ Plan sürümü 1.0. Roller: Codex altyapı/entegrasyon; Claude Code masaüstü/U
 | BUILD-02 | Codex | BUILD-01 | Geçici toolchain | Kitap sırası ve ELF/linker testleri | Tamamlandı (geçici araçlar ve final toolchain) |
 | BUILD-03 | Codex | BUILD-02, PKG-01 | Chroot/temel LFS | Paket dosya sahipliği ve kritik testler | Tamamlandı (LFS 12.4-systemd temel rootfs) |
 | BOOT-01 | Codex | BUILD-03 | Gen2 ve Gen1 boot | Hedef kernel ile giriş/ağ/reboot | M1 Gen2 giriş, DHCP/ping ve kontrollü yeniden açılış geçti; 22.09.2026 ayrı Gen1 VM'de 2 GiB ile giriş istemi kullanıcı tarafından doğrulandı; Gen1 ağ/reboot açık |
-| BLFS-01 | Codex | BOOT-01 | Ağ/ses/grafik/oturum bağımlılıkları | TLS/ses/renderer testleri | Başlamadı — Builder SSH kullanıcısı `sa` için root/sudo yetkisi gerekli, henüz erişilmedi |
+| BLFS-01 | Codex | BOOT-01 | Ağ/ses/grafik/oturum bağımlılıkları | TLS/ses/renderer testleri | Başladı: LFS 12.4 uyumlu BLFS 12.4 manifesti hazır (`docs/M2_BLFS_MANIFEST.md`); CA/curl/TLS kurulumu ve grafik/ses zinciri sürüyor |
 | UI-01 | Claude | Belgeler | Tema token'ları ve mevcut mockup eşlemesi | Türkçe, Solid varsayılan, profil farkları | Sırada |
 | UI-02 | Claude | UI-01 | Kısayol tanımları ve kullanıcı yardımı | Çakışma listesi; Alt+Tab/Win+D dahil | Başlamadı |
 | SHELL-01 | Claude | Belgeler | Zsh/Konsole profil taslağı | Öneri kabul/çalıştır ayrımı, düzeltme, Türkçe | Sırada |
 | UI-03 | Claude | UI-01 | Atatürk tema varlık planı ve kaynak kaydı | Görsel kaynağı, kırpım/kontrast, logo korunması | Başlamadı |
-| DESKTOP-01 | Codex | BLFS-01, UI/SHELL girdileri | LFS içinde Plasma oturumu | Temiz kullanıcı, düşük kaynak ölçümü | Başlamadı — BLFS-01 ve Builder root erişimini bekliyor |
+| DESKTOP-01 | Codex | BLFS-01, UI/SHELL girdileri | LFS içinde Plasma oturumu | Temiz kullanıcı, düşük kaynak ölçümü | Başlamadı — BLFS-01 tamamlanmasını bekliyor |
 | APPS-01 | Codex + Claude inceleme | DESKTOP-01 | Hazır temel uygulama profili | Dosya ilişkileri ve günlük senaryolar | Başlamadı |
 | COMPAT-01 | Codex | Multilib + grafik | Wine/Steam/Proton doğrulaması | 32/64-bit grafik; bir test oyunu | Başlamadı |
 | OFFICE-01 | Claude plan / Codex test | Wine + lisanslı medya | Office sürüm bazlı rapor | Kur/aç/kaydet/yazdır; bilinen sorunlar | Başlamadı |
