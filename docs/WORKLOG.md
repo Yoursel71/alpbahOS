@@ -44,6 +44,14 @@
 - Systemd-257.8 kaynak ağacından `-D pam=true -D man=false -D tests=false` ile 1431 ninja adımı derlendi; build logu `/mnt/lfs/tmp/alp-logs/systemd-pam-build.log`, install logu `/mnt/lfs/tmp/alp-logs/systemd-pam-install.log`. Kurulum sonrası `/usr/lib/security/pam_systemd.so`, `/usr/lib/systemd/systemd-logind` ve `systemd 257.8` doğrulandı.
 - Bu kesitte boot VM'de yeniden login testi henüz yapılmadı; mevcut rootfs'yi M1 VHDX'e yeniden paketleme ve Gen1/Gen2 reboot doğrulaması sonraki adımdır.
 
+## M2 polkit kesiti — 22 Eylül 2026
+
+- Duktape 2.7.0: MD5 `b3200b02ab80125b694bae887d7c1ca6`; BLFS Makefile.sharedlibrary build/install geçti. Log `/mnt/lfs/tmp/alp-logs/duktape-build.log`.
+- GLib 2.84.4: MD5 `5655d0ff809b98dd77c02490609fadde`; Meson build/install geçti (`introspection=disabled`, man pages disabled, sysprof disabled). GLib build logu `/mnt/lfs/tmp/alp-logs/glib-build.log`.
+- Polkit 126: MD5 `db4ce0a42d5bf8002061f8e34ee9bdd0`; `session_tracking=logind`, PAM ve `os_type=lfs`, testler kapalı (dbusmock kurulu değil). Build/install logu `/mnt/lfs/tmp/alp-logs/polkit-build.log`.
+- Doğrulama: `/usr/lib/polkit-1/polkitd`, `/usr/bin/pkcheck`, `/usr/bin/pkaction`, `/usr/share/dbus-1/system-services/org.freedesktop.PolicyKit1.service`, `uid=27(polkitd)` ve GLib `2.84.4` bulundu. Chroot geçici DNS dosyası işlem sonunda kaldırıldı.
+- Açık: Polkit `ninja test` çalıştırılmadı; dbusmock/D-Bus çalışan servis ve grafik authentication agent sonraki Plasma ortamında test edilecek.
+
 ## M01 güncellemesi — LFS temel sistem ve boot imajı
 
 - Ubuntu 24.04.5 builder VM üzerinde LFS **12.4-systemd** x86_64 temel sistem derlendi. Kaynak disk imajı 20 GiB GPT düzeniyle BIOS boot, EFI ve ext4 root bölümlerini içerir.

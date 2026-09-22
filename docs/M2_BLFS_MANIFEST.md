@@ -44,6 +44,7 @@ Sürümler BLFS 12.4 kitabının paket ve bağımlılık tablolarından build ba
 - D-Bus: M1 rootfs'de `dbus-daemon 1.16.2` zaten mevcut.
 - Linux-PAM: `1.7.1`, MD5 `92812d7dd414d816fba8d649e84e68ca`; LFS chroot'unda Meson/Ninja build geçti. Install + PAM yapılandırması ve systemd/shadow yeniden kurulumu aynı bağlı adım olarak bekliyor.
 - Linux-PAM install tamamlandı; minimal `system-account`, `system-auth`, `system-session`, `system-password` ve restrictive `other` dosyaları oluşturuldu. Systemd 257.8 `-D pam=true` ile yeniden derlenip kuruldu; `/usr/lib/security/pam_systemd.so` ve `systemd-logind` doğrulandı.
+- Duktape `2.7.0` (MD5 `b3200b02ab80125b694bae887d7c1ca6`) ve GLib `2.84.4` (MD5 `5655d0ff809b98dd77c02490609fadde`) build/install geçti. Polkit `126` (MD5 `db4ce0a42d5bf8002061f8e34ee9bdd0`) `session_tracking=logind`, PAM ve LFS OS türüyle kuruldu. Polkit testleri dbusmock eksikliği nedeniyle çalıştırılmadı.
 - p11-kit test istisnası: 66/67 geçti; `common/test-path` SIGSEGV. Kurulum kanıtı logda tutuluyor.
 
 Plasma için M1 kernel grafik, DRM, input ve sound yapılandırması ayrıca kontrol edilmeden donanım desteği varsayılmaz.
