@@ -172,3 +172,33 @@ Kullanıcı sprint M1/M2 etiketleri, `docs/MASTER_PLAN.md` §10'daki M01/M02 aş
 | M12 | Başlamadı | Beta donanım, update/recovery ve kullanıcı kabul kanıtı yok. |
 
 BLFS 12.4, M1'in LFS 12.4 tabanıyla uyumluluk için D33 olarak seçildi. Builder hostunun `/dev/snd` kontrolünde yalnız `seq`/`timer` bulundu; gerçek PCM düğümü olmadığı için playback/capture doğrulaması mümkün olmadı. Bu sonuç ses katmanını başarılı saydırmaz.
+
+## M2 runtime paketleri, sudo ve PCM yolu — 22 Eylül 2026
+
+- Sahip: Codex. Builder: Ubuntu 24.04 `sa@172.28.174.11`; hedef LFS chroot `/mnt/lfs`. Build öncesi aktif package işi yoktu; `/mnt/lfs` için başlangıçta 42 GiB, sonrasında 41 GiB boş alan vardı. Hiçbir VM/host kapatılmadı.
+- Lua 5.4.8 arşivi BLFS 12.4 MD5 `81cf5265b8634967d8a7480d238168ce` ile doğrulandı; BLFS `lua-5.4.8-shared_library-1.patch` uygulandı; `make linux`, `make test`, install ve `lua.pc` geçti. Log `/mnt/lfs/tmp/alp-logs/lua-build-test.log`.
+- WirePlumber 0.5.10 arşivi MD5 `2cbb662f91da2bdce31fa55bef5dfcf5` ile doğrulandı. Sistem Lua etkin Meson/Ninja build, `ninja test` ve install geçti. Loglar `/mnt/lfs/tmp/alp-logs/wireplumber-{configure,build,test,install}.log`.
+- PipeWire `pw-cat=enabled` yapılandırması `libsndfile` olmadan durdu. BLFS 12.4 libsndfile 1.2.2 arşivi MD5 `04e2e6f726da7c5dc87f8cf72f250d04` ile doğrulandı; BLFS GCC-15 ALAC uyumluluk sed düzeltmesi uygulandı; build ve `make check` geçti. Loglar `/mnt/lfs/tmp/alp-logs/libsndfile-{build,test,install}.log`.
+- PipeWire 1.4.7 mevcut build ağacı `-D pw-cat=enabled` ile reconfigure edildi; `pw-cat`, `pw-play`, `pw-record` build edildi; `ninja test` ve install geçti. Test logu `/mnt/lfs/tmp/alp-logs/pipewire-pwcat-test.log`; build/install logları aynı dizinde.
+- ALSA Utilities 1.2.14 arşivi MD5 `d098c3d677ee80cf3d9f87783cce2e53` ile doğrulandı. BLFS seçenekleriyle build/install geçti; `make check`: 2/2 PASS. `aplay -l` sanal Loopback playback device 0 ve 1'i gördü. Loglar `/mnt/lfs/tmp/alp-logs/alsa-utils-{build,test,install}.log`.
+- PCM kanıtı: Ubuntu Builder kernel 6.8'deki `snd-aloop` modülü geçici olarak yüklendi. LFS chroot'tan 48 kHz, stereo, 16-bit WAV playback `hw:Loopback,0,0` ile capture `hw:Loopback,1,0` arasında geçti. 144000 kare; peak 12000; RMS 7046.61; captured PCM SHA-256 `5d8f31349bd312226a5f4c60fe6a313b32311effdc5bee24c6751997c91c93eb`. Bu ALSA kernel loopback testidir, fiziksel hoparlör/mikrofon değildir. Testten sonra `snd-aloop` kaldırıldı.
+- PipeWire runtime: rootfs'de geçici D-Bus oturumu ve WirePlumber başlatıldı; ALSA Loopback kartı bulundu. WirePlumber otomatik sink ve source node'ları ikisi de playback/capture için device 0 yolunu (`front:0`) kullanıyordu. `pw-play` + `pw-record` kaydı sessiz çıktı (peak 0, RMS 0). Device 1'e elle kaynak node ekleme denemesi çalışır PCM node'u üretmedi. Böylece PipeWire kurulum/testi geçti ama PipeWire PCM I/O kanıtı geçmedi; M06 ses kapısı kapatılmadı. Runtime'da system bus/RTKit ve logind uyarıları da gözlendi; bunlar ayrı olarak gerçek oturumda yeniden doğrulanmalı.
+- Geçici audio test temizliği: `snd-aloop` unload edildi, `/run/udev` bind mount kaldırıldı, `pipewire`/`wireplumber`/`arecord` test süreçleri kapatıldı. Builder `/dev/snd` tekrar yalnız `seq` ve `timer` gösterdi.
+- `sudo` 1.9.17p2 arşivi BLFS 12.4 MD5 `dcbf46f739ae06b076e1a11cbb271a10` ile doğrulandı. PAM başlıkları bulundu; configure `pam_start` tespit etti. `make`, BLFS `env LC_ALL=C make check` geçti; kurulum tamamlandı. Loglar `/mnt/lfs/tmp/alp-logs/sudo-{configure,build,test,install}.log`, test sonuç etiketi `SUDO_TESTS=PASS`.
+- Sudo policy: `/etc/sudoers` içinde `@includedir /etc/sudoers.d` doğrulandı; `/etc/sudoers.d/00-sudo` içine secure path ve `%wheel ALL=(ALL) ALL` eklendi. `/etc/pam.d/sudo` paylaşılan system-auth/system-account/system-session kurallarını kullanıyor. `visudo -c` hem ana dosyayı hem drop-in'i parse OK verdi; `/mnt/lfs/tmp/alp-logs/sudo-visudo-check.log`.
+- Önemli hesap farkı: Builder `/mnt/lfs` içinde yalnız `tester` hesabı var; `sa` ve `/etc/shadow` bulunmuyor. M1 VHDX'te `sa` mevcut olduğu kullanıcı Gen1 login testiyle doğrulandı. Bilinmeyen parola/hesap hash'i üretilmedi veya değişmedi; `%wheel` grup üyeliği gerçek M2 guest hesabına final imaj entegrasyonunda verilmeli. Bu nedenle M1 guest'inde sudo/ip görünürlüğü henüz test edilmedi; `/usr/sbin/ip` mevcut LFS rootfs'de zaten var.
+- Kapasite: Builder `/mnt/lfs` son kontrolde 41 GiB boştu. PipeWire session testlerinden sonra geçici `snd-aloop`/udev durumu temizlendi. M06 kısmi; Qt6/KWin/Plasma başlanmadı.
+
+## M2 devamı — eksik kullanıcı alanı ve PCM yolu
+
+- Sahip: Codex. Ortam: Ubuntu Builder `sa@172.28.174.11`, tek yazıcı `/mnt/lfs`; kaynak rootfs/VHDX ayrımı korunuyor. Bu kayda başlarken aktif Ninja/Meson/make/chroot build'i yoktu; `/mnt/lfs` dosya sisteminde 42 GiB boş alan vardı.
+- Kullanıcı M2 için gereken tüm paket/build/test işlerinin izinsiz sürdürülmesini onayladı; ayrıca guest komutu istemeyeceğiz. Bu turda PipeWire kullanıcı aracı (`pw-cat`), WirePlumber/Lua, loopback PCM I/O, `sudo`/`iproute2` paket sahipliği ve Gen1 M2 imaj güncellemesi/yeniden açılış yolu tamamlanmaya çalışılacak.
+- İlk inceleme: LFS rootfs'de `ip` var (`/usr/sbin/ip`), `sudo`, `pw-cat`, `wireplumber`, `wpctl`, `lua` yok. PipeWire 1.4.7 build dizini mevcut. Builder `/dev/snd` altında yalnız `seq`/`timer` var; fiziksel PCM henüz görünmüyor.
+- `snd-aloop` ile sanal PCM testi fiziksel hoparlör/mikrofon doğrulaması sayılmayacak. Bu yüzden M06 ses çıkış koşulu yalnız testin gerçekten geçtiği kapsam kadar güncellenecek.
+
+## M2 yeniden başlatma sonrası devam — 22 Eylül 2026
+
+- Kullanıcı M2 işi tamamlanınca bug hunt yapılmasını istedi; bu kayıt M2 çalışmasının devamıdır, bug hunt henüz başlatılmadı. Kullanıcı bilgisayarı/oturumu kapatmama talimatını yineledi; hiçbir VM veya host kapatılmadı.
+- Builder'a yeniden SSH erişimi doğrulandı. Önceki PipeWire yönlü PCM denemelerinde PipeWire sunucusu test sırasında erişilemez durumdaydı (`pw_context_connect() failed: Host is down`); ALSA yakalama başlatılmış olsa da geçerli PipeWire→ALSA PCM akışı kanıtlanmadı. PipeWire PCM I/O kapısı açık kalıyor.
+- Önceki teşhis sırasında test artığı olarak oluşan 1.3 GiB sessiz WAV silindi ve bağlantısı kopmuş SSH oturumunun bekleyen `sudo` süreci kapatıldı. Builder `/mnt/lfs` boş alanı 41 GiB'den 42 GiB'ye çıktı. Kaydedilen build/test logları bırakıldı.
+- M2 kapsamındaki paket, konuk imaj entegrasyonu ve masaüstü hedefleri tamamlanmış değil; bu kontrol M2'yi kapatmaz.
