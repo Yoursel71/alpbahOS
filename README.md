@@ -4,7 +4,7 @@
 
 Windows'tan geçenler için kolay, Türkçe, kişiselleştirilebilir ve kaynak kullanımına dikkat eden LFS tabanlı x86_64 masaüstü projesi.
 
-**Durum:** Plan ve görev paylaşımı hazır. Linux derlemesi/ISO henüz üretilmedi. Repo özel kullanım içindir; test edilmemiş özellikler ürün desteği değildir.
+**Durum:** M01 derleme ortamı ve LFS 12.4-systemd tabanı hazırlandı. İlk önyüklenebilir VHDX, BIOS ve UEFI emülasyonunda gerçek kernel, systemd ve giriş istemine kadar doğrulandı. Grafik masaüstü, ISO, paket motoru entegrasyonu ve gerçek Hyper-V açılışı henüz tamamlanmadı.
 
 Özel kaynak deposu: [Yoursel71/alpbahOS](https://github.com/Yoursel71/alpbahOS).
 
@@ -17,6 +17,7 @@ Windows'tan geçenler için kolay, Türkçe, kişiselleştirilebilir ve kaynak k
 - [Ortak ajan kuralları](AGENTS.md)
 - [Claude talimatları](CLAUDE.md) ve [ilk görev](docs/CLAUDE_START.md)
 - [İş kaydı](docs/WORKLOG.md)
+- [M01 önyükleme doğrulaması](docs/M1_BOOT_VERIFICATION.md)
 - [Tasarım referansı](docs/alpbahOS-design-mockups.md)
 
 Başlangıç seçimleri: LFS/BLFS, KDE Plasma/KWin, Konsole/Zsh, pacman/libalpm + `pkg`, Discover, Solid/Glass profilleri, Atatürk masaüstü/kilit ekranı, Türkçe Q. Steam/Wine için 32-bit kullanıcı alanı uyumluluğu toolchain aşamasında planlanır.
