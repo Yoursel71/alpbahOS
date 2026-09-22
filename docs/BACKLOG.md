@@ -14,7 +14,7 @@ Plan sürümü 1.0. Roller: Codex altyapı/entegrasyon; Claude Code masaüstü/U
 | BUILD-01 | Codex | ABI-01, HOST-02 | Kaynak manifesti, indir/doğrula/tarif runner | Temiz yeniden deneme ve loglar | LFS 12.4-systemd akışıyla ilerletildi |
 | BUILD-02 | Codex | BUILD-01 | Geçici toolchain | Kitap sırası ve ELF/linker testleri | Tamamlandı (geçici araçlar ve final toolchain) |
 | BUILD-03 | Codex | BUILD-02, PKG-01 | Chroot/temel LFS | Paket dosya sahipliği ve kritik testler | LFS 12.4-systemd rootfs hazır; M1 doğrulamaları mevcut, ancak `/mnt/lfs/var/lib/alp/db.json` boş olduğundan ana plan §10.1 paket sahipliği çıkışı tamamlanmamış |
-| BOOT-01 | Codex | BUILD-03 | Gen2 ve Gen1 boot | Hedef kernel ile giriş/ağ/reboot | M1 Gen2 giriş, DHCP/ping ve kontrollü yeniden açılış geçti; Gen1 giriş, guest DHCP lease `172.28.165.181/20` ve host ping 2/2 doğrulandı; Gen1 reboot sonrası ping bekliyor |
+| BOOT-01 | Codex | BUILD-03 | Gen2 ve Gen1 boot | Hedef kernel ile giriş/ağ/reboot | M1 Gen2 tam geçti; M2 Gen1 login + DHCP (`172.28.165.181/20`) doğrulandı, kontrollü reboot + relogin sonrası aynı MAC yeni `172.28.171.186` IP'sinde ping 3/3 geçti |
 | BLFS-01 | Codex | BOOT-01 | Ağ/ses/grafik/oturum bağımlılıkları | TLS/ses/renderer testleri | Ağ/TLS, PAM/logind, pkexec e2e ve Mesa softpipe EGL readback kanıtı mevcut. p11-kit UID/test mismatch açıklandı. Gerçek PCM playback/capture ve Wayland masaüstü oturumu yok; BLFS-01 kısmi, Qt/KWin/Plasma beklemede |
 | UI-01 | Claude | Belgeler | Tema token'ları ve mevcut mockup eşlemesi | Türkçe, Solid varsayılan, profil farkları | Sırada |
 | UI-02 | Claude | UI-01 | Kısayol tanımları ve kullanıcı yardımı | Çakışma listesi; Alt+Tab/Win+D dahil | Başlamadı |
