@@ -44,6 +44,8 @@ Plan, BOOT-01 Gen1 kolunu ayrı test VM'inde doğrulayıp ardından BLFS-01 sert
 - Mesa 25.1.8 softpipe yolu build/install edildi; son dosya sistemi incelemesinde `swrast_dri.so`/`kms_swrast_dri.so` bulunmadı. Buna rağmen gerçek surfaceless EGL/GLES smoke testi geçti: `GL_RENDERER=softpipe`, readback pikseli `64,128,191,255`. Gerçek Wayland/compositor oturumu hâlâ sınanmadı.
 - BLFS CMake 4.1.0 (MD5 `80ae27faba5068c8ec12c77bf00e6db3`) LFS chroot'unda derlenip kuruldu; `cmake --version` 4.1.0 döndürdü. Qt 6.9.2 alt bileşenleri bu temel doğrulama çalışmalarından sonra kurulup test edildi; KWin/Plasma henüz yapılmadı.
 - QtBase, QtDeclarative, QtShaderTools ve QtWayland 6.9.2 ön hazırlık bileşenleri kurulup offscreen/QML smoke testleri geçti; KWin/Plasma henüz kurulmadı. PipeWire sanal sink graph'ında gerçek PCM playback/capture doğrulandı; fiziksel aygıt yönlendirmesi ayrı, açık kapsamdır. M05 ve M06 temel doğrulama kapılarının güncel dökümü aşağıdadır.
+- 23 Eylül devamı: KF6/Plasma önkoşulları (libgpg-error, libgcrypt, libxslt, LMDB, libqrencode, libical, libogg/libvorbis, libcanberra, QCA, DocBook, Perl URI/MIME ve shared-mime-info) kuruldu. ECM, Plasma Wayland Protocols ve Breeze Icons da kurulu. Shared-mime-info `ninja test` içinde 9/10 test geçti; `test-mime` yalnızca 30 saniyelik sınırda geçici veritabanı üretimini tamamlayamadı. `ninja install` ve kurulumun MIME veritabanı üretimi exit 0 ile tamamlandı. QCA ve Perl testleri geçti. BLFS 12.4 Frameworks arşivleri doğrulandı; temel Frameworks derlemesi sırada. Ayrıntılar ve sınırlamalar `docs/WORKLOG.md` içinde.
+- LFS rootfs'de `/etc/profile` yoktu; bu nedenle `/opt/qt6/bin` ve masaüstü ortam değişkenleri login kabuğuna gelmiyordu. Login profili, Qt6/KF6 profile parçaları ve dynamic-loader yolları eklendi; QMake 6.9.2 ve QCA 2.3.10 artık login ortamında çalışıyor.
 
 Bu bölüm günlük konuşmadaki sprint adını kullanır. `docs/MASTER_PLAN.md` içindeki tarihsel M02 paket prototipi numarasıyla karıştırılmamalıdır; o işin `alp` prototipi Claude tarafından ayrı repoda başlatılmıştır.
 
@@ -60,7 +62,7 @@ Bu tablo `docs/MASTER_PLAN.md` §10'daki M00–M12 aşamalarını izler; yukarı
 | M04 — nihai LFS tabanı | Kısmi (LFS 12.4 rootfs hazır) | M1 rootfs, linker ve FAT/ext4 kontrolleri mevcut; fakat `/mnt/lfs/var/lib/alp/db.json` paket listesi boş. Ana plan §10.1'de istenen temel sistem dosya sahipliği kayıtları kanıtlanmadı. |
 | M05 — kernel/boot/VM | Tamamlandı | Gen2 DHCP/ping/reboot geçti. Gen1 guest login ve reboot öncesi DHCP lease (`172.28.165.181/20`) doğrulandı; kontrollü reboot + yeniden login sonrası aynı NIC MAC yeni `.171.186` IP'sinde ping 3/3, TTL 64 verdi. |
 | M06 — BLFS altyapısı | Kısmi | Ağ/TLS, PAM/logind, pkexec e2e, Mesa softpipe EGL çizim/readback, ALSA loopback ve PipeWire null-sink graph PCM roundtrip kanıtı var. Fiziksel ses aygıtı ve gerçek masaüstü oturumu henüz yok. |
-| M07 — Plasma ve temel uygulamalar | Hazırlık yapıldı | Qt 6.9.2 Base/Declarative/ShaderTools/Wayland kurulu ve smoke testli; KWin/Plasma kurulumu ve oturumu henüz başlamadı. |
+| M07 — Plasma ve temel uygulamalar | Devam ediyor | Qt 6.9.2 Base/Declarative/ShaderTools/Wayland ile KF6 önkoşulları kurulu; doğrulanmış KF6 6.17 kaynakları hazır. KWin/Plasma derlemesi ve oturumu sırada. |
 | M08 — ürün UX/terminal/tema | Başlamadı | Masaüstüne bağlı kullanıcı senaryoları tamamlanmadı. |
 | M09 — canlı imaj/ISO | Başlamadı | Live rootfs/ISO ve açılış kanıtı yok. |
 | M10 — alfa | Başlamadı | M09 yayın adayı/test matrisi yok. |
