@@ -45,6 +45,7 @@ Sürümler BLFS 12.4 kitabının paket ve bağımlılık tablolarından build ba
 - Linux-PAM: `1.7.1`, MD5 `92812d7dd414d816fba8d649e84e68ca`; LFS chroot'unda Meson/Ninja build geçti. Install + PAM yapılandırması ve systemd/shadow yeniden kurulumu aynı bağlı adım olarak bekliyor.
 - Linux-PAM install tamamlandı; minimal `system-account`, `system-auth`, `system-session`, `system-password` ve restrictive `other` dosyaları oluşturuldu. Systemd 257.8 `-D pam=true` ile yeniden derlenip kuruldu; `/usr/lib/security/pam_systemd.so` ve `systemd-logind` doğrulandı.
 - Duktape `2.7.0` (MD5 `b3200b02ab80125b694bae887d7c1ca6`) ve GLib `2.84.4` (MD5 `5655d0ff809b98dd77c02490609fadde`) build/install geçti. Polkit `126` (MD5 `db4ce0a42d5bf8002061f8e34ee9bdd0`) `session_tracking=logind`, PAM ve LFS OS türüyle kuruldu. Polkit testleri dbusmock eksikliği nedeniyle çalıştırılmadı.
+- ALSA-lib `1.2.14` (MD5 `d0efd7930da31f0034baddc0b993fa03`) GCC uyumlu test düzeltmesiyle `make check` ve install geçti. PipeWire `1.4.7` (MD5 `e151f5f67b2f09d0b37e0b9493111ca0`) `session-managers=[]` ile `ninja test` ve install geçti. Gerçek aygıt/ses çıkışı testi sonraki Hyper-V oturumunda.
 - p11-kit test istisnası: 66/67 geçti; `common/test-path` SIGSEGV. Kurulum kanıtı logda tutuluyor.
 
 Plasma için M1 kernel grafik, DRM, input ve sound yapılandırması ayrıca kontrol edilmeden donanım desteği varsayılmaz.
