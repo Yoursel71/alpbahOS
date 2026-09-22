@@ -1,6 +1,15 @@
 # alpbahOS — İş kaydı
 
-## Durum: 21 Eylül 2026
+## Durum: 22 Eylül 2026
+
+## M01 güncellemesi — LFS temel sistem ve boot imajı
+
+- Ubuntu 24.04.5 builder VM üzerinde LFS **12.4-systemd** x86_64 temel sistem derlendi. Kaynak disk imajı 20 GiB GPT düzeniyle BIOS boot, EFI ve ext4 root bölümlerini içerir.
+- Kernel: `6.16.1-alpbahOS`; systemd, GRUB 2.12, Türkçe UTF-8/Türkçe Q varsayımları ve `sa` kullanıcı hesabı rootfs'e yerleştirildi.
+- İlk GRUB önyüklemesinde initramfs olmadığı için `root=UUID=...` çözülemiyordu. Kernel diski `/dev/sda3` olarak gördüğünden boot girdisi `root=/dev/sda3` olarak düzeltildi.
+- Son artifact: `artifacts/alpbahOS-m1-bootable.vhdx` — 20 GiB sanal boyut, yaklaşık 4.7 GiB fiziksel boyut. SHA-256: `5816717f6777595e924be419bd5117381d4cf129313ec3ecb6314c0a29c92b92`.
+- Doğrulama: QEMU BIOS ve OVMF UEFI testleri, VHDX → GRUB → Linux 6.16.1 → `/dev/sda3` ext4 mount → systemd → `alpbahos login:` zincirini geçti. Ayrıntı: `docs/M1_BOOT_VERIFICATION.md`.
+- Kalan M01/BOOT-01 kapısı: Aynı VHDX'in Hyper-V Gen1 ve Gen2 üzerinde gerçek açılışı; ağ ve yeniden başlatma kontrolü. Bu gerçekleştirilmeden masaüstü/ISO aşamasına geçilmeyecek.
 
 Kullanıcı cevapları ana plan 1.0'a işlendi. Mevcut sonuçlar logo, kabul edilmiş arayüz referansı, tasarım dokümanı, terminal logo varlıkları, görevler ve ajan talimatlarıdır. Linux derlemesi veya kurulum başlamadı.
 
