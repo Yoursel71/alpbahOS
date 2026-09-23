@@ -1,0 +1,170 @@
+{
+  "$schema": "alpbahOS/shortcuts/v0",
+  "durum": "taslak — hiçbir kısayol gerçek KDE Plasma oturumunda test edilmedi",
+  "kaynak": "docs/MASTER_PLAN.md §6",
+  "not": "Bu dosya kısayolların TEK tanım kaynağı olması planlanan yerdir (MASTER_PLAN §6). 'kwin_varsayilani' işaretli satırlar bile sürüme göre değişebileceğinden doğrulanmalıdır; upstream varsayılanı olduğu iddia edilmez.",
+  "durum_kodlari": {
+    "kwin_varsayilani": "İlgili masaüstü bileşeninin mevcut varsayılanı olduğu düşünülüyor; sürüm/dağıtım farkına karşı doğrulanmalı.",
+    "yeniden_esleme_gerekli": "Bileşende zaten bir varsayılan var ama başka tuşa bağlı; bu tuşa taşınması ve çakışma kontrolü gerekiyor.",
+    "ozel_binding_gerekli": "Bileşende varsayılan yok; System Settings > Kısayollar (custom shortcut / khotkeys) ile yeni bağlama tanımlanmalı.",
+    "dogrulanmamis": "Davranış veya varsayılan kısayol bu oturumda kesin bilinmiyor; kurulu sürümde elle kontrol edilmeli.",
+    "uygulama_varsayilani": "Sistem kısayolu değil; Qt/GTK uygulama katmanının kendi standardı, alpbahOS burada yeniden tanımlamaz."
+  },
+  "shortcuts": [
+    {
+      "id": "walk-windows",
+      "key": "Alt+Tab",
+      "key_reverse": "Alt+Shift+Tab",
+      "eylem_tr": "Pencereler arasında ileri/geri geçiş",
+      "bilesen": "kwin",
+      "kde_action_id": "Walk Through Windows / Walk Through Windows (Reverse)",
+      "durum": "kwin_varsayilani",
+      "test_kapsami": "Çoklu pencere ve çoklu ekran"
+    },
+    {
+      "id": "show-desktop",
+      "key": "Win+D",
+      "eylem_tr": "Masaüstünü göster / geri dön",
+      "bilesen": "kwin",
+      "kde_action_id": "Show Desktop",
+      "durum": "dogrulanmamis",
+      "not": "Plasma sürümüne göre varsayılan farklı olabilir (bazı sürümlerde Ctrl+F12).",
+      "test_kapsami": "Minimize durumlarının korunması"
+    },
+    {
+      "id": "file-manager",
+      "key": "Win+E",
+      "eylem_tr": "Dosya yöneticisini aç (Dolphin)",
+      "bilesen": "custom-shortcut",
+      "kde_action_id": null,
+      "durum": "ozel_binding_gerekli",
+      "test_kapsami": "Tekrarlı çağrı davranışı (yeni pencere mi, mevcut mu?)"
+    },
+    {
+      "id": "lock-session",
+      "key": "Win+L",
+      "eylem_tr": "Oturumu kilitle",
+      "bilesen": "kscreenlocker",
+      "kde_action_id": "Lock Session",
+      "durum": "yeniden_esleme_gerekli",
+      "not": "Plasma varsayılanı genelde Ctrl+Alt+L; Win+L'e taşınmalı ve çakışma kontrol edilmeli.",
+      "test_kapsami": "Kilit ekranından güvenli dönüş"
+    },
+    {
+      "id": "run-launcher",
+      "key": "Win+R",
+      "eylem_tr": "Komut/uygulama başlatıcı",
+      "bilesen": "krunner",
+      "kde_action_id": "run command",
+      "durum": "ozel_binding_gerekli",
+      "not": "KRunner'ın mevcut Alt+F2/Alt+Space kısayolu korunur; Win+R ek bağlama olarak eklenir.",
+      "test_kapsami": "Arama alanına doğru odak"
+    },
+    {
+      "id": "app-menu",
+      "key": "Win",
+      "eylem_tr": "Uygulama menüsü",
+      "bilesen": "plasmashell",
+      "kde_action_id": "Modifier-only Shortcuts: Meta",
+      "durum": "dogrulanmamis",
+      "not": "Bazı Plasma sürümlerinde Meta tuşu zaten başlatıcıya bağlı olabilir; System Settings > Shortcuts > Modifier-only Shortcuts'ta doğrulanmalı.",
+      "test_kapsami": "Diğer Win kombinasyonlarıyla çakışmama"
+    },
+    {
+      "id": "settings",
+      "key": "Win+I",
+      "eylem_tr": "Ayarlar",
+      "bilesen": "systemsettings",
+      "kde_action_id": null,
+      "durum": "ozel_binding_gerekli",
+      "test_kapsami": "Doğru ayarlar uygulaması açılıyor mu"
+    },
+    {
+      "id": "tile-left",
+      "key": "Win+Left",
+      "eylem_tr": "Pencereyi sol kenara yerleştir",
+      "bilesen": "kwin",
+      "kde_action_id": "Quick Tile Window to the Left",
+      "durum": "kwin_varsayilani",
+      "test_kapsami": "Çoklu ekran ve ölçekleme"
+    },
+    {
+      "id": "tile-right",
+      "key": "Win+Right",
+      "eylem_tr": "Pencereyi sağ kenara yerleştir",
+      "bilesen": "kwin",
+      "kde_action_id": "Quick Tile Window to the Right",
+      "durum": "kwin_varsayilani",
+      "test_kapsami": "Çoklu ekran ve ölçekleme"
+    },
+    {
+      "id": "maximize",
+      "key": "Win+Up",
+      "eylem_tr": "Büyüt",
+      "bilesen": "kwin",
+      "kde_action_id": "Maximize Window",
+      "durum": "kwin_varsayilani",
+      "test_kapsami": "Tutarlı durum sırası (büyüt/geri yükle)"
+    },
+    {
+      "id": "minimize-restore",
+      "key": "Win+Down",
+      "eylem_tr": "Geri yükle / küçült",
+      "bilesen": "kwin",
+      "kde_action_id": null,
+      "durum": "dogrulanmamis",
+      "not": "KWin'de büyütülmüş pencerede Win+Down genelde geri yükler; Windows'taki 'ikinci basışta küçült' sıralı davranışı yerleşik değildir, gerekiyorsa script/khotkeys ile taklit edilmeli.",
+      "test_kapsami": "Tutarlı durum sırası"
+    },
+    {
+      "id": "overview",
+      "key": "Win+Tab",
+      "eylem_tr": "Pencere/masaüstü genel görünümü",
+      "bilesen": "kwin",
+      "kde_action_id": "Overview",
+      "durum": "yeniden_esleme_gerekli",
+      "not": "Plasma 5.24+ Overview efektinin varsayılanı Meta+W'dir, Meta+Tab değil; taşınmalı ve çakışma kontrol edilmeli.",
+      "test_kapsami": "Seçilen masaüstü eylemiyle eşleşme"
+    },
+    {
+      "id": "close-window",
+      "key": "Alt+F4",
+      "eylem_tr": "Aktif pencereyi kapat",
+      "bilesen": "kwin",
+      "kde_action_id": "Close Window",
+      "durum": "kwin_varsayilani",
+      "test_kapsami": "Kaydedilmemiş belge uyarısı (uygulama sorumluluğunda)"
+    },
+    {
+      "id": "system-monitor",
+      "key": "Ctrl+Shift+Esc",
+      "eylem_tr": "Sistem izleyicisi",
+      "bilesen": "custom-shortcut",
+      "kde_action_id": null,
+      "durum": "ozel_binding_gerekli",
+      "not": "Plasma'da varsayılan yok; plasma-systemmonitor veya eşdeğerine özel kısayol tanımlanmalı.",
+      "test_kapsami": "Kısayol çakışması olmaması"
+    },
+    {
+      "id": "region-screenshot",
+      "key": "Win+Shift+S",
+      "eylem_tr": "Bölge ekran görüntüsü",
+      "bilesen": "spectacle",
+      "kde_action_id": null,
+      "durum": "dogrulanmamis",
+      "not": "Kurulu Spectacle sürümünün varsayılan kısayolu kontrol edilmeli; farklı bir tuşa zaten atanmış olabilir.",
+      "test_kapsami": "Wayland izin ve bölge seçim akışı"
+    },
+    {
+      "id": "clipboard-ops",
+      "key": "Ctrl+C / Ctrl+V / Ctrl+X / Ctrl+Z",
+      "eylem_tr": "Kopyala / yapıştır / kes / geri al",
+      "bilesen": "uygulama (Qt/GTK)",
+      "kde_action_id": null,
+      "durum": "uygulama_varsayilani",
+      "not": "Sistem düzeyinde yeniden tanımlanmaz. Terminal istisnası: Konsole'da Ctrl+C SIGINT'tir; kopyalama/yapıştırma davranışı profiles/shell/README.md içinde ayrıca belgelenir.",
+      "test_kapsami": "Uygulama bağlamı; terminal istisnası"
+    }
+  ],
+  "sonraki_adim": "UI-02: gerçek Plasma oturumunda System Settings > Shortcuts üzerinden her satırı tek tek uygula, çakışma listesini çıkar, 'durum' alanlarını güncelle."
+}
