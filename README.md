@@ -4,7 +4,7 @@
 
 Windows'tan geçenler için kolay, Türkçe, kişiselleştirilebilir ve kaynak kullanımına dikkat eden LFS tabanlı x86_64 masaüstü projesi.
 
-**Durum:** M1 temel sistem tamamlandı. LFS 12.4-systemd tabanı BIOS/UEFI emülasyonunda ve Hyper-V Gen2 üzerinde gerçek kernel, giriş istemi, DHCP ağı ve kontrollü yeniden başlatmayla doğrulandı. Grafik masaüstü, canlı ISO ve Hyper-V Gen1 testi sonraki aşamalardadır.
+**Durum:** M1 temel sistem tamamlandı. LFS 12.4-systemd tabanı BIOS/UEFI emülasyonunda ve Hyper-V Gen2 üzerinde gerçek kernel, giriş istemi, DHCP ağı ve kontrollü yeniden başlatmayla doğrulandı. alpbahOS Gen1 test VM'i silindi; Gen1 sonuçları tarihsel kanıttır. Güncel test hedefi Gen2'dir. Grafik masaüstü ve canlı ISO sonraki aşamalardadır.
 
 Özel kaynak deposu: [Yoursel71/alpbahOS](https://github.com/Yoursel71/alpbahOS).
 
