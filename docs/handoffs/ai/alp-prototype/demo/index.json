@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "entries": {
+    "htop": {
+      "method": "recipe",
+      "recipe": "recipes/htop.recipe.json"
+    },
+    "firefox": {
+      "method": "flatpak",
+      "flatpak_ref": "org.mozilla.firefox",
+      "remote": "flathub",
+      "version": "130.0"
+    },
+    "alpbah-theme-solid": {
+      "method": "core",
+      "name": "alpbah-theme-solid",
+      "version": "1.0.0",
+      "url": "core/alpbah-theme-solid-1.0.0.tar.gz",
+      "sha256": "8122aeef2ff1774f67c928d484b6112991a9a45f1913bf91d16b33d95546c6b3"
+    }
+  }
+}

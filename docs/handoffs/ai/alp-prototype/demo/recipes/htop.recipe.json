@@ -1,0 +1,11 @@
+{
+  "name": "htop",
+  "version": "3.3.0",
+  "source_url": "https://github.com/htop-dev/htop/releases/download/3.3.0/htop-3.3.0.tar.xz",
+  "sha256": "REPLACE_WITH_REAL_UPSTREAM_SHA256_BEFORE_USE",
+  "build": {
+    "configure": ["./configure", "--prefix=/usr"],
+    "make": ["make"],
+    "make_install": ["make", "install"]
+  }
+}

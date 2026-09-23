@@ -1,0 +1,76 @@
+# alpbahOS interaktif Zsh profili — TASLAK
+#
+# Durum: statik taslak, gerçek terminal oturumunda çalıştırılmadı.
+# Hedef sistemde bu dosyanın /etc/alpbahos/zshrc.alpbah olarak konumlanıp
+# kullanıcı ~/.zshrc dosyasından `source /etc/alpbahos/zshrc.alpbah` ile
+# çağrılması planlanır. Sistem shell'i (/bin/sh) veya build scriptlerinin
+# yorumlayıcısı bu dosyadan ETKİLENMEZ.
+#
+# Kaynak: docs/MASTER_PLAN.md §4
+
+# --- Tamamlama sistemi (Zsh yerleşik) ---
+autoload -Uz compinit
+compinit
+
+# --- Geçmiş ---
+HISTFILE="${HOME}/.zsh_history"
+HISTSIZE=20000
+SAVEHIST=20000
+setopt APPEND_HISTORY
+setopt SHARE_HISTORY
+setopt HIST_IGNORE_DUPS
+setopt HIST_IGNORE_SPACE
+
+# Ctrl+R: geçmiş arama (yerleşik, fuzzy değil — açık karar)
+bindkey '^R' history-incremental-search-backward
+
+# --- Yazım düzeltme: yalnızca komut adı, tüm argümanlar DEĞİL ---
+# AGENTS.md: "Yazım yardımı argümanları/dosya adlarını sessizce yeniden yazmaz."
+setopt CORRECT
+unsetopt CORRECT_ALL
+
+# --- zsh-autosuggestions (soluk öneri) ---
+# Kaynak: https://github.com/zsh-users/zsh-autosuggestions
+# Paket/kurulum yolu Codex tarafında BUILD/BLFS entegrasyonunda sabitlenir.
+#
+# NOT: Eklentinin VARSAYILAN davranışı zaten "kabul != çalıştır" ayrımını
+# sağlar (sağ ok / End önericiyi satıra alır, Enter ayrı adımdır). Bu profil
+# o davranışı override ETMEZ; yalnızca renk ve kaynağı özelleştirir.
+ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#8ea2af'   # --ab-text-muted (soluk gri-mavi)
+
+if [ -f /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
+  source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+fi
+
+# --- zsh-syntax-highlighting ---
+# Kaynak: https://github.com/zsh-users/zsh-syntax-highlighting
+# NOT: Bu eklenti diğer keybinding'lerden SONRA source edilmelidir (upstream uyarısı).
+if [ -f /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]; then
+  source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+fi
+
+# --- Tab tamamlama görünümü ---
+zstyle ':completion:*' menu select
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+
+# --- pkg tamamlama iskeleti ---
+# PKG-01/PKG-02 (motor + CLI sözleşmesi) sabitlenmeden gerçek bir _pkg
+# tamamlama fonksiyonu yazılmaz (MASTER_PLAN: "paket motorunun API'si
+# netleşmeden mağaza işlem mantığı yazma").
+# compdef _pkg pkg
+
+# --- Ctrl+C ---
+# Zsh'nin varsayılan SIGINT/iş kesme davranışı KORUNUR; bu profil tarafından
+# yeniden bağlanmaz veya "kopyala" gibi başka bir anlama getirilmez.
+
+# --- alpbahOS neofetch ASCII karşılaması (isteğe bağlı, varsayılan KAPALI) ---
+# if [ -f /etc/alpbahos/branding/alpbahOS-neofetch-ansi.txt ]; then
+#   cat /etc/alpbahos/branding/alpbahOS-neofetch-ansi.txt
+# fi
+
+# --- Prompt (taslak) ---
+# 256-color kod numaraları --ab-cyan / --ab-cyan-soft için YAKLAŞIK eşleşmedir;
+# gerçek terminalde truecolor doğrulaması yapılmadı.
+autoload -Uz colors && colors
+PROMPT='%F{39}%n@alpbahos%f:%F{75}%~%f%# '
