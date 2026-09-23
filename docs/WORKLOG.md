@@ -359,4 +359,3 @@ BLFS 12.4, M1'in LFS 12.4 tabanıyla uyumluluk için D33 olarak seçildi. Builde
 - VMConnect penceresinin başlığı `alpbahOS-M2-SSH-Gen1`; ekrandaki kernel audit olaylarında `success=yes` ve başarılı syscall sonucu görüldü. Bu satırlar tek başına Plasma ya da login hatası kanıtı değil.
 - SSH üzerinden kernel console loglevel geçici olarak `3` yapıldı (`/proc/sys/kernel/printk`: `3 4 1 7`) ve `getty@tty1` yeniden başlatıldı; servis `active` döndü. Bu ayar kalıcı boot yapılandırması değildir.
 - Ardından alınan guest kanıtı: `loginctl list-sessions` yalnız SSH kaynaklı oturumları gösteriyor; süreç listesinde tty1 için `agetty` var, `sa` tty login'i, KWin veya Plasma süreci yok. Root üzerinden okunan `/dev/vcs1` ekran buffer'ı açıkça `alpbahos login:` istemini içeriyor. Sonuç: login prompt görünür ve hazır, ancak kullanıcı tty1 girişi ve gerçek Plasma/DRM-seat oturumu henüz doğrulanmadı. M07 açık tutuluyor.
-
