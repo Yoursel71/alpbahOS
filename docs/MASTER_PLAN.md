@@ -23,7 +23,7 @@ Kullanıcının kabul ettiği deneyim:
 - Premium, minimalist, opak temel profil; kişiselleştirilebilir akıcı animasyonlar.
 - Steam ve Wine; Office 2016/2019/2021 ailesi için sürüm bazlı uyumluluk testleri.
 - Legacy BIOS ve UEFI; daha sonraki kurucuda internetsiz kurulum ve Windows yanında kurulum.
-- Yerel Hyper-V geliştirme, 300 GB depolama bütçesi; bulut derleme/depolama kullanılmaz.
+- Yerel Hyper-V geliştirme, 300 GB depolama bütçesi; bulut derleme/depolama kullanılmaz. C: NVMe çalışma alanı, F: SATA HDD artifact/build-VM alanıdır.
 - Günde 1–2 saat kullanıcı katkısı; Claude Code ve Codex için özel Git deposunda ayrı çalışma alanları.
 
 Önceki canlı USB/VM tercihi ilk alfayı tanımlar. Sonraki “hepsi olsun” yanıtı grafik, çevrimdışı ve Windows yanında kurulum özelliklerini genel yol haritasına ekler; ilk alfa ile kurulabilir beta ayrı teslimlerdir.
@@ -32,7 +32,7 @@ Kullanıcının kabul ettiği deneyim:
 
 ## 2. Mevcut durum ve kaynaklar
 
-Mevcut Windows bilgisayarı: Ryzen 7 5700, yaklaşık 24 GiB RAM, RTX 5060. F: sürücüsü ST500LT012 SATA HDD ve yaklaşık 350 GiB boş alana sahip. Kullanıcı 300 GB proje bütçesi ayırdı; fiziksel bölüm oluşturulmadı. HDD erişim süresi özellikle çok küçük dosyalı build'leri etkileyebilir; ölçüme göre iş sayısı ayarlanacak.
+Mevcut Windows bilgisayarı: Ryzen 7 5700, yaklaşık 24 GiB RAM, RTX 5060. Kullanıcının 23 Eylül 2026 tarihli disk düzeni bilgisine göre C: NVMe SSD, F: SATA HDD'dir. Bu oturumda `Get-Volume` ile C: 117,789,728,768 byte (~109.7 GiB), F: 182,085,091,328 byte (~169.5 GiB) boş okundu; değerler zamanla değişebilir. Kullanıcı 300 GB proje bütçesi ayırdı; fiziksel bölüm oluşturulmadı. F: üzerindeki HDD erişim süresi özellikle çok küçük dosyalı build'leri etkileyebilir; ölçüme göre iş sayısı ayarlanacak.
 
 Hyper-V PowerShell modülü mevcut, fakat mevcut oturumda VM hostunu okuma yetkisi yok. Özelliğin etkinliği ve VM oluşturma yetkisi kurulum aşamasında doğrulanacak. Bu kontrol için yetki engeli, plan/doküman/Git çalışmasını engellemez. Rootlu, SSH erişimli Mi 9 telefonu yardımcı cihaz olarak mevcut; x86_64 ana derleme hostu veya uyumluluk kanıtı olarak kullanılmayacak.
 

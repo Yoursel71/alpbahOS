@@ -205,3 +205,12 @@ Kapsam: yalnız Gen2 test imajı ve `alpbahOS-M2-SSH-Gen2` VM'i. `/mnt/lfs`, Gen
 
 - After the artifact and Hyper-V v3 working disk both matched SHA-256 `14f22e9074eb3a01267df284317e3191e5f75af4ac56699d005d33f11e78dcd4`, the Builder output `/home/sa/alpbahOS-m2-ssh-gen2-test.vhdx` was removed.
 - A pre-existing `/tmp/alpbahOS-m2-ssh-gen2-test.vhdx` (mtime 2026-09-23 18:30; qemu image info: 24 GiB virtual, 6.45 GiB file) was found. `/sys/block/nbd0/pid` was empty, no `/proc/*/fd` referenced it, and no qemu-nbd/qemu-img process had it open. The one exact file was removed per the temporary-image cleanup instruction. `find /tmp -maxdepth 2 -type f -iname '*.vhdx'` returned no files; `df -h /` returned 98 GiB total, 69 GiB used, 25 GiB free. `nbd0` remained idle.
+
+**Gen2 v3 DNS, account and key-only policy checks**
+
+Environment: live `alpbahOS-M2-SSH-Gen2` v3 guest at `sa@172.28.171.21`.
+
+- `resolvectl status --no-pager`: `eth0` online DNS server `172.28.160.1`; `/etc/resolv.conf` points to `/run/systemd/resolve/stub-resolv.conf` via the recorded relative symlink. `timeout 10 resolvectl query github.com --no-pager` returned `140.82.121.3` in 6.2305 s. Ping to gateway `172.28.160.1` returned 0% loss, 0.422 ms. `networkctl status eth0` showed `routable/online`, DHCP `172.28.171.21/20`, gateway/DNS `172.28.160.1`.
+- `systemctl is-enabled getty@tty1 systemd-resolved sshd`: all three `enabled`. `systemctl --failed`: zero loaded failed units. `/etc/shadow` is `0600 root:root`; `admin` exists as UID 1001, `users,wheel`, `/home/admin` exists. `alp --help` exited 0; `alp list` reported no installed packages.
+- `/etc/ssh/sshd_config` directly confirms `PermitRootLogin no`, `AuthenticationMethods publickey`, `PasswordAuthentication no`, `KbdInteractiveAuthentication no`, `UsePAM yes`, `AllowUsers sa`. External SSH public-key login as sa succeeds. An additional unprivileged `sshd -T` probe printed `no hostkeys available` because sa cannot read the root-owned host private keys; it was not used as effective-config evidence and did not change files. The effective config directives and live key-only login provide the available verification.
+- `loginctl list-sessions --no-legend` currently shows only sa's SSH session (`Type=manager` plus user session); there is no admin tty login yet. VMConnect is open and the user was asked to log in as `admin/admin` without running commands. Console `seat0`, `Type=tty`, active PAM session evidence remains pending.
