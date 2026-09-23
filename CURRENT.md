@@ -107,3 +107,4 @@ Tahmin: ilk Plasma giriş ekranı için 4-7 takvim günü; test edilmiş M2 VHDX
 - `kapidox` wheel oluşturma başarılıydı ancak BLFS pip adımı `doxypypy` bağımlılığını bulamadığı için durdu. Bu belge üretim aracı ilk Plasma oturumu için gerekli olmadığından etkin framework manifestinin devamında bırakıldı; durum M2 raporunda açıkça belirtilecek.
 
 - **KF6 devam durumu:** `kdbusaddons`, `kguiaddons`, `kidletime` için Wayland hedefi korunup `WITH_X11=OFF` yapılandırması kullanıldı; `kwindowsystem` için karşılık gelen `KWINDOWSYSTEM_X11=OFF` seçeneği kullanıldı. `kdnssd`, `ki18n`, `kimageformats`, `kitemmodels`, `kitemviews`, `kplotting`, `kwidgetsaddons`, `solid`, `sonnet` geçti. Sonnet için BLFS Aspell 0.60.8.1 (MD5 `187bd142f522ada555c7aa6b9cbf56e6`) kuruldu; GCC 15 düzeltmesi uygulandı, upstream paket test suite sunmuyor. `threadweaver` sırada.
+
