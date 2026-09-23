@@ -55,6 +55,11 @@ test -f "$ROOTFS/etc/systemd/user/plasma-kwin_wayland.service.d/10-wayland-only.
 
 bash "$SCRIPT_DIR/apply-m2-rootfs-fixes.sh" "$ALP_SOURCE"
 
+test -f "$ROOTFS/usr/lib/systemd/user/dbus.service"
+test -f "$ROOTFS/usr/lib/systemd/user/dbus.socket"
+grep -q '^ExecStart=/usr/bin/dbus-daemon --session --address=systemd:' "$ROOTFS/usr/lib/systemd/user/dbus.service"
+grep -q '^ListenStream=%t/bus$' "$ROOTFS/usr/lib/systemd/user/dbus.socket"
+
 modprobe nbd max_part=8
 [[ -b $NBD ]] || { echo "$NBD is unavailable." >&2; exit 1; }
 if [[ -s /sys/block/nbd0/pid ]]; then
@@ -162,6 +167,10 @@ test ! -e "$MOUNT/etc/ssh/ssh_host_ed25519_key"
 [[ $(readlink "$MOUNT/etc/resolv.conf") == ../run/systemd/resolve/stub-resolv.conf ]]
 [[ $(readlink "$MOUNT/usr/lib/systemd/user/plasma-kwin_wayland.service") == /opt/kf6/lib/systemd/user/plasma-kwin_wayland.service ]]
 grep -q '^ExecStart=/opt/kf6/bin/kwin_wayland_wrapper$' "$MOUNT/etc/systemd/user/plasma-kwin_wayland.service.d/10-wayland-only.conf"
+test -f "$MOUNT/usr/lib/systemd/user/dbus.service"
+test -f "$MOUNT/usr/lib/systemd/user/dbus.socket"
+grep -q '^ExecStart=/usr/bin/dbus-daemon --session --address=systemd:' "$MOUNT/usr/lib/systemd/user/dbus.service"
+grep -q '^ListenStream=%t/bus$' "$MOUNT/usr/lib/systemd/user/dbus.socket"
 printf 'ROOT_UUID=%s\nEFI_UUID=%s\nROOT_PARTUUID=%s\n' "$ROOT_UUID" "$EFI_UUID" "$ROOT_PARTUUID"
 printf 'VHDX=%s\n' "$OUT"
 sync
