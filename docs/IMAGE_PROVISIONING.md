@@ -13,9 +13,12 @@ key, `/etc/shadow`, PAM login, and `pam_systemd`; the test image builder checks
 those prerequisites before copying the rootfs.
 
 `scripts/apply-m2-rootfs-fixes.sh` enables tty1 getty and systemd-resolved,
-sets the resolved stub `/etc/resolv.conf`, and installs the `alp.py` blob from
-commit `e8b0376` after checking its expected SHA-256. The Gen2 image builder
-runs this script before creating the image. It also adds `admin` (UID 1001,
+sets the resolved stub `/etc/resolv.conf`, installs the D-Bus 1.16.2 upstream
+user-bus systemd units from the checksum-verified source archive, and installs
+the `alp.py` blob from commit `e8b0376` after checking its expected SHA-256.
+The D-Bus user units are required by the packaged PipeWire user service. The
+Gen2 image builder runs this script before creating the image and checks that
+both units are present. It also adds `admin` (UID 1001,
 `users` and `wheel`, password `admin`) inside the throwaway test image only.
 SSH remains restricted to key-only `sa`. Do not use this test builder for a
 release image.

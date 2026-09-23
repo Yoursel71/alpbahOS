@@ -162,3 +162,10 @@ Uzun yeniden keşif, tekrar tekrar aynı hash kontrolü veya kanıtsız “M2 ta
 
 - M04 sahiplik çıkış koşulu açık: `/mnt/lfs/var/lib/alp/db.json` boş `packages`; daha derin taramada bulunan install manifests BLFS/desktop'a ait, LFS base'i kapsamıyor. Kontrollü base reinstall veya tam tarihsel manifest gerekli; dosya uid/gid'sinden tahmin etme. Değerlendirme: `docs/verification/m04-base-ownership-assessment-2026-09-23.md`.
 - Artifact ve komut kanıtları: `docs/verification/p0-p2-audit-2026-09-23.log`. Bu bölümdeki durumlar `CURRENT.md` ile birlikte okunmalı.
+
+## 14. M06 D-Bus user bus ve ayrı Gen2 test VM — 24 Eylül 2026
+
+- Eski Gen2 v3 guest'te PipeWire başlatması `Unit dbus.service not found` dedi; Builder `/mnt/lfs/usr/lib/systemd/user` da dbus user unit içermiyordu. `scripts/apply-m2-rootfs-fixes.sh` artık checksum'ı sabitlenmiş D-Bus 1.16.2 arşivinden `dbus.service`/`dbus.socket` upstream template'lerini kuruyor; image script bu dosyaları ve içeriklerini zorunlu doğruluyor.
+- Yeni test artifact: `F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen2-dbus-test.vhdx`, SHA-256 `c877ff26fc488b1e917c77d14e1f519d279b5440a5f236eb626fa260733c070b`; ayrı working copy SHA eşleşiyor. Eski `alpbahOS-M2-SSH-Gen2` diski/VM'i değiştirilmedi.
+- Yeni VM `alpbahOS-M2-SSH-Gen2-DBus`, IP en son `172.28.171.33`, MAC `00-15-5D-00-02-0A`, kernel `6.16.1-alpbahOS`, boot ID `67e367ff-b6a0-4f6f-9e55-0e2202675d84`. DNS, HTTPS/TLS, SSH, host ping, getty/resolved/sshd ve KWin Wayland-only kontrolü geçti.
+- SSH user session'ında `systemctl --user start pipewire.service wireplumber.service pipewire-pulse.socket` başarılı; PipeWire graph'te yalnız Dummy/Freewheel driver var. `aplay -l` gerçek soundcard göstermedi. VMConnect tty1 admin/admin login hâlâ gerekli; bundan sonra `loginctl` ile `seat0`, `Type=tty`, PAM/systemd oturumu ve gerçek Plasma testi değerlendirilecek. Komut çalıştırma kullanıcıdan istenmeyecek.
