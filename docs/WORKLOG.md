@@ -476,3 +476,11 @@ Builder `/mnt/lfs` tekrar denetiminde `alp` veritabanı boş ve LFS base dosyala
 - Yeni guest KWin doğrulaması: `FragmentPath=/usr/lib/systemd/user/plasma-kwin_wayland.service`, `DropInPaths=/etc/systemd/user/plasma-kwin_wayland.service.d/10-wayland-only.conf`, etkin ExecStart `/opt/kf6/bin/kwin_wayland_wrapper`, `--xwayland` olmadan. `loginctl` yalnız SSH session/user manager gösterdi; yeni VM'de tty1 `admin/admin` konsol girişi, `seat0`/`Type=tty` PAM session ve gerçek Plasma testi bekliyor.
 - `loginctl seat-status seat0 --no-pager` DRM `card0`, `card0-Virtual-1` ve AT keyboard aygıtlarını listeliyor; `loginctl list-sessions --no-legend`'da admin/tty session yok. Seat aygıtlarının görülmesi admin PAM login veya Plasma'yı kanıtlamaz.
 - Build tamamlandıktan sonra `/sys/block/nbd0/pid` boştu; `sudo find /tmp -maxdepth 2 -type f -name '*.vhdx'` bir sonuç döndürmedi. Builder `/` 19 GiB boş alanda kaldı.
+
+## M06 Gen2 ALSA loopback doğrulaması — hazırlık başladı
+
+Sahip: Codex. Sınır: Builder `/mnt/lfs` içindeki Linux 6.16.1 kaynağı/config'i ve modül ağacı; imaj üretimi mevcut Gen2 image script'iyle; test yalnız ayrı Gen2 test VM'inde. M04 base ownership DB doldurulmayacak; mevcut Gen2 test VM'i değiştirilmeyecek.
+
+Canlı Gen2 DBus test VM `172.28.171.33` (MAC `00-15-5D-00-02-0A`) üzerinde `aplay -l` “no soundcards found” döndürdü; boot logu `ALSA device list: No soundcards found` diyor. Guest kernel config'inde `CONFIG_SND_HDA=y`, `CONFIG_SND_HDA_INTEL=y`, `CONFIG_SND_ALOOP` kapalı. Guest `/dev/snd` yalnız `seq`/`timer`; DNS (`resolvectl query github.com`), HTTPS (`curl` HTTP 200, TLS verify 0), `sshd`, `getty@tty1`, `systemd-resolved` ve ping 4/4 geçiyor. KWin user unit'in drop-in'i etkin ExecStart'tan `--xwayland` kaldırıyor. SSH session'ları dışında tty/seat PAM login yok.
+
+İlerideki test artefaktında virtual ALSA loopback PCM yolunu sınamak için kernel modülünü `/mnt/lfs`-e kurup, yalnız test imajında modülün açılışta yüklenmesini sağlayan tekrar üretilebilir yol inceleniyor. Şu ana kadar Builder rootfs'i veya VM diski değiştirilmedi; başlamadan önce kaynak/config sahipliği, boş disk alanı, aktif build ve image script sınırları doğrulanacak. Fiziksel ses aygıtı testi olarak raporlanmayacak.
