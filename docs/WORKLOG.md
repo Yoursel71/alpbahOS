@@ -298,3 +298,8 @@ BLFS 12.4, M1'in LFS 12.4 tabanıyla uyumluluk için D33 olarak seçildi. Builde
 - Kullanıcının yeni release'leri F: diskinde tutma talebi doğrultusunda, Builder'daki M1 temel VHDX'ten bağımsız `/home/sa/alpbahOS-m2-candidate.vhdx` üretildi ve `F:\alpbahOS-build\artifacts\alpbahOS-m2-candidate.vhdx` konumuna kopyalandı. Boyut 6,685,720,576 byte; Builder ve F: kopyalarının SHA-256 değeri `c82634aade41c9eeea89c6eaf0387c1dc4acafe0059463e4847823070158ea77`. F: dizininde `.sha256` ve doğrulama sınırlarını açıklayan `.txt` manifesti var.
 - Aday kopyada `sa` hesabı, shadow hash, grup, hostname, machine-id, fstab ve hosts dosyaları M1 tabanıyla byte-byte karşılaştırıldı. `sa` wheel üyesi; chroot içinde `visudo -c` başarılı, `plasmashell --version` 6.4.4, 6.16.1-alpbahOS modülleri mevcut. Read-only doğrulamada dosya sistemi tutarlılığı korunarak M1 tabanı ve aday ayrı NBD aygıtlarıyla bağlandı; test sonrasında iki bölüm de ayrıldı.
 - M07 halen açık: gerçek Hyper-V guest boot ve Plasma Wayland oturumu doğrulanmadı. Offscreen sürüm çıktısı ve loader kontrolü masaüstü oturumu kanıtı sayılmıyor.
+
+## 23 Eylül 2026 — Hyper-V aday açılışı için erişim durumu
+
+- Windows host'ta OpenSSH `sshd` hizmeti `Running/Automatic`; yerel oturum kullanıcısı `thewo` ve mevcut süreç yükseltilmemiş. `claude_alpbahos_m2` anahtarıyla `thewo@127.0.0.1` bağlantı denemesi public-key/password yöntemlerinde reddedildi. `Get-VM` daha önce yönetici yetkisi olmadan kullanılamadı.
+- Bu nedenle adayla ayrı VM oluşturulmadı, mevcut VM'ler başlatılmadı/durdurulmadı ve aday guest boot/Plasma oturumu iddia edilmiyor. Yönetici SSH anahtar yetkilendirmesi veya kullanıcı tarafından sağlanacak erişim bekleniyor; M1 ve çalışan VM disklerine dokunulmadı.
