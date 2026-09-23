@@ -353,3 +353,9 @@ BLFS 12.4, M1'in LFS 12.4 tabanıyla uyumluluk için D33 olarak seçildi. Builde
 - **Temizlik:** Önce `Off` olduğu doğrulanan `alpbahOS-M2-Candidate-Gen1` ve `alpbahOS-M2-Gen1` VM konfigürasyonları kaldırıldı; yalnız onlara ait candidate artifact/manifest ve F: VM dizinleri silindi. M1 final VHDX ve Builder korunuyor. Builder'dan geçici base/candidate/SSH VHDX kopyaları silinince Ubuntu boş alanı 25 GiB oldu; LFS kaynak ve build logları tutuldu. `/mnt/lfs` üzerindeki geçici bind mount'lar derleme sonrası ayrıldı.
 - **M1 checksum farkı:** `C:\alpbahOS\artifacts\alpbahOS-m1-final-v2.vhdx` dosyası bu turda değiştirilmedi; güncel `Get-FileHash` iki kez `200da434d4581ab29ef40600498b18d0d21e2b451555e13d086d04789820e945` verdi. CURRENT/M1 doğrulama geçmişinde `07123bf1...` kayıtlı. Bu kayıt ile diskteki mevcut içerik uyuşmuyor; eski bir hash/M1 içerik sürümü olabilir. Dosya korundu, fark ayrıca incelenmeli.
 - **Devam kapısı:** Kullanıcıdan Windows/Hyper-V komutu istenmiyor. `sa` kullanıcısının VMConnect'te normal login'i sonrası aktif seat üzerinde Plasma Wayland oturumu doğrulanacak; M07 açık tutuluyor.
+
+## 23 Eylül 2026 — M2 tty1 konsolunun yeniden görünür kılınması
+
+- VMConnect penceresinin başlığı `alpbahOS-M2-SSH-Gen1`; ekrandaki kernel audit olaylarında `success=yes` ve başarılı syscall sonucu görüldü. Bu satırlar tek başına Plasma ya da login hatası kanıtı değil.
+- SSH üzerinden kernel console loglevel geçici olarak `3` yapıldı (`/proc/sys/kernel/printk`: `3 4 1 7`) ve `getty@tty1` yeniden başlatıldı; servis `active` döndü. Bu ayar kalıcı boot yapılandırması değildir.
+- Ardından alınan guest kanıtı: `loginctl list-sessions` yalnız SSH kaynaklı oturumları gösteriyor; süreç listesinde tty1 için `agetty` var, `sa` tty login'i, KWin veya Plasma süreci yok. Sonuç: giriş ekranının görünürlüğü toparlandı, fakat kullanıcı tty1 girişi ve gerçek Plasma/DRM-seat oturumu henüz doğrulanmadı. M07 açık tutuluyor.
