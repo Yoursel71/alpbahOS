@@ -1,0 +1,202 @@
+alpbahOS P0/P1/P2 audit evidence — 2026-09-23
+Host: Windows desktop; Builder: Ubuntu 24.04 VM `yrsk`; target rootfs: /mnt/lfs.
+
+[P0-1, P0-7, P0-8, P0-9] Access and read-only Builder inspection
+Command: Get-VM | Select-Object Name,State,Generation,ProcessorCount,MemoryStartup
+Result: Hyper-V denied the current Windows token: “Bu görevi tamamlamak için gerekli izne sahip değilsiniz”. No VM state was changed.
+
+Command: ssh -i C:\Users\thewo\.ssh\claude_alpbahos_m2 -o BatchMode=yes sa@172.28.162.172 "lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS; df -h /"
+Result:
+  sda 210G disk
+  sda1 1G vfat /boot/efi
+  sda2 2G ext4 /boot
+  sda3 206.9G LVM2_member
+  ubuntu--vg-ubuntu--lv 100G ext4 /
+  df: 98G total, 69G used, 25G available, 74% used.
+The Builder VHDX virtual capacity is 210 GiB. This pass did not resize the VHDX, PV, or LV.
+
+Command: ssh -i C:\Users\thewo\.ssh\claude_alpbahos_m2 -o BatchMode=yes sa@172.28.162.172 "sudo -n vgs; sudo -n lvs"
+Result: both commands returned “sudo: a password is required”. VG/LV free-space values are therefore unavailable; no resize was attempted.
+
+Command: ssh -i C:\Users\thewo\.ssh\claude_alpbahos_m2 -o BatchMode=yes sa@172.28.162.172 "sed -n '1,100p' /mnt/lfs/etc/passwd; sed -n '1,100p' /mnt/lfs/etc/group; cat /mnt/lfs/etc/pam.d/system-session; ls -l /mnt/lfs/etc/shadow /mnt/lfs/etc/pam.d/login"
+Result: rootfs has no `sa` account; `wheel` and `users` groups exist; `/etc/shadow` and `/etc/pam.d/login` do not exist; `system-session` is only `session required pam_unix.so`. PAM-enabled Shadow/login provisioning is not complete in the authoritative rootfs.
+
+Command: ssh -i C:\Users\thewo\.ssh\claude_alpbahos_m2 -o BatchMode=yes sa@172.28.162.172 "grep -R -- '--xwayland' /mnt/lfs/opt/kf6/lib/systemd/user/plasma-kwin_wayland.service*"
+Result: `/mnt/lfs/opt/kf6/lib/systemd/user/plasma-kwin_wayland.service` contains `ExecStart=/opt/kf6/bin/kwin_wayland_wrapper --xwayland`.
+
+Command: ssh -i C:\Users\thewo\.ssh\claude_alpbahos_m2 -o BatchMode=yes -o ConnectTimeout=5 sa@172.28.169.177 "hostname; id"
+Result: TCP/22 connection timed out. The live guest could not be inspected; guest `systemctl --user cat`, session-start path, journal, and tty1 environment remain unverified.
+
+[P0-2] alp engine hashes; no package mutation
+Command: ssh -i C:\Users\thewo\.ssh\claude_alpbahos_m2 sa@172.28.162.172 "sha256sum /mnt/lfs/usr/lib/alp/alp.py"
+Result: `d06c72ee0d1048b10af0889be8a815a5e4fc771c7897e42847b5f2dcc655b830`.
+Command: git show e8b0376:docs/handoffs/claude/alp-prototype/alp.py | sha256sum
+Result: `7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132`.
+Result: hashes differ. Commit `e8b0376` is merged into main as merge commit `46c58b1`; it has not been installed into `/mnt/lfs`. No `alp remove` or `alp upgrade` was run in this audit. Hash claims in earlier WORKLOG rows were corrected. The obsolete main-owned `004-alp-real-lfs-file-mode-fix.patch` was removed.
+
+[P0-3, P2-17] Plasma Workspace patch validation against clean 6.4.4 source
+Source archive copied read-only from Builder: `/mnt/lfs/sources/kde/plasma-workspace-6.4.4.tar.xz` (20 MiB); extracted under `C:\tmp\plasma-pristine`.
+Commands (run from the extracted clean source tree):
+  git apply --check -p1 C:\alpbahOS\docs\patches\plasma-workspace-6.4.4-wayland-no-xwayland.patch
+  patch --dry-run -p1 --fuzz=0 < C:\alpbahOS\docs\patches\plasma-workspace-6.4.4-wayland-no-xwayland.patch
+  git apply --check -p1 C:\alpbahOS\docs\patches\plasma-workspace-6.4.4-wayland-no-x11.patch
+  patch --dry-run -p1 --fuzz=0 < C:\alpbahOS\docs\patches\plasma-workspace-6.4.4-wayland-no-x11.patch
+Result: all commands exited 0; GNU patch reported the expected files with no fuzz. The no-Xwayland patch was regenerated from the upstream `startup.cpp` and no longer has a corrupt hunk. The no-X11 patch was regenerated from the archive after correcting dashboard braces, removing `find_package(X11 QUIET)`, restoring unconditional `interactiveconsole`, and adding `config-X11.h` to all affected sources/headers. Static scan: all source/header files with `#if HAVE_X11` include `config-X11.h`. No Plasma rebuild or session test was performed.
+
+[P1-5, P2-11] Compatibility research
+Wine 11.0 upstream release notes say new WoW64 is fully supported and can run 32-bit Windows applications without a 32-bit Unix process/library stack. Valve's current Steam for Linux README still requires 32-bit glibc and 32-bit graphics drivers. Source links are in `docs/DECISIONS.md`; D22/D32 remains open for user decision.
+
+[P0-6, P0-7, P0-8, P2-10, P2-12, P2-13, P2-14, P2-15, P2-16]
+Documentation updated in CURRENT.md, WORKLOG.md, DECISIONS.md, MASTER_PLAN.md, BACKLOG.md, AGENTS.md, CLAUDE.md, and HYPERV_PLAN.md. A repeatable test-user provisioning script was added; command `bash -n scripts/provision-m2-test-user.sh` exited 0. It was not run against the rootfs because its PAM/shadow prerequisites are currently absent and Builder root access is unavailable.
+
+## 23 Eylül 2026 — P0 işi yeniden denetimi (bu oturum)
+
+Kapsam: salt okunur tekrar kontrolü. Bu oturumda rootfs, VHDX, LV veya VM değiştirilmedi; `alp remove`/`alp upgrade` çalıştırılmadı. Workspace başında `git status --short --branch` alındı: `main...origin/main [ahead 16]`; mevcut kullanıcı değişiklikleri korunuyor. Claude dosyaları ve `docs/patches/plasma-desktop-6.4.4-wayland-no-netwm.patch` değiştirilmedi.
+
+**Builder bağlantısı ve storage**
+
+Komut: `ssh -i C:\Users\thewo\.ssh\claude_alpbahos_m2 -o BatchMode=yes -o ConnectTimeout=8 sa@172.28.162.172` üzerinden `hostname; id; lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS; df -h / /mnt/lfs; vgs; lvs; sudo -n vgs; sudo -n lvs; findmnt /mnt/lfs`.
+
+Sonuç: SSH başarılı; host `yrsk`, kullanıcı `uid=1000(sa)`, gruplar arasında `sudo` var. `lsblk`: `sda` 210G, `sda1` 1G EFI, `sda2` 2G `/boot`, `sda3` 206.9G LVM PV, root LV 100G. `df`: `/` ve `/mnt/lfs` aynı ext4 root dosya sisteminde, 98G toplam / 69G kullanım / 25G boş. `findmnt -T /mnt/lfs` hedefi `/` olarak gösteriyor; `/mnt/lfs` ayrı mount değil, rootfs dizini. Yetkisiz `vgs`/`lvs` LVM lock erişimi hatası verdi; `sudo -n vgs` ve `sudo -n lvs` ikisi de `sudo: a password is required` döndürdü. VHDX, PV veya LV büyütülmedi. İmaj üretimi için root yetkisi, LVM free space ve hedef artifact alanı doğrulanamadı.
+
+Not: ilk birleşik SSH denemesinde PowerShell içinden çok katmanlı shell quoting bozulduğu için uzak `bash -c` sözdizimi hatası verdi; hiçbir değişiklik yapmadı. Tekrar deneme SSH stdin üzerinden `bash -s` ile yapıldı. CRLF'li stdin yüzünden `du -sh /mnt/lfs` izin uyarıları verdi ve bazı ilk probe satırları `\r` nedeniyle başarısız oldu; bu nedenle path/hash/PAM kontrolleri sadeleştirilmiş, CR temizlenmiş ikinci stdin betiğiyle tekrarlandı. Bunlar da salt okunur denemelerdi.
+
+**PAM, Shadow, hesap ve KWin rootfs durumu**
+
+Komut: Builder'a stdin üzerinden `bash -s` gönderilerek `test -e` ile `/mnt/lfs/etc/{shadow,pam.d/login,pam.d/system-session}`, `pam_systemd.so`, `systemd-user-sessions`, `useradd`, `usermod`, `chpasswd`, Bash denetlendi; `awk` ile yalnız `sa`/`wheel`/`users` kayıtları sorgulandı; `cat /mnt/lfs/etc/pam.d/system-session`; `stat`; `sed -n '1,30p' /mnt/lfs/opt/kf6/lib/systemd/user/plasma-kwin_wayland.service`; drop-in dizinleri listelendi.
+
+Sonuç: `/etc/shadow` ve `/etc/pam.d/login` yok; `system-session` var fakat yalnız `session required pam_unix.so` içeriyor, `pam_systemd` çağrısı yok. `pam_systemd.so`, `systemd-user-sessions`, `useradd`, `usermod`, `chpasswd` ve `/usr/bin/bash` mevcut. `wheel` GID 97 ve `users` GID 999 mevcut; rootfs `/etc/passwd` içinde `sa` yok. `/mnt/lfs/opt/kf6/lib/systemd/user/plasma-kwin_wayland.service` halen `ExecStart=/opt/kf6/bin/kwin_wayland_wrapper --xwayland`; `/mnt/lfs/etc/systemd/user/plasma-kwin_wayland.service.d` drop-in'i bulunmuyor. Rootfs içindeki ilgili dosyalar `root:root` sahipli, mevcut SSH `sa` yetkisiyle yazılabilir değil. Provisioning script'i çalıştırılmadı; önkoşulları sağlanmamış ve parola hash'i girdi olarak sağlanmamış durumda. Parola/public key değeri okunmadı veya loglanmadı.
+
+**`alp.py` hash karşılaştırması**
+
+Komut: `sha256sum /mnt/lfs/usr/lib/alp/alp.py` (Builder); beklenen kaynak hash'i `git show e8b0376:docs/handoffs/claude/alp-prototype/alp.py` için önceki audit kaydıyla karşılaştırıldı.
+
+Sonuç: rootfs SHA-256 `d06c72ee0d1048b10af0889be8a815a5e4fc771c7897e42847b5f2dcc655b830`; beklenen merge edilmiş kaynak SHA-256 `7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132`; eşleşmiyor. Bu yalnızca raporlandı; `alp.py` değiştirilmedi.
+
+**Hyper-V ve canlı guest**
+
+Komutlar: `Get-VM | Select-Object Name,State,Generation,ProcessorCount,MemoryStartup,Path`; `Get-VMHardDiskDrive -VMName *`; `Get-VMHost`; ayrıca `Test-NetConnection 172.28.169.177 -Port 22 -InformationLevel Quiet`.
+
+Sonuç: üç Hyper-V yönetim cmdlet'i de yerel Windows token'ı için “Bu görevi tamamlamak için gerekli izne sahip değilsiniz” verdi. VM/disk listesi alınamadı; VM state veya VHDX'e dokunulmadı. Port testi `False` verdi. Komut: `ssh -i C:\Users\thewo\.ssh\claude_alpbahos_m2 -o BatchMode=yes -o ConnectTimeout=5 -o ConnectionAttempts=1 sa@172.28.169.177 "hostname; id; loginctl list-sessions --no-legend"`. Sonuç: `ssh: connect to host 172.28.169.177 port 22: Connection timed out`.
+
+**Bu oturumun P0 kapı durumları**
+
+- P0-1 / hesap ve rootfs-image provisioning: **KALDI / BLOKLANDI** — login PAM, Shadow ve `sa` eksik; sudo/root yazma yetkisi yok.
+- P0-2 / rootfs `alp.py` sürümü: **KALDI** — yukarıdaki hash'ler farklı; talimat gereği dosya değiştirilmedi.
+- P0-3 / temiz kaynak patch uygunluğu: **ÖNCEKİ AUDIT'TE GEÇTİ** — bu oturumda yeniden derleme veya patch uygulama yapılmadı; no-netwm patch dosyasına dokunulmadı.
+- P0-4 / KWin systemd başlatma: **KALDI / BLOKLANDI** — rootfs unit `--xwayland` kullanıyor, override kurulu değil.
+- P0-5 / X11-uyumluluk, kilit ekranı ve renderer kararları: **AÇIK** — DECISIONS.md'deki kullanıcı karar kapısı değişmedi; bu oturumda ilgili build/tercih çalışması yapılmadı.
+- P0-6 / dokümantasyonda PAM iddiası: **GEÇTİ** — mevcut kayıtlar PAM/login eksikliğini doğru ifade ediyor; bu oturumda buna aykırı başarı iddiası eklenmedi.
+- P0-7 / tty login, `pam_systemd`, runtime dir ve journal kanıtı: **BLOKLANDI** — guest erişimi timeout; rootfs PAM da eksik.
+- P0-8 / güncel M2 kernel ile Gen2/UEFI: **BLOKLANDI** — Hyper-V erişimi yok; guest boot testi yapılmadı.
+- P0-9 / disk/LVM alanı: **KISMİ / BLOKLANDI** — Builder root filesystem'de 25G boşluk görüldü; LVM free space ve VHDX/artifact alanı yetki olmadan doğrulanamadı. Büyütme yapılmadı.
+
+Yeni/test VHDX **üretilmedi**; yol ve SHA-256 yok. `fa29d476…` eski release VHDX'ine dokunulmadı. Gen2, tty1 login ve Plasma/Wayland/KWin testleri başlatılmadı. Log: `docs/verification/p0-p2-audit-2026-09-23.log` (bu kayıt).
+
+Son ek kontroller: Builder `test -e /mnt/lfs/etc/systemd/user/plasma-kwin_wayland.service.d/10-wayland-only.conf` sonucu `DROPIN_MISSING`; dizin de `DROPIN_DIRECTORY_MISSING`. `git diff --check` başlangıç `git status`'unda zaten değiştirilmiş görünen Plasma Workspace patch dosyalarında trailing whitespace/EOF boş satır uyarıları verdi; bu patch dosyaları bu oturumda düzenlenmedi. PowerShell'de `git show ... | Get-FileHash` pipeline denemesi dosya içerik satırlarını yol gibi yorumladığı için başarısız oldu; shell'de `bash -n scripts/provision-m2-test-user.sh` denemesi de yerel Windows hostta `bash` komutu bulunmadığından çalışmadı. Script sözdizimi için önceki audit'te kayıtlı başarılı `bash -n` sonucu geçerliliğini koruyor. Bu iki başarısız yerel deneme dosya değiştirmedi.
+
+## 23 Eylül 2026 — SSH image preparation follow-up
+
+Builder/rootfs actions (all against authoritative `/mnt/lfs`):
+- `ssh alp-builder 'hostname; id'` -> `yrsk`, `sa` UID 1000. `df -h /mnt/lfs` -> root filesystem 98G total, 25G available; no resize.
+- `md5sum -c` for `/mnt/lfs/sources/openssh-10.0p1.tar.gz` -> `OK`; expected BLFS hash `689148621a2eaa734497b12bed1c5202`.
+- First OpenSSH `configure` attempts exited during generated `config.status`: malformed 535-line ed-diff cache hunk (`0a1,534`). The generated temporary file was backed up outside the source tree; exactly that hunk was removed from `/mnt/lfs/tmp/openssh-10.0p1/config.status`; `/bin/bash -n` -> exit 0; `./config.status` -> exit 0. OpenSSH `make -j2` and `make install` then completed. Build/install logs are `/mnt/lfs/tmp/alp-logs/openssh-gen2-build-codex-20260923.log`, `/mnt/lfs/tmp/openssh-make-codex.log`, `/mnt/lfs/tmp/openssh-install-codex.log`.
+- `make install` generated host keys before the `sshd` privilege-separation account existed; all six newly generated private/public files were removed. Rootfs has no `/etc/ssh/ssh_host_*` afterward. `sshd.service` enabled for multi-user; service `ExecStartPre` runs `ssh-keygen -A` at guest boot.
+- Installed key-only server policy: port 22, `UsePAM yes`, `AllowUsers sa`, `AuthenticationMethods publickey`, password/kbd-interactive auth disabled, root login disabled. `sshd -t -f /etc/ssh/sshd_config -h /tmp/sshd-config-test-key` -> exit 0 using an ephemeral ed25519 test key; test key removed. `sshd -T` confirmed effective values. `systemctl --root=/mnt/lfs is-enabled sshd.service` -> `enabled`.
+- The first test-user provision command stopped before user changes because the tracked KWin drop-in was not staged at the script's expected relative path. After staging that config, `scripts/provision-m2-test-user.sh` -> exit 0; `sa` UID1000 in `users` and `wheel`; authorized_keys mode 0600/owner UID1000; KWin Wayland-only drop-in installed. No plaintext password, password hash, or private key was logged or written to repository.
+- `chroot /mnt/lfs /usr/bin/alp --help` -> exit 0; `alp list` -> exit 0, empty package database. `/mnt/lfs/usr/lib/alp/alp.py` SHA-256 `d06c72ee0d1048b10af0889be8a815a5e4fc771c7897e42847b5f2dcc655b830`, expected merged source SHA-256 `7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132`; mismatch only reported, file untouched. No `alp remove` or `alp upgrade`.
+- Local SSH config verification: `ssh -G alp-builder` -> `sa@172.28.162.172` with the configured AlpbahOS key; `ssh -G alp-m2-gen1` -> `sa@172.28.169.177`, correcting the prior false Gen2 label. `ssh alp-builder 'hostname; id -un'` -> success; `ssh alp-m2-gen1` -> TCP/22 timeout.
+- `Get-VM`/`Get-VMHardDiskDrive` for `alpbahOS-M2-SSH-Gen1` -> Hyper-V authorization denied. No VM or disk modified. New Gen2 VHDX/VM has not been created; SSH active/login and Plasma have not been tested on a guest.
+## 23 Eylül 2026 — Gen2 boot kök nedeni düzeltmesi ve P0 doğrulaması (Claude, `alp-m2-gen2`)
+
+Kapsam: kullanıcının pasted talimatı ile devam. `git -C C:\alpbahOS status --short --branch` başlangıçta `main...origin/main [ahead 16]`, önceki oturumdaki tüm değişiklikler korunmuş halde bulundu; hiçbiri sıfırlanmadı/stash edilmedi. Bu oturumda `/mnt/lfs` hiç mount edilmedi/değiştirilmedi; `alp remove`/`alp upgrade` çalıştırılmadı; commit/push yapılmadı.
+
+**Kök neden teşhisi**
+
+Ekrandaki hata (`VFS: Cannot open root device "UUID=..."`) initramfs'siz kernel'in `root=UUID=` (dosya sistemi UUID'si) argümanını çözemeyişinden kaynaklanıyordu; bu yalnızca bir initramfs/udev ile çözülür, çıplak kernel yalnızca `root=PARTUUID=` (GPT bölüm GUID'i) veya `/dev/sdaN` anlar. `scripts/build-m2-gen2-test-image.sh` bu oturumdan önce zaten `root=PARTUUID=$ROOT_PARTUUID` kullanacak şekilde güncellenmişti (20:32 UTC), ama Builder'daki mevcut `/tmp/alpbahOS-m2-ssh-gen2-test.vhdx` (hash `f606aedf…`) hâlâ eski `root=UUID=` satırıyla üretilmiş standalone GRUB imajıydı; script'in güncellenmesi geriye dönük imajı otomatik düzeltmiyordu.
+
+**Uygulanan düzeltme**
+
+Yeni script: `scripts/patch-m2-gen2-root-partuuid.sh` (bu oturumda eklendi). Yalnızca `/tmp/alpbahOS-m2-ssh-gen2-test.vhdx`'i (kaynak hash `f606aedf3e54e5235b11f87bf87ae328c94deb3b5d3a85fa3d55f197e292705f` doğrulanarak) NBD ile bağlar, `grub.cfg`'deki `root=UUID=… rw` satırını gerçek `blkid`/`sgdisk -i 2` ile çapraz doğrulanmış `root=PARTUUID=… rootwait rw` ile değiştirir (`rootwait` eklendi: Hyper-V storvsc sürücüsü diski geç tanıtabiliyor, PARTUUID doğru olsa bile bu olmadan aynı hata tekrar edebilirdi), `grub-mkstandalone` ile EFI uygulamasını yeniden üretir, eski `grub.cfg`+`BOOTX64.EFI`'yi `/tmp/alpbahOS-m2-gen2-before-partuuid/` altına yedekler. Komut: `ssh alp-builder 'sudo -n bash /tmp/claude-patch-m2-gen2-root-partuuid.sh'` → exit 0. Yeni imaj SHA-256: `da7b69b3d43ea75250b3f631aef1e7c3c0357ca49be02863173c96c18139a849`. `qemu-img check` temiz.
+
+**Artifact ve VM çalışma diski güncellemesi**
+
+Yeni imaj Builder'dan Windows host'a `scp` ile kopyalandı, hash doğrulandı (`da7b69b3…` eşleşti), `F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen2-test.vhdx` üzerine yazıldı (hash tekrar doğrulandı). VM'in çalışma diski `alpbahOS-M2-SSH-Gen2-v2.vhdx` `alp-windows-admin` SSH ile `alpbahOS-M2-SSH-Gen2-v2.before-partuuid.vhdx` olarak yedeklendi (silinmedi), yerine yeni imaj kopyalandı ve hash doğrulandı. M1 artifact'ı ve Gen1 diskine dokunulmadı.
+
+**VM başlatma ve IP keşfi**
+
+`Stop-VM -TurnOff -Force` → `Start-VM`. `Get-VMNetworkAdapter` durumu önceki `{LostCommunication}`'dan `Ok`'a döndü ama KVP entegrasyon servisi guest'te çalışmadığı için (`İletişim Yok`) IP raporlanmadı. Seri konsol denemesi: Gen2 VM'lerde `Set-VMComPort -Path` yalnız named pipe kabul ediyor, düz dosya yolu vermek `Start-VM`'i "Parametre hatalı (0x80070057)" ile başarısız kılıyor; bu yol terk edildi, COM1/COM2 path'leri temizlendi. Bunun yerine host tarafında `172.28.160.0/20` (Default Switch alt ağı, `Get-NetIPAddress` ile doğrulandı) üzerinde 4096 adresi 64 paralel runspace ile ping'leyip ARP tablosunu (`Get-NetNeighbor`) VM'in bilinen MAC'iyle (`00-15-5D-00-02-09`) eşleştiren tek seferlik bir PowerShell betiği (`/tmp/gen2-scan.ps1`, kalıcı değil) çalıştırıldı. Sonuç: `172.28.160.110`.
+
+**SSH ve P0 kontrolleri**
+
+`~/.ssh/config`'e `alp-m2-gen2 -> 172.28.160.110` eklendi (anahtar: `claude_alpbahos_m2`, `StrictHostKeyChecking accept-new`). `ssh alp-m2-gen2` anahtar tabanlı bağlandı: `uid=1000(sa) gid=999(users) groups=999(users),97(wheel)`, hostname `alpbahos-m2-gen2`.
+
+- `systemctl --failed` → boş (hiçbir birim başarısız değil).
+- `networkctl status` → `eth0` `routable`/`online`, DHCP ile `172.28.160.110/20`, `20-wired.network` doğru eşleşti ("Found matching .network file… based on potentially unpredictable interface name").
+- `getent passwd sa` → `sa:x:1000:999::/home/sa:/bin/bash`; `/etc/shadow` `0600 root:root`; `/etc/pam.d/login` mevcut; `/etc/pam.d/system-session` içinde `pam_systemd.so` var.
+- SSH üzerinden `UsePAM yes` sayesinde `loginctl list-sessions` iki oturum gösterdi (manager + user, `sa`); bu `pam_systemd`'nin SSH girişinde de tetiklendiğinin kanıtı. `/run/user/1000` dolu, `systemctl --user status` → `State: running`, `Failed: 0 units`.
+- `sshd_config` etkin değerleri: `PermitRootLogin no`, `PasswordAuthentication no`, `UsePAM yes`, `AllowUsers sa` — anahtar-only politika canlı imajda da doğrulandı.
+- **tty1 konsol girişi: BULGU — `getty@tty1.service` `disabled`/`inactive`, `multi-user.target.wants/` içinde yok; sistemin varsayılan hedefi `graphical.target` ama hiçbir display manager kurulu değil.** Yani şu anki Gen2 imajında ne tty konsol girişi ne de grafik girişi başlatılıyor; yalnız SSH ile girilebiliyor. Bu Gen1'deki "tty login prompt visible" bulgusunun Gen2'ye taşınmadığını gösteriyor.
+- **KWin: BULGU — `/etc/systemd/user/plasma-kwin_wayland.service.d/10-wayland-only.conf` dosyası rootfs'de var ve içeriği doğru (`ExecStart=/opt/kf6/bin/kwin_wayland_wrapper`, `--xwayland` yok), ama taban `plasma-kwin_wayland.service` biriminin kendisi sistemde hiçbir yerde (`/usr/lib/systemd/user`, `/etc/systemd/user`) kurulu değil.** `systemctl --user cat/show plasma-kwin_wayland.service` → "No files found". Bir drop-in, taban birim olmadan hiçbir zaman yüklenmez; override şu an etkisiz. **Bu nedenle Plasma oturum testi başlatılmadı** (talimat: "KWin… hâlâ başarısızsa Plasma oturum testi yapma").
+- `alp --help` ve `alp list` → exit 0, kurulu paket yok. `sha256sum /usr/lib/alp/alp.py` → `d06c72ee0d1048b10af0889be8a815a5e4fc771c7897e42847b5f2dcc655b830`; beklenen düzeltilmiş motor (`e8b0376`) hash'i `7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132` ile **eşleşmiyor** — önceki audit bulgusu hâlâ geçerli, dosyaya dokunulmadı.
+- Guest'te `sa` için sudo parolasız değil (`sudo -n` → "a password is required"); journal `-p err` bu nedenle root gerektiren kısmı okunamadı, kalan tüm kontroller `sa` yetkisiyle yapıldı.
+
+**Bu oturumun P0 kapı durumları**
+
+- Root/boot düzeltmesi (PARTUUID+rootwait): **GEÇTİ** — imaj yeniden üretildi, VM sorunsuz açıldı, SSH ile doğrulandı.
+- SSH anahtar-only erişim: **GEÇTİ** — `172.28.160.110`, `sa`, anahtar tabanlı, parola kapalı.
+- PAM/login/pam_systemd: **GEÇTİ** — SSH oturumu `pam_systemd` ile kullanıcı session'ı açıyor, `/etc/shadow`+`pam.d/login` mevcut, `sa` `wheel`'de.
+- systemd birim sağlığı: **GEÇTİ** — `--failed` boş.
+- Ağ (systemd-networkd/DHCP): **GEÇTİ** — `eth0` routable, doğru `.network` eşleşmesi.
+- tty1 yerel konsol girişi: **KALDI** — `getty@tty1.service` disabled, `graphical.target` varsayılan ama display manager yok.
+- KWin Wayland-only override: **KALDI/BLOKE** — drop-in var ama taban unit kurulu değil; override etkisiz.
+- Plasma oturum testi: **YAPILMADI** (talimat gereği KWin geçmeden başlatılmadı).
+- `alp` hash: **KALDI** — rootfs hâlâ eski/düzeltilmemiş motor; dosya değiştirilmedi.
+
+**Değiştirilmeyenler**: `/mnt/lfs`, Gen1 VM ve diski, M1 artifact'ı, `docs/patches/plasma-desktop-6.4.4-wayland-no-netwm.patch`, Claude'un çalışma dosyaları, `/mnt/lfs/usr/lib/alp/alp.py`. Yeni dosyalar: `scripts/patch-m2-gen2-root-partuuid.sh`; yedekler: Builder `/tmp/alpbahOS-m2-gen2-before-partuuid/`, Windows `F:\alpbahOS-build\vms\alpbahOS-M2-SSH-Gen2\alpbahOS-M2-SSH-Gen2-v2.before-partuuid.vhdx`. Bu oturumda commit/push yapılmadı.
+
+## 23 Eylül 2026 — Gen2 test imajı: tty1 login, düzeltilmiş alp, DNS, admin hesabı (Claude)
+
+Kapsam: yalnız Gen2 test imajı ve `alpbahOS-M2-SSH-Gen2` VM'i. `/mnt/lfs`, Gen1, M1 artifact'ı değiştirilmedi. Commit/push yok.
+
+- `scripts/patch-m2-gen2-login-and-alp.sh`: `getty@tty1.service` `getty.target.wants` altına etkinleştirildi; `/usr/lib/alp/alp.py` `e8b0376` sürümüyle değiştirildi (mod 0755 korundu). Önceki dosya Builder'da `/tmp/alpbahOS-m2-gen2-alp.py.before-e8b0376` olarak yedeklendi. Sonuç imaj `f5087799…`. Guest'te doğrulandı: `getty@tty1` enabled/active (agetty tty1), `sha256sum alp.py` = `7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132` (beklenenle eşleşti).
+- Bulgu: guest'te DNS çalışmıyordu (`alp install htop` → "Temporary failure in name resolution"). `/etc/resolv.conf` `systemd-resolved` stub dosyasına işaret ediyor ama `systemd-resolved` hiç etkinleştirilmemişti; IP ile erişim çalışıyordu (1.1.1.1 ping 28 ms).
+- `scripts/patch-m2-gen2-dns-and-admin.sh` (parola `ADMIN_PASSWORD` ortam değişkeninden, loga yazılmaz): `systemd-resolved` etkinleştirildi, resolv.conf symlink'i imajda oluşturuldu, konsol hesabı `admin` (UID 1001, `users`, `wheel`) eklendi. Kullanıcı bu test VM'i için kullanıcı adı ve parolayı `admin`/`admin` olarak belirledi. SSH hâlâ key-only (`AllowUsers sa`), yani bu parola yalnız konsol için. Sonuç imaj SHA-256 `896642c22dcd88f88a209d6fe9475218fae892535b3b7085b40ca666716b07b8`, `qemu-img check` temiz. F: artifact ve VM çalışma diski bu hash'le eşleşti; önceki çalışma diski `alpbahOS-M2-SSH-Gen2-v2.before-admin-dns.vhdx` olarak korundu.
+- Guest (yeni IP `172.28.171.21`, DHCP MAC `00-15-5D-00-02-09` aynı; SSH alias güncellendi): `systemd-resolved` active, `getent hosts github.com` → `140.82.121.4`, `systemctl --failed` boş, `id admin` = `uid=1001 groups=users,wheel`, `getty@tty1` active.
+- `alp` uçtan uca (sa yetkisiyle, geçici `--root /tmp/claude-alp-root`): `alp install htop` → "htop (recipe) -> 3.3.0 kuruldu"; `alp list` → `htop 3.3.0 recipe`; ikili modu `-rwxr-xr-x`; `htop --version` → `htop 3.3.0`; `alp remove htop` → "htop kaldırıldı", liste boş. Kurulumdan sonra `var/lib/alp/cache/destdir-*` ve log dosyaları kalıyor (bilinen sınır 6). Gerçek `/` köküne kurulum denenmedi (sa'da sudo yok).
+- Hata analizi notu (kendi hatam): patch script'lerinin başarısız çalıştırmaları imajı r/w bağlayıp ayırdığı için her seferinde hash'i değiştirdi; bu başka bir yazıcı sanılmıştı, sudo günlüğü tüm komutların bu oturuma ait olduğunu gösterdi. Ayrıca Builder `/tmp` üstünde benim bıraktığım üç VHDX kopyası root diski %100 doldurmuştu; silindi (75 GB kullanım, 19 GB boş).
+- Hâlâ açık: KWin taban birimi (`plasma-kwin_wayland.service`) kurulu değil; gerçek Plasma oturumu denenmedi. Bu üç düzeltme (getty, resolved, alp) yalnız test imajında; `/mnt/lfs` rootfs'ye Codex'in uygulaması gerekiyor.
+
+## 23 Eylül 2026 — Builder rootfs düzeltmeleri, KWin birimi ve yeni Gen2 image
+
+**Builder ön kontrolü**
+
+- `ssh alp-builder 'hostname; id; df -h / /mnt/lfs; ...; sudo -n true'`: host `yrsk`, user `sa` uid 1000, `sudo -n` başarılı; `/mnt/lfs` Builder `/` üzerinde, 19 GiB boş. `ps` taramasında etkin make/ninja/cmake/chroot derlemesi yoktu. `/sys/block/nbd0/pid` boştu. Her NBD bağlantısından önce aynı PID dosyası tekrar kontrol edildi.
+- Yerel `git show e8b0376:docs/handoffs/claude/alp-prototype/alp.py` byte olarak `C:\tmp\alp-e8b0376.py` dosyasına yazıldı; SHA-256 `7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132`.
+
+**Rootfs değişiklikleri (Builder `/mnt/lfs`; `sudo -n bash /tmp/apply-m2-rootfs-fixes.sh /tmp/alp-e8b0376.py`)**
+
+- `getty.target.wants/getty@tty1.service` → `/usr/lib/systemd/system/getty@.service`.
+- `sysinit.target.wants/systemd-resolved.service` ve `dbus-org.freedesktop.resolve1.service` → `/usr/lib/systemd/system/systemd-resolved.service`.
+- `/etc/resolv.conf` → `../run/systemd/resolve/stub-resolv.conf`.
+- `/usr/lib/alp/alp.py` SHA-256 `7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132`; önceki dosya `/mnt/lfs/tmp/alp-logs/alp.py.before-e8b0376` olarak korundu. `systemctl --root=/mnt/lfs is-enabled getty@tty1.service systemd-resolved.service` iki birim için `enabled` verdi. `alp remove`/`alp upgrade` çalıştırılmadı.
+
+**KWin systemd user unit kaynağı ve düzeltmesi**
+
+- Kaynak araştırması: `/mnt/lfs/sources/kde/kwin-6.4.4.tar.xz` içinde `kwin-6.4.4/plasma-kwin_wayland.service.in`; içerik `ExecStart=@CMAKE_INSTALL_FULL_BINDIR@/kwin_wayland_wrapper --xwayland`. `CMakeLists.txt:539` bunu `${KDE_INSTALL_SYSTEMDUSERUNITDIR}` altına kuruyor. Kurulu/render edilmiş birim `/mnt/lfs/opt/kf6/lib/systemd/user/plasma-kwin_wayland.service`; taban SHA-256 `ecdb7ff898d326848324ef5e4a4bf9b5d46f40c21795944a9422374806388d1d`.
+- Rootfs görünürlük düzeltmesi `/mnt/lfs/usr/lib/systemd/user/plasma-kwin_wayland.service` → `/opt/kf6/lib/systemd/user/plasma-kwin_wayland.service`; hedef `chroot /mnt/lfs` içinden test edildi. `/etc/systemd/user/plasma-kwin_wayland.service.d/10-wayland-only.conf` SHA-256 `5fe52d003a2cf8b0e75f1a4394943d26f0cffea8fe1116745ac2fd5255412d2e`; ExecStart `/opt/kf6/bin/kwin_wayland_wrapper`, `--xwayland` yok.
+
+**Test image build and cleanup**
+
+- Kaynak: Builder `/mnt/lfs`; komut: `sudo -n env ALP_SOURCE=/tmp/alp-e8b0376.py ADMIN_PASSWORD=admin OUT=/home/sa/alpbahOS-m2-ssh-gen2-test.vhdx bash /tmp/build-m2-gen2-test-image.sh`. Script içinde `trap` ERR satır/komut kanıtı verir, rootfs düzeltmelerini önce çağırır, `nbd0` PID kontrolü yapar, `root=PARTUUID=84b8b2c9-9a5c-46b9-b9a0-0a22834278fe rootwait` yazar, doğrulanmış `alp`/getty/resolved/KWin içeriğini ve admin hesabını denetler. Yalnız test imajı `admin/admin` alır; rootfs/release'e bu parola yazılmaz. `/usr/sbin/useradd` “Creating mailbox file: No such file or directory” uyarısı verdi ancak exit 0; passwd/shadow/home/group kontrolleri geçti ve guest SSH erişimi geldi.
+- Bir ilk build aktarımı 1 GiB civarında kontrollü durduruldu, çünkü rootfs taraması sırasında eksik KWin değişikliği keşfedildi. Script ERR trap `FAILED line 89: ...tar...` yazdı; `nbd0` PID boşaldı, mount kalmadı, kısmi `/home/sa/alpbahOS-m2-ssh-gen2-test.vhdx` cleanup ile silindi, Builder boş alanı 19 GiB'a döndü. İmajdan artifact üretilmedi.
+- Nihai build: `qemu-img check` → “No errors were found on the image”; virtual size 24 GiB; VHDX file length 6.48 GiB; SHA-256 `14f22e9074eb3a01267df284317e3191e5f75af4ac56699d005d33f11e78dcd4`. Çıktı önce `F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen2-rootfs-kwin-test.vhdx`'e kopyalandı; Builder/Windows artifact hash'leri aynı. `.txt` manifest ve `.vhdx.sha256` yanına yazıldı. Hyper-V çalışma kopyası `F:\alpbahOS-build\vms\alpbahOS-M2-SSH-Gen2\alpbahOS-M2-SSH-Gen2-v3-rootfs-kwin.vhdx`; bunun SHA-256'sı da aynı.
+- Admin SSH ile Hyper-V üzerinden Gen2 VM kapatıldı, v3 çalışma diski bağlandı, VM yeniden başlatıldı. VM `Running`, Generation 2; MAC `00-15-5D-00-02-09`, DHCP `172.28.171.21`; IP'nin ARP kaydı bu MAC ile eşleşti. Yeni rootfs boş machine-id/host key ürettiği için eski SSH host key değişti; IP/MAC doğrulandıktan sonra yalnız `172.28.171.21` known_hosts kaydı yenilendi.
+
+**Canlı guest kanıtı (`sa@172.28.171.21`; SSH key-only)**
+
+- `systemctl --failed --no-pager` → `0 loaded units listed`; `systemctl is-active getty@tty1 systemd-resolved` → iki servis `active`.
+- `sha256sum /usr/lib/alp/alp.py` → beklenen `7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132`.
+- `systemctl --user cat plasma-kwin_wayland.service` taban birimi `/usr/lib/systemd/user/plasma-kwin_wayland.service` ve drop-in `/etc/systemd/user/plasma-kwin_wayland.service.d/10-wayland-only.conf` birlikte gösterdi. Taban unit'te upstream `--xwayland` satırı görünür; drop-in önce `ExecStart=` ile sıfırlıyor, sonra `ExecStart=/opt/kf6/bin/kwin_wayland_wrapper` ekliyor.
+- `systemctl --user show plasma-kwin_wayland.service -p FragmentPath -p DropInPaths -p ExecStart` → FragmentPath `/usr/lib/systemd/user/plasma-kwin_wayland.service`; DropInPaths doğru; etkin ExecStart yalnız `/opt/kf6/bin/kwin_wayland_wrapper`, `--xwayland` yok. KWin P0 gate geçti. Gerçek Plasma oturumu bu kanıt alınmadan başlatılmadı.
+- tty1'de admin ile gerçek konsol login henüz kullanıcı girdisi bekliyor. VMConnect penceresi açıldı ve kullanıcıdan yalnız `admin/admin` ile giriş yapması istendi; komut çalıştırması istenmedi. Sonraki kontrol SSH üzerinden `loginctl` ile admin session `seat0`, `Type=tty`, active bilgilerini doğrulamaktır.

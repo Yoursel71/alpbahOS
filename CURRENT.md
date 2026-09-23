@@ -1,5 +1,7 @@
 # alpbahOS — Güncel durum
 
+> Yeni sohbet için operasyonel başlangıç belgesi: `docs/NEW_SESSION_HANDOFF.md`. VM/SSH/disk yolları ve sıradaki gerçek kapı bu belgede kısa ve toplu halde tutulur.
+
 Son güncelleme: 23 Eylül 2026
 
 ## Tamamlanan M1
@@ -13,7 +15,7 @@ Son güncelleme: 23 Eylül 2026
 - Hyper-V Default Switch üzerinden DHCP ve hosttan ping doğrulandı.
 - Kontrollü `Running -> Off -> Running` testi sonrası heartbeat, yeni DHCP adresi ve ping tekrar geçti.
 - FAT/ext4 bölümleri çevrimdışı `fsck` kontrolünden hatasız geçti.
-- `/etc/shadow`, root kurtarma hesabı, systemd ağ kullanıcıları ve DHCP profili tamamlandı.
+- M1 imajında `/etc/shadow`, root kurtarma hesabı, systemd ağ kullanıcıları ve DHCP profili doğrulandı; bu M1/VM içeriğidir, Builder `/mnt/lfs` rootfs'sinde `sa` hesabı ve `/etc/shadow` bulunmadığı daha sonra görüldü.
 
 ## M1 kapanışındaki açık sınırlar (tarihsel kayıt)
 
@@ -33,9 +35,9 @@ Plan, BOOT-01 Gen1 kolunu ayrı test VM'inde doğrulayıp ardından BLFS-01 sert
 - Sahip: Codex (LFS/BLFS, Gen1 doğrulaması, `alp` entegrasyonu ve Plasma); kullanıcı istemi M2 uygulamasına başladı.
 - Ortam: Windows host `C:\alpbahOS`, branch `main`; Builder Ubuntu `sa@172.28.162.172`; kaynak M1 final VHDX. M2 SSH sürümü `F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen1.vhdx`, çalışan VM `alpbahOS-M2-SSH-Gen1` (Gen1, 2 vCPU, 2 GiB sabit RAM).
 - Gen1 giriş istemi doğrulandı; VM `alpbahOS-M2-Gen1`, Generation 1, 2 GiB sabit RAM. Test kaynağı M1 VHDX'in ayrı `F:\alpbahOS-build\vms\alpbahOS-M2-Gen1\alpbahOS-M2-Gen1.vhdx` kopyasıdır.
-- `alp` htop recipe'i düzeltme commit'i `a82f872` ile test köküne yeniden kuruldu: ELF modu `0755`, `htop 3.3.0 --version` geçti; `alp remove` dosya ve DB kaydını temizledi. Ayrıntı/log ve checksum `docs/WORKLOG.md` içinde.
+- Htop geçmiş testindeki dosya modu hatasını `a82f872` commit'ine atfetmek yanlıştı: Builder rootfs'deki motor SHA-256 `d06c72ee…`, `36f5240` + `copyfile→copy2` yamasına karşılık geliyor; `a82f872` içindeki kaynak motor hash'i farklıdır. Main'e alınan güncel güvenlik düzeltmesi `e8b0376`; beklenen dosya SHA-256 `7b2998a5…`. Rootfs'ye henüz kurulmadı; eski rootfs motorunda `alp remove`/`alp upgrade` çalıştırma.
 - BLFS ağ/TLS kesiti geçti: libtasn1, libunistring, libidn2, make-ca, libpsl ve cURL LFS rootfs'ye kuruldu. `p11-kit` ilk 66/67 test koşusundaki `test-path` SIGSEGV'inin kökü doğrulandı: hedef rootfs'de build UID 1000 yok; `p11_path_expand()` başarısız passwd aramasında NULL/ESRCH döndürüyor, fakat test bu NULL'u `strstr()`'e verip çöküyor. UID 101 ile aynı ikili 9/9 geçti; trust list 172 CA anchor verdi. Bu test-fixture/korunmasız test iddiasıdır, trust-store üretim yolu hatasına kanıt değildir. CA bundle ve LFS chroot TLS testi geçti. Ayrıntı `docs/WORKLOG.md`.
-- D-Bus 1.16.2; Linux-PAM 1.7.1, `pam_systemd.so`, systemd-logind/systemd 257.8 rootfs'ye kuruldu. Minimal `/etc/pam.d/system-*` yapılandırması var; PAM+logind kurulumu tamamlandı.
+- D-Bus 1.16.2, Linux-PAM 1.7.1, `pam_systemd.so` ve logind bileşenleri rootfs'ye kurulu. **PAM/login zinciri tamamlanmadı:** salt okunur Builder incelemesinde rootfs'de `/etc/shadow` ve `/etc/pam.d/login` yok. Önceki “PAM/systemd zinciri tamamlandı” ifadesi düzeltildi; bkz. 23 Eylül P0 audit ve `docs/WORKLOG.md`.
 - Polkit zinciri kuruldu ve gerçek `pkexec` uçtan uca senaryosu geçti: geçici system D-Bus + polkitd, yalnız `tester` → `/usr/bin/id` için test kuralı; sonuç `uid=0(root)`, exit 0. Bu, test kuralıyla izin yolunu kanıtlar; etkileşimli auth agent/varsayılan kimlik doğrulama akışını kanıtlamaz.
 - Ses altyapısı genişletildi: ALSA-lib, ALSA Utilities, libsndfile, PipeWire (`pw-cat` açık), Lua ve WirePlumber LFS rootfs'ye kuruldu; paket testleri geçti. Builder kernelindeki geçici `snd-aloop` ile ALSA PCM playback→capture roundtrip geçti (144000 kare, peak 12000, RMS 7046.61). WirePlumber ile geçici PipeWire null sink'e playback ve monitor-source capture da geçti (48 kHz stereo, 243712 kare, peak 12000, RMS 6522.08). Bunlar sanal testlerdir; ALSA aygıtına yönlendirme ve fiziksel hoparlör/mikrofon doğrulanmadı.
 - Yönetim araçları: `iproute2` zaten LFS rootfs'de (`/usr/sbin/ip`), eski M1 VHDX guest'inde yok. `sudo 1.9.17p2` derlenip test edildi; PAM, `%wheel` sudoers kuralı ve `visudo -c` geçti. M2 aday VHDX oluşturulurken M1 `sa` hesabı/parola özeti korundu ve `sa` `wheel` grubuna eklendi.
@@ -54,12 +56,12 @@ Bu tablo `docs/MASTER_PLAN.md` §10'daki M00–M12 aşamalarını izler; yukarı
 |---|---|---|
 | M00 — Gereksinimler ve repo | Tamamlandı | Ana plan, kararlar, ajan talimatları ve private repo var. |
 | M01 — Linux build hostu | Tamamlandı | Ubuntu 24.04 Builder, SSH, LFS build kökü ve disk alanı doğrulandı. |
-| M02 — paket motoru prototipi | Kısmi | D31 ile pacman/Discover yolu bırakılıp `alp` seçildi. Güncel `alp` ile htop install/remove, checksum ve çalıştırma kanıtı var; update/GUI yolu ile paket motorunun tam kabul koşulları yok. |
+| M02 — paket motoru prototipi | Kısmi | D31 ile `alp` seçildi; rootfs motoru `e8b0376` kaynağına güncellendi ve SHA-256 `7b2998a5…` canlı Gen2 guest’te doğrulandı. htop install/remove e2e önceki Gen2 test imajında geçti; bu rootfs’ten üretilen yeni imajda tekrar edilmedi. update, bağımlılık ve GUI kabul koşulları açık. |
 | M03 — multilib | Kullanıcı kararıyla uygulanmayacak | D32/P01 saf 64-bit kararı; kod veya build değişikliği yapılmadı. ELF32 ölçütü tamamlanmış gibi gösterilmez. |
-| M04 — nihai LFS tabanı | Kısmi (LFS 12.4 rootfs hazır) | M1 rootfs, linker ve FAT/ext4 kontrolleri mevcut; fakat `/mnt/lfs/var/lib/alp/db.json` paket listesi boş. Ana plan §10.1'de istenen temel sistem dosya sahipliği kayıtları kanıtlanmadı. |
-| M05 — kernel/boot/VM | Tamamlandı (M1 + güncel M2 SSH Gen1) | M1 Gen1 ve güncel `alpbahOS-M2-SSH-Gen1` DHCP/ping/kontrollü reboot koşulları geçti. Son tekrar: aynı MAC reboot sonrası yeni DHCP adresi `172.28.162.19`, guest SSH geri geldi, host ping 4/4 ve TTL 64. |
-| M06 — BLFS altyapısı | Kısmi | Ağ/TLS, PAM/logind, pkexec e2e, Mesa softpipe EGL çizim/readback, ALSA loopback ve PipeWire null-sink graph PCM roundtrip kanıtı var. Fiziksel ses aygıtı ve gerçek masaüstü oturumu henüz yok. |
-| M07 — Plasma ve temel uygulamalar | Devam ediyor — konsol login'i bekleniyor | SSH PAM `XDG_RUNTIME_DIR` ve user manager sağlıyor; D-Bus user bus socket etkin ve `org.freedesktop.systemd1` yanıt veriyor. Plasma Workspace'in KWin'e verdiği hatalı `--xwayland` argümanı kaynakta düzeltildi ve `plasma_session` yeniden derlenip kuruldu. `sa`'nın tty1 login kabuğu Plasma'yı otomatik başlatacak şekilde ayarlandı. 23 Eylül guest denetiminde tty1 `agetty` active ve `/dev/vcs1` ekran buffer'ında `alpbahos login:` istemi görünür; `loginctl` hâlâ yalnız SSH oturumlarını gösteriyor. Gerçek DRM-seat oturumu ve Plasma henüz doğrulanmadı. Konsol audit gürültüsünü azaltmak için geçici kernel console loglevel 3'e çekildi. |
+| M04 — nihai LFS tabanı | Kısmi (LFS 12.4 rootfs hazır) | M1 rootfs, linker, FAT/ext4 ve boot kontrolleri mevcut; `/mnt/lfs/var/lib/alp/db.json` taban paket sahipliği kayıtlarını kanıtlamıyor. M04 çıkış koşulu olan temel dosya sahipliği envanteri bu turda henüz üretilmedi. |
+| M05 — kernel/boot/VM | Kısmi: Gen1 ve Gen2 boot doğrulandı | Rootfs’ten üretilen v3 Gen2/UEFI test imajı SHA-256 `14f22e90…` ile açıldı; SSH key-only erişim, DHCP `172.28.171.21/20`, boş `systemctl --failed`, aktif getty/resolved ve e8b0376 `alp.py` hash’i doğrulandı. PARTUUID+rootwait ile boot edildi. tty1’de gerçek admin login ve PAM session kanıtı bekleniyor. |
+| M06 — BLFS altyapısı | Kısmi | Ağ/TLS, PAM/logind, pkexec e2e, Mesa softpipe EGL çizim/readback, ALSA loopback ve PipeWire null-sink graph PCM roundtrip kanıtı var. Yeni rootfs imajında servis/ağ kontrolleri geçti; gerçek grafik oturumu, fiziksel ses aygıtı ve masaüstü oturumu hâlâ doğrulanmadı. |
+| M07 — Plasma ve temel uygulamalar | P0 KWin kapısı geçti; gerçek oturum bekliyor | Gen2 canlı guest’te `systemctl --user cat/show plasma-kwin_wayland.service`: taban birim ve `/etc` drop-in yüklü; etkin ExecStart yalnız `/opt/kf6/bin/kwin_wayland_wrapper`, `--xwayland` yok. getty ve resolved active, admin test hesabı mevcut. VMConnect tty1’de admin login kullanıcıdan istendi; `loginctl` ile `seat0`, `Type=tty`, active session doğrulaması ve ardından gerçek Plasma testi henüz yapılmadı. |
 | M08 — ürün UX/terminal/tema | Başlamadı | Masaüstüne bağlı kullanıcı senaryoları tamamlanmadı. |
 | M09 — canlı imaj/ISO | Başlamadı | Live rootfs/ISO ve açılış kanıtı yok. |
 | M10 — alfa | Başlamadı | M09 yayın adayı/test matrisi yok. |
@@ -77,12 +79,13 @@ M2 hedefi, M1'de açılan metin tabanlı LFS sistemini ilk kullanılabilir grafi
 5. Hafif KDE Plasma/KWin oturumunu Hyper-V'de aç; Türkçe Q, ağ, ses ve yeniden başlatma testlerini yap.
 6. Doğrulanmış `alpbahOS-m2.vhdx`, checksum ve M2 raporu üret.
 
-Tahmin: ilk Plasma giriş ekranı için 4-7 takvim günü; test edilmiş M2 VHDX için 7-10 gün. Bu tahmin günlük yaklaşık 5 saat, hafta sonu daha uzun çalışma ve Claude katkısı varsayar.
+Takvim tahmini yeniden hesaplanmadı. Önceki 4–7/7–10 günlük tahmin günde yaklaşık 5 saat varsaydığından geçersiz; D15'e göre kullanıcı günde 1–2 saat ayırır. Ölçülmüş iş süresi olmadan yeni takvim tahmini verilmez.
 
 ## Artifact saklama kuralı
 
 - Windows'ta M1 teslimi `C:\alpbahOS\artifacts\alpbahOS-m1-final-v2.vhdx` olarak korunur. Kullanıcının isteğiyle yeni release ve test artifact'leri `F:\alpbahOS-build\artifacts` altına yazılır.
 - Builder'da `alpbahOS-m1-clean.raw` düzenlenebilir temiz kaynak, `alpbahOS-m1-final-v2.vhdx` ise doğrulanmış teslim olarak tutulur.
+- `F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen1.vhdx`, SHA-256 `fa29d47608a4444e043a3cbfa26753fd32a3c7e0b2078179dbcd852eab322c78`, **eski geliştirme/test imajıdır; PAM/login və Plasma düzeltmelerini içermez** (Claude'un disk karşılaştırması). Bu turda imaj salt okunur bağlanıp bağımsız tekrar karşılaştırılamadı. Dağıtım imajı olarak kullanma. Yeni imaj yalnız doğrulanmış Builder `/mnt/lfs` rootfs'sinden üretilecek.
 - Eski boot/debug/framebuffer denemeleri ve geçici loglar M1 kapanışında temizlenmiştir.
 
 ## M2 temel kapıları — 22 Eylül 2026 denetimi
@@ -94,7 +97,7 @@ Tahmin: ilk Plasma giriş ekranı için 4-7 takvim günü; test edilmiş M2 VHDX
 - **Mesa:** `/mnt/lfs/tmp/alp-mesa-egl-smoke.c` ile derlenen EGL/GLES2 pbuffer testi softpipe renderer'da çizdi ve pikseli geri okudu. Log: `/mnt/lfs/tmp/alp-logs/mesa-egl-smoke.log`; test binary: `/mnt/lfs/tmp/alp-mesa-egl-smoke`. `swrast_dri.so` dosyaları mevcut kurulumda bulunmadı; bu test surfaceless EGL yolunu doğrular, Wayland compositor yolunu değil.
 - **Ses:** ALSA Utilities `1.2.14` (MD5 `d098c3d677ee80cf3d9f87783cce2e53`), libsndfile `1.2.2` (`04e2e6f726da7c5dc87f8cf72f250d04`), PipeWire `1.4.7` (`e151f5f67b2f09d0b37e0b9493111ca0`, `pw-cat=enabled`), Lua `5.4.8` (`81cf5265b8634967d8a7480d238168ce`) ve WirePlumber `0.5.10` (`2cbb662f91da2bdce31fa55bef5dfcf5`) kuruldu; paket testleri geçti. `snd-aloop` üzerinden ALSA playback/capture ve PipeWire null-sink graph'ında `pw-play`→monitor `pw-record` roundtrip geçti: 48 kHz stereo, 243712 kare, peak 12000, RMS 6522.08, PCM SHA-256 `5c0547fd620ba0fd4e7128e9c11594d7128fa324ac450da0d63192263bc6e7b3`. Bu gerçek PipeWire graph PCM I/O kanıtıdır; ALSA aygıt routing'i veya fiziksel hoparlör/mikrofon doğrulanmış değildir.
 - **Yönetim araçları:** Rootfs'de `ip` var; M1 VHDX guest'i eski kaldığından guest'te `ip` komutu yok. `sudo 1.9.17p2` checksum `dcbf46f739ae06b076e1a11cbb271a10`, `make check` ve `visudo -c` geçti; PAM ile kuruldu, `/etc/sudoers.d/00-sudo` `%wheel` kuralı eklendi. Builder rootfs'sinde `sa` hesabı ve `/etc/shadow` yok; M1 imajında doğrulanmış hesabın grup üyeliği final imaj entegrasyonuna kaldı. Hesap/parola oluşturulmadı veya değiştirilmedi.
-- **`alp` htop:** `a82f872570c938dbd68d5b868070d72ffe437c27` içindeki güncel `alp.py` Builder'a aktarıldı ve 23 Eylül'de tekrar test edildi. Htop 3.3.0 checksum doğrulamasıyla geçici `--root` altına kuruldu; `/usr/bin/htop` modu `0755`, `htop 3.3.0` çıktısı doğrulandı; kaldırma sonrası binary ve DB paketi temizlendi. Yeniden test logu `/mnt/lfs/tmp/alp-logs/alp-a82f872-rerun.log`; kaynak repo/commit ve özet WORKLOG'da.
+- **`alp` htop tarihçe düzeltmesi:** Önceki not, 23 Eylül geçici `--root` tekrar testinin `a82f872` motoruyla yapıldığını yanlış atfetmişti. Bu audit'te Builder rootfs motoru hash'i `d06c72…` çıktı; `a82f872` ise farklı motor hash'ine sahip. Tarihsel `--root` testi rootfs paket sahipliği testi değildir. Bu audit sırasında `alp remove` veya `alp upgrade` çalıştırılmadı; ayrıntı ve hash kanıtı WORKLOG'da.
 - **23 Eylül temel-kapı denetiminin o andaki sonucu:** M1 Gen1 ağ/reboot kanıtı ile p11-kit, polkit, Mesa EGL, PipeWire PCM ve `alp` kontrolleri kayıtlıydı. Bu noktanın ardından Qt/KWin/Plasma build'lerine devam edildi; bugün gerçek Wayland/Plasma oturumu hâlâ doğrulanmadı. Fiziksel ses aygıtı da test edilmedi.
 
 ## 23 Eylül 2026 — KF6 derlemesi başladı
@@ -160,3 +163,22 @@ Tahmin: ilk Plasma giriş ekranı için 4-7 takvim günü; test edilmiş M2 VHDX
 - Aynı guest'e SSH üzerinden `sudo systemctl reboot` verildi. VM yeniden erişilebilir olunca MAC aynı kaldı ve guest DHCP'den yeni adres `172.28.162.19/20` aldı; host ping'i 4/4, %0 kayıp, TTL 64; public-key SSH tekrar çalıştı. Bu, güncel Gen1 imajında gerçek kernel/ağ/kontrollü reboot çıkış koşulunu doğrular.
 - Hyper-V VMConnect konsolunda giriş yapıldığı henüz logind tarafından görülmedi: reboot sonrasında `loginctl list-sessions` yalnız manager ve SSH oturumlarını gösterdi. Bu nedenle otomatik Plasma başlangıcı/DRM oturumu hâlâ doğrulanmış değil; M07 açık.
 - Konsol tanısında eski `/usr/bin/login` Shadow 4.18.0 ikilisinin PAM'siz derlendiği ve `/etc/pam.d/login` dosyasının bulunmadığı saptandı. Linux-PAM kurulduktan sonra Shadow, BLFS 12.4 tarifine göre PAM etkin olacak şekilde yeniden derlendi; eski ikili yedeklenerek M2 çalışma VM'sine aktarıldı ve `login` PAM servisi `system-session`/`pam_systemd` ile yapılandırıldı. Pseudo-TTY `login -f sa` logind `Type=tty` session açtı. Shadow login `XDG_RUNTIME_DIR`'i kabuğa taşımadığından, yalnız doğru sahipli ve 0700 modlu `/run/user/<uid>` mevcutsa dışa aktaran `.bash_profile` fallback'i eklendi; tekrar pseudo-TTY login'de `/run/user/1000` doğrulandı. Gerçek Hyper-V tty1/seat0 Plasma testi hâlâ bekliyor.
+
+## 23 Eylül 2026 — P0 işinin yeniden denetimi
+
+- Çalışma ağacı başında `git status --short --branch` alındı (`main...origin/main [ahead 16]`); önceden var olan kullanıcı değişiklikleri korundu. Claude dosyaları ve `plasma-desktop-6.4.4-wayland-no-netwm.patch` değiştirilmedi; commit/push yapılmadı.
+- Builder SSH çalıştı (`yrsk`, `sa`, uid 1000). `lsblk` Builder VHDX'i 210G, root LV'yi 100G gösterdi. `df -h / /mnt/lfs`: 98G toplam, 69G kullanım, 25G boş. `findmnt -T /mnt/lfs` `/` döndürdü; rootfs ayrı mount değil, Builder dosya sistemindeki `/mnt/lfs` dizini. `vgs`/`lvs` normal kullanıcıyla lock izni hatası verdi; `sudo -n vgs` ve `sudo -n lvs` parola istedi. Herhangi bir kapasite artırımı yapılmadı.
+- Rootfs tekrar kontrolü: `sa`, `/etc/shadow` ve `/etc/pam.d/login` yok. `wheel` (gid 97), `users` (gid 999), `pam_systemd.so`, `systemd-user-sessions`, `useradd`, `usermod`, `chpasswd` ve Bash var. `/etc/pam.d/system-session` yalnız `session required pam_unix.so`; `pam_systemd` yok. Script önkoşulları sağlanmadığından ve root yazma yetkisi olmadığından provisioning çalıştırılmadı.
+- KWin unit'i `/opt/kf6/lib/systemd/user/plasma-kwin_wayland.service` hâlâ `ExecStart=/opt/kf6/bin/kwin_wayland_wrapper --xwayland`; `/mnt/lfs/etc/systemd/user/plasma-kwin_wayland.service.d/10-wayland-only.conf` kurulu değil. Rootfs'de drop-in uygulanamadı.
+- `alp.py` hash kontrolü rootfs için `d06c72ee0d1048b10af0889be8a815a5e4fc771c7897e42847b5f2dcc655b830`, merge edilmiş kaynak için `7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132` verdi; eşleşmiyor ve yalnızca raporlandı.
+- `Get-VM`, `Get-VMHardDiskDrive`, `Get-VMHost` Hyper-V yetki hatası verdi. `172.28.169.177:22` TCP testi başarısız; batch SSH `ConnectTimeout=5` ile timeout. VM/disk belirlenemediğinden VHDX üretilmedi veya bağlanmadı; eski `fa29d476…` release korunmuş durumda.
+- P0 kapıları: P0-1 bloklandı (provisioning); P0-2 kaldı (alp hash mismatch); P0-3 önceki audit'te geçti, bu oturumda yeniden yapılmadı; P0-4 bloklandı (drop-in kurulu/effective değil); P0-6 dokümantasyon doğru; P0-7 bloklandı (tty/PAM/session/journal kanıtı yok); P0-8 bloklandı (güncel kernel Gen2 testi yok); P0-9 kısmi/bloklu (25G boş alan biliniyor, LVM/artifact erişimi ve imaj kapasite kararı bilinmiyor). Ayrıntı ve komut çıktısı `docs/verification/p0-p2-audit-2026-09-23.log` içinde.
+- Gen2, tty1 login ve gerçek Plasma/KWin denemesi başlatılmadı. Gerekli sonraki erişim: Builder root/sudo yetkisi (PAM Shadow/login kurulum girdilerini uygulamak ve provisioning için), Hyper-V VM/disk listeleme ve yönetme yetkisi, guest SSH/VMConnect erişimi. Yeni/test imajı ve hash henüz yok.
+
+## 23 Eylül 2026 — Gen2 boot kök nedeni düzeltmesi (Claude, `alp-m2-gen2`)
+
+- Gen2 `VFS: Cannot open root device "UUID=..."` hatasının nedeni: initramfs'siz kernel `root=UUID=` çözemiyor, yalnız `root=PARTUUID=` anlıyor. Yeni `scripts/patch-m2-gen2-root-partuuid.sh` ile Builder'daki test imajının GRUB kernel satırı gerçek `blkid`/`sgdisk -i 2` PARTUUID'i ve `rootwait`'le (storvsc'nin geç disk tanıması için) yeniden üretildi. Yeni imaj SHA-256 `da7b69b3d43ea75250b3f631aef1e7c3c0357ca49be02863173c96c18139a849`; `qemu-img check` temiz. Eski `grub.cfg`/EFI Builder'da `/tmp/alpbahOS-m2-gen2-before-partuuid/` altında yedekli.
+- `F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen2-test.vhdx` ve VM çalışma diski (`alpbahOS-M2-SSH-Gen2-v2.vhdx`) bu yeni imajla değiştirildi, hash'ler her adımda doğrulandı; eski çalışma diski `alpbahOS-M2-SSH-Gen2-v2.before-partuuid.vhdx` olarak korunuyor.
+- VM başlatıldı; KVP guest entegrasyonu çalışmadığından `Get-VMNetworkAdapter` IP raporlamadı, host tarafında Default Switch alt ağının (`172.28.160.0/20`) paralel ARP taraması ile guest IP `172.28.160.110` bulundu ve `~/.ssh/config`'e `alp-m2-gen2` olarak eklendi.
+- SSH ile doğrulanan: `systemctl --failed` boş, `eth0` DHCP ile routable/online, `pam_systemd` SSH girişinde kullanıcı session'ı açıyor, `sshd_config` key-only. **Açık kalan:** `getty@tty1.service` disabled (yerel konsol girişi yok), `plasma-kwin_wayland.service` taban unit'i kurulu değil (Wayland-only drop-in etkisiz). Bu ikisi çözülmeden Plasma testi yapılmadı. Ayrıntı: `docs/verification/p0-p2-audit-2026-09-23.log`.
+- Değiştirilmeyen: `/mnt/lfs`, Gen1 VM/diski, M1 artifact'ı, `alp.py`. Commit/push yapılmadı.

@@ -38,7 +38,7 @@ Hyper-V PowerShell modülü mevcut, fakat mevcut oturumda VM hostunu okuma yetki
 
 Mevcut dosyalar tasarım belgeleri ve logo varlıklarıdır. Linux host, rootfs, paket deposu, boot eden imaj veya ISO henüz yoktur. Tasarım mockup'ındaki sürümler, paket sayıları, CPU/RAM ve `pacman` satırları örnek metindir.
 
-Başlangıç kaynakları: [LFS 13.1-systemd](https://www.linuxfromscratch.org/lfs/view/13.1-systemd/) ve [BLFS 13.1](https://www.linuxfromscratch.org/blfs/view/13.1-systemd/). Steam için gereken multilib uzantısı aşağıdaki karar kapısında sabitlenecek. Kitap sürümleri ve kullanılan düzeltmeler birlikte sabitlenecek; yalnız bir paketi rastgele en yeni sürüme geçirmek standart süreç olmayacak.
+Mevcut build tabanı [LFS 12.4-systemd](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/) ve eşleşen [BLFS 12.4-systemd](https://www.linuxfromscratch.org/blfs/view/12.4-systemd/) olarak D33 ile sabitlendi. Bu, önceki 13.1+multilib taslak tercihinin yerine geçti. D32 saf 64-bit kararı ile D22 Steam hedefi çelişiyor; kullanıcı kararı açık kalır.
 
 ## 3. Seçilen başlangıç mimarisi
 
@@ -46,13 +46,13 @@ Kullanıcı teknik seçimleri devrettiği için aşağıdaki başlangıç mimari
 
 | Katman | Aday / yaklaşım | Doğrulama |
 |---|---|---|
-| Temel sistem | LFS 13.1-systemd + Steam için sabitlenecek multilib uzantısı | Host kontrolü; ELF32/ELF64, linker ve test logları |
-| Ek sistem bileşenleri | Eşleşen BLFS; ağ, TLS sertifikaları, ses, grafik, oturum | Gerçek işlev testleri |
+| Temel sistem | LFS 12.4-systemd + eşleşen BLFS 12.4-systemd (D33). D32 saf 64-bit kabulü kayıtlı; D22 Steam isteğiyle çelişki kullanıcı kararında açık. | Mevcut rootfs/build kayıtları; D22/D32 kararı netleşmeden Steam/multilib çıkış koşulu yok |
+| Ek sistem bileşenleri | BLFS 12.4-systemd; ağ, TLS sertifikaları, ses, grafik, oturum | Gerçek işlev testleri |
 | Masaüstü | KDE Plasma / KWin | İlk sanal masaüstü oturumu ve donanım testi |
-| Görüntü protokolü | Wayland öncelikli; eski GPU/Hyper-V için ölçüme bağlı X11 uyumluluk oturumu | Seçilen Plasma sürümünde her iki oturumun sağlanabilirliği doğrulanır |
+| Görüntü protokolü | Wayland öncelikli. X11/Xwayland build tercihi açık kullanıcı kararı; Qt XCB ve Xwayland şu an kapalı. | P02 uyumluluk yolu kullanıcı yanıtı ve build sonrası test bekliyor |
 | Terminal | Konsole + etkileşimli Zsh | Öneri, düzeltme, Unicode ve kısayol testleri |
-| Paket deneyimi | pacman/libalpm + ince `pkg` arayüzü + kendi imzalı yerel depomuz | Bootstrap ve işlem testleri; Arch deposu kullanılmaz |
-| Uygulama mağazası | Discover + PackageKit alpm backend + AppStream metadata | Aynı libalpm veritabanı ve kilit; entegrasyon prototipi zorunlu |
+| Paket deneyimi | `alp`: recipe/kaynaktan derleme, Flatpak sarmalayıcı ve alpbahOS core arşivi (D31/P13) | Kod `docs/handoffs/claude/alp-prototype/`; rootfs motoru commit ve SHA-256 ile eşleşmeli |
+| Uygulama mağazası | `alp` PackageKit backend taslağı; Discover/GUI entegrasyonu doğrulanmış değil | Ortak veritabanı, işlem kilidi ve paket işlemleri uçtan uca test edilmeden hazır sayılmaz |
 | Ses/ağ | PipeWire + WirePlumber; NetworkManager; Bluetooth için BlueZ | Ses, ağ geçişi ve cihaz testleri |
 | Kurucu | Sonraki sürümde Calamares özelleştirmesi | Offline, BIOS/UEFI, boş disk ve dual-boot sanal disk senaryoları |
 | Marka/tema | alpbahOS görünüm ve varsayılan ayar paketleri | Temiz kullanıcı hesabında görünüm doğrulaması |
@@ -115,7 +115,7 @@ Etkileşimli Zsh kullanımı build scriptlerinin yorumlayıcısını veya `/bin/
 
 ## 5. Paket ve mağaza deneyimi
 
-> **21 Eylül 2026 güncellemesi (D31/P13):** Bu bölümün altyapı seçimi (§5.2, pacman/libalpm + Discover/PackageKit alpm) kullanıcının doğrudan talimatıyla **terk edildi** ve M02 testini beklemeden `alp` (recipe + Flatpak sarmalayıcı + core `.tar.gz` hibrit motoru) ile değiştirildi; sahiplik Codex'ten Claude'a geçti. §5.1 ve §5.2 aşağıda **tarihsel kayıt** olarak korunuyor (neden pacman seçildiği ve neden değiştiği anlaşılsın diye); güncel komut adı `pkg` değil `alp`'tir (`alp search/info/install/remove/list`). Ayrıntı: [docs/DECISIONS.md](DECISIONS.md) D31/P13, [docs/handoffs/claude/001-alp-hybrid-pkg-proposal.md](handoffs/claude/001-alp-hybrid-pkg-proposal.md), kod: [Yoursel71/alpbahOS-alp](https://github.com/Yoursel71/alpbahOS-alp) ve ana repodaki `docs/handoffs/claude/alp-prototype/`.
+> **21 Eylül 2026 güncellemesi (D31/P13):** pacman/libalpm + Discover/PackageKit alpm altyapısı terk edildi ve `alp` motoru seçildi; sahipliği Claude'a geçti. Motor kodu bu repodaki `docs/handoffs/claude/alp-prototype/alp.py` ve yardımcı dosyalardadır. Ayrı [alpbahOS-alp tarif deposu](https://github.com/Yoursel71/alpbahOS-alp) tarif/index içeriğini taşır. Rootfs'ye kurulu motor, kaynak commit blob SHA-256'sı ile aynı değilse güncel kabul edilmez. Discover/PackageKit hazır entegrasyon gibi sunulmaz.
 
 ### 5.1 Kullanıcıya sunulacak komut ailesi (tarihsel — bkz. yukarıdaki güncelleme)
 
@@ -234,7 +234,7 @@ Seçilen ortam Hyper-V'dir. Bir Gen2 Linux builder, bir Gen2 UEFI test tanımı 
 
 Linux build ağacı Linux dosya sisteminde tutulur. Windows'taki `C:\alpbahOS` belgeleri ve repo kopyası doğrudan Linux rootfs kurulum hedefi değildir. VM disk dosyası NTFS üzerinde bulunabilir; VM içindeki rootfs yine Linux dosya sisteminde olur.
 
-Builder: 6 vCPU, 12 GiB sabit RAM; başlangıç build paralelliği 4, ölçüme göre 6. Test VMs: 2 vCPU ve 4 GiB RAM, sırayla çalışır. Ağ için mevcut uygun Hyper-V sanal anahtarı seçilir; Windows ağını bozacak yeni köprü otomatik kurulmaz. Hostta editör/ajanlar için RAM bırakılır. Hyper-V framebuffer ile fiziksel NVIDIA GPU performansı eşit sayılmaz; GPU passthrough ilk kurulumun önkoşulu değildir.
+Builder'ın gerçek ayarı 4 vCPU, 3 GiB başlangıç/en az ve 6 GiB en çok RAM'dir (23 Eylül 2026 gözlemi; eski 6 vCPU/12 GiB planı geçersizdir). Build paralelliği RAM ve ölçüme göre belirlenir. Test VMs: 2 vCPU ve 4 GiB RAM, sırayla çalışır. Ağ için mevcut uygun Hyper-V sanal anahtarı seçilir; Windows ağını bozacak yeni köprü otomatik kurulmaz. Hostta editör/ajanlar için RAM bırakılır. Hyper-V framebuffer ile fiziksel NVIDIA GPU performansı eşit sayılmaz; GPU passthrough ilk kurulumun önkoşulu değildir.
 
 Depolama kökü planı: `F:\alpbahOS-build`. Kullanıcının 300 GB sınırı decimal bütçe olarak ele alınır (yaklaşık 279 GiB). Plan: builder VHDX üst sınırı 210 GB; sırayla kullanılan test diskleri toplam 40 GB; ISO/çıktı 20 GB; checkpoint ve büyüme payı 30 GB. Kaynak cache'i builder alanına dahildir. Checkpoint'ler bu payı aşabilir; gerçek tüketim izlenir ve bütçeyi aşacak işlem durur. Sürekli snapshot biriktirilmez. NTFS üzerinde symlink/izin gerektiren Linux rootfs açılmaz.
 
@@ -307,7 +307,7 @@ Aşamalar oturum planına bağlanır; gerçek derleme ölçümleri olmadan takvi
 | M02 | Kaynak manifesti, tarif şablonu, paket motoru/mağaza prototipi | M01 | Küçük paketi üret/kur/güncelle/kaldır; sahiplik ve GUI yolu kanıtı |
 | M03 | Multilib cross-toolchain ve geçici araçlar | M01, M02 ABI kararı, sabit kaynaklar | ELF32/64 dahil kitap sırasındaki doğrulamalar geçer |
 | M04 | Chroot ve nihai LFS temel sistemi | M02 kararları, M03 | Paket kayıtları, kritik testler, linker ve dosya sistemi doğrulaması |
-| M05 | Kernel, init, bootloader ve ilk VM açılışı | M04 | Hedef imajdan giriş, gerçek kernel, ağ, yeniden başlatma |
+| M05 | Kernel, init, bootloader ve ilk VM açılışı | M04 | BIOS ve UEFI yollarında hedef kernel'den giriş, ağ, yeniden başlatma; mevcut M2 DRM kernel'i Gen2/UEFI'de henüz denenmedi |
 | M06 | BLFS altyapısı: grafik, ses, oturum, ağ ve sertifikalar | M05 | Grafik test oturumu; ağ/TLS/ses doğrulaması |
 | M07 | Hazır masaüstü ve temel uygulama profili | M06 | Temiz kullanıcıda çalışan masaüstü, ayarlar ve dosya yöneticisi |
 | M08 | Terminal yardımı, pkg+mağaza, kısayollar ve Atatürk/Glass temaları | M02, M07 | İstenen özelliklerin kullanıcı senaryoları geçer |

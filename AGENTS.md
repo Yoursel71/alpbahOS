@@ -1,14 +1,17 @@
 # alpbahOS — Ortak ajan çalışma talimatları
 
+> Yeni sohbet/ajan önce `docs/NEW_SESSION_HANDOFF.md` dosyasını okumalıdır. Canlı VM, SSH, disk, artifact ve mevcut kirli çalışma ağacı bilgileri oradadır; ortamı tahmin ederek yeniden kurma.
+
 Bu dosya projede çalışan tüm ajanların ortak talimatıdır. Kullanıcının yeni açık kararları önceliklidir; bunları karar kaydına yansıt. Ana plan 1.0 ve M1 LFS temel boot imajı hazırdır; güncel çalışma durumu `CURRENT.md` içindedir. Bu belge tek başına fiziksel disk değiştirme görevi değildir. Kullanıcının mevcut görev yetkisini ve kabul edilmiş tercihlerini tekrar sormadan kullan.
 
 ## Başlangıç
 
-1. Bu dosyayı, `docs/DECISIONS.md` ve `docs/MASTER_PLAN.md` dosyalarını oku.
-2. `CURRENT.md` ile `docs/WORKLOG.md` içindeki son durum ve sahipliği kontrol et.
-3. Görsel işlerde `docs/alpbahOS-design-mockups.md` ve mevcut logo referansını incele.
-4. Çalışma ağacındaki kullanıcı değişikliklerini koru. Git deposu yoksa varmış gibi davranma.
-5. Görev kapsamını, kullanılacak ortamı ve doğrulama yöntemini belirle; yalnız ilgili işe başla.
+1. Komut çalıştırmadan önce `docs/AI_ENVIRONMENT_GUIDE.md` §1 ve §3'ü oku.
+2. Bu dosyayı, `docs/DECISIONS.md` ve `docs/MASTER_PLAN.md` dosyalarını oku.
+3. `CURRENT.md` ile `docs/WORKLOG.md` içindeki son durum ve sahipliği kontrol et.
+4. Görsel işlerde `docs/alpbahOS-design-mockups.md` ve mevcut logo referansını incele.
+5. Çalışma ağacındaki kullanıcı değişikliklerini koru. Git deposu yoksa varmış gibi davranma.
+6. Görev kapsamını, kullanılacak ortamı ve doğrulama yöntemini belirle; yalnız ilgili işe başla.
 
 ## Ürün ilkeleri
 
@@ -20,7 +23,7 @@ Bu dosya projede çalışan tüm ajanların ortak talimatıdır. Kullanıcının
 - Kullanıcı teknik seçimleri devretti: planın teknik seçimleriyle ilerle; başarısız deneyde gerekçeli revizyon yap. Test edilmemiş seçimi çalışan özellik gibi sunma.
 - Hyper-V, 300 GB yerel bütçe, Türkçe/Türkçe Q, Legacy+UEFI ve mevcut mockup düzeni sabittir. Bulut build/ISO depolaması kullanma; özel kaynak Git deposu istisnadır.
 - Eski x86_64 donanım ve düşük RAM önceliklidir. Solid varsayılan, Glass/Liquid seçenektir; hedefleri MASTER_PLAN.md'den al.
-- Wine/Steam istenir; multilib kararını toolchain'den sonraya erteleme. Word/oyun ve tüm sürücü desteğini test olmadan garanti etme.
+- Wine/Steam hedefi D22 ile kabul edildi, ancak D32 saf 64-bit kararıyla çelişiyor. Multilib/X11 uyumluluk kapsamını kullanıcı kararı olmadan varsayma; `docs/DECISIONS.md` ve COMPAT-01 açık kalmalı. Word/oyun ve tüm sürücü desteğini test olmadan garanti etme.
 
 ## Doğruluk ve kayıt
 

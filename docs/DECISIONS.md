@@ -18,7 +18,7 @@ Tarih: 21 Eylül 2026. Durum: Kullanıcı cevapları işlendi; uygulamaya hazır
 | D08 | Kabul | Windows'a tanıdık kısayollar hedeflenecek; Alt+Tab ve Win+D açıkça istendi. | Son kullanıcı yanıtı |
 | D09 | Kabul | Varsayılan masaüstü ve kilit ekranı Atatürk temalı olacak. | Takip sorusu yanıtı |
 | D10 | Kabul | Güçlü cihazlar için liquid glass veya normal cam görünümü olacak. | Son kullanıcı yanıtı; teknik çözüm açık |
-| D11 | Kabul (21 Eylül 2026'da revize edildi, bkz. D31) | Tek kolay komut ailesi: `alp install`, `alp remove`, `alp update`; ayrıca grafik mağaza. | Takip sorusu yanıtı; motor artık D31 ile seçildi |
+| D11 | Kabul (21 Eylül 2026'da revize edildi, bkz. D31) | `alp install`, `alp remove`, `alp update` komut ailesi; grafik mağaza hedefi ayrıca sürüyor. | Takip sorusu yanıtı; motor D31 ile seçildi |
 | D12 | Kabul | İlk hedef VM masaüstü ve canlı USB; diske kurucu sonraki aşama. | Takip sorusu yanıtı |
 | D13 | Kabul | Fazla RAM tüketimi istenmiyor; eski PC uyumluluğu öncelik. | Cevap 4/12 |
 | D14 | Kabul | Paket yöneticisi ve büyük bileşenler hazır açık kaynak olacak. | Cevap 5/20 |
@@ -47,25 +47,36 @@ Tarih: 21 Eylül 2026. Durum: Kullanıcı cevapları işlendi; uygulamaya hazır
 | ID | Teknik seçim | Gerekçe / doğrulanması gereken |
 |---|---|---|
 | P01 | **Kapalı — kullanıcı kararı:** 32-bit desteği ve multilib yok; saf x86_64/64-bit devam. | Kullanıcı açıkça 32-bit/multilib istemedi. D32 ürün kararını, D33 LFS 12.4 + BLFS 12.4 sürüm eşleşmesinin gerekçesini kaydeder. M03 ELF32 ölçütü uygulanmayacak; bu karar kod veya build değişikliği gerektirmiyor. |
-| P02 | KDE Plasma / KWin, Wayland öncelikli | Eski GPU/Hyper-V için seçilen sürümün X11 uyumluluk yolu test edilecek. |
+| P02 | KDE Plasma / KWin, Wayland öncelikli | X11/Xwayland kapalı build Steam/Wine/X11 uygulaması hedefleriyle uyuşmuyor. Karar açık; P02'nin X11 uyumluluk yolu kullanıcı yanıtı ve build maliyeti değerlendirmesi bekliyor. |
 | P03 | Konsole + Zsh + autosuggestions + syntax-highlighting | Öneri kabulü ayrı, çalıştırma ayrı. |
 | P04 | Varsayılan alpbah-solid, seçenek Glass ve deneysel Liquid | Üst panel/dock düzeni korunur; RAM bütçesi önce gelir. |
 | P05 | **Terk edildi (21 Eylül 2026), bkz. D31/P13.** ~~pacman/libalpm + ince pkg arayüzü + Discover/PackageKit alpm~~ | ~~Tek veritabanı, kendi depo; entegrasyon testi geçmezse gerekçeli alternatif.~~ Kullanıcı M02 testini beklemeden `alp` lehine gerekçeli öncelik değiştirdi. |
-| P06 | Hyper-V Gen2 builder; Gen1 ve Gen2 test VMs | 6 vCPU / 12 GiB builder; testler sırayla, 300 GB toplam bütçe. |
+| P06 | Hyper-V Gen2 builder; Gen1 ve Gen2 test VMs | Gerçek Builder ayarı 4 vCPU, 3 GiB başlangıç/en az ve 6 GiB en çok RAM. Testler sırayla, 300 GB toplam bütçe. |
 | P07 | Stable paket kümesi + yerel testing; kullanıcı başlatmalı güncelleme | Yeni kullanıcı ve sınırlı günlük bakım zamanı. |
 | P08 | İlk düşük kaynak hedefi 4 GiB eski x86_64; idle bellek <=1 GiB tasarım hedefi | Ölçülmeden minimum gereksinim diye yayımlanmaz. |
 | P09 | Hazır temel KDE uygulamaları, Firefox, LibreOffice, VLC, Wine, Steam | Chrome kurulumu ayrı doğrulama; Office sürümleri ayrı test. |
 | P10 | Calamares kurucu; önce sanal diskler | BIOS/UEFI, offline, dual-boot testleri; gerçek disk yazımı ayrı yetki gerektirir. |
 | P11 | Codex altyapı/entegrasyon (LFS/BLFS, kernel, Hyper-V, ISO); Claude masaüstü/tema/terminal UX **+ paket motoru (`alp`, D31 ile 21 Eylül 2026'da eklendi)** | Ayrı branch ve worktree; paylaşılan rootfs tek yazıcı. `alp`'in recipes/index/core içeriği ayrı repoda ([alpbahOS-alp](https://github.com/Yoursel71/alpbahOS-alp)), bu reponun `recipes/`/`packaging/` dosya sınırıyla çakışmaz. |
 | P12 | Türkçe Q, tr_TR.UTF-8; Europe/Istanbul değiştirilebilir varsayılan | Dil/klavye kullanıcı tercihi; saat dilimi mevcut bağlamdan seçildi. |
-| P13 | `alp` (Python, stdlib-only, tek `db.json` + tek yazıcı kilidi); üç yöntem: recipe (kaynaktan derleme), flatpak (sarmalayıcı), core (alpbahOS'a özel önceden derlenmiş `.tar.gz`). Sahip: Claude. Recipes/index/core içeriği ayrı private repoda: [Yoursel71/alpbahOS-alp](https://github.com/Yoursel71/alpbahOS-alp). | Prototip bu makinede test edildi (bkz. proposal §8, `003-alp-review-fixes.md`); bağımlılık çözümü, imzalama ve PackageKit/Discover entegrasyonu **henüz yok** — dürüst eksiklik listesi proposal §6'da. Gerçek Linux/BLFS ortamında (Codex M06+) uçtan uca doğrulanmadı. |
+| P13 | `alp` (Python, stdlib-only; recipe, Flatpak sarmalayıcı, core arşivi). Sahip: Claude. | Motor kodu `docs/handoffs/claude/alp-prototype/alp.py` altında `46c58b1` commit'iyle main'e alındı; recipe/index/core içeriği [Yoursel71/alpbahOS-alp](https://github.com/Yoursel71/alpbahOS-alp) deposunda. Devir belgeleri Linux testlerini, Seviye 1/2 bağımlılık kontrollerini ve PackageKit backend taslağını kaydediyor. Rootfs'deki motor güncel değil ve kaynak hash'iyle eşleşmiyor; güvenli rootfs kurulumu/remove/upgrade ve Discover GUI entegrasyonu doğrulanmadı. |
+
+## Açık — kullanıcı kararı gerekiyor
+
+| Konu | Seçenekler ve maliyet | Çakışan hedef / durum |
+|---|---|---|
+| X11 uygulama uyumluluğu | QtBase XCB, Xwayland ve X11 kullanıcı alanını sonradan eklemek; ek kaynak/build alanı, bağımlılıklar, bakım ve test gerektirir. Alternatif: ilk sürümü yalnız Wayland uygulamalarıyla sınırlamak. | Mevcut QtBase XCB kapalı ve KWin X11 kapalı; P02 uyumluluk yolu ile Wine/Steam görsel gereksinimleri henüz karşılanmıyor. |
+| KWin kilit ekranı | KScreenLocker'ı ve gereken Qt XCB/X11 greeter bağımlılıklarını geri getirmek; ek bağımlılık, derleme ve oturum testi gerekir. Alternatif: kilit ekranı olmadan devam etmek; D09'u karşılamaz ve oturum kilitlenemez. | `KWIN_BUILD_SCREENLOCKER=OFF`; D09 Atatürk temalı kilit ekranı isteğiyle çelişiyor. Kilit ekranını geri getirme işi BACKLOG'da açık. |
+| Mesa renderer | LLVM etkinleştirip llvmpipe kurmak; LLVM toolchain'i derleme süresini, disk kullanımını ve RAM talebini artırır. Alternatif: daha hafif softpipe ile kalmak; animasyon/perf hedefi risk altında kalır. | Mevcut doğrulama softpipe. D25 akıcı animasyon hedefinin performans kanıtı yok. |
+| D22 Steam/Wine ve D32 saf 64-bit | (a) D32'yi değiştirip multilib ve 32-bit grafik/glibc yığınını desteklemek; (b) D32'yi koruyup Steam istemci hedefini/Steam oyun beklentisini kaldırmak veya daraltmak. | D22 Steam ve Wine'ı ister, D32 ilk sürümde 32-bit kullanıcı alanını reddeder. Wine 11'in yeni WoW64 modu 32-bit Windows uygulamalarını 32-bit Unix kütüphaneleri olmadan çalıştırabilir; Valve'ın Linux Steam istemcisi README'si hâlâ 32-bit glibc ve grafik sürücüsü istiyor. Bu araştırma kullanıcı kararının yerine geçmez. |
+
+Güncel kaynaklar: [Wine 11.0 WoW64 duyurusu](https://list.winehq.org/hyperkitty/list/wine-announce%40list.winehq.org/thread/MXULWEMXQ5C24UEJ2STHPIUHNOZ7AZPQ/), [Valve Steam for Linux gereksinimleri](https://github.com/ValveSoftware/steam-for-linux/blob/master/README.md).
 
 ## Yanıtlar ve kalan uygulama ayrıntıları
 
 | ID | Soru | Durum |
 |---|---|---|
 | Q01 | Atatürk görselleri seçilebilir tema mı, varsayılan masaüstü/kilit mi, açılış dahil mi? | Yanıtlandı: varsayılan masaüstü ve kilit; D09 |
-| Q02 | Gerçek apt komutları mı, pkg komut ailesi mi, mağaza ağırlıklı deneyim mi? | Yanıtlandı: pkg + mağaza; D11 |
+| Q02 | Gerçek apt komutları mı, paket komut ailesi mi, mağaza ağırlıklı deneyim mi? | Yanıtlandı: `alp` komut ailesi + mağaza hedefi; D11/D31 |
 | Q03 | İlk dağıtılabilir sürüm: canlı USB mi; grafik kurucu da mı; Windows yanında kurulum da mı? | Yanıtlandı: VM + canlı USB; kurucu sonra; D12 |
 | Q04 | Hedef tarih, günlük çalışma süresi, gece derleme imkânı? | 1–2 saat/gün; kesin tarih verilmedi, gece çalışması varsayılmaz |
 | Q05 | Alan ve derleme ortamı? | Hyper-V, 300 GB; F: SATA HDD olarak tespit edildi |

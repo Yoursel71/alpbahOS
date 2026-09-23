@@ -1,16 +1,22 @@
 # Hyper-V ve yerel kaynak planı
 
-Durum: Plan. VM oluşturulmadı, fiziksel disk bölümleme yapılmadı.
+Durum: Builder VM'i ve build diski mevcut; fiziksel disk bölümleme yapılmadı. 23 Eylül 2026'da SSH salt okunur incelemesi yapıldı.
 
 ## Ortam
 
 - Windows: mevcut çalışma hostu.
-- Builder: minimal Ubuntu 24.04 LTS amd64, Hyper-V Gen2; ISO sürümü ve checksum kurulumda kaydedilecek.
+- Builder: Ubuntu 24.04 LTS amd64, Hyper-V Gen2. Builder SSH bağlantısı doğrulandı; Hyper-V PowerShell sorgusu mevcut token'da yönetici izni reddediyor.
 - LFS host koşulları kitap scriptiyle doğrulanacak; gerekli sh/awk/yacc bağlantıları yalnız builder içinde düzenlenecek.
-- Builder: 6 vCPU, 12 GiB sabit RAM, başlangıç 4 build işi; ölçüme göre ayarlanır.
+- Builder (gerçek): 4 vCPU; 3 GiB başlangıç/en az ve 6 GiB en çok dynamic RAM. Build paralelliği kullanılabilir RAM'e göre seçilir. Eski 6 vCPU / 12 GiB planı geçersizdir.
 - Hedef testleri: Gen1 Legacy ve Gen2 UEFI, 2 vCPU/4 GiB; test VMs aynı anda açılmaz.
 - Grafik: VM renderer bilgisi kaydedilir. VM performansı RTX performansı gibi raporlanmaz.
 - Hyper-V modülü mevcut; yönetim sorgusu mevcut oturumda yetki hatası verdi. Kurulum öncesi uygun yönetim erişimi gerekir.
+
+### Builder disk gözlemi — 23 Eylül 2026
+
+- Builder VHDX sanal kapasitesi 210 GiB; guest `lsblk` `/dev/sda3` LVM PV'yi 206.9 GiB, root LV'yi 100 GiB gösterdi.
+- Guest `df -h /`: 98 GiB toplam, 69 GiB kullanılmış, 25 GiB boş, %74 kullanım.
+- `sudo -n vgs` ve `sudo -n lvs` parola istedi; VG'deki gerçek boş extent miktarı ölçülemedi. LV/VHDX boyutu değiştirilmedi. Komut ve çıktı: [P0/P1/P2 audit logu](verification/p0-p2-audit-2026-09-23.log).
 
 ## 300 GB fiziksel tüketim bütçesi
 
