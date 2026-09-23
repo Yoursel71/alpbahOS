@@ -30,6 +30,7 @@ import hashlib
 import json
 import os
 import posixpath
+import re
 import shutil
 import socket
 import stat
@@ -991,7 +992,8 @@ def cmd_search(index: dict, term: str, as_json: bool = False) -> int:
 
 def cmd_info(index: dict, db: dict, name: str) -> int:
     if name in db["packages"]:
-        pkg = db["packages"][name]
+        pkg = dict(db["packages"][name])
+        pkg["required_by"] = reverse_dependents(index, db["packages"], name)
         print(json.dumps(pkg, indent=2, ensure_ascii=False))
         return 0
     entry = index["entries"].get(name)
@@ -1005,7 +1007,8 @@ def cmd_info(index: dict, db: dict, name: str) -> int:
 def cmd_list(db: dict, as_json: bool = False) -> int:
     if as_json:
         rows = [
-            {"name": name, "version": pkg["version"], "method": pkg["method"], "status": pkg.get("status", "installed")}
+            {"name": name, "version": pkg["version"], "method": pkg["method"],
+             "status": pkg.get("status", "installed"), "reason": pkg.get("reason", "explicit")}
             for name, pkg in sorted(db["packages"].items())
         ]
         print(json.dumps(rows, ensure_ascii=False))
@@ -1014,51 +1017,339 @@ def cmd_list(db: dict, as_json: bool = False) -> int:
         print("Kurulu paket yok.")
         return 0
     for name, pkg in sorted(db["packages"].items()):
-        print(f"{name}\t{pkg['version']}\t{pkg['method']}")
+        suffix = "\t(bağımlılık)" if pkg.get("reason") == "dependency" else ""
+        print(f"{name}\t{pkg['version']}\t{pkg['method']}{suffix}")
     return 0
 
 
-def _resolve_install_order(index: dict, target: str, already_installed: set[str]) -> list[str]:
-    """Seviye 2: resolve `target`'s `depends` chain -- but ONLY within
-    this local catalog (index.json's own entries). This is deliberately
-    not real dependency resolution (see design/config-protection.md and
-    the proposal's own gap list, and 008-alp-preflight-deps.md's Seviye
-    1/2/3 breakdown): no version constraints, no conflict resolution, no
-    reaching outside this index for an external universe of packages --
-    just "if X's index entry lists other alp catalog packages under
-    `depends`, install those first." System-level requirements
-    (libraries/tools not in this catalog) remain requires_commands /
-    requires_libraries (Seviye 1), checked separately inside
-    install_recipe/upgrade_recipe.
+# --------------------------------------------------------------------------
+# Seviye 3: version constraints, conflicts, reverse dependencies, orphans.
+#
+# Scope, on purpose: the catalog carries exactly ONE version of each package,
+# so there is never a choice between candidates and nothing to backtrack
+# over. "Resolution" here means: walk the `depends` graph, check every
+# constraint against what is installed or what the catalog offers, upgrade a
+# dependency only when its installed version fails a constraint, and refuse
+# the whole transaction -- before touching anything -- if the end state would
+# break a constraint or a `conflicts` rule. This is not a SAT solver and does
+# not reach outside index.json; system libraries stay Seviye 1
+# (requires_commands / requires_libraries).
+# --------------------------------------------------------------------------
 
-    Returns an install order (dependencies before their dependents,
-    target last), skipping anything in `already_installed`. Raises
-    AlpError on an unknown package name anywhere in the chain, or a
-    dependency cycle (reports the exact cycle path).
+_VERSION_TOKEN = re.compile(r"\d+|[A-Za-z]+")
+
+
+def vercmp(a: str, b: str) -> int:
+    """Compare two version strings; returns -1, 0 or 1.
+
+    Numeric segments compare as integers, letter segments as text, and a
+    number beats letters at the same position (1.0.1 > 1.0a). When one side
+    runs out, a remaining letter segment marks a pre-release (1.0rc1 < 1.0)
+    and a remaining number marks a newer release (1.0.1 > 1.0). Separators
+    (. - _ +) are ignored.
     """
-    order: list[str] = []
-    visiting: list[str] = []
-    visited: set[str] = set()
+    ta, tb = _VERSION_TOKEN.findall(a), _VERSION_TOKEN.findall(b)
+    for x, y in zip(ta, tb):
+        xd, yd = x.isdigit(), y.isdigit()
+        if xd and yd:
+            if int(x) != int(y):
+                return 1 if int(x) > int(y) else -1
+        elif xd != yd:
+            return 1 if xd else -1
+        elif x != y:
+            return 1 if x > y else -1
+    if len(ta) == len(tb):
+        return 0
+    if len(ta) > len(tb):
+        return -1 if ta[len(tb)].isalpha() else 1
+    return 1 if tb[len(ta)].isalpha() else -1
 
-    def visit(name: str) -> None:
-        if name in already_installed or name in visited:
+
+_SPEC_NAME = re.compile(r"\s*([A-Za-z0-9][A-Za-z0-9._+-]*?)\s*((?:[<>=!].*)?)$")
+_SPEC_CLAUSE = re.compile(r"\s*(>=|<=|==|!=|=|<|>)\s*([A-Za-z0-9._+~-]+)\s*$")
+_OPS = {
+    ">=": lambda c: c >= 0,
+    "<=": lambda c: c <= 0,
+    "==": lambda c: c == 0,
+    "=": lambda c: c == 0,
+    "!=": lambda c: c != 0,
+    ">": lambda c: c > 0,
+    "<": lambda c: c < 0,
+}
+
+
+@dataclass(frozen=True)
+class Spec:
+    name: str
+    clauses: tuple[tuple[str, str], ...]
+    raw: str
+
+    def allows(self, version: str) -> bool:
+        return all(_OPS[op](vercmp(version, want)) for op, want in self.clauses)
+
+    def __str__(self) -> str:
+        return self.raw
+
+
+def parse_spec(raw: str) -> Spec:
+    """'name', 'name>=1.2' or 'name>=1.2,<2' (comma = AND)."""
+    m = _SPEC_NAME.fullmatch(raw)
+    if not m:
+        raise AlpError(f"Geçersiz bağımlılık tanımı: {raw!r}")
+    name, rest = m.group(1), m.group(2)
+    clauses = []
+    if rest:
+        for part in rest.split(","):
+            cm = _SPEC_CLAUSE.fullmatch(part)
+            if not cm:
+                raise AlpError(f"Geçersiz sürüm kısıtı {part.strip()!r} ({raw!r} içinde)")
+            clauses.append((cm.group(1), cm.group(2)))
+    return Spec(name, tuple(clauses), raw.strip())
+
+
+def catalog_version(index: dict, index_dir: Path, name: str) -> str:
+    entry = index["entries"][name]
+    if "version" in entry:
+        return str(entry["version"])
+    if entry.get("method") == "recipe":
+        with open(index_dir / entry["recipe"], "r", encoding="utf-8") as f:
+            return str(json.load(f)["version"])
+    return "unknown"
+
+
+def _declared(record: dict | None, entry: dict | None, field: str) -> list[str]:
+    """What an installed package requires/conflicts with. Recorded at install
+    time since Seviye 3; records written before that fall back to the
+    current catalog entry."""
+    if record is not None and field in record:
+        return record[field]
+    return (entry or {}).get(field, [])
+
+
+@dataclass
+class PlanStep:
+    action: str  # "install" | "upgrade" | "reinstall"
+    name: str
+    old_version: str | None
+    new_version: str
+    reason: str  # "explicit" | "dependency"
+
+
+def plan_transaction(
+    index: dict, index_dir: Path, installed: dict, targets: list[str],
+    mode: str = "install", reinstall: bool = False,
+) -> list[PlanStep]:
+    """Ordered steps (dependencies first) that bring `targets` in.
+
+    mode="install": install missing targets (or reinstall them).
+    mode="upgrade": move targets to the catalog version when it is newer.
+    A dependency that is already installed and satisfies every constraint
+    placed on it is left alone; one that does not is upgraded, if the
+    catalog version satisfies the constraint, otherwise the plan fails.
+    """
+    state = {n: r["version"] for n, r in installed.items()}
+    steps: list[PlanStep] = []
+    planned: set[str] = set()
+    visiting: list[str] = []
+
+    def chain(name: str) -> str:
+        return " -> ".join(visiting + [name])
+
+    def add(name: str, action: str, reason: str) -> None:
+        if name in planned:
             return
         if name in visiting:
             cycle = " -> ".join(visiting[visiting.index(name):] + [name])
             raise AlpError(f"Bağımlılık döngüsü tespit edildi: {cycle}")
-        entry = index["entries"].get(name)
-        if entry is None:
-            chain = " -> ".join(visiting + [name])
-            raise AlpError(f"Bilinmeyen bağımlılık: {name!r} ({chain} zincirinde)")
+        entry = index["entries"][name]
+        new_version = catalog_version(index, index_dir, name)
         visiting.append(name)
-        for dep in entry.get("depends", []):
-            visit(dep)
+        for raw in entry.get("depends", []):
+            need(parse_spec(raw))
         visiting.pop()
-        visited.add(name)
+        old = installed.get(name)
+        steps.append(PlanStep(
+            action, name, old["version"] if old else None, new_version,
+            reason if old is None else old.get("reason", "explicit"),
+        ))
+        planned.add(name)
+        state[name] = new_version
+
+    def need(spec: Spec) -> None:
+        requester = visiting[-1]
+        current = state.get(spec.name)
+        if current is not None and spec.allows(current):
+            return
+        if spec.name not in index["entries"]:
+            if current is None:
+                raise AlpError(f"Bilinmeyen bağımlılık: {spec.name!r} ({chain(spec.name)} zincirinde)")
+            raise AlpError(
+                f"{requester} şunu gerektiriyor: {spec}; kurulu {spec.name} {current} bunu "
+                "karşılamıyor ve katalogda yenisi yok."
+            )
+        if spec.name in planned:
+            raise AlpError(
+                f"{requester} şunu gerektiriyor: {spec}; ama bu işlemde {spec.name} "
+                f"{state[spec.name]} kurulacak. İkisi aynı anda karşılanamaz."
+            )
+        offered = catalog_version(index, index_dir, spec.name)
+        if not spec.allows(offered):
+            have = f"kurulu {current}, " if current is not None else ""
+            raise AlpError(
+                f"{requester} şunu gerektiriyor: {spec}; {have}katalogdaki {spec.name} {offered}. "
+                "Hiçbiri kısıtı karşılamıyor."
+            )
+        add(spec.name, "upgrade" if spec.name in installed else "install", "dependency")
+
+    for target in targets:
+        if target not in index["entries"]:
+            raise AlpError(f"Bilinmeyen paket: {target!r}. Önce 'alp search {target}' ile denetleyin.")
+        if mode == "install":
+            if target in installed and not reinstall:
+                continue
+            add(target, "reinstall" if target in installed else "install", "explicit")
+        else:
+            if target in planned:
+                continue
+            offered = catalog_version(index, index_dir, target)
+            if vercmp(offered, installed[target]["version"]) > 0:
+                add(target, "upgrade", "explicit")
+    return steps
+
+
+def state_problems(index: dict, installed: dict, steps: list[PlanStep], only_touched: bool = True) -> list[str]:
+    """Broken constraints and conflicts in the state `steps` would leave.
+
+    With only_touched, pre-existing problems between packages this
+    transaction does not touch are ignored (they are `alp check`'s job).
+    """
+    touched = {s.name for s in steps}
+    final = {n: r["version"] for n, r in installed.items()}
+    final.update({s.name: s.new_version for s in steps})
+
+    def declared(name: str, field: str) -> list[str]:
+        entry = index["entries"].get(name)
+        if name in touched:
+            return (entry or {}).get(field, [])
+        return _declared(installed.get(name), entry, field)
+
+    problems: list[str] = []
+    for name in sorted(final):
+        for raw in declared(name, "depends"):
+            spec = parse_spec(raw)
+            if only_touched and name not in touched and spec.name not in touched:
+                continue
+            have = final.get(spec.name)
+            if have is None:
+                problems.append(f"{name} {spec} gerektiriyor, {spec.name} kurulu değil")
+            elif not spec.allows(have):
+                problems.append(f"{name} {spec} gerektiriyor, {spec.name} {have} olur")
+        for raw in declared(name, "conflicts"):
+            spec = parse_spec(raw)
+            if spec.name == name or (only_touched and name not in touched and spec.name not in touched):
+                continue
+            have = final.get(spec.name)
+            if have is not None and spec.allows(have):
+                problems.append(f"{name} ile {spec.name} {have} çakışıyor ({spec})")
+    return problems
+
+
+def reverse_dependents(index: dict, installed: dict, name: str) -> list[str]:
+    return sorted(
+        other for other, record in installed.items()
+        if other != name and any(
+            parse_spec(raw).name == name
+            for raw in _declared(record, index["entries"].get(other), "depends")
+        )
+    )
+
+
+def plan_remove(index: dict, installed: dict, targets: list[str], cascade: bool) -> list[str]:
+    """Removal order, dependents before what they depend on. Without
+    cascade, refuses when an installed package outside `targets` still
+    needs one of them."""
+    removing = set(targets)
+    if cascade:
+        frontier = list(targets)
+        while frontier:
+            for dep in reverse_dependents(index, installed, frontier.pop()):
+                if dep not in removing:
+                    removing.add(dep)
+                    frontier.append(dep)
+    else:
+        for target in targets:
+            blockers = [d for d in reverse_dependents(index, installed, target) if d not in removing]
+            if blockers:
+                raise AlpError(
+                    f"{target} kaldırılamaz, şu kurulu paketler ona bağımlı: {', '.join(blockers)}. "
+                    f"Onlarla birlikte kaldırmak için: alp remove --cascade {target}"
+                )
+
+    order: list[str] = []
+    seen: set[str] = set()
+
+    def visit(name: str) -> None:
+        if name in seen:
+            return
+        seen.add(name)
+        for dep in reverse_dependents(index, installed, name):
+            if dep in removing:
+                visit(dep)
         order.append(name)
 
-    visit(target)
+    for name in sorted(removing):
+        visit(name)
     return order
+
+
+def find_orphans(index: dict, installed: dict, removing: set[str] = frozenset()) -> list[str]:
+    """Packages pulled in as dependencies that nothing left needs anymore.
+    Records without a `reason` (pre-Seviye 3) count as explicit and are
+    never auto-removed."""
+    alive = set(installed) - set(removing)
+    orphans: set[str] = set()
+    while True:
+        needed = {
+            parse_spec(raw).name
+            for name in alive - orphans
+            for raw in _declared(installed[name], index["entries"].get(name), "depends")
+        }
+        new = {
+            name for name in alive - orphans
+            if installed[name].get("reason") == "dependency" and name not in needed
+        }
+        if not new:
+            return sorted(orphans)
+        orphans |= new
+
+
+def _confirm(question: str, assume_yes: bool) -> bool:
+    """Asks only on an interactive terminal; scripts and the PackageKit
+    backend (stdin is not a tty) proceed as before."""
+    if assume_yes or sys.stdin is None or not sys.stdin.isatty():
+        return True
+    try:
+        answer = input(f"{question} [E/h] ").strip().lower()
+    except EOFError:
+        return False
+    return answer in ("", "e", "evet", "y", "yes")
+
+
+_FLATPAK_UPGRADE_MSG = (
+    "flatpak yöntemi 'alp upgrade' ile yükseltilmez; flatpak kendi güncellemesini "
+    "yönetir (bkz. design/config-protection.md §8). 'flatpak update' kullanın."
+)
+_ACTION_LABEL = {"install": "kur", "upgrade": "yükselt", "reinstall": "yeniden kur"}
+_ACTION_DONE = {"install": "kuruldu", "upgrade": "yükseltildi", "reinstall": "yeniden kuruldu"}
+
+
+def _print_plan(steps: list[PlanStep], index: dict) -> None:
+    print("İşlem planı:")
+    for s in steps:
+        version = f"{s.old_version} -> {s.new_version}" if s.action == "upgrade" else s.new_version
+        note = "  (bağımlılık)" if s.action == "install" and s.reason == "dependency" else ""
+        method = index["entries"][s.name]["method"]
+        print(f"  {_ACTION_LABEL[s.action]:<12}{s.name} {version} [{method}]{note}")
 
 
 def _install_one(paths: Paths, name: str, entry: dict, index_dir: Path, dry_run: bool, db: dict) -> dict:
@@ -1079,11 +1370,63 @@ def _upgrade_one(paths: Paths, name: str, entry: dict, index_dir: Path, old: dic
     if method == "core":
         return upgrade_core(paths, entry, index_dir, old, dry_run, db=db, pkg_name=name)
     if method == "flatpak":
-        raise AlpError(
-            "flatpak yöntemi 'alp upgrade' ile yükseltilmez; flatpak kendi güncellemesini "
-            "yönetir (bkz. design/config-protection.md §8). 'flatpak update' kullanın."
-        )
+        raise AlpError(_FLATPAK_UPGRADE_MSG)
     raise AlpError(f"Tanımsız yöntem: {method!r}")
+
+
+def _run_plan(
+    steps: list[PlanStep], paths: Paths, index: dict, index_dir: Path, db: dict,
+    dry_run: bool, explicit: set[str],
+) -> None:
+    tag = "[dry-run] " if dry_run else ""
+    done: list[str] = []
+    for step in steps:
+        entry = index["entries"][step.name]
+        old = db["packages"].get(step.name)
+        try:
+            if old is not None and entry["method"] in ("recipe", "core"):
+                # upgrade and --reinstall share the config-aware path, so
+                # modified configs get .alpnew and dropped files are removed.
+                record = _upgrade_one(paths, step.name, entry, index_dir, old, dry_run, db)
+            else:
+                record = _install_one(paths, step.name, entry, index_dir, dry_run, db)
+        except Exception:
+            if done:
+                remaining = [s.name for s in steps[len(done):]]
+                print(
+                    f"alp: işlem yarıda kaldı. Tamamlanan ve kaydedilen: {', '.join(done)}; "
+                    f"yapılmayan: {', '.join(remaining)}",
+                    file=sys.stderr,
+                )
+            raise
+        record["depends"] = list(entry.get("depends", []))
+        record["conflicts"] = list(entry.get("conflicts", []))
+        if step.name in explicit:
+            record["reason"] = "explicit"
+        elif old is not None:
+            record["reason"] = old.get("reason", "explicit")
+        else:
+            record["reason"] = step.reason
+        if not dry_run:
+            db["packages"][step.name] = record
+            save_db(paths, db)
+        done.append(step.name)
+        print(f"{tag}{step.name} ({entry['method']}) -> {record.get('version')} {_ACTION_DONE[step.action]}.")
+
+
+def _plan_or_refuse(index: dict, installed: dict, steps: list[PlanStep]) -> None:
+    problems = state_problems(index, installed, steps)
+    if problems:
+        raise AlpError(
+            "Bu işlem sistemi tutarsız bırakırdı; hiçbir şey yapılmadı:\n  - " + "\n  - ".join(problems)
+        )
+
+
+def _hint_orphans(index: dict, installed: dict, removing: set[str] = frozenset()) -> None:
+    orphans = find_orphans(index, installed, removing)
+    if orphans:
+        print(f"Artık hiçbir paketin ihtiyaç duymadığı bağımlılıklar: {', '.join(orphans)}. "
+              "Kaldırmak için: alp autoremove")
 
 
 def cmd_install(args: argparse.Namespace, paths: Paths, index: dict, index_dir: Path) -> int:
@@ -1093,69 +1436,164 @@ def cmd_install(args: argparse.Namespace, paths: Paths, index: dict, index_dir: 
     paths.ensure()
     with DbLock(paths.lock_file):
         db = load_db(paths)
-        already_installed = set(db["packages"])
-        if args.reinstall:
-            already_installed.discard(args.name)
+        installed = db["packages"]
+        steps = plan_transaction(
+            index, index_dir, installed, [args.name],
+            mode="install", reinstall=getattr(args, "reinstall", False),
+        )
 
-        order = _resolve_install_order(index, args.name, already_installed)
-
-        if not order:
-            print(f"{args.name} zaten kurulu (sürüm {db['packages'][args.name]['version']}).")
+        if not steps:
+            record = installed[args.name]
+            if record.get("reason") == "dependency" and not args.dry_run:
+                record["reason"] = "explicit"
+                save_db(paths, db)
+                print(f"{args.name} zaten kurulu (sürüm {record['version']}); artık açıkça kurulmuş "
+                      "olarak işaretlendi, autoremove onu kaldırmaz.")
+            else:
+                print(f"{args.name} zaten kurulu (sürüm {record['version']}).")
             return 0
 
-        if len(order) > 1:
-            print("Bağımlılık zinciri: " + " -> ".join(order))
-
-        tag = "[dry-run] " if args.dry_run else ""
-        for name in order:
-            entry = index["entries"][name]
-            old = db["packages"].get(name)
-            if old is not None and entry["method"] in ("recipe", "core"):
-                # --reinstall of an installed package: same config-aware path
-                # as upgrade, so modified configs get .alpnew instead of being
-                # overwritten and files the package no longer ships are dropped.
-                record = _upgrade_one(paths, name, entry, index_dir, old, args.dry_run, db)
-            else:
-                record = _install_one(paths, name, entry, index_dir, args.dry_run, db)
-            if not args.dry_run:
-                db["packages"][name] = record
-                save_db(paths, db)
-            print(f"{tag}{name} ({entry['method']}) -> {record.get('version')} kuruldu.")
-
+        _plan_or_refuse(index, installed, steps)
+        _print_plan(steps, index)
+        if len(steps) > 1:
+            print("Bağımlılık zinciri: " + " -> ".join(s.name for s in steps))
+        if not args.dry_run and not _confirm("Devam edilsin mi?", getattr(args, "yes", False)):
+            print("İptal edildi, hiçbir şey değişmedi.")
+            return 1
+        _run_plan(steps, paths, index, index_dir, db, args.dry_run, explicit={args.name})
     return 0
+
+
+def _drop_kept_back(index: dict, index_dir: Path, installed: dict, targets: list[str]) -> tuple[list[str], list[str]]:
+    """Full-system upgrade: one package that cannot move (its new version
+    would break an installed dependent, or needs something the catalog
+    cannot give) is held back with its reason instead of blocking every
+    other update -- apt's "kept back"."""
+    accepted: list[str] = []
+    kept: list[str] = []
+    for target in targets:
+        try:
+            steps = plan_transaction(index, index_dir, installed, accepted + [target], mode="upgrade")
+            problems = state_problems(index, installed, steps)
+        except AlpError as exc:
+            problems = [str(exc)]
+        if problems:
+            print(f"geri tutuldu: {target} ({'; '.join(problems)})")
+            kept.append(target)
+        else:
+            accepted.append(target)
+    return accepted, kept
 
 
 def cmd_upgrade(args: argparse.Namespace, paths: Paths, index: dict, index_dir: Path) -> int:
     paths.ensure()
     with DbLock(paths.lock_file):
         db = load_db(paths)
-        old = db["packages"].get(args.name)
-        if old is None:
-            raise AlpError(f"Kurulu değil: {args.name}. 'alp upgrade' yalnız kurulu paketler içindir.")
-        entry = index["entries"].get(args.name)
-        if entry is None:
-            raise AlpError(f"Bilinmeyen paket: {args.name!r}")
+        installed = db["packages"]
+        name = getattr(args, "name", None)
 
-        record = _upgrade_one(paths, args.name, entry, index_dir, old, args.dry_run, db)
+        if name:
+            if name not in installed:
+                raise AlpError(f"Kurulu değil: {name}. 'alp upgrade' yalnız kurulu paketler içindir.")
+            if name not in index["entries"]:
+                raise AlpError(f"Bilinmeyen paket: {name!r}")
+            if index["entries"][name]["method"] == "flatpak":
+                raise AlpError(_FLATPAK_UPGRADE_MSG)
+            targets = [name]
+        else:
+            targets, flatpaks, kept = [], [], []
+            for pkg in sorted(installed):
+                entry = index["entries"].get(pkg)
+                if entry is None:
+                    continue
+                if entry["method"] == "flatpak":
+                    flatpaks.append(pkg)
+                elif vercmp(catalog_version(index, index_dir, pkg), installed[pkg]["version"]) > 0:
+                    targets.append(pkg)
+            if flatpaks:
+                print(f"flatpak paketleri ({', '.join(flatpaks)}) için 'flatpak update' kullanın.")
+            targets, kept = _drop_kept_back(index, index_dir, installed, targets)
 
-        if not args.dry_run:
-            db["packages"][args.name] = record
-            save_db(paths, db)
+        steps = plan_transaction(index, index_dir, installed, targets, mode="upgrade")
+        if not steps:
+            if name:
+                print(f"{name} zaten güncel ({installed[name]['version']}).")
+            else:
+                print("Yükseltilebilecek başka paket yok." if kept else "Her şey güncel.")
+            return 0
 
-    tag = "[dry-run] " if args.dry_run else ""
-    print(f"{tag}{args.name} {old.get('version')} -> {record.get('version')} yükseltildi.")
+        _plan_or_refuse(index, installed, steps)
+        _print_plan(steps, index)
+        if not args.dry_run and not _confirm("Devam edilsin mi?", getattr(args, "yes", False)):
+            print("İptal edildi, hiçbir şey değişmedi.")
+            return 1
+        _run_plan(steps, paths, index, index_dir, db, args.dry_run, explicit=set())
     return 0
 
 
-def cmd_remove(args: argparse.Namespace, paths: Paths) -> int:
+def _remove_many(order: list[str], paths: Paths, db: dict, dry_run: bool) -> None:
+    tag = "[dry-run] " if dry_run else ""
+    for name in order:
+        remove_package(paths, db, name, dry_run)
+        if not dry_run:
+            save_db(paths, db)
+        print(f"{tag}{name} kaldırıldı.")
+
+
+def cmd_remove(args: argparse.Namespace, paths: Paths, index: dict | None = None) -> int:
+    index = index or {"entries": {}}
     paths.ensure()
     with DbLock(paths.lock_file):
         db = load_db(paths)
-        remove_package(paths, db, args.name, args.dry_run)
-        if not args.dry_run:
-            save_db(paths, db)
-    tag = "[dry-run] " if args.dry_run else ""
-    print(f"{tag}{args.name} kaldırıldı.")
+        installed = db["packages"]
+        if args.name not in installed:
+            raise AlpError(f"Kurulu değil: {args.name}")
+        order = plan_remove(index, installed, [args.name], cascade=getattr(args, "cascade", False))
+        if len(order) > 1:
+            print("Birlikte kaldırılacak (önce bağımlı olanlar): " + ", ".join(order))
+            if not args.dry_run and not _confirm("Devam edilsin mi?", getattr(args, "yes", False)):
+                print("İptal edildi, hiçbir şey değişmedi.")
+                return 1
+        snapshot = dict(installed)
+        _remove_many(order, paths, db, args.dry_run)
+        _hint_orphans(index, snapshot if args.dry_run else db["packages"], set(order) if args.dry_run else set())
+    return 0
+
+
+def cmd_autoremove(args: argparse.Namespace, paths: Paths, index: dict) -> int:
+    paths.ensure()
+    with DbLock(paths.lock_file):
+        db = load_db(paths)
+        installed = db["packages"]
+        orphans = find_orphans(index, installed)
+        if not orphans:
+            print("Kaldırılacak sahipsiz bağımlılık yok.")
+            return 0
+        order = plan_remove(index, installed, orphans, cascade=False)
+        print("Sahipsiz bağımlılıklar kaldırılacak: " + ", ".join(order))
+        if not args.dry_run and not _confirm("Devam edilsin mi?", getattr(args, "yes", False)):
+            print("İptal edildi, hiçbir şey değişmedi.")
+            return 1
+        _remove_many(order, paths, db, args.dry_run)
+    return 0
+
+
+def cmd_check(paths: Paths, index: dict, index_dir: Path) -> int:
+    installed = load_db(paths)["packages"]
+    problems = state_problems(index, installed, [], only_touched=False)
+    for name in sorted(installed):
+        if name in index["entries"] and index["entries"][name]["method"] != "flatpak":
+            offered = catalog_version(index, index_dir, name)
+            if vercmp(offered, installed[name]["version"]) > 0:
+                print(f"güncelleme var: {name} {installed[name]['version']} -> {offered}")
+    orphans = find_orphans(index, installed)
+    if orphans:
+        print(f"sahipsiz bağımlılık: {', '.join(orphans)} (alp autoremove)")
+    if problems:
+        for p in problems:
+            print(f"SORUN: {p}")
+        return 1
+    print(f"Bağımlılık tutarlılığı: sorun yok ({len(installed)} kurulu paket).")
     return 0
 
 
@@ -1174,16 +1612,23 @@ def build_parser() -> argparse.ArgumentParser:
     sp = sub.add_parser("info", help="Show details for a package")
     sp.add_argument("name")
 
-    sp = sub.add_parser("install", help="Install a package via its declared method")
+    yes = argparse.ArgumentParser(add_help=False)
+    yes.add_argument("-y", "--yes", action="store_true", help="Do not ask for confirmation")
+
+    sp = sub.add_parser("install", parents=[yes], help="Install a package and the catalog packages it depends on")
     sp.add_argument("name")
     sp.add_argument("--reinstall", action="store_true")
 
-    sp = sub.add_parser("upgrade", help="Upgrade an installed recipe/core package (config-aware, see design/config-protection.md)")
-    sp.add_argument("name")
+    sp = sub.add_parser("upgrade", parents=[yes],
+                        help="Upgrade one installed package, or every outdated recipe/core package when no name is given")
+    sp.add_argument("name", nargs="?")
 
-    sp = sub.add_parser("remove", help="Remove an installed package")
+    sp = sub.add_parser("remove", parents=[yes], help="Remove an installed package (refuses if others depend on it)")
     sp.add_argument("name")
+    sp.add_argument("--cascade", action="store_true", help="Also remove installed packages that depend on it")
 
+    sub.add_parser("autoremove", parents=[yes], help="Remove dependencies nothing needs anymore")
+    sub.add_parser("check", help="Verify installed dependency constraints and conflicts")
     sub.add_parser("list", help="List installed packages")
     sub.add_parser("update", help="Refresh the local index (no-op in this prototype)")
 
@@ -1215,7 +1660,12 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "upgrade":
             return cmd_upgrade(args, paths, index, index_dir)
         if args.command == "remove":
-            return cmd_remove(args, paths)
+            return cmd_remove(args, paths, index)
+        if args.command == "autoremove":
+            return cmd_autoremove(args, paths, index)
+        if args.command == "check":
+            paths.ensure()
+            return cmd_check(paths, index, index_dir)
         raise AlpError(f"Bilinmeyen komut: {args.command}")
     except AlpError as exc:
         print(f"alp: hata: {exc}", file=sys.stderr)

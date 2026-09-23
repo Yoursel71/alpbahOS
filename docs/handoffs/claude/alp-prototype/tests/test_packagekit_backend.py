@@ -87,7 +87,7 @@ def test_alp_install_list_info_remove_round_trip(env):
     pkb.alp_install(ALP_PY, env["root"], env["index"], "theme")
 
     listed = pkb.alp_list(ALP_PY, env["root"], env["index"])
-    assert listed == [{"name": "theme", "version": "1.0.0", "method": "core", "status": "installed"}]
+    assert listed == [{"name": "theme", "version": "1.0.0", "method": "core", "status": "installed", "reason": "explicit"}]
 
     info = pkb.alp_info(ALP_PY, env["root"], env["index"], "theme")
     assert info["version"] == "1.0.0"

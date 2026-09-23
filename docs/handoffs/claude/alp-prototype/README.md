@@ -74,3 +74,20 @@ python3 -m pytest tests/ -v
 Testlerin gerçekten anlamlı olduğu (yalnızca "her zaman geçen" testler olmadığı) şöyle doğrulandı: bu testler, düzeltmeden ÖNCEKİ `alp.py` sürümüne (`51f93b9`) karşı çalıştırıldı ve **tam olarak 3 düzeltmeye karşılık gelen 7 test başarısız oldu** (dry-run'ın gerçekten fetch çağırmadığını doğrulayan 3 test, `_merge_destdir`'in dizinleri kaydettiğini doğrulayan 2 test, indirme timeout'unu doğrulayan 2 test); diğer 22 test zaten geçiyordu. Bu, testlerin gerçek regresyon koruması sağladığının kanıtıdır — kozmetik/anlamsız testler değil.
 
 Kapsanmayan (bu hostta hâlâ test edilemeyen, testlerde de öyle işaretli): gerçek `configure/make/make install` çalıştırma, gerçek `flatpak install/uninstall`, gerçek internet üzerinden `htop`/`jq`/`zsh`/`tmux` indirme (o testler `alpbahOS-alp` reposunda elle doğrulandı, bu test setinde değil — burada network tamamen mock'lu tutuluyor, hız ve tekrarlanabilirlik için).
+
+## Seviye 3 bağımlılık denetimi (23 Eylül 2026)
+
+Ayrıntı: [../013-alp-seviye3-deps.md](../013-alp-seviye3-deps.md). Kısaca:
+
+- `index.json` girdilerinde `depends` artık sürüm kısıtı alıyor: `"libfoo>=2.0"`, `"libfoo>=2.0,<3"` (virgül = VE). İsteğe bağlı yeni `conflicts` alanı var.
+- Kurulum, yükseltme ve kaldırma önce bir **işlem planı** gösteriyor. Etkileşimli terminalde `[E/h]` onayı soruyor; betikler ve PackageKit backend'i için `-y/--yes` var.
+- Plan sonunda bir kısıt veya çakışma bozulacaksa işlem **tek bayt yazılmadan** reddediliyor.
+- Yeni komutlar ve seçenekler:
+  - `alp remove --cascade <ad>`: bağımlı paketlerle birlikte kaldırır. `--cascade` olmadan, başka paketin ihtiyaç duyduğu bir paket kaldırılamaz.
+  - `alp autoremove`: bağımlılık olarak gelip artık kimsenin ihtiyaç duymadığı paketleri kaldırır.
+  - `alp upgrade` (ad vermeden): bütün eski paketleri yükseltir. Takılan bir paketi nedeniyle "geri tutuldu" diye bildirir, diğerlerini yükseltir.
+  - `alp check`: kurulu sistemdeki bozuk kısıtları, çakışmaları, güncellemeleri ve sahipsiz bağımlılıkları listeler.
+- `info`, kurulu paketin `required_by` listesini, `list` ise "(bağımlılık)" işaretini gösteriyor.
+- Sınır: katalogda her paketin tek bir sürümü var. Bu yüzden bu bir SAT çözücü değil, deterministik bir kısıt denetleyicisi. Katalog dışındaki sistem kütüphaneleri hâlâ Seviye 1'de (`requires_commands` / `requires_libraries`).
+
+Test: Windows'ta **126 geçti, 10 atlandı**. Builder'da (Ubuntu 24.04.5) **136 geçti, 0 atlandı**.

@@ -470,7 +470,7 @@ def test_cmd_list_json_output_is_parseable(paths: alp.Paths, capsys):
     db["packages"]["htop"] = {"version": "3.3.0", "method": "recipe", "status": "installed"}
     assert alp.cmd_list(db, as_json=True) == 0
     out = json.loads(capsys.readouterr().out)
-    assert out == [{"name": "htop", "version": "3.3.0", "method": "recipe", "status": "installed"}]
+    assert out == [{"name": "htop", "version": "3.3.0", "method": "recipe", "status": "installed", "reason": "explicit"}]
 
 
 # --------------------------------------------------------------------------
@@ -869,7 +869,7 @@ def test_install_recipe_fails_preflight_before_any_network_call(paths: alp.Paths
 
 
 # --------------------------------------------------------------------------
-# _resolve_install_order / cmd_install -- Seviye 2: dependency chains
+# plan_transaction / cmd_install -- Seviye 2: dependency chains
 # WITHIN this local catalog only (index.json's own `depends` field). Not
 # real resolution: no version constraints, no reaching outside the index.
 # --------------------------------------------------------------------------
@@ -882,51 +882,60 @@ def _core_entry(tmp_path: Path, name: str, content: bytes = b"x", depends: list[
     return entry
 
 
-def test_resolve_install_order_linear_chain(tmp_path: Path):
+def _order(index: dict, tmp_path: Path, target: str, installed: dict | None = None) -> list[str]:
+    steps = alp.plan_transaction(index, tmp_path, installed or {}, [target])
+    return [s.name for s in steps]
+
+
+def _rec(version: str = "1.0.0", **extra) -> dict:
+    return {"version": version, "method": "core", **extra}
+
+
+def test_plan_linear_chain(tmp_path: Path):
     index = {"entries": {
         "a": _core_entry(tmp_path, "a", depends=["b"]),
         "b": _core_entry(tmp_path, "b"),
     }}
-    assert alp._resolve_install_order(index, "a", already_installed=set()) == ["b", "a"]
+    assert _order(index, tmp_path, "a") == ["b", "a"]
 
 
-def test_resolve_install_order_diamond_fanout(tmp_path: Path):
+def test_plan_diamond_fanout(tmp_path: Path):
     index = {"entries": {
         "a": _core_entry(tmp_path, "a", depends=["b", "c"]),
         "b": _core_entry(tmp_path, "b"),
         "c": _core_entry(tmp_path, "c"),
     }}
-    order = alp._resolve_install_order(index, "a", already_installed=set())
+    order = _order(index, tmp_path, "a")
     assert order[-1] == "a"
     assert set(order[:-1]) == {"b", "c"}
 
 
-def test_resolve_install_order_skips_already_installed(tmp_path: Path):
+def test_plan_skips_already_installed(tmp_path: Path):
     index = {"entries": {
         "a": _core_entry(tmp_path, "a", depends=["b"]),
         "b": _core_entry(tmp_path, "b"),
     }}
-    assert alp._resolve_install_order(index, "a", already_installed={"b"}) == ["a"]
+    assert _order(index, tmp_path, "a", {"b": _rec()}) == ["a"]
 
 
-def test_resolve_install_order_target_already_installed_is_empty(tmp_path: Path):
+def test_plan_target_already_installed_is_empty(tmp_path: Path):
     index = {"entries": {"a": _core_entry(tmp_path, "a")}}
-    assert alp._resolve_install_order(index, "a", already_installed={"a"}) == []
+    assert _order(index, tmp_path, "a", {"a": _rec()}) == []
 
 
-def test_resolve_install_order_detects_cycle(tmp_path: Path):
+def test_plan_detects_cycle(tmp_path: Path):
     index = {"entries": {
         "a": _core_entry(tmp_path, "a", depends=["b"]),
         "b": _core_entry(tmp_path, "b", depends=["a"]),
     }}
     with pytest.raises(alp.AlpError, match="Bağımlılık döngüsü"):
-        alp._resolve_install_order(index, "a", already_installed=set())
+        _order(index, tmp_path, "a")
 
 
-def test_resolve_install_order_unknown_dependency_raises(tmp_path: Path):
+def test_plan_unknown_dependency_raises(tmp_path: Path):
     index = {"entries": {"a": _core_entry(tmp_path, "a", depends=["ghost"])}}
     with pytest.raises(alp.AlpError, match="Bilinmeyen bağımlılık"):
-        alp._resolve_install_order(index, "a", already_installed=set())
+        _order(index, tmp_path, "a")
 
 
 def test_cmd_install_installs_dependency_chain_end_to_end(paths: alp.Paths, tmp_path: Path):
