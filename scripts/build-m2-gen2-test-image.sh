@@ -133,13 +133,18 @@ if grep -q '^admin:' "$MOUNT/etc/passwd"; then
     echo 'Refusing to reuse an existing admin account in the test image.' >&2
     exit 1
 fi
+grep -q '^audio:' "$MOUNT/etc/group"
 chroot "$MOUNT" /usr/sbin/useradd -m -u 1001 -g users -G wheel -s /bin/bash admin
+chroot "$MOUNT" /usr/sbin/usermod -aG audio sa
+chroot "$MOUNT" /usr/sbin/usermod -aG audio admin
 admin_hash=$(printf '%s' "$ADMIN_PASSWORD" | openssl passwd -6 -stdin)
 printf 'admin:%s\n' "$admin_hash" | chroot "$MOUNT" /usr/sbin/chpasswd -e
 unset admin_hash
 grep -q '^admin:x:1001:' "$MOUNT/etc/passwd"
 awk -F: '$1 == "admin" && $2 ~ /^\$6\$/ { ok=1 } END { exit !ok }' "$MOUNT/etc/shadow"
 test -d "$MOUNT/home/admin"
+chroot "$MOUNT" /usr/bin/id -nG sa | tr ' ' '\n' | grep -qx audio
+chroot "$MOUNT" /usr/bin/id -nG admin | tr ' ' '\n' | grep -qx audio
 grep -q '^AllowUsers sa$' "$MOUNT/etc/ssh/sshd_config"
 
 grub-install --target=x86_64-efi --efi-directory="$MOUNT/boot/efi" \
