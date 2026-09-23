@@ -36,7 +36,7 @@ Mevcut Windows bilgisayarı: Ryzen 7 5700, yaklaşık 24 GiB RAM, RTX 5060. F: s
 
 Hyper-V PowerShell modülü mevcut, fakat mevcut oturumda VM hostunu okuma yetkisi yok. Özelliğin etkinliği ve VM oluşturma yetkisi kurulum aşamasında doğrulanacak. Bu kontrol için yetki engeli, plan/doküman/Git çalışmasını engellemez. Rootlu, SSH erişimli Mi 9 telefonu yardımcı cihaz olarak mevcut; x86_64 ana derleme hostu veya uyumluluk kanıtı olarak kullanılmayacak.
 
-Mevcut dosyalar tasarım belgeleri ve logo varlıklarıdır. Linux host, rootfs, paket deposu, boot eden imaj veya ISO henüz yoktur. Tasarım mockup'ındaki sürümler, paket sayıları, CPU/RAM ve `pacman` satırları örnek metindir.
+Mevcut dosyalar tasarım belgeleri ve logo varlıklarıdır. Linux host, rootfs, paket deposu, boot eden imaj veya ISO henüz yoktur. Tasarım mockup'ındaki sürümler, eski paket yöneticisi örnekleri, paket sayıları ve CPU/RAM değerleri örnek metindir.
 
 Mevcut build tabanı [LFS 12.4-systemd](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/) ve eşleşen [BLFS 12.4-systemd](https://www.linuxfromscratch.org/blfs/view/12.4-systemd/) olarak D33 ile sabitlendi. Bu, önceki 13.1+multilib taslak tercihinin yerine geçti. D32 saf 64-bit kararı ile D22 Steam hedefi çelişiyor; kullanıcı kararı açık kalır.
 
@@ -58,15 +58,15 @@ Kullanıcı teknik seçimleri devrettiği için aşağıdaki başlangıç mimari
 | Marka/tema | alpbahOS görünüm ve varsayılan ayar paketleri | Temiz kullanıcı hesabında görünüm doğrulaması |
 | Dağıtım çıktısı | Sanal disk imajı ve canlı ISO | Boot, ağ, oturum, yeniden başlatma |
 
-Plasma, tema ve efekt altyapısı nedeniyle uygun adaydır. BLFS'de [Plasma derleme bölümü](https://www.linuxfromscratch.org/blfs/view/13.1-systemd/kde/plasma-all.html) vardır; bu bölümün bulunması tek başına tüm alpbahOS entegrasyonlarının hazır olduğu anlamına gelmez.
+Plasma, tema ve efekt altyapısı nedeniyle uygun adaydır. BLFS'de [Plasma derleme bölümü](https://www.linuxfromscratch.org/blfs/view/12.4-systemd/kde/plasma-all.html) vardır; bu bölümün bulunması tek başına tüm alpbahOS entegrasyonlarının hazır olduğu anlamına gelmez.
 
 Grafik uygulamalarda önce mevcut dosya yöneticisi, ayarlar, terminal, ağ ve ses bileşenleri kullanılır. GTK/Qt/Flatpak uygulamalarında tema kapsamı ayrı ayrı test edilir; tek tema paketinin tüm arayüzleri aynı şekilde değiştireceği varsayılmaz.
 
-### 3.1 Steam ve 32-bit uyumluluk kapısı
+### 3.1 Steam/Wine ve x86_64 kapsam kararı
 
-[Standart LFS x86_64](https://www.linuxfromscratch.org/lfs/view/13.1-systemd/prologue/architecture.html) saf 64-bit sistem üretir. [Valve gereksinimleri](https://github.com/ValveSoftware/steam-for-linux) Steam için 32/64-bit glibc ve grafik kullanıcı alanı desteğini belirtir. Bu nedenle Steam sonradan rastgele birkaç paket eklenerek çözülecek iş olarak ertelenmez.
+[Standart LFS x86_64](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/prologue/architecture.html) saf 64-bit sistem üretir. D22 Steam/Wine hedefini ister; D32 ilk sürüm için 32-bit kullanıcı alanı ve multilib'i kapsam dışı bırakır. Bu iki kararın Steam istemcisiyle uyumluluğu `docs/DECISIONS.md` içinde açık kullanıcı kararıdır.
 
-M02'de LFS belgesinin bağladığı [multilib dalının](https://www.linuxfromscratch.org/~thomas/multilib/index.html) kullanılabilir sürüm/commit'i incelenir. LFS 13.1 ile eşleşme doğrulanmadan sürüm numarası uydurulmaz. Başlangıç kararı x86_64 kernel + i686 kullanıcı alanı uyumluluğudur; ayrı 32-bit dağıtım değildir. Dizilim, libc/derleyici seçenekleri ve lib32 grafik paketleri manifestte açıkça tanımlanır. 32-bit çalıştırılabilir test ve loader doğrulaması geçmeden M03 tam derlemesi başlamaz. Gerekirse uyumlu sabit kitap çifti ADR ile revize edilir.
+M03'teki 32-bit/multilib ve ELF32 kabul ölçütleri D32 ile kapsam dışıdır; bu kapsam için toolchain derlemesi yapılmaz. Steam/Wine uyumluluğu, D22/D32 kararı netleşmeden vaat edilmez veya tamamlandı işaretlenmez.
 
 ### 3.2 Eski PC ve RAM bütçesi
 
@@ -81,7 +81,7 @@ Test hedefleri garanti edilmiş minimumlar değildir; ölçümden sonra yayımla
 
 Tarayıcı, Steam, Wine, dosya indeksleme ve mağaza arka planda otomatik başlatılmaz. Çok uygulamanın kurulu olması hepsinin RAM'de çalışması anlamına gelmez. Gereksiz sürekli servisler kapalı, erişilebilirlik bileşenleri talebe göre etkin olur. Kullanılan RAM/CPU, süreçlerin PSS toplamı ve bellek baskısı aynı yöntemle raporlanır. Solid bütçesi geçmezse önce servis/tema optimizasyonu yapılır; bu yetmezse ayrı hafif masaüstü profili ölçülmüş alternatif olarak ele alınır.
 
-Genel taban için `-march=native` kullanılmaz; x86_64 uyumluluk tabanı korunur. Steam/Chrome gibi uygulamaların ek CPU talimat gereksinimleri ayrı kontrol edilir. Eski 32-bit CPU'lar, Mi 9 gibi ARM cihazlar ve desteği kesilmiş tüm GPU'lar hedef dışı/ayrı test sınıfıdır; “hepsinde” isteği geniş x86_64 uyumluluk matrisi olarak uygulanır.
+Genel taban için `-march=native` kullanılmaz; x86_64 uyumluluk tabanı korunur. Steam/Chrome gibi uygulamaların ek CPU talimat gereksinimleri ayrı kontrol edilir. Yalnız 32-bit çalışan CPU desteği D32/P01 kapsamında dışıdır; Mi 9 gibi ARM cihazlar ve desteği kesilmiş GPU'lar hedef dışı/ayrı test sınıfıdır; “hepsinde” isteği geniş x86_64 uyumluluk matrisi olarak uygulanır.
 
 ## 4. Terminal deneyimi
 
@@ -136,9 +136,9 @@ Aşağıdakiler planlanan arayüzdür; henüz çalışan komutlar değildir. `pk
 
 ### 5.2 Altyapı seçimi (tarihsel — bkz. §5 başındaki 21 Eylül 2026 güncellemesi, D31/P13)
 
-LFS belirli bir paket yöneticisi sağlamaz. [LFS paket yönetimi bölümü](https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter08/pkgmgt.html) temel yöntemleri açıklar. Sistem dosyaları ilk kurulduğunda sahiplik ve sürüm bilgisi yakalanmalıdır; bu yüzden motor/manifest yaklaşımı nihai LFS sistem kurulumundan önce seçilir.
+LFS belirli bir paket yöneticisi sağlamaz. [LFS 12.4 paket yönetimi bölümü](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/pkgmgt.html) temel yöntemleri açıklar. Sistem dosyaları ilk kurulduğunda sahiplik ve sürüm bilgisi yakalanmalıdır; bu yüzden motor/manifest yaklaşımı nihai LFS sistem kurulumundan önce seçilir.
 
-Başlangıç tercihi pacman/libalpm'dir; [pacman kılavuzu](https://man.archlinux.org/man/pacman.8) ve [depo yapılandırması](https://man.archlinux.org/man/pacman.conf.5) esas alınır. Mağaza için [Discover](https://apps.kde.org/discover/) ile [PackageKit alpm backend](https://github.com/PackageKit/PackageKit/tree/main/backends/alpm) entegrasyonu test edilir. Backend'in kaynak ağacında olması seçilen sürümlerin uyumlu olduğunu kanıtlamaz. M02 başarısızsa dpkg/APT + PackageKit alternatifine gerekçeli geçiş değerlendirilir. Deney ölçütleri:
+Güncel paket motoru `alp`'tir (D31/P13). Kaynak motorun commit ve SHA-256 değeri rootfs'deki dosyayla eşleşmelidir. `alp` GUI yolu, veri tabanı, işlem kilidi ve güvenli kurulum/kaldırma testleri tamamlanmadan hazır sayılmaz.
 
 - LFS üzerinde bootstrap ve paket üretim zorluğu.
 - Bağımlılık çözümü, dosya sahipliği, yapılandırma korunması, imza ve transaction kilidi.
@@ -149,11 +149,11 @@ Başlangıç tercihi pacman/libalpm'dir; [pacman kılavuzu](https://man.archlinu
 
 `pkg` komutları motorun üzerine ince, testli bir arayüz olur; ikinci bir paket veri tabanı veya sıfırdan bağımlılık çözücü oluşturmaz. Debian/Ubuntu/Arch taban depoları alpbahOS sistem paketlerine doğrudan karıştırılmaz. APT gibi bir araç seçilmesi yabancı dağıtım paketleriyle otomatik uyumluluk sağlamaz.
 
-Başlangıçta tek native paket yöneticisi pacman'dır. `apt`, `pacman` ve `pkg` ayrı ayrı bağımsız veri tabanlarıyla aynı sisteme kurulmaz. Kullanıcının kolaylık isteği `pkg` ile karşılanır; pacman uzman erişimi belgelenir. APT seçilmiş bir kullanıcı zorunluluğu değildir.
+Tek native paket motoru `alp`'tir; ikinci bir bağımsız sistem paket veritabanı eklenmez. Kolay kullanıcı arayüzü `pkg`/mağaza için tasarlanır, ancak gerçek GUI entegrasyonu ayrıca kanıtlanmalıdır.
 
 İlk depo yerel `file://` kaynağı ve canlı/kurulum medyasındaki paket deposudur. İnternetten kendiliğinden güncellenen genel bir alpbahOS sunucusu varsayılmaz. Kullanıcı bulut depolama istemediğinden ISO/paketler yerelde tutulur; özel GitHub deposu yalnız kaynak/belge eşgüdümü içindir.
 
-Pacman tam sistem güncellemesi gerektiren kütüphane geçişlerinde kısmi yükseltmeye izin verilmez. `pkg update` indeks/plan yeniler; sonrasında install/upgrade güvenli, tutarlı işlem planı üretir. AppStream metadata ve paket manifestleri aynı sürüm kümesine bağlıdır.
+Sistem güncellemeleri kütüphane geçişlerini kısmi bırakmamalıdır. `alp update` ve kur/upgrade işlemlerinin güvenli, tutarlı işlem planı üretmesi ayrıca test edilmelidir; AppStream metadata ve paket manifestleri aynı sürüm kümesine bağlanır.
 
 ### 5.3 Mağaza sözleşmesi
 
@@ -163,7 +163,7 @@ Pacman tam sistem güncellemesi gerektiren kütüphane geçişlerinde kısmi yü
 - Uydurma puan, güvenlik rozeti veya indirme sayısı gösterilmez.
 - Birden fazla paket kaynağı varsa kaynak ve kapsam kullanıcıya görünürdür.
 - Flatpak gibi ek uygulama kanalları ayrıca seçilir; taban sistemin paket yönetiminin yerine geçmez.
-- Discover seçimi backend entegrasyon deneyi geçmeden uygulanmış/çalışır sayılmaz.
+- Discover/PackageKit alpm seçimi D31 ile terk edildi; mevcut mağaza entegrasyonu doğrulanmış değildir.
 
 ## 6. Windows'a tanıdık kısayol profili
 
@@ -305,9 +305,9 @@ Aşamalar oturum planına bağlanır; gerçek derleme ölçümleri olmadan takvi
 | M00 | Gereksinimler, teknik seçimler, özel repo ve görev paylaşımı | Kullanıcı cevapları | Bu plan + ajan dosyaları + repo doğrulaması |
 | M01 | Linux host, disk alanı, ağ, LFS araç kontrolü, log düzeni | Ortam ve alan tercihi | Host kontrolü geçer; kontrollü dosya sistemi ve build kökü |
 | M02 | Kaynak manifesti, tarif şablonu, paket motoru/mağaza prototipi | M01 | Küçük paketi üret/kur/güncelle/kaldır; sahiplik ve GUI yolu kanıtı |
-| M03 | Multilib cross-toolchain ve geçici araçlar | M01, M02 ABI kararı, sabit kaynaklar | ELF32/64 dahil kitap sırasındaki doğrulamalar geçer |
+| M03 | ABI ve geçici araçlar | M01, M02 ABI kararı, sabit kaynaklar | Saf x86_64 kapsamı D32 ile sabit; 32-bit/multilib ve ELF32 ölçütleri kapsam dışı |
 | M04 | Chroot ve nihai LFS temel sistemi | M02 kararları, M03 | Paket kayıtları, kritik testler, linker ve dosya sistemi doğrulaması |
-| M05 | Kernel, init, bootloader ve ilk VM açılışı | M04 | BIOS ve UEFI yollarında hedef kernel'den giriş, ağ, yeniden başlatma; mevcut M2 DRM kernel'i Gen2/UEFI'de henüz denenmedi |
+| M05 | Kernel, init, bootloader ve ilk VM açılışı | M04 | BIOS ve UEFI yollarında hedef kernel'den giriş, ağ, yeniden başlatma; M2 DRM kernel'i Gen2/UEFI'de boot ve SSH/DHCP ile doğrulandı, v3 kontrollü reboot tekrarı açık |
 | M06 | BLFS altyapısı: grafik, ses, oturum, ağ ve sertifikalar | M05 | Grafik test oturumu; ağ/TLS/ses doğrulaması |
 | M07 | Hazır masaüstü ve temel uygulama profili | M06 | Temiz kullanıcıda çalışan masaüstü, ayarlar ve dosya yöneticisi |
 | M08 | Terminal yardımı, pkg+mağaza, kısayollar ve Atatürk/Glass temaları | M02, M07 | İstenen özelliklerin kullanıcı senaryoları geçer |
@@ -354,7 +354,7 @@ Bağımlılık zinciri korunur. Tasarım, terminal yapılandırma taslağı ve k
 | Sistem ve disk | Plasma System Monitor, disk kullanım aracı | Süreç/bellek/disk bilgisi |
 | Tarayıcı | Firefox hazır; Chrome için doğrulanmış kurulum seçeneği | İnternet/TLS, indirme, varsayılan ilişki |
 | Ofis | LibreOffice Writer/Calc/Impress | DOCX/XLSX/PPTX örnekleri; birebir Word garantisi yok |
-| Mağaza | Özelleştirilmiş Discover | Kendi depomuzdan uygulama işlemi |
+| Mağaza | `alp` ile bütünleşecek grafik arayüz | Kendi depomuzdan uygulama işlemi; GUI yolu doğrulanmalı |
 | Windows uygulamaları | Wine + ayarlardan prefix/uyumluluk erişimi | 32/64-bit test programı; seçili Office sürümü |
 | Oyun | Steam istemcisi ve Proton kullanım yolu | Giriş/indirme ve seçilmiş test oyunu |
 
@@ -362,7 +362,7 @@ Bağımlılık zinciri korunur. Tasarım, terminal yapılandırma taslağı ve k
 
 Wine kurulu gelir. Kullanıcı Office 2016/2019/2021 ailesini belirtti; tam sürüm, lisanslı kurulum medyası ve Click-to-Run/MSI ayrımı uyumluluk testi sırasında kaydedilecek. Her sürüm temiz ayrı Wine prefix'inde açma/kaydetme/yazdırma senaryolarıyla denenir. Hiçbiri çalıştırılmadan “Word çalışıyor” denmez. Microsoft Office ISO'ya gömülmez; kullanıcı lisanslı medyasıyla kurar. LibreOffice günlük belge işlerini ilk günden sağlar; Microsoft Word ile aynı uygulama diye sunulmaz.
 
-Steam'in ilk kurulum/hesap ve oyun indirmesi internet gerektirir; offline sistem kurulumu bunu değiştirmez. Native multilib grafik yığını test edilir; kapalı anti-cheat kullanan her oyunun çalışacağı iddia edilmez. Özel oyun listesi sonraki test genişletmesidir.
+Steam'in ilk kurulum/hesap ve oyun indirmesi internet gerektirir; offline sistem kurulumu bunu değiştirmez. D22/D32 kararı çözülmeden Steam istemcisi veya 32-bit grafik yığını uyumluluğu vaat edilmez; kapalı anti-cheat kullanan her oyunun çalışacağı iddia edilmez. Özel oyun listesi sonraki test genişletmesidir.
 
 ### 11.1 Sürücü matrisi
 
@@ -410,7 +410,7 @@ Gizlilik/sürücü/uyumluluk seçenekleri Ayarlar'dan erişilebilir. Telemetri v
 
 ## 14. Codex ve Claude iş bölümü
 
-Kullanıcının devrettiği rol seçimi: Codex build sistemi, LFS, multilib, Hyper-V/ISO ve entegrasyon sahibi; Claude Code masaüstü profilleri, terminal kullanıcı deneyimi, kısayollar, tema, **paket motoru (`alp`, bkz. D31/P13, 21 Eylül 2026)** ve ikinci göz inceleme sahibi. Bu sahiplik planıdır.
+Kullanıcının devrettiği rol seçimi: Codex build sistemi, LFS, ABI kapsamı, Hyper-V/ISO ve entegrasyon sahibi; Claude Code masaüstü profilleri, terminal kullanıcı deneyimi, kısayollar, tema, **paket motoru (`alp`, bkz. D31/P13, 21 Eylül 2026)** ve ikinci göz inceleme sahibi. Bu sahiplik planıdır.
 
 **Not (21 Eylül 2026):** Önceki sürümde "paket entegrasyonu" Codex'in sahiplik alanındaydı (pacman/libalpm + PackageKit backend'i, PKG-01/PKG-02). Kullanıcı D31 ile bu kararı değiştirdi: motor artık `alp`, sahibi Claude. Codex'in rolü bu noktadan sonra LFS temel sistemine `alp`'i (saf Python, stdlib-only bir script; ek bağımlılık gerektirmez) yerleştirmek ve BLFS grafik/oturum zincirini ilerletmekle sınırlı; PackageKit/Discover backend'i artık bu planın kapsamında değildir (`alp`'in kendi GUI entegrasyon yolu ayrıca ele alınacak, proposal §6'da "Yok" olarak işaretli açık eksiklik).
 
@@ -448,7 +448,7 @@ Her 1–2 saatlik kullanıcı oturumu: 10 dk devir/log inceleme, 40–75 dk tek 
 
 1. Plan/repo/devir düzeni ve Hyper-V yetki kontrolü.
 2. Builder hazırlığı, ağ/SSH ve LFS host-check.
-3. Kaynak/kitap sabitleme, multilib ve paket motoru küçük deneyleri.
+3. Kaynak/kitap sabitleme, ABI kapsamı ve paket motoru küçük deneyleri.
 4. Geçici toolchain başlatma; Claude tarafında tema/kısayol dosyalarının hazırlanması.
 5. Sonuçları doğrulama ve ölçümlerle sonraki oturumları planlama.
 

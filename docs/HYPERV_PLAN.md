@@ -39,7 +39,7 @@ Checkpoint boyutu gerçek yazma miktarıyla büyür. Otomatik günlük sonsuz sn
 3. Yalnız proje klasöründe builder sanal disk/VM oluştur; fiziksel disk passthrough kullanma.
 4. Minimal Linux ve SSH hazırla; kullanıcı anahtarlarını repo dışında sakla.
 5. Host-check, dosya sistemi semantiği, saat, ağ/TLS ve izin testleri yap.
-6. LFS/multilib manifestlerini sabitle, referans derlemeyi ölç.
+6. LFS 12.4 kaynak manifestini ve saf x86_64 ABI kapsamını sabitle; referans derlemeyi ölç.
 7. Hedef rootfs'den Gen1/Gen2 test imajı üret; kendi kernel'iyle boot et.
 
 Gen2'de Secure Boot sertifika şablonu ve imzalanmış boot zinciri ayrı konudur. Kendi imzasız LFS imajı için ilk testte yalnız ilgili test VM'sinin Secure Boot ayarı ele alınır; Windows host ayarı değiştirilmez. Gen1 BIOS testiyle Gen2 UEFI testi aynı kabul sonucu sayılmaz.

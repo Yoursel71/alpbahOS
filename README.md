@@ -20,7 +20,7 @@ Windows'tan geçenler için kolay, Türkçe, kişiselleştirilebilir ve kaynak k
 - [M01 önyükleme doğrulaması](docs/M1_BOOT_VERIFICATION.md)
 - [Tasarım referansı](docs/alpbahOS-design-mockups.md)
 
-Başlangıç seçimleri: LFS/BLFS, KDE Plasma/KWin, Konsole/Zsh, `alp` paket motoru, grafik mağaza, Solid/Glass profilleri, Atatürk masaüstü/kilit ekranı, Türkçe Q. Steam/Wine için 32-bit kullanıcı alanı uyumluluğu toolchain aşamasında planlanır.
+Başlangıç seçimleri: LFS/BLFS, KDE Plasma/KWin, Konsole/Zsh, `alp` paket motoru, grafik mağaza, Solid/Glass profilleri, Atatürk masaüstü/kilit ekranı, Türkçe Q. Steam/Wine hedefi D22 ile, ilk sürümün saf x86_64 kapsamı D32 ile kayıtlıdır; aralarındaki uyumluluk kararı açık kalır. D32 gereği 32-bit kullanıcı alanı/multilib kapsam dışıdır.
 
 Önce Hyper-V masaüstü ve Legacy+UEFI canlı ISO; sonra Calamares ile grafik/offline/Windows yanında kurulum. Düşük RAM bütçesi ve sürücü uyumluluğu test kapılarıdır.
 

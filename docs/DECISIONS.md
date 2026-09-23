@@ -104,8 +104,8 @@ Uygulamaya geçişte kanıt gerektirenler: Hyper-V yönetim yetkisi, multilib s�
 
 ## Kaynaklar
 
-- [LFS 13.1 systemd](https://www.linuxfromscratch.org/lfs/view/13.1-systemd/)
-- [BLFS 13.1](https://www.linuxfromscratch.org/blfs/view/13.1-systemd/)
-- [Plasma derleme bölümü](https://www.linuxfromscratch.org/blfs/view/13.1-systemd/kde/plasma-all.html)
+- [LFS 12.4 systemd](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/)
+- [BLFS 12.4](https://www.linuxfromscratch.org/blfs/view/12.4-systemd/)
+- [Plasma derleme bölümü](https://www.linuxfromscratch.org/blfs/view/12.4-systemd/kde/plasma-all.html)
 - [Zsh autosuggestions](https://github.com/zsh-users/zsh-autosuggestions)
 - [KDE tema ve eklenti altyapısı](https://develop.kde.org/docs/plasma/)
