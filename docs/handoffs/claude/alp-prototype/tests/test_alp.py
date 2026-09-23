@@ -235,10 +235,21 @@ def test_safe_extract_rejects_path_traversal(tmp_path: Path):
 
 
 # --------------------------------------------------------------------------
-# _merge_destdir -- regression test for finding #2 (orphaned directories)
+# _merge_staged -- ownership recording (orphaned directories, finding #2 of
+# the first review) and removal cleanup
 # --------------------------------------------------------------------------
 
-def test_merge_destdir_records_directories_not_just_files(tmp_path: Path):
+def _merge(staged: Path, root: Path, **kw) -> "alp.MergeResult":
+    root.mkdir(parents=True, exist_ok=True)
+    return alp._merge_staged(
+        staged, root,
+        config_files=kw.get("config_files", set()),
+        old_record=kw.get("old_record"),
+        other_owners=kw.get("other_owners", {}),
+    )
+
+
+def test_merge_staged_records_created_directories_and_files(tmp_path: Path):
     destdir = tmp_path / "destdir"
     (destdir / "usr/share/doc/pkg").mkdir(parents=True)
     (destdir / "usr/bin").mkdir(parents=True)
@@ -246,42 +257,33 @@ def test_merge_destdir_records_directories_not_just_files(tmp_path: Path):
     (destdir / "usr/share/doc/pkg/readme").write_bytes(b"y")
 
     root = tmp_path / "root"
-    installed = alp._merge_destdir(destdir, root, dry_run=False)
+    installed = _merge(destdir, root).installed
 
-    # both leaf files...
     assert "/usr/bin/tool" in installed
     assert "/usr/share/doc/pkg/readme" in installed
-    # ...AND every directory that was created, so remove_package can clean
-    # them up (this is exactly what finding #2 said was missing).
-    assert "/usr/bin" in installed
-    assert "/usr/share/doc/pkg" in installed
-    assert "/usr/share/doc" in installed
-    assert "/usr/share" in installed
-    assert "/usr" in installed
+    # every directory this merge CREATED is owned, so removal can clean up
+    for d in ("/usr", "/usr/bin", "/usr/share", "/usr/share/doc", "/usr/share/doc/pkg"):
+        assert d in installed
     assert (root / "usr/bin/tool").read_bytes() == b"x"
 
 
-def test_merge_destdir_dry_run_does_not_copy_files(tmp_path: Path):
+def test_merge_staged_does_not_own_preexisting_directories(tmp_path: Path):
     destdir = tmp_path / "destdir"
     (destdir / "usr/bin").mkdir(parents=True)
     (destdir / "usr/bin/tool").write_bytes(b"x")
     root = tmp_path / "root"
+    (root / "usr/bin").mkdir(parents=True)  # the base system already has these
 
-    installed = alp._merge_destdir(destdir, root, dry_run=True)
+    installed = _merge(destdir, root).installed
 
-    assert "/usr/bin/tool" in installed  # still reported
-    assert not (root / "usr/bin/tool").exists()  # but nothing copied
+    assert installed == ["/usr/bin/tool"]
 
 
-# --------------------------------------------------------------------------
-# remove_package -- end-to-end: directories left behind must be cleaned up
-# --------------------------------------------------------------------------
-
-def test_remove_package_cleans_up_files_and_now_empty_directories(paths: alp.Paths, tmp_path: Path):
+def test_remove_package_cleans_up_own_dirs_but_keeps_protected_system_dirs(paths: alp.Paths, tmp_path: Path):
     destdir = tmp_path / "destdir"
     (destdir / "usr/share/doc/pkg").mkdir(parents=True)
     (destdir / "usr/share/doc/pkg/readme").write_bytes(b"y")
-    installed_files = alp._merge_destdir(destdir, paths.root, dry_run=False)
+    installed_files = _merge(destdir, paths.root).installed
 
     db = {"schema_version": alp.SCHEMA_VERSION, "updated_at": None, "packages": {
         "pkg": {"method": "recipe", "files": installed_files, "flatpak_ref": None}
@@ -291,9 +293,9 @@ def test_remove_package_cleans_up_files_and_now_empty_directories(paths: alp.Pat
 
     assert "pkg" not in db["packages"]
     assert not (paths.root / "usr/share/doc/pkg").exists()
-    assert not (paths.root / "usr/share/doc").exists()
-    assert not (paths.root / "usr/share").exists()
-    assert not (paths.root / "usr").exists()
+    # /usr, /usr/share, /usr/share/doc are protected even though this
+    # package created them in an empty test root and they are now empty
+    assert (paths.root / "usr/share/doc").is_dir()
 
 
 def test_remove_package_unknown_name_raises(paths: alp.Paths):
@@ -770,7 +772,7 @@ def test_copy_entry_preserves_executable_mode(tmp_path: Path):
     assert stat.S_IMODE(dst.stat().st_mode) == 0o755
 
 
-def test_merge_destdir_handles_dangling_symlinks_in_staged_tree(paths: alp.Paths, tmp_path: Path):
+def test_merge_staged_handles_dangling_symlinks_in_staged_tree(paths: alp.Paths, tmp_path: Path):
     if not _symlinks_supported(tmp_path):
         pytest.skip("os.symlink() unavailable/unprivileged in this environment")
 
@@ -779,7 +781,7 @@ def test_merge_destdir_handles_dangling_symlinks_in_staged_tree(paths: alp.Paths
     (destdir / "usr/share/units/definitions.units").write_bytes(b"real content\n")
     os.symlink("/usr/com/units/currency.units", destdir / "usr/share/units/currency.units")
 
-    installed = alp._merge_destdir(destdir, paths.root, dry_run=False)
+    installed = _merge(destdir, paths.root).installed
 
     assert "/usr/share/units/currency.units" in installed
     link = paths.root / "usr/share/units/currency.units"
@@ -990,3 +992,297 @@ def test_cmd_install_dry_run_chain_touches_nothing(paths: alp.Paths, tmp_path: P
     assert "Bağımlılık zinciri: libfoo -> app" in out
     assert alp.load_db(paths)["packages"] == {}  # dry-run: db never written
     assert list(paths.cache_dir.iterdir()) == []  # nothing fetched/staged
+
+
+# --------------------------------------------------------------------------
+# Regression tests for the 23 Sep 2026 logic review (docs/handoffs/claude/
+# 011-alp-logic-review-fixes.md). Symlink / FIFO / stale-lock cases skip on
+# hosts that can't create them (e.g. an unprivileged Windows shell) and must
+# also be run on Linux.
+# --------------------------------------------------------------------------
+
+def _make_dot_tar(tmp_path: Path, name: str, members: dict[str, bytes]) -> Path:
+    """Archive laid out like `tar -C stage -czf x.tgz .`: a "." entry and
+    every name prefixed with "./"."""
+    stage = tmp_path / f"stage-{name}"
+    for relpath, content in members.items():
+        (stage / relpath).parent.mkdir(parents=True, exist_ok=True)
+        (stage / relpath).write_bytes(content)
+    archive = tmp_path / name
+    with tarfile.open(archive, "w:gz") as tf:
+        tf.add(str(stage), arcname=".")
+    return archive
+
+
+def _core(tmp_path: Path, name: str, version: str, members: dict[str, bytes], config_files=None, dot=False) -> dict:
+    maker = _make_dot_tar if dot else _make_tar
+    archive = maker(tmp_path, f"{name}-{version}.tar.gz", members)
+    entry = {"method": "core", "name": name, "version": version,
+             "url": archive.name, "sha256": alp.sha256_of(archive)}
+    if config_files:
+        entry["config_files"] = config_files
+    return entry
+
+
+def _install(paths: alp.Paths, tmp_path: Path, entries: dict, name: str, reinstall: bool = False) -> int:
+    import argparse
+    args = argparse.Namespace(name=name, dry_run=False, reinstall=reinstall)
+    return alp.cmd_install(args, paths, {"entries": entries}, tmp_path)
+
+
+# --- "./"-prefixed core archives (upgrade used to delete fresh files) ---
+
+def test_safe_extract_normalizes_dot_slash_names(tmp_path: Path):
+    archive = _make_dot_tar(tmp_path, "d.tar.gz", {"usr/share/x": b"1"})
+    names = alp.safe_extract(archive, tmp_path / "out")
+    assert "usr/share/x" in names
+    assert "." not in names and not any(n.startswith("./") for n in names)
+
+
+def test_upgrade_core_dot_slash_archive_keeps_new_files_and_config_hash(paths: alp.Paths, tmp_path: Path):
+    v1 = _core(tmp_path, "theme", "1", {"usr/share/t/theme.conf": b"a\n", "usr/share/t/README": b"r"},
+               config_files=["/usr/share/t/theme.conf"], dot=True)
+    old = alp.install_core(paths, v1, tmp_path, dry_run=False)
+    assert "/usr/share/t/theme.conf" in old["config_hashes"]
+    assert not any(f.startswith("/.") for f in old["files"])
+
+    v2 = _core(tmp_path, "theme", "2", {"usr/share/t/theme.conf": b"b\n", "usr/share/t/README": b"r2"},
+               config_files=["/usr/share/t/theme.conf"], dot=True)
+    alp.upgrade_core(paths, v2, tmp_path, old, dry_run=False)
+
+    assert (paths.root / "usr/share/t/theme.conf").read_bytes() == b"b\n"
+    assert (paths.root / "usr/share/t/README").read_bytes() == b"r2"
+
+
+# --- file conflicts (used to silently overwrite other/unowned files) ---
+
+def test_install_refuses_file_owned_by_other_package(paths: alp.Paths, tmp_path: Path):
+    entries = {
+        "a": _core(tmp_path, "a", "1", {"usr/share/common/f": b"from-a"}),
+        "b": _core(tmp_path, "b", "1", {"usr/share/common/f": b"from-b"}),
+    }
+    _install(paths, tmp_path, entries, "a")
+    with pytest.raises(alp.AlpError, match="'a' paketine ait"):
+        _install(paths, tmp_path, entries, "b")
+    assert (paths.root / "usr/share/common/f").read_bytes() == b"from-a"
+    assert set(alp.load_db(paths)["packages"]) == {"a"}
+
+
+def test_install_refuses_unowned_preexisting_file_and_writes_nothing(paths: alp.Paths, tmp_path: Path):
+    (paths.root / "usr/bin").mkdir(parents=True)
+    (paths.root / "usr/bin/tool").write_bytes(b"base-system")
+    entries = {"pkg": _core(tmp_path, "pkg", "1", {"usr/bin/tool": b"pkg", "usr/share/pkg/data": b"d"})}
+
+    with pytest.raises(alp.AlpError, match="hiçbir alp paketine ait değil"):
+        _install(paths, tmp_path, entries, "pkg")
+
+    assert (paths.root / "usr/bin/tool").read_bytes() == b"base-system"
+    assert not (paths.root / "usr/share/pkg").exists()  # preflight ran before any write
+
+
+def test_remove_does_not_delete_file_owned_by_other_package(paths: alp.Paths, tmp_path: Path):
+    entries = {"a": _core(tmp_path, "a", "1", {"usr/share/a/f": b"a"})}
+    _install(paths, tmp_path, entries, "a")
+    db = alp.load_db(paths)
+    # an inconsistent/old db where another record also lists a's file
+    db["packages"]["b"] = {"method": "core", "version": "1", "files": ["/usr/share/a/f"], "flatpak_ref": None}
+    alp.remove_package(paths, db, "b", dry_run=False)
+    assert (paths.root / "usr/share/a/f").exists()
+
+
+# --- config protection gaps ---
+
+def test_reinstall_preserves_modified_config_as_alpnew(paths: alp.Paths, tmp_path: Path):
+    entries = {"theme": _core(tmp_path, "theme", "1", {"etc/theme.conf": b"default\n"},
+                              config_files=["/etc/theme.conf"])}
+    _install(paths, tmp_path, entries, "theme")
+    conf = paths.root / "etc/theme.conf"
+    conf.write_bytes(b"user-edit\n")
+
+    _install(paths, tmp_path, entries, "theme", reinstall=True)
+
+    assert conf.read_bytes() == b"user-edit\n"
+    assert conf.with_name("theme.conf.alpnew").read_bytes() == b"default\n"
+
+
+def test_upgrade_dropped_modified_config_is_saved_as_alpsave(paths: alp.Paths, tmp_path: Path):
+    v1 = _core(tmp_path, "t", "1", {"etc/t.conf": b"default\n"}, config_files=["/etc/t.conf"])
+    old = alp.install_core(paths, v1, tmp_path, dry_run=False)
+    (paths.root / "etc/t.conf").write_bytes(b"user-edit\n")
+
+    v2 = _core(tmp_path, "t", "2", {"etc/t/t.conf": b"default\n"}, config_files=["/etc/t/t.conf"])
+    alp.upgrade_core(paths, v2, tmp_path, old, dry_run=False)
+
+    assert (paths.root / "etc/t.conf.alpsave").read_bytes() == b"user-edit\n"
+    assert not (paths.root / "etc/t.conf").exists()
+    assert (paths.root / "etc/t/t.conf").read_bytes() == b"default\n"
+
+
+def test_newly_declared_config_file_keeps_getting_updates(paths: alp.Paths, tmp_path: Path):
+    v1 = _core(tmp_path, "app", "1", {"usr/share/app/c": b"v1"})
+    r1 = alp.install_core(paths, v1, tmp_path, dry_run=False)
+    v2 = _core(tmp_path, "app", "2", {"usr/share/app/c": b"v2"}, config_files=["/usr/share/app/c"])
+    r2 = alp.upgrade_core(paths, v2, tmp_path, r1, dry_run=False)
+    v3 = _core(tmp_path, "app", "3", {"usr/share/app/c": b"v3"}, config_files=["/usr/share/app/c"])
+    alp.upgrade_core(paths, v3, tmp_path, r2, dry_run=False)
+
+    assert (paths.root / "usr/share/app/c").read_bytes() == b"v3"
+    assert not (paths.root / "usr/share/app/c.alpnew").exists()
+
+
+# --- upgrade robustness ---
+
+def test_upgrade_own_file_becoming_directory(paths: alp.Paths, tmp_path: Path):
+    v1 = _core(tmp_path, "app", "1", {"usr/share/app/x": b"file"})
+    old = alp.install_core(paths, v1, tmp_path, dry_run=False)
+    v2 = _core(tmp_path, "app", "2", {"usr/share/app/x/y": b"inside"})
+
+    alp.upgrade_core(paths, v2, tmp_path, old, dry_run=False)
+
+    assert (paths.root / "usr/share/app/x/y").read_bytes() == b"inside"
+
+
+def test_copy_entry_breaks_hardlink_instead_of_writing_through_it(tmp_path: Path):
+    dst = tmp_path / "dst"
+    dst.write_bytes(b"old")
+    other = tmp_path / "other"
+    try:
+        os.link(dst, other)
+    except OSError:
+        pytest.skip("hard links unsupported here")
+    src = tmp_path / "src"
+    src.write_bytes(b"new")
+
+    alp._copy_entry(src, dst)
+
+    assert dst.read_bytes() == b"new"
+    assert other.read_bytes() == b"old"
+
+
+# --- symlinks (need os.symlink; run these on Linux) ---
+
+def test_remove_never_deletes_symlinked_system_dir_from_old_format_record(paths: alp.Paths, tmp_path: Path):
+    if not _symlinks_supported(tmp_path):
+        pytest.skip("os.symlink() unavailable/unprivileged in this environment")
+    (paths.root / "usr/lib/udev").mkdir(parents=True)
+    (paths.root / "usr/lib/udev/x.rules").write_bytes(b"r")
+    os.symlink("usr/lib", paths.root / "lib")  # LFS layout
+    db = {"schema_version": alp.SCHEMA_VERSION, "updated_at": None, "packages": {
+        # older alp versions recorded every directory, including /lib
+        "pkg": {"method": "recipe", "files": ["/lib", "/lib/udev", "/lib/udev/x.rules"], "flatpak_ref": None}
+    }}
+
+    alp.remove_package(paths, db, "pkg", dry_run=False)
+
+    assert (paths.root / "lib").is_symlink()
+    assert (paths.root / "usr/lib").is_dir()
+    assert not (paths.root / "usr/lib/udev/x.rules").exists()
+
+
+def test_install_through_lfs_lib_symlink_then_remove_keeps_the_link(paths: alp.Paths, tmp_path: Path):
+    if not _symlinks_supported(tmp_path):
+        pytest.skip("os.symlink() unavailable/unprivileged in this environment")
+    (paths.root / "usr/lib").mkdir(parents=True)
+    os.symlink("usr/lib", paths.root / "lib")
+    entries = {"rules": _core(tmp_path, "rules", "1", {"lib/udev/rules.d/99-x.rules": b"r"})}
+
+    _install(paths, tmp_path, entries, "rules")
+    record = alp.load_db(paths)["packages"]["rules"]
+    assert "/lib" not in record["files"]
+    assert (paths.root / "usr/lib/udev/rules.d/99-x.rules").read_bytes() == b"r"
+
+    db = alp.load_db(paths)
+    alp.remove_package(paths, db, "rules", dry_run=False)
+    assert (paths.root / "lib").is_symlink()
+    assert not (paths.root / "usr/lib/udev").exists()
+
+
+def test_merge_refuses_symlink_that_escapes_root(paths: alp.Paths, tmp_path: Path):
+    if not _symlinks_supported(tmp_path):
+        pytest.skip("os.symlink() unavailable/unprivileged in this environment")
+    host_run = tmp_path / "host_run"
+    host_run.mkdir()
+    (paths.root / "var").mkdir(exist_ok=True)
+    os.symlink(str(host_run), paths.root / "var/run")  # like LFS var/run -> /run under --root
+    staged = tmp_path / "staged"
+    (staged / "var/run").mkdir(parents=True)
+    (staged / "var/run/foo.pid").write_bytes(b"1")
+
+    with pytest.raises(alp.AlpError, match="kök dizinin dışına"):
+        _merge(staged, paths.root)
+    assert not (host_run / "foo.pid").exists()
+
+
+def test_copy_entry_replaces_symlink_instead_of_writing_through_it(tmp_path: Path):
+    if not _symlinks_supported(tmp_path):
+        pytest.skip("os.symlink() unavailable/unprivileged in this environment")
+    (tmp_path / "libfoo.so.1").write_bytes(b"real-library")
+    os.symlink("libfoo.so.1", tmp_path / "libfoo.so")
+    src = tmp_path / "src"
+    src.write_bytes(b"new")
+
+    alp._copy_entry(src, tmp_path / "libfoo.so")
+
+    assert not (tmp_path / "libfoo.so").is_symlink()
+    assert (tmp_path / "libfoo.so").read_bytes() == b"new"
+    assert (tmp_path / "libfoo.so.1").read_bytes() == b"real-library"
+
+
+def test_merge_installs_symlink_to_directory_and_remove_deletes_it(paths: alp.Paths, tmp_path: Path):
+    if not _symlinks_supported(tmp_path):
+        pytest.skip("os.symlink() unavailable/unprivileged in this environment")
+    staged = tmp_path / "staged"
+    (staged / "usr/share/terminfo/x").mkdir(parents=True)
+    (staged / "usr/share/terminfo/x/xterm").write_bytes(b"t")
+    (staged / "usr/lib").mkdir(parents=True)
+    os.symlink("../share/terminfo", staged / "usr/lib/terminfo")  # ncurses layout
+
+    merged = _merge(staged, paths.root)
+
+    link = paths.root / "usr/lib/terminfo"
+    assert link.is_symlink() and os.readlink(link) == "../share/terminfo"
+    assert "/usr/lib/terminfo" in merged.installed and "/usr/lib/terminfo" in merged.symlinks
+
+    db = {"schema_version": alp.SCHEMA_VERSION, "updated_at": None, "packages": {"nc": {
+        "method": "recipe", "files": merged.installed, "symlinks": merged.symlinks, "flatpak_ref": None}}}
+    alp.remove_package(paths, db, "nc", dry_run=False)
+    assert not os.path.lexists(link)
+
+
+def test_merge_rejects_fifo_in_staged_tree(paths: alp.Paths, tmp_path: Path):
+    if not hasattr(os, "mkfifo"):
+        pytest.skip("no FIFOs on this OS")
+    staged = tmp_path / "staged"
+    staged.mkdir()
+    os.mkfifo(staged / "pipe")
+    with pytest.raises(alp.AlpError, match="Desteklenmeyen dosya türü"):
+        _merge(staged, paths.root)
+
+
+# --- lock + extraction safety ---
+
+def test_stale_lock_from_dead_process_is_cleared(paths: alp.Paths):
+    if os.name != "posix":
+        pytest.skip("stale-lock detection is POSIX-only by design")
+    proc = subprocess.Popen([sys.executable, "-c", "pass"])
+    proc.wait()
+    paths.lock_file.write_text(f"pid={proc.pid} host={alp.socket.gethostname()} ts=x\n", encoding="utf-8")
+
+    with alp.DbLock(paths.lock_file):
+        assert f"pid={os.getpid()}" in paths.lock_file.read_text(encoding="utf-8")
+
+
+def test_lock_held_by_live_process_still_blocks(paths: alp.Paths):
+    paths.lock_file.write_text(f"pid={os.getpid()} host={alp.socket.gethostname()} ts=x\n", encoding="utf-8")
+    with pytest.raises(alp.AlpError, match="kilitli"):
+        with alp.DbLock(paths.lock_file):
+            pass
+    assert paths.lock_file.exists()
+
+
+def test_safe_extract_fails_closed_without_data_filter(tmp_path: Path, monkeypatch):
+    archive = _make_tar(tmp_path, "ok.tar.gz", {"usr/bin/tool": b"x"})
+    monkeypatch.delattr(tarfile, "data_filter")
+    with pytest.raises(alp.AlpError, match="güvenli çıkarma"):
+        alp.safe_extract(archive, tmp_path / "out")
+    assert not (tmp_path / "out/usr/bin/tool").exists()

@@ -67,7 +67,7 @@ Tasarım: `org.alpbahos.alp.pkgkit.policy` adında bir PolicyKit action dosyası
 </action>
 ```
 
-`search`/`list`/`info`/`get-files` için **yetkilendirme istenmez** (salt okunur, `--root /` ile bile herkesin `db.json`'u okuyabilmesi gerekir — dosya izinleri `0644` olmalı, `alp.lock`/yazma işlemleri `0600`+root). Yalnızca `install`/`remove` (ve gelecekteki `upgrade`) `auth_admin` ister — bu, `install_recipe`'in zaten root gerektiren tek adımının (`_merge_destdir`'in `/` altına kopyalama) kapsamıyla örtüşür (AGENTS.md: "yalnız dosya kopyalama/DESTDIR-merge adımı `/` yazma yetkisi ister — tüm `alp` sürecinin root çalışması gerekmez").
+`search`/`list`/`info`/`get-files` için **yetkilendirme istenmez** (salt okunur, `--root /` ile bile herkesin `db.json`'u okuyabilmesi gerekir — dosya izinleri `0644` olmalı, `alp.lock`/yazma işlemleri `0600`+root). Yalnızca `install`/`remove` (ve gelecekteki `upgrade`) `auth_admin` ister — bu, `install_recipe`'in zaten root gerektiren tek adımının (`_merge_staged`'in `/` altına kopyalama) kapsamıyla örtüşür (AGENTS.md: "yalnız dosya kopyalama/DESTDIR-merge adımı `/` yazma yetkisi ister — tüm `alp` sürecinin root çalışması gerekmez").
 
 ## 6. Kilit/eşzamanlılık ile etkileşim
 
