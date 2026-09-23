@@ -36,3 +36,26 @@ Added `scripts/capture-package-manifest.py` to serialize a completed staging tre
 Validation: ran the script on a temporary fixture containing `/usr/bin/fixture` plus its two parent directories. It emitted 3 entries (2 directories, 1 regular file); assertions verified package identity, path, mode/uid/gid types, size, and the fixture file's SHA-256. The temporary fixture and output were removed automatically. This validates the capture format only; it creates no LFS base package ownership records and does not close M04.
 
 Next use: for each package that is rebuilt/reinstalled in Builder `/mnt/lfs` chroot, direct its install step to a package-specific staging tree, verify that tree is complete, then run the capture tool with the verified source archive checksum. Preserve the resulting sidecar and reconcile its path set with the package's `alp` record before claiming package ownership. Existing base packages still require proven historical manifests or a controlled reinstall through this path.
+
+## Builder recheck — 2026-09-23 23:37 UTC
+
+Read-only verification from Windows via `ssh alp-builder`:
+
+- Builder `yrsk`; `/mnt/lfs` resolves to the Builder root filesystem (`/`), not a separate mount.
+- `/mnt/lfs/usr/lib/alp/alp.py` remains SHA-256
+  `7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132`.
+- `/mnt/lfs/var/lib/alp/db.json` still has `packages: {}`.
+- `/mnt/lfs/etc/systemd/system/getty.target.wants/getty@tty1.service` points
+  to `/usr/lib/systemd/system/getty@.service`;
+  `systemd-resolved.service` has both required symlinks; `/etc/resolv.conf`
+  points to `../run/systemd/resolve/stub-resolv.conf`.
+- `/mnt/lfs/usr/lib/systemd/user/plasma-kwin_wayland.service` points to the
+  packaged unit under `/opt/kf6`.
+- Builder `/` has 13 GiB free (87% used); `/sys/block/nbd0` is absent. No
+  `make`, `ninja`, or `cmake` build process was present. A targeted source scan
+  showed current manifests beginning with CMake and KDE/BLFS packages; this is
+  consistent with, but does not expand, the earlier full scan that found no
+  complete LFS-base install manifests.
+
+No rootfs files, package database, VHDX, or mounts were changed by this check.
+M04 remains open: no LFS-base path ownership is claimed.
