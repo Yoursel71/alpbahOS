@@ -225,6 +225,13 @@ BLFS 12.4, M1'in LFS 12.4 tabanıyla uyumluluk için D33 olarak seçildi. Builde
 - **Sürüm kararı:** D33, LFS 12.4-systemd taban ve imaj/kernel'in zaten bu sürümde doğrulanmış olması, BLFS 13.1 paketlerinin kitap bağımlılıkları/ABI'larıyla karışma riski ve 13.1'e geçiş için temel sistemi yeniden üretmenin gerekecek olması nedeniyle 12.4 eşleşmesini seçiyor. [BLFS 12.4 KF6](https://www.linuxfromscratch.org/blfs/view/12.4-systemd/kde/frameworks6.html) LFS 12.4 platformunda bilinen uyumu beyan ediyor.
 - **İlerleme durumu:** Bu denetim, 22 Eylül tarihli “PipeWire sessiz / Qt başlamasın” ve “Gen1 ağ/reboot açık” satırlarını tarihsel ara durum olarak supersede eder. Qt 6.9.2 Base/Declarative/ShaderTools/Wayland zaten daha sonraki kayıtlarla derlenmiş/kurulmuştur; M07'nin KWin/Plasma ve gerçek oturum işleri hâlâ tamamlanmamıştır. Fiziksel ses, gerçek Wayland oturumu ve resmî M02/M04 paket sahipliği açık kalır.
 
+## 23 Eylül 2026 — M05 güncel Gen1 DHCP ve kontrollü reboot doğrulaması
+
+- **VM/kimlik:** Aktif `alpbahOS-M2-SSH-Gen1`, Hyper-V Gen1; host neighbor eşlemesi MAC `00-15-5D-00-02-08` ile doğrulandı. Guest SSH bağlantısı `sa@172.28.169.177` üzerinden yapıldı.
+- **Reboot öncesi:** Guest `networkctl status eth0 --no-pager` → `State: routable`, `172.28.169.177/20 (DHCPv4 via 172.28.160.1)`, gateway/DNS `172.28.160.1`. Windows host `ping.exe -n 4 172.28.169.177` → 4/4, %0 kayıp, TTL 64.
+- **Kontrollü reboot:** Guest üzerinde `sudo systemctl reboot` çalıştırıldı; SSH bağlantısı kapandı ve guest tekrar açıldı. Aynı MAC yeni DHCP adresi `172.28.162.19/20` aldı. Guest `networkctl` adres/gateway'i doğruladı; host ping'i yeni adrese 4/4, %0 kayıp, TTL 64 verdi; SSH public-key girişi tekrar başarılı oldu. Bu güncel Gen1 VHDX için kernel boot + DHCP + kontrollü reboot çıkış koşulunun doğrudan kanıtıdır.
+- **Plasma durumu:** reboot sonrası `loginctl list-sessions --no-legend` yalnız systemd user manager ile SSH oturumlarını gösterdi; tty/seat login'i yok. Bu nedenle gerçek DRM-seat Wayland/Plasma oturumu doğrulanmadı. Kullanıcıya VMConnect'te özellikle `alpbahOS-M2-SSH-Gen1` konsolunu seçmesi söylendi; gerçek Plasma/DRM oturumu M07 için açık.
+
 ## 23 Eylül 2026 — M2 temel kapıları yeniden denetimi ve Plasma derleme sonucu
 
 - **Resmî plan / kararlar:** `MASTER_PLAN.md` §10 M00–M12 çıkış koşullarıyla `CURRENT.md` durum tablosu karşılaştırıldı. M02 ve M04 kısmi; M03 kullanıcı kararıyla uygulanmıyor; M05 tamamlandı; M06 kısmi; M07 sürüyor; M08–M12 başlamadı. P01 saf 64-bit kararı kapalıdır; bu karar için kod/build değişikliği yapılmadı. D33, LFS 12.4 tabanını koruma ve BLFS 13.1 karıştırmama gerekçesini kaydeder.
