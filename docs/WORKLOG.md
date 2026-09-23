@@ -428,7 +428,7 @@ VMConnect tty1'de admin/admin konsol login kullanıcıdan istendi; komut çalı�
 
 ## M04 base ownership kayıtlarının salt okunur incelemesi
 
-Builder `yrsk` üzerinde `/mnt/lfs/var/lib/alp/db.json` incelendi: 83-byte dosyada `"packages": {}`. `/mnt/lfs/sources` altında dokuz `install_manifest.txt` bulundu; bunlar CMake, QtBase, QtPositioning, QtTools, QtSpeech, QtLocation, QtSvg, QtMultimedia ve QCoro masaüstü derlemeleridir, LFS taban paketlerinin sahipliğini kanıtlamaz. Rootfs uid/gid sahipliğini paket sahipliği gibi yorumlamadım. M04 sahiplik çıkış koşulu açık kaldı; kanıtlı değerlendirme [m04-base-ownership-assessment-2026-09-23.md](verification/m04-base-ownership-assessment-2026-09-23.md) içinde.
+Builder `yrsk` üzerinde `/mnt/lfs/var/lib/alp/db.json` incelendi: 83-byte dosyada `"packages": {}`. İlk `find -maxdepth 3` taraması dokuz `install_manifest.txt` döndürdü; daha sonraki derin tarama KDE altında 88, Qt altında 2, qt-build altında 6 ve Qt5Compat/QtSensors/Double Conversion/QCoro gibi ek manifestler buldu. Bunlar BLFS/desktop derlemeleridir, LFS taban paketlerinin sahipliğini kanıtlamaz. Rootfs uid/gid sahipliğini paket sahipliği gibi yorumlamadım. M04 sahiplik çıkış koşulu açık kaldı; kanıtlı değerlendirme [m04-base-ownership-assessment-2026-09-23.md](verification/m04-base-ownership-assessment-2026-09-23.md) içinde.
 
 ## Belge tutarlılık denetimi ve entegrasyon
 
@@ -449,3 +449,17 @@ Added `scripts/capture-package-manifest.py` for package-specific staged install 
 ## Gen1 VM removal and current Hyper-V inventory
 
 User reported that the Gen1 VM was deleted. Read-only host inventory was retrieved through the authorized local Windows OpenSSH administrator account (`Get-VM | Select-Object Name,State,Generation`): `alpbah-builder` Running/Gen2, `alpbahOS-M2-SSH-Gen2` Running/Gen2, and unrelated `Yeni Sanal Makine` Off/Gen1. `alpbahOS-M2-SSH-Gen1` is absent. Separate `Test-Path` checks returned `True` for both `F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen1.vhdx` and its old VM working VHDX, so only the VM registration is confirmed deleted; the VHDX files remain untouched. Updated `CURRENT.md`, `docs/NEW_SESSION_HANDOFF.md`, and `docs/MASTER_PLAN.md`; prior Gen1 test records remain historical.
+
+## 23 Eylül 2026 — M05 Gen2 reboot sonrası canlı doğrulama
+
+- Gen2 VM `alpbahOS-M2-SSH-Gen2` için reboot `Restart-VM -Type Reboot -Force -Confirm:$false` ile başlatıldı. VM `Running` kaldı; KVP IP alanı boş olduğundan guest adresi KVP'den alınamadı. Yönetici host ARP kaydı MAC `00-15-5D-00-02-09` için `172.28.164.164` gösterdi.
+- `sa@172.28.164.164` public-key SSH ile bağlanıldı. Guest boot zamanı `2026-09-23 23:44:51`; boot ID `6df39e0d-a48d-4e8f-a138-6ec5c4e4a663`. `/proc/cmdline`: `root=PARTUUID=84b8b2c9-9a5c-46b9-b9a0-0a22834278fe rootwait rw`; `/` kaynağı `/dev/sda2` ext4.
+- `networkctl status eth0`: `172.28.164.164/20`, DHCPv4, gateway/DNS `172.28.160.1`, `routable/online`; host ping 4/4, %0 kayıp, TTL 64. `resolvectl query github.com` → `140.82.121.4`; `/etc/resolv.conf` gerçek hedefi `/run/systemd/resolve/stub-resolv.conf`.
+- `systemctl --failed --no-pager`: 0 failed units. `getty@tty1`, `systemd-resolved`, `sshd`: enabled ve active. `admin` UID 1001, grupları `users,wheel`; `/etc/shadow` modu 0600. SSH policy `PasswordAuthentication no`, `KbdInteractiveAuthentication no`, `PermitRootLogin no`, `UsePAM yes`, `AllowUsers sa`; sa public-key girişi başarılı.
+- `loginctl list-sessions` yalnız SSH session'ı ve user manager'ı gösterdi. tty1'de admin/admin gerçek konsol girişi ve `pam_systemd` seat session hâlâ bekliyor; bu olmadan Plasma/seat0 testi başlatılmadı. `ip` ikilisi guest'te yok; ağ kanıtı `networkctl`/`resolvectl` üzerinden alındı.
+- Reboot sonrası user unit tekrar denetlendi: `FragmentPath=/usr/lib/systemd/user/plasma-kwin_wayland.service`, `DropInPaths=/etc/systemd/user/plasma-kwin_wayland.service.d/10-wayland-only.conf`, `ExecStart=/opt/kf6/bin/kwin_wayland_wrapper` (argv içinde `--xwayland` yok). P0 KWin birim kapısı reboot sonrası da geçti; gerçek Plasma oturumu başlatılmadı.
+- M06 guest runtime kontrolü: Gen2 reboot sonrası `curl -I --fail --show-error --connect-timeout 12 https://github.com/` HTTP `200 OK` verdi; `resolvectl query github.com` DNS'i de geçti. `pw-cli`/`aplay` mevcut; SSH user manager'ında PipeWire/WirePlumber inactive ve `aplay -l` “no soundcards found” döndürdü. Bu VM üzerinden fiziksel/sanal ses kartı doğrulanmadı. Önceki Builder `snd-aloop` playback/capture ve PipeWire null-sink graph roundtrip kanıtları sanal pipeline testi olarak kalıyor; M06 grafik oturum kapısı hâlâ M07 konsol login'ine bağlı.
+
+## M04 sahiplik kayıtlarının kapanış engeli
+
+Builder `/mnt/lfs` tekrar denetiminde `alp` veritabanı boş ve LFS base dosyaları için tam tarihsel install manifesti bulunmadı. `/mnt/lfs/usr/lib/alp/alp.py` beklenen SHA-256 değerinde, Builder `/` üzerinde 25 GiB boş ve `/sys/block/nbd0` yok. Yeni capture aracı fixture üzerinde çalıştı ama mevcut rootfs'e sahiplik kaydı eklemedi. Dosya uid/gid'sinden paket sahipliği türetmek hatalı olacağından M04 tamamlandı olarak işaretlenmedi. Kapatma için kontrollü base paket reinstall/rebuild ve merge öncesi staging capture veya eşdeğer tam tarihsel manifest gerekir; bu tur M05'e ilerledi.
