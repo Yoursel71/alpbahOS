@@ -108,3 +108,10 @@ Tahmin: ilk Plasma giriş ekranı için 4-7 takvim günü; test edilmiş M2 VHDX
 
 - **KF6 devam durumu:** `kdbusaddons`, `kguiaddons`, `kidletime` için Wayland hedefi korunup `WITH_X11=OFF` yapılandırması kullanıldı; `kwindowsystem` için karşılık gelen `KWINDOWSYSTEM_X11=OFF` seçeneği kullanıldı. `kdnssd`, `ki18n`, `kimageformats`, `kitemmodels`, `kitemviews`, `kplotting`, `kwidgetsaddons`, `solid`, `sonnet` geçti. Sonnet için BLFS Aspell 0.60.8.1 (MD5 `187bd142f522ada555c7aa6b9cbf56e6`) kuruldu; GCC 15 düzeltmesi uygulandı, upstream paket test suite sunmuyor. `threadweaver` sırada.
 
+
+## 23 Eylül 2026 — İlk Wayland Plasma oturumu (devam ediyor)
+
+- `libplasma` 6.4.4 derlenip `/opt/kf6` altına kuruldu. BLFS kaynağında `WITHOUT_X11=ON` durumunda da açık kalan X11 derleme dalları (`appletpopup`, `dialog`, `plasmawindow`, `windowthumbnail`, `theme`, `contrasteffectwatcher`) Wayland koşullu hale getirildi; derleme geçti. Ayrıntılı log `/mnt/lfs/tmp/alp-logs/plasma/libplasma-{build,install}.log`.
+- Plasma çekirdeği için `kdecoration`, `breeze`, `layer-shell-qt`, `plasma-activities`, `kglobalacceld` ve `kwayland` başarılı kuruldu. `libkscreen` de Wayland/QScreen/fake backend'leriyle kuruldu; QtBase'de XCB kapalı olduğundan libkscreen'in XRandR/DPMS backend'i devre dışı bırakıldı.
+- KWin'in configure kapısında gereken Qt Sensors 6.9.2 (BLFS Qt alt modül listesi MD5 `f7b2fae56c39a7f6a556a2b3a2d364b7`), libepoxy 1.5.10, Little CMS 2.17 ve Wayland Protocols 1.45 resmi BLFS checksum'larıyla doğrulanıp kuruldu. BLFS X11 client alt kümesi (xorgproto, libXau, libXdmcp, xcb-proto, libxcb, xtrans, libX11, xcb-util-keysyms) da KScreenLocker'ın CMake gereksinimi için kuruldu; Xorg sunucusu kurulmadı.
+- KScreenLocker 6.4.4, X11 greeter'ında Qt'nin `QX11Application`/XCB plugin özel arayüzünü istiyor. Bu QtBase XCB'siz yapılandırıldığı ve ilk oturum Wayland hedefli olduğu için KWin'de `KWIN_BUILD_SCREENLOCKER=OFF` kullanılıyor; ekran kilidi ilk oturumun doğrulama kapsamına dahil değil. KWin Wayland derlemesi şu an devam ediyor; henüz Plasma oturumu tamamlandı sayılmıyor.
