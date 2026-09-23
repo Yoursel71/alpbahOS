@@ -59,7 +59,7 @@ Bu tablo `docs/MASTER_PLAN.md` §10'daki M00–M12 aşamalarını izler; yukarı
 | M04 — nihai LFS tabanı | Kısmi (LFS 12.4 rootfs hazır) | M1 rootfs, linker ve FAT/ext4 kontrolleri mevcut; fakat `/mnt/lfs/var/lib/alp/db.json` paket listesi boş. Ana plan §10.1'de istenen temel sistem dosya sahipliği kayıtları kanıtlanmadı. |
 | M05 — kernel/boot/VM | Tamamlandı (M1 ve M2 aday Gen1) | M1 Gen1'in DHCP/ping/reboot koşulları geçti. Yeni M2 adayında guest `networkctl` DHCP'yi doğruladı; kontrollü guest reboot sonrası aynı MAC yeni DHCP adresi aldı, Hyper-V `Running` kaldı ve host ping'i 4/4, TTL 64 geçti. |
 | M06 — BLFS altyapısı | Kısmi | Ağ/TLS, PAM/logind, pkexec e2e, Mesa softpipe EGL çizim/readback, ALSA loopback ve PipeWire null-sink graph PCM roundtrip kanıtı var. Fiziksel ses aygıtı ve gerçek masaüstü oturumu henüz yok. |
-| M07 — Plasma ve temel uygulamalar | Devam ediyor | KWin 6.4.4, Plasma Workspace, Plasma Integration ve Breeze QQC2 kuruldu. `plasmashell --version` offscreen ortamda 6.4.4 verdi; loader taramasında eksik dinamik bağımlılık yok. Wayland-only yamaları temiz BLFS arşivine karşı `patch --dry-run` ile doğrulandı. Gen1 DRM kernel'i ayrı aday VHDX ile Hyper-V'de login istemine kadar açıldı; host ping'i geçti. Gerçek Plasma oturumu henüz çalıştırılmadı. |
+| M07 — Plasma ve temel uygulamalar | Devam ediyor — ilk oturum denemesi başarısız | KWin/Workspace kuruldu; Gen1 boot, DHCP ve reboot doğrulandı. 23 Eylül'de `dbus-run-session startplasma-wayland` denemesi KWin Wayland soketi oluşturmadan başarısız oldu; `kwin_wayland_wrapper` için SIGTRAP/audit kaydı ve D-Bus `org.freedesktop.systemd1` servisinin exit 1 döngüsü ekranda görüldü. Login ortamı ve journal tanısı bekleniyor; masaüstü oturumu doğrulanmadı. |
 | M08 — ürün UX/terminal/tema | Başlamadı | Masaüstüne bağlı kullanıcı senaryoları tamamlanmadı. |
 | M09 — canlı imaj/ISO | Başlamadı | Live rootfs/ISO ve açılış kanıtı yok. |
 | M10 — alfa | Başlamadı | M09 yayın adayı/test matrisi yok. |
@@ -107,6 +107,9 @@ Tahmin: ilk Plasma giriş ekranı için 4-7 takvim günü; test edilmiş M2 VHDX
 
 
 ## 23 Eylül 2026 — İlk Wayland Plasma oturumu (devam ediyor)
+
+- Kullanıcı Gen1 konsolunda `dbus-run-session startplasma-wayland` çalıştırdı. VMConnect görüntüsünde QIODevice/QPixmap uyarıları, tekrar eden `org.freedesktop.systemd1` D-Bus servis aktivasyonu hataları, `Could not create wayland socket` ve `kwin_wayland_wrapper` için SIGTRAP/audit satırı yer alıyor; prompt'a dönmediği için komut kullanıcı tarafından kesilmek üzere. Gerçek Plasma oturumu başlamadı.
+- İlk rootfs incelemesinde `/etc/pam.d/system-session` yalnız `pam_unix.so` içeriyor, `pam_systemd.so` çağrısı yok ve `/etc/pam.d/login` dosyası bulunmuyor. Bu, `XDG_RUNTIME_DIR`/systemd kullanıcı oturumunun kurulmamış olabileceğine dair bir ipucu; guest içinden `env`, `/run/user/1000`, `/dev/dri` ve boot journal tanısı henüz alınmadı, dolayısıyla kök neden kesinleştirilmedi.
 
 - `libplasma` 6.4.4 derlenip `/opt/kf6` altına kuruldu. BLFS kaynağında `WITHOUT_X11=ON` durumunda da açık kalan X11 derleme dalları (`appletpopup`, `dialog`, `plasmawindow`, `windowthumbnail`, `theme`, `contrasteffectwatcher`) Wayland koşullu hale getirildi; derleme geçti. Ayrıntılı log `/mnt/lfs/tmp/alp-logs/plasma/libplasma-{build,install}.log`.
 - Plasma çekirdeği için `kdecoration`, `breeze`, `layer-shell-qt`, `plasma-activities`, `kglobalacceld` ve `kwayland` başarılı kuruldu. `libkscreen` de Wayland/QScreen/fake backend'leriyle kuruldu; QtBase'de XCB kapalı olduğundan libkscreen'in XRandR/DPMS backend'i devre dışı bırakıldı.
