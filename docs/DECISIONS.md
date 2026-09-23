@@ -42,7 +42,7 @@ Tarih: 21 Eylül 2026. Durum: Kullanıcı cevapları işlendi; uygulamaya hazır
 | D32 | Kabul | alpbahOS ilk sürümünde 32-bit kullanıcı alanı/multilib desteği olmayacak; saf x86_64/64-bit devam edilecek. M03'ün ELF32/multilib kabul ölçütü bu ürün kararıyla kapsam dışıdır; 32-bit Steam/Wine uyumluluğu vaat edilmez. | Kullanıcı kararı, 22 Eylül 2026 |
 | D33 | Teknik seçim | Mevcut doğrulanmış taban LFS 12.4-systemd olarak korunacak ve BLFS de 12.4-systemd ile eşleştirilecek. Ana plandaki 13.1 hedefinden sapma bilinçli sürüm sabitlemesidir: M1 rootfs, kernel/boot imajı ve tekrar kullanılacak mevcut sistem 12.4 ile üretildi; BLFS 13.1 paketlerini bu tabana karıştırmak kitap uyumluluğunu ve tekrarlanabilirliği zedeler. 13.1'e geçiş bu iş kapsamında tam temel sistemi yeniden üretmeyi gerektireceğinden, M2 için çalışan tabanı yeniden kurmak yerine uyumlu 12.4 BLFS seçildi. | Codex'in M2 sürüm uyumluluğu kararı, 22 Eylül 2026; uygulama kanıtı: `docs/M2_BLFS_MANIFEST.md`, M1/M2 kayıtları `docs/WORKLOG.md` |
 
-## Teknik seçimler — uygulama ve test bekliyor
+## Teknik seçimler — uygulama/test durumu
 
 | ID | Teknik seçim | Gerekçe / doğrulanması gereken |
 |---|---|---|
