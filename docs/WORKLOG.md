@@ -425,3 +425,11 @@ KWin unit kaynağı `/mnt/lfs/sources/kde/kwin-6.4.4.tar.xz:kwin-6.4.4/plasma-kw
 Artifact F: test klasörüne ve v3 Hyper-V çalışma diskine kopyalandı, her kopyada hash eşleşti. `alpbahOS-M2-SSH-Gen2` kapatıldı, v3 diski bağlandı, Gen2 olarak çalıştırıldı. Yeni guest DHCP `172.28.171.21`, MAC `00-15-5D-00-02-09`; IP/MAC ARP doğrulandı. SSH key-only sa login başarılı. Live çıktılar: `systemctl --failed` boş; getty/resolved `active`; alp hash beklenen. `systemctl --user cat/show plasma-kwin_wayland.service` FragmentPath `/usr/lib/systemd/user/plasma-kwin_wayland.service`, DropInPaths `/etc/systemd/user/plasma-kwin_wayland.service.d/10-wayland-only.conf`, etkin ExecStart `/opt/kf6/bin/kwin_wayland_wrapper` gösterdi. Gerçek Plasma henüz başlatılmadı.
 
 VMConnect tty1'de admin/admin konsol login kullanıcıdan istendi; komut çalıştırması istenmedi. Login sonrası `loginctl` session `seat0`, `Type=tty`, active ve PAM/systemd bilgileri SSH üzerinden kontrol edilecek.
+
+## M04 base ownership kayıtlarının salt okunur incelemesi
+
+Builder `yrsk` üzerinde `/mnt/lfs/var/lib/alp/db.json` incelendi: 83-byte dosyada `"packages": {}`. `/mnt/lfs/sources` altında dokuz `install_manifest.txt` bulundu; bunlar CMake, QtBase, QtPositioning, QtTools, QtSpeech, QtLocation, QtSvg, QtMultimedia ve QCoro masaüstü derlemeleridir, LFS taban paketlerinin sahipliğini kanıtlamaz. Rootfs uid/gid sahipliğini paket sahipliği gibi yorumlamadım. M04 sahiplik çıkış koşulu açık kaldı; kanıtlı değerlendirme [m04-base-ownership-assessment-2026-09-23.md](verification/m04-base-ownership-assessment-2026-09-23.md) içinde.
+
+## Belge tutarlılık denetimi ve entegrasyon
+
+`5436e73` (AI environment guide) ve `d36b261` (stdlib checker) main'e merge edildi; merge commit `4179330`. Kullanıcı başlangıç kontrol listesine komut çalıştırmadan önce `docs/AI_ENVIRONMENT_GUIDE.md` §1 ve §3 okuma maddesi eklendi. Main üzerinde `python docs/handoffs/claude/tools/check_docs.py` ilk kez 19 stale-term bulgusu verdi (broken-link, commit-ref, decision-ref: 0). README, BACKLOG, DECISIONS, HYPERV_PLAN ve MASTER_PLAN güncel D31/D32/D33 kararlarına göre düzeltildi; tekrar komutu `0 bulgu` verdi.
