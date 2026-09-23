@@ -99,7 +99,7 @@ ssh -i C:\Users\thewo\.ssh\claude_alpbahos_m2 sa@172.28.162.172
 
 - LFS 12.4-systemd x86_64 temel sistem ve Linux `6.16.1-alpbahOS` açılıyor.
 - Hyper-V Gen1 ve Gen2 boot-to-login kanıtları var; M2 Gen1 DHCP/reboot/SSH kayıtları tarihsel test kanıtıdır. Gen1 VM kaydı silindi; güncel M2 test VM'i Gen2'dir.
-- BLFS TLS/CA, D-Bus, PAM/logind düzeltmeleri, polkit test yolu, ALSA/PipeWire sanal testleri, Mesa softpipe EGL/GLES smoke testi tamamlandı.
+- BLFS TLS/CA, D-Bus, PAM/logind düzeltmeleri, polkit test yolu, Mesa softpipe EGL/GLES smoke testi tamamlandı. Guest'te `snd-aloop` ile ALSA sanal PCM iki yönlü geçti; PipeWire aygıt keşfi geçti fakat PipeWire→ALSA PCM roundtrip'i geçmedi (ayrıntı §15).
 - Qt 6.9.2, KF6/Plasma 6.4.4 bileşenlerinin önemli kısmı, KWin Wayland ve Plasma Workspace derlenip kuruldu.
 - Türkçe Q keymap derlemesi geçti.
 - `alp` ile gerçek LFS chroot'ta htop kur/list/çalıştır/kaldır döngüsü geçti.
@@ -170,3 +170,10 @@ Uzun yeniden keşif, tekrar tekrar aynı hash kontrolü veya kanıtsız “M2 ta
 - Yeni VM `alpbahOS-M2-SSH-Gen2-DBus`, IP en son `172.28.171.33`, MAC `00-15-5D-00-02-0A`, kernel `6.16.1-alpbahOS`, boot ID `67e367ff-b6a0-4f6f-9e55-0e2202675d84`. DNS, HTTPS/TLS, SSH, host ping, getty/resolved/sshd ve KWin Wayland-only kontrolü geçti.
 - SSH user session'ında `systemctl --user start pipewire.service wireplumber.service pipewire-pulse.socket` başarılı. Geçici null sink 440 Hz playback/monitor capture denemesinde 577536 byte kaydedildi ancak peak/RMS sıfır; bu bir audio roundtrip başarısı değildir. Test config/dosyaları temizlendi. Guest `/dev/snd`'de soundcard yok.
 - `loginctl seat-status seat0` DRM `card0`/`Virtual-1` ve keyboard gösteriyor; `loginctl list-sessions` yalnız SSH session ve manager içeriyor. VMConnect'te yeni `alpbahOS-M2-SSH-Gen2-DBus` VM'inin tty1'inde admin/admin login hâlâ gerekli. Sonra `loginctl` ile `seat0`, `Type=tty`, PAM/systemd oturumu ve gerçek Plasma testi değerlendirilecek; komut çalıştırma kullanıcıdan istenmeyecek.
+
+## 15. M06 ayrı Gen2 ALSA/PipeWire test VM — 24 Eylül 2026
+
+- VM `alpbahOS-M2-SSH-Gen2-Audio`, Generation 2, MAC `00-15-5D-00-02-0B`, en son DHCP `172.28.174.20` (DHCP değişebilir). Çalışma diski `F:\alpbahOS-build\vms\alpbahOS-M2-SSH-Gen2-Audio-v2\alpbahOS-M2-SSH-Gen2-Audio-v2.vhdx`.
+- Artifact `F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen2-audio-test-v2.vhdx`, SHA-256 `2491bbecbd6f6605df2d595a6aa8b0c0417b222ece6a3ebd2e7d81757e678898`; artifact ve working copy hash'i eşleşti. Root PARTUUID `1238a374-f5e6-4277-b1b4-18682e5474cc`.
+- `snd-aloop` boot'ta yüklendi; `/proc/asound/cards` ve `aplay -l` Loopback'i gösterdi; `sa` `users,audio,wheel` gruplarında. ALSA loopback iki yönlü sinüs capture ile geçti. PipeWire 1.4.7/WirePlumber 0.5.10 Loopback device, sink 45/source 46 buldu; PipeWire sink'e WAV playback exit 0, fakat ALSA opposite-end capture 144000 frame boyunca sessiz kaldı ve I/O error ile bitti. PipeWire end-to-end audio pass sayma. Fiziksel audio cihazı yok.
+- Ayrıntılı kanıt: `docs/verification/m06-gen2-audio-2026-09-24.md`. M07 tty login hedefi DBus VM `00-15-5D-00-02-0A`; Audio VM ile karıştırma.

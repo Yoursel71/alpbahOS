@@ -23,6 +23,14 @@ both units are present. It also adds `admin` (UID 1001,
 SSH remains restricted to key-only `sa`. Do not use this test builder for a
 release image.
 
+The Gen2 audio test variant also requires the rootfs-built Linux
+`snd-aloop.ko` and `CONFIG_SND_ALOOP=m`; it loads that virtual PCM through
+`systemd-modules-load` and adds only the test accounts `sa`/`admin` to the
+`audio` group. This proves guest virtual ALSA PCM access, not physical audio
+hardware. PipeWire device discovery has been observed, but its capture
+roundtrip remains unverified; see
+`docs/verification/m06-gen2-audio-2026-09-24.md`.
+
 A distribution image (M09+) must omit test accounts and developer public keys,
 start with an empty `/etc/machine-id`, and create SSH host keys on first boot.
 Test that first-boot behavior separately before calling it complete.
