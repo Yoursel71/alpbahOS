@@ -41,7 +41,10 @@ def _is_lock_error(stderr: str) -> bool:
 
 def _run_alp(alp_path: Path, root: Path, index: Path, args: list[str], timeout: float | None = None) -> subprocess.CompletedProcess:
     cmd = [sys.executable, str(alp_path), "--root", str(root), "--index", str(index), *args]
-    return subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+    # stdin=DEVNULL: an inherited invalid stdin handle breaks CreateProcess on
+    # Windows. It does not suppress alp's prompt (NUL reports isatty() there);
+    # callers that change the system pass --yes for that.
+    return subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, stdin=subprocess.DEVNULL)
 
 
 # --------------------------------------------------------------------------
@@ -70,21 +73,22 @@ def alp_info(alp_path: Path, root: Path, index: Path, name: str) -> dict:
 
 
 def alp_install(alp_path: Path, root: Path, index: Path, name: str) -> str:
-    proc = _run_alp(alp_path, root, index, ["install", name])
+    # --yes: PackageKit/polkit already asked the user; alp must not ask again.
+    proc = _run_alp(alp_path, root, index, ["install", "--yes", name])
     if proc.returncode != 0:
         raise AlpBackendError(proc.stderr.strip() or f"alp install {name} başarısız", is_locked=_is_lock_error(proc.stderr))
     return proc.stdout
 
 
 def alp_remove(alp_path: Path, root: Path, index: Path, name: str) -> str:
-    proc = _run_alp(alp_path, root, index, ["remove", name])
+    proc = _run_alp(alp_path, root, index, ["remove", "--yes", name])
     if proc.returncode != 0:
         raise AlpBackendError(proc.stderr.strip() or f"alp remove {name} başarısız", is_locked=_is_lock_error(proc.stderr))
     return proc.stdout
 
 
 def alp_upgrade(alp_path: Path, root: Path, index: Path, name: str) -> str:
-    proc = _run_alp(alp_path, root, index, ["upgrade", name])
+    proc = _run_alp(alp_path, root, index, ["upgrade", "--yes", name])
     if proc.returncode != 0:
         raise AlpBackendError(proc.stderr.strip() or f"alp upgrade {name} başarısız", is_locked=_is_lock_error(proc.stderr))
     return proc.stdout
