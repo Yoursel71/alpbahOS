@@ -47,6 +47,9 @@ test -f "$ROOTFS/etc/shadow"
 test -f "$ROOTFS/etc/pam.d/login"
 grep -q 'pam_systemd.so' "$ROOTFS/etc/pam.d/system-session"
 grep -q '^sa:' "$ROOTFS/etc/passwd"
+test -s "$ROOTFS/usr/lib/modules/6.16.1-alpbahOS/kernel/sound/drivers/snd-aloop.ko"
+grep -qx 'CONFIG_SND_ALOOP=m' "$ROOTFS/boot/config-6.16.1-alpbahOS"
+test -f "$ROOTFS/usr/lib/systemd/system/systemd-modules-load.service"
 test -s "$ROOTFS/home/sa/.ssh/authorized_keys"
 [[ $(readlink "$ROOTFS/etc/systemd/system/multi-user.target.wants/sshd.service") == /usr/lib/systemd/system/sshd.service ]]
 [[ $(readlink "$ROOTFS/usr/lib/systemd/user/plasma-kwin_wayland.service") == /opt/kf6/lib/systemd/user/plasma-kwin_wayland.service ]]
@@ -95,6 +98,13 @@ tar --numeric-owner --xattrs --acls --one-file-system \
     --exclude='./media/*' --exclude='./build/*' --exclude='./sources/*' --exclude='./tools/*' \
     --exclude='./home/lfs/*' --exclude='./var/cache/*' \
     -C "$ROOTFS" -cpf - . | tar --numeric-owner --xattrs --acls -xpf - -C "$MOUNT"
+
+# The ALSA loopback driver is carried in the authoritative rootfs, but loaded
+# automatically only in this throwaway test image for guest PCM validation.
+mkdir -p "$MOUNT/etc/modules-load.d"
+printf 'snd-aloop\n' > "$MOUNT/etc/modules-load.d/90-alpbahos-test-audio.conf"
+test -s "$MOUNT/usr/lib/modules/6.16.1-alpbahOS/kernel/sound/drivers/snd-aloop.ko"
+grep -qx 'snd-aloop' "$MOUNT/etc/modules-load.d/90-alpbahos-test-audio.conf"
 
 ROOT_UUID=$(blkid -s UUID -o value "${NBD}p2")
 EFI_UUID=$(blkid -s UUID -o value "${NBD}p1")
