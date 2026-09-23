@@ -34,7 +34,7 @@ Kullanıcının kabul ettiği deneyim:
 
 Mevcut Windows bilgisayarı: Ryzen 7 5700, yaklaşık 24 GiB RAM, RTX 5060. Kullanıcının 23 Eylül 2026 tarihli disk düzeni bilgisine göre C: NVMe SSD, F: SATA HDD'dir. Bu oturumda `Get-Volume` ile C: 117,789,728,768 byte (~109.7 GiB), F: 182,085,091,328 byte (~169.5 GiB) boş okundu; değerler zamanla değişebilir. Kullanıcı 300 GB proje bütçesi ayırdı; fiziksel bölüm oluşturulmadı. F: üzerindeki HDD erişim süresi özellikle çok küçük dosyalı build'leri etkileyebilir; ölçüme göre iş sayısı ayarlanacak.
 
-Hyper-V PowerShell modülü mevcut, fakat mevcut oturumda VM hostunu okuma yetkisi yok. Özelliğin etkinliği ve VM oluşturma yetkisi kurulum aşamasında doğrulanacak. Bu kontrol için yetki engeli, plan/doküman/Git çalışmasını engellemez. Rootlu, SSH erişimli Mi 9 telefonu yardımcı cihaz olarak mevcut; x86_64 ana derleme hostu veya uyumluluk kanıtı olarak kullanılmayacak.
+Hyper-V PowerShell modülü mevcut. Normal yerel PowerShell oturumu VM envanter yetkisine sahip değil; Windows hostun yerel OpenSSH yönetici hesabına public-key erişim sağlandı ve salt okunur `Get-VM` envanteri bu yoldan doğrulanabiliyor. Hyper-V değişiklik komutları yine yalnız görev gerektirip açıkça yetkilendirildiğinde kullanılmalı. Rootlu, SSH erişimli Mi 9 telefonu yardımcı cihaz olarak mevcut; x86_64 ana derleme hostu veya uyumluluk kanıtı olarak kullanılmayacak.
 
 Mevcut dosyalar tasarım belgeleri ve logo varlıklarıdır. Linux host, rootfs, paket deposu, boot eden imaj veya ISO henüz yoktur. Tasarım mockup'ındaki sürümler, eski paket yöneticisi örnekleri, paket sayıları ve CPU/RAM değerleri örnek metindir.
 
