@@ -60,9 +60,9 @@ Bu tablo `docs/MASTER_PLAN.md` §10'daki M00–M12 aşamalarını izler; yukarı
 | M02 — paket motoru prototipi | Kısmi | D31 ile pacman/Discover yolu bırakılıp `alp` seçildi. Güncel `alp` ile htop install/remove, checksum ve çalıştırma kanıtı var; update/GUI yolu ile paket motorunun tam kabul koşulları yok. |
 | M03 — multilib | Kullanıcı kararıyla uygulanmayacak | D32/P01 saf 64-bit kararı; kod veya build değişikliği yapılmadı. ELF32 ölçütü tamamlanmış gibi gösterilmez. |
 | M04 — nihai LFS tabanı | Kısmi (LFS 12.4 rootfs hazır) | M1 rootfs, linker ve FAT/ext4 kontrolleri mevcut; fakat `/mnt/lfs/var/lib/alp/db.json` paket listesi boş. Ana plan §10.1'de istenen temel sistem dosya sahipliği kayıtları kanıtlanmadı. |
-| M05 — kernel/boot/VM | Tamamlandı | Gen2 DHCP/ping/reboot geçti. Gen1 guest login ve reboot öncesi DHCP lease (`172.28.165.181/20`) doğrulandı; kontrollü reboot + yeniden login sonrası aynı NIC MAC yeni `.171.186` IP'sinde ping 3/3, TTL 64 verdi. |
+| M05 — kernel/boot/VM | Tamamlandı | Gen2 DHCP/ping/reboot geçti. Gen1 guest login ve reboot öncesi DHCP lease (`172.28.165.181/20`) doğrulandı; kontrollü reboot + yeniden login sonrası aynı NIC MAC yeni `.171.186` IP'sinde ping 3/3, TTL 64 verdi. 23 Eylül canlı tekrarında host ping 4/4, TTL 64; Hyper-V durum cmdlet'i yetki nedeniyle okunamadı. |
 | M06 — BLFS altyapısı | Kısmi | Ağ/TLS, PAM/logind, pkexec e2e, Mesa softpipe EGL çizim/readback, ALSA loopback ve PipeWire null-sink graph PCM roundtrip kanıtı var. Fiziksel ses aygıtı ve gerçek masaüstü oturumu henüz yok. |
-| M07 — Plasma ve temel uygulamalar | Devam ediyor | Qt 6.9.2 Base/Declarative/ShaderTools/Wayland ile KF6 önkoşulları kurulu; doğrulanmış KF6 6.17 kaynakları hazır. KWin/Plasma derlemesi ve oturumu sırada. |
+| M07 — Plasma ve temel uygulamalar | Devam ediyor | KWin 6.4.4 Wayland kuruldu ve sürümü doğrulandı. Plasma Workspace derlemesi `menuimporter.cpp` içindeki `KWindowInfo` ve `virtualdesktopinfo.cpp` içindeki `KX11Extras` X11 API başlıklarında durdu (`WITH_X11=OFF`); bu kaynak yolları için Wayland koşulları eklenip derleme tekrarlanmalı. Plasma oturumu henüz doğrulanmadı. |
 | M08 — ürün UX/terminal/tema | Başlamadı | Masaüstüne bağlı kullanıcı senaryoları tamamlanmadı. |
 | M09 — canlı imaj/ISO | Başlamadı | Live rootfs/ISO ve açılış kanıtı yok. |
 | M10 — alfa | Başlamadı | M09 yayın adayı/test matrisi yok. |
