@@ -1,6 +1,6 @@
 # `alp` prototipi — çalıştırma ve test notları
 
-Bu dizin, [../001-alp-hybrid-pkg-proposal.md](../001-alp-hybrid-pkg-proposal.md) önerisinin çalışan kanıtıdır. **alpbahOS'un kabul edilmiş paket motoru değildir** — bkz. o belgenin 1. bölümü.
+Bu dizin, [../001-alp-hybrid-pkg-proposal.md](../001-alp-hybrid-pkg-proposal.md) önerisinin çalışan kanıtıdır. `alp`, D31/P13 kararıyla alpbahOS'un kabul edilen başlangıç motorudur; prototip ve sistem entegrasyonu bitmiş/üretime hazır değildir.
 
 ## Dosyalar
 
@@ -56,7 +56,7 @@ Checksum reddi testi artık gerçek (dry-run olmayan) bir `install htop` çağr�
 
 ## Otomatik test seti (22 Eylül 2026, güncellendi)
 
-`tests/test_alp.py` + `tests/test_packagekit_backend.py` — pytest, gerçek ağa hiç çıkmaz. **51 test**, bu ortamda çalıştırıldı, hepsi geçti:
+`tests/test_alp.py` + `tests/test_packagekit_backend.py` — pytest, gerçek ağa hiç çıkmaz. 24 Eylül 2026'da Windows Python 3.14.7 üzerinde, TTY'li PowerShell oturumunda **82 test geçti, 10 POSIX-özelliği testi atlandı**. Ayrıntı: [`docs/verification/m02-alp-tests-2026-09-24.md`](../../../verification/m02-alp-tests-2026-09-24.md).
 
 ```bash
 cd docs/handoffs/claude/alp-prototype

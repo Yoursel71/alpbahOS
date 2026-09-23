@@ -304,7 +304,7 @@ Aşamalar oturum planına bağlanır; gerçek derleme ölçümleri olmadan takvi
 |---|---|---|---|
 | M00 | Gereksinimler, teknik seçimler, özel repo ve görev paylaşımı | Kullanıcı cevapları | Bu plan + ajan dosyaları + repo doğrulaması |
 | M01 | Linux host, disk alanı, ağ, LFS araç kontrolü, log düzeni | Ortam ve alan tercihi | Host kontrolü geçer; kontrollü dosya sistemi ve build kökü |
-| M02 | Kaynak manifesti, tarif şablonu, paket motoru/mağaza prototipi | M01 | Küçük paketi üret/kur/güncelle/kaldır; sahiplik ve GUI yolu kanıtı |
+| M02 | Kaynak manifesti, tarif şablonu, paket motoru/mağaza prototipi | M01 | Kısmi: `alp` başlangıç motoru; Windows Python 3.14.7 TTY test koşusunda 82 geçti, 10 POSIX-özelliği testi atlandı. htop install/list/run/remove bir Gen2 test imajında geçti. `update`, gerçek rootfs upgrade/rollback, sistem tabanı sahipliği ve GUI yolu açık. Kanıt: `docs/verification/m02-alp-tests-2026-09-24.md`. |
 | M03 | ABI ve geçici araçlar | M01, M02 ABI kararı, sabit kaynaklar | Saf x86_64 kapsamı D32 ile sabit; 32-bit/multilib ve ELF32 ölçütleri kapsam dışı |
 | M04 | Chroot ve nihai LFS temel sistemi | M02 kararları, M03 | Paket kayıtları, kritik testler, linker ve dosya sistemi doğrulaması |
 | M05 | Kernel, init, bootloader ve ilk VM açılışı | M04 | BIOS ve UEFI yollarında hedef kernel'den giriş, ağ, yeniden başlatma doğrulandı. Gen2/UEFI M2 DRM kernel v3 kontrollü reboot sonrası `6.16.1-alpbahOS`, PARTUUID+rootwait root, DHCP, SSH key ve 0 failed unit ile tekrar açıldı (23 Eyl 2026). |
