@@ -308,8 +308,8 @@ Aşamalar oturum planına bağlanır; gerçek derleme ölçümleri olmadan takvi
 | M03 | ABI ve geçici araçlar | M01, M02 ABI kararı, sabit kaynaklar | Saf x86_64 kapsamı D32 ile sabit; 32-bit/multilib ve ELF32 ölçütleri kapsam dışı |
 | M04 | Chroot ve nihai LFS temel sistemi | M02 kararları, M03 | Paket kayıtları, kritik testler, linker ve dosya sistemi doğrulaması |
 | M05 | Kernel, init, bootloader ve ilk VM açılışı | M04 | BIOS ve UEFI yollarında hedef kernel'den giriş, ağ, yeniden başlatma doğrulandı. Gen2/UEFI M2 DRM kernel v3 kontrollü reboot sonrası `6.16.1-alpbahOS`, PARTUUID+rootwait root, DHCP, SSH key ve 0 failed unit ile tekrar açıldı (23 Eyl 2026). |
-| M06 | BLFS altyapısı: grafik, ses, oturum, ağ ve sertifikalar | M05 | Grafik test oturumu; ağ/TLS/ses doğrulaması |
-| M07 | Hazır masaüstü ve temel uygulama profili | M06 | Temiz kullanıcıda çalışan masaüstü, ayarlar ve dosya yöneticisi |
+| M06 | BLFS altyapısı: grafik, ses, oturum, ağ ve sertifikalar | M05 | Kısmi: DNS/TLS, D-Bus user bus ve sanal ALSA `snd-aloop` roundtrip'i geçti. PipeWire sink discovery/playback başladı fakat PCM capture sessiz kaldı; fiziksel audio ve grafik test oturumu açık. Kanıt: `docs/verification/m06-gen2-audio-2026-09-24.md`. |
+| M07 | Hazır masaüstü ve temel uygulama profili | M06 | P0 KWin unit/Wayland-only kapısı geçti. Temiz yerel PAM/seat oturumu, gerçek Plasma, ayarlar ve dosya yöneticisi kanıtı bekliyor. Plasma başlatmak için önce tty1 `admin/admin` oturumu `loginctl` ile doğrulanmalı. |
 | M08 | Terminal yardımı, pkg+mağaza, kısayollar ve Atatürk/Glass temaları | M02, M07 | İstenen özelliklerin kullanıcı senaryoları geçer |
 | M09 | Canlı rootfs, initramfs, canlı ISO ve VM imajı paketleme | M08 | Canlı medyadan açılış ve oturum; kurulumsuz kullanım |
 | M10 | Alfa doğrulaması, yayın adayının hazırlanması | M09 | Test matrisi, bilinen sorunlar, checksum ve kullanım yönergesi |
