@@ -4,6 +4,8 @@
 
 Son güncelleme: 23 Eylül 2026
 
+> **Güncel VM envanteri (23 Eylül 2026):** Kullanıcı `alpbahOS-M2-SSH-Gen1` VM'ini sildiğini bildirdi. Yerel yönetici SSH üzerinden `Get-VM` envanterinde bu VM yok; `alpbahOS-M2-SSH-Gen2` ve Builder `Running`. Gen1 release VHDX'i ve Gen1 VM çalışma VHDX'i hâlâ F: üzerinde mevcut (`Test-Path=True`); VM kaydının silinmesi disklerin silindiği anlamına gelmiyor. Güncel test hedefi Gen2'dir. Eski Gen1 test sonuçları aşağıda tarihsel kanıt olarak kalır.
+
 ## Tamamlanan M1
 
 - LFS 12.4-systemd x86_64 temel sistem, Linux `6.16.1-alpbahOS` ve GRUB 2.12 hazır.
@@ -58,7 +60,7 @@ Bu tablo `docs/MASTER_PLAN.md` §10'daki M00–M12 aşamalarını izler; yukarı
 | M01 — Linux build hostu | Tamamlandı | Ubuntu 24.04 Builder, SSH, LFS build kökü ve disk alanı doğrulandı. |
 | M02 — paket motoru prototipi | Kısmi | D31 ile `alp` seçildi; rootfs motoru `e8b0376` kaynağına güncellendi ve SHA-256 `7b2998a5…` canlı Gen2 guest’te doğrulandı. htop install/remove e2e önceki Gen2 test imajında geçti; bu rootfs’ten üretilen yeni imajda tekrar edilmedi. update, bağımlılık ve GUI kabul koşulları açık. |
 | M03 — multilib | Kullanıcı kararıyla uygulanmayacak | D32/P01 saf 64-bit kararı; kod veya build değişikliği yapılmadı. ELF32 ölçütü tamamlanmış gibi gösterilmez. |
-| M04 — nihai LFS tabanı | Kısmi (LFS 12.4 rootfs hazır) | M1 rootfs, linker, FAT/ext4 ve boot kontrolleri mevcut. Builder incelemesinde `/mnt/lfs/var/lib/alp/db.json` `packages: {}`; görülen dokuz `install_manifest.txt` BLFS/desktop paketlerine ait, LFS taban sahipliğini kanıtlamıyor. M04 hâlâ açık; [kanıtlı durum](docs/verification/m04-base-ownership-assessment-2026-09-23.md). |
+| M04 — nihai LFS tabanı | Kısmi (LFS 12.4 rootfs hazır) | Builder incelemesinde `/mnt/lfs/var/lib/alp/db.json` `packages: {}`; mevcut build manifestleri BLFS/desktop paketlerine ait, LFS taban sahipliğini kanıtlamıyor. `scripts/capture-package-manifest.py` staging fixture üzerinde doğrulandı; mevcut rootfs için sahiplik kaydı üretmedi. M04 açık; [kanıt ve sonraki kayıt yöntemi](docs/verification/m04-base-ownership-assessment-2026-09-23.md). |
 | M05 — kernel/boot/VM | Kısmi: Gen1 ve Gen2 boot doğrulandı | Rootfs’ten üretilen v3 Gen2/UEFI test imajı SHA-256 `14f22e90…` ile açıldı; SSH key-only erişim, DHCP `172.28.171.21/20`, boş `systemctl --failed`, aktif getty/resolved ve e8b0376 `alp.py` hash’i doğrulandı. PARTUUID+rootwait ile boot edildi. tty1’de gerçek admin login ve PAM session kanıtı bekleniyor. |
 | M06 — BLFS altyapısı | Kısmi | Ağ/TLS, PAM/logind, pkexec e2e, Mesa softpipe EGL çizim/readback, ALSA loopback ve PipeWire null-sink graph PCM roundtrip kanıtı var. Yeni rootfs imajında servis/ağ kontrolleri geçti; gerçek grafik oturumu, fiziksel ses aygıtı ve masaüstü oturumu hâlâ doğrulanmadı. |
 | M07 — Plasma ve temel uygulamalar | P0 KWin kapısı geçti; gerçek oturum bekliyor | Gen2 canlı guest’te `systemctl --user cat/show plasma-kwin_wayland.service`: taban birim ve `/etc` drop-in yüklü; etkin ExecStart yalnız `/opt/kf6/bin/kwin_wayland_wrapper`, `--xwayland` yok. getty ve resolved active, admin test hesabı mevcut. VMConnect tty1’de admin login kullanıcıdan istendi; `loginctl` ile `seat0`, `Type=tty`, active session doğrulaması ve ardından gerçek Plasma testi henüz yapılmadı. |

@@ -39,15 +39,14 @@ ssh -i C:\Users\thewo\.ssh\codex_alpbahos_m1 thewo@localhost
 
 ## 4. Canlı Hyper-V envanteri
 
-23 Eylül canlı sorgusu:
+23 Eylül tarihli canlı envanter; Gen1 test VM'i sonradan silinmiştir (aşağıdaki güncel not):
 
 | VM | Durum | Nesil | Kaynak | Disk | MAC |
 |---|---|---:|---|---|---|
 | `alpbah-builder` | Running | Gen2 | 4 vCPU, dinamik RAM 3–6 GiB | `F:\alpbahOS-build\vhdx\alpbah-builder.vhdx` | `00-15-5D-00-02-04` |
-| `alpbahOS-M2-SSH-Gen1` | Off | Gen1 | 2 vCPU, sabit 2 GiB | `F:\alpbahOS-build\vms\alpbahOS-M2-SSH-Gen1\alpbahOS-M2-SSH-Gen1.vhdx` | `00-15-5D-00-02-08` |
 | `Yeni Sanal Makine` | Off | Gen1 | Eski/alakasız VM; kullanma | `C:\ProgramData\Microsoft\Windows\Virtual Hard Disks\Yeni Sanal Makine.vhdx` | `00-15-5D-00-02-03` |
 
-Builder ve M2 VM'lerinde otomatik checkpoint kapalıdır. `Yeni Sanal Makine` alpbahOS çalışma hedefi değildir.
+Güncel salt okunur envanter `ssh ... thewo@localhost` üzerinden alındı: Hyper-V'de `alpbah-builder` (Running, Gen2), `alpbahOS-M2-SSH-Gen2` (Running, Gen2) ve alakasız `Yeni Sanal Makine` (Off, Gen1) görünüyor. `alpbahOS-M2-SSH-Gen1` VM kaydı artık yok. Gen1 release artifact'i `F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen1.vhdx` ve eski Gen1 çalışma diski `F:\alpbahOS-build\vms\alpbahOS-M2-SSH-Gen1\alpbahOS-M2-SSH-Gen1.vhdx` hâlâ mevcut; VM silinmesi disk dosyalarının silindiği anlamına gelmiyor. `Yeni Sanal Makine` alpbahOS çalışma hedefi değildir.
 
 ## 5. Builder Ubuntu
 
@@ -63,7 +62,7 @@ ssh -i C:\Users\thewo\.ssh\claude_alpbahos_m2 sa@172.28.162.172
 
 - Anahtar parolasızdır. Özel anahtarı repoya veya mesaja koyma.
 - Ubuntu 24.04 tabanı, kernel `6.8.0-139-generic`.
-- Builder root LV: yaklaşık 98 GiB; son kontrolde yaklaşık 21 GiB boştu. Büyük derlemeden önce `df -h / /mnt/lfs` kontrol et.
+- Builder root LV: yaklaşık 98 GiB; güncel `df -h /` çıktısında 25 GiB boştu. Aynı kontrolde `make`, `ninja`, `cmake` veya `chroot` süreci yoktu; `/sys/block/nbd0` mevcut değildi. Büyük derlemeden önce tekrar kontrol et.
 - LFS hedef kökü: `/mnt/lfs`.
 - Kritik ayrıntı: `/mnt/lfs` ayrı bağlı disk/mount değildir; Builder'ın `/` dosya sistemi içindeki dizindir. `findmnt -T /mnt/lfs` `/` döndürür. Yanlışlıkla mount/format işlemi yapma.
 - Kaynak arşivleri: `/mnt/lfs/sources`
@@ -87,22 +86,19 @@ ssh -i C:\Users\thewo\.ssh\claude_alpbahos_m2 sa@172.28.162.172
 - SHA dosyası: `F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen1.vhdx.sha256`
 - Doğrulanmış release SHA-256: `fa29d47608a4444e043a3cbfa26753fd32a3c7e0b2078179dbcd852eab322c78`
 - Release standalone, dinamik 20 GiB VHDX'tir ve parent'ı yoktur.
-- Hyper-V VM doğrudan release dosyasını değil, `vms\alpbahOS-M2-SSH-Gen1` altındaki ayrı çalışma kopyasını kullanır.
+- Silinmiş Gen1 VM çalışırken release dosyası yerine `vms\alpbahOS-M2-SSH-Gen1` altındaki ayrı çalışma kopyasını kullanıyordu; VM kaydı silindi, bu iki VHDX dosyası korundu.
+- Gen2 rootfs tabanlı test artifact'i: `F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen2-rootfs-kwin-test.vhdx`, SHA-256 `14f22e9074eb3a01267df284317e3191e5f75af4ac56699d005d33f11e78dcd4`. Güncel çalışan test VM `alpbahOS-M2-SSH-Gen2` bu imajın v3 çalışma diskini kullanır.
 
-## 7. M2 guest erişimi
+## 7. Gen1 guest erişimi — VM silindi
 
-- VM: `alpbahOS-M2-SSH-Gen1`, şu an kapalı.
-- Guest kullanıcı: `sa`.
-- SSH yalnız public key ile açıktır; root SSH ve parola SSH kapalıdır.
-- Windows anahtarı: `C:\Users\thewo\.ssh\claude_alpbahos_m2`.
-- VM açıldıktan sonra DHCP adresini eski IP'den varsayma. MAC `00-15-5D-00-02-08` ile komşu tablosu/Hyper-V bilgisi üzerinden yeni adresi bul ve önce ping, sonra SSH doğrula.
-- `sshd.service` enable/active olarak paketlendi; host key'ler ilk açılışta üretilir.
-- Önceki canlı Gen1 testinde DHCP, ping, public-key SSH ve kontrollü reboot geçti.
+- `alpbahOS-M2-SSH-Gen1` Hyper-V VM kaydı güncel inventory'de yok; bu guest'e artık SSH/VMConnect ile bağlanma.
+- İlişkili Gen1 artifact ve çalışma VHDX dosyaları hâlâ disk üzerinde duruyor; salt okunur `Test-Path` ikisine de `True` verdi. Bunları silme veya yeni VM'ye bağlama için kullanıcı isteği yok.
+- Bu bölümdeki Gen1 test geçmişi yalnız arşiv bilgisi olarak kalsın; güncel M2 erişim hedefi Gen2'dir (bölüm 13).
 
 ## 8. Teknik olarak gerçekten tamamlananlar
 
 - LFS 12.4-systemd x86_64 temel sistem ve Linux `6.16.1-alpbahOS` açılıyor.
-- Hyper-V Gen1 ve Gen2 boot-to-login kanıtları var; güncel M2 Gen1 DHCP/reboot/SSH geçti.
+- Hyper-V Gen1 ve Gen2 boot-to-login kanıtları var; M2 Gen1 DHCP/reboot/SSH kayıtları tarihsel test kanıtıdır. Gen1 VM kaydı silindi; güncel M2 test VM'i Gen2'dir.
 - BLFS TLS/CA, D-Bus, PAM/logind düzeltmeleri, polkit test yolu, ALSA/PipeWire sanal testleri, Mesa softpipe EGL/GLES smoke testi tamamlandı.
 - Qt 6.9.2, KF6/Plasma 6.4.4 bileşenlerinin önemli kısmı, KWin Wayland ve Plasma Workspace derlenip kuruldu.
 - Türkçe Q keymap derlemesi geçti.
@@ -113,23 +109,21 @@ Bu maddeler gerçek grafik masaüstünün açıldığını göstermez.
 
 ## 9. Şu anki asıl açık kapı
 
-M07 hâlâ açık: Hyper-V VMConnect konsolundaki gerçek `tty1/seat0` oturumundan KWin/Plasma Wayland başlatılmalı ve görüntü alınmalıdır. SSH oturumu DRM master/aktif seat sağlamadığı için SSH üzerinden `startplasma-wayland` denemesi gerçek masaüstü doğrulaması değildir.
+M07 hâlâ açık: çalışan Gen2 test VM'inde VMConnect `tty1` üzerinden `admin/admin` ile gerçek konsol girişi yapılmalı; SSH'den `loginctl` ile `seat0`, `Type=tty`, aktif PAM/systemd oturumu doğrulanmalı; bundan sonra gerçek KWin/Plasma Wayland başlatılıp görüntü alınmalıdır. `sa` SSH oturumu DRM master/aktif seat sağlamaz; SSH üzerinden `startplasma-wayland` denemesi geçerli değildir. Kullanıcıdan yalnız konsolda giriş yapması istendi, komut çalıştırması istenmedi. Bu giriş henüz doğrulanmadı.
 
 İlk sonraki akış:
 
-1. Repo ve VM envanterini salt okunur doğrula.
-2. `alpbahOS-M2-SSH-Gen1` VM'ini başlat.
-3. Yeni DHCP adresini MAC ile bul; ping ve SSH'yi doğrula.
-4. VMConnect `tty1` üzerinde `sa` oturumunun logind tarafından `seat0`, `Type=tty`, aktif session olarak görüldüğünü doğrula.
-5. `/dev/dri`, `/run/user/1000`, user D-Bus ve journal durumunu kontrol et.
-6. Gerçek konsoldan Plasma Wayland başlat; siyah ekran/çökme varsa journal ve KWin logundan tek kök nedene ilerle.
-7. Görüntü oluşmadan M07 tamamlandı yazma.
+1. Test VM'i: çalışan `alpbahOS-M2-SSH-Gen2`; Gen1 VM silinmiştir.
+2. Kullanıcı VMConnect `tty1` ekranında `admin/admin` ile giriş yapsın.
+3. Guest SSH'sinden `loginctl` ile admin'in `seat0`, `Type=tty`, `Active=yes` PAM/systemd oturumunu doğrula.
+4. Yalnız bu kanıttan sonra konsol oturumunda Plasma Wayland başlat; siyah ekran/çökme varsa journal ve KWin logundan kök nedeni araştır.
+5. Görüntü oluşmadan M07 tamamlandı yazma.
 
 ## 10. Paket yöneticisi için Claude sınırı
 
 - Kanonik motor `alp`; aynı rootfs'ye apt/pacman gibi ikinci native paket veritabanı ekleme.
-- Ana repodaki merge edilmiş `alp.py` ile Builder rootfs'deki eski kopyanın hash'leri geçmiş kontrolde eşleşmiyordu. Önce hash ve sürüm karşılaştır.
-- Eski rootfs motorunda güvenli olduğu kanıtlanmadan `alp remove` veya `alp upgrade` çalıştırma.
+- Builder `/mnt/lfs/usr/lib/alp/alp.py` son kontrolde `e8b0376` kaynağının beklenen SHA-256 `7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132` değeriyle eşleşti. Paket işlemlerinden önce hash'i tekrar doğrula.
+- Bu hash eşleşmeden gerçek rootfs'de `alp remove` veya `alp upgrade` çalıştırma.
 - Htop dışındaki katalog, `alp update`, bağımlılık çözümü, transaction lock, rollback/config protection ve PackageKit yolu ayrı ayrı test edilmeden hazır sayılmaz.
 - Claude değişikliği ayrı dosya/branch sınırında teslim etmeli; rootfs'ye kurulum tek entegratör tarafından yapılmalı.
 
