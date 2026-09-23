@@ -24,7 +24,7 @@ Recipe/core girdilerine isteğe bağlı bir alan eklenir:
 }
 ```
 
-`config_files`, `files[]`'in bir alt kümesidir — kurulum sırasında `_merge_destdir`/`safe_extract`'in ürettiği tam yol listesiyle kesiştirilir. Bu, Debian'ın `conffiles` listesine veya pacman'ın `.PKGINFO` içindeki `backup` dizisine denk düşer; yeni bir kavram değil, iyi bilinen bir desenin `alp` şemasına eklenmesi.
+`config_files`, `files[]`'in bir alt kümesidir — kurulum sırasında tek birleştirme yolu `_merge_staged()`'in ürettiği tam yol listesiyle kesiştirilir (23 Eylül 2026'dan beri recipe ve core yöntemlerinin kurulum, yükseltme ve `--reinstall` işlemlerinin hepsi bu yoldan geçer; bkz. `docs/handoffs/claude/011-alp-logic-review-fixes.md`). Bu, Debian'ın `conffiles` listesine veya pacman'ın `.PKGINFO` içindeki `backup` dizisine denk düşer; yeni bir kavram değil, iyi bilinen bir desenin `alp` şemasına eklenmesi.
 
 ## 3. `db.json` şema genişletmesi
 

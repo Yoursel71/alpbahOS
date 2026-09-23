@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
-"""alp -- alpbahOS hybrid package manager (DESIGN PROTOTYPE, not the accepted engine).
+"""alp -- alpbahOS hybrid package manager (prototype).
 
-Status: proposal artifact for docs/handoffs/claude/001-alp-hybrid-pkg-proposal.md.
-alpbahOS's currently accepted package engine is pacman/libalpm (DECISIONS.md D11/P05,
-MASTER_PLAN.md section 5). This script exists to make that proposal concrete and
-testable; it is not wired into the real system and must not be treated as a
-replacement for pacman without the sign-off described in the proposal doc.
+Status: accepted package engine since DECISIONS.md D31 (21 Sep 2026); still a
+prototype -- see docs/handoffs/claude/001-alp-hybrid-pkg-proposal.md for the
+honest list of what is and isn't implemented/tested.
 
 Three installation methods, dispatched from a local "index" (the thing a real
 GitHub-hosted catalog would provide):
@@ -31,7 +29,10 @@ import argparse
 import hashlib
 import json
 import os
+import posixpath
 import shutil
+import socket
+import stat
 import subprocess
 import sys
 import tarfile
@@ -92,6 +93,29 @@ class Paths:
 # AGENTS.md: "Tek paket veri tabanı ve tek yazıcı/işlem kilidi kullan."
 # --------------------------------------------------------------------------
 
+def _lock_holder_is_dead(holder: str) -> bool:
+    """True only when the lock provably belongs to a process that no longer
+    exists on this machine (e.g. after kill -9 or a power cut). Anything
+    uncertain -- another host, unparsable content, a non-POSIX OS where
+    os.kill(pid, 0) would actually terminate the process -- counts as alive."""
+    if os.name != "posix":
+        return False
+    fields = dict(part.split("=", 1) for part in holder.split() if "=" in part)
+    if fields.get("host") not in (None, socket.gethostname()):
+        return False
+    try:
+        pid = int(fields["pid"])
+    except (KeyError, ValueError):
+        return False
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return True
+    except PermissionError:
+        return False
+    return False
+
+
 class DbLock:
     def __init__(self, lock_file: Path):
         self.lock_file = lock_file
@@ -99,18 +123,34 @@ class DbLock:
 
     def __enter__(self) -> "DbLock":
         self.lock_file.parent.mkdir(parents=True, exist_ok=True)
-        try:
-            fd = os.open(str(self.lock_file), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
-        except FileExistsError as exc:
-            holder = self.lock_file.read_text(encoding="utf-8").strip() if self.lock_file.exists() else "?"
-            raise AlpError(
-                f"Veritabanı kilitli, başka bir alp/mağaza işlemi sürüyor ({holder}). "
-                f"Kilit dosyası: {self.lock_file}"
-            ) from exc
+        for attempt in (1, 2):
+            try:
+                fd = os.open(str(self.lock_file), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+                break
+            except FileExistsError as exc:
+                holder = self._read_holder()
+                if attempt == 1 and _lock_holder_is_dead(holder):
+                    # Only remove the lock if it still holds the exact content
+                    # we judged stale, so a lock another process just took over
+                    # is not deleted.
+                    if self._read_holder() == holder:
+                        print(f"uyarı: sahibi çalışmayan eski kilit temizlendi ({holder})", file=sys.stderr)
+                        self.lock_file.unlink(missing_ok=True)
+                    continue
+                raise AlpError(
+                    f"Veritabanı kilitli, başka bir alp/mağaza işlemi sürüyor ({holder}). "
+                    f"Kilit dosyası: {self.lock_file}"
+                ) from exc
         with os.fdopen(fd, "w") as f:
-            f.write(f"pid={os.getpid()} ts={_now()}\n")
+            f.write(f"pid={os.getpid()} host={socket.gethostname()} ts={_now()}\n")
         self._held = True
         return self
+
+    def _read_holder(self) -> str:
+        try:
+            return self.lock_file.read_text(encoding="utf-8").strip()
+        except OSError:
+            return "?"
 
     def __exit__(self, exc_type, exc, tb) -> None:
         if self._held and self.lock_file.exists():
@@ -194,19 +234,29 @@ def fetch(url: str, dest: Path, expected_sha256: str) -> None:
 
 
 def safe_extract(archive: Path, dest_dir: Path) -> list[str]:
-    """Extract archive under dest_dir, rejecting path-traversal/device members."""
+    """Extract archive under dest_dir with tarfile's "data" filter (rejects
+    path traversal, absolute/escaping links and device files). Fails closed
+    on a Python without that filter instead of extracting unchecked.
+
+    Returns member names normalized to plain relative form ("./usr/x" and
+    "usr/x" both become "usr/x"; the "." entry is dropped)."""
+    if not hasattr(tarfile, "data_filter"):
+        raise AlpError(
+            "Bu Python sürümü tarfile güvenli çıkarma filtresini desteklemiyor "
+            "(3.12+ ya da güvenlik yamalı 3.8–3.11 gerekir); arşiv açılmadı."
+        )
     dest_dir.mkdir(parents=True, exist_ok=True)
     with tarfile.open(archive) as tf:
         try:
-            tf.extractall(dest_dir, filter="data")  # Python 3.12+: safe by default
-        except TypeError:
-            resolved_dest = dest_dir.resolve()
-            for member in tf.getmembers():
-                member_path = (dest_dir / member.name).resolve()
-                if not str(member_path).startswith(str(resolved_dest)):
-                    raise AlpError(f"Güvensiz arşiv girdisi (path traversal): {member.name}")
-            tf.extractall(dest_dir)
-        names = tf.getnames()
+            tf.extractall(dest_dir, filter="data")
+        except tarfile.FilterError as exc:
+            raise AlpError(f"Güvensiz arşiv girdisi reddedildi: {exc}") from exc
+        raw_names = tf.getnames()
+    names = []
+    for raw in raw_names:
+        norm = posixpath.normpath(raw.lstrip("/"))
+        if norm != ".":
+            names.append(norm)
     return names
 
 
@@ -239,14 +289,23 @@ def _copy_entry(src: Path, dst: Path) -> None:
     permission bits -- the installed /usr/bin/htop ELF came out mode 0644
     (not executable) even though the staged binary was 0755. Every regular
     file must have its mode explicitly carried over with shutil.copymode().
+
+    Regular files are written to a temporary sibling and renamed over dst,
+    never written in place: in-place writes follow an existing symlink at
+    dst (overwriting whatever it points to), modify every hard link of dst,
+    and fail with ETXTBSY on a running executable during upgrades.
     """
     if src.is_symlink():
-        if dst.exists() or dst.is_symlink():
+        if os.path.lexists(dst):
             dst.unlink()
         os.symlink(os.readlink(src), dst)
-    else:
-        shutil.copyfile(src, dst)
-        shutil.copymode(src, dst)
+        return
+    tmp = dst.with_name(f".{dst.name}.alp-tmp")
+    if os.path.lexists(tmp):
+        tmp.unlink()
+    shutil.copyfile(src, tmp)
+    shutil.copymode(src, tmp)
+    os.replace(tmp, dst)
 
 
 def _tool_available(binary: str, cwd: Path) -> bool:
@@ -265,126 +324,234 @@ def _tool_available(binary: str, cwd: Path) -> bool:
     return shutil.which(binary) is not None
 
 
-def _merge_destdir(destdir: Path, root: Path, dry_run: bool) -> list[str]:
-    """Copy a staged DESTDIR install into root, recording every file AND
-    directory installed.
-
-    This is the file-ownership-tracking mechanism AGENTS.md requires
-    ("Temel paketlerin hangi dosyalara sahip olduğunu izleyecek yöntem ...
-    seçilmiş olmalı") for the recipe method. Directories are recorded too
-    (not just files) so `remove_package` can clean them up on removal --
-    matching how the `core` method's `files[]` already includes directory
-    entries via `tarfile.getnames()`. Without this, every directory a
-    recipe's `make install` creates (e.g. /usr/share/doc/<pkg>/) would be
-    silently orphaned forever, since remove_package only ever acts on
-    entries present in `files[]`.
-    """
-    installed = []
-    for dirpath, _dirnames, filenames in os.walk(destdir):
-        rel_dir = Path(dirpath).relative_to(destdir)
-        if str(rel_dir) != ".":
-            installed.append("/" + str(rel_dir).replace(os.sep, "/"))
-        for fn in filenames:
-            staged = Path(dirpath) / fn
-            rel = staged.relative_to(destdir)
-            installed.append("/" + str(rel).replace(os.sep, "/"))
-            if not dry_run:
-                target = root / rel
-                target.parent.mkdir(parents=True, exist_ok=True)
-                _copy_entry(staged, target)
-    return sorted(installed)
+# Directories alp never removes, even if a (possibly old-format) db record
+# lists them and they are empty or are symlinks. On LFS, /bin, /lib, /sbin
+# are symlinks into /usr and /var/run -> /run: deleting any of them breaks
+# the system (e.g. the dynamic loader path goes through /lib).
+PROTECTED_PATHS = frozenset({
+    "/", "/bin", "/boot", "/dev", "/etc", "/home", "/lib", "/lib32", "/lib64",
+    "/media", "/mnt", "/opt", "/proc", "/root", "/run", "/sbin", "/srv", "/sys",
+    "/tmp", "/usr", "/usr/bin", "/usr/include", "/usr/lib", "/usr/lib64",
+    "/usr/libexec", "/usr/local", "/usr/sbin", "/usr/share", "/usr/share/doc",
+    "/usr/share/info", "/usr/share/locale", "/usr/share/man", "/usr/src",
+    "/var", "/var/cache", "/var/lib", "/var/lock", "/var/log", "/var/mail",
+    "/var/opt", "/var/run", "/var/spool", "/var/tmp",
+})
+STATE_PREFIX = "/" + DEFAULT_STATE_DIR
 
 
-def _remove_tracked_paths(root: Path, rel_paths: list[str], dry_run: bool) -> None:
-    """Delete files/dirs the db recorded as owned by a package, deepest-first
-    (reverse string sort -- an ancestor directory is always a string prefix
-    of its descendants, so this always removes children before the now-empty
-    parent). Shared by remove_package() and upgrade_*()'s dropped-file
-    cleanup so the two don't drift out of sync."""
-    for rel in sorted(rel_paths, reverse=True):
-        target = root / rel.lstrip("/")
-        if dry_run:
-            print(f"[dry-run] rm {target}")
+def _is_protected(rel: str) -> bool:
+    return rel in PROTECTED_PATHS or rel == STATE_PREFIX or rel.startswith(STATE_PREFIX + "/")
+
+
+def _walk_staged(staged_root: Path) -> list[tuple[str, str]]:
+    """Every entry of a staged tree as ("/rel/path", kind), parents before
+    children. kind is "dir", "file" or "symlink". Symlinks -- including ones
+    pointing at directories, which os.walk lists under dirnames but never
+    descends into -- are entries of their own and are not followed."""
+    entries: list[tuple[str, str]] = []
+    for dirpath, dirnames, filenames in os.walk(staged_root):
+        base = Path(dirpath)
+        for name in [*dirnames, *filenames]:
+            full = base / name
+            mode = os.lstat(full).st_mode
+            rel = "/" + full.relative_to(staged_root).as_posix()
+            if stat.S_ISLNK(mode):
+                kind = "symlink"
+            elif stat.S_ISDIR(mode):
+                kind = "dir"
+            elif stat.S_ISREG(mode):
+                kind = "file"
+            else:
+                raise AlpError(f"Desteklenmeyen dosya türü (FIFO/soket/aygıt): {rel}")
+            entries.append((rel, kind))
+    return sorted(entries)
+
+
+def _other_owners(db: dict, exclude: str) -> dict[str, str]:
+    """path -> owning package, for every installed package except `exclude`."""
+    owners: dict[str, str] = {}
+    for pkg_name, record in db["packages"].items():
+        if pkg_name == exclude:
             continue
-        try:
-            if target.is_file() or target.is_symlink():
-                target.unlink()
-            elif target.is_dir() and not any(target.iterdir()):
-                target.rmdir()
-        except OSError as exc:
-            print(f"uyarı: {target} kaldırılamadı: {exc}", file=sys.stderr)
+        for rel in record.get("files", []):
+            owners.setdefault(rel, pkg_name)
+    return owners
+
+
+def _inside(real_root: str, path: str) -> bool:
+    return os.path.commonpath([real_root, path]) == real_root
+
+
+def _preflight_merge(
+    entries: list[tuple[str, str]],
+    root: Path,
+    self_owned: set[str],
+    other_owners: dict[str, str],
+) -> None:
+    """Refuse the whole merge -- before a single byte is written -- if any
+    entry would overwrite a file owned by another package or by nobody
+    (e.g. the LFS base system, whose files are not in the alp db), change a
+    file into a directory or vice versa where that isn't ours to change, or
+    land outside root through a symlink (e.g. --root=/mnt/lfs with the LFS
+    absolute link var/run -> /run would otherwise write into the build
+    host's /run)."""
+    real_root = os.path.realpath(root)
+    problems: list[str] = []
+    for rel, kind in entries:
+        target = root / rel.lstrip("/")
+        if not _inside(real_root, os.path.realpath(target.parent)):
+            problems.append(f"{rel}: symlink üzerinden kök dizinin dışına çıkıyor ({os.path.realpath(target.parent)})")
+            continue
+        if not os.path.lexists(target):
+            continue
+        if kind == "dir":
+            if target.is_dir():
+                if target.is_symlink() and not _inside(real_root, os.path.realpath(target)):
+                    problems.append(f"{rel}: symlink üzerinden kök dizinin dışına çıkıyor ({os.path.realpath(target)})")
+                continue
+            if rel not in self_owned:
+                problems.append(f"{rel}: pakette dizin, sistemde dosya")
+            continue
+        if target.is_dir() and not target.is_symlink():
+            problems.append(f"{rel}: pakette dosya, sistemde dizin")
+            continue
+        owner = other_owners.get(rel)
+        if owner is not None:
+            problems.append(f"{rel}: '{owner}' paketine ait")
+        elif rel not in self_owned:
+            problems.append(f"{rel}: sistemde zaten var ve hiçbir alp paketine ait değil")
+    if problems:
+        shown = "\n  ".join(problems[:20])
+        more = f"\n  ... ve {len(problems) - 20} çakışma daha" if len(problems) > 20 else ""
+        raise AlpError("Kurulum çakışması, hiçbir dosyaya dokunulmadı:\n  " + shown + more)
 
 
 @dataclass
 class MergeResult:
     installed: list[str]
+    symlinks: list[str]
     config_hashes: dict[str, str]
     alpnew: list[str]
 
 
-def _config_aware_merge(
+def _merge_staged(
     staged_root: Path,
-    target_root: Path,
+    root: Path,
+    *,
     config_files: set[str],
-    old_config_hashes: dict[str, str],
+    old_record: dict | None,
+    other_owners: dict[str, str],
 ) -> MergeResult:
-    """Copy a staged tree (a recipe's DESTDIR or an extracted core archive)
-    into target_root, applying pacman's pacnew decision tree (see
-    design/config-protection.md) to any path listed in config_files:
+    """The single path every recipe/core install, upgrade and reinstall uses
+    to copy a staged tree (a recipe's DESTDIR or an extracted core archive)
+    into root.
 
-      - untouched on disk (current hash == recorded install-time hash, or
-        the file doesn't exist yet) -> overwrite normally, record new hash.
-      - modified on disk (current hash != recorded hash) -> leave the
-        user's file alone, write the new version as "<path>.alpnew"
-        instead, keep the OLD recorded hash (the file is still considered
-        user-modified next time).
+    Ownership recorded (the files[] list remove/upgrade act on):
+      - every file and symlink copied;
+      - a directory only if this merge created it, or the package already
+        owned it. Pre-existing directories such as /usr/bin, or /lib when it
+        is a symlink into /usr, are shared and never recorded, so removal
+        can never take them away.
 
-    Non-config files/directories are copied unconditionally, same as
-    _merge_destdir. Never called during --dry-run (callers must not stage
-    anything on disk in dry-run mode, same rule as install_*()).
+    Config files (config_files) follow pacman's pacnew decision tree (see
+    design/config-protection.md): absent, untouched since install (hash
+    matches the recorded one), or never hashed before (newly declared as
+    config) -> replaced and hashed; modified by the user -> left alone, new
+    version written as "<path>.alpnew", old recorded hash kept.
     """
-    installed: list[str] = []
-    new_hashes = dict(old_config_hashes)
+    entries = _walk_staged(staged_root)
+    old_record = old_record or {}
+    self_owned = set(old_record.get("files", []))
+    old_hashes = old_record.get("config_hashes", {})
+    _preflight_merge(entries, root, self_owned, other_owners)
+
+    owned: list[str] = []
+    symlinks: list[str] = []
+    new_hashes: dict[str, str] = {}
     alpnew: list[str] = []
+    try:
+        for rel, kind in entries:
+            src = staged_root / rel.lstrip("/")
+            dst = root / rel.lstrip("/")
+            if kind == "dir":
+                if os.path.lexists(dst) and rel in self_owned and (dst.is_symlink() or not dst.is_dir()):
+                    dst.unlink()  # our own file/symlink becoming a real directory
+                if not dst.is_dir():
+                    dst.mkdir()
+                    shutil.copymode(src, dst)
+                    owned.append(rel)
+                elif rel in self_owned:
+                    owned.append(rel)
+                continue
 
-    for dirpath, _dirnames, filenames in os.walk(staged_root):
-        rel_dir = Path(dirpath).relative_to(staged_root)
-        if str(rel_dir) != ".":
-            installed.append("/" + str(rel_dir).replace(os.sep, "/"))
-        for fn in filenames:
-            staged_file = Path(dirpath) / fn
-            rel = staged_file.relative_to(staged_root)
-            rel_str = "/" + str(rel).replace(os.sep, "/")
-            installed.append(rel_str)
-            target = target_root / rel
-
-            if staged_file.is_symlink():
-                # Symlinks (e.g. GNU units' intentionally dangling data
-                # links, see _copy_entry's docstring) are preserved as-is
-                # and never subject to config-hash comparison -- that
-                # requires reading file content, which a dangling link
-                # doesn't have.
-                target.parent.mkdir(parents=True, exist_ok=True)
-                _copy_entry(staged_file, target)
-            elif rel_str in config_files:
-                current_hash = _file_sha256_or_none(target)
-                recorded_hash = old_config_hashes.get(rel_str)
-                if current_hash is None or current_hash == recorded_hash:
-                    target.parent.mkdir(parents=True, exist_ok=True)
-                    _copy_entry(staged_file, target)
-                    new_hashes[rel_str] = sha256_of(staged_file)
+            owned.append(rel)
+            if kind == "symlink":
+                symlinks.append(rel)
+                _copy_entry(src, dst)
+            elif rel in config_files:
+                current = _file_sha256_or_none(dst)
+                recorded = old_hashes.get(rel)
+                if current is None or recorded is None or current == recorded:
+                    _copy_entry(src, dst)
+                    new_hashes[rel] = sha256_of(src)
                 else:
-                    new_path = target.with_name(target.name + ".alpnew")
-                    new_path.parent.mkdir(parents=True, exist_ok=True)
-                    _copy_entry(staged_file, new_path)
-                    alpnew.append(rel_str)
-                    # recorded_hash intentionally left unchanged -- the
-                    # user's on-disk file is still "modified" next upgrade.
+                    _copy_entry(src, dst.with_name(dst.name + ".alpnew"))
+                    new_hashes[rel] = recorded  # still "user-modified" next time
+                    alpnew.append(rel)
             else:
-                target.parent.mkdir(parents=True, exist_ok=True)
-                _copy_entry(staged_file, target)
+                _copy_entry(src, dst)
+    except OSError as exc:
+        raise AlpError(
+            f"Dosya kopyalanırken hata: {exc}. İşlem yarıda kaldı; veritabanı "
+            "güncellenmedi, sistemde bu paketin dosyalarının bir kısmı yazılmış olabilir."
+        ) from exc
+    return MergeResult(installed=sorted(owned), symlinks=sorted(symlinks), config_hashes=new_hashes, alpnew=sorted(alpnew))
 
-    return MergeResult(installed=sorted(installed), config_hashes=new_hashes, alpnew=sorted(alpnew))
+
+def _remove_owned_paths(root: Path, rel_paths, record: dict, dry_run: bool) -> None:
+    """Delete paths a package owns, deepest-first (reverse string sort: an
+    ancestor is always a string prefix of its descendants). Shared by
+    remove_package() and upgrade's dropped-file cleanup.
+
+      - Protected system directories and alp's own state are never touched.
+      - A symlink that points to a directory is only removed if the package
+        recorded it as its own symlink (old-format records listed every
+        directory, including e.g. /lib on LFS).
+      - A user-modified config file is kept as "<path>.alpsave" (pacman's
+        .pacsave, see design/config-protection.md §6).
+      - Directories are removed only when empty.
+    """
+    config_files = set(record.get("config_files", []))
+    config_hashes = record.get("config_hashes", {})
+    own_symlinks = set(record.get("symlinks", []))
+    for rel in sorted(rel_paths, reverse=True):
+        if _is_protected(rel):
+            continue
+        target = root / rel.lstrip("/")
+        if not os.path.lexists(target):
+            continue
+        if target.is_symlink() and target.is_dir() and rel not in own_symlinks:
+            continue
+        if rel in config_files and target.is_file() and not target.is_symlink():
+            if sha256_of(target) != config_hashes.get(rel):
+                save_path = target.with_name(target.name + ".alpsave")
+                if dry_run:
+                    print(f"[dry-run] {target} -> {save_path} (değiştirilmiş, kaydediliyor)")
+                else:
+                    os.replace(target, save_path)
+                    print(f"Değiştirilmiş yapılandırma korundu: {save_path}")
+                continue
+        if dry_run:
+            print(f"[dry-run] rm {target}")
+            continue
+        try:
+            if target.is_symlink() or target.is_file():
+                target.unlink()
+            elif target.is_dir() and not any(target.iterdir()):
+                target.rmdir()
+        except OSError as exc:
+            print(f"uyarı: {target} kaldırılamadı: {exc}", file=sys.stderr)
 
 
 def _check_recipe_requirements(recipe: dict) -> list[str]:
@@ -439,7 +606,10 @@ def _require_recipe_dependencies(recipe: dict) -> None:
 # Method 1: System Build Recipes
 # --------------------------------------------------------------------------
 
-def install_recipe(paths: Paths, entry: dict, index_dir: Path, dry_run: bool) -> dict:
+def install_recipe(
+    paths: Paths, entry: dict, index_dir: Path, dry_run: bool,
+    db: dict | None = None, pkg_name: str | None = None,
+) -> dict:
     recipe_path = index_dir / entry["recipe"]
     with open(recipe_path, "r", encoding="utf-8") as f:
         recipe = json.load(f)
@@ -506,13 +676,13 @@ def install_recipe(paths: Paths, entry: dict, index_dir: Path, dry_run: bool) ->
             log.write(f"$ {' '.join(step)}\n")
             subprocess.run(step, cwd=src_dir, check=True, stdout=log, stderr=subprocess.STDOUT)
 
-    installed_files = _merge_destdir(destdir, paths.root, dry_run=False)
     config_files = set(recipe.get("config_files", []))
-    config_hashes = {
-        rel: sha256_of(paths.root / rel.lstrip("/"))
-        for rel in config_files
-        if rel in installed_files
-    }
+    db = db if db is not None else load_db(paths)
+    merged = _merge_staged(
+        destdir, paths.root,
+        config_files=config_files, old_record=None,
+        other_owners=_other_owners(db, exclude=pkg_name or recipe["name"]),
+    )
 
     return {
         "name": recipe["name"],
@@ -523,19 +693,23 @@ def install_recipe(paths: Paths, entry: dict, index_dir: Path, dry_run: bool) ->
         "installed_by": f"alp/{ALP_VERSION}",
         "source": {"url": recipe["source_url"], "sha256": recipe["sha256"], "recipe": entry["recipe"]},
         "build": {"log_path": str(log_path)},
-        "files": installed_files,
+        "files": merged.installed,
+        "symlinks": merged.symlinks,
         "config_files": sorted(config_files),
-        "config_hashes": config_hashes,
+        "config_hashes": merged.config_hashes,
         "flatpak_ref": None,
     }
 
 
 # --------------------------------------------------------------------------
 # Upgrade: recipe/core only (flatpak manages its own updates, see
-# design/config-protection.md §8). Config-aware -- see _config_aware_merge().
+# design/config-protection.md §8). Config-aware -- see _merge_staged().
 # --------------------------------------------------------------------------
 
-def upgrade_recipe(paths: Paths, entry: dict, index_dir: Path, old_record: dict, dry_run: bool) -> dict:
+def upgrade_recipe(
+    paths: Paths, entry: dict, index_dir: Path, old_record: dict, dry_run: bool,
+    db: dict | None = None, pkg_name: str | None = None,
+) -> dict:
     recipe_path = index_dir / entry["recipe"]
     with open(recipe_path, "r", encoding="utf-8") as f:
         recipe = json.load(f)
@@ -580,8 +754,13 @@ def upgrade_recipe(paths: Paths, entry: dict, index_dir: Path, old_record: dict,
             log.write(f"$ {' '.join(step)}\n")
             subprocess.run(step, cwd=src_dir, check=True, stdout=log, stderr=subprocess.STDOUT)
 
-    merged = _config_aware_merge(destdir, paths.root, config_files, old_record.get("config_hashes", {}))
-    _drop_stale_files(paths.root, old_record.get("files", []), merged.installed, dry_run=False)
+    db = db if db is not None else load_db(paths)
+    other_owners = _other_owners(db, exclude=pkg_name or recipe["name"])
+    merged = _merge_staged(
+        destdir, paths.root,
+        config_files=config_files, old_record=old_record, other_owners=other_owners,
+    )
+    _drop_stale_files(paths.root, old_record, merged.installed, other_owners)
     _warn_about_alpnew(merged.alpnew)
 
     return {
@@ -594,18 +773,21 @@ def upgrade_recipe(paths: Paths, entry: dict, index_dir: Path, old_record: dict,
         "source": {"url": recipe["source_url"], "sha256": recipe["sha256"], "recipe": entry["recipe"]},
         "build": {"log_path": str(log_path)},
         "files": merged.installed,
+        "symlinks": merged.symlinks,
         "config_files": sorted(config_files),
         "config_hashes": merged.config_hashes,
         "flatpak_ref": None,
     }
 
 
-def _drop_stale_files(root: Path, old_files: list[str], new_files: list[str], dry_run: bool) -> None:
-    """Remove files/dirs the old version owned that the new version no
-    longer ships (e.g. a renamed binary, a dropped doc file)."""
-    dropped = sorted(set(old_files) - set(new_files))
+def _drop_stale_files(root: Path, old_record: dict, new_files: list[str], other_owners: dict[str, str]) -> None:
+    """Remove what the old version owned that the new version no longer
+    ships (a renamed binary, a dropped doc file), with the same safety rules
+    as removal -- including .alpsave for a user-modified config file the new
+    version dropped. Paths another package owns are left alone."""
+    dropped = set(old_record.get("files", [])) - set(new_files) - set(other_owners)
     if dropped:
-        _remove_tracked_paths(root, dropped, dry_run)
+        _remove_owned_paths(root, dropped, old_record, dry_run=False)
 
 
 def _warn_about_alpnew(alpnew: list[str]) -> None:
@@ -659,7 +841,24 @@ def remove_flatpak(ref: str, dry_run: bool) -> None:
 # Method 3: Core OS Packages (prebuilt alpbahOS tarballs)
 # --------------------------------------------------------------------------
 
-def install_core(paths: Paths, entry: dict, index_dir: Path, dry_run: bool) -> dict:
+def _stage_core_archive(paths: Paths, entry: dict, index_dir: Path, prefix: str) -> Path:
+    """Download + verify a core archive and extract it into a private
+    staging dir (never straight into root, so a conflicting or half-read
+    archive can't leave untracked files in the system)."""
+    name, version = entry["name"], entry["version"]
+    archive = paths.cache_dir / f"{name}-{version}.tar.gz"
+    fetch(resolve_source_url(entry["url"], index_dir), archive, entry["sha256"])
+    staged = paths.cache_dir / f"{prefix}-stage-{name}-{version}"
+    if staged.exists():
+        shutil.rmtree(staged)
+    safe_extract(archive, staged)
+    return staged
+
+
+def install_core(
+    paths: Paths, entry: dict, index_dir: Path, dry_run: bool,
+    db: dict | None = None, pkg_name: str | None = None,
+) -> dict:
     name, version = entry["name"], entry["version"]
     source_url = resolve_source_url(entry["url"], index_dir)
 
@@ -680,16 +879,17 @@ def install_core(paths: Paths, entry: dict, index_dir: Path, dry_run: bool) -> d
             "flatpak_ref": None,
         }
 
-    archive = paths.cache_dir / f"{name}-{version}.tar.gz"
-    fetch(source_url, archive, entry["sha256"])
-    names = safe_extract(archive, paths.root)
-    files = sorted("/" + n for n in names)
     config_files = set(entry.get("config_files", []))
-    config_hashes = {
-        rel: sha256_of(paths.root / rel.lstrip("/"))
-        for rel in config_files
-        if rel in files
-    }
+    db = db if db is not None else load_db(paths)
+    staged = _stage_core_archive(paths, entry, index_dir, "install")
+    try:
+        merged = _merge_staged(
+            staged, paths.root,
+            config_files=config_files, old_record=None,
+            other_owners=_other_owners(db, exclude=pkg_name or name),
+        )
+    finally:
+        shutil.rmtree(staged, ignore_errors=True)
 
     return {
         "name": name,
@@ -699,32 +899,37 @@ def install_core(paths: Paths, entry: dict, index_dir: Path, dry_run: bool) -> d
         "installed_at": _now(),
         "installed_by": f"alp/{ALP_VERSION}",
         "source": {"url": entry["url"], "sha256": entry["sha256"]},
-        "files": files,
+        "files": merged.installed,
+        "symlinks": merged.symlinks,
         "config_files": sorted(config_files),
-        "config_hashes": config_hashes,
+        "config_hashes": merged.config_hashes,
         "flatpak_ref": None,
     }
 
 
-def upgrade_core(paths: Paths, entry: dict, index_dir: Path, old_record: dict, dry_run: bool) -> dict:
+def upgrade_core(
+    paths: Paths, entry: dict, index_dir: Path, old_record: dict, dry_run: bool,
+    db: dict | None = None, pkg_name: str | None = None,
+) -> dict:
     name, version = entry["name"], entry["version"]
-    source_url = resolve_source_url(entry["url"], index_dir)
     config_files = set(entry.get("config_files", []))
 
     if dry_run:
+        source_url = resolve_source_url(entry["url"], index_dir)
         print(f"[dry-run] {name} yükseltilecekti: {old_record.get('version')} -> {version} ({source_url})")
         return {**old_record, "version": version, "status": "would-upgrade"}
 
-    archive = paths.cache_dir / f"{name}-{version}.tar.gz"
-    fetch(source_url, archive, entry["sha256"])
-
-    staged = paths.cache_dir / f"upgrade-stage-{name}-{version}"
-    if staged.exists():
-        shutil.rmtree(staged)
-    safe_extract(archive, staged)
-
-    merged = _config_aware_merge(staged, paths.root, config_files, old_record.get("config_hashes", {}))
-    _drop_stale_files(paths.root, old_record.get("files", []), merged.installed, dry_run=False)
+    db = db if db is not None else load_db(paths)
+    other_owners = _other_owners(db, exclude=pkg_name or name)
+    staged = _stage_core_archive(paths, entry, index_dir, "upgrade")
+    try:
+        merged = _merge_staged(
+            staged, paths.root,
+            config_files=config_files, old_record=old_record, other_owners=other_owners,
+        )
+    finally:
+        shutil.rmtree(staged, ignore_errors=True)
+    _drop_stale_files(paths.root, old_record, merged.installed, other_owners)
     _warn_about_alpnew(merged.alpnew)
 
     return {
@@ -736,6 +941,7 @@ def upgrade_core(paths: Paths, entry: dict, index_dir: Path, old_record: dict, d
         "installed_by": f"alp/{ALP_VERSION}",
         "source": {"url": entry["url"], "sha256": entry["sha256"]},
         "files": merged.installed,
+        "symlinks": merged.symlinks,
         "config_files": sorted(config_files),
         "config_hashes": merged.config_hashes,
         "flatpak_ref": None,
@@ -754,30 +960,9 @@ def remove_package(paths: Paths, db: dict, name: str, dry_run: bool) -> None:
     if pkg["method"] == "flatpak":
         remove_flatpak(pkg["flatpak_ref"], dry_run)
     else:
-        config_files = set(pkg.get("config_files", []))
-        config_hashes = pkg.get("config_hashes", {})
-        plain_files = []
-        for rel in pkg.get("files", []):
-            if rel not in config_files:
-                plain_files.append(rel)
-                continue
-            target = paths.root / rel.lstrip("/")
-            current_hash = _file_sha256_or_none(target)
-            recorded_hash = config_hashes.get(rel)
-            if current_hash is not None and current_hash != recorded_hash:
-                # user modified this config file -- save it instead of
-                # deleting (pacman's .pacsave equivalent, see
-                # design/config-protection.md §6).
-                save_path = target.with_name(target.name + ".alpsave")
-                if dry_run:
-                    print(f"[dry-run] {target} -> {save_path} (değiştirilmiş, kaydediliyor)")
-                else:
-                    shutil.copyfile(target, save_path)
-                    target.unlink()
-                    print(f"Değiştirilmiş yapılandırma korundu: {save_path}")
-            else:
-                plain_files.append(rel)
-        _remove_tracked_paths(paths.root, plain_files, dry_run)
+        other_owners = _other_owners(db, exclude=name)
+        ours = [rel for rel in pkg.get("files", []) if rel not in other_owners]
+        _remove_owned_paths(paths.root, ours, pkg, dry_run)
 
     if not dry_run:
         del db["packages"][name]
@@ -876,15 +1061,29 @@ def _resolve_install_order(index: dict, target: str, already_installed: set[str]
     return order
 
 
-def _install_one(paths: Paths, name: str, entry: dict, index_dir: Path, dry_run: bool) -> dict:
+def _install_one(paths: Paths, name: str, entry: dict, index_dir: Path, dry_run: bool, db: dict) -> dict:
     method = entry["method"]
     if method == "recipe":
-        return install_recipe(paths, entry, index_dir, dry_run)
+        return install_recipe(paths, entry, index_dir, dry_run, db=db, pkg_name=name)
     if method == "flatpak":
         return install_flatpak(entry, dry_run)
     if method == "core":
-        return install_core(paths, entry, index_dir, dry_run)
+        return install_core(paths, entry, index_dir, dry_run, db=db, pkg_name=name)
     raise AlpError(f"Tanımsız kurulum yöntemi: {method!r}")
+
+
+def _upgrade_one(paths: Paths, name: str, entry: dict, index_dir: Path, old: dict, dry_run: bool, db: dict) -> dict:
+    method = entry["method"]
+    if method == "recipe":
+        return upgrade_recipe(paths, entry, index_dir, old, dry_run, db=db, pkg_name=name)
+    if method == "core":
+        return upgrade_core(paths, entry, index_dir, old, dry_run, db=db, pkg_name=name)
+    if method == "flatpak":
+        raise AlpError(
+            "flatpak yöntemi 'alp upgrade' ile yükseltilmez; flatpak kendi güncellemesini "
+            "yönetir (bkz. design/config-protection.md §8). 'flatpak update' kullanın."
+        )
+    raise AlpError(f"Tanımsız yöntem: {method!r}")
 
 
 def cmd_install(args: argparse.Namespace, paths: Paths, index: dict, index_dir: Path) -> int:
@@ -910,7 +1109,14 @@ def cmd_install(args: argparse.Namespace, paths: Paths, index: dict, index_dir: 
         tag = "[dry-run] " if args.dry_run else ""
         for name in order:
             entry = index["entries"][name]
-            record = _install_one(paths, name, entry, index_dir, args.dry_run)
+            old = db["packages"].get(name)
+            if old is not None and entry["method"] in ("recipe", "core"):
+                # --reinstall of an installed package: same config-aware path
+                # as upgrade, so modified configs get .alpnew instead of being
+                # overwritten and files the package no longer ships are dropped.
+                record = _upgrade_one(paths, name, entry, index_dir, old, args.dry_run, db)
+            else:
+                record = _install_one(paths, name, entry, index_dir, args.dry_run, db)
             if not args.dry_run:
                 db["packages"][name] = record
                 save_db(paths, db)
@@ -930,18 +1136,7 @@ def cmd_upgrade(args: argparse.Namespace, paths: Paths, index: dict, index_dir: 
         if entry is None:
             raise AlpError(f"Bilinmeyen paket: {args.name!r}")
 
-        method = entry["method"]
-        if method == "recipe":
-            record = upgrade_recipe(paths, entry, index_dir, old, args.dry_run)
-        elif method == "core":
-            record = upgrade_core(paths, entry, index_dir, old, args.dry_run)
-        elif method == "flatpak":
-            raise AlpError(
-                "flatpak yöntemi 'alp upgrade' ile yükseltilmez; flatpak kendi güncellemesini "
-                "yönetir (bkz. design/config-protection.md §8). 'flatpak update' kullanın."
-            )
-        else:
-            raise AlpError(f"Tanımsız yöntem: {method!r}")
+        record = _upgrade_one(paths, args.name, entry, index_dir, old, args.dry_run, db)
 
         if not args.dry_run:
             db["packages"][args.name] = record

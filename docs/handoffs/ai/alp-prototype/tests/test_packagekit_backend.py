@@ -24,6 +24,8 @@ from __future__ import annotations
 
 import io
 import json
+import os
+import socket
 import sys
 import tarfile
 from pathlib import Path
@@ -105,7 +107,9 @@ def test_alp_backend_error_detects_lock_contention(env):
     root = env["root"]
     lock_file = root / "var/lib/alp/alp.lock"
     lock_file.parent.mkdir(parents=True, exist_ok=True)
-    lock_file.write_text("pid=999999 ts=fake\n", encoding="utf-8")
+    # A live holder (this pytest process): a dead pid would now, correctly,
+    # be cleared as a stale lock on POSIX instead of reported as contention.
+    lock_file.write_text(f"pid={os.getpid()} host={socket.gethostname()} ts=fake\n", encoding="utf-8")
     try:
         with pytest.raises(pkb.AlpBackendError) as excinfo:
             pkb.alp_remove(ALP_PY, root, env["index"], "theme")
