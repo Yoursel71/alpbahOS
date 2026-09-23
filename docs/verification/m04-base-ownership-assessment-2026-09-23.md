@@ -19,14 +19,15 @@ sudo -n stat -c '%n %s bytes %y' /mnt/lfs/var/lib/alp/db.json
 Results:
 
 - `db.json` contains `"packages": {}` (83 bytes; updated 2026-09-23 03:35:56 UTC). It tracks no installed base package.
-- Nine `install_manifest.txt` files exist under `/mnt/lfs/sources`: CMake, QtBase, QtPositioning, QtTools, QtSpeech, QtLocation, QtSvg, QtMultimedia, and QCoro. They belong to later BLFS/desktop builds and do not establish ownership for the LFS base packages.
+- The original `find -maxdepth 3` scan reported nine `install_manifest.txt` files: CMake, QtBase, QtPositioning, QtTools, QtSpeech, QtLocation, QtSvg, QtMultimedia, and QCoro. A later scan of deeper source trees found 88 under `/mnt/lfs/sources/kde`, 2 under `/mnt/lfs/sources/qt`, and 6 under `/mnt/lfs/sources/qt-build`, with additional manifests for Qt5Compat, QtSensors, Double Conversion, and QCoro. These are BLFS/desktop builds and do not establish ownership for the LFS base packages.
 - The regular filesystem owner (`root:root`, etc.) is not package ownership. It cannot be used to reconstruct which package installed a path.
+- Rechecked during the M05 continuation: live `/mnt/lfs/var/lib/alp/db.json` still has an empty `packages` object, `/mnt/lfs/usr/lib/alp/alp.py` has expected SHA-256 `7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132`, Builder `/` has 25 GiB free, and `/sys/block/nbd0` is absent. No image was attached or modified for this check.
 
 ## M04 status and next record method
 
 Do not backfill the LFS base package database from current file owners or guess from package names. For future package installs, capture each package's staged install tree or a complete install manifest before merging into `/mnt/lfs`; record package/version/source checksum, relative path, file type, mode, uid/gid, symlink target, and SHA-256 for regular files. Existing base packages can be attributed only when a preserved install manifest/log proves the exact path set; otherwise rebuild/reinstall them through the capture path before claiming M04 ownership coverage.
 
-M04's ownership-record exit condition remains open. This assessment is diagnostic evidence, not a package ownership manifest.
+M04's ownership-record exit condition remains open. Existing manifests are for BLFS/desktop packages; no preserved complete manifests for the installed LFS base were found, and the empty package database cannot safely be populated from filesystem owners. Closing M04 requires a controlled, package-by-package base reinstall/rebuild with staged install trees captured before merge into `/mnt/lfs`, or discovery of equivalent complete historical install manifests. This assessment is diagnostic evidence, not a package ownership manifest.
 
 ## Staged-install capture utility
 
