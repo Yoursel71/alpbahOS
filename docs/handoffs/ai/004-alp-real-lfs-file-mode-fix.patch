@@ -1,0 +1,10 @@
+--- a/alp.py
++++ b/alp.py
+@@
+     if src.is_symlink():
+         if dst.exists() or dst.is_symlink():
+             dst.unlink()
+         os.symlink(os.readlink(src), dst)
+     else:
+-        shutil.copyfile(src, dst)
++        shutil.copy2(src, dst)
