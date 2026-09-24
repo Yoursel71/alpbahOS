@@ -99,7 +99,7 @@ ssh -i C:\Users\thewo\.ssh\claude_alpbahos_m2 sa@172.28.162.172
 
 - LFS 12.4-systemd x86_64 temel sistem ve Linux `6.16.1-alpbahOS` açılıyor.
 - Hyper-V Gen1 ve Gen2 boot-to-login kanıtları var; M2 Gen1 DHCP/reboot/SSH kayıtları tarihsel test kanıtıdır. Gen1 VM kaydı silindi; güncel M2 test VM'i Gen2'dir.
-- BLFS TLS/CA, D-Bus, PAM/logind düzeltmeleri, polkit test yolu, Mesa softpipe EGL/GLES smoke testi tamamlandı. Guest'te `snd-aloop` ile ALSA sanal PCM iki yönlü geçti; PipeWire aygıt keşfi geçti fakat PipeWire→ALSA PCM roundtrip'i geçmedi (ayrıntı §15).
+- BLFS TLS/CA, D-Bus, PAM/logind düzeltmeleri, polkit test yolu, Mesa softpipe EGL/GLES smoke testi tamamlandı. Guest'te `snd-aloop` ile ALSA sanal PCM iki yönlü geçti. 24 Eylül ek testinde PipeWire pro-audio profili ve adlandırılmış karşı uçla PipeWire→ALSA sanal roundtrip geçti; fiziksel ses hâlâ sınanmadı (ayrıntı §15).
 - Qt 6.9.2, KF6/Plasma 6.4.4 bileşenlerinin önemli kısmı, KWin Wayland ve Plasma Workspace derlenip kuruldu.
 - Türkçe Q keymap derlemesi geçti.
 - `alp` ile gerçek LFS chroot'ta htop kur/list/çalıştır/kaldır döngüsü geçti.
@@ -175,5 +175,5 @@ Uzun yeniden keşif, tekrar tekrar aynı hash kontrolü veya kanıtsız “M2 ta
 
 - VM `alpbahOS-M2-SSH-Gen2-Audio`, Generation 2, MAC `00-15-5D-00-02-0B`, en son DHCP `172.28.174.20` (DHCP değişebilir). Çalışma diski `F:\alpbahOS-build\vms\alpbahOS-M2-SSH-Gen2-Audio-v2\alpbahOS-M2-SSH-Gen2-Audio-v2.vhdx`.
 - Artifact `F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen2-audio-test-v2.vhdx`, SHA-256 `2491bbecbd6f6605df2d595a6aa8b0c0417b222ece6a3ebd2e7d81757e678898`; artifact ve working copy hash'i eşleşti. Root PARTUUID `1238a374-f5e6-4277-b1b4-18682e5474cc`.
-- `snd-aloop` boot'ta yüklendi; `/proc/asound/cards` ve `aplay -l` Loopback'i gösterdi; `sa` `users,audio,wheel` gruplarında. ALSA loopback iki yönlü sinüs capture ile geçti. PipeWire 1.4.7/WirePlumber 0.5.10 Loopback device, sink 45/source 46 buldu; PipeWire sink'e WAV playback exit 0, fakat ALSA opposite-end capture 144000 frame boyunca sessiz kaldı ve I/O error ile bitti. PipeWire end-to-end audio pass sayma. Fiziksel audio cihazı yok.
+- `snd-aloop` boot'ta yüklendi; `/proc/asound/cards` ve `aplay -l` Loopback'i gösterdi; `sa` `users,audio,wheel` gruplarında. ALSA loopback iki yönlü sinüs capture ile geçti. İlk PipeWire testi otomatik analog-stereo profilinde sessiz kaldı; M06 doğrulama dosyasındaki sonraki test, `pro-audio` profili ve `alsa_input.platform-snd_aloop.0.pro-input-1` adıyla seçilen karşı endpoint üzerinden 440 Hz PipeWire playback/capture roundtrip'i geçti. Capture: 480,000 S16 örnekten 456,932 nonzero, peak 16,000, RMS 11,145.16; test logu `docs/verification/m06-pipewire-proaudio-retest-2026-09-24.log`. Bu yalnız sanal PCM kanıtıdır; fiziksel audio cihazı yok.
 - Ayrıntılı kanıt: `docs/verification/m06-gen2-audio-2026-09-24.md`. M07 tty login hedefi DBus VM `00-15-5D-00-02-0A`; Audio VM ile karıştırma.
