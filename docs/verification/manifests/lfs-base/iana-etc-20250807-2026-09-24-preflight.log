@@ -1,0 +1,4 @@
+MISMATCH /etc
+  expected: {"gid": 0, "mode": 493, "path": "/etc", "type": "directory", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/etc", "type": "directory", "uid": 1001}
+package=iana-etc version=20250807 entries=3 matched=2 mismatched=1
