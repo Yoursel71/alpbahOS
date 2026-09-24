@@ -21,8 +21,9 @@ export function boxGeo(x0, y0, z0, x1, y1, z1, texScale = 4) {
 }
 
 export class Door {
-  constructor(level, id, x0, y0, z0, x1, y1, z1, { open = false, dir = 'up', travel = null, mat = 'door' } = {}) {
+  constructor(level, id, x0, y0, z0, x1, y1, z1, { open = false, dir = 'up', travel = null, mat = 'door', speed = 0.9 } = {}) {
     this.level = level;
+    this.openSpeed = speed;
     this.id = id;
     this.box = [x0, y0, z0, x1, y1, z1];
     this.dir = dir;
@@ -75,7 +76,7 @@ export class Door {
 
   update(dt) {
     if (this.t === this.target) return;
-    const speed = this.target > this.t ? 0.9 : 3.0;
+    const speed = this.target > this.t ? this.openSpeed : 3.0;
     if (this.target > this.t) this.t = Math.min(this.target, this.t + dt * speed);
     else this.t = Math.max(this.target, this.t - dt * speed);
     this.apply();
@@ -433,7 +434,33 @@ export class Level {
     return pk;
   }
 
+  // V1'in üssü: bölüm başlangıç noktasının üstünde havada asılı küçük metal oda. Oyuncu yerdeki
+  // kapağın üstünde doğar; alarm çalar, kapak açılır ve bölüme düşer. (noBase: kullanılmaz)
+  buildBase() {
+    const [x, y, z] = this.spawn.pos;
+    const R = 4.5, H = 4.2, h = 1.7;
+    // zemin (ortada kapak deliği)
+    this.box(x - R, y - 0.6, z - R, x + R, y, z - h, 'metal');
+    this.box(x - R, y - 0.6, z + h, x + R, y, z + R, 'metal');
+    this.box(x - R, y - 0.6, z - h, x - h, y, z + h, 'metal');
+    this.box(x + h, y - 0.6, z - h, x + R, y, z + h, 'metal');
+    // duvarlar ve tavan
+    this.box(x - R - 0.4, y - 0.6, z - R - 0.4, x + R + 0.4, y + H, z - R, 'dark');
+    this.box(x - R - 0.4, y - 0.6, z + R, x + R + 0.4, y + H, z + R + 0.4, 'dark');
+    this.box(x - R - 0.4, y - 0.6, z - R, x - R, y + H, z + R, 'dark');
+    this.box(x + R, y - 0.6, z - R, x + R + 0.4, y + H, z + R, 'dark');
+    this.box(x - R - 0.4, y + H, z - R - 0.4, x + R + 0.4, y + H + 0.5, z + R + 0.4, 'metal');
+    // kapak çevresinde kırmızı uyarı şeritleri, duvarda pencere çıtaları
+    for (const [a0, b0, a1, b1] of [[-h - 0.25, -h - 0.25, h + 0.25, -h], [-h - 0.25, h, h + 0.25, h + 0.25], [-h - 0.25, -h, -h, h], [h, -h, h + 0.25, h]]) {
+      this.box(x + a0, y, z + b0, x + a1, y + 0.03, z + b1, 'glow', { solid: false, texScale: 1 });
+    }
+    for (const zz of [-R + 0.02, R - 0.02]) this.box(x - 2.4, y + 1.6, z + zz - 0.02, x + 2.4, y + 1.75, z + zz + 0.02, 'glow', { solid: false, texScale: 1 });
+    this.door('baseHatch', x - h, y - 0.5, z - h, x + h, y, z + h, { open: false, dir: 'down', travel: 2.5, mat: 'metal', speed: 3.5 });
+    this.lamps.push({ pos: new THREE.Vector3(x, y + H - 0.8, z), color: 0xff3020, power: 1.4 });
+  }
+
   finalize() {
+    if (!this.noBase && this.spawn.pos[1] - this.spawn.checkpoint[1] > 10) this.buildBase();
     for (const [mat, geos] of this.buckets) {
       const merged = mergeGeometries(geos, false);
       const mesh = new THREE.Mesh(merged, this.mats[mat]);

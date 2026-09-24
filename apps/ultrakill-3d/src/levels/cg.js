@@ -69,6 +69,7 @@ export function buildCyberGrind(L) {
     hemiSky: 0xb8c8ff, hemiGround: 0x301040, hemi: 2.2, ambient: 0x404070, sun: 0xa8b8ff,
   };
   L.endless = true;
+  L.noBase = true;
   L.spawn = { pos: [0, 0.1, 27], yaw: 0, pitch: -0.05, checkpoint: [0, 0, 27] };
   L.menuCam = { target: [0, 2, 0], radius: 20, height: 9 };
   L.decor = [['drone', [-4, 5, -4], 0.4], ['streetcleaner', [4, 0, 2], -0.5], ['v2', [0, 0, -6], 0]];

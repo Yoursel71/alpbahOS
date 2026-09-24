@@ -273,7 +273,8 @@ const as = await page.evaluate(() => {
     const o = p.eyePos();
     g.addProjectile(new Proj(g, { pos: o.clone().add(new o.constructor(0, 0, -12)), vel: new o.constructor(0, 0, 22), radius: 0.35, damage: 10 }));
     let slow = 0, cue = false;
-    for (let i = 0; i < 40; i++) { step(1); slow = Math.max(slow, g.slowT || 0); if (document.getElementById('parrycue').classList.contains('on')) cue = true; }
+    for (let i = 0; i < 40; i++) { step(1); slow = Math.max(slow, g.slowT || 0); }
+    cue = !!document.getElementById('parrycue');
     return { slow: +slow.toFixed(2), cue };
   };
   const strong = run(2), off = run(0);
@@ -296,7 +297,7 @@ const as = await page.evaluate(() => {
   S.coinAssist = 1;
   return { strong, off, cs, c0 };
 });
-check('parry yardımı (güçlü): yaklaşan kürede ağır çekim + PARRY işareti; kapalıyken yok', as.strong.slow > 0 && as.strong.cue && as.off.slow === 0, JSON.stringify(as));
+check('parry yardımı (güçlü): yaklaşan kürede ağır çekim, ekranda "PARRY!" yazısı yok; kapalıyken ağır çekim yok', as.strong.slow > 0 && !as.strong.cue && as.off.slow === 0, JSON.stringify(as));
 check('para yardımı: güçlüde sapmış atış paraya yönelir, kapalıyken ıskalar', as.cs.hit && !as.c0.hit, JSON.stringify(as));
 
 // 11) Kol animasyonları: yumruk, para, duvar, kayma bacağı

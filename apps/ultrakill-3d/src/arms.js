@@ -146,15 +146,24 @@ export class ViewArms {
     this.coinMesh.visible = false;
     weapons.scene.add(this.coinMesh);
     this.act = null; // { type, t, dur, side }
+    // parry şok halkası (görünür kol sahnesinde, yumruğun önünde)
+    this.ring = new THREE.Mesh(new THREE.RingGeometry(0.1, 0.13, 32), new THREE.MeshBasicMaterial({ color: 0xbfe8ff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false }));
+    this.ring.visible = false;
+    this.ringT = 1;
+    weapons.scene.add(this.ring);
+    this.flare = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.game.tex.star, color: 0xffffff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false }));
+    this.flare.visible = false;
+    weapons.scene.add(this.flare);
     this.glow = 0;
     this.legK = 0;
   }
 
   // Eylem başlat: 'punch' | 'coin' | 'hook' | 'wall' | 'slam' | 'slamHit' | 'dash'
   play(type, opts = {}) {
-    const dur = { punch: 0.42, coin: 0.36, hook: 0.3, wall: 0.3, slam: 9, slamHit: 0.3, dash: 0.24 }[type];
-    // yumruk her şeyi keser; diğerleri yumruğu kesmez
-    if (this.act && this.act.type === 'punch' && type !== 'punch' && this.act.t < this.act.dur) return;
+    const dur = { punch: 0.42, coin: 0.36, hook: 0.3, wall: 0.3, slam: 9, slamHit: 0.3, dash: 0.24, parry: 0.62 }[type];
+    // yumruk/parry her şeyi keser; diğerleri onları kesmez
+    if (this.act && (this.act.type === 'punch' || this.act.type === 'parry') && type !== 'punch' && type !== 'parry' && this.act.t < this.act.dur) return;
+    if (type === 'parry') { this.ring.visible = true; this.ringT = 0; }
     this.act = { type, t: 0, dur, ...opts };
   }
 
@@ -182,7 +191,24 @@ export class ViewArms {
     const p = this.game.player;
     for (const k in this.models) this.models[k].visible = false;
     this.coinMesh.visible = false;
-    this.glow = Math.max(0, this.glow - dt * 3);
+    this.glow = Math.max(0, this.glow - dt * 2.2);
+    // parry halkası: yumruğun önünden büyüyerek söner
+    if (this.ring.visible) {
+      this.ringT += dt;
+      const k = this.ringT / 0.4;
+      if (k >= 1) { this.ring.visible = false; this.flare.visible = false; }
+      else {
+        const s = 0.6 + k * 5;
+        this.ring.position.set(-0.04, -0.08, -0.95);
+        this.ring.scale.setScalar(s);
+        this.ring.material.opacity = (1 - k) * 0.9;
+        this.flare.visible = true;
+        this.flare.position.set(-0.05, -0.1, -0.9);
+        this.flare.scale.setScalar(0.5 + (1 - k) * 0.9);
+        this.flare.material.opacity = 1 - k;
+        this.flare.material.rotation = k * 2;
+      }
+    }
     // kayarken ayak
     this.legK += ((p.sliding ? 1 : 0) - this.legK) * Math.min(1, dt * 14);
     this.leg.visible = this.legK > 0.03;
@@ -208,6 +234,14 @@ export class ViewArms {
     // pozlar: [x, y, z, rx, ry, rz]; sol kol ekranın sol altından gelir (ry < 0 → ön kol sola-geriye)
     let P = OFF, curl = 1;
     switch (a.type) {
+      case 'parry': {
+        // hızlı ileri itiş + aşırı uzanma, parlayan yumruk titrer, sonra yavaşça çekilir
+        const SUPER = [-0.04, -0.08, -0.86, 0.12, -0.22, 0.05];
+        if (t < 0.04) P = lerpPose(OFF, SUPER, easeOut(t / 0.04));
+        else if (t < 0.3) { P = SUPER.slice(); const j = 0.012 * (1 - (t - 0.04) / 0.26); P[0] += (Math.random() - 0.5) * j; P[1] += (Math.random() - 0.5) * j; P[5] += Math.sin(t * 60) * 0.05; }
+        else P = lerpPose(SUPER, OFF, easeIn((t - 0.3) / 0.32));
+        break;
+      }
       case 'punch': {
         // geri çek → vur → tut → geri dön
         if (t < 0.05) P = lerpPose(OFF, COCK, easeOut(t / 0.05));

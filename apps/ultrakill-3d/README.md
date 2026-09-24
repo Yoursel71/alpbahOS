@@ -56,9 +56,10 @@ Telefonu yatay tut.
   çevresinde ZIPLA / ATIL / KAY-ÇAK / ALT; kanca ve kol butonları yalnız alınınca görünür.
   Terminalin önüne gelince ortada **DÜKKÂN** butonu çıkar. Üstte 1-5 silah, ≡ istatistik,
   ⛶ tam ekran, II duraklat.
-- **Nişan yardımı** (Ayarlar → Dokunmatik): KAPALI / HAFİF (mermi hafif bükülür) / GÜÇLÜ
-  (varsayılan: ateş ya da ALT basılıyken bakış yakındaki düşmana doğru kayar, nişangâh
-  düşmanın üstündeyken bakış yavaşlar).
+- **Nişan yardımı** (Ayarlar → Dokunmatik): KAPALI / HAFİF / GÜÇLÜ (varsayılan). Hedef seçimi
+  yapışkandır (başka düşman belirgin daha iyi değilse değişmez); hedef köşeli kırmızı çerçeveyle
+  gösterilir; nişangâh yakındayken bakış yavaşlar; koşan düşman kısmen takip edilir (güçlüde
+  %85); güçlüde ateş/ALT basılıyken hız sınırlı yumuşak çekim; mermi hedefin üst gövdesine bükülür.
 - Telefonda sade arayüz: menüde bölüm kartları ve hep görünen BAŞLA, ağır efektler kapalı; menü,
   duraklatma, dükkân ve sonuç ekranları daha az kare çizer (pil/ısı). Sonuç ekranına dokunmak
   animasyonu atlar.
@@ -69,7 +70,7 @@ Telefonu yatay tut.
 
 ### Android APK
 
-`dist/ultrakill-3d.apk` (~530 KB, sürüm 1.2) telefona kurulabilir. Uygulama aynı oyunu tam ekran, yatay ve
+`dist/ultrakill-3d.apk` (~545 KB, sürüm 1.3) telefona kurulabilir. Uygulama aynı oyunu tam ekran, yatay ve
 **tamamen çevrimdışı** çalıştıran bir WebView kabuğudur (yazı tipleri de içinde; ağ izni yok).
 Gerekenler: Android 7.0+ ve güncel "Android System WebView" (WebGL2).
 
@@ -82,11 +83,17 @@ Gerekenler: Android 7.0+ ve güncel "Android System WebView" (WebGL2).
 
 ## İçerik
 
+- Bölüm başı: V1 bölümün üstünde havada asılı küçük **üste** doğar; alarm çalar, yerdeki kapak
+  açılır ve bölüme düşer. Bölüm sonu: sonuç ekranı, V1 karanlık bir kuyuda **düşerken** açılır
+  (bölüm temasının renginde tünel, rüzgâr çizgileri; Siber Öğütücü'de üs yoktur)
 - Terminal görünümlü açılış (boot günlüğü), ana menü (`$ ./oyna` komutları, katmanlı bölüm listesi,
   karakter ve zorluk seçimi) ve harf harf yazılan intro; arka plan ASCII shader ile çizilir. Oyun
   içi arayüz (HUD) ekran yüksekliğine göre küçülür, ipucu kutusu nişangâhı kapatmaz
 - Ölüm ekranı: ağır çekim + gri/kırmızı görüntü, karartma, harf harf yazılan terminal satırları,
-  çarpan "ÖLDÜN" başlığı ve yeniden doğuş istemi; ölünce alınan silahlar kaybolmaz
+  **çenesi açılıp çığlık atan piksel kafatası**, çarpan "ÖLDÜN" başlığı ve yeniden doğuş istemi;
+  ölünce alınan silahlar kaybolmaz
+- Hasar alınca: ekran kenarına kan sıçrar ve aşağı akar, saldırının geldiği yönde kırmızı yay
+  belirir, kamera darbeyle itilir
 - PRELUDE: İLK KAN (her bölümün kendi teması, sis/gökyüzü renkleri, sıralama eşikleri ve
   meydan okuması var):
   - **0-1 ATEŞİN İÇİNE**: tutorial kanadı (atılma zıplaması, kayma, duvar sıçraması, çakış
@@ -113,7 +120,8 @@ Gerekenler: Android 7.0+ ve güncel "Android System WebView" (WebGL2).
 - Silahlar (her biri 3 varyant, aynı tuşa tekrar basınca değişir):
   - Revolver: Piercer (şarjlı delici) · Marksman (bozuk para, RICOSHOT) · Sharpshooter (seken ışın)
   - Shotgun: Core Eject · Pump Charge (3. pompada patlama) · Sawed-On (geri dönen testere)
-  - Nailgun: Attractor (mıknatıs) · Overheat (ısıtılmış çivi → yanma) · Sawblade (seken testere)
+  - Nailgun: Attractor (mıknatıs) · Overheat (ısıtılmış çivi → yanma) · Sawblade (seken testere;
+    namlular yerine dönen dişli testereli fırlatıcı, mermi dönen dişli disk)
   - Railcannon: Electric · Screwdriver (delip sürekli hasar) · Malicious (patlama)
   - Rocket Launcher: Freezeframe (roketleri dondur) · S.R.S. Cannon (gülle) · Firestarter (alev)
   - Kollar: Feedbacker (parry) · Knuckleblaster (güçlü yumruk, basılı tut: şok dalgası) · Whiplash
@@ -125,11 +133,18 @@ Gerekenler: Android 7.0+ ve güncel "Android System WebView" (WebGL2).
   - Dükkân fiyatları: Marksman 1.500, Sharpshooter 3.000 · Shotgun 2.000 (+2.000/3.000) · Nailgun
     3.500 (+2.500/3.000) · Railcannon 5.500 (+3.500/4.500) · Rocket 6.500 (+3.500/4.000) ·
     Knuckleblaster 3.000 · Whiplash 2.500 P. Varyant için önce temel silah alınmalı.
+- PARRY görseli: yumruk ekranın ortasına fırlayıp titrer, önünden şok halkası büyür, ekran beyaz
+  ışınlarla patlar, görüş kısa süre daralır; katmanlı metal çınlama + derin darbe sesi. Parry
+  yardımı ağır çekimi korur ama ekrana "PARRY!" yazısı çıkarmaz
 - PARRY: uzun kol (mermiler ~7 m, parlayan saldırılar ~6.5 m + düşman yarıçapı; kol ekranda ileri
   uzanır), yumruktan sonra 0,18 sn tampon penceresi; birden çok parlayan düşman varsa nişangâhın
   baktığı seçilir; geri yollanan mermi nişan alınan düşmana yönelir;
   parlayan yakın saldırıyı bozar; çekirdek/roket/gülleyi fırlatır; bozuk parayı yumruklama; yakın
   mesafede shotgun parry; can tamamen dolar, hitstop ve ekran nabzı. Knuckleblaster mermi savuşturmaz.
+- Efektler: namlu alevi konisi ve kamera tepmesi, isabette kıvılcım/moloz/toz ve parlama, düşman
+  isabetinde tık sesi, dash'te hız çizgileri ve hava sesi, sert inişte toz halkası; düşmanların
+  yakın saldırıları önlerinde parlayan bir kavis bırakır, vuran darbe oyuncuyu iter ve kısa donma
+  yapar. Boss'lar ölünce ağır çekimde titreyip parça parça kopar, sonunda patlar
 - Görünür kollar: parmaklı Feedbacker / Knuckleblaster / Whiplash elleri; yumruk (geri çek → vur),
   başparmakla para fırlatma, kanca atma, duvar sıçramasında avuç, yere çakma, atılma savrulması,
   kayarken kıvılcımlı bacak; silahlar yay tabanlı geri tepme/iniş/çekme hareketi ve uzun boşta
@@ -143,7 +158,7 @@ Gerekenler: Android 7.0+ ve güncel "Android System WebView" (WebGL2).
   saldırısı), Stray (turuncu, savuşturulabilir küre), Schism (mor, mermi dizisi ve bıçak),
   **Malicious Face** (havada süzülen taş kafa: küre yağmuru, kilitlenen ışın — dash ile kaçılır;
   gözler zayıf nokta; ölünce düşüp patlar), boss Swordsmachine (sarı zırh, 2 faz), boss
-  **Cerberus** (canlanan taş heykel: büyük küre, zıplanarak aşılan sarsıntı dalgası, parry ile
+  **Cerberus** (canlanan taş heykel: büyük küre — ikizler arasında ortak bekleme süresiyle seyrek, zıplanarak aşılan sarsıntı dalgası, parry ile
   bozulan parlayan hücum, duvara çarpınca sersemler). Vuruş tepkisi, sersemleme/saldırı bölme, kafa
   takibi; ölüm biçimleri: parçalanma, kafa kopması (kan fıskiyesi) ve cesedin yığılması.
 - Kanla iyileşme, sert hasar, stamina, hasarsızlık kareleri
@@ -165,6 +180,8 @@ CHROME=/yol/chrome node tests/mobile.mjs    # dokunmatik emülasyon testi (22 ko
 CHROME=/yol/chrome node tests/levels.mjs    # 5 bölüm, dükkân/P, yeni düşmanlar, nişan, parry (22 kontrol)
 CHROME=/yol/chrome node tests/araf.mjs      # ARAF 1-1…1-4, Drone/Streetcleaner/Hideous Mass/V2, Siber Öğütücü,
                                             # V2 karakter, Slab/Jackhammer, parry/para yardımı, kollar, ASCII (22 kontrol)
+CHROME=/yol/chrome node tests/feel.mjs      # üsten iniş, düşerken sonuç, parry efekti, kafatası, kan, boss parçalanma,
+                                            # Cerberus nerfi, Sawblade, nişan yardımı, efektler (12 kontrol)
 CHROME=/yol/chrome node tests/tour.mjs      # görsel tur ekran görüntüleri
 npm run apk                                 # → dist/ultrakill-3d.apk (Python 3 + JDK 11+, Android SDK gerekmez)
 CHROME=/yol/chrome npm run test:apk         # APK içeriği: yerel köken, köprü, yazı tipleri (11 kontrol)
@@ -194,6 +211,7 @@ Kaynak `src/` altında ES modülleridir; `build.mjs` hepsini esbuild ile tek HTM
 | `touch.js` · `input.js` | Dokunmatik kontroller ve düzen düzenleyici · klavye/fare/pointer lock |
 | `audio.js` · `music.js` | DSP ses bankası · prosedürel müzik |
 | `physics.js` · `render.js` · `textures.js` · `fx.js` | AABB fizik · renderer/post (ASCII shader dahil) · dokular · efektler |
+| `fall.js` | Bölüm sonu düşüş sahnesi (sonuç ekranının arkası) |
 | `android/` | Android WebView kabuğu, yerel köprü, simgeler, çevrimdışı yazı tipleri (OFL), APK derleyicisi |
 
 ## Lisans / atıf

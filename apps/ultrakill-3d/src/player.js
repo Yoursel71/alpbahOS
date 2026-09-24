@@ -185,6 +185,8 @@ export class Player {
         this.vel.set(dx * P.DASH_SPEED, 0, dz * P.DASH_SPEED);
         this.fovKick = 8;
         game.weapons.onMove('dash');
+        game.hud.speedLines && game.hud.speedLines();
+        game.audio.play('dashWhoosh');
         audio.play('dash');
         game.fx.sparkDir(this.pos.clone().add(new THREE.Vector3(0, 0.8, 0)), new THREE.Vector3(-dx, 0, -dz), 8, 10, 0x9fd0ff, 0.25, 0.05, 0.4);
       }
@@ -429,7 +431,8 @@ export class Player {
       game.fx.sparkBurst(this.pos.clone().add(new THREE.Vector3(0, 0.1, 0)), 30, 12, 0xffa060, 0.5, 0.07);
     } else if (fallSpeed > 12) {
       this.landDip = -Math.min(0.3, fallSpeed * 0.008);
-      game.audio.play('land');
+      game.audio.play('land', null, { rate: fallSpeed > 22 ? 0.8 : 1 });
+      if (fallSpeed > 18) game.fx.ring(this.pos.clone(), 0xb8a898, 2 + fallSpeed * 0.05, 0.35);
     }
   }
 

@@ -18,6 +18,7 @@ import { HUD } from './hud.js';
 import { UI, rankTime, rankKills, rankStyle, finalRank, betterRank } from './ui.js';
 import { ENEMY_TYPES } from './enemies.js';
 import './enemies2.js';
+import { FallFX } from './fall.js';
 import { rand, clamp, damp, yawTo, wrapAngle } from './util.js';
 import { Projectile } from './projectiles.js';
 import { WEAPONS } from './weapons.js';
@@ -25,6 +26,7 @@ import { TouchControls, touchDevice } from './touch.js';
 
 const _v = new THREE.Vector3();
 const _v2 = new THREE.Vector3();
+const _v3 = new THREE.Vector3();
 
 class Arenas {
   constructor(game) {
@@ -181,6 +183,7 @@ class Game {
     this.stats = { time: 0, kills: 0, restarts: 0, secrets: 0, parries: 0, damageTaken: 0 };
     this.corpses = [];
     this.shocks = [];
+    this.fall = new FallFX(this);
     this.bankedStyle = 0;
     this.bonusP = 0;
     this.levelP = 0;
@@ -489,7 +492,19 @@ class Game {
     this.haptic(Math.min(120, 30 + dmg * 2));
     this.stats.damageTaken += dmg;
     this.style.onDamageTaken(dmg);
-    this.hud.damage(dmg);
+    // saldırı yönü: 0 = önden (ekran üstü), +π/2 = sağdan
+    let ang = null;
+    if (fromPos) {
+      const dx = fromPos.x - p.pos.x, dz = fromPos.z - p.pos.z;
+      if (dx * dx + dz * dz > 0.01) {
+        const fx = -Math.sin(p.yaw), fz = -Math.cos(p.yaw);
+        ang = Math.atan2(dx * -fz + dz * fx, dx * fx + dz * fz);
+        // darbe kamerayı saldırıdan uzağa iter (yuvarlanma + başın geri gitmesi)
+        this.hurtRoll = (this.hurtRoll || 0) + Math.sin(ang) * Math.min(0.09, 0.03 + dmg * 0.002);
+        this.hurtPitch = (this.hurtPitch || 0) + Math.cos(ang) * Math.min(0.06, 0.02 + dmg * 0.0015);
+      }
+    }
+    this.hud.damage(dmg, ang);
     this.shake(0.22 + Math.min(dmg, 40) * 0.008);
     this.audio.play('hurt');
     if (fromPos) {
@@ -714,19 +729,21 @@ class Game {
     best._pa = true;
     this.slowT = lvl >= 2 ? 0.34 : 0.18;
     this.slowK = lvl >= 2 ? 0.3 : 0.55;
-    this.hud.parryCue();
     this.haptic(12);
   }
 
   onParry(pos, n = 1, melee = false) {
     this.slowT = 0;
     this.weapons.arms.parryFlash();
+    this.weapons.arms.play('parry');
     const p = this.player;
     this.stats.parries++;
     this.haptic([20, 30, 60]);
-    p.hp = 100;
+    p.hp = p.maxHp || 100;
     p.hard = 0;
+    p.fovKick = -14;
     this.audio.play('parry');
+    this.audio.play('parryRing', null, { delay: 0.05 });
     this.hitstop(melee ? 0.22 : 0.15);
     this.hud.flash('rgba(255,255,255,0.85)', 0.22);
     this.hud.parryPulse();
@@ -850,6 +867,7 @@ class Game {
   }
 
   toMenu() {
+    this.fall.stop();
     this.state = 'menu';
     this.input.gameActive = false;
     this.input.wantLock = false;
@@ -872,6 +890,7 @@ class Game {
   }
 
   resetLevelState() {
+    this.cerbOrbT = -99;
     for (const e of this.enemies) e.removeSilently();
     this.enemies = [];
     for (const p of this.projectiles) p.remove();
@@ -934,6 +953,16 @@ class Game {
     this.music.setMode('calm');
     const def = this.levelDef;
     this.hud.titleCard(`<div class="tc-layer">${def.layer} /// ${def.id}</div><div class="tc-name">${def.name}</div>`, 4.5);
+    // üsten iniş: alarm, kapak açılır, oyuncu bölüme düşer
+    const hatch = L.doors.baseHatch;
+    if (hatch) {
+      hatch.setInstant(false);
+      this.player.pitch = -0.75;
+      this.audio.play('beep', null, { rate: 0.7 });
+      this.schedule(0.25, () => this.audio.play('beep', null, { rate: 0.7 }));
+      this.schedule(0.5, () => { hatch.open(); this.shake(0.25); this.audio.play('doorSlam', null, { rate: 1.4, vol: 0.6 }); });
+    }
+    this.fall.stop();
     if (L.onStart) L.onStart(this);
   }
 
@@ -1090,6 +1119,7 @@ class Game {
     saveProgress();
     this.lastResults = r;
     this.ui.showResults(r);
+    this.fall.start(this.level.theme);
   }
 
   nextLevel() {
@@ -1145,7 +1175,7 @@ class Game {
     this.lastT = now;
     // Telefonda oyun dışı ekranlar daha seyrek çizilir (menü 30, duraklatma/dükkân 12 kare/sn)
     const st = this.state;
-    const cap = !this.mobile ? 0 : st === 'paused' || st === 'shop' || st === 'results' ? 1 / 12 : st === 'menu' || st === 'splash' ? 1 / 30 : 0;
+    const cap = !this.mobile ? 0 : st === 'paused' || st === 'shop' || (st === 'results' && !this.fall.active) ? 1 / 12 : st === 'menu' || st === 'splash' || st === 'results' ? 1 / 30 : 0;
     this.frameAcc += realDt;
     if (cap && this.frameAcc < cap) return;
     const dt = Math.min(0.05, this.frameAcc);
@@ -1174,7 +1204,7 @@ class Game {
     this.renderer.setAscii(term);
     this.enemyGlowMul = term && settings.termRender !== 'off' ? 3.4 : 1;
     this.touch.update();
-    if (render) this.renderer.render(this.scene, this.camera, showVM && !this.player.dead ? this.weapons.scene : null, this.weapons.cam);
+    if (render) this.renderer.render(this.fall.active && st === 'results' ? this.fall.scene : this.scene, this.camera, showVM && !this.player.dead ? this.weapons.scene : null, this.weapons.cam);
     this.input.endFrame();
   }
 
@@ -1196,6 +1226,11 @@ class Game {
 
   updateResults(dt) {
     const cam = this.camera;
+    if (this.fall.active) {
+      this.fall.update(dt, cam);
+      this.fx.update(dt);
+      return;
+    }
     cam.rotation.y += dt * 0.05;
     this.level.update(dt, this.realTime, cam.position);
     this.fx.update(dt);
@@ -1351,38 +1386,76 @@ class Game {
 
   // Nişan yardımı (dokunmatik, güçlü): ateş basılıyken bakış yakındaki düşmana doğru kayar;
   // nişangâh düşmanın üstündeyken bakış yavaşlar (yapışkan nişan).
+  // Nişan yardımı (dokunmatik). Hedef seçimi yapışkandır (başka düşman belirgin daha iyi olmadıkça
+  // değişmez). HAFİF: nişangâh yakınında yavaşlama + hareketli hedefi kısmen takip.
+  // GÜÇLÜ: ek olarak ateş/ALT basılıyken yumuşak, hız sınırlı çekim ve güçlü takip.
+  // Nişan noktası gövdenin üst kısmıdır (kafaya yakın, ama ıskalamaz).
+  aimPoint(e, out = new THREE.Vector3()) {
+    const c = e.center(out);
+    const h = e.hitSpheres && e.hitSpheres.find((s) => s.kind === 'head');
+    if (h && !e.big) c.lerp(h.w, 0.35);
+    return c;
+  }
+
   aimMagnet(dt) {
     this.aimFriction = 1;
-    if (!this.touch.active || (settings.aimAssist | 0) < 2) return;
+    const lvl = settings.aimAssist | 0;
     const p = this.player;
-    if (p.dead) return;
+    if (!this.touch.active || !lvl || p.dead) { this.aimTarget = null; return; }
     const input = this.input;
     const firing = input.is('fire') || input.is('alt');
     const o = p.eyePos(_v2);
     const d = p.aimDir();
-    let best = null, bestScore = 1e9, bestA = 0;
-    const maxA = firing ? 0.32 : 0.14;
-    for (const e of this.enemies) {
-      if (e.dead || e.decor || e.state === 'spawn' || e.dormant) continue;
-      const c = e.center(_v);
+    const angTo = (e) => {
+      const c = this.aimPoint(e, _v);
       const tx = c.x - o.x, ty = c.y - o.y, tz = c.z - o.z;
       const dist = Math.hypot(tx, ty, tz);
-      if (dist > 70 || dist < 0.5) continue;
-      const a = Math.acos(clamp((tx * d.x + ty * d.y + tz * d.z) / dist, -1, 1));
-      if (a > maxA + (e.r || 0.5) / dist) continue;
-      const score = a + dist * 0.003;
-      if (score < bestScore && this.world.lineOfSight(o, c)) { bestScore = score; best = e; bestA = a; }
+      return { a: Math.acos(clamp((tx * d.x + ty * d.y + tz * d.z) / (dist || 1), -1, 1)), dist, tx, ty, tz };
+    };
+    const maxA = (firing ? (lvl >= 2 ? 0.34 : 0.16) : lvl >= 2 ? 0.18 : 0.1);
+    let best = null, bestScore = 1e9, bestInfo = null;
+    for (const e of this.enemies) {
+      if (e.dead || e.decor || e.state === 'spawn' || e.dormant) continue;
+      const info = angTo(e);
+      if (info.dist > 75 || info.dist < 0.6) continue;
+      const slack = (e.r || 0.5) / info.dist;
+      const keep = e === this.aimTarget ? 1.6 : 1;
+      if (info.a > (maxA + slack) * keep) continue;
+      // açı ağırlıklı skor; mevcut hedefe %35 avantaj
+      let score = info.a - slack * 0.5 + info.dist * 0.002;
+      if (e === this.aimTarget) score *= 0.65;
+      if (score < bestScore && this.world.lineOfSight(o, this.aimPoint(e, _v3))) { bestScore = score; best = e; bestInfo = info; }
     }
+    if (best !== this.aimTarget) { this.aimTarget = best; this.aimPrev = null; }
     if (!best) return;
-    if (bestA < 0.09) this.aimFriction = 0.55;
-    if (!firing) return;
-    const c = best.center(_v);
-    const tx = c.x - o.x, ty = c.y - o.y, tz = c.z - o.z;
+    const { a, tx, ty, tz } = bestInfo;
     const tYaw = Math.atan2(-tx, -tz);
     const tPitch = Math.atan2(ty, Math.hypot(tx, tz));
-    const k = 1 - Math.exp(-dt * 6);
-    p.yaw += wrapAngle(tYaw - p.yaw) * k;
-    p.pitch += (tPitch - p.pitch) * k;
+    // yakınlıkta yavaşlama (yumuşak geçişli)
+    const fr = lvl >= 2 ? 0.42 : 0.65;
+    this.aimFriction = a < 0.08 ? fr : a < 0.2 ? fr + (1 - fr) * ((a - 0.08) / 0.12) : 1;
+    // takip: hedefin açısal hareketinin bir kısmını bakışa ekle (koşan düşman / yan adım)
+    if (this.aimPrev && dt > 0) {
+      const dYaw = wrapAngle(tYaw - this.aimPrev.yaw), dPitch = tPitch - this.aimPrev.pitch;
+      const follow = (lvl >= 2 ? 0.85 : 0.5) * (a < 0.25 ? 1 : 0);
+      if (Math.abs(dYaw) < 0.2 && Math.abs(dPitch) < 0.2) { p.yaw += dYaw * follow; p.pitch += dPitch * follow; }
+    }
+    this.aimPrev = { yaw: tYaw, pitch: tPitch };
+    // çekim: yalnız güçlüde ve ateş basılıyken; hız sınırlı, uzaktayken daha hızlı
+    if (firing && lvl >= 2) {
+      const ey = wrapAngle(tYaw - p.yaw), ep = tPitch - p.pitch;
+      const err = Math.hypot(ey, ep);
+      if (err > 0.004) {
+        const rate = Math.min(err, (1.2 + err * 9) * dt);
+        p.yaw += (ey / err) * rate;
+        p.pitch += (ep / err) * rate;
+      }
+    } else if (firing && a < 0.1) {
+      // hafif: yalnız çok yakınken küçük düzeltme
+      const k = 1 - Math.exp(-dt * 3);
+      p.yaw += wrapAngle(tYaw - p.yaw) * k;
+      p.pitch += (tPitch - p.pitch) * k;
+    }
   }
 
   checkSecrets() {
@@ -1409,7 +1482,10 @@ class Game {
     this.trauma = Math.max(0, this.trauma - realDt * 1.6);
     const sh = this.trauma * this.trauma * settings.shake;
     let eye = p.eye + p.landDip;
-    let roll = p.tilt;
+    this.hurtRoll = damp(this.hurtRoll || 0, 0, 7, realDt);
+    this.camKick = damp(this.camKick || 0, 0, 14, realDt);
+    this.hurtPitch = damp(this.hurtPitch || 0, 0, 7, realDt);
+    let roll = p.tilt - this.hurtRoll;
     if (p.dead) {
       const k = Math.min(1, this.deathT / 0.8);
       eye = p.eye * (1 - k) + 0.25 * k;
@@ -1423,7 +1499,7 @@ class Game {
       p.pos.y + eye + bobY + rand(-1, 1) * sh * 0.2,
       p.pos.z + cz * bobX + rand(-1, 1) * sh * 0.2
     );
-    cam.rotation.set(p.pitch + rand(-1, 1) * sh * 0.03, p.yaw + rand(-1, 1) * sh * 0.03, roll + rand(-1, 1) * sh * 0.04);
+    cam.rotation.set(p.pitch + this.hurtPitch + this.camKick + rand(-1, 1) * sh * 0.03, p.yaw + rand(-1, 1) * sh * 0.03, roll + rand(-1, 1) * sh * 0.04);
     const fov = settings.fov + p.fovKick + (p.sliding ? 5 : 0);
     if (Math.abs(cam.fov - fov) > 0.05) {
       cam.fov = damp(cam.fov, fov, 12, realDt);

@@ -216,6 +216,7 @@ kbd { font-family: var(--f-mono); font-size: 19px; padding: 1px 7px; border: 1px
 .pause-box .panel-box { width: min(560px, 92vw); max-height: 60vh; margin-top: 12px; }
 
 /* ---------------------------------------------------------------- sonuçlar */
+#scr-results.falling { background: linear-gradient(90deg, rgba(7, 4, 10, 0.2), rgba(7, 4, 10, 0.72) 45%, rgba(7, 4, 10, 0.8)); }
 #scr-results { background: rgba(7, 4, 10, 0.86); display: grid; place-items: center; padding-inline: 16px; overflow-y: auto; }
 .res-box { width: min(680px, 100%); pointer-events: auto; padding-block: 24px; }
 .res-title { font-family: var(--f-display); font-size: clamp(30px, 4.4vw, 48px); letter-spacing: 0.03em; margin-bottom: 18px; }
@@ -250,6 +251,25 @@ kbd { font-family: var(--f-mono); font-size: 19px; padding: 1px 7px; border: 1px
 /* ---------------------------------------------------------------- HUD */
 #hud { position: absolute; inset: 0; pointer-events: none; font-family: var(--f-mono); }
 #flash { position: absolute; inset: 0; opacity: 0; }
+#bloodfx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+#dmgdir { position: absolute; left: 50%; top: 50%; width: 0; height: 0; pointer-events: none; }
+#dmgdir i { position: absolute; left: -110px; top: -160px; width: 220px; height: 320px; opacity: 0; transform-origin: 110px 160px;
+  background: radial-gradient(ellipse 60% 22% at 50% 0%, rgba(255, 30, 20, 0.95), rgba(160, 0, 0, 0.5) 45%, transparent 70%); }
+#dmgdir i.on { animation: dirFade 0.9s ease-out; }
+@keyframes dirFade { 0% { opacity: 1; } 60% { opacity: 0.8; } 100% { opacity: 0; } }
+.ds-skull { width: min(26vh, 200px); margin-bottom: -6px; filter: drop-shadow(0 0 18px rgba(255, 40, 30, 0.55)); }
+.ds-skull svg { display: block; width: 100%; height: auto; overflow: visible; }
+.ds-skull .b { fill: #e8dcc8; }
+.ds-skull .d { fill: #140404; }
+.ds-skull .r { fill: #ff2a1a; }
+.ds-skull .sk-jaw { transform-box: fill-box; transform-origin: 50% 0%; }
+.ds-skull.scream { animation: skIn 0.3s cubic-bezier(0.2, 1.6, 0.4, 1), skShake 0.06s steps(2) 0.25s 20; }
+.ds-skull.scream .sk-jaw { animation: jawOpen 1.35s ease-out 0.1s; }
+.ds-skull.scream .r { animation: eyeFlare 1.4s ease-out; }
+@keyframes skIn { from { transform: scale(0.2); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes skShake { 0% { transform: translate(-2px, 1px) rotate(-1.5deg); } 100% { transform: translate(2px, -1px) rotate(1.5deg); } }
+@keyframes jawOpen { 0% { transform: none; } 12% { transform: translateY(2.6px) rotate(3deg); } 30% { transform: translateY(2.2px) rotate(-3deg); } 50% { transform: translateY(2.8px) rotate(2deg); } 78% { transform: translateY(2.4px); } 100% { transform: none; } }
+@keyframes eyeFlare { 0% { fill: #fff; } 25% { fill: #ffd060; } 100% { fill: #ff2a1a; } }
 #dmgvig { position: absolute; inset: 0; opacity: 0; background: radial-gradient(ellipse at center, transparent 45%, rgba(200, 0, 0, 0.55) 100%); }
 
 #crosshair { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
@@ -303,13 +323,29 @@ kbd { font-family: var(--f-mono); font-size: 19px; padding: 1px 7px; border: 1px
 .pts-row { margin-top: 6px; font-family: var(--f-mono); font-size: 17px; color: #39ff6a; letter-spacing: 0.04em; }
 .pts-row b { font-weight: 400; color: #b8ffc8; }
 .pts-row i { font-style: normal; color: #ffd24a; }
-#parrycue { position: absolute; left: 50%; top: 50%; width: 0; height: 0; pointer-events: none; opacity: 0; }
-#parrycue i { position: absolute; left: -46px; top: -46px; width: 92px; height: 92px; border: 3px solid #9fe0ff; border-radius: 50%; box-shadow: 0 0 18px rgba(120, 200, 255, 0.8); }
-#parrycue b { position: absolute; left: 0; top: 54px; transform: translateX(-50%); font-family: var(--f-mono); font-weight: 400; font-size: 26px; color: #bfe8ff; letter-spacing: 0.1em; text-shadow: 0 0 10px rgba(120, 200, 255, 0.9), 0 2px 0 #000; white-space: nowrap; }
-#parrycue.on { animation: cueFade 0.5s ease-out; }
-#parrycue.on i { animation: cueRing 0.5s ease-out; }
-@keyframes cueFade { 0% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; } }
-@keyframes cueRing { from { transform: scale(2.2); } to { transform: scale(0.45); } }
+/* nişan yardımı hedef işareti: dört köşe */
+#lockmark { position: absolute; left: 0; top: 0; width: 0; height: 0; pointer-events: none; --s: 40px; }
+#lockmark i { position: absolute; width: 9px; height: 9px; border: 2px solid rgba(255, 90, 60, 0.85); }
+#lockmark i:nth-child(1) { left: calc(var(--s) / -2); top: calc(var(--s) / -2); border-right: 0; border-bottom: 0; }
+#lockmark i:nth-child(2) { left: calc(var(--s) / 2 - 11px); top: calc(var(--s) / -2); border-left: 0; border-bottom: 0; }
+#lockmark i:nth-child(3) { left: calc(var(--s) / -2); top: calc(var(--s) / 2 - 11px); border-right: 0; border-top: 0; }
+#lockmark i:nth-child(4) { left: calc(var(--s) / 2 - 11px); top: calc(var(--s) / 2 - 11px); border-left: 0; border-top: 0; }
+/* dash: kenarlarda akan hız çizgileri + mavi kenar */
+#speedfx { position: absolute; inset: 0; pointer-events: none; opacity: 0;
+  background: repeating-conic-gradient(from 3deg at 50% 50%, rgba(200, 230, 255, 0.5) 0deg 0.7deg, transparent 0.7deg 9deg);
+  -webkit-mask: radial-gradient(ellipse at center, transparent 42%, #000 78%); mask: radial-gradient(ellipse at center, transparent 42%, #000 78%);
+  box-shadow: inset 0 0 90px rgba(60, 150, 255, 0.35); }
+#speedfx.go { animation: speedFade 0.32s ease-out; }
+@keyframes speedFade { 0% { opacity: 0.9; transform: scale(1.12); } 100% { opacity: 0; transform: scale(1); } }
+/* parry patlaması: beyaz ışınlar + mavi halka, kısa süre */
+#parryburst { position: absolute; left: 50%; top: 50%; width: 0; height: 0; pointer-events: none; opacity: 0; }
+#parryburst i { position: absolute; left: -60vmax; top: -60vmax; width: 120vmax; height: 120vmax; border-radius: 50%;
+  background: repeating-conic-gradient(rgba(255, 255, 255, 0.85) 0deg 2.2deg, transparent 2.2deg 12deg);
+  -webkit-mask: radial-gradient(circle, transparent 9%, #000 12%, #000 34%, transparent 58%); mask: radial-gradient(circle, transparent 9%, #000 12%, #000 34%, transparent 58%); }
+#parryburst.go { animation: burstFade 0.42s ease-out; }
+#parryburst.go i { animation: burstSpin 0.42s ease-out; }
+@keyframes burstFade { 0% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes burstSpin { from { transform: scale(0.35) rotate(0deg); } to { transform: scale(1.25) rotate(14deg); } }
 #crosshair.coin .ch { background: #ffd24a; box-shadow: 0 0 8px #ffd24a; }
 #shopprompt { position: absolute; left: 50%; bottom: 20%; transform: translateX(-50%); padding: 8px 18px 6px; font-family: var(--f-mono); font-size: 24px; color: #39ff6a; background: rgba(2, 26, 8, 0.85); border: 1px solid #39ff6a; box-shadow: 0 0 18px rgba(57, 255, 106, 0.35); }
 #shopprompt b { font-weight: 400; color: #fff; }

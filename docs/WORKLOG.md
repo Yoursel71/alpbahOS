@@ -972,3 +972,27 @@ PipeWire hatası için aynı gün ek tekrar: Guest `/tmp`'te 12 saniye 48 kHz st
 - APK SHA-256: `bbca1743ac9b7828e7a63c34b54f4f14de8291d49e3995a0affae68ebfa54e3c`.
 - Çalıştırılmadı: gerçek cihazda insan testi, ses dinleme, Android'de kurulum, denge.
 - Ayrıntı: [devir 018](handoffs/claude/018-ultrakill-3d-araf.md).
+
+## 24 Eylül 2026 — Claude: ULTRAKILL 3D oyun hissi (üsten iniş, düşerken sonuç, parry/efekt/ses, kan, kafatası, boss parçalanma, nişan yardımı)
+
+- Görev/sahip: Claude Code (bulut oturumu), dal `claude/3d-ultrakill-game-dev-qzqj42`. Dosya sınırı yalnız `apps/ultrakill-3d/**`. Kernel, rootfs, paket manifesti, `alp`, build/mount işlemleri ve Hyper-V ortamına dokunulmadı.
+- Değişiklikler:
+  - Başlangıç ve bitiş: havadaki üsten kapak açılarak bölüme iniş; bölüm sonunda karanlık kuyuda düşerken sonuç ekranı.
+  - Parry: özel parry animasyonu, şok halkası, ışın patlaması ve katmanlı parry sesi; "PARRY!" yardım yazısı kaldırıldı.
+  - Hasar ve ölüm:
+    - ekrana akan kan, hasar yönü göstergesi ve kamera darbesi,
+    - ölüm ekranında çığlık atan piksel kafatası.
+  - Efektler ve sesler:
+    - namlu alevi konisi, kamera tepmesi, isabet parlaması/molozu,
+    - dash hız çizgileri, isabet/dash/yakın saldırı sesleri,
+    - düşman yakın saldırı kavisi ve darbe hissi,
+    - boss parçalanma sekansı.
+  - Oyun dengesi ve görünüm:
+    - Cerberus küre nerfi (ikizlerde ortak bekleme),
+    - Nailgun SAWBLADE testere fırlatıcı modeli ve dişli disk mermi,
+    - yapışkan/takipli nişan yardımı ve hedef işareti.
+  - APK 1.3 (aynı imza).
+- Doğrulama (headless Chromium, yazılım GL): oyun hissi 12/12 (yeni), ARAF 22/22, smoke 36/36, tutorial 11/11, mobil 22/22, PRELUDE 22/22, APK içerik 11/11.
+- APK SHA-256: `77887de4fc06e89d658bf26bfaa17de22844e25d33eac9f2c493bb0a990cb84f`.
+- Çalıştırılmadı: gerçek cihazda insan testi, ses dinleme, Android'de kurulum.
+- Ayrıntı: [devir 019](handoffs/claude/019-ultrakill-3d-his.md).

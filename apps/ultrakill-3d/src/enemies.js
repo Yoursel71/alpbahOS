@@ -281,12 +281,27 @@ export class Enemy {
   }
 
   meleeHit(range, dmg, arc = 0.2) {
+    // görsel: saldırının önünde süpürülen kavis (vursa da vurmasa da)
+    const c = this.center();
+    const f0 = this.forward();
+    this.game.fx.slash(c.addScaledVector(f0, Math.min(1.4, range * 0.4)), this.yaw, this.slashColor || 0xffe0c0, Math.min(3.4, range * 0.75), 0.2, (Math.random() - 0.5) * 0.7);
+    this.game.audio.play('meleeWhoosh', this.pos, { rate: this.big ? 0.75 : 1.1 });
     const i = this.playerInfo();
     if (i.dist > range || Math.abs(i.dy + 0.5) > 2.6) return false;
     const f = this.forward();
     if (f.x * i.dx + f.z * i.dz < arc) return false;
     const ok = this.game.damagePlayer(dmg * difficulty().dmg, this.center(), false, this);
-    if (ok) this.game.fx.bloodBurst(this.game.player.eyePos().addScaledVector(this.forward(), 0.3), 8, 5);
+    if (ok) {
+      const g = this.game;
+      g.fx.bloodBurst(g.player.eyePos().addScaledVector(this.forward(), 0.3), 14, 6);
+      g.audio.play('punchHit', null, { rate: this.big ? 0.7 : 1 });
+      g.hitstop(this.big ? 0.08 : 0.05);
+      g.shake(this.big ? 0.45 : 0.3);
+      // darbe oyuncuyu geriye iter
+      const f = this.forward();
+      g.player.vel.x += f.x * (this.big ? 9 : 5);
+      g.player.vel.z += f.z * (this.big ? 9 : 5);
+    }
     return ok;
   }
 
@@ -492,6 +507,11 @@ export class Enemy {
     }
     const pt = info.point || this.center();
     game.fx.bloodBurst(pt, Math.min(45, 6 + Math.round(dmg * 10)), 5 + Math.min(dmg, 4) * 2, info.dir || null);
+    // isabet parlaması (kafada sarı) ve kısa isabet tıkı
+    if (!info.quiet) {
+      game.fx.sprite(pt, info.part === 'head' ? 0xffe060 : 0xffffff, info.part === 'head' ? 1.1 : 0.6, 0.07, 'star', 1.8);
+      if (info.weapon !== 'lava') game.audio.play('hitTick', null, { rate: info.part === 'head' ? 1.3 : 1 });
+    }
     if (!info.noHeal) game.bloodHeal(pt, dmg);
     const w = info.weapon;
     const fw = FRESH_W.has(w) ? w : null;
@@ -534,9 +554,26 @@ export class Enemy {
     for (const m of this.mats) m.emissive.copy(m.userData.glow);
     const c = this.center();
     const dir = info.dir ? info.dir.clone() : new THREE.Vector3();
-    const mode = this.deathMode(info, dmg);
+    let mode = this.deathMode(info, dmg);
+    // boss: özel parçalanma sekansı (ağır çekim, titreme, parça parça kopma, son patlama)
+    if (this.boss && !info.silent && info.dmg < 99 && !this.decor) mode = 'bossDeath';
     this.root.updateMatrixWorld(true);
-    if (mode === 'gib') {
+    if (mode === 'bossDeath') {
+      this.bossDeathT = 0;
+      this.nextPop = 0.12;
+      this.deathMeshes = [];
+      this.root.traverseVisible((o) => { if (o.isMesh && !o.userData.noGib) this.deathMeshes.push(o); });
+      for (let k = this.deathMeshes.length - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [this.deathMeshes[k], this.deathMeshes[j]] = [this.deathMeshes[j], this.deathMeshes[k]]; }
+      this.deathDir = dir.clone();
+      game.corpses.push(this);
+      game.slowT = 1.1;
+      game.slowK = 0.28;
+      game.hitstop(0.2);
+      game.hud.flash('rgba(255,255,255,0.9)', 0.35);
+      game.shake(0.7);
+      game.audio.play('bossDeath', c);
+      game.fx.bloodBurst(c, 60, 10, dir, true);
+    } else if (mode === 'gib') {
       const force = info.explosion ? 12 : 5 + Math.min(info.knock || 0, 20) * 0.4;
       const meshes = [];
       this.root.traverseVisible((o) => { if (o.isMesh && !o.userData.noGib) meshes.push(o); });
@@ -582,8 +619,56 @@ export class Enemy {
     game.onEnemyKilled(this, info);
   }
 
+  // Boss ölümü: ~1.7 sn titrer ve parlar, parçaları tek tek kopar, sonunda patlayarak dağılır
+  updateBossDeath(dt) {
+    const game = this.game;
+    this.bossDeathT += dt;
+    const t = this.bossDeathT;
+    const j = 0.04 + t * 0.05;
+    this.root.position.set(this.pos.x + rand(-j, j), this.pos.y + rand(-j, j) * 0.5, this.pos.z + rand(-j, j));
+    this.root.rotation.z = rand(-1, 1) * 0.04;
+    const pulse = 0.5 + 0.5 * Math.sin(t * 38);
+    for (const m of this.mats) m.emissive.setRGB(0.6 + 0.4 * pulse, 0.12 * pulse, 0.08 * pulse);
+    if (t >= this.nextPop && t < 1.6) {
+      this.nextPop = t + Math.max(0.07, 0.16 - t * 0.05);
+      const m = this.deathMeshes.pop();
+      if (m && m.parent) {
+        const p = m.getWorldPosition(new THREE.Vector3());
+        const v = p.clone().sub(this.center()).setY(0).normalize().multiplyScalar(rand(4, 8)).add(new THREE.Vector3(0, rand(4, 9), 0));
+        game.fx.gibFromMesh(m, v, 12);
+        m.visible = false;
+        game.fx.bloodBurst(p, 18, 8, v.clone().normalize(), true);
+        game.fx.sparkBurst(p, 10, 8, 0xffc060, 0.35, 0.06);
+        if (Math.random() < 0.5) game.fx.fountain(m.parent, 0.6);
+        game.audio.play('gore', p, { rate: rand(0.8, 1.2) });
+        game.shake(0.25);
+      }
+    }
+    if (t >= 1.7) {
+      const c = this.center();
+      for (const m of this.deathMeshes) {
+        if (!m.visible || !m.parent) continue;
+        const v = new THREE.Vector3(rand(-1, 1), rand(0.4, 1.4), rand(-1, 1)).multiplyScalar(rand(8, 16)).addScaledVector(this.deathDir, 5);
+        game.fx.gibFromMesh(m, v, 14);
+      }
+      for (let k = 0; k < 16; k++) game.fx.gibChunk(c.clone().add(new THREE.Vector3(rand(-0.5, 0.5), rand(-0.5, 0.5), rand(-0.5, 0.5))), new THREE.Vector3(rand(-9, 9), rand(4, 13), rand(-9, 9)), rand(0.1, 0.25), game.goreMat);
+      game.fx.explosionFX(c, 5);
+      game.fx.bloodBurst(c, 160, 16, null, true);
+      game.fx.ring(this.pos.clone(), 0xff3020, 9, 0.6, 0.1);
+      game.fx.addDecal(this.pos.x, this.pos.y + 0.01, this.pos.z, 0, 1, 0, 5);
+      game.audio.play('explosion', c, { rate: 0.7 });
+      game.audio.play('gore', c, { rate: 0.6 });
+      game.hud.flash('rgba(255,40,20,0.6)', 0.4);
+      game.shake(0.9);
+      game.scene.remove(this.root);
+      return false;
+    }
+    return true;
+  }
+
   // Ceset animasyonu: öne/arkaya devrilir, uzuvlar gevşer, sonra yere gömülüp kaybolur
   updateCorpse(dt) {
+    if (this.bossDeathT !== undefined) return this.updateBossDeath(dt);
     this.corpseT += dt;
     const t = this.corpseT;
     const world = this.game.world;
@@ -626,7 +711,7 @@ export class Enemy {
   }
 
   removeSilently() {
-    if (this.dead && this.corpseT === undefined) return;
+    if (this.dead && this.corpseT === undefined && this.bossDeathT === undefined) return;
     this.dead = true;
     this.game.scene.remove(this.root);
   }
@@ -1456,7 +1541,7 @@ export class Swordsmachine extends Enemy {
   die(info, wasFull, dmg) {
     this.gun.visible = false;
     super.die(info, wasFull, dmg);
-    this.game.explode(this.center(), 4, 0, { owner: 'none', playerDmg: 0, visualOnly: true });
+    if (this.bossDeathT === undefined) this.game.explode(this.center(), 4, 0, { owner: 'none', playerDmg: 0, visualOnly: true });
     this.game.hitstop(0.35);
   }
 
@@ -1948,8 +2033,8 @@ export class Cerberus extends Enemy {
   enrage() {
     if (this.enraged || this.dead) return;
     this.enraged = true;
-    this.speed = this.baseSpeed * 1.3;
-    this.cdMul = 0.65;
+    this.speed = this.baseSpeed * 1.2;
+    this.cdMul = 0.8;
     this.setAwake(true);
     this.game.audio.play('bossRoar', this.pos, { rate: 0.8, exactRate: true });
     this.game.style.add('ENRAGED', 50);
@@ -1981,7 +2066,7 @@ export class Cerberus extends Enemy {
         if (this.atkCd <= 0) {
           const r = Math.random();
           if (i.dist < 4.2) { this.setState('swipeWind'); this.game.audio.play('windup', this.pos); }
-          else if (r < 0.4 && this.canSee) { this.setState('orbWind'); this.game.audio.play('orbCharge', this.pos, { rate: 0.7, exactRate: true }); }
+          else if (r < 0.25 && this.canSee && this.game.time - (this.game.cerbOrbT ?? -99) > 3.2) { this.game.cerbOrbT = this.game.time; this.setState('orbWind'); this.game.audio.play('orbCharge', this.pos, { rate: 0.7, exactRate: true }); }
           else if (r < 0.7) { this.setState('stompWind'); this.game.audio.play('slamStart', this.pos, { rate: 0.6, exactRate: true }); }
           else if (this.canSee && i.dist > 6) { this.setState('tackleWind'); this.game.audio.play('windup', this.pos, { rate: 0.7, exactRate: true }); }
           else { this.setState('stompWind'); this.game.audio.play('slamStart', this.pos, { rate: 0.6, exactRate: true }); }
@@ -1991,9 +2076,9 @@ export class Cerberus extends Enemy {
       case 'orbWind': {
         this.faceYaw(yawTo(i.dx, i.dz), 7, dt);
         this.accelTo(0, 0, 30, dt);
-        const dur = 0.8 * cd;
+        const dur = Math.max(0.8, 0.95 * cd);
         this.orbGlow.scale.setScalar(1.4 + (this.st / dur) * 2);
-        if (this.st >= dur) { this.throwOrb(); this.orbGlow.scale.setScalar(1.4); this.state = 'recover'; this.st = 0; this.atkCd = rand(1.5, 2.5) * cd; }
+        if (this.st >= dur) { this.throwOrb(); this.orbGlow.scale.setScalar(1.4); this.state = 'recover'; this.st = 0; this.atkCd = rand(2.2, 3.2) * cd; }
         break;
       }
       case 'stompWind': {
@@ -2067,11 +2152,11 @@ export class Cerberus extends Enemy {
     const game = this.game;
     const p = game.player;
     const from = this.orb.getWorldPosition(new THREE.Vector3());
-    const speed = 24 * difficulty().speed;
+    const speed = 19 * difficulty().speed;
     const target = new THREE.Vector3(p.pos.x, p.pos.y + p.h * 0.5, p.pos.z);
-    target.addScaledVector(p.vel, (from.distanceTo(target) / speed) * 0.35);
+    target.addScaledVector(p.vel, (from.distanceTo(target) / speed) * 0.2);
     const dir = target.sub(from).normalize();
-    game.addProjectile(new Projectile(game, { pos: from, vel: dir.multiplyScalar(speed), radius: 0.6, damage: 25 * difficulty().dmg, color: 0xff7a20, source: this }));
+    game.addProjectile(new Projectile(game, { pos: from, vel: dir.multiplyScalar(speed), radius: 0.6, damage: 18 * difficulty().dmg, color: 0xff7a20, source: this }));
     game.audio.play('orbThrow', from, { rate: 0.6, exactRate: true });
   }
 
@@ -2096,7 +2181,7 @@ export class Cerberus extends Enemy {
   die(info, wasFull, dmg) {
     const pa = this.partner;
     super.die(info, wasFull, dmg);
-    this.game.explode(this.center(), 4, 0, { visualOnly: true });
+    if (this.bossDeathT === undefined) this.game.explode(this.center(), 4, 0, { visualOnly: true });
     this.game.hitstop(0.3);
     if (pa && !pa.dead) {
       if (pa.dormant) pa.wake();

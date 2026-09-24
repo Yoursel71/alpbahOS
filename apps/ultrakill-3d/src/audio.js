@@ -214,20 +214,29 @@ const DEFS = {
       o[i] = sat((th.run(45 + 120 * Math.exp(-t / 0.03)) * Math.exp(-t / 0.1) * 1.4 + lp.run(z) * Math.exp(-t / 0.04) * 1.2 + bp.run(z) * Math.exp(-t / 0.12) * 0.6) * 1.6);
     }
   }),
-  parry: (sr) => mk(sr, 2.2, (o, n) => {
-    const base = 620;
-    const ratios = [1, 2.76, 5.4, 8.93, 1.5];
-    const amps = [0.5, 0.35, 0.22, 0.12, 0.25];
-    const taus = [1.1, 0.7, 0.4, 0.25, 0.9];
+  parry: (sr) => mk(sr, 1.6, (o, n) => {
+    // keskin metal tık + derin gövde darbesi + kısa parlak çınlama
+    const hp = new BQ(sr, 'hp', 3500), bp = new BQ(sr, 'bp', 5200, 2.5), th = new Osc(sr), sub = new Osc(sr), lp = new BQ(sr, 'lp', 900);
+    const ratios = [1, 2.41, 3.9, 5.37, 7.1], amps = [0.45, 0.32, 0.22, 0.14, 0.08], taus = [0.55, 0.38, 0.26, 0.18, 0.12];
     const oscs = ratios.map(() => new Osc(sr));
-    const th = new Osc(sr), hp = new BQ(sr, 'hp', 3000);
+    for (let i = 0; i < n; i++) {
+      const t = i / sr, z = rnd();
+      let v = hp.run(z) * Math.exp(-t / 0.006) * 2.2 + bp.run(z) * Math.exp(-t / 0.03) * 1.2;
+      for (let k = 0; k < oscs.length; k++) v += oscs[k].run(880 * ratios[k] * (1 + 0.004 * Math.sin(TAU * 7 * t))) * amps[k] * Math.exp(-t / taus[k]);
+      v += th.run(55 + 260 * Math.exp(-t / 0.02)) * Math.exp(-t / 0.16) * 1.6;
+      v += sub.run(32 + 30 * Math.exp(-t / 0.08)) * Math.exp(-t / 0.45) * 1.4;
+      v += lp.run(z) * Math.exp(-t / 0.09) * 0.9;
+      o[i] = sat(v * 1.5);
+    }
+  }),
+  parryRing: (sr) => mk(sr, 2.0, (o, n) => {
+    // uzun, yükselen parıltı kuyruğu (ters çan)
+    const a = new Osc(sr), b = new Osc(sr), c = new Osc(sr, 'tri'), hp = new BQ(sr, 'hp', 6000);
     for (let i = 0; i < n; i++) {
       const t = i / sr;
-      let v = 0;
-      for (let k = 0; k < oscs.length; k++) v += oscs[k].run(base * ratios[k]) * amps[k] * Math.exp(-t / taus[k]);
-      v += th.run(30 + 120 * Math.exp(-t / 0.05)) * Math.exp(-t / 0.35) * 1.4;
-      v += hp.run(rnd()) * Math.exp(-t / 0.03) * 0.9;
-      o[i] = sat(v * 1.3);
+      const env = Math.min(1, t / 0.02) * Math.exp(-t / 0.7);
+      const f = 1320 + 220 * (1 - Math.exp(-t / 0.4));
+      o[i] = (a.run(f) * 0.4 + b.run(f * 1.5) * 0.25 + c.run(f * 2.01) * 0.15) * env * (0.8 + 0.2 * Math.sin(TAU * 11 * t)) + hp.run(rnd()) * Math.exp(-t / 0.25) * 0.12;
     }
   }),
   dash: (sr) => mk(sr, 0.35, (o, n) => {
@@ -544,6 +553,60 @@ const DEFS = {
       o[i] = sat(v * 1.8);
     }
   }),
+  dashWhoosh: (sr) => mk(sr, 0.4, (o, n) => {
+    // hava yarma: hızla yükselen bant gürültüsü + kısa alt vuruş
+    const bp = new BQ(sr, 'bp', 600, 2.2), bp2 = new BQ(sr, 'bp', 2200, 3), th = new Osc(sr);
+    for (let i = 0; i < n; i++) {
+      const t = i / sr, z = rnd();
+      bp.set(500 + 5000 * Math.pow(t / 0.4, 0.6));
+      const env = Math.sin(Math.PI * Math.min(1, t / 0.4)) ** 0.8;
+      o[i] = (bp.run(z) * 1.5 + bp2.run(z) * 0.5 * Math.exp(-t / 0.08)) * env + th.run(70 * Math.exp(-t / 0.05) + 40) * Math.exp(-t / 0.06) * 0.8;
+    }
+  }),
+  hitTick: (sr) => mk(sr, 0.09, (o, n) => {
+    // isabet onayı: kuru, parlak tık + kısa metal tını
+    const hp = new BQ(sr, 'hp', 2500), a = new Osc(sr, 'tri');
+    for (let i = 0; i < n; i++) {
+      const t = i / sr;
+      o[i] = hp.run(rnd()) * Math.exp(-t / 0.004) * 1.6 + a.run(1900) * Math.exp(-t / 0.025) * 0.5;
+    }
+  }),
+  meleeWhoosh: (sr) => mk(sr, 0.32, (o, n) => {
+    const bp = new BQ(sr, 'bp', 300, 1.8), lp = new BQ(sr, 'lp', 900);
+    for (let i = 0; i < n; i++) {
+      const t = i / sr, z = rnd();
+      bp.set(300 + 2400 * Math.sin(Math.PI * Math.min(1, t / 0.32)));
+      o[i] = (bp.run(z) * 1.6 + lp.run(z) * 0.4) * Math.sin(Math.PI * Math.min(1, t / 0.32)) ** 1.2;
+    }
+  }),
+  bossDeath: (sr) => mk(sr, 2.4, (o, n) => {
+    // metal çöküş: alçalan bozuk gövde + gıcırtı + derin gürleme
+    const s = new Osc(sr, 'saw'), s2 = new Osc(sr, 'square'), lp = new BQ(sr, 'lp', 1500), bp = new BQ(sr, 'bp', 1800, 6), th = new Osc(sr), lp2 = new BQ(sr, 'lp', 120);
+    for (let i = 0; i < n; i++) {
+      const t = i / sr, z = rnd();
+      const f = 180 * Math.exp(-t / 0.9) + 35;
+      lp.set(200 + 2500 * Math.exp(-t / 0.7));
+      let v = lp.run(s.run(f) + s2.run(f * 1.5) * 0.4) * 1.2;
+      v += bp.run(z) * (0.6 + 0.4 * Math.sin(TAU * 13 * t)) * Math.exp(-t / 0.5) * 0.7;
+      v += th.run(28 + 60 * Math.exp(-t / 0.1)) * Math.exp(-t / 0.8) * 1.5;
+      v += lp2.run(z) * Math.exp(-t / 1.2) * 2;
+      o[i] = sat(v * 1.7) * Math.min(1, t / 0.01);
+    }
+  }),
+  skullScream: (sr) => mk(sr, 1.9, (o, n) => {
+    // üç ayarsız testere + "aaa" formantları, titreşim, nefes gürültüsü, doygunluk
+    const s1 = new Osc(sr, 'saw'), s2 = new Osc(sr, 'saw'), s3 = new Osc(sr, 'square');
+    const f1 = new BQ(sr, 'bp', 820, 4), f2 = new BQ(sr, 'bp', 1250, 5), f3 = new BQ(sr, 'bp', 2700, 6), nb = new BQ(sr, 'bp', 3200, 1.5), lp = new BQ(sr, 'lp', 6000);
+    for (let i = 0; i < n; i++) {
+      const t = i / sr, z = rnd();
+      const glide = t < 0.12 ? 380 + 900 * (t / 0.12) : 1280 * Math.exp(-(t - 0.12) / 1.4) + 260;
+      const f = glide * (1 + 0.05 * Math.sin(TAU * 7.5 * t) + 0.02 * Math.sin(TAU * 31 * t));
+      const src = s1.run(f) + s2.run(f * 1.012) * 0.8 + s3.run(f * 0.5) * 0.35 + z * 0.35;
+      let v = f1.run(src) * 1.2 + f2.run(src) * 0.9 + f3.run(src) * 0.6 + nb.run(z) * 0.5;
+      const env = Math.min(1, t / 0.025) * (t < 1.2 ? 1 : Math.exp(-(t - 1.2) / 0.22));
+      o[i] = lp.run(sat(v * 3.2)) * env;
+    }
+  }),
   glitch: (sr) => mk(sr, 0.35, (o, n) => {
     const a = new Osc(sr, 'square');
     let hold = 0, f = 400;
@@ -597,14 +660,14 @@ const VARIANTS = { step: 4, enemyHit: 3, gore: 3, type: 3, filthGrowl: 3 };
 const MIX = {
   revolver: [0.55, 0.25], piercer: [0.7, 0.35], chargeLoop: [0.25, 0.1], chargeReady: [0.35, 0.2], coin: [0.35, 0.2], ricochet: [0.5, 0.4],
   shotgun: [0.8, 0.3], pump: [0.45, 0.15], shell: [0.12, 0.1], overpump: [0.35, 0.2], coreLaunch: [0.5, 0.2], explosion: [0.95, 0.45],
-  rail: [0.85, 0.5], railReady: [0.3, 0.2], empty: [0.3, 0.05], punch: [0.35, 0.1], punchHit: [0.6, 0.2], parry: [0.9, 0.6],
+  rail: [0.85, 0.5], railReady: [0.3, 0.2], empty: [0.3, 0.05], punch: [0.35, 0.1], punchHit: [0.6, 0.2], parry: [1.0, 0.55], parryRing: [0.3, 0.6],
   dash: [0.4, 0.15], jump: [0.25, 0.05], walljump: [0.35, 0.1], land: [0.35, 0.05], step: [0.16, 0.03], slideLoop: [0.18, 0.05],
   slamStart: [0.35, 0.1], slam: [0.8, 0.35], hurt: [0.6, 0.1], heal: [0.12, 0.05], enemyHit: [0.45, 0.15], headshot: [0.6, 0.2],
   gore: [0.75, 0.3], filthGrowl: [0.35, 0.2], screech: [0.35, 0.2], windup: [0.3, 0.15], glint: [0.45, 0.4], orbCharge: [0.22, 0.15],
   orbThrow: [0.4, 0.2], schismShot: [0.3, 0.15], projHit: [0.4, 0.2], swing: [0.6, 0.25], chainsaw: [0.4, 0.2], bossRoar: [0.8, 0.5],
   bossShotgun: [0.75, 0.3], spawn: [0.35, 0.35], door: [0.5, 0.3], doorSlam: [0.7, 0.4], secret: [0.35, 0.4], checkpoint: [0.3, 0.2],
   rankUp: [0.2, 0.1], pickup: [0.55, 0.5], uiHover: [0.12, 0], uiClick: [0.22, 0.05], type: [0.18, 0.02], beep: [0.2, 0.05],
-  bigText: [0.9, 0.6], death: [0.7, 0.4], glitch: [0.25, 0.1], rankStamp: [0.55, 0.3], tick: [0.12, 0], pRank: [0.45, 0.4], lava: [0.45, 0.1],
+  bigText: [0.9, 0.6], death: [0.7, 0.4], glitch: [0.25, 0.1], skullScream: [0.75, 0.55], dashWhoosh: [0.3, 0.1], hitTick: [0.16, 0], meleeWhoosh: [0.35, 0.1], bossDeath: [0.95, 0.6], rankStamp: [0.55, 0.3], tick: [0.12, 0], pRank: [0.45, 0.4], lava: [0.45, 0.1],
 };
 // Eski adlar → yeni
 const ALIAS = { charge: null, bossShotgun: 'bossShotgun' };

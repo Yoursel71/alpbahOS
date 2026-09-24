@@ -5,6 +5,14 @@ import { fmtTime, clamp } from './util.js';
 import { settings, progress } from './settings.js';
 import { Typer, drawNoise } from './typer.js';
 
+// Piksel kafatası (üst kafa + ayrı çene): ölüm ekranında çığlık atar
+function skullSVG() {
+  const TOP = ['....######....', '..##########..', '.############.', '##############', '##############', '##ooo####ooo##', '#ooooo##ooooo#', '#ooRoo##ooRoo#', '##ooo####ooo##', '######nn######', '.#####nn#####.', '..#.#.##.#.#..'];
+  const JAW = ['..#.#.##.#.#..', '..##########..', '...########...'];
+  const px = (rows, y0) => rows.map((r, y) => [...r].map((c, x) => (c === '.' ? '' : `<rect x="${x}" y="${y + y0}" width="1.02" height="1.02" class="${c === '#' ? 'b' : c === 'R' ? 'r' : 'd'}"/>`)).join('')).join('');
+  return `<svg viewBox="0 0 14 16" shape-rendering="crispEdges"><g class="sk-top">${px(TOP, 0)}</g><g class="sk-jaw">${px(JAW, 12.2)}</g></svg>`;
+}
+
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 export class HUD {
@@ -14,10 +22,13 @@ export class HUD {
     el.id = 'hud';
     el.className = 'hidden';
     el.innerHTML = `
+      <canvas id="bloodfx" width="384" height="216"></canvas>
       <div id="dmgvig"></div>
+      <div id="dmgdir"><i></i><i></i><i></i><i></i></div>
       <div id="flash"></div>
       <div id="parrypulse"></div>
-      <div id="parrycue"><i></i><b>PARRY!</b></div>
+      <div id="parryburst"><i></i></div>
+      <div id="speedfx"></div>
       <div id="crosshair"><i class="ch l"></i><i class="ch r"></i><i class="ch t"></i><i class="ch b"></i><div id="hitmark"><i></i><i></i><i></i><i></i></div>
         <div class="ch-hp"><i></i></div><div class="ch-st"><i></i></div></div>
       <div id="hud-bl" class="panel">
@@ -38,6 +49,7 @@ export class HUD {
         <ul class="st-list"></ul>
       </div>
       <div id="bossbar" class="hidden"><div class="bb-name"></div><div class="bb-bar"><i class="bb-lag"></i><i class="bb-fill"></i></div></div>
+      <div id="lockmark" class="hidden"><i></i><i></i><i></i><i></i></div>
       <div id="cgwave" class="hidden"></div>
       <div id="hint" class="hidden"></div>
       <div id="shopprompt" class="hidden"><b>[B]</b> DÜKKÂN</div>
@@ -47,6 +59,7 @@ export class HUD {
       <div id="deathscreen" class="hidden">
         <canvas class="ds-noise" width="160" height="90"></canvas>
         <div class="ds-term"></div>
+        <div class="ds-skull hidden">${skullSVG()}</div>
         <div class="ds-title hidden" data-text="ÖLDÜN">ÖLDÜN</div>
         <div class="ds-sub hidden"></div>
       </div>
@@ -64,7 +77,7 @@ export class HUD {
       boss: q('#bossbar'), bName: q('.bb-name'), bFill: q('.bb-fill'), bLag: q('.bb-lag'),
       hint: q('#hint'), msg: q('#msg'), stats: q('#stats'), flash: q('#flash'), vig: q('#dmgvig'),
       hit: q('#hitmark'), title: q('#titlecard'), death: q('#deathscreen'), fps: q('#fps'), lockhint: q('#lockhint'),
-      cue: q('#parrycue'), cgwave: q('#cgwave'),
+      burst: q('#parryburst'), speed: q('#speedfx'), lock: q('#lockmark'), cgwave: q('#cgwave'), blood: q('#bloodfx'), dirs: [...el.querySelectorAll('#dmgdir i')], skull: q('.ds-skull'),
       ptsBank: q('.pts-bank'), ptsRun: q('.pts-run'), shopPrompt: q('#shopprompt'),
       chHp: q('.ch-hp i'), chSt: q('.ch-st i'), cross: q('#crosshair'), armInd: q('.arm-ind'), hookInd: q('.hook-ind'), pulse: q('#parrypulse'),
     };
@@ -124,8 +137,107 @@ export class HUD {
     this.$.flash.style.opacity = 1;
   }
 
-  damage(dmg) {
+  // Hasar: kırmızı kenar + ekrana kan sıçraması (akıp söner) + saldırının yönünü gösteren yay
+  damage(dmg, angle = null) {
     this.vigT = Math.min(1, 0.4 + dmg / 40);
+    const n = Math.min(5, 1 + Math.round(dmg / 12));
+    for (let k = 0; k < n; k++) this.addSplat(angle, dmg);
+    if (angle !== null) {
+      const el = this.$.dirs[this.dirIdx = ((this.dirIdx || 0) + 1) % this.$.dirs.length];
+      el.style.transform = `rotate(${angle}rad)`;
+      el.classList.remove('on');
+      void el.offsetWidth;
+      el.classList.add('on');
+    }
+  }
+
+  // nişan yardımı hedefini köşeli çerçeveyle göster
+  updateLock() {
+    const g = this.game, t = g.aimTarget, el = this.$.lock;
+    if (this.lockHidden === undefined) this.lockHidden = true;
+    if (!t || t.dead || g.state !== 'playing') { if (!this.lockHidden) { el.classList.add('hidden'); this.lockHidden = true; } return; }
+    g.camera.updateMatrixWorld();
+    const v = g.aimPoint(t).project(g.camera);
+    if (v.z > 1) { el.classList.add('hidden'); this.lockHidden = true; return; }
+    const W = el.parentElement.clientWidth, H = el.parentElement.clientHeight;
+    const dist = g.player.eyePos().distanceTo(t.center());
+    const size = clamp((t.h || 2) * 0.55 * H / (dist * 1.2 + 1e-3), 26, 140);
+    el.style.transform = `translate(${((v.x + 1) / 2) * W}px, ${((1 - v.y) / 2) * H}px)`;
+    el.style.setProperty('--s', size + 'px');
+    if (this.lockHidden) { el.classList.remove('hidden'); this.lockHidden = false; }
+  }
+
+  speedLines() {
+    const el = this.$.speed;
+    el.classList.remove('go');
+    void el.offsetWidth;
+    el.classList.add('go');
+  }
+
+  addSplat(angle, dmg) {
+    const W = 384, H = 216;
+    // saldırı yönündeki ekran kenarına yakın, rastgele
+    let x, y;
+    if (angle !== null && Math.random() < 0.75) {
+      const r = 0.72 + Math.random() * 0.3;
+      x = W / 2 + Math.sin(angle) * W * 0.5 * r + (Math.random() - 0.5) * 60;
+      y = H / 2 - Math.cos(angle) * H * 0.5 * r + (Math.random() - 0.5) * 50;
+    } else {
+      const edge = Math.random() < 0.5;
+      x = edge ? (Math.random() < 0.5 ? Math.random() * 90 : W - Math.random() * 90) : Math.random() * W;
+      y = edge ? Math.random() * H : (Math.random() < 0.6 ? H - Math.random() * 60 : Math.random() * 60);
+    }
+    const size = 4 + Math.random() * 6 + Math.min(8, dmg * 0.18);
+    // düzensiz leke: ana gövde yönünde uzanan küçük daireler + sıçrantı damlaları
+    const dir = Math.random() * Math.PI * 2, blobs = [];
+    for (let k = 0; k < 9; k++) {
+      const d = Math.random() * size * (k < 3 ? 0.4 : 1.1);
+      const a = dir + (Math.random() - 0.5) * (k < 3 ? 6 : 1.3);
+      blobs.push([Math.cos(a) * d, Math.sin(a) * d * 0.8, size * (k < 3 ? 0.55 : 0.18 + Math.random() * 0.25)]);
+    }
+    const drops = [];
+    for (let k = 0; k < 7; k++) { const a = dir + (Math.random() - 0.5) * 1.6, d = size * (1.2 + Math.random() * 1.8); drops.push([Math.cos(a) * d, Math.sin(a) * d, 0.5 + Math.random() * 1.3]); }
+    (this.splats || (this.splats = [])).push({ x, y, size, blobs, drops, t: 0, life: 1.8 + Math.random() * 1.2, drip: Math.random() < 0.6 ? size * (2 + Math.random() * 4) : 0, dripX: (Math.random() - 0.5) * size * 0.5 });
+    if (this.splats.length > 40) this.splats.shift();
+  }
+
+  updateBlood(realDt) {
+    const list = this.splats;
+    const cv = this.$.blood;
+    if (!list || (!list.length && !this.bloodDirty)) return;
+    const ctx = cv.getContext('2d');
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    this.bloodDirty = list.length > 0;
+    for (let i = list.length - 1; i >= 0; i--) {
+      const s = list[i];
+      s.t += realDt;
+      if (s.t > s.life) { list.splice(i, 1); continue; }
+      const a = Math.min(1, s.t / 0.05) * (1 - Math.max(0, (s.t - s.life * 0.55) / (s.life * 0.45)));
+      const dripLen = s.drip * Math.min(1, s.t / 1.6);
+      ctx.globalAlpha = a * 0.78;
+      // koyu gövde + parlak merkez
+      for (const [bx, by, br] of s.blobs) {
+        const g = ctx.createRadialGradient(s.x + bx - br * 0.3, s.y + by - br * 0.3, br * 0.1, s.x + bx, s.y + by, br);
+        g.addColorStop(0, '#a80a08'); g.addColorStop(0.75, '#6e0303'); g.addColorStop(1, 'rgba(60,0,0,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(s.x + bx, s.y + by, br, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.fillStyle = '#7a0404';
+      for (const [dx, dy, dr] of s.drops) { ctx.beginPath(); ctx.arc(s.x + dx, s.y + dy, dr, 0, Math.PI * 2); ctx.fill(); }
+      if (dripLen > 1) {
+        // aşağı akan damla izi
+        const w = Math.max(1.2, s.size * 0.16);
+        ctx.fillRect(s.x + s.dripX - w / 2, s.y, w, dripLen);
+        ctx.beginPath(); ctx.arc(s.x + s.dripX, s.y + dripLen, w * 0.9, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  clearBlood() {
+    this.splats = [];
+    const cv = this.$.blood;
+    cv.getContext('2d').clearRect(0, 0, cv.width, cv.height);
   }
 
   hitmarker(kill) {
@@ -134,10 +246,11 @@ export class HUD {
   }
 
   parryPulse() {
-    const el = this.$.pulse;
-    el.classList.remove('go');
-    void el.offsetWidth;
-    el.classList.add('go');
+    for (const el of [this.$.pulse, this.$.burst]) {
+      el.classList.remove('go');
+      void el.offsetWidth;
+      el.classList.add('go');
+    }
   }
 
   rankPulse() {
@@ -163,14 +276,6 @@ export class HUD {
     this.bossFrac = clamp(frac, 0, 1);
   }
 
-  // parry yardımı işareti: nişangâhta daralan halka + yazı
-  parryCue() {
-    const c = this.$.cue;
-    c.classList.remove('on');
-    void c.offsetWidth;
-    c.classList.add('on');
-  }
-
   shopPrompt(on) {
     this.$.shopPrompt.classList.toggle('hidden', !on);
     if (on) this.game.audio.play('beep');
@@ -193,6 +298,8 @@ export class HUD {
     if (!on) { if (this.deathTyper) this.deathTyper = null; return; }
     el.classList.remove('dark');
     el.querySelector('.ds-title').classList.add('hidden');
+    this.$.skull.classList.add('hidden');
+    this.$.skull.classList.remove('scream');
     const sub = el.querySelector('.ds-sub');
     sub.classList.add('hidden');
     const touch = this.game.touch && this.game.touch.active;
@@ -219,8 +326,15 @@ export class HUD {
         this.deathStage = 2;
         this.deathT2 = 0;
         el.querySelector('.ds-title').classList.remove('hidden');
+        // çığlık atan kafatası
+        const sk = this.$.skull;
+        sk.classList.remove('hidden', 'scream');
+        void sk.offsetWidth;
+        sk.classList.add('scream');
+        this.game.audio.play('skullScream');
         this.game.audio.play('bigText');
-        this.game.shake(0.4);
+        this.game.shake(0.5);
+        this.game.haptic && this.game.haptic([40, 30, 80, 30, 120]);
       }
     }
     if (this.deathStage === 2) {
@@ -268,6 +382,7 @@ export class HUD {
 
   reset() {
     this.boss(null);
+    this.clearBlood();
     this.$.cgwave.classList.add('hidden');
     this.$.shopPrompt.classList.add('hidden');
     this.$.hint.classList.add('hidden');
@@ -284,6 +399,8 @@ export class HUD {
   }
 
   update(dt, realDt) {
+    this.updateBlood(realDt);
+    this.updateLock();
     const g = this.game;
     const p = g.player;
     const $ = this.$;

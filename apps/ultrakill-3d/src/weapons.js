@@ -45,6 +45,25 @@ function cylZ(r1, r2, len, mat, x, y, z, parent, seg = 10) {
   return m;
 }
 
+// Dişli testere diski: eksen x (dikey disk, ileri yöne bakar)
+export function sawDisc(r, mat, toothMat) {
+  const g = new THREE.Group();
+  const disc = new THREE.Mesh(new THREE.CylinderGeometry(r, r, r * 0.12, 18), mat);
+  disc.rotation.z = Math.PI / 2;
+  g.add(disc);
+  const hub = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.3, r * 0.3, r * 0.2, 8), toothMat);
+  hub.rotation.z = Math.PI / 2;
+  g.add(hub);
+  for (let k = 0; k < 12; k++) {
+    const a = (k / 12) * Math.PI * 2;
+    const t = new THREE.Mesh(new THREE.BoxGeometry(r * 0.1, r * 0.22, r * 0.14), toothMat);
+    t.position.set(0, Math.cos(a) * r, Math.sin(a) * r);
+    t.rotation.x = -a;
+    g.add(t);
+  }
+  return g;
+}
+
 const easeOut = (t) => 1 - Math.pow(1 - clamp(t, 0, 1), 3);
 const easeInOut = (t) => { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); };
 
@@ -108,6 +127,14 @@ export class Weapons {
     this.flashGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: T.glow, color: 0xffb060, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false }));
     this.flashGlow.visible = false;
     this.scene.add(this.flashGlow);
+    // namlu alevi konisi (dar uç namluda, geniş uç ileride) ve yan kıvılcım yıldızı
+    const coneGeo = new THREE.ConeGeometry(1, 1, 7, 1, true).rotateX(Math.PI / 2).translate(0, 0, -0.5);
+    this.flashCone = new THREE.Mesh(coneGeo, new THREE.MeshBasicMaterial({ color: 0xffd080, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, side: THREE.DoubleSide }));
+    this.flashCone.visible = false;
+    this.scene.add(this.flashCone);
+    this.flashCore = new THREE.Mesh(coneGeo, new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, side: THREE.DoubleSide }));
+    this.flashCore.visible = false;
+    this.scene.add(this.flashCore);
 
     // Whiplash halatı (dünya sahnesinde)
     const lg = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
@@ -442,9 +469,21 @@ export class Weapons {
     const muzzle = new THREE.Object3D();
     muzzle.position.set(0, 0.01, -0.55);
     gun.add(muzzle);
+    // SAWBLADE: testere yuvası (iki yan plaka, kızak) ve içinde dönen dişli testere
+    const sawRig = new THREE.Group();
+    sawRig.position.set(0, 0.1, -0.26);
+    sawRig.visible = false;
+    gun.add(sawRig);
+    // alçak yan plakalar: testerenin üst yarısı dışarıda görünür
+    for (const x of [-0.045, 0.045]) box(0.012, 0.1, 0.3, M.dark, x, -0.06, 0, sawRig);
+    box(0.1, 0.02, 0.3, M.gun, 0, -0.11, 0, sawRig);
+    box(0.104, 0.02, 0.05, A, 0, -0.005, 0.13, sawRig);
+    box(0.02, 0.025, 0.28, A, 0, -0.095, 0, sawRig);
+    const saw = sawDisc(0.1, M.gun, A);
+    sawRig.add(saw);
     this.buildHand(gun, 0, -0.1, 0.1);
     g.position.set(0.26, -0.29, -0.58);
-    return { group: g, gun, muzzle, barrels, heat, base: new THREE.Vector3(0.26, -0.29, -0.58), ry: 0.05 };
+    return { group: g, gun, muzzle, barrels, heat, sawRig, saw, drum, base: new THREE.Vector3(0.26, -0.29, -0.58), ry: 0.05 };
   }
 
   buildRail() {
@@ -624,6 +663,13 @@ export class Weapons {
     const p = game.player;
     const o = p.eyePos(), d = p.aimDir();
     if (game.touch && game.touch.active && settings.aimAssist) {
+      const t = game.aimTarget;
+      if (t && !t.dead) {
+        const to = game.aimPoint(t).sub(o);
+        const dist = to.length();
+        to.normalize();
+        if (Math.acos(Math.min(1, to.dot(d))) < (settings.aimAssist >= 2 ? 0.12 : 0.08) + (t.r || 0.5) / dist * 0.5) return { o, d: to };
+      }
       const best = this.assistDir(o, d, settings.aimAssist >= 2 ? 0.1 : 0.075);
       if (best) return { o, d: best };
     }
@@ -687,6 +733,7 @@ export class Weapons {
     this.idleT = 0;
     this.inspectT = 0;
     this.flashT = 0.055;
+    this.game.camKick = Math.min(0.08, (this.game.camKick || 0) + k * 0.009);
     this.haptic(Math.min(40, 8 + k * 10));
   }
 
@@ -717,9 +764,11 @@ export class Weapons {
     const w = r.world;
     const n = new THREE.Vector3(w.nx, w.ny, w.nz);
     const p = new THREE.Vector3(w.x, w.y, w.z);
-    game.fx.sparkDir(p, n, big ? 10 : 5, big ? 9 : 6, 0xffd080, 0.25, 0.04, 0.7);
+    game.fx.sparkDir(p, n, big ? 14 : 7, big ? 10 : 7, 0xffd080, 0.3, 0.045, 0.7);
     game.fx.bulletHole(w.x, w.y, w.z, w.nx, w.ny, w.nz, big ? 0.3 : 0.16);
-    game.fx.smoke(p.clone().addScaledVector(n, 0.1), big ? 3 : 1, 0x9a8c80, big ? 0.7 : 0.4, 0.7, 0.8);
+    game.fx.smoke(p.clone().addScaledVector(n, 0.1), big ? 4 : 2, 0x9a8c80, big ? 0.8 : 0.45, 0.8, 0.9);
+    game.fx.sprite(p.clone().addScaledVector(n, 0.08), 0xffe0a0, big ? 1.4 : 0.7, 0.06, 'star', 1.6);
+    game.fx.debris(p, n, big ? 5 : 2, big ? 6 : 4);
   }
 
   ejectCasing(red = false) {
@@ -1217,6 +1266,8 @@ export class Weapons {
     const from = this.muzzleWorld();
     game.addProjectile(new Projectile(game, { kind: 'saw', pos: from, vel: d.clone().multiplyScalar(55), radius: 0.28, damage: 0.55, gravity: 1, life: 3, bounces: 3 }));
     this.kick(0.35, 0.4);
+    this.sawReload = 0;
+    game.fx.sparkDir(from, d, 6, 8, 0xffb060, 0.2, 0.04, 0.4);
     this.barrelSpin = 1;
     game.audio.play('chainsaw', null, { rate: 1.6, vol: 0.5 });
   }
@@ -1524,6 +1575,16 @@ export class Weapons {
       } else if (this.cur === 2) {
         this.barrelAngle += dt * (2 + this.barrelSpin * 30);
         m.barrels.rotation.z = this.barrelAngle;
+        const sawV = this.varId === 'sawblade';
+        m.barrels.visible = !sawV;
+        m.drum.visible = !sawV;
+        m.sawRig.visible = sawV;
+        if (sawV) {
+          this.sawReload = Math.min(1, (this.sawReload ?? 1) + dt / 0.28);
+          m.saw.visible = this.sawReload > 0.35;
+          m.saw.position.z = 0.12 * (1 - easeOut((this.sawReload - 0.35) / 0.65));
+          m.saw.rotation.x -= dt * (6 + this.barrelSpin * 40);
+        }
         const h = this.heat;
         this.heatMat.color.setRGB(0.25 + h * 0.75, 0.06 + h * 0.4, 0.03 + h * 0.1);
         if (this.heatBurst > 0) this.heatMat.color.setHex(Math.sin(game.time * 50) > 0 ? 0xffffff : 0xff8020);
@@ -1570,9 +1631,25 @@ export class Weapons {
       this.flashGlow.scale.setScalar(s * 2.2);
       this.flashGlow.material.color.setHex(col);
       this.flashLightVM.intensity = 5;
+      // koni: silahın ileri yönüne bakar, her karede biraz farklı
+      if (this.cur !== 3) {
+        const q = m.muzzle.getWorldQuaternion(new THREE.Quaternion());
+        const len = [0.55, 0.8, 0.35, 0, 0.7][this.cur] * rand(0.8, 1.25);
+        const w = [0.09, 0.16, 0.06, 0, 0.14][this.cur] * rand(0.8, 1.2);
+        for (const [c, k] of [[this.flashCone, 1], [this.flashCore, 0.45]]) {
+          c.visible = true;
+          c.position.copy(mp);
+          c.quaternion.copy(q);
+          c.rotateZ(rand(0, Math.PI));
+          c.scale.set(w * k, w * k * rand(0.7, 1.1), len * (0.6 + k * 0.4));
+        }
+        this.flashCone.material.color.setHex(col === 0xffe0a0 ? 0xffb050 : col);
+      }
     } else {
       for (const f of this.flashes) f.visible = false;
       this.flashGlow.visible = false;
+      this.flashCone.visible = false;
+      this.flashCore.visible = false;
       this.flashLightVM.intensity = 0;
     }
   }

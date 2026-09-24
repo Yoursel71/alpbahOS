@@ -74,6 +74,10 @@ export class FX {
     this.ringGeo.rotateX(-Math.PI / 2);
     this.shellGeo = new THREE.SphereGeometry(1, 16, 10);
     this.spriteMatCache = new Map();
+    this.slashes = [];
+    this.slashGeo = new THREE.RingGeometry(0.72, 1, 20, 1, -1.1, 2.2);
+    this.slashGeo.rotateX(-Math.PI / 2);
+    this.debrisMat = new THREE.MeshLambertMaterial({ color: 0x8a7a6c });
     this.gibCountMax = 160;
   }
 
@@ -277,6 +281,26 @@ export class FX {
     return s;
   }
 
+  // Düşman yakın saldırısı: önünde süpürülen parlak kavis (yatay, hafif eğik)
+  slash(pos, yaw, color = 0xffe0c0, size = 2, life = 0.2, tilt = 0) {
+    const mat = new THREE.MeshBasicMaterial({ color, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+    const m = new THREE.Mesh(this.slashGeo, mat);
+    m.position.copy(pos);
+    m.rotation.order = 'YXZ';
+    m.rotation.set(0, yaw + Math.PI / 2, tilt);
+    m.scale.setScalar(size * 0.6);
+    this.scene.add(m);
+    this.slashes.push({ mesh: m, life, max: life, size, yaw });
+  }
+
+  // Duvar/zemin isabetinde küçük moloz parçaları
+  debris(pos, n, count = 3, speed = 4) {
+    for (let i = 0; i < count; i++) {
+      const v = n.clone().multiplyScalar(speed * rand(0.4, 1)).add(new THREE.Vector3(rand(-1, 1), rand(0.5, 2), rand(-1, 1)).multiplyScalar(speed * 0.4));
+      this.gibChunk(pos.clone().addScaledVector(n, 0.05), v, rand(0.04, 0.09), this.debrisMat);
+    }
+  }
+
   spawnFX(pos, h = 2) {
     this.ring(pos, 0x9fd8ff, 2.5, 0.6);
     this.sparkBurst(pos.clone().add(new THREE.Vector3(0, h * 0.5, 0)), 20, 6, 0xa0e0ff, 0.6, 0.07, -2);
@@ -440,6 +464,15 @@ export class FX {
       t.mesh.scale.setScalar(0.2 + t.radius * (1 - (1 - k) * (1 - k)));
       t.mesh.material.opacity = (1 - k) * 0.9;
     }
+    for (let i = this.slashes.length - 1; i >= 0; i--) {
+      const t = this.slashes[i];
+      t.life -= dt;
+      if (t.life <= 0) { this.scene.remove(t.mesh); t.mesh.material.dispose(); this.slashes.splice(i, 1); continue; }
+      const k = 1 - t.life / t.max;
+      t.mesh.scale.setScalar(t.size * (0.6 + 0.5 * (1 - (1 - k) * (1 - k))));
+      t.mesh.rotation.y = t.yaw + Math.PI / 2 + (k - 0.5) * 0.9;
+      t.mesh.material.opacity = (1 - k) * 0.95;
+    }
     for (let i = this.sprites.length - 1; i >= 0; i--) {
       const t = this.sprites[i];
       t.life -= dt;
@@ -468,6 +501,8 @@ export class FX {
     for (const t of this.rings) this.scene.remove(t.mesh);
     for (const t of this.shells) this.scene.remove(t.mesh);
     for (const t of this.sprites) this.scene.remove(t.s);
+    for (const t of this.slashes) this.scene.remove(t.mesh);
+    this.slashes.length = 0;
     this.tracers.length = this.rings.length = this.shells.length = this.sprites.length = 0;
   }
 }

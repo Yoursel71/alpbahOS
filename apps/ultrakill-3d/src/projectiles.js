@@ -3,6 +3,7 @@
 // Marksman bozuk paraları.
 import * as THREE from 'three';
 import { rand } from './util.js';
+import { sawDisc } from './weapons.js';
 
 const _a = new THREE.Vector3();
 const _b = new THREE.Vector3();
@@ -95,7 +96,8 @@ export class Projectile {
       return;
     }
     if (k === 'saw') {
-      this.mesh = add(new THREE.Mesh(geo('sw', () => new THREE.CylinderGeometry(0.28, 0.28, 0.03, 12)), new THREE.MeshLambertMaterial({ color: 0xd8dce4, emissive: 0x401010 })));
+      // şablon bir kez kurulur; her mermi geometri/malzemeyi paylaşan kopya alır
+      this.mesh = add(geo('sawT', () => sawDisc(0.28, new THREE.MeshLambertMaterial({ color: 0xd8dce4, emissive: 0x401010 }), new THREE.MeshBasicMaterial({ color: 0xff4a30 }))).clone());
       glow(0xff4030, 0.9);
       return;
     }
@@ -233,7 +235,8 @@ export class Projectile {
       this.group.lookAt(this.pos.x + this.vel.x, this.pos.y + this.vel.y, this.pos.z + this.vel.z);
       if (k === 'rocket' && Math.random() < dt * 40) this.game.fx.smoke(this.pos.clone().addScaledVector(this.vel, -0.012), 1, 0x8a8480, 0.35, 0.6, 0.3);
     } else if (k === 'saw') {
-      this.mesh.rotation.y += dt * 40;
+      this.group.lookAt(this.pos.x + this.vel.x, this.pos.y + this.vel.y, this.pos.z + this.vel.z);
+      this.mesh.rotation.x -= dt * 40;
     } else if (k === 'cannonball') {
       this.mesh.rotation.x += dt * 10;
     } else if (this.glow) this.glow.material.rotation += dt * 4;
