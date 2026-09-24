@@ -427,6 +427,27 @@ detached all mounts; Builder retained 69 GiB free and an empty NBD PID. The
 pinned `alp.py` hash and empty package database were unchanged. LFS reference:
 [Findutils 4.10.0 build instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/findutils.html).
 
+## Gawk 5.3.2 staged comparison — 24 September 2026
+
+Gawk 5.3.2 was built in the Builder `/mnt/lfs` chroot from the archive whose
+LFS MD5 is `b7014650c5f45e5d4837c31209dc0037` and SHA-256 is
+`f8c3486509de705192138b00ef2c00bbbdd0e84c30d5c07d23fc73a9dc4cc9cc`. The
+build followed LFS: remove `extras` from `Makefile.in`, configure
+`--prefix=/usr`, build with `make -j2`, and run `make check` as tester UID
+101. Output reported `ALL TESTS PASSED`. Installation and the `awk.1`
+symlink were created only in `/mnt/lfs/tmp/alp-m04-gawk-stage-r1`; the staged
+program printed GNU Awk 5.3.2 and the arithmetic smoke printed `42`.
+
+The manifest contains 160 entries (62 directories, 96 files, 2 symlinks),
+SHA-256 `BD2910B111EE94B758C6ECDF0AF515B78B823125555F4257F5CD35D9F54EEEAA`;
+[manifest](manifests/lfs-base/gawk-5.3.2-2026-09-24.json). Read-only
+preflight reported 8 matches and 152 mismatches; [full report](manifests/lfs-base/gawk-5.3.2-2026-09-24-preflight.log),
+SHA-256 `E8ADB73CD44F31728FF3BC9DDE82B1448803F41BA8F8A8455E7C38DC8197CFE8`.
+No stage files were merged and no package ownership record was created.
+Cleanup detached all mounts; NBD PID was empty, 69 GiB remained free, and
+the pinned `alp.py` hash and empty database were unchanged. LFS reference:
+[Gawk 5.3.2 build instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/gawk.html).
+
 Official LFS 12.4-systemd procedures:
 [Gzip-1.14](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/gzip.html),
 [Zstd-1.5.7](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/zstd.html),
