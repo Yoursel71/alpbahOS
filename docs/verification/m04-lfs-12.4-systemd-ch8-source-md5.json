@@ -1,0 +1,491 @@
+{
+  "schema": "alpbahos-lfs-ch8-source-md5-v1",
+  "book": "Linux From Scratch 12.4-systemd",
+  "scope": "The 79 ordered Chapter 8 package source archives in the existing M04 coverage matrix. Patches, Chapter 5/6/7 sources, documentation archives, and unrelated sources are excluded.",
+  "source": {
+    "url": "https://www.linuxfromscratch.org/lfs/downloads/12.4-systemd/md5sums",
+    "retrieved_on": "2026-09-24",
+    "snapshot_file": "m04-lfs-12.4-systemd-official-md5sums.txt",
+    "snapshot_sha256": "d18a55ca1aa4eb0f483f134cd44287ea8d48eeb1def5fa0c8d07fe44f38dbb17",
+    "checksum_algorithm": "MD5 as published by official LFS 12.4-systemd md5sums",
+    "use": "Book source identity comparison; MD5 does not provide modern cryptographic authenticity."
+  },
+  "package_order_source": "m04-lfs-12.4-package-coverage-2026-09-24.md rows 1-79",
+  "expected_count": 79,
+  "entries": [
+    {
+      "index": 1,
+      "package": "Man-pages 6.15",
+      "archive": "man-pages-6.15.tar.xz",
+      "md5": "16f68d70139dd2bbcae4102be4705753"
+    },
+    {
+      "index": 2,
+      "package": "Iana-Etc 20250807",
+      "archive": "iana-etc-20250807.tar.gz",
+      "md5": "de0a909103d4ff59d1424c5ec7ac9e4a"
+    },
+    {
+      "index": 3,
+      "package": "Glibc 2.42",
+      "archive": "glibc-2.42.tar.xz",
+      "md5": "23c6f5a27932b435cae94e087cb8b1f5"
+    },
+    {
+      "index": 4,
+      "package": "Zlib 1.3.1",
+      "archive": "zlib-1.3.1.tar.gz",
+      "md5": "9855b6d802d7fe5b7bd5b196a2271655"
+    },
+    {
+      "index": 5,
+      "package": "Bzip2 1.0.8",
+      "archive": "bzip2-1.0.8.tar.gz",
+      "md5": "67e051268d0c475ea773822f7500d0e5"
+    },
+    {
+      "index": 6,
+      "package": "Xz 5.8.1",
+      "archive": "xz-5.8.1.tar.xz",
+      "md5": "cf5e1feb023d22c6bdaa30e84ef3abe3"
+    },
+    {
+      "index": 7,
+      "package": "Lz4 1.10.0",
+      "archive": "lz4-1.10.0.tar.gz",
+      "md5": "dead9f5f1966d9ae56e1e32761e4e675"
+    },
+    {
+      "index": 8,
+      "package": "Zstd 1.5.7",
+      "archive": "zstd-1.5.7.tar.gz",
+      "md5": "780fc1896922b1bc52a4e90980cdda48"
+    },
+    {
+      "index": 9,
+      "package": "File 5.46",
+      "archive": "file-5.46.tar.gz",
+      "md5": "459da2d4b534801e2e2861611d823864"
+    },
+    {
+      "index": 10,
+      "package": "Readline 8.3",
+      "archive": "readline-8.3.tar.gz",
+      "md5": "25a73bfb2a3ad7146c5e9d4408d9f6cd"
+    },
+    {
+      "index": 11,
+      "package": "M4 1.4.20",
+      "archive": "m4-1.4.20.tar.xz",
+      "md5": "6eb2ebed5b24e74b6e890919331d2132"
+    },
+    {
+      "index": 12,
+      "package": "Bc 7.0.3",
+      "archive": "bc-7.0.3.tar.xz",
+      "md5": "ad4db5a0eb4fdbb3f6813be4b6b3da74"
+    },
+    {
+      "index": 13,
+      "package": "Flex 2.6.4",
+      "archive": "flex-2.6.4.tar.gz",
+      "md5": "2882e3179748cc9f9c23ec593d6adc8d"
+    },
+    {
+      "index": 14,
+      "package": "Tcl 8.6.16",
+      "archive": "tcl8.6.16-src.tar.gz",
+      "md5": "eaef5d0a27239fb840f04af8ec608242"
+    },
+    {
+      "index": 15,
+      "package": "Expect 5.45.4",
+      "archive": "expect5.45.4.tar.gz",
+      "md5": "00fce8de158422f5ccd2666512329bd2"
+    },
+    {
+      "index": 16,
+      "package": "DejaGNU 1.6.3",
+      "archive": "dejagnu-1.6.3.tar.gz",
+      "md5": "68c5208c58236eba447d7d6d1326b821"
+    },
+    {
+      "index": 17,
+      "package": "Pkgconf 2.5.1",
+      "archive": "pkgconf-2.5.1.tar.xz",
+      "md5": "3291128c917fdb8fccd8c9e7784b643b"
+    },
+    {
+      "index": 18,
+      "package": "Binutils 2.45",
+      "archive": "binutils-2.45.tar.xz",
+      "md5": "dee5b4267e0305a99a3c9d6131f45759"
+    },
+    {
+      "index": 19,
+      "package": "GMP 6.3.0",
+      "archive": "gmp-6.3.0.tar.xz",
+      "md5": "956dc04e864001a9c22429f761f2c283"
+    },
+    {
+      "index": 20,
+      "package": "MPFR 4.2.2",
+      "archive": "mpfr-4.2.2.tar.xz",
+      "md5": "7c32c39b8b6e3ae85f25156228156061"
+    },
+    {
+      "index": 21,
+      "package": "MPC 1.3.1",
+      "archive": "mpc-1.3.1.tar.gz",
+      "md5": "5c9bc658c9fd0f940e8e3e0f09530c62"
+    },
+    {
+      "index": 22,
+      "package": "Attr 2.5.2",
+      "archive": "attr-2.5.2.tar.gz",
+      "md5": "227043ec2f6ca03c0948df5517f9c927"
+    },
+    {
+      "index": 23,
+      "package": "Acl 2.3.2",
+      "archive": "acl-2.3.2.tar.xz",
+      "md5": "590765dee95907dbc3c856f7255bd669"
+    },
+    {
+      "index": 24,
+      "package": "Libcap 2.76",
+      "archive": "libcap-2.76.tar.xz",
+      "md5": "449ade7d620b5c4eeb15a632fbaa4f74"
+    },
+    {
+      "index": 25,
+      "package": "Libxcrypt 4.4.38",
+      "archive": "libxcrypt-4.4.38.tar.xz",
+      "md5": "1796a5d20098e9dd9e3f576803c83000"
+    },
+    {
+      "index": 26,
+      "package": "Shadow 4.18.0",
+      "archive": "shadow-4.18.0.tar.xz",
+      "md5": "30ef46f54363db1d624587be68794ef2"
+    },
+    {
+      "index": 27,
+      "package": "GCC 15.2.0",
+      "archive": "gcc-15.2.0.tar.xz",
+      "md5": "b861b092bf1af683c46a8aa2e689a6fd"
+    },
+    {
+      "index": 28,
+      "package": "Ncurses 6.5-20250809",
+      "archive": "ncurses-6.5-20250809.tgz",
+      "md5": "679987405412f970561cc85e1e6428a2"
+    },
+    {
+      "index": 29,
+      "package": "Sed 4.9",
+      "archive": "sed-4.9.tar.xz",
+      "md5": "6aac9b2dbafcd5b7a67a8a9bcb8036c3"
+    },
+    {
+      "index": 30,
+      "package": "Psmisc 23.7",
+      "archive": "psmisc-23.7.tar.xz",
+      "md5": "53eae841735189a896d614cba440eb10"
+    },
+    {
+      "index": 31,
+      "package": "Gettext 0.26",
+      "archive": "gettext-0.26.tar.xz",
+      "md5": "8e14e926f088e292f5f2bce95b81d10e"
+    },
+    {
+      "index": 32,
+      "package": "Bison 3.8.2",
+      "archive": "bison-3.8.2.tar.xz",
+      "md5": "c28f119f405a2304ff0a7ccdcc629713"
+    },
+    {
+      "index": 33,
+      "package": "Grep 3.12",
+      "archive": "grep-3.12.tar.xz",
+      "md5": "5d9301ed9d209c4a88c8d3a6fd08b9ac"
+    },
+    {
+      "index": 34,
+      "package": "Bash 5.3",
+      "archive": "bash-5.3.tar.gz",
+      "md5": "977c8c0c5ae6309191e7768e28ebc951"
+    },
+    {
+      "index": 35,
+      "package": "Libtool 2.5.4",
+      "archive": "libtool-2.5.4.tar.xz",
+      "md5": "22e0a29df8af5fdde276ea3a7d351d30"
+    },
+    {
+      "index": 36,
+      "package": "GDBM 1.26",
+      "archive": "gdbm-1.26.tar.gz",
+      "md5": "aaa600665bc89e2febb3c7bd90679115"
+    },
+    {
+      "index": 37,
+      "package": "Gperf 3.3",
+      "archive": "gperf-3.3.tar.gz",
+      "md5": "31753b021ea78a21f154bf9eecb8b079"
+    },
+    {
+      "index": 38,
+      "package": "Expat 2.7.1",
+      "archive": "expat-2.7.1.tar.xz",
+      "md5": "9f0c266ff4b9720beae0c6bd53ae4469"
+    },
+    {
+      "index": 39,
+      "package": "Inetutils 2.6",
+      "archive": "inetutils-2.6.tar.xz",
+      "md5": "401d7d07682a193960bcdecafd03de94"
+    },
+    {
+      "index": 40,
+      "package": "Less 679",
+      "archive": "less-679.tar.gz",
+      "md5": "0386dc14f6a081a94dfb4c2413864eed"
+    },
+    {
+      "index": 41,
+      "package": "Perl 5.42.0",
+      "archive": "perl-5.42.0.tar.xz",
+      "md5": "7a6950a9f12d01eb96a9d2ed2f4e0072"
+    },
+    {
+      "index": 42,
+      "package": "XML::Parser 2.47",
+      "archive": "XML-Parser-2.47.tar.gz",
+      "md5": "89a8e82cfd2ad948b349c0a69c494463"
+    },
+    {
+      "index": 43,
+      "package": "Intltool 0.51.0",
+      "archive": "intltool-0.51.0.tar.gz",
+      "md5": "12e517cac2b57a0121cda351570f1e63"
+    },
+    {
+      "index": 44,
+      "package": "Autoconf 2.72",
+      "archive": "autoconf-2.72.tar.xz",
+      "md5": "1be79f7106ab6767f18391c5e22be701"
+    },
+    {
+      "index": 45,
+      "package": "Automake 1.18.1",
+      "archive": "automake-1.18.1.tar.xz",
+      "md5": "cea31dbf1120f890cbf2a3032cfb9a68"
+    },
+    {
+      "index": 46,
+      "package": "OpenSSL 3.5.2",
+      "archive": "openssl-3.5.2.tar.gz",
+      "md5": "890fc59f86fc21b5e4d1c031a698dbde"
+    },
+    {
+      "index": 47,
+      "package": "Libelf (Elfutils 0.193)",
+      "archive": "elfutils-0.193.tar.bz2",
+      "md5": "ceefa052ded950a4c523688799193a44"
+    },
+    {
+      "index": 48,
+      "package": "Libffi 3.5.2",
+      "archive": "libffi-3.5.2.tar.gz",
+      "md5": "92af9efad4ba398995abf44835c5d9e9"
+    },
+    {
+      "index": 49,
+      "package": "Python 3.13.7",
+      "archive": "Python-3.13.7.tar.xz",
+      "md5": "256cdb3bbf45cdce7499e52ba6c36ea3"
+    },
+    {
+      "index": 50,
+      "package": "Flit-Core 3.12.0",
+      "archive": "flit_core-3.12.0.tar.gz",
+      "md5": "c538415c1f27bd69cbbbf3cdd5135d39"
+    },
+    {
+      "index": 51,
+      "package": "Packaging 25.0",
+      "archive": "packaging-25.0.tar.gz",
+      "md5": "ab0ef21ddebe09d1803575120d3f99f8"
+    },
+    {
+      "index": 52,
+      "package": "Wheel 0.46.1",
+      "archive": "wheel-0.46.1.tar.gz",
+      "md5": "65e09ee84af36821e3b1e9564aa91bd5"
+    },
+    {
+      "index": 53,
+      "package": "Setuptools 80.9.0",
+      "archive": "setuptools-80.9.0.tar.gz",
+      "md5": "82e1d67883b713f9493659b50d13b436"
+    },
+    {
+      "index": 54,
+      "package": "Ninja 1.13.1",
+      "archive": "ninja-1.13.1.tar.gz",
+      "md5": "c35f8f55f4cf60f1a916068d8f45a0f8"
+    },
+    {
+      "index": 55,
+      "package": "Meson 1.8.3",
+      "archive": "meson-1.8.3.tar.gz",
+      "md5": "08221d2f515e759686f666ff6409a903"
+    },
+    {
+      "index": 56,
+      "package": "Kmod 34.2",
+      "archive": "kmod-34.2.tar.xz",
+      "md5": "36f2cc483745e81ede3406fa55e1065a"
+    },
+    {
+      "index": 57,
+      "package": "Coreutils 9.7",
+      "archive": "coreutils-9.7.tar.xz",
+      "md5": "6b7285faf7d5eb91592bdd689270d3f1"
+    },
+    {
+      "index": 58,
+      "package": "Diffutils 3.12",
+      "archive": "diffutils-3.12.tar.xz",
+      "md5": "d1b18b20868fb561f77861cd90b05de4"
+    },
+    {
+      "index": 59,
+      "package": "Gawk 5.3.2",
+      "archive": "gawk-5.3.2.tar.xz",
+      "md5": "b7014650c5f45e5d4837c31209dc0037"
+    },
+    {
+      "index": 60,
+      "package": "Findutils 4.10.0",
+      "archive": "findutils-4.10.0.tar.xz",
+      "md5": "870cfd71c07d37ebe56f9f4aaf4ad872"
+    },
+    {
+      "index": 61,
+      "package": "Groff 1.23.0",
+      "archive": "groff-1.23.0.tar.gz",
+      "md5": "5e4f40315a22bb8a158748e7d5094c7d"
+    },
+    {
+      "index": 62,
+      "package": "GRUB 2.12",
+      "archive": "grub-2.12.tar.xz",
+      "md5": "60c564b1bdc39d8e43b3aab4bc0fb140"
+    },
+    {
+      "index": 63,
+      "package": "Gzip 1.14",
+      "archive": "gzip-1.14.tar.xz",
+      "md5": "4bf5a10f287501ee8e8ebe00ef62b2c2"
+    },
+    {
+      "index": 64,
+      "package": "IPRoute2 6.16.0",
+      "archive": "iproute2-6.16.0.tar.xz",
+      "md5": "80e1f91bf59d572acc15d5c6eb4f3e7c"
+    },
+    {
+      "index": 65,
+      "package": "Kbd 2.8.0",
+      "archive": "kbd-2.8.0.tar.xz",
+      "md5": "24b5d24f7483726b88f214dc6c77aa41"
+    },
+    {
+      "index": 66,
+      "package": "Libpipeline 1.5.8",
+      "archive": "libpipeline-1.5.8.tar.gz",
+      "md5": "17ac6969b2015386bcb5d278a08a40b5"
+    },
+    {
+      "index": 67,
+      "package": "Make 4.4.1",
+      "archive": "make-4.4.1.tar.gz",
+      "md5": "c8469a3713cbbe04d955d4ae4be23eeb"
+    },
+    {
+      "index": 68,
+      "package": "Patch 2.8",
+      "archive": "patch-2.8.tar.xz",
+      "md5": "149327a021d41c8f88d034eab41c039f"
+    },
+    {
+      "index": 69,
+      "package": "Tar 1.35",
+      "archive": "tar-1.35.tar.xz",
+      "md5": "a2d8042658cfd8ea939e6d911eaf4152"
+    },
+    {
+      "index": 70,
+      "package": "Texinfo 7.2",
+      "archive": "texinfo-7.2.tar.xz",
+      "md5": "11939a7624572814912a18e76c8d8972"
+    },
+    {
+      "index": 71,
+      "package": "Vim 9.1.1629",
+      "archive": "vim-9.1.1629.tar.gz",
+      "md5": "4f856c3233c1c4570bc17572e4f9e8e4"
+    },
+    {
+      "index": 72,
+      "package": "MarkupSafe 3.0.2",
+      "archive": "markupsafe-3.0.2.tar.gz",
+      "md5": "cb0071711b573b155cc8f86e1de72167"
+    },
+    {
+      "index": 73,
+      "package": "Jinja2 3.1.6",
+      "archive": "jinja2-3.1.6.tar.gz",
+      "md5": "66d4c25ff43d1deaf9637ccda523dec8"
+    },
+    {
+      "index": 74,
+      "package": "Systemd 257.8",
+      "archive": "systemd-257.8.tar.gz",
+      "md5": "25fe5d328e22641254761f1baa74cee0"
+    },
+    {
+      "index": 75,
+      "package": "D-Bus 1.16.2",
+      "archive": "dbus-1.16.2.tar.xz",
+      "md5": "97832e6f0a260936d28536e5349c22e5"
+    },
+    {
+      "index": 76,
+      "package": "Man-DB 2.13.1",
+      "archive": "man-db-2.13.1.tar.xz",
+      "md5": "b6335533cbeac3b24cd7be31fdee8c83"
+    },
+    {
+      "index": 77,
+      "package": "Procps-ng 4.0.5",
+      "archive": "procps-ng-4.0.5.tar.xz",
+      "md5": "90803e64f51f192f3325d25c3335d057"
+    },
+    {
+      "index": 78,
+      "package": "Util-linux 2.41.1",
+      "archive": "util-linux-2.41.1.tar.xz",
+      "md5": "7e5e68845e2f347cf96f5448165f1764"
+    },
+    {
+      "index": 79,
+      "package": "E2fsprogs 1.47.3",
+      "archive": "e2fsprogs-1.47.3.tar.gz",
+      "md5": "113d7a7ee0710d2a670a44692a35fd2e"
+    }
+  ]
+}
