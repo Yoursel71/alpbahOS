@@ -555,3 +555,9 @@ PipeWire hatası için aynı gün ek tekrar: Guest `/tmp`'te 12 saniye 48 kHz st
 - `speaker-test -D hw:Loopback,1,0 -t sine -f 440 -r 48000 -c 2 -F S32_LE -s 1 -l 5` exit 0 oldu. Aynı PCM `S16_LE` biçimini reddetti; test S32_LE ile yinelendi.
 - `pw-record --target=46 --rate=48000 --channels=2 --format=s32` kaydı beklenen SIGINT cleanup sınırında kapanmadı; kısa ölçüm penceresinde WAV 990,941,184 byte (946 MiB) büyüdü ve recorder exit 1 verdi. Ses örnekleri ölçülmedi; PipeWire capture/roundtrip başarılı sayılmıyor. Bu VM'deki son `/tmp` ölçümü 11 MiB kullanım ve 946 MiB boş gösterdi.
 - Yalnız bu probe'un oluşturduğu `/tmp/m06-inverse-pw-record.wav`, speaker-test/recorder logları kaldırıldı; package, kalıcı config, VM image veya rootfs değişmedi. Sonraki probe çıktı boyutuna sert sınır koymalı. Ayrıntı [M06 verification](verification/m06-gen2-audio-2026-09-24.md#inverse-alsa-to-pipewire-probe--24-september-2026).
+
+## 24 Eylül 2026 — M06 boyut-sınırlı PipeWire capture ölçümü
+
+- Audio Gen2 guest'te PipeWire source 46 kaydı `pw-record --raw` → `head -c 1048576` ile kesin 1 MiB'te kesildi; eşzamanlı S32_LE/48 kHz `speaker-test` → `hw:Loopback,1,0` exit 0 oldu. `pw-record` pipe exit 141, downstream boyut sınırının beklenen SIGPIPE sonucudur.
+- Ham PCM guest'ten Windows host'a alınıp hostta analiz edildi: 131,072 stereo frame; sol kanal peak 0, RMS 0, nonzero örnek 0; SHA-256 `30e14955ebf1352266dc2ff8067e68104607e750abb9d3b36582b8af909fcb58`. ALSA playback aktifken source 46 sessiz; ters PipeWire roundtrip başarısızdır.
+- Guest ham kayıt/logları ve host analiz kopyası kaldırıldı; son `df -h /tmp` guest'te 11 MiB kullanım / 946 MiB boş gösterdi. Paket, kalıcı ayar, imaj veya rootfs değişmedi. Ayrıntı [M06 verification](verification/m06-gen2-audio-2026-09-24.md#bounded-raw-recapture).
