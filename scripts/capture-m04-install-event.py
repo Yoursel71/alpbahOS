@@ -2,9 +2,10 @@
 """Capture one M04 install event in a marked disposable Linux fixture.
 
 This is deliberately not a Builder/rootfs installer. It requires a fixture
-marked with .m04-fixture-root, strace, and bubblewrap. bubblewrap exposes the
-host filesystem read-only and binds only the fixture writable; the captured
-trace is also rejected if a mutating syscall names a path outside the fixture.
+marked with .m04-fixture-root, strace, and bubblewrap. It configures bubblewrap
+to expose the host filesystem read-only and only the fixture writable. Linux
+integration must still verify those mount restrictions and trace coverage before
+using the data as ownership evidence.
 """
 
 from __future__ import annotations
@@ -33,16 +34,39 @@ WRITE_SYSCALLS = {
     "creat", "link", "linkat", "mkdir", "mkdirat", "mknod", "mknodat",
     "open", "openat", "openat2", "rename", "renameat", "renameat2",
     "rmdir", "symlink", "symlinkat", "truncate", "unlink", "unlinkat",
-    "utime", "utimes", "utimensat", "chmod", "fchmodat", "chown",
+    "utime", "utimes", "utimensat", "chmod", "fchmod", "fchmodat", "chown",
+    "fchmodat2", "fchown", "ftruncate", "fallocate",
     "fchownat", "lchown", "setxattr", "lsetxattr", "removexattr",
-    "lremovexattr", "mount", "umount2",
+    "fsetxattr", "fremovexattr", "lremovexattr", "write", "writev",
+    "pwrite64", "pwritev", "pwritev2", "sendfile", "copy_file_range",
+    "splice", "mmap", "mount", "umount2",
 }
-DIRFD_SYSCALLS = {"linkat", "mkdirat", "mknodat", "openat", "openat2", "renameat",
-                  "renameat2", "symlinkat", "unlinkat", "utimensat", "fchmodat",
-                  "fchownat"}
+PATH_ARGUMENTS = {
+    "creat": (0,), "link": (1,), "linkat": (3,), "mkdir": (0,),
+    "mkdirat": (1,), "mknod": (0,), "mknodat": (1,), "open": (0,),
+    "openat": (1,), "openat2": (1,), "rename": (0, 1),
+    "renameat": (1, 3), "renameat2": (1, 3), "rmdir": (0,),
+    "symlink": (1,), "symlinkat": (2,), "truncate": (0,),
+    "unlink": (0,), "unlinkat": (1,), "utime": (0,), "utimes": (0,),
+    "utimensat": (1,), "chmod": (0,), "fchmodat": (1,), "fchmodat2": (1,), "chown": (0,),
+    "fchownat": (1,), "lchown": (0,), "setxattr": (0,), "lsetxattr": (0,),
+    "removexattr": (0,), "lremovexattr": (0,),
+}
+DIRFD_ARGUMENTS = {
+    "linkat": {1: 0, 3: 2}, "mkdirat": {1: 0}, "mknodat": {1: 0},
+    "openat": {1: 0}, "openat2": {1: 0}, "renameat": {1: 0, 3: 2},
+    "renameat2": {1: 0, 3: 2}, "symlinkat": {2: 1}, "unlinkat": {1: 0},
+    "utimensat": {1: 0}, "fchmodat": {1: 0}, "fchmodat2": {1: 0}, "fchownat": {1: 0},
+}
+OPEN_WRITE_FLAGS = ("O_WRONLY", "O_RDWR", "O_CREAT", "O_TRUNC", "O_APPEND", "O_TMPFILE")
+FD_WRITE_ARGUMENTS = {
+    "fchmod": (0,), "fchown": (0,), "ftruncate": (0,), "fallocate": (0,),
+    "fsetxattr": (0,), "fremovexattr": (0,), "write": (0,), "writev": (0,),
+    "pwrite64": (0,), "pwritev": (0,), "pwritev2": (0,), "sendfile": (0,),
+    "copy_file_range": (2,), "splice": (2,), "mmap": (4,),
+}
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 SYSCALL_RE = re.compile(r"^\s*(?:\[pid\s+\d+\]\s*)?([a-zA-Z_][a-zA-Z0-9_]*)\((.*)")
-QUOTED_RE = re.compile(r'"(?:\\.|[^"\\])*"')
 
 
 class CaptureError(RuntimeError):
@@ -67,7 +91,7 @@ def _write_json(path: Path, value: Any) -> None:
     path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
-def _reject_symlink_ancestors(path: Path) -> None:
+def _reject_symlink_ancestors(path: Path, *, allow_missing: bool = False) -> None:
     absolute = Path(os.path.abspath(os.fspath(path)))
     cursor = Path(absolute.anchor)
     for component in absolute.parts[1:]:
@@ -75,6 +99,8 @@ def _reject_symlink_ancestors(path: Path) -> None:
         try:
             info = os.lstat(cursor)
         except FileNotFoundError as exc:
+            if allow_missing:
+                return
             raise CaptureError(f"path component does not exist: {cursor}") from exc
         if stat.S_ISLNK(info.st_mode):
             raise CaptureError(f"symlink path component refused: {cursor}")
@@ -160,6 +186,62 @@ def _hash_inputs(paths: Sequence[Path]) -> list[dict[str, str]]:
     return result
 
 
+def _split_strace_arguments(body: str) -> list[str]:
+    args: list[str] = []
+    start = 0
+    stack: list[str] = []
+    quote = False
+    escaped = False
+    matching = {")": "(", "}": "{", "]": "["}
+    for index, char in enumerate(body):
+        if quote:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                quote = False
+            continue
+        if char == '"':
+            quote = True
+        elif char in "({[":
+            stack.append(char)
+        elif char in ")}]":
+            if not stack:
+                if char == ")":
+                    args.append(body[start:index].strip())
+                    return args
+            elif stack[-1] == matching[char]:
+                stack.pop()
+        elif char == "," and not stack:
+            args.append(body[start:index].strip())
+            start = index + 1
+    if start < len(body):
+        args.append(body[start:].strip())
+    return args
+
+
+def _decode_trace_path(args: Sequence[str], index: int) -> str | None:
+    if index >= len(args):
+        return None
+    try:
+        value = ast.literal_eval(args[index])
+    except (SyntaxError, ValueError):
+        return None
+    return value if isinstance(value, str) else None
+
+
+def _trace_open_writes(syscall: str, args: Sequence[str]) -> bool:
+    flags_index = {"open": 1, "openat": 2, "openat2": 2}[syscall]
+    if flags_index >= len(args):
+        return True
+    return any(flag in args[flags_index] for flag in OPEN_WRITE_FLAGS)
+
+
+def _trace_mmap_writes(args: Sequence[str]) -> bool:
+    return len(args) > 4 and "MAP_SHARED" in args[3] and "PROT_WRITE" in args[2]
+
+
 def _trace_outside_writes(trace_path: Path, root: Path, cwd: Path) -> list[str]:
     violations: list[str] = []
     for line_no, line in enumerate(trace_path.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
@@ -167,22 +249,43 @@ def _trace_outside_writes(trace_path: Path, root: Path, cwd: Path) -> list[str]:
         if not match or match.group(1) not in WRITE_SYSCALLS:
             continue
         syscall, body = match.groups()
-        try:
-            strings = [ast.literal_eval(q) for q in QUOTED_RE.findall(body)]
-        except (SyntaxError, ValueError) as exc:
-            violations.append(f"line {line_no}: cannot decode strace path arguments: {exc}")
+        args = _split_strace_arguments(body)
+        if syscall in {"open", "openat", "openat2"} and not _trace_open_writes(syscall, args):
             continue
-        if not strings:
-            violations.append(f"line {line_no}: cannot resolve path arguments for {syscall}")
+        if syscall == "mmap" and not _trace_mmap_writes(args):
             continue
-        dirfd_arg = body.split(",", 1)[0].strip()
-        dirfd_match = re.fullmatch(r"\d+<([^>]+)>", dirfd_arg)
-        dirfd_path = Path(dirfd_match.group(1)) if dirfd_match else cwd
-        paths = strings[:2] if syscall.startswith(("rename", "link")) else strings[:1]
-        for raw in paths:
-            if not os.path.isabs(raw) and syscall in DIRFD_SYSCALLS and dirfd_arg != "AT_FDCWD" and not dirfd_match:
+        path_indices = PATH_ARGUMENTS.get(syscall)
+        if path_indices is None:
+            for fd_index in FD_WRITE_ARGUMENTS.get(syscall, ()):
+                fd_arg = args[fd_index] if fd_index < len(args) else ""
+                fd_match = re.search(r"\d+<([^>]+)>", fd_arg)
+                if not fd_match:
+                    violations.append(f"line {line_no}: cannot resolve descriptor for {syscall}")
+                    continue
+                fd_path = fd_match.group(1)
+                if fd_path.startswith(("pipe:[", "socket:[", "anon_inode:")):
+                    continue
+                candidate = Path(fd_path)
+                if not candidate.is_absolute():
+                    violations.append(f"line {line_no}: cannot resolve fd path for {syscall}")
+                    continue
+                try:
+                    candidate.relative_to(root)
+                except ValueError:
+                    violations.append(f"line {line_no}: {syscall} fd path outside fixture: {candidate}")
+            continue
+        for path_index in path_indices:
+            raw = _decode_trace_path(args, path_index)
+            if raw is None:
+                violations.append(f"line {line_no}: cannot decode {syscall} pathname argument {path_index}")
+                continue
+            dirfd_index = DIRFD_ARGUMENTS.get(syscall, {}).get(path_index)
+            dirfd_arg = args[dirfd_index] if dirfd_index is not None and dirfd_index < len(args) else "AT_FDCWD"
+            dirfd_match = re.fullmatch(r"\d+<([^>]+)>", dirfd_arg)
+            if not os.path.isabs(raw) and dirfd_arg != "AT_FDCWD" and not dirfd_match:
                 violations.append(f"line {line_no}: cannot resolve relative {syscall} dirfd {dirfd_arg!r}")
                 continue
+            dirfd_path = Path(dirfd_match.group(1)) if dirfd_match else cwd
             candidate = Path(raw) if os.path.isabs(raw) else dirfd_path / raw
             candidate = Path(os.path.abspath(os.fspath(candidate)))
             try:
@@ -195,10 +298,10 @@ def _trace_outside_writes(trace_path: Path, root: Path, cwd: Path) -> list[str]:
 def _execute(argv: Sequence[str], cwd: Path, env: Mapping[str, str], root: Path,
              trace_path: Path, strace: str, bwrap: str,
              stdout_path: Path, stderr_path: Path) -> int:
-    # The host is read-only inside the namespace; the marked fixture is writable.
-    # Evidence is separately mounted read-only so installer code cannot alter it.
+    # Request a read-only host and evidence store with only the fixture writable.
+    # Effective isolation has not been verified by a real Linux integration run.
     event_store = root / CAPTURE_DIR / "events"
-    traced = [strace, "-f", "-qq", "-yy", "-e", "trace=%file", "-o", str(trace_path),
+    traced = [strace, "-f", "-qq", "-yy", "-e", "trace=%file,%desc,mmap", "-o", str(trace_path),
               "--", bwrap, "--die-with-parent", "--unshare-all", "--ro-bind", "/", "/",
               "--bind", str(root), str(root), "--ro-bind", str(event_store), str(event_store),
               "--chdir", str(cwd), "--", *argv]
@@ -227,9 +330,17 @@ def capture_install(root: Path, argv: Sequence[str], *, cwd: Path | None = None,
     if not bwrap:
         raise CaptureError("bubblewrap (bwrap) is required to confine writes")
     event_id = f"{time.strftime('%Y%m%dT%H%M%SZ', time.gmtime())}-{uuid.uuid4().hex}"
+    capture_root = root / CAPTURE_DIR
+    event_root, work_root = capture_root / "events", capture_root / "work"
     event_dir = root / CAPTURE_DIR / "events" / event_id
+    work_dir = work_root / event_id
+    for path in (capture_root, event_root, work_root, event_dir, work_dir):
+        _reject_symlink_ancestors(path, allow_missing=True)
     event_dir.mkdir(parents=True, mode=0o700)
-    work_dir = root / CAPTURE_DIR / "work" / event_id
+    work_dir.mkdir(parents=True, mode=0o700)
+    _inside(root, event_dir)
+    before = _snapshot(root)
+    hashed_inputs = _hash_inputs(input_paths)
     home_dir, temp_dir = work_dir / "home", work_dir / "tmp"
     home_dir.mkdir(parents=True, mode=0o700)
     temp_dir.mkdir(parents=True, mode=0o700)
@@ -237,11 +348,9 @@ def capture_install(root: Path, argv: Sequence[str], *, cwd: Path | None = None,
                "HOME": str(home_dir), "TMPDIR": str(temp_dir)}
     for key, value in (env_overrides or {}).items():
         if not re.fullmatch(r"[A-Z_][A-Z0-9_]*", key) or "\x00" in value or "=" in key:
+            shutil.rmtree(work_dir, ignore_errors=True)
             raise CaptureError(f"invalid explicit environment entry: {key!r}")
         allowed[key] = value
-    _inside(root, event_dir)
-    before = _snapshot(root)
-    hashed_inputs = _hash_inputs(input_paths)
     before_path = event_dir / "before.json"
     _write_json(before_path, before)
     trace_path = event_dir / "strace-file-writes.log"
@@ -251,7 +360,12 @@ def capture_install(root: Path, argv: Sequence[str], *, cwd: Path | None = None,
         exit_status = _execute(argv, workdir, allowed, root, trace_path, strace, bwrap,
                                stdout_path, stderr_path)
     except OSError as exc:
+        shutil.rmtree(work_dir, ignore_errors=True)
         raise CaptureError(f"could not start confined install command: {exc}") from exc
+    try:
+        shutil.rmtree(work_dir)
+    except OSError as exc:
+        raise CaptureError(f"could not clean command scratch directory {work_dir}: {exc}") from exc
     end_ns = time.time_ns()
     if not trace_path.is_file():
         raise CaptureError("strace did not produce its trace; event is incomplete")
