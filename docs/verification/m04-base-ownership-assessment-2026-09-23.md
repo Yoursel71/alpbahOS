@@ -405,6 +405,28 @@ The final Builder check showed empty NBD PID, 69 GiB free, unchanged pinned
 `alp.py`, and an empty `db.json`. LFS reference:
 [Diffutils 3.12 build instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/diffutils.html).
 
+## Findutils 4.10.0 staged comparison — 24 September 2026
+
+Findutils 4.10.0 was built in the Builder `/mnt/lfs` chroot from the archive
+whose LFS MD5 is `870cfd71c07d37ebe56f9f4aaf4ad872` and SHA-256 is
+`1387e0b67ff247d2abde998f90dfbf70c1491391a59ddfecb8ae698789f0a4f5`. It
+used `./configure --prefix=/usr --localstatedir=/var/lib/locate` and `make
+-j2`; `make check` ran as the LFS `tester` UID 101. The root install was
+isolated to `/mnt/lfs/tmp/alp-m04-findutils-stage-r1`. Library tests reported
+2 PASS, gnulib 290 PASS/72 SKIP, and Findutils tests 21 PASS/2 SKIP, with no
+FAIL or ERROR. The smoke found a nested file and the staged `xargs` confirmed
+it was a file.
+
+The manifest has 144 entries (92 directories, 52 files), SHA-256
+`23B55C6F711EF9309ACFAA5D1CEF40BE6DD7CEC5F3CFC845B6E206CE678075B7`;
+[manifest](manifests/lfs-base/findutils-4.10.0-2026-09-24.json). Read-only
+preflight reported 6 matches and 138 mismatches; [full report](manifests/lfs-base/findutils-4.10.0-2026-09-24-preflight.log),
+SHA-256 `3300D70C5DC72C6EA3AFEB211BBC9C280F916ADB50B68060382F59099B8C6EB1`.
+No staged paths were merged and no ownership record was added. The EXIT trap
+detached all mounts; Builder retained 69 GiB free and an empty NBD PID. The
+pinned `alp.py` hash and empty package database were unchanged. LFS reference:
+[Findutils 4.10.0 build instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/findutils.html).
+
 Official LFS 12.4-systemd procedures:
 [Gzip-1.14](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/gzip.html),
 [Zstd-1.5.7](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/zstd.html),
