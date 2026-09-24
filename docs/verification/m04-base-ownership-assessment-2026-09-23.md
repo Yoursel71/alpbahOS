@@ -555,6 +555,32 @@ EXIT cleanup found no mounts below `/mnt/lfs`; NBD PID remained empty, 68 GiB
 was free, the pinned rootfs `alp.py` hash was unchanged, and `db.json` stayed
 empty. LFS reference: [GDBM 1.26 instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/gdbm.html).
 
+## Gperf 3.3 staged comparison — 24 September 2026
+
+Gperf 3.3 was built in the Builder `/mnt/lfs` chroot from the LFS source
+archive with MD5 `31753b021ea78a21f154bf9eecb8b079` and SHA-256
+`fd87e0aba7e43ae054837afd6cd4db03a3f2693deb3619085e6ed9d8d9604ad8`. It
+used `./configure --prefix=/usr --docdir=/usr/share/doc/gperf-3.3`, `make
+-j2`, and `make check`; the test command exited 0. The stage-only smoke
+reported GNU gperf 3.3. Installation went to
+`/mnt/lfs/tmp/alp-m04-gperf-stage-r1`; generated shared `info/dir` was
+removed from the stage.
+
+The manifest has 12 entries (8 directories, 4 files), SHA-256
+`4390C72BD9A1D7FBA284C01C6B3BA1E72D3FC3BA0BF9722A0B3D3649726BA5A7`;
+[manifest](manifests/lfs-base/gperf-3.3-2026-09-24.json). Read-only preflight
+reported 7 exact matches and 5 mismatches; [full report](manifests/lfs-base/gperf-3.3-2026-09-24-preflight.log),
+SHA-256 `4B56FB0D563F2B2F0AA3FC5DDE0D1BB63BF25B659D3C61E4F7F626E245EE1497`.
+The mismatches are `/usr/bin/gperf`, shared `/usr/share/doc` and
+`/usr/share/info` metadata, and `/usr/share/doc/gperf-3.3` files absent from
+the current rootfs. No staged file was merged.
+
+Builder log `/mnt/lfs/tmp/alp-logs/m04-gperf-3.3-stage-20260924-r1.log`
+SHA-256 `02fd820eecb3aefd024412ba16de4f0feceda300c5081237bc4ba53f32edb117`.
+EXIT cleanup found no mounts below `/mnt/lfs`; NBD PID remained empty, 68 GiB
+was free, rootfs `alp.py` retained the pinned hash, and `db.json` remained
+empty. LFS reference: [Gperf 3.3 instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/gperf.html).
+
 Official LFS 12.4-systemd procedures:
 [Gzip-1.14](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/gzip.html),
 [Zstd-1.5.7](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/zstd.html),
