@@ -30,8 +30,8 @@ exceptions. A trace alone is not confinement.
 The current fixture runner now sends stdout/stderr through pipes and has the
 parent stream 64 KiB chunks to evidence files opened after the traced process
 starts; this avoids inheriting writable regular log descriptors. Its combined
-Windows-host capture/reconciler/evidence-verifier suite passes 38 tests and
-skips 4. **The integrated Linux strace/bwrap confinement probe has not been
+Windows-host capture/adapter/reconciler/evidence-verifier suite passes 46 tests
+and skips 4. **The integrated Linux strace/bwrap confinement probe has not been
 run**, including the real descendant-pipe test, so this remains a partial
 descriptor mitigation, not a production boundary. A future runner must still
 close unrelated descriptors, bound output size, and keep strace's output
@@ -62,10 +62,14 @@ every changed path in the before/after tree must reconcile to an observed
 installer operation or an explicitly documented generated-state action.
 
 `io_uring` is a known gap: kernel-mediated operations may not appear as the
-underlying file syscalls in a ptrace trace. Deny `io_uring_setup` through a
-verified seccomp policy for the initial implementation, or use an independently
-validated observer that accounts for its operations. Apply the same rule to
-any other write mechanism the trace cannot fully observe. Treat unresolved
+underlying file syscalls in a ptrace trace. The fixture runner now explicitly
+requests `io_uring_setup` in the strace filter and records any occurrence as an
+`observation_violation`, invalidating the event. This detects and rejects a
+reported call; it does not deny `io_uring`, and Linux integration has not
+verified the filter/parser behavior. Production must deny `io_uring_setup`
+through a verified seccomp policy or use an independently validated observer
+that accounts for its operations. Apply the same rule to any other write
+mechanism the trace cannot fully observe. Treat unresolved
 relative dirfds, descriptor paths, absolute/relative symlink escapes, and
 writes outside the selected target as event failures. A detected escape
 attempt invalidates the event even when the kernel denied the write.

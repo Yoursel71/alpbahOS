@@ -21,7 +21,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 
-CAPTURE_SCHEMA = "alpbahOS.m04-install-event-capture/v1"
+CAPTURE_SCHEMA = "alpbahOS.m04-install-event-capture/v2"
 PROVENANCE_SCHEMA = "alpbahOS.m04-capture-adapter-provenance/v1"
 BUNDLE_SCHEMA = "alpbahOS.m04-install-evidence/v1"
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
@@ -95,13 +95,22 @@ def _validate_capture(raw: Any) -> dict[str, Any]:
         raise AdapterError(f"event schema must be {CAPTURE_SCHEMA}")
     required = {"schema", "event_id", "root_id", "event_dir", "package", "version", "argv",
                 "cwd", "environment", "started_unix_ns", "ended_unix_ns", "exit_status",
-                "changed_paths", "outside_root_write_attempts", "inputs", "artifacts"}
+                "changed_paths", "outside_root_write_attempts", "observation_violations", "inputs", "artifacts"}
     if not required <= set(raw):
         raise AdapterError(f"capture event is missing fields: {sorted(required - set(raw))}")
     if type(raw["exit_status"]) is not int or raw["exit_status"] != 0:
         raise AdapterError("failed capture events cannot be adapted")
-    if raw["outside_root_write_attempts"]:
+    outside_attempts = raw["outside_root_write_attempts"]
+    if not isinstance(outside_attempts, list) or any(not isinstance(item, str) for item in outside_attempts):
+        raise AdapterError("outside_root_write_attempts must be a string array")
+    if outside_attempts:
         raise AdapterError("capture reports outside-root write attempts")
+    observation_violations = raw["observation_violations"]
+    if not isinstance(observation_violations, list) or any(
+            not isinstance(item, str) for item in observation_violations):
+        raise AdapterError("observation_violations must be a string array")
+    if observation_violations:
+        raise AdapterError("capture reports incomplete observation violations")
     if not isinstance(raw["package"], str) or not raw["package"].strip():
         raise AdapterError("capture package name is missing")
     if not isinstance(raw["version"], str) or not raw["version"].strip():

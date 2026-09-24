@@ -52,6 +52,7 @@ class CaptureEventAdapterTests(unittest.TestCase):
             "exit_status": 0,
             "changed_paths": ["/usr/bin/alpha"],
             "outside_root_write_attempts": [],
+            "observation_violations": [],
             "inputs": [
                 {"path": self.source_path, "sha256": source_hash},
                 {"path": self.recipe_path, "sha256": recipe_hash},
@@ -122,6 +123,9 @@ class CaptureEventAdapterTests(unittest.TestCase):
         escaped = dict(self.event, outside_root_write_attempts=["fixture escape"])
         with self.assertRaisesRegex(adapter.AdapterError, "outside-root"):
             adapter.adapt_bundle_event(escaped, self.provenance, self.root)
+        incomplete = dict(self.event, observation_violations=["io_uring_setup was used"])
+        with self.assertRaisesRegex(adapter.AdapterError, "incomplete observation"):
+            adapter.adapt_bundle_event(incomplete, self.provenance, self.root)
 
     def test_adapter_rejects_artifact_hash_mismatch(self) -> None:
         changed = self.artifact_dir / "strace.dat"

@@ -79,6 +79,10 @@ class InstallEventCaptureTests(unittest.TestCase):
             outside = str(Path(root.anchor) / "etc/passwd")
             trace_path.write_text(f'unlink({json.dumps(outside)}) = -1 EROFS (Read-only file system)\n', encoding="utf-8")
             return 1
+        if action == "io-uring":
+            trace_path.write_text("io_uring_setup(2, 0x7ffc1234) = -1 ENOSYS (Function not implemented)\n",
+                                  encoding="utf-8")
+            return 0
         raise AssertionError(action)
 
     def test_install_write_records_command_environment_logs_trace_and_snapshots(self):
@@ -142,6 +146,27 @@ class InstallEventCaptureTests(unittest.TestCase):
         event = json.loads(event_files[0].read_text(encoding="utf-8"))
         self.assertTrue(event["outside_root_write_attempts"])
         self.assertRegex(event["outside_root_write_attempts"][0], r"etc[\\/]passwd")
+
+    def test_io_uring_setup_invalidates_event_as_observation_violation(self):
+        with self.assertRaisesRegex(capture.CaptureError, r"observation violations \(io_uring_setup\)"):
+            capture.capture_install(self.fx.root, ["installer", "io-uring"], cwd=self.fx.root)
+        event_files = list((self.fx.root / capture.CAPTURE_DIR / "events").glob("*/event.json"))
+        self.assertEqual(len(event_files), 1)
+        event = json.loads(event_files[0].read_text(encoding="utf-8"))
+        self.assertEqual(event["outside_root_write_attempts"], [])
+        self.assertEqual(len(event["observation_violations"]), 1)
+        self.assertIn("io_uring_setup observed", event["observation_violations"][0])
+        self.assertTrue(event["observation_violations"][0].startswith("line 1:"))
+
+    def test_trace_observation_parser_detects_pid_prefixed_io_uring_setup(self):
+        trace = self.fx.root / "trace.log"
+        trace.write_text(
+            "openat(AT_FDCWD, \"/fixture/read-only\", O_RDONLY) = 3\n"
+            "[pid 4242] io_uring_setup(2, 0x7ffc1234) = 5\n",
+            encoding="utf-8")
+        violations = capture._trace_observation_violations(trace)
+        self.assertEqual(len(violations), 1)
+        self.assertIn("line 2: io_uring_setup observed", violations[0])
 
     def test_trace_distinguishes_symlink_destination_from_target(self):
         trace = self.fx.root / "trace.log"
@@ -240,6 +265,8 @@ class InstallEventCaptureTests(unittest.TestCase):
         self.assertIn(str(event_store), argv)
         self.assertEqual(argv.count("--ro-bind"), 2)
         self.assertEqual(argv.count("--bind"), 1)
+        trace_arg = argv[argv.index("-e") + 1]
+        self.assertIn("io_uring_setup", trace_arg)
 
     def test_parent_streams_mocked_pipe_output_without_opening_logs_for_child(self):
         stdout_path, stderr_path = self.fx.root / "stdout.log", self.fx.root / "stderr.log"

@@ -58,6 +58,11 @@ exclusive capture lock. A snapshot diff is not enough to attribute concurrent
 changes to the install command. The adapter must not manufacture that
 completeness assertion.
 
+The capture event schema is now v2 and includes `observation_violations`. The
+adapter rejects events with any recorded observation violation, including the
+fixture runner's detection of `io_uring_setup`. This is post-capture detection;
+it does not prevent the syscall or make the trace complete.
+
 Before reconciler conversion can be considered, capture must provide a
 validated complete write-observation boundary and exclusive/quiescent target
 guarantees, and a separate assembly step must supply the full ordered 79-event
@@ -69,7 +74,7 @@ remain required.
 
 ## Validation
 
-- Windows host: `python -m pytest -q tests/test_m04_capture_event_adapter.py tests/test_m04_evidence_bundle.py tests/test_m04_install_event_capture.py tests/test_m04_final_owner_reconciler.py` — **44 passed, 4 skipped**. This includes a CLI-path fixture test that writes an adapted index and passes it through the existing bundle verifier.
+- Windows host: `python -m pytest -q tests/test_m04_capture_event_adapter.py tests/test_m04_evidence_bundle.py tests/test_m04_install_event_capture.py tests/test_m04_final_owner_reconciler.py` — **46 passed, 4 skipped**. This includes a CLI-path fixture test that writes an adapted index and passes it through the existing bundle verifier, plus `io_uring_setup` rejection.
 - `python -m py_compile scripts/adapt-m04-capture-event.py` — passed.
 - `python docs/handoffs/claude/tools/check_docs.py` — 0 findings.
 - `git diff --check` — passed.

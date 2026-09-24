@@ -1070,3 +1070,12 @@ PipeWire hatası için aynı gün ek tekrar: Guest `/tmp`'te 12 saniye 48 kHz st
 ## 24 Eylül 2026 — GCC `make -k check` live poll (16:04 UTC)
 
 - Same Builder test handles remain live: wrapper PID `1,451,319`, make PIDs `1,451,325` and `1,451,331`, DejaGNU PID `2,556,218` (elapsed 2:47:10), active `xg++` PID `2,605,818`. `libstdc++.sum`: 10,356 PASS / 114 XFAIL / 594 unsupported / 0 FAIL. GCC remains at four `gcc.target/i386/pr90579.c` assembly scan failures (`vaddsd` offsets +40, +32, +24, +16); G++ has no unexpected failures. No aggregate finish marker or summary; `/mnt/lfs` last observed with 60 GiB free. This is a live, incomplete run; no process or Builder file was changed.
+
+## 24 Eylül 2026 — GCC `make -k check` live poll (16:14 UTC)
+
+- The same exact wrapper/make/DejaGNU handles remain live with active `xg++`. `libstdc++.sum`: 11,159 PASS / 122 XFAIL / 610 unsupported / 0 FAIL. GCC remains at four `gcc.target/i386/pr90579.c` assembly scan failures; G++ has no unexpected failures. No aggregate finish marker or summary. No process or Builder file was changed.
+
+## 24 Eylül 2026 — M04 `io_uring_setup` observation rejection
+
+- Bumped the fixture install-event schema to v2 and added `observation_violations`. The strace filter now explicitly requests `io_uring_setup`; any observed call is persisted separately from outside-root writes and invalidates the event. The bundle adapter rejects events with any observation violation.
+- Focused combined capture/adapter/evidence/reconciler tests: 46 passed, 4 skipped; `py_compile`, `check_docs.py` (0 findings), and `git diff --check` passed. This detects/rejects a reported syscall after capture; it does not deny it, validate strace integration on Linux, close unknown-syscall gaps, or permit reconciliation. `/mnt/lfs` remains untouched and M04 remains 0/79 events.
