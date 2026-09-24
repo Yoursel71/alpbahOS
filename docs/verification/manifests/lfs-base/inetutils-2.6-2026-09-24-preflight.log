@@ -1,0 +1,43 @@
+MISMATCH /usr/bin/dnsdomainname
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/dnsdomainname", "sha256": "fc2661b97333e3baecf109f0b0a8199585b469950385b4668c938fe3eb38b7cd", "size": 216888, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/bin/dnsdomainname", "sha256": "5f74cc500cf84b09f140664d6ae5a8625ae0ebaf0b32c0a786809041c63c6655", "size": 216888, "type": "file", "uid": 0}
+MISMATCH /usr/bin/ftp
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/ftp", "sha256": "19f97bfee373b6e9a8eb8ff67973289e62335abd6dd4193ef56b983d40bdab78", "size": 470848, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/bin/ftp", "sha256": "57641746f5114a882f858805eebdf896751a5215bb2661edc19d9c314101adf5", "size": 470848, "type": "file", "uid": 0}
+MISMATCH /usr/bin/hostname
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/hostname", "sha256": "ee6cd3451ee51a7affc2c44710955cda05d690a65506bffc724541327502af4a", "size": 231736, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/bin/hostname", "sha256": "91557b21a301deab8cd34246e6a9c2bb15f1b770c1dc40dc35af7d154c7213fc", "size": 231736, "type": "file", "uid": 0}
+MISMATCH /usr/bin/ifconfig
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/ifconfig", "sha256": "be2e30d33d026078a778f8f8fc5f3d3449b014583454b57d7672112ebf1b592f", "size": 444504, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/bin/ifconfig", "sha256": "802414c1fada820058dde574e70978865b8014c4ad56b2027686a45c446063f4", "size": 444504, "type": "file", "uid": 0}
+MISMATCH /usr/bin/ping
+  expected: {"gid": 0, "mode": 2541, "path": "/usr/bin/ping", "sha256": "eea8cf7ffb46b2eaa96b829691bf4ad81aefd8dc8f06bd9859381e26efe57e08", "size": 323520, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 2541, "path": "/usr/bin/ping", "sha256": "59761f734bd93708318d59047cf4e9174d1440b1a9438c8b9b9b130376859f6d", "size": 323520, "type": "file", "uid": 0}
+MISMATCH /usr/bin/ping6
+  expected: {"gid": 0, "mode": 2541, "path": "/usr/bin/ping6", "sha256": "1bd28b6799331a8d55b10cc00d5512fa8aa27358751b2821776382e44c2970f3", "size": 276040, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 2541, "path": "/usr/bin/ping6", "sha256": "6db081860df99f8746724ae1344c3da0da83a83dccaf5ffa74a04e1dc460f49f", "size": 276040, "type": "file", "uid": 0}
+MISMATCH /usr/bin/talk
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/talk", "sha256": "14ff496e59f78351417bbf60ae62d932a9a1b243a40c69ab39a608c570589649", "size": 259480, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/bin/talk", "sha256": "59c9bd3d74b066293514f06a666510aa2403210adf3567a6394e715373ec72b0", "size": 259480, "type": "file", "uid": 0}
+MISMATCH /usr/bin/telnet
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/telnet", "sha256": "0bf2507277297c78c5339d6d902390714a3a1d2381732e939aff214317d0af00", "size": 544896, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/bin/tftp
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/tftp", "sha256": "67d9ae005fcdd58127805872ed329defef19faf7bb179a96ffb875a4b2a2edc8", "size": 271328, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/bin/tftp", "sha256": "8315eb742c52716cfe72910c548ecb3587c731aeb5f234c93b03d9a049709c7f", "size": 271328, "type": "file", "uid": 0}
+MISMATCH /usr/bin/traceroute
+  expected: {"gid": 0, "mode": 2541, "path": "/usr/bin/traceroute", "sha256": "c21544b805706694ae6e74ae331ca9e06e924e8d485a354e5b579c9c2b754edb", "size": 252384, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 2541, "path": "/usr/bin/traceroute", "sha256": "42c6f2284068ce565c8681734f57583c841006594006b6367d61d2289f6df140", "size": 252376, "type": "file", "uid": 0}
+MISMATCH /usr/libexec
+  expected: {"gid": 0, "mode": 493, "path": "/usr/libexec", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/libexec", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/info
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/info", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/info", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/info/dir
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/info/dir", "sha256": "07435ef20c6a9faa5105b2b9c44f85b09c560edf49e48ff2ae1fce28688f0804", "size": 2602, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 420, "path": "/usr/share/info/dir", "sha256": "fb80e5b75495213cb4b42a22e14aad3db7520b6443216725462f79cf12e87af7", "size": 107341, "type": "file", "uid": 0}
+MISMATCH /usr/share/man/man1/telnet.1
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/man/man1/telnet.1", "sha256": "93d683c2154e6b41ce32f9a9bc539f21cdfd3f84ed8d8a7481e2047e0e9537ba", "size": 2196, "type": "file", "uid": 0}
+  actual:   MISSING
+package=inetutils version=2.6 entries=30 matched=16 mismatched=14

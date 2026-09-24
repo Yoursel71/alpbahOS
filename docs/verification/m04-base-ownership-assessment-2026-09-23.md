@@ -615,6 +615,36 @@ Expat 2.7.5 or later as the remediation version. A release candidate must
 resolve that update before it can be treated as current:
 [LFS/BLFS consolidated advisories](https://linuxfromscratch.org/blfs/advisories/consolidated.html).
 
+## Inetutils 2.6 staged comparison — 24 September 2026
+
+Inetutils 2.6 was built in the Builder `/mnt/lfs` chroot from the LFS source
+archive with MD5 `401d7d07682a193960bcdecafd03de94` and SHA-256
+`68bedbfeaf73f7d86be2a7d99bcfbd4093d829f52770893919ae174c0b2357ca`. The
+LFS GCC compatibility `sed` fix was applied in the isolated build tree, then
+configured with `--prefix=/usr --bindir=/usr/bin --localstatedir=/var
+--disable-logger --disable-whois --disable-rcp --disable-rexec
+--disable-rlogin --disable-rsh --disable-servers`. `make -j2` completed;
+`make check` reported 9 PASS, 3 SKIP, 0 XFAIL, 0 FAIL, 0 ERROR. The skips
+were `test-snprintf`, `ping-localhost.sh`, and `traceroute-localhost.sh`.
+Stage-only `ftp --version` reported GNU inetutils 2.6.
+
+Installation went only to `/mnt/lfs/tmp/alp-m04-inetutils-stage-r1`. The
+manifest has 30 entries (8 directories, 22 files), SHA-256
+`5c816b024e46c38129f0f53e03ede89f153e281cce1e8260ca4d466e244dfcdb`;
+[manifest](manifests/lfs-base/inetutils-2.6-2026-09-24.json). Read-only
+preflight reported 16 exact matches and 14 mismatches; [full report](manifests/lfs-base/inetutils-2.6-2026-09-24-preflight.log),
+SHA-256 `f5813f405e7b1f14d37a9b6291350d703d13099f73ba3762f4959e4d250b9970`.
+The mismatches include changed existing networking binaries, `/usr/bin/telnet`
+and its man page missing from rootfs, plus `/usr/libexec`, `/usr/share/info`,
+and generated info index differences. No staged file was merged and no
+ownership record was added.
+
+Builder log `/mnt/lfs/tmp/alp-logs/m04-inetutils-2.6-stage-20260924-r1.log`
+SHA-256 `935176fa1c910df0e0cf8780cd3dd7683080ee978bb08ef9e423dfd50e85da12`.
+EXIT cleanup found no mounts below `/mnt/lfs`; NBD PID remained empty, 68 GiB
+was free, the pinned rootfs `alp.py` hash was unchanged, and `db.json` stayed
+empty. LFS reference: [Inetutils 2.6 instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/inetutils.html).
+
 Official LFS 12.4-systemd procedures:
 [Gzip-1.14](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/gzip.html),
 [Zstd-1.5.7](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/zstd.html),

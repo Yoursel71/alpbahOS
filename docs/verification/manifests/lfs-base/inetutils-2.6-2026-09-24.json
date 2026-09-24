@@ -1,0 +1,268 @@
+{
+  "captured_at": "2026-09-24T03:40:09+00:00",
+  "entries": [
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/dnsdomainname",
+      "sha256": "fc2661b97333e3baecf109f0b0a8199585b469950385b4668c938fe3eb38b7cd",
+      "size": 216888,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/ftp",
+      "sha256": "19f97bfee373b6e9a8eb8ff67973289e62335abd6dd4193ef56b983d40bdab78",
+      "size": 470848,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/hostname",
+      "sha256": "ee6cd3451ee51a7affc2c44710955cda05d690a65506bffc724541327502af4a",
+      "size": 231736,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/ifconfig",
+      "sha256": "be2e30d33d026078a778f8f8fc5f3d3449b014583454b57d7672112ebf1b592f",
+      "size": 444504,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 2541,
+      "path": "/usr/bin/ping",
+      "sha256": "eea8cf7ffb46b2eaa96b829691bf4ad81aefd8dc8f06bd9859381e26efe57e08",
+      "size": 323520,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 2541,
+      "path": "/usr/bin/ping6",
+      "sha256": "1bd28b6799331a8d55b10cc00d5512fa8aa27358751b2821776382e44c2970f3",
+      "size": 276040,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/talk",
+      "sha256": "14ff496e59f78351417bbf60ae62d932a9a1b243a40c69ab39a608c570589649",
+      "size": 259480,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/telnet",
+      "sha256": "0bf2507277297c78c5339d6d902390714a3a1d2381732e939aff214317d0af00",
+      "size": 544896,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/tftp",
+      "sha256": "67d9ae005fcdd58127805872ed329defef19faf7bb179a96ffb875a4b2a2edc8",
+      "size": 271328,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 2541,
+      "path": "/usr/bin/traceroute",
+      "sha256": "c21544b805706694ae6e74ae331ca9e06e924e8d485a354e5b579c9c2b754edb",
+      "size": 252384,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/libexec",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/info",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/info/dir",
+      "sha256": "07435ef20c6a9faa5105b2b9c44f85b09c560edf49e48ff2ae1fce28688f0804",
+      "size": 2602,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/info/inetutils.info",
+      "sha256": "109da458337428fd289974154bf673a8a5b1850ace39500d0ebebd362168be6b",
+      "size": 234313,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man/man1",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/dnsdomainname.1",
+      "sha256": "b6b6c655917be565ad83080657641c44ed2cf554a928e7c74d7cc761ba0181dd",
+      "size": 1323,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/ftp.1",
+      "sha256": "cd21c66b8adad31b42857ac556f7648e46692acd608964eebd8ffe923a19b066",
+      "size": 2047,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/hostname.1",
+      "sha256": "1f3e7500ff759bf448d6848a1bf6125b468ab97b8e89991fbb51b26e454a92ae",
+      "size": 1612,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/ifconfig.1",
+      "sha256": "c11c5a140baa3e70d9b3979f40b3d8ecb6a88d874a6d7b176dbd29705ab4d97f",
+      "size": 2735,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/ping.1",
+      "sha256": "d451cf728ea6e9c411704220a762df5884bfec24111dc612e38d92a51417fdfb",
+      "size": 2930,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/ping6.1",
+      "sha256": "436e4212132f41a4cdda9582582f9dca95e8338178dab2e1871d53b3dbb88126",
+      "size": 2432,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/talk.1",
+      "sha256": "6ea3eac3309802ae7c67e7781d614c0473aa122b5d088e8a2f008705dfaa147b",
+      "size": 1073,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/telnet.1",
+      "sha256": "93d683c2154e6b41ce32f9a9bc539f21cdfd3f84ed8d8a7481e2047e0e9537ba",
+      "size": 2196,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/tftp.1",
+      "sha256": "a043def8bc338f499886c990d0ab8dd6369633cd06a243883bd5b23f065ca6b6",
+      "size": 1093,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/traceroute.1",
+      "sha256": "f053de659bc66901510cbd1fa409f88970d082bee1b135b51c41b6c88caf98ab",
+      "size": 2045,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man/man8",
+      "type": "directory",
+      "uid": 0
+    }
+  ],
+  "package": {
+    "name": "inetutils",
+    "source": {
+      "sha256": "68bedbfeaf73f7d86be2a7d99bcfbd4093d829f52770893919ae174c0b2357ca",
+      "url": "https://ftp.gnu.org/gnu/inetutils/inetutils-2.6.tar.xz"
+    },
+    "version": "2.6"
+  },
+  "schema": "alpbahOS.package-files/v1"
+}
