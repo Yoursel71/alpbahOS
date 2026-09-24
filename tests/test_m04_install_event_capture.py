@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 import importlib.util
+import io
 import json
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -202,17 +205,75 @@ class InstallEventCaptureTests(unittest.TestCase):
         event_store.mkdir(parents=True)
         trace = self.fx.root / "trace.log"
         stdout, stderr = self.fx.root / "stdout.log", self.fx.root / "stderr.log"
-        with mock.patch.object(capture.subprocess, "run", return_value=SimpleNamespace(returncode=0)) as run:
+        fake_proc = SimpleNamespace(stdout=io.BytesIO(), stderr=io.BytesIO(),
+                                    poll=lambda: 0, wait=lambda: 0)
+        with mock.patch.object(capture.subprocess, "Popen", return_value=fake_proc) as run:
             status = capture._execute(["installer"], self.fx.root, {}, self.fx.root,
                                       trace, "/usr/bin/strace", "/usr/bin/bwrap", stdout, stderr)
         self.assertEqual(status, 0)
         argv = run.call_args.args[0]
+        self.assertEqual(run.call_args.kwargs["stdout"], subprocess.PIPE)
+        self.assertEqual(run.call_args.kwargs["stderr"], subprocess.PIPE)
+        self.assertTrue(run.call_args.kwargs["close_fds"])
         self.assertLess(argv.index("--ro-bind"), argv.index("--bind"))
         read_only = [index for index, arg in enumerate(argv) if arg == "--ro-bind"]
         self.assertGreater(read_only[1], argv.index("--bind"))
         self.assertIn(str(event_store), argv)
         self.assertEqual(argv.count("--ro-bind"), 2)
         self.assertEqual(argv.count("--bind"), 1)
+
+    def test_parent_streams_mocked_pipe_output_without_opening_logs_for_child(self):
+        stdout_path, stderr_path = self.fx.root / "stdout.log", self.fx.root / "stderr.log"
+        observed = {}
+
+        def fake_popen(argv, **kwargs):
+            observed.update(kwargs)
+            self.assertFalse(stdout_path.exists())
+            self.assertFalse(stderr_path.exists())
+            return SimpleNamespace(stdout=io.BytesIO(b"descendant stdout\nparent stdout\n"),
+                                   stderr=io.BytesIO(b"descendant stderr\nparent stderr\n"),
+                                   poll=lambda: 0, wait=lambda: 0)
+
+        with mock.patch.object(capture.subprocess, "Popen", side_effect=fake_popen):
+            status = capture._run_with_parent_logs(
+                ["installer"], self.fx.root, {}, stdout_path, stderr_path)
+
+        self.assertEqual(status, 0)
+        self.assertEqual(observed["stdout"], subprocess.PIPE)
+        self.assertEqual(observed["stderr"], subprocess.PIPE)
+        self.assertTrue(observed["close_fds"])
+        self.assertEqual(stdout_path.read_bytes(), b"descendant stdout\nparent stdout\n")
+        self.assertEqual(stderr_path.read_bytes(), b"descendant stderr\nparent stderr\n")
+
+    @unittest.skipUnless(sys.platform == "linux", "real inherited-pipe process test requires Linux")
+    def test_command_descendant_uses_pipe_stdio_and_parent_preserves_output(self):
+        stdout_path, stderr_path = self.fx.root / "stdout.log", self.fx.root / "stderr.log"
+        child_code = "import os; os.write(1, b'descendant stdout\\n'); os.write(2, b'descendant stderr\\n')"
+        parent_code = (
+            "import os, subprocess, sys; "
+            f"subprocess.run([sys.executable, '-c', {child_code!r}], check=True); "
+            "os.write(1, b'parent stdout\\n'); os.write(2, b'parent stderr\\n')"
+        )
+        real_popen = subprocess.Popen
+        observed = {}
+
+        def checked_popen(argv, **kwargs):
+            observed.update(kwargs)
+            # The regular evidence files do not exist/open until after spawn.
+            self.assertFalse(stdout_path.exists())
+            self.assertFalse(stderr_path.exists())
+            return real_popen(argv, **kwargs)
+
+        with mock.patch.object(capture.subprocess, "Popen", side_effect=checked_popen):
+            status = capture._run_with_parent_logs(
+                [sys.executable, "-c", parent_code], self.fx.root, {}, stdout_path, stderr_path)
+
+        self.assertEqual(status, 0)
+        self.assertEqual(observed["stdout"], subprocess.PIPE)
+        self.assertEqual(observed["stderr"], subprocess.PIPE)
+        self.assertTrue(observed["close_fds"])
+        self.assertEqual(stdout_path.read_bytes(), b"descendant stdout\nparent stdout\n")
+        self.assertEqual(stderr_path.read_bytes(), b"descendant stderr\nparent stderr\n")
 
     def test_snapshot_rejects_symlink_target_escape(self):
         link = self.fx.root / "escape"
