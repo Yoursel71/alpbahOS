@@ -1,0 +1,106 @@
+{
+  "captured_at": "2026-09-24T03:29:58+00:00",
+  "entries": [
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/gperf",
+      "sha256": "8582c9ffa20cb454ac4989c1276ae9714a47662197611aa007204e5c66f4a0ce",
+      "size": 475184,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/doc",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/doc/gperf-3.3",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/gperf-3.3/gperf.html",
+      "sha256": "52f09b87bdf78054a77bd7b58f89c774c94e5d94d55aad3ac6e45394a1ae0e6d",
+      "size": 106180,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/info",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/info/gperf.info",
+      "sha256": "3a79a4aef3b2ffdeba45c292d414cf8cde99aa6ced62dc9c75d172793dbfd109",
+      "size": 102579,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man/man1",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/gperf.1",
+      "sha256": "02bfec00bb7fa820b68e88fb67d1b88c23d5531e71db8bffa53be2e3e6d62aa2",
+      "size": 7394,
+      "type": "file",
+      "uid": 0
+    }
+  ],
+  "package": {
+    "name": "gperf",
+    "source": {
+      "sha256": "fd87e0aba7e43ae054837afd6cd4db03a3f2693deb3619085e6ed9d8d9604ad8",
+      "url": "https://ftp.gnu.org/gnu/gperf/gperf-3.3.tar.gz"
+    },
+    "version": "3.3"
+  },
+  "schema": "alpbahOS.package-files/v1"
+}
