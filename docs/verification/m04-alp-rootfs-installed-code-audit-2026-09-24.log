@@ -1,0 +1,23 @@
+# M04 Alp behavior tests against the installed Builder rootfs code
+
+Date: 2026-09-24, Windows verification run at approximately 17:58 UTC.
+
+## Procedure
+
+- Read the installed source from Builder with `scp alp-builder:/mnt/lfs/usr/lib/alp/alp.py` into a temporary Windows test directory (`%TEMP%\alp-rootfs-m04-audit-20260924\alp.py`). No file was written to Builder or `/mnt/lfs`.
+- Verified the copied file SHA-256: `7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132` (50,348 bytes). This is the pinned `e8b0376` implementation.
+- Copied the repository's existing `docs/handoffs/claude/alp-prototype/tests/test_alp.py` into the temporary directory. Its import path resolves to the copied Builder-installed `alp.py`, not the repository's current module.
+- Ran:
+
+  ```powershell
+  python -m pytest "$env:TEMP\alp-rootfs-m04-audit-20260924\tests\test_alp.py" -q -k "install_refuses_unowned_preexisting_file_and_writes_nothing or install_core_real_end_to_end_then_remove or cmd_install_installs_dependency_chain_end_to_end or merge_staged_records_created_directories_and_files"
+  ```
+
+## Result and scope
+
+```text
+....                                                                     [100%]
+4 passed, 81 deselected in 0.36s
+```
+
+The four cases exercise refusal to overwrite an unowned existing file, record generation in a package install/remove path, dependency-chain installation records, and ownership entries for created directories/files, using the exact installed Builder Alp module against temporary test roots. They do not write to `/mnt/lfs`, install a package into the rootfs, populate its existing empty DB, or prove all future recipes. No M04 stage or capture work was started.
