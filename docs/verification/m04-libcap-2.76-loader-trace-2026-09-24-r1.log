@@ -1,0 +1,39 @@
+   1304229:	find library=libcap.so.2 [0]; searching
+   1304229:	 search path=/tmp/alp-m04-libcap-stage-r1/usr/lib/glibc-hwcaps/x86-64-v3:/tmp/alp-m04-libcap-stage-r1/usr/lib/glibc-hwcaps/x86-64-v2:/tmp/alp-m04-libcap-stage-r1/usr/lib		(LD_LIBRARY_PATH)
+   1304229:	  trying file=/tmp/alp-m04-libcap-stage-r1/usr/lib/glibc-hwcaps/x86-64-v3/libcap.so.2
+   1304229:	  trying file=/tmp/alp-m04-libcap-stage-r1/usr/lib/glibc-hwcaps/x86-64-v2/libcap.so.2
+   1304229:	  trying file=/tmp/alp-m04-libcap-stage-r1/usr/lib/libcap.so.2
+   1304229:	
+   1304229:	find library=libc.so.6 [0]; searching
+   1304229:	 search path=/tmp/alp-m04-libcap-stage-r1/usr/lib		(LD_LIBRARY_PATH)
+   1304229:	  trying file=/tmp/alp-m04-libcap-stage-r1/usr/lib/libc.so.6
+   1304229:	 search cache=/etc/ld.so.cache
+   1304229:	  trying file=/usr/lib/libc.so.6
+   1304229:	
+   1304229:	
+   1304229:	calling init: /lib64/ld-linux-x86-64.so.2
+   1304229:	
+   1304229:	
+   1304229:	calling init: /usr/lib/libc.so.6
+   1304229:	
+   1304229:	
+   1304229:	calling init: /tmp/alp-m04-libcap-stage-r1/usr/lib/libcap.so.2
+   1304229:	
+   1304229:	
+   1304229:	initialize program: /build/libcap-2.76-m04-r1/libcap-stage-smoke
+   1304229:	
+   1304229:	
+   1304229:	transferring control: /build/libcap-2.76-m04-r1/libcap-stage-smoke
+   1304229:	
+   1304229:	
+   1304229:	calling fini:  [0]
+   1304229:	
+   1304229:	
+   1304229:	calling fini: /tmp/alp-m04-libcap-stage-r1/usr/lib/libcap.so.2 [0]
+   1304229:	
+   1304229:	
+   1304229:	calling fini: /usr/lib/libc.so.6 [0]
+   1304229:	
+   1304229:	
+   1304229:	calling fini: /lib64/ld-linux-x86-64.so.2 [0]
+   1304229:	

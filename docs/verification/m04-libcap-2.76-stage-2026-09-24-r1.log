@@ -1,0 +1,417 @@
+Builder=yrsk source=629da4ab29900d0f7fcc36227073743119925fd711c99a1689bbf5c9b40c8e6f  /mnt/lfs/sources/libcap-2.76.tar.xz
+LFS_REQUIRED_PATCH=none; install_mode=DESTDIR; rootfs_merge=forbidden
+make -C libcap all
+make[1]: Entering directory '/build/libcap-2.76-m04-r1/libcap'
+sed -e 's,@prefix@,/usr,' \
+	-e 's,@exec_prefix@,/usr,' \
+	-e 's,@libdir@,/usr/lib,' \
+	-e 's,@includedir@,/usr/include,' \
+	-e 's,@VERSION@,2.76,' \
+	-e 's,@deps@,,' \
+	libcap.pc.in >libcap.pc
+make libpsx.pc
+make[2]: Entering directory '/build/libcap-2.76-m04-r1/libcap'
+sed -e 's,@prefix@,/usr,' \
+	-e 's,@exec_prefix@,/usr,' \
+	-e 's,@libdir@,/usr/lib,' \
+	-e 's,@includedir@,/usr/include,' \
+	-e 's,@VERSION@,2.76,' \
+	-e 's,@deps@,,' \
+	libpsx.pc.in >libpsx.pc
+make[2]: Leaving directory '/build/libcap-2.76-m04-r1/libcap'
+=> making cap_names.list.h from /build/libcap-2.76-m04-r1/libcap/../libcap/include/uapi/linux/capability.h
+grep -E '^#define\s+CAP_([^\s]+)\s+[0-9]+\s*$' include/uapi/linux/capability.h | sed -e 's/^#define\s\+/{"/' -e 's/\s*$/},/' -e 's/\s\+/",/' -e 'y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/' > cap_names.list.h
+gcc -O2 -Dlinux -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code  -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I/build/libcap-2.76-m04-r1/libcap/../libcap/include/uapi -I/build/libcap-2.76-m04-r1/libcap/../libcap/include _makenames.c -o _makenames
+./_makenames > cap_names.h
+gcc -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code -fPIC -D_LIBPSX_PTHREAD_LINKAGE -Dlinux -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I/build/libcap-2.76-m04-r1/libcap/../libcap/include/uapi -I/build/libcap-2.76-m04-r1/libcap/../libcap/include -c cap_alloc.c -o cap_alloc.o
+gcc -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code -fPIC -D_LIBPSX_PTHREAD_LINKAGE -Dlinux -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I/build/libcap-2.76-m04-r1/libcap/../libcap/include/uapi -I/build/libcap-2.76-m04-r1/libcap/../libcap/include -c cap_proc.c -o cap_proc.o
+gcc -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code -fPIC -D_LIBPSX_PTHREAD_LINKAGE -Dlinux -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I/build/libcap-2.76-m04-r1/libcap/../libcap/include/uapi -I/build/libcap-2.76-m04-r1/libcap/../libcap/include -c cap_extint.c -o cap_extint.o
+gcc -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code -fPIC -D_LIBPSX_PTHREAD_LINKAGE -Dlinux -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I/build/libcap-2.76-m04-r1/libcap/../libcap/include/uapi -I/build/libcap-2.76-m04-r1/libcap/../libcap/include -c cap_flag.c -o cap_flag.o
+gcc -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code -fPIC -D_LIBPSX_PTHREAD_LINKAGE -Dlinux -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I/build/libcap-2.76-m04-r1/libcap/../libcap/include/uapi -I/build/libcap-2.76-m04-r1/libcap/../libcap/include  -c cap_text.c -o cap_text.o
+gcc -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code -fPIC -D_LIBPSX_PTHREAD_LINKAGE -Dlinux -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I/build/libcap-2.76-m04-r1/libcap/../libcap/include/uapi -I/build/libcap-2.76-m04-r1/libcap/../libcap/include -c cap_file.c -o cap_file.o
+gcc -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code -fPIC -D_LIBPSX_PTHREAD_LINKAGE -Dlinux -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I/build/libcap-2.76-m04-r1/libcap/../libcap/include/uapi -I/build/libcap-2.76-m04-r1/libcap/../libcap/include -c cap_syscalls.c -o cap_syscalls.o
+ar rcs libcap.a cap_alloc.o cap_proc.o cap_extint.o cap_flag.o cap_text.o cap_file.o cap_syscalls.o
+ranlib libcap.a
+make libcap.so
+make[2]: Entering directory '/build/libcap-2.76-m04-r1/libcap'
+gcc -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code -fPIC -D_LIBPSX_PTHREAD_LINKAGE -Dlinux -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I/build/libcap-2.76-m04-r1/libcap/../libcap/include/uapi -I/build/libcap-2.76-m04-r1/libcap/../libcap/include  empty.c -o empty
+objcopy --dump-section .interp=loader.txt empty /dev/null
+gcc -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code -fPIC -D_LIBPSX_PTHREAD_LINKAGE -Dlinux -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I/build/libcap-2.76-m04-r1/libcap/../libcap/include/uapi -I/build/libcap-2.76-m04-r1/libcap/../libcap/include -DLIBRARY_VERSION=\"libcap-2.76\" -DSHARED_LOADER=\"/lib64/ld-linux-x86-64.so.2\" -include ./libcap.h -c execable.c -o cap_magic.o
+gcc -Wl,-x -shared -Wl,-shared -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code -fPIC -D_LIBPSX_PTHREAD_LINKAGE  -Wl,-soname,libcap.so.2 -o libcap.so.2.76 cap_alloc.o cap_proc.o cap_extint.o cap_flag.o cap_text.o cap_file.o cap_syscalls.o cap_magic.o -Wl,-e,__so_start
+ln -sf libcap.so.2.76 libcap.so.2
+ln -sf libcap.so.2 libcap.so
+make[2]: Leaving directory '/build/libcap-2.76-m04-r1/libcap'
+make libpsx.a
+make[2]: Entering directory '/build/libcap-2.76-m04-r1/libcap'
+gcc -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code -fPIC -D_LIBPSX_PTHREAD_LINKAGE -Dlinux -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I/build/libcap-2.76-m04-r1/libcap/../libcap/include/uapi -I/build/libcap-2.76-m04-r1/libcap/../libcap/include -c ../psx/psx.c -o ../psx/psx.o
+gcc -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code -fPIC -D_LIBPSX_PTHREAD_LINKAGE -Dlinux -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I/build/libcap-2.76-m04-r1/libcap/../libcap/include/uapi -I/build/libcap-2.76-m04-r1/libcap/../libcap/include -c ../psx/psx_calls.c -o ../psx/psx_calls.o
+gcc -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code -fPIC -D_LIBPSX_PTHREAD_LINKAGE -Dlinux -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I/build/libcap-2.76-m04-r1/libcap/../libcap/include/uapi -I/build/libcap-2.76-m04-r1/libcap/../libcap/include -c ../psx/wrap/psx_wrap.c -o ../psx/wrap/psx_wrap.o
+rm -f include/sys/psx_syscall.h
+ln -s ../../../psx/psx_syscall.h include/sys/psx_syscall.h
+ar rcs libpsx.a ../psx/psx.o ../psx/psx_calls.o ../psx/wrap/psx_wrap.o
+ranlib libpsx.a
+make[2]: Leaving directory '/build/libcap-2.76-m04-r1/libcap'
+make libpsx.so
+make[2]: Entering directory '/build/libcap-2.76-m04-r1/libcap'
+gcc -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code -fPIC -D_LIBPSX_PTHREAD_LINKAGE -Dlinux -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I/build/libcap-2.76-m04-r1/libcap/../libcap/include/uapi -I/build/libcap-2.76-m04-r1/libcap/../libcap/include -DLIBRARY_VERSION=\"libpsx-2.76\" -DSHARED_LOADER=\"/lib64/ld-linux-x86-64.so.2\" -c psx_exec.c -o psx_magic.o
+gcc -Wl,-x -shared -Wl,-shared -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code -fPIC -D_LIBPSX_PTHREAD_LINKAGE  -Wl,-soname,libpsx.so.2 -o libpsx.so.2.76 ../psx/psx.o ../psx/psx_calls.o ../psx/wrap/psx_wrap.o psx_magic.o -Wl,-e,__so_start -lpthread
+ln -sf libpsx.so.2.76 libpsx.so.2
+ln -sf libpsx.so.2 libpsx.so
+make[2]: Leaving directory '/build/libcap-2.76-m04-r1/libcap'
+make[1]: Leaving directory '/build/libcap-2.76-m04-r1/libcap'
+make -C pam_cap all
+make[1]: Entering directory '/build/libcap-2.76-m04-r1/pam_cap'
+gcc -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code -fPIC -Dlinux -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I/build/libcap-2.76-m04-r1/pam_cap/../libcap/include/uapi -I/build/libcap-2.76-m04-r1/pam_cap/../libcap/include  -c -o pam_cap.o pam_cap.c
+gcc -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code -fPIC -Dlinux -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I/build/libcap-2.76-m04-r1/pam_cap/../libcap/include/uapi -I/build/libcap-2.76-m04-r1/pam_cap/../libcap/include -DLIBCAP_VERSION=\"libcap-2.76\" -DSHARED_LOADER=\"/lib64/ld-linux-x86-64.so.2\" -c execable.c -o execable.o
+gcc -Wl,-x -shared -Wl,-shared -o lazylink.so -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code -fPIC -Dlinux -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I/build/libcap-2.76-m04-r1/pam_cap/../libcap/include/uapi -I/build/libcap-2.76-m04-r1/pam_cap/../libcap/include  lazylink.c -DSHARED_LOADER=\"/lib64/ld-linux-x86-64.so.2\" -Wl,-e,__so_start
+echo "-Wl,-e,__so_start" > pam_cap_linkopts
+./lazylink.so || echo "-lpam" >> pam_cap_linkopts
+make -C ../libcap all
+make[2]: Entering directory '/build/libcap-2.76-m04-r1/libcap'
+make libpsx.pc
+make[3]: Entering directory '/build/libcap-2.76-m04-r1/libcap'
+make[3]: 'libpsx.pc' is up to date.
+make[3]: Leaving directory '/build/libcap-2.76-m04-r1/libcap'
+make libcap.so
+make[3]: Entering directory '/build/libcap-2.76-m04-r1/libcap'
+make[3]: 'libcap.so' is up to date.
+make[3]: Leaving directory '/build/libcap-2.76-m04-r1/libcap'
+make libpsx.a
+make[3]: Entering directory '/build/libcap-2.76-m04-r1/libcap'
+make[3]: 'libpsx.a' is up to date.
+make[3]: Leaving directory '/build/libcap-2.76-m04-r1/libcap'
+make libpsx.so
+make[3]: Entering directory '/build/libcap-2.76-m04-r1/libcap'
+make[3]: 'libpsx.so' is up to date.
+make[3]: Leaving directory '/build/libcap-2.76-m04-r1/libcap'
+make[2]: Leaving directory '/build/libcap-2.76-m04-r1/libcap'
+touch LIBCAP
+cat pam_cap_linkopts | xargs -e gcc -Wl,-x -shared -Wl,-shared  -o pam_cap.so pam_cap.o execable.o -L/build/libcap-2.76-m04-r1/pam_cap/../libcap -lcap
+make testlink
+make[2]: Entering directory '/build/libcap-2.76-m04-r1/pam_cap'
+gcc -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code -fPIC -Dlinux -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I/build/libcap-2.76-m04-r1/pam_cap/../libcap/include/uapi -I/build/libcap-2.76-m04-r1/pam_cap/../libcap/include  -c -o test.o test.c
+gcc -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code -fPIC  -o testlink test.o pam_cap.o -lpam -ldl -L/build/libcap-2.76-m04-r1/pam_cap/../libcap -lcap
+make[2]: Leaving directory '/build/libcap-2.76-m04-r1/pam_cap'
+make[1]: Leaving directory '/build/libcap-2.76-m04-r1/pam_cap'
+make -C tests all
+make[1]: Entering directory '/build/libcap-2.76-m04-r1/tests'
+leave test building to test target
+make[1]: Leaving directory '/build/libcap-2.76-m04-r1/tests'
+make -C progs all
+make[1]: Entering directory '/build/libcap-2.76-m04-r1/progs'
+gcc -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code -Dlinux -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I/build/libcap-2.76-m04-r1/progs/../libcap/include/uapi -I/build/libcap-2.76-m04-r1/progs/../libcap/include -c getpcaps.c -o getpcaps.o
+gcc -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code  getpcaps.o -L/build/libcap-2.76-m04-r1/progs/../libcap -lcap  -o getpcaps
+gcc -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code -Dlinux -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I/build/libcap-2.76-m04-r1/progs/../libcap/include/uapi -I/build/libcap-2.76-m04-r1/progs/../libcap/include -c getcap.c -o getcap.o
+gcc -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code  getcap.o -L/build/libcap-2.76-m04-r1/progs/../libcap -lcap  -o getcap
+gcc -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code -Dlinux -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I/build/libcap-2.76-m04-r1/progs/../libcap/include/uapi -I/build/libcap-2.76-m04-r1/progs/../libcap/include -c setcap.c -o setcap.o
+gcc -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code  setcap.o -L/build/libcap-2.76-m04-r1/progs/../libcap -lcap  -o setcap
+./mkcapshdoc.sh > capshdoc.c.cf
+diff -u capshdoc.c capshdoc.c.cf || (rm capshdoc.c.cf ; exit 1)
+gcc -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code -Dlinux -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I/build/libcap-2.76-m04-r1/progs/../libcap/include/uapi -I/build/libcap-2.76-m04-r1/progs/../libcap/include   capsh.c capshdoc.c -L/build/libcap-2.76-m04-r1/progs/../libcap -lcap  -o capsh
+make[1]: Leaving directory '/build/libcap-2.76-m04-r1/progs'
+make -C doc all
+make[1]: Entering directory '/build/libcap-2.76-m04-r1/doc'
+make[1]: Nothing to be done for 'all'.
+make[1]: Leaving directory '/build/libcap-2.76-m04-r1/doc'
+make -C libcap test
+make[1]: Entering directory '/build/libcap-2.76-m04-r1/libcap'
+gcc -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code -fPIC -D_LIBPSX_PTHREAD_LINKAGE -Dlinux -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I/build/libcap-2.76-m04-r1/libcap/../libcap/include/uapi -I/build/libcap-2.76-m04-r1/libcap/../libcap/include  cap_test.c cap_alloc.o cap_proc.o cap_extint.o cap_flag.o cap_text.o cap_file.o cap_syscalls.o -o cap_test
+./cap_test
+test_cap_bits: being called
+test_cap_flags: being called
+test_short_bits: being called
+test_alloc: being called
+test_alloc
+test_alloc: drop_launcher
+test_alloc: drop_iab
+test_alloc: drop_cap
+test_prctl: being called
+tested
+cap_test PASS
+make libcapsotest
+make[2]: Entering directory '/build/libcap-2.76-m04-r1/libcap'
+./libcap.so
+./libcap.so is the shared library version: libcap-2.76.
+See the License file for distribution information.
+More information on this library is available from:
+
+    https://sites.google.com/site/fullycapable/
+./libcap.so --usage
+./libcap.so is the shared library version: libcap-2.76.
+See the License file for distribution information.
+More information on this library is available from:
+
+    https://sites.google.com/site/fullycapable/
+
+usage: libcap.so [--help|--usage|--summary]
+./libcap.so --help
+./libcap.so is the shared library version: libcap-2.76.
+See the License file for distribution information.
+More information on this library is available from:
+
+    https://sites.google.com/site/fullycapable/
+
+usage: libcap.so [--help|--usage|--summary]
+./libcap.so --summary
+./libcap.so is the shared library version: libcap-2.76.
+See the License file for distribution information.
+More information on this library is available from:
+
+    https://sites.google.com/site/fullycapable/
+
+Current mode: HYBRID
+Number of cap values known to: this libcap=41, running kernel=41
+make[2]: Leaving directory '/build/libcap-2.76-m04-r1/libcap'
+make libpsxsotest
+make[2]: Entering directory '/build/libcap-2.76-m04-r1/libcap'
+./libpsx.so
+./libpsx.so is the shared library version: libpsx-2.76.
+See the License file for distribution information.
+More information on this library is available from:
+
+    https://sites.google.com/site/fullycapable/
+make[2]: Leaving directory '/build/libcap-2.76-m04-r1/libcap'
+make[1]: Leaving directory '/build/libcap-2.76-m04-r1/libcap'
+make -C pam_cap test
+make[1]: Entering directory '/build/libcap-2.76-m04-r1/pam_cap'
+gcc -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code -fPIC -Dlinux -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I/build/libcap-2.76-m04-r1/pam_cap/../libcap/include/uapi -I/build/libcap-2.76-m04-r1/pam_cap/../libcap/include -o test_pam_cap test_pam_cap.c -L/build/libcap-2.76-m04-r1/pam_cap/../libcap -lcap --static
+echo "^cap_setuid  alpha" > incapable.conf && chmod o+w incapable.conf
+./test_pam_cap
+test_pam_cap: OK (kick the tires test)
+LD_LIBRARY_PATH=../libcap ./pam_cap.so
+./pam_cap.so (version libcap-2.76) is a PAM module to specify
+inheritable (IAB) capabilities via the libpam authentication
+abstraction. See the pam_cap License file for licensing information.
+
+Release notes and feature documentation for libcap and pam_cap.so
+can be found at:
+
+    https://sites.google.com/site/fullycapable/
+LD_LIBRARY_PATH=../libcap ./pam_cap.so --help
+./pam_cap.so (version libcap-2.76) is a PAM module to specify
+inheritable (IAB) capabilities via the libpam authentication
+abstraction. See the pam_cap License file for licensing information.
+
+Release notes and feature documentation for libcap and pam_cap.so
+can be found at:
+
+    https://sites.google.com/site/fullycapable/
+
+./pam_cap.so supports the following module arguments:
+
+debug         - verbose logging (ignored for now)
+config=<file> - override the default config with file
+keepcaps      - workaround for apps that setuid without this
+autoauth      - pam_cap.so to always succeed for the 'auth' phase
+default=<iab> - fallback IAB value if there is no '*' rule
+defer         - apply IAB value at pam_exit (not via setcred)
+module can be run as an executable!
+make[1]: Leaving directory '/build/libcap-2.76-m04-r1/pam_cap'
+make -C tests test
+make[1]: Entering directory '/build/libcap-2.76-m04-r1/tests'
+make run_psx_test run_libcap_psx_test
+make[2]: Entering directory '/build/libcap-2.76-m04-r1/tests'
+gcc -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code -Dlinux -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I/build/libcap-2.76-m04-r1/tests/../libcap/include/uapi -I/build/libcap-2.76-m04-r1/tests/../libcap/include  psx_test.c -o psx_test -Wl,-rpath,../libcap -L/build/libcap-2.76-m04-r1/tests/../libcap -Wl,--no-as-needed -Wl,--whole-archive -lpsx -Wl,--no-whole-archive -Wl,--as-needed -lpthread
+./psx_test
+child 1303825 starting
+child 1303825 exiting
+iteration [1303824]: 0
+hello [1303824], main<0> 79ae2f3db740 (keepcaps=1 vs. want=1)
+pid=1303824 forked -> 1303825
+[1303824] started=0 vs 1
+[1303824] started=1 vs 1
+iteration [1303824]: 1
+hello [1303824], main<1> 79ae2f3db740 (keepcaps=0 vs. want=0)
+hello [1303824], thread<0> 79ae2f3da6c0 (keepcaps=0 vs. want=0)
+[1303824] started=1 vs 2
+[1303824] started=2 vs 2
+iteration [1303824]: 2
+hello [1303824], main<2> 79ae2f3db740 (keepcaps=1 vs. want=1)
+hello [1303824], thread<0> 79ae2ebd96c0 (keepcaps=1 vs. want=1)
+hello [1303824], thread<1> 79ae2f3da6c0 (keepcaps=1 vs. want=1)
+[1303824] started=2 vs 3
+[1303824] started=3 vs 3
+iteration [1303824]: 3
+hello [1303824], main<3> 79ae2f3db740 (keepcaps=0 vs. want=0)
+hello [1303824], thread<0> 79ae2e3d86c0 (keepcaps=0 vs. want=0)
+hello [1303824], thread<2> 79ae2f3da6c0 (keepcaps=0 vs. want=0)
+hello [1303824], thread<1> 79ae2ebd96c0 (keepcaps=0 vs. want=0)
+iteration [1303824]: 4
+hello [1303824], main<4> 79ae2f3db740 (keepcaps=1 vs. want=1)
+hello [1303824], thread<2> 79ae2ebd96c0 (keepcaps=1 vs. want=1)
+hello [1303824], thread<1> 79ae2e3d86c0 (keepcaps=1 vs. want=1)
+iteration [1303824]: 5
+hello [1303824], main<5> 79ae2f3db740 (keepcaps=0 vs. want=0)
+hello [1303824], thread<2> 79ae2e3d86c0 (keepcaps=0 vs. want=0)
+iteration [1303824]: 6
+hello [1303824], main<6> 79ae2f3db740 (keepcaps=1 vs. want=1)
+iteration [1303824]: 7
+hello [1303824], main<7> 79ae2f3db740 (keepcaps=0 vs. want=0)
+iteration [1303824]: 8
+hello [1303824], main<8> 79ae2f3db740 (keepcaps=1 vs. want=1)
+iteration [1303824]: 9
+hello [1303824], main<9> 79ae2f3db740 (keepcaps=0 vs. want=0)
+./psx_test PASSED
+gcc -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code -Dlinux -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I/build/libcap-2.76-m04-r1/tests/../libcap/include/uapi -I/build/libcap-2.76-m04-r1/tests/../libcap/include  libcap_psx_test.c -o libcap_psx_test -Wl,-rpath,../libcap -L/build/libcap-2.76-m04-r1/tests/../libcap -lcap -L/build/libcap-2.76-m04-r1/tests/../libcap -Wl,--no-as-needed -Wl,--whole-archive -lpsx -Wl,--no-whole-archive -Wl,--as-needed -lpthread
+./libcap_psx_test
+hello libcap and libpsx .......... PASSED
+make[2]: Leaving directory '/build/libcap-2.76-m04-r1/tests'
+make run_b219174
+make[2]: Entering directory '/build/libcap-2.76-m04-r1/tests'
+gcc -Wl,-x -shared -Wl,-shared -o weaver.so -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code -fPIC -Dlinux -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I/build/libcap-2.76-m04-r1/tests/../libcap/include/uapi -I/build/libcap-2.76-m04-r1/tests/../libcap/include weaver.c -DSHARED_LOADER=\"/lib64/ld-linux-x86-64.so.2\" -Wl,-e,__so_start -lpthread
+gcc -O2  -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -Wunreachable-code -Dlinux -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I/build/libcap-2.76-m04-r1/tests/../libcap/include/uapi -I/build/libcap-2.76-m04-r1/tests/../libcap/include b219174.c -o b219174 -Wl,-rpath,../libcap -L/build/libcap-2.76-m04-r1/tests/../libcap -Wl,--no-as-needed -Wl,--whole-archive -lpsx -Wl,--no-whole-archive -Wl,--as-needed -lpthread -ldl
+./weaver.so
+PASSED
+./b219174
+for 1 weaver.so launched threads, total=2, wanted=2
+for 2 weaver.so launched threads, total=6, wanted=6
+for 3 weaver.so launched threads, total=6, wanted=6
+for 4 weaver.so launched threads, total=12, wanted=12
+for 5 weaver.so launched threads, total=10, wanted=10
+for 6 weaver.so launched threads, total=18, wanted=18
+for 7 weaver.so launched threads, total=14, wanted=14
+for 8 weaver.so launched threads, total=24, wanted=24
+for 9 weaver.so launched threads, total=18, wanted=18
+for 10 weaver.so launched threads, total=30, wanted=30
+for 11 weaver.so launched threads, total=22, wanted=22
+for 12 weaver.so launched threads, total=36, wanted=36
+for 13 weaver.so launched threads, total=26, wanted=26
+for 14 weaver.so launched threads, total=42, wanted=42
+for 15 weaver.so launched threads, total=30, wanted=30
+for 16 weaver.so launched threads, total=48, wanted=48
+for 17 weaver.so launched threads, total=34, wanted=34
+for 18 weaver.so launched threads, total=54, wanted=54
+for 19 weaver.so launched threads, total=38, wanted=38
+for 20 weaver.so launched threads, total=60, wanted=60
+for 21 weaver.so launched threads, total=42, wanted=42
+for 22 weaver.so launched threads, total=66, wanted=66
+for 23 weaver.so launched threads, total=46, wanted=46
+for 24 weaver.so launched threads, total=72, wanted=72
+for 25 weaver.so launched threads, total=50, wanted=50
+for 26 weaver.so launched threads, total=78, wanted=78
+for 27 weaver.so launched threads, total=54, wanted=54
+for 28 weaver.so launched threads, total=84, wanted=84
+for 29 weaver.so launched threads, total=58, wanted=58
+for 30 weaver.so launched threads, total=90, wanted=90
+for 31 weaver.so launched threads, total=62, wanted=62
+for 32 weaver.so launched threads, total=96, wanted=96
+for 33 weaver.so launched threads, total=66, wanted=66
+for 34 weaver.so launched threads, total=102, wanted=102
+for 35 weaver.so launched threads, total=70, wanted=70
+for 36 weaver.so launched threads, total=108, wanted=108
+for 37 weaver.so launched threads, total=74, wanted=74
+PASSED
+make[2]: Leaving directory '/build/libcap-2.76-m04-r1/tests'
+make[1]: Leaving directory '/build/libcap-2.76-m04-r1/tests'
+make -C progs test
+make[1]: Entering directory '/build/libcap-2.76-m04-r1/progs'
+no program tests without privilege, try 'make sudotest'
+make[1]: Leaving directory '/build/libcap-2.76-m04-r1/progs'
+make -C doc test
+make[1]: Entering directory '/build/libcap-2.76-m04-r1/doc'
+no doc tests available
+make[1]: Leaving directory '/build/libcap-2.76-m04-r1/doc'
+make -C libcap install
+make[1]: Entering directory '/build/libcap-2.76-m04-r1/libcap'
+mkdir -p -m 0755 /tmp/alp-m04-libcap-stage-r1/usr/include/sys
+mkdir -p -m 0755 /tmp/alp-m04-libcap-stage-r1/usr/lib/pkgconfig
+mkdir -p -m 0755 /tmp/alp-m04-libcap-stage-r1/usr/lib
+install -m 0644 include/sys/capability.h /tmp/alp-m04-libcap-stage-r1/usr/include/sys
+install -m 0644 libcap.pc /tmp/alp-m04-libcap-stage-r1/usr/lib/pkgconfig/libcap.pc
+make install-static-psx
+make[2]: Entering directory '/build/libcap-2.76-m04-r1/libcap'
+mkdir -p -m 0755 /tmp/alp-m04-libcap-stage-r1/usr/include/sys
+mkdir -p -m 0755 /tmp/alp-m04-libcap-stage-r1/usr/lib/pkgconfig
+mkdir -p -m 0755 /tmp/alp-m04-libcap-stage-r1/usr/lib
+install -m 0644 include/sys/psx_syscall.h /tmp/alp-m04-libcap-stage-r1/usr/include/sys
+install -m 0644 libpsx.pc /tmp/alp-m04-libcap-stage-r1/usr/lib/pkgconfig/libpsx.pc
+make[2]: Leaving directory '/build/libcap-2.76-m04-r1/libcap'
+make install-shared
+make[2]: Entering directory '/build/libcap-2.76-m04-r1/libcap'
+mkdir -p -m 0755 /tmp/alp-m04-libcap-stage-r1/usr/include/sys
+mkdir -p -m 0755 /tmp/alp-m04-libcap-stage-r1/usr/lib/pkgconfig
+mkdir -p -m 0755 /tmp/alp-m04-libcap-stage-r1/usr/lib
+install -m 0644 include/sys/capability.h /tmp/alp-m04-libcap-stage-r1/usr/include/sys
+install -m 0644 libcap.pc /tmp/alp-m04-libcap-stage-r1/usr/lib/pkgconfig/libcap.pc
+install -m 0755 libcap.so.2.76 /tmp/alp-m04-libcap-stage-r1/usr/lib/libcap.so.2.76
+ln -sf libcap.so.2.76 /tmp/alp-m04-libcap-stage-r1/usr/lib/libcap.so.2
+ln -sf libcap.so.2 /tmp/alp-m04-libcap-stage-r1/usr/lib/libcap.so
+make install-shared-psx
+make[3]: Entering directory '/build/libcap-2.76-m04-r1/libcap'
+mkdir -p -m 0755 /tmp/alp-m04-libcap-stage-r1/usr/include/sys
+mkdir -p -m 0755 /tmp/alp-m04-libcap-stage-r1/usr/lib/pkgconfig
+mkdir -p -m 0755 /tmp/alp-m04-libcap-stage-r1/usr/lib
+install -m 0644 include/sys/psx_syscall.h /tmp/alp-m04-libcap-stage-r1/usr/include/sys
+install -m 0644 libpsx.pc /tmp/alp-m04-libcap-stage-r1/usr/lib/pkgconfig/libpsx.pc
+install -m 0755 libpsx.so.2.76 /tmp/alp-m04-libcap-stage-r1/usr/lib/libpsx.so.2.76
+ln -sf libpsx.so.2.76 /tmp/alp-m04-libcap-stage-r1/usr/lib/libpsx.so.2
+ln -sf libpsx.so.2 /tmp/alp-m04-libcap-stage-r1/usr/lib/libpsx.so
+make[3]: Leaving directory '/build/libcap-2.76-m04-r1/libcap'
+make[2]: Leaving directory '/build/libcap-2.76-m04-r1/libcap'
+make[1]: Leaving directory '/build/libcap-2.76-m04-r1/libcap'
+make -C pam_cap install
+make[1]: Entering directory '/build/libcap-2.76-m04-r1/pam_cap'
+make testlink
+make[2]: Entering directory '/build/libcap-2.76-m04-r1/pam_cap'
+make[2]: 'testlink' is up to date.
+make[2]: Leaving directory '/build/libcap-2.76-m04-r1/pam_cap'
+mkdir -p -m 0755 /tmp/alp-m04-libcap-stage-r1/usr/lib/security
+install -m 0755 pam_cap.so /tmp/alp-m04-libcap-stage-r1/usr/lib/security
+make[1]: Leaving directory '/build/libcap-2.76-m04-r1/pam_cap'
+make -C tests install
+make[1]: Entering directory '/build/libcap-2.76-m04-r1/tests'
+nothing to install from tests
+make[1]: Leaving directory '/build/libcap-2.76-m04-r1/tests'
+make -C progs install
+make[1]: Entering directory '/build/libcap-2.76-m04-r1/progs'
+mkdir -p -m 0755 /tmp/alp-m04-libcap-stage-r1/usr/sbin
+for p in getpcaps getcap setcap capsh ; do \
+	install -m 0755 $p /tmp/alp-m04-libcap-stage-r1/usr/sbin ; \
+done
+make[1]: Leaving directory '/build/libcap-2.76-m04-r1/progs'
+make -C doc install
+make[1]: Entering directory '/build/libcap-2.76-m04-r1/doc'
+mkdir -p -m 755 /tmp/alp-m04-libcap-stage-r1/usr/share/man/man1 /tmp/alp-m04-libcap-stage-r1/usr/share/man/man3 /tmp/alp-m04-libcap-stage-r1/usr/share/man/man5 /tmp/alp-m04-libcap-stage-r1/usr/share/man/man7 /tmp/alp-m04-libcap-stage-r1/usr/share/man/man8
+for man in \
+	/tmp/alp-m04-libcap-stage-r1/usr/share/man/man1 capsh.1 \
+	/tmp/alp-m04-libcap-stage-r1/usr/share/man/man3 cap_init.3 cap_free.3 cap_dup.3 cap_clear.3 cap_clear_flag.3 cap_get_flag.3 cap_set_flag.3 cap_fill.3 cap_fill_flag.3 cap_max_bits.3 cap_compare.3 cap_get_proc.3 cap_get_pid.3 cap_set_proc.3 cap_get_file.3 cap_get_fd.3 cap_set_file.3 cap_set_fd.3 cap_set_nsowner.3 cap_get_nsowner.3 cap_copy_ext.3 cap_size.3 cap_copy_int.3 cap_mode.3 cap_copy_int_check.3 cap_set_syscall.3 cap_from_text.3 cap_to_text.3 cap_from_name.3 cap_to_name.3 capsetp.3 capgetp.3 libcap.3 cap_get_bound.3 cap_drop_bound.3 cap_get_mode.3 cap_set_mode.3 cap_mode_name.3 cap_get_secbits.3 cap_set_secbits.3 cap_setuid.3 cap_setgroups.3 cap_launch.3 cap_func_launcher.3 cap_launcher_callback.3 cap_launcher_set_chroot.3 cap_launcher_set_mode.3 cap_launcher_setgroups.3 cap_launcher_setuid.3 cap_launcher_set_iab.3 cap_new_launcher.3 cap_iab.3 cap_iab_init.3 cap_iab_dup.3 cap_iab_compare.3 cap_iab_get_proc.3 cap_iab_get_pid.3 cap_iab_set_proc.3 cap_iab_to_text.3 cap_iab_from_text.3 cap_iab_get_vector.3 cap_iab_set_vector.3 cap_iab_fill.3 cap_proc_root.3 cap_prctl.3 cap_prctlw.3 psx_syscall.3 psx_syscall3.3 psx_syscall6.3 psx_set_sensitivity.3 psx_load_syscalls.3 __psx_syscall.3 libpsx.3 \
+	/tmp/alp-m04-libcap-stage-r1/usr/share/man/man5 capability.conf.5 \
+	/tmp/alp-m04-libcap-stage-r1/usr/share/man/man7 cap_text_formats.7 \
+	/tmp/alp-m04-libcap-stage-r1/usr/share/man/man8 getcap.8 setcap.8 getpcaps.8 captree.8 pam_cap.8 \
+	; \
+do \
+	case $man in \
+	/*)	sub=$man ; continue ;; \
+	esac; \
+	install -m 644 $man $sub ; \
+done
+make[1]: Leaving directory '/build/libcap-2.76-m04-r1/doc'
+ 0x0000000000000001 (NEEDED)             Shared library: [libcap.so.2]
+NBD_IDLE: verified
+manifest=/mnt/lfs/tmp/alp-m04-libcap-2.76-manifest-20260924-r1.json
+entries=110 types={"directory": 14, "file": 92, "symlink": 4}
+STAGE_COMPARE_OK: entries=110 matched=110 mismatched=0
+ROOTFS_PREFLIGHT=staged paths differ; review before adoption
+package=libcap version=2.76
+source_url=https://www.kernel.org/pub/linux/libs/security/linux-privs/libcap2/libcap-2.76.tar.xz
+source_md5=449ade7d620b5c4eeb15a632fbaa4f74 (LFS package list)
+source_sha256=629da4ab29900d0f7fcc36227073743119925fd711c99a1689bbf5c9b40c8e6f (kernel.org signed sha256sums.asc)
+critical_tests=make test passed
+smoke_loader_trace=/mnt/lfs/build/libcap-2.76-m04-r1/libcap-stage-loader-trace.log sha256=f94a4f3c435d20eb64d6f9a5da2678caead4391a826892a8c77fc72bce123286
+install_mode=DESTDIR; rootfs_merge=forbidden
+manifest=/mnt/lfs/tmp/alp-m04-libcap-2.76-manifest-20260924-r1.json
+entries=110 types={"directory": 14, "file": 92, "symlink": 4}
+STAGE_COMPARE_OK: entries=110 matched=110 mismatched=0
+MISMATCH /usr/include/sys
+  expected: {"gid": 0, "mode": 493, "path": "/usr/include/sys", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/include/sys", "type": "directory", "uid": 1001}
+MISMATCH /usr/lib/security/pam_cap.so
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/security/pam_cap.so", "sha256": "da5ceee067f97d20e3d959c2c3fe14cde0531b4cded8519622392f6df1850ba1", "size": 17984, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/sbin
+  expected: {"gid": 0, "mode": 493, "path": "/usr/sbin", "type": "directory", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/sbin", "type": "directory", "uid": 1001}
+package=libcap version=2.76 entries=110 matched=107 mismatched=3
+ROOTFS_PREFLIGHT=staged paths differ; review before adoption
+NBD_IDLE: verified
+STAGE_OK: /mnt/lfs/tmp/alp-m04-libcap-stage-r1
