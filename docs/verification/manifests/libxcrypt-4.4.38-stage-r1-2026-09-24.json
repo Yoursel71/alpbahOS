@@ -1,0 +1,220 @@
+{
+  "captured_at": "2026-09-24T08:09:01+00:00",
+  "entries": [
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/include",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/crypt.h",
+      "sha256": "6f0623e910155766feb1b4c728591c9d446de81a454b860c0d553300d72e2b7c",
+      "size": 11131,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libcrypt.la",
+      "sha256": "6fa6662fe2356ec741ff06104495a0db3d8bc2be3cf09f89b4ef3d017e73da07",
+      "size": 907,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libcrypt.so",
+      "target": "libcrypt.so.2.0.0",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libcrypt.so.2",
+      "target": "libcrypt.so.2.0.0",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libcrypt.so.2.0.0",
+      "sha256": "b1c0797ced052c007d6ac8444587bdd0c0d1487909145d6a3ae381484b0344c2",
+      "size": 583144,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/pkgconfig",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/pkgconfig/libcrypt.pc",
+      "target": "libxcrypt.pc",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/pkgconfig/libxcrypt.pc",
+      "sha256": "d17ee331ab36c9d45b15ae9fbbf4b93d6cf41ba83041e795f57432da5cef6390",
+      "size": 382,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man/man3",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/crypt.3",
+      "sha256": "26afc9624bb0923256f72d68efd70e2ccc348ebc35d148c7da512ee66473a16a",
+      "size": 10450,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/crypt_checksalt.3",
+      "sha256": "5f39a8f48c5b5d2a57a56f6573a0db833d880231fe863c4fc6931c9c1f7e0716",
+      "size": 2891,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/crypt_gensalt.3",
+      "sha256": "5b4463cea7aa192abc5761f044cc311f0d809af2bbd0df3447d3eff6022fc2a2",
+      "size": 6127,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/crypt_gensalt_ra.3",
+      "sha256": "088cd72a7bd163689ad11d0c33e4f70902a1bd483f91f48c00f1fadb79dfc3ae",
+      "size": 25,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/crypt_gensalt_rn.3",
+      "sha256": "088cd72a7bd163689ad11d0c33e4f70902a1bd483f91f48c00f1fadb79dfc3ae",
+      "size": 25,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/crypt_preferred_method.3",
+      "sha256": "2c2cb4adae81b4e4843047fd056978cbdbc9710f10c911b82bd6a4b01c95f109",
+      "size": 1580,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/crypt_r.3",
+      "sha256": "e03f0b95062176ba33b640479942251523bc5ccc28e42a291204262a4614b7e0",
+      "size": 17,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/crypt_ra.3",
+      "sha256": "e03f0b95062176ba33b640479942251523bc5ccc28e42a291204262a4614b7e0",
+      "size": 17,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/crypt_rn.3",
+      "sha256": "e03f0b95062176ba33b640479942251523bc5ccc28e42a291204262a4614b7e0",
+      "size": 17,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man/man5",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man5/crypt.5",
+      "sha256": "0d66b9e2825a9586f373fd6a252a2380ef4251cc755243e27bac4daca465d9b9",
+      "size": 12180,
+      "type": "file",
+      "uid": 0
+    }
+  ],
+  "package": {
+    "name": "libxcrypt",
+    "source": {
+      "sha256": "80304b9c306ea799327f01d9a7549bdb28317789182631f1b54f4511b4206dd6",
+      "url": "https://github.com/besser82/libxcrypt/releases/download/v4.4.38/libxcrypt-4.4.38.tar.xz"
+    },
+    "version": "4.4.38"
+  },
+  "schema": "alpbahOS.package-files/v1"
+}
