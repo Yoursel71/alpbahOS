@@ -1,0 +1,1330 @@
+{
+  "captured_at": "2026-09-24T08:32:40+00:00",
+  "entries": [
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/etc",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/etc/login.defs",
+      "sha256": "fd27b8a3c4bd65cdad9f1fb60c75a1a047a79e029c2db1273f1bd133b21b0ee3",
+      "size": 13476,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 2541,
+      "path": "/usr/bin/chage",
+      "sha256": "6d5e48d5548b8d962b73786c47d52c1b064022941573e0f307d27633854ed460",
+      "size": 385408,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 2541,
+      "path": "/usr/bin/chfn",
+      "sha256": "5e51a955368b8dec89a10fff52cda85e552c99f6552e7d0d8183201c31e3dc33",
+      "size": 225488,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 2541,
+      "path": "/usr/bin/chsh",
+      "sha256": "39736d44c0788090bb710e6c3bcc8ea592e9f60dc6c6d27affa7762e87b831ef",
+      "size": 191768,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 2541,
+      "path": "/usr/bin/expiry",
+      "sha256": "439e0ac6af4a952498832d4a3c69d3ec582d5353957e20911174d03040334263",
+      "size": 90872,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/faillog",
+      "sha256": "85cdd84040ea52c6d0edb3a4f2e84a6b319d6be1b173cb83747c42c146308f41",
+      "size": 74856,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/getsubids",
+      "sha256": "2b3264a1ecbc892e8350a74def5f4f1d865b15922bcae6f5b716a2b7655a1065",
+      "size": 25600,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 2541,
+      "path": "/usr/bin/gpasswd",
+      "sha256": "a7dd9254f4afd364b439e6fc2a3d75cea03d8d65736f798e49fd391748640a0c",
+      "size": 310760,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/login",
+      "sha256": "68aa0cf60e8e2fbf2d1f0333e95dd08cedb6ddeb70aae65fb5fe361be9e24b1e",
+      "size": 394208,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 2541,
+      "path": "/usr/bin/newgidmap",
+      "sha256": "a721af26c0fa6fd49793208e2b000400a2255bba13dbc5b0e38d155b7e6d1332",
+      "size": 229952,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 2541,
+      "path": "/usr/bin/newgrp",
+      "sha256": "d360bc6073c455d9fc3424aaf0eb43b0a2256a46e5a912b0402156180aebd0ed",
+      "size": 179824,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 2541,
+      "path": "/usr/bin/newuidmap",
+      "sha256": "d1c1d3a5fb326593956e22196615b6c19c8e813c6f80ead55ac361b50a4c8355",
+      "size": 227976,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 2541,
+      "path": "/usr/bin/passwd",
+      "sha256": "8a9d521ea7d66687af3454eb07230523c352b63f42c5ab18d27336e3257d04ba",
+      "size": 475328,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/bin/sg",
+      "target": "newgrp",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 2541,
+      "path": "/usr/bin/su",
+      "sha256": "9ca3b0f23a06ea46ec19e45949321cfd63f984e15307b551d0497954679bc0ab",
+      "size": 166368,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/include",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/include/shadow",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/shadow/subid.h",
+      "sha256": "ac4d4f100248c45ac7ac639e2dc54da3b10455b9bd43ed6cc33e5c0e4fb975b4",
+      "size": 5398,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libsubid.la",
+      "sha256": "84bd131f82de1c6c967501650d572ef9e413749a6a849c93686f614d7690e366",
+      "size": 1069,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libsubid.so",
+      "target": "libsubid.so.5.0.0",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libsubid.so.5",
+      "target": "libsubid.so.5.0.0",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libsubid.so.5.0.0",
+      "sha256": "c019bff1cdc0737a0d61a47073a23190118f56dbce596e8d59b3f0fd8b4a1db2",
+      "size": 833752,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/sbin",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/sbin/chgpasswd",
+      "sha256": "612421496e60d465a2e448dfd1a76cef141071a8f7b1c60c5152cc24bf44edaf",
+      "size": 236296,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/sbin/chpasswd",
+      "sha256": "cb43256c049c1daa1bade28b00ded4de5c9f7b4dd437c655b9226bf6f3f7f515",
+      "size": 373336,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/sbin/groupadd",
+      "sha256": "b0fdfe58e2ba01ca7fe121fcd9ff6af497ca75a4cd9aa8ed7a398632724614e4",
+      "size": 395464,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/sbin/groupdel",
+      "sha256": "af03f946a541a8c5d7f2a0126c0ba5c5b094272a1f573e88f21410c5a854e0d1",
+      "size": 350512,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/sbin/groupmems",
+      "sha256": "165df66bdea1412c7f04a8f7fb41d126bae3bb78ee6be87a78fb9f06c93ac83f",
+      "size": 220312,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/sbin/groupmod",
+      "sha256": "d7bc5e2540a5e441dc127c33ae5b21ec90ecafb17af99eb209ef69f8b1a24726",
+      "size": 395064,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/sbin/grpck",
+      "sha256": "f8f0e9d67de4f1a4aca54fd3a1a4be13d1c783b8f9b9d73ac28c16e183efb157",
+      "size": 219544,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/sbin/grpconv",
+      "sha256": "d11ac54a7a1b9c9a5a7fb1c98c31317478a03006334c719701160c98d107b738",
+      "size": 191960,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/sbin/grpunconv",
+      "sha256": "d66f6bfebdf4bd03237cf148b24d9762df40fd3d384bd2f879c6796670c4dc20",
+      "size": 191520,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/sbin/logoutd",
+      "sha256": "9c0e91d0c63d82e777b5bfb97dd3152b0af6b389c3c384de933e94b66482d5c5",
+      "size": 48424,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/sbin/newusers",
+      "sha256": "9947cf33b8c29bc94bbebd999a088f90bffccc398164fa9fd3a1b3c17401a493",
+      "size": 420336,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/sbin/nologin",
+      "sha256": "6a012f9c0518a2289f291a6b2c5db495eadc180f0c81d7e146806af382a9ca65",
+      "size": 20952,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/sbin/pwck",
+      "sha256": "510f154ae09e5c02d9cfcd331f7f1cc548083079ad99c67c50cfc8baef61e388",
+      "size": 209144,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/sbin/pwconv",
+      "sha256": "07c12750198acb2f552a11ea1c194fe33b64bf3db49c54efa402d410147c0085",
+      "size": 186728,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/sbin/pwunconv",
+      "sha256": "fa9e076807fe55914678e8eb554130b58ba01a6d169728b8cadd48a6d85be5fe",
+      "size": 177824,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/sbin/useradd",
+      "sha256": "177ce633e59aeb29b39930697ae3e5a7b6977cabea45a31748003d79e2dea4ff",
+      "size": 545312,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/sbin/userdel",
+      "sha256": "9169f6eadd85ceb406cf5fb902d15ec11eb24e580050cfab1319a2b05d0b284b",
+      "size": 404672,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/sbin/usermod",
+      "sha256": "cd4f3d36c5b7ecb987c62cd43c61d8c708ff849e15d7000efffb38dd168f7317",
+      "size": 503976,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/sbin/vigr",
+      "target": "vipw",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/sbin/vipw",
+      "sha256": "2170590688d36cc8e92a0881d97065fc030736030c223c24cb735e24672747a6",
+      "size": 239240,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/bs",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/bs/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/bs/LC_MESSAGES/shadow.mo",
+      "sha256": "9a52b7f02d537ecc1b1f3bbd66e3d0aa8f23eeb62e9f6d9ca4da2812787f268e",
+      "size": 2971,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ca",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ca/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ca/LC_MESSAGES/shadow.mo",
+      "sha256": "cad047a00936fd6306f426d3f7d3ca94be3fc287fae2018fa173eb711f1476fc",
+      "size": 84073,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/cs",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/cs/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/cs/LC_MESSAGES/shadow.mo",
+      "sha256": "d751ca00e81643cd2d260f5100d520a192b7e407e650d8966cf22e77bedf23e2",
+      "size": 65007,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/da",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/da/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/da/LC_MESSAGES/shadow.mo",
+      "sha256": "9e371b034ef777ce14d6c95eab69c073eef37d74be7b1535cef8a49c96bb99a0",
+      "size": 58588,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/de",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/de/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/de/LC_MESSAGES/shadow.mo",
+      "sha256": "aabb6b58ee20ce65008151476ad27b1a992fc4a699be03be605ec78c2ca7d762",
+      "size": 64287,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/dz",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/dz/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/dz/LC_MESSAGES/shadow.mo",
+      "sha256": "453f0e28e4fc2a9c38affb0b4f5e794fbbe2c3a9fbec6faffef28976b9685d8d",
+      "size": 29413,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/el",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/el/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/el/LC_MESSAGES/shadow.mo",
+      "sha256": "8647f2e65ab54488b3475a71c99630467592daaa5fc9572231f72994ae0e5594",
+      "size": 78839,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/es",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/es/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/es/LC_MESSAGES/shadow.mo",
+      "sha256": "1ad6a98ee6793ca8607709710b71a834ad31405ccb778a5e0f862ccf912b24f9",
+      "size": 56311,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/eu",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/eu/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/eu/LC_MESSAGES/shadow.mo",
+      "sha256": "bcb431359d9ab26747ccabf54e6d8cad38bab1d0ceb83c272603bae27d9df090",
+      "size": 44034,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/fi",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/fi/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/fi/LC_MESSAGES/shadow.mo",
+      "sha256": "0a7b6aaf7677ea3fc979e009f8c4062ed067b6019da6e4502a49725853d2f798",
+      "size": 17112,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/fr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/fr/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/fr/LC_MESSAGES/shadow.mo",
+      "sha256": "0e849d03c4663aaabd8d5582759cfdafe52e7cee5955da7b67db9129351b85e9",
+      "size": 86149,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/gl",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/gl/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/gl/LC_MESSAGES/shadow.mo",
+      "sha256": "a39bdccb44c855666d811828e42eff94408dfbd6e969b3a1f77e341a2de12ea9",
+      "size": 17157,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/he",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/he/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/he/LC_MESSAGES/shadow.mo",
+      "sha256": "47aa5e26c93d05ee7ace0bd9ba0454b85eb79cd8e702091a3fa9e0ed1441f282",
+      "size": 4188,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/hu",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/hu/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/hu/LC_MESSAGES/shadow.mo",
+      "sha256": "74c88450881b115d525b721c962caa4eb3626070175c72311117f3642e92eb13",
+      "size": 16898,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/id",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/id/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/id/LC_MESSAGES/shadow.mo",
+      "sha256": "580edefcf57e296726b15629dffe35170bab727097c27ce9850d2d56e453bb1d",
+      "size": 14392,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/it",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/it/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/it/LC_MESSAGES/shadow.mo",
+      "sha256": "b22df39a7754adac609717b288d665966281e6a8f88554351130966377cdf318",
+      "size": 19160,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ja",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ja/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ja/LC_MESSAGES/shadow.mo",
+      "sha256": "0b53e1057131b259c539ffdf1d0ba23ebdfa6e728c81b8745abf4842ddb06c29",
+      "size": 67564,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ka",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ka/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ka/LC_MESSAGES/shadow.mo",
+      "sha256": "40ec04027fe340142c9fa725093b1b41691a3c69c77969fa61ccc2a687e0a693",
+      "size": 122082,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/kk",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/kk/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/kk/LC_MESSAGES/shadow.mo",
+      "sha256": "20be20f4ea35e266888b60449ac49fd0a65effb2b0d4b0d88eddd449a8045a05",
+      "size": 78115,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/km",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/km/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/km/LC_MESSAGES/shadow.mo",
+      "sha256": "8d09b8e49ac9d90a4492c283ebbb8d95887681a1abe6b90062cc5622634a08eb",
+      "size": 25182,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ko",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ko/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ko/LC_MESSAGES/shadow.mo",
+      "sha256": "336849440e9c6170e3033ff534f35da0c5776c444f522946d1bd80f2c71676d6",
+      "size": 28476,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/nb",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/nb/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/nb/LC_MESSAGES/shadow.mo",
+      "sha256": "f2baa06385888bc852fd14368396e3610233df360fdd51e4562016bd26173610",
+      "size": 61685,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ne",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ne/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ne/LC_MESSAGES/shadow.mo",
+      "sha256": "5ffd51d84aa43d44f236af51807c065a642b4b59a2854a25ff29d1e5208b1168",
+      "size": 25464,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/nl",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/nl/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/nl/LC_MESSAGES/shadow.mo",
+      "sha256": "6580fd951d39f4a526aea9aa7ac04c06dcbb1110099e34a82ae148112814ee6f",
+      "size": 83207,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/nn",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/nn/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/nn/LC_MESSAGES/shadow.mo",
+      "sha256": "40f270c14eb8ff3d34307f3947e685d025c47694406c7e63eb2691b1b70fa623",
+      "size": 11360,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pl",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pl/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/pl/LC_MESSAGES/shadow.mo",
+      "sha256": "be48ef771cbf82d227749d2b6cae9d00e9b13e1662513899f118721cd5d6eea8",
+      "size": 17248,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pt",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pt/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/pt/LC_MESSAGES/shadow.mo",
+      "sha256": "42cc2f3b07a370677c87b0ac3b1eaa69e08170da403ef2e2fd25a8477075cd69",
+      "size": 62327,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pt_BR",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pt_BR/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/pt_BR/LC_MESSAGES/shadow.mo",
+      "sha256": "dfd2fc04e33682d05415d0efe408be368c4487482c40c7b8b3c93603da9e6d47",
+      "size": 53495,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ro",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ro/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ro/LC_MESSAGES/shadow.mo",
+      "sha256": "78755be6e57d0b60848f68a8acd99f646fe0919d27cb9dbf60b650b21a696ade",
+      "size": 86468,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ru",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ru/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ru/LC_MESSAGES/shadow.mo",
+      "sha256": "9670d7c6ff7479ba772fab11cfc78be20cf2c7c678ac35e57f938c6ae7452228",
+      "size": 84062,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sk",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sk/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/sk/LC_MESSAGES/shadow.mo",
+      "sha256": "ee3fc8d069c9b2ebd50022f8683ccd412f2adcea3ea86cddff2a9dfd4cdf57e0",
+      "size": 40520,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sq",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sq/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/sq/LC_MESSAGES/shadow.mo",
+      "sha256": "781ff25d3b589fc141d303b141c78b367c5737c579ecfd0c8eb5decf126f3ad0",
+      "size": 960,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sv",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sv/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/sv/LC_MESSAGES/shadow.mo",
+      "sha256": "0e121dcd8c4839711c0af86a1448d474a5b1066c1596b13b812e1462c7f27988",
+      "size": 51065,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/tl",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/tl/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/tl/LC_MESSAGES/shadow.mo",
+      "sha256": "283752444dd0357fe0afbe61b0105bc8c97cb3997b93b3a5984bbb94f554d45c",
+      "size": 17082,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/tr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/tr/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/tr/LC_MESSAGES/shadow.mo",
+      "sha256": "4eabf3a93a902fe274ab5fdb43af29176e3bc5a871e5d52bf125c4acfb63dd19",
+      "size": 18589,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/uk",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/uk/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/uk/LC_MESSAGES/shadow.mo",
+      "sha256": "82a6c0c0594e9374872dbd037cc26f7f30358b15b07de30d220232258737c296",
+      "size": 98708,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/vi",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/vi/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/vi/LC_MESSAGES/shadow.mo",
+      "sha256": "c421cca6ca9845492cc789a780e589c60ff6b9ec890be074791e54031b36c1fc",
+      "size": 69762,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/zh_CN",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/zh_CN/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/zh_CN/LC_MESSAGES/shadow.mo",
+      "sha256": "3620a35bcd89c6f642f27f3ed5fb4282c60350e78e963ac49c78ea1a6d3a5d54",
+      "size": 66763,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/zh_TW",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/zh_TW/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/zh_TW/LC_MESSAGES/shadow.mo",
+      "sha256": "6b58878a1cf46c14167ada2c271131c6b8bb1c63906a264c4a6dcf0fbc3fd678",
+      "size": 62720,
+      "type": "file",
+      "uid": 0
+    }
+  ],
+  "package": {
+    "name": "shadow",
+    "source": {
+      "sha256": "add4604d3bc410344433122a819ee4154b79dd8316a56298c60417e637c07608",
+      "url": "https://github.com/shadow-maint/shadow/releases/download/4.18.0/shadow-4.18.0.tar.xz"
+    },
+    "version": "4.18.0"
+  },
+  "schema": "alpbahOS.package-files/v1"
+}
