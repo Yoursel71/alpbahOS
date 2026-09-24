@@ -81,6 +81,7 @@ class InstallEventCaptureTests(unittest.TestCase):
         self.assertTrue(event["environment"]["HOME"].startswith(str(self.fx.root / capture.CAPTURE_DIR / "work")))
         self.assertTrue(event["environment"]["TMPDIR"].startswith(str(self.fx.root / capture.CAPTURE_DIR / "work")))
         self.assertNotIn("/events/", event["environment"]["HOME"].replace("\\", "/"))
+        self.assertFalse(Path(event["environment"]["HOME"]).parent.exists())
         self.assertEqual(event["changed_paths"], ["/usr", "/usr/bin", "/usr/bin/new-tool"])
         self.assertEqual(len(event["inputs"]), 1)
         artifact_dir = self.fx.root / event["artifacts"]["strace"]["path"]
@@ -120,11 +121,80 @@ class InstallEventCaptureTests(unittest.TestCase):
         self.assertTrue(event["outside_root_write_attempts"])
         self.assertRegex(event["outside_root_write_attempts"][0], r"etc[\\/]passwd")
 
+    def test_trace_distinguishes_symlink_destination_from_target(self):
+        trace = self.fx.root / "trace.log"
+        outside = self.fx.root.parent / "outside-target"
+        link = self.fx.root / "link"
+        trace.write_text(
+            f"symlink({json.dumps(str(outside))}, {json.dumps(str(link))}) = 0\n"
+            f"symlink({json.dumps(str(link))}, {json.dumps(str(outside / 'bad-link'))}) = 0\n",
+            encoding="utf-8")
+        violations = capture._trace_outside_writes(trace, self.fx.root, self.fx.root)
+        self.assertEqual(len(violations), 1)
+        self.assertIn(str(outside / "bad-link"), violations[0])
+
+    def test_trace_ignores_outside_readonly_open_and_rejects_write_open(self):
+        trace = self.fx.root / "trace.log"
+        outside = self.fx.root.parent / "outside-source"
+        trace.write_text(
+            f"openat(AT_FDCWD, {json.dumps(str(outside))}, O_RDONLY|O_CLOEXEC) = 3\n"
+            f"openat(AT_FDCWD, {json.dumps(str(outside))}, O_WRONLY|O_CREAT, 0644) = 4\n",
+            encoding="utf-8")
+        violations = capture._trace_outside_writes(trace, self.fx.root, self.fx.root)
+        self.assertEqual(len(violations), 1)
+        self.assertIn(str(outside), violations[0])
+
+    def test_trace_resolves_symlinkat_dirfd_and_linkat_destination(self):
+        trace = self.fx.root / "trace.log"
+        destination = self.fx.root / "usr/bin/new-link"
+        source = self.fx.root.parent / "read-only-source"
+        trace.write_text(
+            f"symlinkat({json.dumps('/usr/lib/tool')}, 42<{self.fx.root / 'usr/bin'}>, \"new-link\") = 0\n"
+            f"linkat(AT_FDCWD, {json.dumps(str(source))}, AT_FDCWD, {json.dumps(str(destination))}, 0) = 0\n",
+            encoding="utf-8")
+        self.assertEqual(capture._trace_outside_writes(trace, self.fx.root, self.fx.root), [])
+
+    def test_trace_checks_descriptor_mutations_and_allows_pipe_writes(self):
+        trace = self.fx.root / "trace.log"
+        outside = self.fx.root.parent / "outside-open-file"
+        inside_log = self.fx.root / capture.CAPTURE_DIR / "events/event/stdout.log"
+        trace.write_text(
+            f'write(1<pipe:[12345]>, "command output", 14) = 14\n'
+            f'write(3<{inside_log}>, "captured", 8) = 8\n'
+            f'ftruncate(4<{outside}>, 0) = 0\n',
+            encoding="utf-8")
+        violations = capture._trace_outside_writes(trace, self.fx.root, self.fx.root)
+        self.assertEqual(len(violations), 1)
+        self.assertIn("ftruncate", violations[0])
+
+    def test_trace_fchmodat2_checks_path_and_relative_dirfd(self):
+        trace = self.fx.root / "trace.log"
+        outside = self.fx.root.parent / "outside-mode-target"
+        inside_dir = self.fx.root / "usr/bin"
+        trace.write_text(
+            f"fchmodat2(AT_FDCWD, {json.dumps(str(outside))}, 0644, 0) = 0\n"
+            f"fchmodat2(42<{inside_dir}>, \"tool\", 0755, 0) = 0\n",
+            encoding="utf-8")
+        violations = capture._trace_outside_writes(trace, self.fx.root, self.fx.root)
+        self.assertEqual(len(violations), 1)
+        self.assertIn(str(outside), violations[0])
+
     def test_missing_strace_refuses_before_running_command(self):
         with mock.patch.object(capture.shutil, "which", side_effect=lambda name: None if name == "strace" else "/usr/bin/bwrap"):
             with self.assertRaisesRegex(capture.CaptureError, "strace is required"):
                 capture.capture_install(self.fx.root, ["installer", "write"], cwd=self.fx.root)
         self.execute_mock.assert_not_called()
+
+    def test_symlinked_capture_root_is_rejected_before_outside_directory_creation(self):
+        with tempfile.TemporaryDirectory(prefix="m04-event-outside-") as outside_name:
+            outside = Path(outside_name)
+            try:
+                (self.fx.root / capture.CAPTURE_DIR).symlink_to(outside, target_is_directory=True)
+            except (OSError, NotImplementedError) as exc:
+                self.skipTest(f"symlink creation is unavailable: {exc}")
+            with self.assertRaisesRegex(capture.CaptureError, "symlink path component refused"):
+                capture.capture_install(self.fx.root, ["installer", "write"], cwd=self.fx.root)
+            self.assertEqual(list(outside.iterdir()), [])
 
     def test_bwrap_mounts_host_readonly_fixture_writable_and_evidence_readonly(self):
         self.execute.stop()
