@@ -382,6 +382,29 @@ EXIT trap confirmed no mounts remained below `/mnt/lfs`; `/sys/block/nbd0/pid`
 was empty and 69 GiB remained free on Builder `/`. LFS reference:
 [M4 1.4.20 build instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/m4.html).
 
+## Diffutils 3.12 staged comparison — 24 September 2026
+
+Diffutils 3.12 was built in the Builder `/mnt/lfs` chroot from the archive
+whose LFS MD5 is `d1b18b20868fb561f77861cd90b05de4` and SHA-256 is
+`7c8b7f9fc8609141fdea9cece85249d308624391ff61dedaf528fcb337727dfd`. The
+build used `./configure --prefix=/usr`, `make -j2`, and `make check`; root
+installed only into `/mnt/lfs/tmp/alp-m04-diffutils-stage-r1`. Diffutils tests
+reported 30 PASS, 2 SKIP, 1 XFAIL, 0 FAIL; gnulib tests reported 276 PASS,
+68 SKIP, 0 FAIL. A stage smoke displayed version 3.12 and `cmp` accepted
+identical inputs.
+
+The manifest contains 124 entries (79 directories, 45 files), SHA-256
+`180D9F0D60AD87C6C99147B69DC31983EE5FE19DEE0E74B5B7D2D1B9598E048C`;
+[manifest](manifests/lfs-base/diffutils-3.12-2026-09-24.json). Read-only
+preflight reported 5 matches and 119 mismatches; [full report](manifests/lfs-base/diffutils-3.12-2026-09-24-preflight.log),
+SHA-256 `7CF0EC37D2A6CD16D7DD105B1277EE0B5954992E443D615AF7149AF59D3678D3`.
+No stage files were merged and no package ownership record was added. The
+initial wrapper attempt ran without sufficient privileges and stopped before
+build/mount; the root rerun completed and its EXIT trap detached all mounts.
+The final Builder check showed empty NBD PID, 69 GiB free, unchanged pinned
+`alp.py`, and an empty `db.json`. LFS reference:
+[Diffutils 3.12 build instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/diffutils.html).
+
 Official LFS 12.4-systemd procedures:
 [Gzip-1.14](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/gzip.html),
 [Zstd-1.5.7](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/zstd.html),
