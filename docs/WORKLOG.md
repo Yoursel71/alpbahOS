@@ -950,3 +950,15 @@ PipeWire hatası için aynı gün ek tekrar: Guest `/tmp`'te 12 saniye 48 kHz st
 
 - Re-poll confirmed GCC runner bash/make/DejaGNU PIDs 1451319/1451325/2121972 remain alive. GCC suite `.sum`/`.log` did not change from 12:01:40 UTC; its recorded summary remains 211,480 PASS, 4 unexpected `pr90579.c` scan FAIL, 1,476 expected FAIL, 3,780 unsupported.
 - g++ suite advanced from 13:08: `.sum` grew 19,621,114 -> 20,320,194 bytes, `.log` 189,486,937 -> 200,463,535 bytes; mtime 13:13:28 UTC. Last seen suite `g++.pt`, with PASS entries. No final test summary or finish marker; `gcc-test-summary.log` is still empty. `/mnt/lfs` has 60 GiB free. No process or file was modified.
+
+
+## 24 Eylül 2026 — M04 replayability route assessment
+
+- M04 capture architecture review concluded a clean bootstrap is not automatically required: a preserved clone can be replayed, but only actual ordered install events plus final complete reconciliation can close the gate. Any retained package payload without a newly observed owner remains unresolved.
+- Added [replayability assessment](verification/m04-replayability-assessment-2026-09-24.md) with Builder path evidence, exact pre-replay gates, candidate preservation/rollback requirements, capacity prerequisites, and the condition that forces a clean bootstrap. It is a plan, not install-capture evidence.
+
+
+## 24 Eylül 2026 — M04 GCC g++ suite terminal summary (13:18 UTC)
+
+- Same GCC wrapper/make PIDs 1451319/1451325 remain live; g++ DejaGNU PID 2121972 has ended. The terminal g++ suite summary is 248,538 expected PASS, 2,282 expected FAIL, 2,046 unsupported, with no unexpected-failure entry.
+- GCC C suite remains 211,480 expected PASS, 4 unexpected `gcc.target/i386/pr90579.c` scan FAIL, 1,476 expected FAIL, 3,780 unsupported. The overall runner has not emitted its finish marker, `gcc-test-summary.log` remains empty, and full `make -k check` is not accepted. `/mnt/lfs` has 60 GiB free. No build source or process was modified.
