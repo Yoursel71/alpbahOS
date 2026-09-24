@@ -15,6 +15,23 @@ presence of `DESTDIR` on a main `make install` command is not enough.
 
 ## Package-specific capture actions
 
+The implementation now has an integrity-only verifier at
+[`scripts/verify-m04-evidence-bundle.py`](../../scripts/verify-m04-evidence-bundle.py)
+and an ordered 79-package identity list at
+[`m04-expected-chapter8-packages-12.4.json`](manifests/lfs-base/m04-expected-chapter8-packages-12.4.json).
+The list matches all 79 rows in the coverage matrix. The verifier checks the
+declared install-event fields and hashes of referenced logs, traces, and
+before/after snapshots; `--strict-coverage` checks package/version order. It
+explicitly does **not** prove that the command ran, that a trace is complete,
+or that the artifacts truthfully describe `/mnt/lfs`. No real install-event
+bundle has been captured yet.
+
+Its fixture tests run with `python -m unittest -v
+tests.test_m04_evidence_bundle`. The 10 tests passed on Builder Linux, including
+the symlink rejection test that Windows skipped because symlink creation was
+unavailable there. The Linux test used a disposable `/tmp` copy and removed it
+afterward; it did not touch `/mnt/lfs`.
+
 Keep the Chapter 8 order from the [coverage matrix](m04-lfs-12.4-package-coverage-2026-09-24.md).
 The following recipes need an explicit adapter or post-install capture in
 addition to the main install target:
