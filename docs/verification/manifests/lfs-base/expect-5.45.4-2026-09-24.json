@@ -1,0 +1,454 @@
+{
+  "captured_at": "2026-09-24T04:54:52+00:00",
+  "entries": [
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/autoexpect",
+      "sha256": "d763248e54bc75b34dcc23fc8d6ee26f13e9a93e302fe1769c8efbbd05d31157",
+      "size": 7706,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/autopasswd",
+      "sha256": "cecc26e4007c8274650993f2e0a9a91b25849f805d214038d3a532c089de3b2a",
+      "size": 375,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/cryptdir",
+      "sha256": "f293b53accf01e6cce98f41374b8dfce9e8d9f1aa75439a53b62a89830c44a49",
+      "size": 1365,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/decryptdir",
+      "sha256": "f293b53accf01e6cce98f41374b8dfce9e8d9f1aa75439a53b62a89830c44a49",
+      "size": 1365,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/dislocate",
+      "sha256": "75d0b0ec01dc63e5681277586cb28a3fc4484fd2365bbb2f990dadf2c7eeb5e5",
+      "size": 7938,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/expect",
+      "sha256": "c529de656037653bdc5170ba826d6c38f2e4c743beb466fab168e24a780217bb",
+      "size": 19648,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/ftp-rfc",
+      "sha256": "9185b44db9f6199d38fc807ed19420f7f160db6a736ef09cfc9ce1385f5831bf",
+      "size": 683,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/kibitz",
+      "sha256": "4e0daf2c692b16c0728c861e4d2c638b8bd26733c3df4370e98cce8c81c4970b",
+      "size": 10886,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/lpunlock",
+      "sha256": "8bf75443139bffdda415a562e52b1caf2b51ead2ce63f1c595c048639e542424",
+      "size": 2619,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/mkpasswd",
+      "sha256": "581cb50379e74418bd4dde3254c2338628f14874d559e4d22bfcbad42534dade",
+      "size": 5388,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/multixterm",
+      "sha256": "2662e6809009f9d314ae8a54f5f4b4afa16c167e36e5eb5f52b9e9d828bb9c3c",
+      "size": 30487,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/passmass",
+      "sha256": "052ba2050da3a8022d6b34a9b5719d192f483e4ca56ea4db083875efa01fc37b",
+      "size": 4551,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/rftp",
+      "sha256": "052c11441ec10bc9919a5a3c27bc97771e06f24c2cef95c8847dfdab6b764e2c",
+      "size": 8888,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/rlogin-cwd",
+      "sha256": "9efa3bda469c97b754b48eb95d8a9c440b4448e886abc3d5b8c170787ffaaa40",
+      "size": 501,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/timed-read",
+      "sha256": "0ef1136c7a6b1fd0a1bc89ee43f9178e0a1bf80178d70a36e8726f9a42e602de",
+      "size": 303,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/timed-run",
+      "sha256": "f2f740db9fccbe280370d02cad173055b93b09238aa2d99e8e94355f2fa6dfc4",
+      "size": 277,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/tknewsbiff",
+      "sha256": "0e8a5c4784906dcb2c4b8cf5b2ce526f5a95b301ecc8600fdf26555e2c3065b3",
+      "size": 11381,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/tkpasswd",
+      "sha256": "266ed1e8d74bb376cf7c2645e2a63823003ff3ba3dd625e822b6f6b61a6a77e6",
+      "size": 16570,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/unbuffer",
+      "sha256": "a5b27490ad1af65f07c25b16e7a246ed15744e0018f97c1a1bbfc691b166fb24",
+      "size": 640,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/weather",
+      "sha256": "c4cb2367d17b3c77d33936ce40e97e68babd2f2bc0a16b888e3591330819418a",
+      "size": 2075,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/xkibitz",
+      "sha256": "191fcc20ccec408af310ef0365fbc2ae56228f8d3e4ec1db0d0c0e0a3da9da8f",
+      "size": 4862,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/xpstat",
+      "sha256": "5ae9f47c66d87e275c94266721813657339d7314f4c3456febe4ccf02290888d",
+      "size": 6606,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/include",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/expect.h",
+      "sha256": "3a1b111616b3b25b67f1f5021aa41b537189d98443a937b6760e5eaf059c579c",
+      "size": 11444,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/expect_comm.h",
+      "sha256": "5eb1d36a637a32c3392faa2fc6b8e210f2c0eb792d7af5bb36d713591052de8b",
+      "size": 2275,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/expect_tcl.h",
+      "sha256": "e4391178215f8200f74456ef844e26be728f1b2cd5243dd00ae53eae58252148",
+      "size": 1835,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/tcldbg.h",
+      "sha256": "0783b1807e963264f9b34507331bca0d8816f1283560774d587daed2c869c027",
+      "size": 1733,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/expect5.45.4",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/expect5.45.4/libexpect5.45.4.so",
+      "sha256": "0b66730d0a3a94264fd5a98047006415f5255f3156d053a11fa1b4cad43e2a53",
+      "size": 223544,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/expect5.45.4/pkgIndex.tcl",
+      "sha256": "49f25fb8d07fff0b210af30f98869bd83d5335f86d0ed80873d1559680d62ed2",
+      "size": 147,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libexpect5.45.4.so",
+      "target": "expect5.45.4/libexpect5.45.4.so",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man/man1",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/autoexpect.1",
+      "sha256": "f1bdc68c022f9fbd764505dcaf1c984e8f7590409bbabbefa11cd3161174224d",
+      "size": 6685,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/cryptdir.1",
+      "sha256": "5276541c36e4730245a7b891df4b53cedfdfd5c8f144f7ccb0835efac6330f4b",
+      "size": 1208,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/decryptdir.1",
+      "sha256": "2f53847ce737345dc059e873fee125eb15f984f19f73d11b053804262e0daa9a",
+      "size": 1203,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/dislocate.1",
+      "sha256": "974c59c0605068d52570bb4147686f29aa3e57acb3fec0482249855abf75cd95",
+      "size": 2691,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/expect.1",
+      "sha256": "88a87689d78839ab6165aac040904e60c1f0825918063d76d24da3d42726b424",
+      "size": 79211,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/kibitz.1",
+      "sha256": "434895a51367e259f4eb45e71a8c2e713576579ea8be6875c3c54474746ea278",
+      "size": 6735,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/mkpasswd.1",
+      "sha256": "217eeb64389e51807e0bd18c60e92064b921a4f9f9cd6f6f270d94a544399e61",
+      "size": 2233,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/multixterm.1",
+      "sha256": "17ed23ef0f630a9571e68cf0c848f05d6e5daf34c1ede85adca7d906ef9f6a3d",
+      "size": 9503,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/passmass.1",
+      "sha256": "8f95672a2e86adc0d73eafc902212386acafb5e3fc3ae5dd42bc03added569a4",
+      "size": 3325,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/tknewsbiff.1",
+      "sha256": "4da47c43bb6ca83294328ab355a9f81c2db362e3dcc5b07ecc3f3a05e32b99f2",
+      "size": 14717,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/unbuffer.1",
+      "sha256": "8a937d80603c4d5f319f44e4bf18ab327a51718de59c9408d6b3fe0bdf523626",
+      "size": 2272,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/xkibitz.1",
+      "sha256": "fb6deebe0e4ae45cf3aa082b20940743c2460472ffea2e470f6c9f07fc493b57",
+      "size": 5094,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man/man3",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/libexpect.3",
+      "sha256": "632ecc46b3ace28518a90431ef86669be5f96ce1b869f3e05248257104a540e7",
+      "size": 22907,
+      "type": "file",
+      "uid": 0
+    }
+  ],
+  "package": {
+    "name": "expect",
+    "source": {
+      "sha256": "49a7da83b0bdd9f46d04a04deec19c7767bb9a323e40c4781f89caf760b92c34",
+      "url": "https://prdownloads.sourceforge.net/expect/expect5.45.4.tar.gz"
+    },
+    "version": "5.45.4"
+  },
+  "schema": "alpbahOS.package-files/v1"
+}
