@@ -56,10 +56,19 @@ relative dirfds, descriptor paths, absolute/relative symlink escapes, and
 writes outside the selected target as event failures. A detected escape
 attempt invalidates the event even when the kernel denied the write.
 
-Compare complete target snapshots before and after capture. The event must
-record added, removed, and changed files, symlinks, metadata, and generated
-state; a syscall trace cannot substitute for that reconciliation, and a tree
-diff cannot prove which command caused a change without a quiescent target.
+The event must record added, removed, and changed files, symlinks, metadata,
+and generated state. A syscall trace cannot substitute for reconciliation,
+and a tree diff cannot prove which command caused a change without a quiescent
+target. A complete before/after tree inventory is the reference method, but
+79 full-rootfs pairs plus final reconciliation may cause unacceptable I/O and
+metadata pressure. Before a candidate replay, measure this cost against a
+representative disposable tree on the same filesystem. If it is infeasible,
+use a complete per-event delta mechanism (for example, a validated filesystem
+layer or journal) that records replacements, deletions, and metadata changes;
+then compare one complete baseline and final inventory against the ordered
+deltas. A partial syscall allowlist or unvalidated trace is not an acceptable
+substitute. If neither complete method fits the measured environment, stop
+before replay.
 
 ### Mount and race constraints
 
@@ -90,21 +99,31 @@ Keep two records with distinct jobs:
    records replacements as ordered transitions and classifies shared,
    generated, configuration, and machine-specific state. This ledger is the
    M04 evidence record; a stage manifest or Alp DB row is not a substitute.
-2. **Alp package database projection:** a supported Alp API may import a
-   validated package manifest and event reference under Alp's normal DB lock
-   and journal guard. Existing `alp adopt-base` validates a package-files
-   manifest against live file/symlink state and writes a protected `lfs-base`
-   record. It does not consume the M04 event schema or prove that the recorded
-   install command ran. Do not edit `db.json` directly or treat `adopt-base` as
-   the canonical event ledger.
+2. **Alp package database projection:** existing `alp adopt-base` validates a
+   package-files manifest against live file/symlink state and writes a
+   protected `lfs-base` record under Alp's DB lock and pending-journal guard.
+   It does not consume M04 events, store event IDs or recipe hashes, or prove
+   that an install command ran. It rejects already-claimed paths and requires
+   each manifest entry to match the current live rootfs. Therefore do not call
+   it once per historical event in replay order: later package replacements
+   would conflict, and earlier versions may no longer match live paths.
+   Preserve install/replacement history and the event-to-package mapping in
+   the canonical ledger. After full replay and conflict-free final-owner
+   reconciliation, derive Alp manifests containing only each package's
+   surviving files and symlinks, then adopt those final projections. Record
+   each Alp manifest hash's event/recipe references in a separately hashed
+   mapping, or extend Alp's supported public importer before claiming those
+   references are stored in its DB. Never edit `db.json` directly or treat
+   `adopt-base` as the canonical event ledger.
 
-Before any import API is used, define and test a strict conversion contract:
-the package, version, source hash, recipe hash, package-file manifest, and
-event ID must agree; all referenced artifacts must hash correctly; the event
-must have successful status and no escape attempts; final live paths must
-match the manifest; conflicts and replacements must be explicit; and repeated
-imports must be idempotent. The import writes the Alp projection through Alp's
-public API while preserving the separately hashed canonical event.
+For the final-owner projection, define and test a strict conversion contract:
+the package, version, source hash, recipe hash, final package-file manifest,
+and its contributing event IDs must agree; all referenced artifacts must hash
+correctly; every contributing event must have successful status and no escape
+attempts; final live paths must match the manifest; and replacements must be
+explicit. Repeated imports must be idempotent. The import writes only the
+protected Alp projection through Alp's public API; the separately hashed
+canonical event ledger retains full chronological provenance.
 
 ## Required one-package Linux fixture validation
 
@@ -147,14 +166,19 @@ evidence:
    hash, with adequate space and a tested restore path. The original `/mnt/lfs`
    remains untouched during the first replay.
 3. The one-package Linux fixture validation above passes on the same kernel,
-   filesystem, bwrap, strace, and seccomp versions intended for replay.
-4. The install-event schema, ordered ledger writer, and supported Alp import
-   API are implemented and tested. The event-to-manifest conversion and
-   reconciliation are deterministic; imports never use raw DB mutation.
+   filesystem, bwrap, strace, and seccomp versions intended for replay; a
+   representative full-tree inventory/delta feasibility measurement also
+   shows adequate I/O time and storage headroom for all events.
+4. The install-event schema and ordered ledger writer are implemented and
+   tested. Select and test either final-owner manifests imported by existing
+   `adopt-base` with a separately hashed event-reference map, or a supported
+   Alp importer that stores the references. Conversion and reconciliation
+   must be deterministic; imports never use raw DB mutation.
 5. One real package replay into the disposable clone passes build/test,
-   confinement, event verification, final-tree reconciliation, and import
-   checks. Preserve its logs, snapshots, source/recipe identities, event ID,
-   and artifact hashes before considering the next Chapter 8 package.
+   confinement, event verification, complete-delta reconciliation, and final
+   projection dry-run. Preserve its logs, snapshots/deltas, source/recipe
+   identities, event ID, and artifact hashes before considering the next
+   Chapter 8 package.
 
 Passing these gates permits a reviewed candidate replay; it does not itself
 close M04. M04 still requires the full ordered package-event coverage and final
