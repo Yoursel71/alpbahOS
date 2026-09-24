@@ -31,6 +31,10 @@ export const settings = {
   touchOpacity: 0.85,
   touchLayout: null,
   allWeapons: false,
+  termRender: 'ascii', // menü/intro arka planı: 'ascii' (renkli terminal) · 'mono' (yeşil fosfor) · 'off' (düz 3D)
+  parryAssist: 1, // 0 kapalı · 1 hafif · 2 güçlü (dokunmatikte ilk açılışta güçlü)
+  coinAssist: 1, // 0 kapalı · 1 hafif · 2 güçlü
+  character: 'v1', // 'v1' · 'v2'
 };
 
 export const progress = {

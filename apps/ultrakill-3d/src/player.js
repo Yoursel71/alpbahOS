@@ -176,6 +176,7 @@ export class Player {
         this.endSlide(true);
         this.vel.set(dx * P.DASH_SPEED, 0, dz * P.DASH_SPEED);
         this.fovKick = 8;
+        game.weapons.onMove('dash');
         audio.play('dash');
         game.fx.sparkDir(this.pos.clone().add(new THREE.Vector3(0, 0.8, 0)), new THREE.Vector3(-dx, 0, -dz), 8, 10, 0x9fd0ff, 0.25, 0.05, 0.4);
       }
@@ -188,6 +189,7 @@ export class Player {
         this.slamStartY = this.pos.y;
         this.endSlide(true);
         this.vel.set(0, -P.SLAM_SPEED, 0);
+        game.weapons.onMove('slam');
         audio.play('slamStart');
       }
       if (slideHeld && this.grounded && !this.sliding && !this.slideLock && this.dashT <= 0) {
@@ -265,6 +267,8 @@ export class Player {
           this.jumpBuffer = 0;
           const hx = wall.x * P.WJ_H + wx * 3, hz = wall.z * P.WJ_H + wz * 3;
           this.vel.set(hx, P.WJ_V, hz);
+          // duvar solda mı (normali sağa bakıyor mu)?
+          game.weapons.onMove('wall', { left: wall.x * Math.cos(this.yaw) - wall.z * Math.sin(this.yaw) > 0.3 });
           audio.play('walljump');
           game.fx.sparkBurst(this.pos.clone().add(new THREE.Vector3(-wall.x * 0.4, 0.8, -wall.z * 0.4)), 8, 6, 0xffd080, 0.3, 0.05);
           game.hud.wallJumps(this.wallJumps);
@@ -389,11 +393,13 @@ export class Player {
       this.vel.y = P.JUMP;
       audio.play('jump');
     }
+    this.game.weapons.onMove('jump');
     this.grounded = false;
   }
 
   onLand(fallSpeed) {
     const game = this.game;
+    if (game.weapons) game.weapons.onMove('land', { fall: fallSpeed });
     if (this.slamming) {
       this.slamming = false;
       this.slamLandT = 0;

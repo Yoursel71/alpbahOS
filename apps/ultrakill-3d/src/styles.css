@@ -292,6 +292,14 @@ kbd { font-family: var(--f-mono); font-size: 19px; padding: 1px 7px; border: 1px
 .pts-row { margin-top: 6px; font-family: var(--f-mono); font-size: 17px; color: #39ff6a; letter-spacing: 0.04em; }
 .pts-row b { font-weight: 400; color: #b8ffc8; }
 .pts-row i { font-style: normal; color: #ffd24a; }
+#parrycue { position: absolute; left: 50%; top: 50%; width: 0; height: 0; pointer-events: none; opacity: 0; }
+#parrycue i { position: absolute; left: -46px; top: -46px; width: 92px; height: 92px; border: 3px solid #9fe0ff; border-radius: 50%; box-shadow: 0 0 18px rgba(120, 200, 255, 0.8); }
+#parrycue b { position: absolute; left: 0; top: 54px; transform: translateX(-50%); font-family: var(--f-mono); font-weight: 400; font-size: 26px; color: #bfe8ff; letter-spacing: 0.1em; text-shadow: 0 0 10px rgba(120, 200, 255, 0.9), 0 2px 0 #000; white-space: nowrap; }
+#parrycue.on { animation: cueFade 0.5s ease-out; }
+#parrycue.on i { animation: cueRing 0.5s ease-out; }
+@keyframes cueFade { 0% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes cueRing { from { transform: scale(2.2); } to { transform: scale(0.45); } }
+#crosshair.coin .ch { background: #ffd24a; box-shadow: 0 0 8px #ffd24a; }
 #shopprompt { position: absolute; left: 50%; bottom: 20%; transform: translateX(-50%); padding: 8px 18px 6px; font-family: var(--f-mono); font-size: 24px; color: #39ff6a; background: rgba(2, 26, 8, 0.85); border: 1px solid #39ff6a; box-shadow: 0 0 18px rgba(57, 255, 106, 0.35); }
 #shopprompt b { font-weight: 400; color: #fff; }
 #app.touch #shopprompt { display: none; }

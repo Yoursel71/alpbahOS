@@ -455,9 +455,10 @@ export class Enemy {
       r = Math.max(r, 0.1 * k); g = Math.max(g, 0.35 * k); b = Math.max(b, 0.8 * k);
     }
     if (this.enraged) r = Math.max(r, 0.35 + Math.sin(this.time * 10) * 0.1);
+    const k = this.game.enemyGlowMul || 1; // terminal görünümünde düşmanlar daha parlak (okunur)
     for (const m of this.mats) {
       const gl = m.userData.glow;
-      m.emissive.setRGB(Math.max(r, gl.r), Math.max(g, gl.g), Math.max(b, gl.b));
+      m.emissive.setRGB(Math.max(r, gl.r * k), Math.max(g, gl.g * k), Math.max(b, gl.b * k));
     }
   }
 

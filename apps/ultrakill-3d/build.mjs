@@ -18,7 +18,7 @@ const result = await build({
   banner: { js: '/*! ULTRAKILL 3D hayran yapımı (alpbahOS). İçerir: three.js — Copyright © 2010-2026 three.js authors — MIT License (https://github.com/mrdoob/three.js/blob/dev/LICENSE) */' },
 });
 const js = result.outputFiles[0].text.replace(/<\/script/gi, '<\\/script');
-const css = readFileSync(join(root, 'src/styles.css'), 'utf8');
+const css = ['src/styles.css', 'src/theme-terminal.css'].map((f) => readFileSync(join(root, f), 'utf8')).join('\n');
 const html = readFileSync(join(root, 'src/index.html'), 'utf8')
   .replace('/*__CSS__*/', () => css)
   .replace('/*__JS__*/', () => js);

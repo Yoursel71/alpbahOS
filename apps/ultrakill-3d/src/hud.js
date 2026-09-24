@@ -17,6 +17,7 @@ export class HUD {
       <div id="dmgvig"></div>
       <div id="flash"></div>
       <div id="parrypulse"></div>
+      <div id="parrycue"><i></i><b>PARRY!</b></div>
       <div id="crosshair"><i class="ch l"></i><i class="ch r"></i><i class="ch t"></i><i class="ch b"></i><div id="hitmark"><i></i><i></i><i></i><i></i></div>
         <div class="ch-hp"><i></i></div><div class="ch-st"><i></i></div></div>
       <div id="hud-bl" class="panel">
@@ -62,6 +63,7 @@ export class HUD {
       boss: q('#bossbar'), bName: q('.bb-name'), bFill: q('.bb-fill'), bLag: q('.bb-lag'),
       hint: q('#hint'), msg: q('#msg'), stats: q('#stats'), flash: q('#flash'), vig: q('#dmgvig'),
       hit: q('#hitmark'), title: q('#titlecard'), death: q('#deathscreen'), fps: q('#fps'), lockhint: q('#lockhint'),
+      cue: q('#parrycue'),
       ptsBank: q('.pts-bank'), ptsRun: q('.pts-run'), shopPrompt: q('#shopprompt'),
       chHp: q('.ch-hp i'), chSt: q('.ch-st i'), cross: q('#crosshair'), armInd: q('.arm-ind'), hookInd: q('.hook-ind'), pulse: q('#parrypulse'),
     };
@@ -158,6 +160,14 @@ export class HUD {
     this.$.boss.classList.toggle('enraged', !!enraged);
     this.set('bName', this.$.bName, 'text', name);
     this.bossFrac = clamp(frac, 0, 1);
+  }
+
+  // parry yardımı işareti: nişangâhta daralan halka + yazı
+  parryCue() {
+    const c = this.$.cue;
+    c.classList.remove('on');
+    void c.offsetWidth;
+    c.classList.add('on');
   }
 
   shopPrompt(on) {
@@ -392,6 +402,9 @@ export class HUD {
       }
     }
     $.cross.classList.toggle('parry', g.parryHintT > 0);
+    // para yardımı: atış havadaki paraya gidecekse nişangâh altın rengine döner
+    const w0 = g.weapons;
+    $.cross.classList.toggle('coin', w0.cur === 0 && w0.coins.length > 0 && !!w0.coinAssistDir(p.eyePos(), p.aimDir()));
     this.updateDeath(realDt);
     if (settings.showFps) {
       $.fps.classList.remove('hidden');

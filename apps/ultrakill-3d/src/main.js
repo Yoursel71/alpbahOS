@@ -1,6 +1,6 @@
 // ULTRAKILL 3D (hayran yapımı) — oyun döngüsü ve durum makinesi.
 import * as THREE from 'three';
-import { settings, loadSettings, progress, saveProgress, difficulty } from './settings.js';
+import { settings, loadSettings, saveSettings, progress, saveProgress, difficulty } from './settings.js';
 import { Input } from './input.js';
 import { Audio } from './audio.js';
 import { Music } from './music.js';
@@ -128,7 +128,7 @@ class Game {
   constructor() {
     const hadSettings = loadSettings();
     this.mobile = touchDevice();
-    if (!hadSettings && this.mobile) { settings.resScale = 0.42; settings.shake = 0.8; }
+    if (!hadSettings && this.mobile) { settings.resScale = 0.42; settings.shake = 0.8; settings.parryAssist = 2; settings.coinAssist = 2; }
     this.canvas = document.getElementById('game');
     this.uiRoot = document.getElementById('ui');
     this.renderer = new Renderer(this.canvas);
@@ -177,6 +177,7 @@ class Game {
     this.levelP = 0;
     this.aimFriction = 1;
     this.frameAcc = 0;
+    this.enemyGlowMul = 1;
     this.loadLevel(Math.min(Math.max(0, (progress.unlocked || 1) - 1), LEVELS.length - 1));
     this.spawnDecor();
     this.onResize();
@@ -503,7 +504,8 @@ class Game {
       if (t < 0 || t > tW) return;
       hits.push({ t, point: new THREE.Vector3(o.x + d.x * t, o.y + d.y * t, o.z + d.z * t), ...extra });
     };
-    if (opts.coins) for (const c of this.weapons.coins) if (c.alive) sphere(c.pos, 0.55, { coin: c });
+    const coinR = [0.55, 0.7, 0.9][settings.coinAssist | 0] ?? 0.55;
+    if (opts.coins) for (const c of this.weapons.coins) if (c.alive) sphere(c.pos, coinR, { coin: c });
     if (opts.cores) for (const pr of this.projectiles) if (!pr.dead && pr.kind === 'core' && pr.owner === 'player') sphere(pr.pos, 0.6, { core: pr });
     hits.sort((a, b) => a.t - b.t);
     return { hits, world: w, end: new THREE.Vector3(o.x + d.x * tW, o.y + d.y * tW, o.z + d.z * tW) };
@@ -570,17 +572,23 @@ class Game {
       }
     }
     if (list.length) {
-      // hedef: nişangâh; yakınında düşman varsa hafif güdüm ile ona
+      // hedef: nişangâh; yakınında düşman varsa ona (parry yardımıyla daha geniş koni + güdüm)
+      const lvl = settings.parryAssist | 0;
       const r = this.hitscan(o, d, 300, {});
       let target = r.hits[0] ? r.hits[0].point : r.end;
-      const assist = w.assistDir(o, d, 0.26);
+      let targetEnemy = r.hits[0] ? r.hits[0].enemy : null;
+      const assist = w.assistDir(o, d, [0.26, 0.5, 0.9][lvl] ?? 0.26);
       if (assist) {
         const hit = this.hitscan(o, assist, 300, {});
-        if (hit.hits[0]) target = hit.hits[0].point;
+        if (hit.hits[0]) { target = hit.hits[0].point; targetEnemy = hit.hits[0].enemy; }
+      } else if (lvl >= 2) {
+        const e = this.nearestVisibleEnemy(o, 60);
+        if (e) { target = e.center(); targetEnemy = e; }
       }
       for (const pr of list) {
         const dir = target.clone().sub(pr.pos).normalize();
         pr.parry(dir, Math.max(pr.vel.length() * 1.8, 65));
+        if (lvl > 0 && targetEnemy) { pr.homeTarget = targetEnemy; pr.homeRate = lvl >= 2 ? 7 : 3.5; }
       }
       this.onParry(list[0].pos.clone(), list.length);
       return true;
@@ -638,7 +646,52 @@ class Game {
     return false;
   }
 
+  nearestVisibleEnemy(o, maxD) {
+    let best = null, bd = maxD;
+    for (const e of this.enemies) {
+      if (e.dead || e.decor || e.state === 'spawn' || e.dormant) continue;
+      const c = e.center(_v);
+      const dd = c.distanceTo(o);
+      if (dd < bd && this.world.lineOfSight(o, c)) { bd = dd; best = e; }
+    }
+    return best;
+  }
+
+  // Parry yardımı: savuşturulabilir tehlike yaklaşınca kısa ağır çekim + işaret (KAPALI/HAFİF/GÜÇLÜ)
+  updateParryAssist(realDt) {
+    this.slowT = Math.max(0, (this.slowT || 0) - realDt);
+    const lvl = settings.parryAssist | 0;
+    if (!lvl || this.player.dead) return;
+    const eye = this.player.eyePos(_v2);
+    const win = lvl >= 2 ? 0.42 : 0.28;
+    let best = null, bt = 1e9;
+    for (const pr of this.projectiles) {
+      if (pr.dead || pr.owner !== 'enemy' || !pr.parryable) continue;
+      const dx = eye.x - pr.pos.x, dy = eye.y - pr.pos.y, dz = eye.z - pr.pos.z;
+      const dist = Math.hypot(dx, dy, dz);
+      if (dist > 20) continue;
+      const closing = (pr.vel.x * dx + pr.vel.y * dy + pr.vel.z * dz) / (dist || 1);
+      if (closing <= 1) continue;
+      const t = (dist - 1.2) / closing;
+      if (t < win && t < bt) { bt = t; best = pr; }
+    }
+    for (const e of this.enemies) {
+      if (e.dead || !e.parryable) { e._pa = false; continue; }
+      if (e.center(_v).distanceTo(eye) < 6.5 + e.r && 0.1 < bt) { bt = 0.1; best = e; }
+    }
+    if (!best) return;
+    this.parryHintT = 0.2;
+    if (best._pa) return;
+    best._pa = true;
+    this.slowT = lvl >= 2 ? 0.34 : 0.18;
+    this.slowK = lvl >= 2 ? 0.3 : 0.55;
+    this.hud.parryCue();
+    this.haptic(12);
+  }
+
   onParry(pos, n = 1, melee = false) {
+    this.slowT = 0;
+    this.weapons.arms.parryFlash();
     const p = this.player;
     this.stats.parries++;
     this.haptic([20, 30, 60]);
@@ -1041,6 +1094,10 @@ class Game {
     else if (st === 'results') this.updateResults(realDt);
     if (st === 'intro') this.ui.updateIntro(realDt);
     const showVM = st === 'playing' || st === 'paused' || st === 'shop';
+    // Terminal (ASCII) görünümü yalnız menü ve introda; oyun içi normal 3D
+    const term = st === 'menu' || st === 'splash' || st === 'intro';
+    this.renderer.setAscii(term);
+    this.enemyGlowMul = term && settings.termRender !== 'off' ? 3.4 : 1;
     this.touch.update();
     if (render) this.renderer.render(this.scene, this.camera, showVM && !this.player.dead ? this.weapons.scene : null, this.weapons.cam);
     this.input.endFrame();
@@ -1073,7 +1130,10 @@ class Game {
   updatePlaying(dt, realDt) {
     const input = this.input;
     const p = this.player;
+    this.coinAssistLevel = settings.coinAssist | 0;
     if (this.state === 'playing') {
+      this.updateParryAssist(realDt);
+      if (this.slowT > 0) dt *= this.slowK;
       this.time += dt;
       this.stats.time += realDt;
       p.look(input, realDt, this.aimFriction);

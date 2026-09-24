@@ -169,6 +169,16 @@ export class Projectile {
         this.vel.lerp(_d, Math.min(1, dt * 10));
       }
     }
+    // parry yardımı: geri yollanan mermi hedefine kıvrılır
+    if (this.homeTarget && this.owner === 'player') {
+      const t = this.homeTarget;
+      if (t.dead) this.homeTarget = null;
+      else {
+        const sp = this.vel.length();
+        _d.subVectors(t.center(_b), this.pos).normalize().multiplyScalar(sp);
+        this.vel.lerp(_d, Math.min(1, dt * this.homeRate));
+      }
+    }
     this.prev.copy(this.pos);
     this.vel.y -= this.gravity * dt;
     const sp = this.vel.length();
@@ -455,7 +465,10 @@ export class Coin {
   update(dt) {
     if (!this.alive) return;
     this.age += dt;
-    this.vel.y -= 24 * dt;
+    // para yardımı: tepe noktasında daha uzun asılı kalır
+    const lvl = this.game.coinAssistLevel || 0;
+    const apexSlow = lvl >= 2 ? 0.3 : lvl >= 1 ? 0.6 : 1;
+    this.vel.y -= 24 * dt * (Math.abs(this.vel.y) < 4 ? apexSlow : 1);
     const nx = this.pos.x + this.vel.x * dt, ny = this.pos.y + this.vel.y * dt, nz = this.pos.z + this.vel.z * dt;
     if (this.game.world.pointInSolid(nx, ny, nz) || this.age > 5) {
       this.game.audio.play('empty', this.pos);

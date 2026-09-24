@@ -10,6 +10,7 @@ import * as THREE from 'three';
 import { clamp, damp, rand } from './util.js';
 import { Coin, Projectile } from './projectiles.js';
 import { settings } from './settings.js';
+import { ViewArms, Spring, buildArm, setCurl } from './arms.js';
 
 const BLUE = 0x3aa0ff, GREEN = 0x3ee06a, RED = 0xff3a2a;
 export const WEAPONS = [
@@ -71,6 +72,7 @@ export class Weapons {
       grip: new THREE.MeshLambertMaterial({ map: T.rock, color: 0xb08a70 }),
       arm: new THREE.MeshLambertMaterial({ map: T.machine, color: 0xb8c0d0 }),
       armDark: new THREE.MeshLambertMaterial({ map: T.machine, color: 0x5a606c }),
+      armLight: new THREE.MeshLambertMaterial({ map: T.metal, color: 0xc4ccda, emissive: 0x14161c }),
       blue: new THREE.MeshLambertMaterial({ map: T.metal, color: 0x4a8cff, emissive: 0x0a2250 }),
       red: new THREE.MeshLambertMaterial({ map: T.metal, color: 0xe03a2a, emissive: 0x3a0806 }),
       brass: new THREE.MeshLambertMaterial({ color: 0xd8a040, emissive: 0x302010 }),
@@ -83,12 +85,18 @@ export class Weapons {
 
     this.models = [this.buildRevolver(), this.buildShotgun(), this.buildNailgun(), this.buildRail(), this.buildRocket()];
     for (const m of this.models) this.scene.add(m.group);
-    this.armModels = [this.buildFeedbacker(), this.buildKnuckle()];
-    for (const a of this.armModels) this.scene.add(a);
+    // görünür sol kol (parmaklı eller) ve eylem animasyonları
+    this.arms = new ViewArms(this);
+    this.armModels = [this.arms.models.feedbacker, this.arms.models.knuckle];
+    this.hookHand = this.arms.models.whiplash;
     this.fist = this.buildIdleFist();
     this.scene.add(this.fist);
-    this.hookHand = this.buildHookHand();
-    this.scene.add(this.hookHand);
+    // silah hareket yayları: geri tepme (z), iniş/zıplama (y), dönüş (x)
+    this.sprZ = new Spring(210, 17);
+    this.sprY = new Spring(150, 13);
+    this.sprR = new Spring(190, 15);
+    this.idleT = 0;
+    this.inspectT = 0;
 
     this.flashes = [];
     for (let i = 0; i < 2; i++) {
@@ -477,16 +485,12 @@ export class Weapons {
     return g;
   }
 
+  // silahsızken görünen sağ el (sol elin aynası, yumruk)
   buildIdleFist() {
-    const M = this.M;
-    const g = new THREE.Group();
-    box(0.12, 0.12, 0.4, M.arm, 0, 0, 0.15, g);
-    box(0.135, 0.05, 0.12, M.armDark, 0, 0.055, 0.1, g);
-    box(0.14, 0.13, 0.14, M.arm, 0, 0, -0.1, g);
-    for (let k = 0; k < 4; k++) box(0.03, 0.03, 0.03, M.armDark, -0.052 + k * 0.035, 0.04, -0.175, g);
-    g.position.set(0.3, -0.3, -0.5);
-    g.rotation.set(0.25, -0.2, 0.1);
-    g.visible = false;
+    const g = buildArm(this.M, 'plain');
+    g.scale.x = -1;
+    setCurl(g, 1);
+    g.rotation.set(0.42, 0.5, -0.15);
     return g;
   }
 
@@ -501,6 +505,8 @@ export class Weapons {
   select(i) {
     const game = this.game;
     if (i < 0 || i >= N || !this.owned[i]) return;
+    this.sprR.kick(-2.2);
+    this.idleT = 0;
     if (i === this.cur) {
       const nv = WEAPONS[i].variants.length;
       let v = this.variant[i];
@@ -567,6 +573,23 @@ export class Weapons {
     return { o, d };
   }
 
+  // Para yardımı: nişangâhın yakınındaki havadaki paraya yönel (KAPALI/HAFİF/GÜÇLÜ)
+  coinAssistDir(o, d) {
+    const lvl = settings.coinAssist | 0;
+    if (!lvl || !this.coins.length) return null;
+    const maxA = lvl >= 2 ? 0.24 : 0.1;
+    let best = null, bestA = maxA;
+    for (const c of this.coins) {
+      if (!c.alive || c.age < 0.06) continue;
+      const to = c.pos.clone().sub(o);
+      const dist = to.length();
+      if (dist > 60) continue;
+      const a = Math.acos(Math.min(1, to.dot(d) / dist));
+      if (a < bestA && this.game.world.lineOfSight(o, c.pos)) { bestA = a; best = to.normalize(); }
+    }
+    return best;
+  }
+
   // Nişan yönüne en yakın görünür düşman noktası (açı sınırı içinde)
   assistDir(o, d, maxA, onlyEnemy = null) {
     const game = this.game;
@@ -602,8 +625,21 @@ export class Weapons {
   kick(k, rot = 1) {
     this.recoil = Math.min(3, this.recoil + k);
     this.recoilRot = Math.min(3, this.recoilRot + k * rot);
+    this.sprZ.kick(k * 0.9);
+    this.sprR.kick(k * rot * 2.2);
+    this.idleT = 0;
+    this.inspectT = 0;
     this.flashT = 0.055;
     this.haptic(Math.min(40, 8 + k * 10));
+  }
+
+  // Oyuncu hareket olayları → kol/silah animasyonu
+  onMove(ev, info = {}) {
+    if (ev === 'land') this.sprY.kick(-Math.min(3.2, (info.fall || 0) * 0.05));
+    else if (ev === 'jump') this.sprY.kick(0.9);
+    else if (ev === 'dash') { this.arms.play('dash'); this.sprR.kick(0.8); }
+    else if (ev === 'slam') this.arms.play('slam');
+    else if (ev === 'wall') { if (info.left) this.arms.play('wall'); this.sprY.kick(1.2); }
   }
 
   haptic(ms) {
@@ -779,7 +815,8 @@ export class Weapons {
     this.drumTarget += Math.PI / 3;
     this.hammerT = 0;
     game.audio.play('revolver');
-    const { o, d } = this.aim();
+    const { o, d: d0 } = this.aim();
+    const d = this.coinAssistDir(o, this.game.player.aimDir()) || d0;
     const r = game.hitscan(o, d, 400, { coins: true, cores: true });
     const h = r.hits[0];
     let end = r.end;
@@ -809,7 +846,8 @@ export class Weapons {
     this.hammerT = 0;
     game.audio.play('piercer');
     game.shake(0.25);
-    const { o, d } = this.aim();
+    const { o, d: d0 } = this.aim();
+    const d = this.coinAssistDir(o, this.game.player.aimDir()) || d0;
     const r = game.hitscan(o, d, 400, { coins: true, cores: true });
     let end = r.end;
     let stopped = false;
@@ -873,6 +911,7 @@ export class Weapons {
     pos.y -= 0.1;
     const vel = f.clone().multiplyScalar(13).add(new THREE.Vector3(0, 8.5, 0)).addScaledVector(p.vel, 0.6);
     this.coins.push(new Coin(game, pos, vel));
+    this.arms.play('coin');
     game.audio.play('coin');
   }
 
@@ -1201,9 +1240,11 @@ export class Weapons {
     const knuckle = this.armId === 'knuckle';
     this.punchCd = knuckle ? 0.7 : 0.4;
     this.punchT = 0;
+    this.arms.play('punch');
+    this.sprY.kick(-0.6);
     game.audio.play('punch', null, { rate: knuckle ? 0.7 : 1, exactRate: true });
     if (game.tryParry()) return;
-    this.parryBuffer = 0.18; // erken basılan yumruk da yakalasın
+    this.parryBuffer = [0.18, 0.26, 0.34][settings.parryAssist | 0] ?? 0.18; // erken basılan yumruk da yakalasın (yardımla daha uzun)
     game.meleePunch(knuckle);
   }
 
@@ -1237,6 +1278,7 @@ export class Weapons {
     const d = p.aimDir();
     const o = p.eyePos();
     this.hook = { phase: 'out', pos: o.clone().addScaledVector(d, 0.5), vel: d.clone().multiplyScalar(90), t: 0, target: null };
+    this.arms.play('hook');
     game.audio.play('walljump', null, { rate: 0.7, exactRate: true });
   }
 
@@ -1244,7 +1286,7 @@ export class Weapons {
     const h = this.hook;
     const game = this.game;
     const p = game.player;
-    if (!h) { this.rope.visible = false; this.hookMesh.visible = false; this.hookHand.visible = false; return; }
+    if (!h) { this.rope.visible = false; this.hookMesh.visible = false; return; }
     h.t += dt;
     const hand = this.vmToWorld(this.hookHand, 0.6);
     if (h.phase === 'out') {
@@ -1288,7 +1330,6 @@ export class Weapons {
       if (d < 1) { this.hook = null; this.hookCd = 0.35; this.rope.visible = false; this.hookMesh.visible = false; return; }
       h.pos.addScaledVector(to.normalize(), Math.min(d, 110 * dt));
     }
-    this.hookHand.visible = true;
     const pa = this.rope.geometry.attributes.position;
     pa.setXYZ(0, hand.x, hand.y, hand.z);
     pa.setXYZ(1, h.pos.x, h.pos.y, h.pos.z);
@@ -1316,9 +1357,16 @@ export class Weapons {
     const airY = clamp(-p.vel.y * 0.0012, -0.03, 0.03);
     this.slideK = damp(this.slideK || 0, p.sliding ? 1 : 0, 10, dt);
 
+    const sz = this.sprZ.update(dt), sy = this.sprY.update(dt), sr = this.sprR.update(dt);
+    // uzun süre boşta kalınca silahı inceleme
+    const idle = !input.is('fire') && !input.is('alt') && Math.hypot(p.vel.x, p.vel.z) < 0.5 && p.grounded;
+    this.idleT = idle ? this.idleT + dt : 0;
+    if (this.idleT > 9 && this.armed && this.inspectT <= 0) { this.inspectT = 1.5; this.idleT = 0; if (this.cur === 0) this.equipSpin = 1; }
+    this.inspectT = Math.max(0, this.inspectT - dt);
+    const insp = this.inspectT > 0 ? Math.sin((1 - this.inspectT / 1.5) * Math.PI) : 0;
     for (let i = 0; i < N; i++) this.models[i].group.visible = i === this.cur;
     this.fist.visible = !this.armed && this.punchT > 0.3;
-    if (!this.armed) this.fist.position.set(0.3 + bx, -0.3 + by + breath - this.slideK * 0.03, -0.5);
+    if (!this.armed) this.fist.position.set(0.3 + bx + this.swayX, -0.3 + by + breath + this.swayY - this.slideK * 0.03 + sy * 0.05, -0.52 + sz * 0.04);
 
     if (this.armed) {
       const m = this.models[this.cur];
@@ -1328,13 +1376,13 @@ export class Weapons {
       const lift = this.cur === 1 ? this.coreCharge : this.cur === 4 ? this.cannonCharge * 0.5 : 0;
       const coinDip = this.coinFlick < 1 ? Math.sin(this.coinFlick * Math.PI) : 0;
       m.group.position.set(
-        m.base.x + bx + this.swayX + shake.x - this.slideK * 0.04,
-        m.base.y + by + breath + this.swayY - sw * 0.5 + airY + shake.y - this.recoil * 0.012 - this.slideK * 0.02 - coinDip * 0.05,
-        m.base.z + this.recoil * 0.09
+        m.base.x + bx + this.swayX + shake.x - this.slideK * 0.04 - insp * 0.08,
+        m.base.y + by + breath + this.swayY - sw * 0.5 + airY + shake.y - this.recoil * 0.012 - this.slideK * 0.02 - coinDip * 0.05 + sy * 0.05 + insp * 0.06,
+        m.base.z + this.recoil * 0.05 + sz * 0.06
       );
       if (this.equipSpin > 0) this.equipSpin = Math.max(0, this.equipSpin - dt / 0.38);
       const spin = this.equipSpin > 0 ? easeInOut(1 - this.equipSpin) * Math.PI * 2 : 0;
-      m.group.rotation.set(this.recoilRot * 0.32 + sw * 0.9 + this.swayY * 1.5 + lift * 0.35 - coinDip * 0.3, m.ry + this.swayX * 1.5, -p.tilt * 1.2 + this.slideK * 0.25);
+      m.group.rotation.set(this.recoilRot * 0.2 + sr * 0.07 + sw * 0.9 + this.swayY * 1.5 + lift * 0.35 - coinDip * 0.3 + insp * 0.25, m.ry + this.swayX * 1.5 + insp * 0.9, -p.tilt * 1.2 + this.slideK * 0.25 + insp * 0.3);
       m.gun.rotation.x = this.cur === 0 ? -spin : 0;
       m.gun.rotation.z = 0;
 
@@ -1384,18 +1432,9 @@ export class Weapons {
       }
     }
 
-    // yumruk kolu (Feedbacker / Knuckleblaster)
+    // sol kol eylemleri ve kayarken bacak (arms.js)
     this.punchT += dt;
-    const pt = this.punchT;
-    for (let i = 0; i < this.armModels.length; i++) {
-      const a = this.armModels[i];
-      if (i !== this.arm || pt >= 0.4) { a.visible = false; continue; }
-      const k = pt < 0.07 ? easeOut(pt / 0.07) : pt < 0.13 ? 1 : 1 - easeOut((pt - 0.13) / 0.27);
-      a.visible = true;
-      a.position.set(-0.42 + 0.34 * k, -0.52 + 0.38 * k, -0.25 - 0.95 * k);
-      a.rotation.set(0.25 - 0.25 * k, 0.35 - 0.33 * k, 0);
-    }
-    if (this.hook) this.hookHand.position.set(-0.28, -0.3, -0.62);
+    this.arms.update(dt);
 
     // namlu alevi
     this.flashT -= dt;

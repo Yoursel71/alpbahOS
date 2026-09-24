@@ -46,6 +46,28 @@ const INTRO_LINES = [
 ];
 const INTRO_BIG = ['İNSANLIK ÖLDÜ.', 'KAN YAKITTIR.', 'CEHENNEM DOLU.'];
 
+// Terminal menüsü için blok harfli ASCII logo (5 satır)
+const FONT5 = {
+  U: ['█   █', '█   █', '█   █', '█   █', ' ███ '],
+  L: ['█    ', '█    ', '█    ', '█    ', '█████'],
+  T: ['█████', '  █  ', '  █  ', '  █  ', '  █  '],
+  R: ['████ ', '█   █', '████ ', '█  █ ', '█   █'],
+  A: [' ███ ', '█   █', '█████', '█   █', '█   █'],
+  K: ['█   █', '█  █ ', '███  ', '█  █ ', '█   █'],
+  I: ['█████', '  █  ', '  █  ', '  █  ', '█████'],
+};
+export function asciiLogo(word = 'ULTRAKILL') {
+  return [0, 1, 2, 3, 4].map((r) => [...word].map((ch) => FONT5[ch][r]).join(' ')).join('\n');
+}
+const BOOT_LOG = [
+  ['[  0.000]', 'V1 BIOS v2.1 — CEHENNEM DİNAMİK A.Ş.'],
+  ['[  0.021]', 'bellek taraması ............ 640K TAMAM'],
+  ['[  0.087]', 'yakıt: KAN ................. <b>[TESPİT]</b>'],
+  ['[  0.140]', 'hareket / silah sistemleri . <b>[TAMAM]</b>'],
+  ['[  0.212]', 'hedef: CEHENNEM · PRELUDE / İLK KAN'],
+];
+const winBar = (title) => `<div class="tw-bar"><i></i><i></i><i></i><span>${title}</span></div>`;
+
 export class UI {
   constructor(game, root) {
     this.game = game;
@@ -53,27 +75,32 @@ export class UI {
     const el = document.createElement('div');
     el.id = 'screens';
     el.innerHTML = `
-      <div class="screen" id="scr-splash">
-        <div class="logo"><span class="l1">ULTRAKILL</span><span class="l2">3D</span></div>
-        <div class="sub">ARAF · HAYRAN YAPIMI</div>
-        <div class="press blink">[ BAŞLAMAK İÇİN TIKLA / DOKUN ]</div>
-        <div class="disclaimer">Resmî değildir. ULTRAKILL; Arsi "Hakita" Patala / New Blood Interactive'in oyunudur.<br>Bu proje tüm modelleri, sesleri ve müziği kodla üreten, ticari olmayan bir hayran çalışmasıdır.</div>
+      <div class="screen term-screen" id="scr-splash">
+        ${winBar('v1@cehennem: ~ — bash')}
+        <div class="sp-body">
+          <pre class="ascii-logo" aria-label="ULTRAKILL 3D">${asciiLogo()}</pre>
+          <div class="sp-tag"># 3D · PRELUDE · HAYRAN YAPIMI</div>
+          <div class="boot-log">${BOOT_LOG.map(([t, x], i) => `<div class="bl" style="animation-delay:${0.15 + i * 0.22}s"><span class="ts">${t}</span> ${x}</div>`).join('')}</div>
+          <div class="press"><span class="ps1">$</span> ./ultrakill3d --başlat <span class="cur">▌</span><div class="press-hint">[ BAŞLAMAK İÇİN TIKLA / DOKUN ]</div></div>
+        </div>
+        <div class="disclaimer">Resmî değildir. ULTRAKILL; Arsi "Hakita" Patala / New Blood Interactive'in oyunudur. Bu proje tüm modelleri, sesleri ve müziği kodla üreten, ticari olmayan bir hayran çalışmasıdır.</div>
       </div>
-      <div class="screen hidden" id="scr-menu">
+      <div class="screen hidden term-screen" id="scr-menu">
+        ${winBar('v1@cehennem: ~/ultrakill3d — bash')}
         <div class="menu-left">
-          <div class="logo small"><span class="l1">ULTRAKILL</span><span class="l2">3D</span></div>
-          <div class="sub">PRELUDE · HAYRAN YAPIMI</div>
+          <pre class="ascii-logo small" aria-label="ULTRAKILL 3D">${asciiLogo()}</pre>
+          <div class="sub"># 3D · PRELUDE · HAYRAN YAPIMI</div>
           <nav>
-            <button class="btn" data-panel="play">OYNA</button>
-            <button class="btn" data-panel="settings">AYARLAR</button>
-            <button class="btn" data-panel="controls">KONTROLLER</button>
-            <button class="btn" data-panel="about">HAKKINDA</button>
+            <button class="btn" data-panel="play"><span class="cmd">./oyna</span></button>
+            <button class="btn" data-panel="settings"><span class="cmd">./ayarlar</span></button>
+            <button class="btn" data-panel="controls"><span class="cmd">./kontroller</span></button>
+            <button class="btn" data-panel="about"><span class="cmd">./hakkinda</span></button>
           </nav>
-          <div class="ver">v0.1 · alpbahOS apps/ultrakill-3d</div>
+          <div class="ver">v2.0 · alpbahOS apps/ultrakill-3d</div>
         </div>
         <div class="menu-right"><div class="panel-box" id="menu-panel"></div></div>
       </div>
-      <div class="screen hidden" id="scr-intro"><canvas class="noise" width="160" height="90"></canvas><div class="crt"></div><pre class="term"></pre><div class="intro-big"></div><div class="term-cont hidden blink">[ DEVAM ETMEK İÇİN TIKLA / DOKUN ]</div><div class="term-skip">tıkla / dokun / boşluk: geç</div></div>
+      <div class="screen hidden term-screen" id="scr-intro">${winBar('v1@cehennem: /dev/v1 — boot')}<canvas class="noise" width="160" height="90"></canvas><div class="crt"></div><pre class="term"></pre><div class="intro-big"></div><div class="term-cont hidden blink">[ DEVAM ETMEK İÇİN TIKLA / DOKUN ]</div><div class="term-skip">tıkla / dokun / boşluk: geç</div></div>
       <div class="screen hidden" id="scr-pause">
         <div class="pause-box">
           <h1>DURAKLATILDI</h1>
@@ -182,7 +209,8 @@ export class UI {
     const toggle = (key, label) => `<div class="set-row"><label>${label}</label><button class="btn tog ${S[key] ? 'on' : ''}" data-t="${key}">${S[key] ? 'AÇIK' : 'KAPALI'}</button></div>`;
     const pct = (v) => Math.round(v * 100) + '%';
     const touch = this.game.touch.active;
-    const CYC = { touchMode: [['auto', 'OTOMATİK'], ['on', 'AÇIK'], ['off', 'KAPALI']], aimAssist: [[0, 'KAPALI'], [1, 'HAFİF'], [2, 'GÜÇLÜ']] };
+    const LVL = [[0, 'KAPALI'], [1, 'HAFİF'], [2, 'GÜÇLÜ']];
+    const CYC = { touchMode: [['auto', 'OTOMATİK'], ['on', 'AÇIK'], ['off', 'KAPALI']], aimAssist: LVL, parryAssist: LVL, coinAssist: LVL, termRender: [['ascii', 'ASCII RENKLİ'], ['mono', 'ASCII FOSFOR'], ['off', 'DÜZ 3D']] };
     const cycle = (key, label) => {
       const opt = CYC[key].find((o) => o[0] === S[key]) || CYC[key][0];
       return `<div class="set-row"><label>${label}</label><button class="btn tog on" data-cycle="${key}">${opt[1]}</button></div>`;
@@ -201,10 +229,14 @@ export class UI {
       <h3>KONTROL</h3>
       ${touch ? '' : slider('sens', 'Fare hassasiyeti', 0.1, 4, 0.05, (v) => (+v).toFixed(2))}
       ${toggle('invertY', 'Y eksenini ters çevir')}
+      <h3>YARDIM</h3>
+      ${cycle('parryAssist', 'Parry yardımı (ağır çekim + işaret, geniş pencere, güdümlü geri yollama)')}
+      ${cycle('coinAssist', 'Para yardımı (atış paraya yönelir, para havada asılı kalır)')}
       <h3>OYUN</h3>
       ${toggle('skipIntro', 'İntroyu atla')}
       ${toggle('allWeapons', 'Test modu: tüm silahlar (dükkânsız)')}
       <h3>GÖRÜNTÜ</h3>
+      ${cycle('termRender', 'Menü/intro arka planı (terminal)')}
       ${slider('fov', 'Görüş alanı (FOV)', 70, 120, 1)}
       ${slider('resScale', 'Çözünürlük ölçeği (piksel)', 0.25, 1, 0.05, pct)}
       ${toggle('colorCompress', 'Renk sıkıştırma (dither)')}
