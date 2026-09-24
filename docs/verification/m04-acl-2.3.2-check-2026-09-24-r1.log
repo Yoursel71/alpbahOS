@@ -1,0 +1,50 @@
+Making check in po
+make[1]: Entering directory '/build/acl-2.3.2-m04-20260924-r1/po'
+make[1]: Nothing to be done for 'check'.
+make[1]: Leaving directory '/build/acl-2.3.2-m04-20260924-r1/po'
+make[1]: Entering directory '/build/acl-2.3.2-m04-20260924-r1'
+make  libtestlookup.la
+make[2]: Entering directory '/build/acl-2.3.2-m04-20260924-r1'
+  CC       test/libtestlookup_la-test_passwd.lo
+  CC       test/libtestlookup_la-test_group.lo
+  CCLD     libtestlookup.la
+make[2]: Leaving directory '/build/acl-2.3.2-m04-20260924-r1'
+make  check-TESTS
+make[2]: Entering directory '/build/acl-2.3.2-m04-20260924-r1'
+make[3]: Entering directory '/build/acl-2.3.2-m04-20260924-r1'
+FAIL: test/cp.test
+PASS: test/getfacl-lfs.test
+PASS: test/getfacl-noacl.test
+PASS: test/getfacl-recursive.test
+PASS: test/malformed-restore.test
+PASS: test/misc.test
+PASS: test/sbits-restore.test
+PASS: test/setfacl-X.test
+PASS: test/utf8-filenames.test
+SKIP: test/root/getfacl.test
+SKIP: test/root/permissions.test
+SKIP: test/root/restore.test
+SKIP: test/root/setfacl.test
+XFAIL: test/nfs/nfsacl.test
+XFAIL: test/nfs/nfs-dir.test
+============================================================================
+Testsuite summary for acl 2.3.2
+============================================================================
+# TOTAL: 15
+# PASS:  8
+# SKIP:  4
+# XFAIL: 2
+# FAIL:  1
+# XPASS: 0
+# ERROR: 0
+============================================================================
+See ./test-suite.log
+Please report to acl-devel@nongnu.org
+============================================================================
+make[3]: *** [Makefile:2073: test-suite.log] Error 1
+make[3]: Leaving directory '/build/acl-2.3.2-m04-20260924-r1'
+make[2]: *** [Makefile:2181: check-TESTS] Error 2
+make[2]: Leaving directory '/build/acl-2.3.2-m04-20260924-r1'
+make[1]: *** [Makefile:2410: check-am] Error 2
+make[1]: Leaving directory '/build/acl-2.3.2-m04-20260924-r1'
+make: *** [Makefile:1958: check-recursive] Error 1
