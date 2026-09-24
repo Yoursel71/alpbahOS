@@ -471,6 +471,36 @@ EXIT trap detached all mounts; NBD PID was empty, 69 GiB remained free, and
 the pinned `alp.py` hash and empty `db.json` were unchanged. LFS reference:
 [Grep 3.12 build instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/grep.html).
 
+## Bash 5.3 staged comparison — 24 September 2026
+
+Bash 5.3 was built in the Builder `/mnt/lfs` chroot from the LFS archive with
+MD5 `977c8c0c5ae6309191e7768e28ebc951` and SHA-256
+`0d5cd86965f869a26cf64f4b71be7b96f90a3ba8b3d74e27e8e9d9d5550f31ba`. It used
+`./configure --prefix=/usr --without-bash-malloc --with-installed-readline
+--docdir=/usr/share/doc/bash-5.3`, `make -j2`, and the book's Expect-based
+`make tests` invocation as target `tester` UID 101. The test command exited
+0. The log contains output differences for `run-builtins` ulimit behavior,
+missing `zh_TW.big5`, `de_DE.UTF-8`, `fr_FR.ISO8859-1`, and `ja_JP.SJIS`
+locales, locale-sensitive formatting, and system-dependent diagnostics; these
+are retained as test limitations rather than reported as a clean output diff.
+
+Installation went only to `/mnt/lfs/tmp/alp-m04-bash-stage-r1`. A stage
+smoke reported GNU Bash 5.3 and arithmetic result `42`. The manifest has 261
+entries (98 directories, 162 files, 1 symlink), SHA-256
+`FF465D63817C1BAB9C275FA5E3F878AE102533EA955434711154F3792B9D0A6D`;
+[manifest](manifests/lfs-base/bash-5.3-2026-09-24.json). Read-only comparison
+reported 119 exact matches and 142 mismatches; [full report](manifests/lfs-base/bash-5.3-2026-09-24-preflight.log),
+SHA-256 `565C3B44F70FAB59449E70E6426BCC5944E36A9FC49C40142DD3F81235FA9BC3`.
+Mismatches include the Bash executable and loadable builtin contents, plus
+rootfs directories whose owner/mode differs. No stage file was merged and no
+base ownership record was added.
+
+Builder build log `/mnt/lfs/tmp/alp-logs/m04-bash-5.3-stage-20260924-r1.log`
+has SHA-256 `2b4d412475a93ad2062d701e7f52021dc2d5ee74282da307c274b89f40fe7b97`.
+The EXIT trap confirmed no mounts below `/mnt/lfs`; NBD PID remained empty,
+the rootfs `alp.py` hash remained pinned, and `db.json` remained empty. LFS
+reference: [Bash 5.3 build instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/bash.html).
+
 Official LFS 12.4-systemd procedures:
 [Gzip-1.14](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/gzip.html),
 [Zstd-1.5.7](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/zstd.html),
