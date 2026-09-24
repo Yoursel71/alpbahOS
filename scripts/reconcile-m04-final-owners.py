@@ -23,7 +23,7 @@ from typing import Any
 
 
 INPUT_SCHEMA = "alpbahOS.m04-final-owner-input/v2"
-SNAPSHOT_SCHEMA = "alpbahOS.m04-reconcile-snapshot/v2"
+SNAPSHOT_SCHEMA = "alpbahOS.m04-reconcile-snapshot/v3"
 DELTA_SCHEMA = "alpbahOS.m04-reconcile-delta/v2"
 OUTPUT_SCHEMA = "alpbahOS.m04-final-owner-plan/v2"
 IDENTITY_PINS_SCHEMA = "alpbahOS.m04-package-identity-pins/v1"
@@ -76,7 +76,7 @@ def _fingerprint(raw: Any, where: str) -> dict[str, Any] | None:
     required = common | ({"size", "sha256"} if kind == "file" else
                         {"target"} if kind == "symlink" else
                         set() if kind == "directory" else
-                        {"rdev"} if kind == "special" else set())
+                        {"special_type", "rdev"} if kind == "special" else set())
     if kind not in {"file", "symlink", "directory", "special"} or set(obj) != required:
         raise ReconcileError(f"{where} has an unsupported type or field set")
     for key in ("mode", "uid", "gid"):
@@ -105,8 +105,12 @@ def _fingerprint(raw: Any, where: str) -> dict[str, Any] | None:
         _sha(obj["sha256"], f"{where}.sha256")
     elif kind == "symlink":
         _string(obj["target"], f"{where}.target")
-    elif kind == "special" and (type(obj["rdev"]) is not int or obj["rdev"] < 0):
-        raise ReconcileError(f"{where}.rdev must be a nonnegative integer")
+    elif kind == "special":
+        if (not isinstance(obj["special_type"], str)
+                or obj["special_type"] not in {"fifo", "socket", "character-device", "block-device"}):
+            raise ReconcileError(f"{where}.special_type is unsupported")
+        if type(obj["rdev"]) is not int or obj["rdev"] < 0:
+            raise ReconcileError(f"{where}.rdev must be a nonnegative integer")
     return obj
 
 
@@ -189,8 +193,13 @@ def _stable_json_artifact(root: Path, raw: Any, where: str) -> tuple[Any, str]:
 
 def _snapshot(raw: Any, root_id: str, where: str) -> dict[str, dict[str, Any]]:
     obj = _object(raw, where)
-    if set(obj) != {"schema", "root_id", "entries"} or obj["schema"] != SNAPSHOT_SCHEMA:
-        raise ReconcileError(f"{where} must use {SNAPSHOT_SCHEMA}")
+    if set(obj) != {"schema", "root_id", "entries"}:
+        raise ReconcileError(f"{where} must contain exactly schema, root_id, and entries")
+    if obj["schema"] != SNAPSHOT_SCHEMA:
+        raise ReconcileError(
+            f"{where} uses unsupported snapshot schema {obj['schema']!r}; expected {SNAPSHOT_SCHEMA}. "
+            "Snapshot v2 is incompatible because it does not record special-node subtypes."
+        )
     if obj["root_id"] != root_id:
         raise ReconcileError(f"{where} root_id mismatch")
     return _entries(obj["entries"], f"{where}.entries")

@@ -40,11 +40,12 @@ installer. Any inability to preserve these conditions invalidates the event.
 
 ### Snapshot metadata and identity
 
-The fixture runner emits the reconciler's `alpbahOS.m04-reconcile-snapshot/v2`
-envelope with a persisted fixture `root_id`. Each entry fingerprints the
-readable xattr set, `security.capability`, and non-directory hardlink count and
-group identity; xattr inspection errors fail closed. The xattr tests use mocks
-on this Windows host, so real Linux xattr, ACL, capability, and hardlink
+The fixture runner emits the reconciler's `alpbahOS.m04-reconcile-snapshot/v3`
+envelope with a persisted fixture `root_id`; v2 snapshots are rejected because
+their special-node fingerprints omit node subtypes. Each entry fingerprints the
+readable xattr set, `security.capability`, special-node subtype, and non-directory
+hardlink count and group identity; xattr inspection errors fail closed. The xattr tests use mocks
+on this Windows host, so real Linux xattr, ACL, capability, special-node, and hardlink
 behavior has not been validated. `root_id` is a continuity label, not an
 authenticated rootfs identity: copying the fixture also copies that label.
 Snapshot traversal and content/metadata reads remain path-based and are not

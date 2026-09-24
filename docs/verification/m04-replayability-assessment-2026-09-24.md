@@ -17,21 +17,33 @@ has no unresolved package-owned paths. A clone is not automatically clean.
 
 ## Builder evidence
 
-At the 24 September shallow read-only check, `/mnt/lfs` was the only full
-rootfs among the inspected Builder `/mnt` paths. The named candidate paths
+The 24 September shallow read-only rootfs check found `/mnt/lfs` as the only
+full rootfs among the inspected Builder `/mnt` paths. The named candidate paths
 `/mnt/base-ro`, `/mnt/alpbahos-clean`, `/mnt/efi-ro`, `/mnt/m2ssh`,
 `/mnt/m2candidate`, `/mnt/m1base`, and `/mnt/alpbahos-old` were empty;
 `/mnt/alpbahos-root` contained only `boot/`. `findmnt -R /mnt` returned no
 mount entries. Thus no known pre-Chapter-8 checkpoint was found in those
 locations. This does not claim that every Builder path was searched.
 
-The Builder GCC `make -k check` process was still live during the check, so no
-recursive disk-size measurement or rootfs copy was performed. A `du -sh`
-attempt returned no size data and is not used as evidence. `/mnt/lfs` showed
-60 GiB available; the volume group had an additional 46.98 GiB free in the
-last read-only storage audit. Capacity is not yet established for retaining
-the original rootfs, a candidate clone, package build trees, sources, logs,
-and test margin at the same time.
+A fresh bounded basename check through the `alp-builder` SSH alias found
+top-level build directories for most Chapter 8 packages and direct source
+archive basenames for all 79 ordered packages. Six packages with no dedicated
+stage script have no matching top-level work directory in that listing:
+Packaging, Wheel, Setuptools, Vim, MarkupSafe, and Jinja2. The depth-2 marker
+listing also found retained `Makefile`/`config.status` paths for many package
+trees (including Glibc, Gettext, Bison, Python, and the systemd-family final
+trees), and Ninja's `build.ninja` and `ninja`. Full commands and unabridged
+basename outputs are preserved in the [Builder availability log](m04-builder-replay-availability-2026-09-24.log).
+
+These names and configuration markers show that the Builder is not limited to
+source archives, but do not prove that build outputs are complete or usable,
+that the source and patch identities are correct, that package tests passed,
+or that an install target is safe to replay. No contents or hashes were read,
+no unbounded recursive scan or `du` was run, and no Builder files or active GCC
+job were changed by this availability check. The earlier storage audit recorded
+60 GiB free under `/mnt/lfs` and 46.98 GiB free in the volume group; capacity
+for preserving a candidate plus build trees, sources, logs, and test margin
+still needs a fresh measurement after the GCC test terminates.
 
 ## Required gates before replay
 

@@ -34,6 +34,14 @@ def directory_fp(mode: int = 0o755) -> dict[str, Any]:
                                  "hardlink_count": None, "hardlink_group_sha256": None}}
 
 
+def special_fp(special_type: str, rdev: int = 0) -> dict[str, Any]:
+    return {"type": "special", "special_type": special_type, "mode": 0o644,
+            "uid": 0, "gid": 0, "rdev": rdev,
+            "metadata_support": {"xattrs_sha256": hashlib.sha256(b"[]").hexdigest(),
+                                 "capabilities_sha256": hashlib.sha256(b"[]").hexdigest(),
+                                 "hardlink_count": 1, "hardlink_group_sha256": None}}
+
+
 class ReconcileFixture:
     def __init__(self) -> None:
         self.temp = tempfile.TemporaryDirectory(prefix="m04-final-owner-")
@@ -132,6 +140,26 @@ class FinalOwnerReconcilerTests(unittest.TestCase):
 
     def tearDown(self) -> None:
         self.fx.close()
+
+    def test_special_fingerprint_requires_and_preserves_node_subtype(self) -> None:
+        fifo = reconcile_module._fingerprint(special_fp("fifo"), "fifo")
+        socket = reconcile_module._fingerprint(special_fp("socket"), "socket")
+        self.assertEqual(fifo["rdev"], socket["rdev"])
+        self.assertNotEqual(fifo, socket)
+        legacy = special_fp("fifo")
+        del legacy["special_type"]
+        with self.assertRaisesRegex(reconcile_module.ReconcileError, "unsupported type or field set"):
+            reconcile_module._fingerprint(legacy, "legacy special")
+        invalid = special_fp("unknown")
+        with self.assertRaisesRegex(reconcile_module.ReconcileError, "special_type is unsupported"):
+            reconcile_module._fingerprint(invalid, "invalid special")
+
+    def test_snapshot_v2_is_rejected_with_special_node_compatibility_reason(self) -> None:
+        legacy = self.fx.snapshot(self.fx.baseline)
+        legacy["schema"] = "alpbahOS.m04-reconcile-snapshot/v2"
+        with self.assertRaisesRegex(reconcile_module.ReconcileError,
+                                   "unsupported snapshot schema.*v2.*does not record special-node subtypes"):
+            reconcile_module._snapshot(legacy, self.fx.root_id, "legacy v2 snapshot")
 
     def test_snapshot_chain_projects_last_writer_and_keeps_deletion_history(self) -> None:
         result = self.fx.run()
