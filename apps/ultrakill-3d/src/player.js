@@ -448,7 +448,7 @@ export class Player {
     this.slamming = false;
     this.endSlide(true);
     this.hurtCd = 0.5;
-    game.damagePlayer(dmg, null, true);
+    if (dmg > 0) game.damagePlayer(dmg, null, true);
     game.hud.flash('rgba(255,90,0,0.5)', 0.4);
     game.hud.message('SINIR DIŞI', 1.2);
   }

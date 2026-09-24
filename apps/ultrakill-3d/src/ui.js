@@ -2,6 +2,7 @@
 // duraklatma ve bölüm sonu sıralama ekranı.
 import { settings, saveSettings, progress, saveProgress, DIFFICULTIES } from './settings.js';
 import { fmtTime } from './util.js';
+import { Typer, drawNoise } from './typer.js';
 
 const RANK_COL = { D: '#4aa3ff', C: '#3ee06a', B: '#ffd21f', A: '#ff8a1f', S: '#ff3a24', P: '#ffd24a' };
 const ORDER = ['D', 'C', 'B', 'A', 'S', 'P'];
@@ -25,26 +26,25 @@ export function rankKills(f) {
   return f >= th[0] ? 'S' : f >= th[1] ? 'A' : f >= th[2] ? 'B' : f >= th[3] ? 'C' : 'D';
 }
 
+// Açılış terminali: V1 uyanır, güç kaynağı yok, yakıt olarak KAN bulunur
 const INTRO_LINES = [
-  ['ARAF-BIOS v0.1 .............................. ', '[HAZIR]'],
-  ['BELLEK TARAMASI ............................. ', '640K TAMAM'],
-  [''],
-  ['BİRİM KİMLİĞİ: ', 'V1'],
-  ['SINIF: SÜPER-MOBİL SAVAŞ MAKİNESİ'],
-  ['DURUM: ', 'UYANIŞ'],
-  [''],
-  ['> ana güç kaynağı ........................... ', '[YOK]', 'bad'],
-  ['> alternatif yakıt aranıyor ...'],
-  ['> KAN ....................................... ', '[TESPİT EDİLDİ]', 'red'],
-  ['> hareket sistemleri ........................ ', '[TAMAM]'],
-  ['> silah sistemleri .......................... ', '[TAMAM]'],
-  ['> geribesleme kolu (FEEDBACKER) ............. ', '[TAMAM]'],
-  ['> hedef: CEHENNEM / KATMAN 0 — ARAF'],
-  [''],
-  ['İNSANLIK ÖLDÜ.', '', 'big'],
-  ['KAN YAKITTIR.', '', 'big'],
-  ['CEHENNEM DOLU.', '', 'big'],
+  { a: 'ARAF-BIOS v0.1 — (C) CEHENNEM DİNAMİK A.Ş.', cps: 160 },
+  { a: 'BELLEK TARAMASI ............................ ', b: '640K TAMAM', cps: 180 },
+  { a: '' },
+  { a: 'BİRİM KİMLİĞİ: ', b: 'V1', cps: 70 },
+  { a: 'SINIF: SÜPER-MOBİL SAVAŞ MAKİNESİ', cps: 90 },
+  { a: 'DURUM: ', b: 'UYANIŞ', cps: 70, pause: 0.35 },
+  { a: '' },
+  { a: '> ana güç kaynağı .......................... ', b: '[YOK]', cls: 'bad', sound: 'glitch', cps: 120, pause: 0.35 },
+  { a: '> alternatif yakıt aranıyor ', bar: true, barDur: 1.1, cps: 90 },
+  { a: '> KAN ...................................... ', b: '[TESPİT EDİLDİ]', cls: 'red', cps: 120, pause: 0.3 },
+  { a: '> yakıt dönüştürücü ', bar: true, barDur: 0.7, cps: 110 },
+  { a: '> hareket sistemleri ....................... ', b: '[TAMAM]', cps: 140 },
+  { a: '> silah sistemleri ......................... ', b: '[SİLAH YOK]', cls: 'bad', cps: 140 },
+  { a: '> geribesleme kolu (FEEDBACKER) ............ ', b: '[TAMAM]', cps: 140 },
+  { a: '> hedef: CEHENNEM / KATMAN 0 — ARAF', cps: 70, pause: 0.6 },
 ];
+const INTRO_BIG = ['İNSANLIK ÖLDÜ.', 'KAN YAKITTIR.', 'CEHENNEM DOLU.'];
 
 export class UI {
   constructor(game, root) {
@@ -73,7 +73,7 @@ export class UI {
         </div>
         <div class="menu-right"><div class="panel-box" id="menu-panel"></div></div>
       </div>
-      <div class="screen hidden" id="scr-intro"><pre class="term"></pre><div class="term-cont hidden blink">[ DEVAM ETMEK İÇİN TIKLA / DOKUN ]</div><div class="term-skip">tıkla / dokun / boşluk: hızlandır</div></div>
+      <div class="screen hidden" id="scr-intro"><canvas class="noise" width="160" height="90"></canvas><div class="crt"></div><pre class="term"></pre><div class="intro-big"></div><div class="term-cont hidden blink">[ DEVAM ETMEK İÇİN TIKLA / DOKUN ]</div><div class="term-skip">tıkla / dokun / boşluk: geç</div></div>
       <div class="screen hidden" id="scr-pause">
         <div class="pause-box">
           <h1>DURAKLATILDI</h1>
@@ -147,6 +147,7 @@ export class UI {
       <div class="diffs">${DIFFICULTIES.map((d, i) => `<button class="btn diff ${i === settings.difficulty ? 'on' : ''}" data-d="${i}">${d.name}</button>`).join('')}</div>
       <div class="diff-desc">${DIFFICULTIES[settings.difficulty].desc}</div>
       <label class="chk"><input type="checkbox" id="opt-skipintro" ${settings.skipIntro ? 'checked' : ''}> İntroyu atla</label>
+      <label class="chk"><input type="checkbox" id="opt-allweapons" ${settings.allWeapons ? 'checked' : ''}> Tüm silahlarla başla (5 silah × 3 varyant, 2 kol, kanca)</label>
       <button class="btn big start" data-act="start">BAŞLA</button>
     `;
     p.querySelectorAll('.diff').forEach((b) => b.addEventListener('click', () => {
@@ -156,6 +157,7 @@ export class UI {
       this.renderPlay(p);
     }));
     p.querySelector('#opt-skipintro').addEventListener('change', (e) => { settings.skipIntro = e.target.checked; saveSettings(); });
+    p.querySelector('#opt-allweapons').addEventListener('change', (e) => { settings.allWeapons = e.target.checked; saveSettings(); });
     const st = p.querySelector('[data-act="start"]');
     st.addEventListener('mouseenter', () => this.game.audio.play('uiHover'));
     st.addEventListener('click', () => {
@@ -188,11 +190,21 @@ export class UI {
       <div class="set-row"><label>Dokunmatik kontroller</label><button class="btn tog on" data-cycle="touchMode">${{ auto: 'OTOMATİK', on: 'AÇIK', off: 'KAPALI' }[S.touchMode || 'auto']}</button></div>
       ${slider('touchSens', 'Dokunmatik bakış hassasiyeti', 0.3, 3, 0.05, (v) => (+v).toFixed(2))}
       ${toggle('aimAssist', 'Nişan yardımı (yalnız dokunmatik)')}
+      <div class="set-row"><label>Buton düzeni</label><button class="btn tog" data-act="edit-layout">SÜRÜKLE-YERLEŞTİR</button></div>
+      ${slider('touchScale', 'Buton boyutu', 0.7, 1.5, 0.05, pct)}
+      ${slider('touchOpacity', 'Buton saydamlığı', 0.25, 1, 0.05, pct)}
       <h3>SES</h3>
       ${slider('master', 'Ana ses', 0, 1, 0.05, pct)}
       ${slider('music', 'Müzik', 0, 1, 0.05, pct)}
       ${slider('sfx', 'Efektler', 0, 1, 0.05, pct)}
     `;
+    p.querySelector('[data-act="edit-layout"]').addEventListener('click', () => {
+      this.click();
+      const prev = Object.keys(this.scr).find((k) => !this.scr[k].classList.contains('hidden'));
+      this.hideAll();
+      this.game.touch.onEditDone = () => { if (prev) this.show(prev); if (prev === 'pause') { this.pausePanel.classList.remove('hidden'); this.renderSettings(this.pausePanel); } };
+      this.game.touch.editLayout();
+    });
     const cyc = p.querySelector('[data-cycle]');
     cyc.addEventListener('click', () => {
       this.click();
@@ -202,7 +214,7 @@ export class UI {
       saveSettings();
       this.game.applySettings();
     });
-    const fmts = { touchSens: (v) => (+v).toFixed(2), sens: (v) => (+v).toFixed(2), resScale: pct, shake: pct, master: pct, music: pct, sfx: pct, fov: (v) => v };
+    const fmts = { touchScale: pct, touchOpacity: pct, touchSens: (v) => (+v).toFixed(2), sens: (v) => (+v).toFixed(2), resScale: pct, shake: pct, master: pct, music: pct, sfx: pct, fov: (v) => v };
     p.querySelectorAll('input[type=range]').forEach((r) => r.addEventListener('input', () => {
       const k = r.dataset.k;
       S[k] = +r.value;
@@ -232,7 +244,9 @@ export class UI {
       ['SOL TIK', 'Ateş'],
       ['SAĞ TIK', 'Alternatif ateş (şarj / bozuk para / çekirdek / pompa)'],
       ['F', 'Yumruk · PARRY: mermiyi ya da parlayan saldırıyı tam zamanında yumrukla'],
-      ['1 2 3', 'Silah seç · aynı tuşa tekrar bas: varyant değiştir'],
+      ['1 2 3 4 5', 'Revolver · Shotgun · Nailgun · Railcannon · Rocket (aynı tuş: varyant)'],
+      ['G', 'Kol değiştir: Feedbacker (parry) ↔ Knuckleblaster (ağır yumruk, basılı tut: şok dalgası)'],
+      ['E', 'Whiplash kancası: hafif düşmanı çek / ağır düşmana atıl'],
       ['Q / TEKERLEK', 'Son silah / silah değiştir'],
       ['TAB', 'Bölüm istatistikleri'],
       ['R', 'Ölünce checkpoint\'ten devam'],
@@ -248,7 +262,8 @@ export class UI {
     ];
     p.innerHTML = `<h2>KONTROLLER</h2><h3>KLAVYE + FARE</h3><table class="keys">${rows.map(([k, v]) => `<tr><td><kbd>${k}</kbd></td><td>${v}</td></tr>`).join('')}</table>
       <h3>DOKUNMATİK (MOBİL)</h3><table class="keys">${touchRows.map(([k, v]) => `<tr><td><kbd>${k}</kbd></td><td>${v}</td></tr>`).join('')}</table>
-      <p class="note">İpucu: Marksman ile bozuk para at (sağ tık), sonra paraya ateş et → RICOSHOT! Birden çok para atarsan mermi paradan paraya seker.</p>
+      <p class="note">PARRY ipuçları: Yumruk erken basılsa da kısa süre geçerlidir. Geri gönderilen mermi nişangâhın yakınındaki düşmana yönelir. Yakından shotgun + hemen yumruk = SHOTGUN PARRY. Kendi roketini/çekirdeğini yumrukla → hızlanır. Havadaki bozuk parayı yumrukla → sekme.</p>
+      <p class="note">Marksman ile bozuk para at (sağ tık), sonra paraya ateş et → RICOSHOT! Birden çok para atarsan mermi paradan paraya seker.</p>
       <p class="note">Not: Tarayıcıda Ctrl+W sekmeyi kapatabileceği için kayma/çakma tuşu C'dir.</p>`;
   }
 
@@ -270,57 +285,78 @@ export class UI {
   }
 
   // ---- intro ----
+  // Aşamalar: 'boot' (terminal) → 'big' (üç büyük satır) → 'done' (devam istemi)
   startIntro() {
     this.show('intro');
-    this.introPre = this.scr.intro.querySelector('.term');
-    this.introCont = this.scr.intro.querySelector('.term-cont');
+    const scr = this.scr.intro;
+    this.introPre = scr.querySelector('.term');
+    this.introBig = scr.querySelector('.intro-big');
+    this.introCont = scr.querySelector('.term-cont');
+    this.introNoise = scr.querySelector('.noise');
     this.introCont.classList.add('hidden');
-    this.introPre.innerHTML = '';
-    this.introLine = 0;
-    this.introChar = 0;
-    this.introT = 0;
-    this.introDone = false;
+    this.introBig.innerHTML = '';
+    this.introPre.classList.remove('gone');
+    scr.classList.remove('crt-on');
+    void scr.offsetWidth;
+    scr.classList.add('crt-on');
+    this.typer = new Typer(this.introPre, INTRO_LINES, { audio: this.game.audio });
+    this.introPhase = 'boot';
+    this.introT = -0.7; // CRT açılışı
     this.introFast = false;
     this.introActive = true;
+    this.introDone = false;
+    this.game.audio.play('glitch');
   }
 
   introClick() {
     this.game.audio.init();
-    if (!this.introDone) { this.introFast = true; return; }
+    if (this.introPhase === 'boot') { this.typer.finish(); this.enterBig(); return; }
+    if (this.introPhase === 'big') { this.finishBig(); return; }
     this.introActive = false;
     this.game.startLevel();
   }
 
+  enterBig() {
+    this.introPhase = 'big';
+    this.introPre.classList.add('gone');
+    this.bigIdx = 0;
+    this.bigT = 0.5;
+  }
+
+  finishBig() {
+    while (this.bigIdx < INTRO_BIG.length) this.addBigLine(true);
+    this.introPhase = 'done';
+    this.introDone = true;
+    this.introCont.classList.remove('hidden');
+  }
+
+  addBigLine(silent = false) {
+    const d = document.createElement('div');
+    d.className = 'big-line';
+    d.textContent = INTRO_BIG[this.bigIdx];
+    d.dataset.text = INTRO_BIG[this.bigIdx];
+    this.introBig.appendChild(d);
+    this.bigIdx++;
+    if (!silent) {
+      this.game.audio.play('bigText');
+      this.scr.intro.classList.remove('jolt');
+      void this.scr.intro.offsetWidth;
+      this.scr.intro.classList.add('jolt');
+    }
+  }
+
   updateIntro(dt) {
-    if (!this.introActive || this.introDone) return;
-    this.introT += dt * (this.introFast ? 12 : 1);
-    const game = this.game;
-    while (this.introT > 0 && !this.introDone) {
-      const L = INTRO_LINES[this.introLine];
-      const text = (L[0] || '') + (L[1] || '');
-      if (this.introChar === 0) {
-        const div = document.createElement('div');
-        div.className = 'tl ' + (L[2] || '');
-        this.introPre.appendChild(div);
-        this.curDiv = div;
-      }
-      if (this.introChar < text.length) {
-        this.introChar++;
-        const shown = text.slice(0, this.introChar);
-        const a = L[0] || '';
-        if (this.introChar <= a.length) this.curDiv.textContent = shown;
-        else this.curDiv.innerHTML = escapeHtml(a) + `<span class="st">${escapeHtml(shown.slice(a.length))}</span>`;
-        this.introT -= L[2] === 'big' ? 0.06 : 0.012;
-        if (this.introChar % 3 === 0) game.audio.play('type');
-      } else {
-        this.introLine++;
-        this.introChar = 0;
-        this.introT -= L[2] === 'big' ? 0.7 : text.length ? 0.18 : 0.1;
-        if (L[2] === 'big') { game.audio.play('rankStamp'); game.shake(0.1); }
-        if (this.introLine >= INTRO_LINES.length) {
-          this.introDone = true;
-          this.introCont.classList.remove('hidden');
-        }
+    if (!this.introActive) return;
+    if (Math.random() < 0.6) drawNoise(this.introNoise, 0.6);
+    this.introT += dt;
+    if (this.introT < 0) return;
+    if (this.introPhase === 'boot') {
+      if (this.typer.update(dt, this.introFast)) { this.introT = 0; this.enterBig(); }
+    } else if (this.introPhase === 'big') {
+      this.bigT -= dt;
+      if (this.bigT <= 0) {
+        if (this.bigIdx < INTRO_BIG.length) { this.addBigLine(); this.bigT = 1.15; }
+        else this.finishBig();
       }
     }
   }

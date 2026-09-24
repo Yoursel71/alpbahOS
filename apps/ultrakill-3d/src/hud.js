@@ -3,6 +3,7 @@
 import { RANKS } from './style.js';
 import { fmtTime, clamp } from './util.js';
 import { settings } from './settings.js';
+import { Typer, drawNoise } from './typer.js';
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
@@ -15,6 +16,7 @@ export class HUD {
     el.innerHTML = `
       <div id="dmgvig"></div>
       <div id="flash"></div>
+      <div id="parrypulse"></div>
       <div id="crosshair"><i class="ch l"></i><i class="ch r"></i><i class="ch t"></i><i class="ch b"></i><div id="hitmark"><i></i><i></i><i></i><i></i></div>
         <div class="ch-hp"><i></i></div><div class="ch-st"><i></i></div></div>
       <div id="hud-bl" class="panel">
@@ -25,7 +27,7 @@ export class HUD {
           <div class="wpn-text"><div class="wpn-name">REVOLVER</div><div class="wpn-var">PIERCER</div></div>
         </div>
         <div class="wpn-extra"></div>
-        <div class="wpn-slots"><span>1</span><span>2</span><span>3</span></div>
+        <div class="wpn-slots"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><em class="arm-ind"></em><em class="hook-ind">E</em></div>
       </div>
       <div id="hud-style" class="panel hidden">
         <div class="st-head"><div class="st-rank">D</div><div class="st-name">DESTRUCTIVE</div></div>
@@ -38,7 +40,12 @@ export class HUD {
       <div id="msg"></div>
       <div id="stats" class="panel hidden"></div>
       <div id="titlecard" class="hidden"></div>
-      <div id="deathscreen" class="hidden"><div class="ds-title">ÖLDÜN</div><div class="ds-sub">Checkpoint'ten devam etmek için <b>[R]</b> ya da tıkla</div></div>
+      <div id="deathscreen" class="hidden">
+        <canvas class="ds-noise" width="160" height="90"></canvas>
+        <div class="ds-term"></div>
+        <div class="ds-title hidden" data-text="ÖLDÜN">ÖLDÜN</div>
+        <div class="ds-sub hidden"></div>
+      </div>
       <div id="fps" class="hidden"></div>
       <div id="lockhint" class="hidden">Fare kilidi yok — bakmak için fareyi hareket ettir ya da <b>ok tuşlarını</b> kullan</div>
     `;
@@ -53,7 +60,7 @@ export class HUD {
       boss: q('#bossbar'), bName: q('.bb-name'), bFill: q('.bb-fill'), bLag: q('.bb-lag'),
       hint: q('#hint'), msg: q('#msg'), stats: q('#stats'), flash: q('#flash'), vig: q('#dmgvig'),
       hit: q('#hitmark'), title: q('#titlecard'), death: q('#deathscreen'), fps: q('#fps'), lockhint: q('#lockhint'),
-      chHp: q('.ch-hp i'), chSt: q('.ch-st i'), cross: q('#crosshair'),
+      chHp: q('.ch-hp i'), chSt: q('.ch-st i'), cross: q('#crosshair'), armInd: q('.arm-ind'), hookInd: q('.hook-ind'), pulse: q('#parrypulse'),
     };
     this.hintT = 0;
     this.msgT = 0;
@@ -118,6 +125,13 @@ export class HUD {
     this.$.hit.classList.toggle('kill', !!kill);
   }
 
+  parryPulse() {
+    const el = this.$.pulse;
+    el.classList.remove('go');
+    void el.offsetWidth;
+    el.classList.add('go');
+  }
+
   rankPulse() {
     this.rankPulseT = 0.3;
   }
@@ -150,8 +164,48 @@ export class HUD {
     this.titleT = dur;
   }
 
-  death(on) {
-    this.$.death.classList.toggle('hidden', !on);
+  // Ölüm ekranı: kırmızı parlama → karartma + statik → terminal yazıları → ÖLDÜN → devam istemi
+  death(on, n = 1) {
+    const el = this.$.death;
+    el.classList.toggle('hidden', !on);
+    this.deathOn = on;
+    if (!on) { if (this.deathTyper) this.deathTyper = null; return; }
+    el.classList.remove('dark');
+    el.querySelector('.ds-title').classList.add('hidden');
+    const sub = el.querySelector('.ds-sub');
+    sub.classList.add('hidden');
+    const touch = this.game.touch && this.game.touch.active;
+    sub.innerHTML = `<div class="blink">${touch ? 'DOKUN' : '<b>[R]</b> ya da TIKLA'} — SON CHECKPOINT'E DÖN</div><div class="ds-count">ölüm #${n}</div>`;
+    this.deathT = 0;
+    this.deathStage = 0;
+    this.deathTyper = new Typer(el.querySelector('.ds-term'), [
+      { a: '> KRİTİK HASAR TESPİT EDİLDİ', cls: 'bad', cps: 110 },
+      { a: '> KAN REZERVİ ............. ', b: '0%', cls: 'bad', cps: 140, sound: 'glitch' },
+      { a: '> MOTOR İŞLEVLERİ ......... ', b: '[ÇÖKTÜ]', cls: 'bad', cps: 140 },
+      { a: '> SİLAH SİSTEMLERİ ........ ', b: '[ÇEVRİMDIŞI]', cls: 'bad', cps: 140 },
+      { a: '> V1 DEVRE DIŞI', cls: 'red', cps: 60, pause: 0.25 },
+    ], { audio: this.game.audio });
+  }
+
+  updateDeath(realDt) {
+    if (!this.deathOn) return;
+    const el = this.$.death;
+    this.deathT += realDt;
+    if (this.deathT > 0.55 && this.deathStage === 0) { this.deathStage = 1; el.classList.add('dark'); }
+    if (this.deathStage >= 1) {
+      drawNoise(el.querySelector('.ds-noise'), 0.9);
+      if (this.deathTyper && this.deathTyper.update(realDt) && this.deathStage === 1) {
+        this.deathStage = 2;
+        this.deathT2 = 0;
+        el.querySelector('.ds-title').classList.remove('hidden');
+        this.game.audio.play('bigText');
+        this.game.shake(0.4);
+      }
+    }
+    if (this.deathStage === 2) {
+      this.deathT2 += realDt;
+      if (this.deathT2 > 0.45) { this.deathStage = 3; el.querySelector('.ds-sub').classList.remove('hidden'); }
+    }
   }
 
   lockHint(on, permanent = true) {
@@ -221,7 +275,7 @@ export class HUD {
     this.set('chSt', $.chSt, 'width', ((p.stamina / 3) * 100).toFixed(0) + '%');
     // Silah
     const w = g.weapons.hudInfo();
-    const key = w.name + w.variant;
+    const key = w.name + w.variant + w.owned.join() + w.arm + w.hook;
     if (this.cache.wName !== key) {
       this.cache.wName = key;
       $.wName.textContent = w.name;
@@ -229,21 +283,28 @@ export class HUD {
       $.wVar.style.color = w.color;
       $.wIcon.style.background = w.color;
       $.wIcon.dataset.w = w.cur;
-      $.slots.forEach((s, i) => s.classList.toggle('on', i === w.cur));
+      $.slots.forEach((s, i) => { s.classList.toggle('on', i === w.cur); s.classList.toggle('none', !w.owned[i]); });
+      $.armInd.textContent = w.arm;
+      $.armInd.style.color = w.armColor;
+      $.hookInd.classList.toggle('none', !w.hook);
     }
     let extra = '';
-    if (w.cur === 0 && w.varId === 'marksman') {
-      const full = Math.floor(w.coins);
-      extra = 'PARA ' + Array.from({ length: 4 }, (_, i) => (i < full ? '●' : i === full ? `<span class="part" style="--p:${(w.coins - full).toFixed(2)}">●</span>` : '○')).join(' ');
-    } else if (w.cur === 0) {
-      extra = `ŞARJ <span class="bar"><i style="width:${(w.pierce * 100).toFixed(0)}%"></i></span>`;
-    } else if (w.cur === 1 && w.varId === 'pump') {
-      extra = 'POMPA ' + [0, 1, 2].map((i) => (i < w.pumps ? (w.pumps >= 3 ? '<b class="hot">▮</b>' : '▮') : '▯')).join('');
-    } else if (w.cur === 1) {
-      extra = `ÇEKİRDEK <span class="bar"><i style="width:${(w.core * 100).toFixed(0)}%"></i></span>`;
-    } else {
-      extra = `ŞARJ <span class="bar rail ${w.rail >= 1 ? 'ready' : ''}"><i style="width:${(w.rail * 100).toFixed(0)}%"></i></span>`;
-    }
+    const bar = (v, cls = '') => `<span class="bar ${cls}"><i style="width:${(Math.max(0, Math.min(1, v)) * 100).toFixed(0)}%"></i></span>`;
+    const pips = (n, max) => Array.from({ length: max }, (_, i) => (i < Math.floor(n) ? '●' : '○')).join(' ');
+    const touch = this.game.touch && this.game.touch.active;
+    if (w.cur < 0) extra = touch ? 'SİLAH YOK · [YUMRUK]' : 'SİLAH YOK · [SOL TIK]/[F] YUMRUK';
+    else if (w.varId === 'marksman') extra = 'PARA ' + pips(w.coins, 4);
+    else if (w.varId === 'sharpshooter') extra = 'SEKME ' + pips(w.sharp, 3) + ' ' + bar(w.pierce);
+    else if (w.cur === 0) extra = 'ŞARJ ' + bar(w.pierce);
+    else if (w.varId === 'pump') extra = 'POMPA ' + [0, 1, 2].map((i) => (i < w.pumps ? (w.pumps >= 3 ? '<b class="hot">▮</b>' : '▮') : '▯')).join('');
+    else if (w.varId === 'saw') extra = w.sawOut ? 'TESTERE <b class="hot">UÇUŞTA</b>' : 'TESTERE HAZIR';
+    else if (w.cur === 1) extra = 'ÇEKİRDEK ' + bar(w.core);
+    else if (w.varId === 'overheat') extra = 'ISI ' + bar(w.heat, w.heat >= 1 ? 'hot' : '');
+    else if (w.cur === 2) extra = 'MIKNATIS ' + pips(w.magnets, 3);
+    else if (w.cur === 3) extra = 'ŞARJ ' + bar(w.rail, 'rail ' + (w.rail >= 1 ? 'ready' : ''));
+    else if (w.varId === 'freeze') extra = 'DONDURMA ' + bar(w.freeze);
+    else if (w.varId === 'cannon') extra = 'GÜLLE ' + bar(w.cannon);
+    else extra = 'YAKIT ' + bar(w.fuel, 'hot');
     this.set('wExtra', $.wExtra, 'html', extra);
 
     // Stil
@@ -312,6 +373,7 @@ export class HUD {
       if (this.titleT <= 0) $.title.classList.add('hidden');
     }
     $.cross.classList.toggle('parry', g.parryHintT > 0);
+    this.updateDeath(realDt);
     if (settings.showFps) {
       $.fps.classList.remove('hidden');
       this.set('fps', $.fps, 'text', g.fps + ' FPS');

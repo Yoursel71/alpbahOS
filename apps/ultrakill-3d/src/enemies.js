@@ -1,12 +1,15 @@
-// Düşmanlar: Filth, Stray, Schism ve boss Swordsmachine.
-// Modeller eklem hiyerarşisiyle kutulardan kurulur; animasyonlar prosedüreldir.
+// Düşmanlar: Filth, Stray, Schism, boss Swordsmachine ve parry eğitmeni.
+// Modeller eklem hiyerarşisiyle kutu/koni/silindirlerden kurulur; animasyonlar prosedüreldir.
+// Ölümde: patlayıcı/ağır hasar → parçalanma, kafadan öldürme → kafa kopar + kan fıskiyesi,
+// diğerleri → ceset olarak yığılır.
 import * as THREE from 'three';
 import { psx } from './render.js';
-import { clamp, rand, chance, wrapAngle, yawTo, damp } from './util.js';
+import { clamp, rand, chance, wrapAngle, yawTo } from './util.js';
 import { difficulty } from './settings.js';
 import { Projectile } from './projectiles.js';
 
 const G = 35;
+const FRESH_W = new Set(['revolver', 'shotgun', 'nailgun', 'rail', 'rocket']);
 const _v1 = new THREE.Vector3();
 const _v2 = new THREE.Vector3();
 const _v3 = new THREE.Vector3();
@@ -17,6 +20,12 @@ function bgeo(w, h, d) {
   const k = `${w.toFixed(3)},${h.toFixed(3)},${d.toFixed(3)}`;
   let g = GEO.get(k);
   if (!g) { g = new THREE.BoxGeometry(w, h, d); GEO.set(k, g); }
+  return g;
+}
+function cgeo(r, h, seg = 5) {
+  const k = `c${r.toFixed(3)},${h.toFixed(3)},${seg}`;
+  let g = GEO.get(k);
+  if (!g) { g = new THREE.ConeGeometry(r, h, seg); GEO.set(k, g); }
   return g;
 }
 
@@ -35,8 +44,17 @@ function limb(parent, w, h, d, mat, y = -h / 2, list = null) {
   return m;
 }
 
+function part(parent, geo, mat, x, y, z, rx = 0, ry = 0, rz = 0, noGib = false) {
+  const m = new THREE.Mesh(geo, mat);
+  m.position.set(x, y, z);
+  m.rotation.set(rx, ry, rz);
+  if (noGib) m.userData.noGib = true;
+  parent.add(m);
+  return m;
+}
+
 export function buildHumanoid(o) {
-  const { skin, dark, hunch = 0.3, torsoW = 0.42, torsoH = 0.55, torsoD = 0.26, headS = 0.3, armL = 1, legL = 1, scale = 1 } = o;
+  const { skin, dark, hunch = 0.3, torsoW = 0.42, torsoH = 0.55, torsoD = 0.26, headS = 0.3, armL = 1, legL = 1, scale = 1, taper = 0.85 } = o;
   const root = new THREE.Group();
   const J = {};
   const meshes = [];
@@ -46,21 +64,25 @@ export function buildHumanoid(o) {
   J.pelvis = limb(J.hips, torsoW * 0.8, 0.2, torsoD * 0.85, skin, 0, meshes);
   J.spine = joint(J.hips, 0, 0.06, 0);
   J.spine.rotation.x = -hunch;
-  J.torso = limb(J.spine, torsoW, torsoH, torsoD, skin, torsoH / 2, meshes);
+  // gövde: bel dar, göğüs geniş
+  J.belly = limb(J.spine, torsoW * taper, torsoH * 0.45, torsoD * 0.9, skin, torsoH * 0.22, meshes);
+  J.torso = limb(J.spine, torsoW, torsoH * 0.6, torsoD, skin, torsoH * 0.7, meshes);
   J.neck = joint(J.spine, 0, torsoH, 0);
   J.neck.rotation.x = hunch * 0.8;
-  J.head = joint(J.neck, 0, 0.02, 0);
+  limb(J.neck, headS * 0.4, 0.08, headS * 0.4, skin, 0.02, meshes);
+  J.head = joint(J.neck, 0, 0.05, 0);
   J.headMesh = limb(J.head, headS, headS * 1.1, headS, skin, headS * 0.55, meshes);
   for (const side of [-1, 1]) {
     const s = side < 0 ? 'L' : 'R';
     const sh = (J['sh' + s] = joint(J.spine, side * (torsoW / 2 + 0.07), torsoH - 0.07, 0));
+    limb(sh, 0.15, 0.12, 0.15, skin, -0.02, meshes); // omuz başı
     J['upper' + s] = limb(sh, 0.11, 0.36 * armL, 0.11, skin, undefined, meshes);
     const el = (J['el' + s] = joint(sh, 0, -0.36 * armL, 0));
     J['fore' + s] = limb(el, 0.095, 0.34 * armL, 0.095, skin, undefined, meshes);
     const ha = (J['ha' + s] = joint(el, 0, -0.34 * armL, 0));
     J['hand' + s] = limb(ha, 0.11, 0.13, 0.11, dark, -0.05, meshes);
     const hip = (J['hip' + s] = joint(J.hips, side * torsoW * 0.26, -0.04, 0));
-    limb(hip, 0.14, thigh, 0.14, skin, undefined, meshes);
+    limb(hip, 0.15, thigh, 0.15, skin, undefined, meshes);
     const kn = (J['kn' + s] = joint(hip, 0, -thigh, 0));
     limb(kn, 0.12, shin, 0.12, skin, undefined, meshes);
     const ft = (J['ft' + s] = joint(kn, 0, -shin, 0));
@@ -68,7 +90,35 @@ export function buildHumanoid(o) {
     foot.position.z = -0.05;
   }
   root.scale.setScalar(scale);
-  return { root, J, meshes, hipY, dims: { thigh, shin, torsoH, headS, torsoW, armL } };
+  return { root, J, meshes, hipY, dims: { thigh, shin, torsoH, headS, torsoW, torsoD, armL } };
+}
+
+// Kaburga kemikleri (göğüs önünde)
+function addRibs(J, d, bone, n = 4) {
+  for (let k = 0; k < n; k++) {
+    part(J.spine, bgeo(d.torsoW * (0.95 - k * 0.06), 0.03, 0.04), bone, 0, d.torsoH * (0.78 - k * 0.1), -d.torsoD / 2 - 0.01);
+  }
+  part(J.spine, bgeo(0.05, d.torsoH * 0.45, 0.04), bone, 0, d.torsoH * 0.65, -d.torsoD / 2 - 0.015); // göğüs kemiği
+}
+
+// Omurga çıkıntıları (sırtta)
+function addVertebrae(J, d, bone, n = 5) {
+  for (let k = 0; k < n; k++) {
+    part(J.spine, bgeo(0.06, 0.05, 0.07), bone, 0, d.torsoH * (0.15 + k * 0.18), d.torsoD / 2 + 0.02, 0.3);
+  }
+}
+
+// Diş sırası
+function addTeeth(parent, y, z, w, bone, n = 5, up = true) {
+  for (let k = 0; k < n; k++) {
+    const x = (k / (n - 1) - 0.5) * w;
+    part(parent, cgeo(0.018, 0.05, 4), bone, x, y, z, up ? Math.PI : 0, 0, 0, true);
+  }
+}
+
+// Pençeler
+function addClaws(ha, bone) {
+  for (const x of [-0.035, 0, 0.035]) part(ha, cgeo(0.016, 0.12, 4), bone, x, -0.16, -0.02, Math.PI - 0.3, 0, 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -102,7 +152,12 @@ export class Enemy {
     this.time = 0;
     this.mats = [];
     this.hitSpheres = [];
+    this.tint = rand(0.88, 1.08);
+    this.hr = { x: 0, z: 0 }; // vurulma tepkisi
+    this.lookYaw = 0;
+    this.lookPitch = 0;
     this.root = new THREE.Group();
+    this.root.rotation.order = 'YXZ';
     this.init(opts);
     this.hp = this.maxHp;
     this.root.position.copy(this.pos);
@@ -112,8 +167,11 @@ export class Enemy {
     else { this.state = 'idle'; }
   }
 
-  mat(map, color) {
-    const m = psx(new THREE.MeshLambertMaterial({ map, color, emissive: 0x000000 }));
+  // glow: malzemenin kendi renginde hafif öz aydınlatma (karanlıkta renk kaybolmasın)
+  mat(map, color, glow = 0.13) {
+    const c = new THREE.Color(color).multiplyScalar(this.tint);
+    const m = psx(new THREE.MeshLambertMaterial({ map, color: c, emissive: 0x000000 }));
+    m.userData.glow = c.clone().multiplyScalar(glow);
     this.mats.push(m);
     return m;
   }
@@ -148,7 +206,6 @@ export class Enemy {
   }
 
   raycast(o, d, maxT) {
-    // kaba küre testi
     const cx = this.pos.x - o.x, cy = this.pos.y + this.h * 0.5 - o.y, cz = this.pos.z - o.z;
     const tc = cx * d.x + cy * d.y + cz * d.z;
     const br = this.h * 0.75 + 0.5;
@@ -166,7 +223,6 @@ export class Enemy {
       let t = -b - sq;
       if (t < 0) t = -b + sq;
       if (t < 0 || t > maxT) continue;
-      // Kafa küreleri öncelikli: eşit mesafede kafayı seç
       const tt = s.kind === 'head' ? t - 0.05 : t;
       if (!best || tt < best.tt) best = { t, tt, part: s.kind, enemy: this, sphere: s };
     }
@@ -223,20 +279,21 @@ export class Enemy {
     return !!this.game.world.overlapBox(x - 0.2, this.pos.y - 1.5, z - 0.2, x + 0.2, this.pos.y - 0.02, z + 0.2, true);
   }
 
-  // Oyuncuya yakın dövüş vuruşu
   meleeHit(range, dmg, arc = 0.2) {
     const i = this.playerInfo();
     if (i.dist > range || Math.abs(i.dy + 0.5) > 2.6) return false;
     const f = this.forward();
     if (f.x * i.dx + f.z * i.dz < arc) return false;
-    return this.game.damagePlayer(dmg * difficulty().dmg, this.center(), false, this);
+    const ok = this.game.damagePlayer(dmg * difficulty().dmg, this.center(), false, this);
+    if (ok) this.game.fx.bloodBurst(this.game.player.eyePos().addScaledVector(this.forward(), 0.3), 8, 5);
+    return ok;
   }
 
   glint(pos) {
     const game = this.game;
-    const s = game.fx.sprite(pos || this.headPos(), 0x9fe0ff, 2.2, 0.35, 'star', 1.6);
+    const s = game.fx.sprite(pos || this.headPos(), 0x9fe0ff, 2.4, 0.38, 'star', 1.7);
     s.material.depthTest = false;
-    game.audio.play('glint', pos || this.pos);
+    game.audio.play('glint', pos || this.pos, { range: 60 });
   }
 
   setParryable(on, glintPos) {
@@ -255,7 +312,7 @@ export class Enemy {
     this.flash = Math.max(0, this.flash - dt * 6);
     if (this.state === 'spawn') {
       const k = clamp(this.st / this.spawnDur, 0, 1);
-      this.root.scale.set(1, 0.2 + 0.8 * k, 1);
+      this.root.scale.set(1 + (1 - k) * 0.6, 0.15 + 0.85 * k * k, 1 + (1 - k) * 0.6);
       this.flash = Math.max(this.flash, 1 - k);
       if (this.st >= this.spawnDur) {
         this.root.scale.set(1, 1, 1);
@@ -266,6 +323,9 @@ export class Enemy {
     } else if (this.state === 'stagger') {
       this.accelTo(0, 0, 20, dt);
       if (this.st > this.stun) this.setState(this.firstState || 'chase');
+    } else if (this.state === 'flinch') {
+      this.accelTo(0, 0, 30, dt);
+      if (this.st > 0.14) this.setState(this.resume || this.firstState || 'chase');
     } else if (!this.game.player.dead) {
       this.seeT -= dt;
       if (this.seeT <= 0) {
@@ -278,17 +338,71 @@ export class Enemy {
       this.accelTo(0, 0, 20, dt);
     }
     if (!this.decor) this.physics(dt);
+    if (this.dead) return;
+    this.dots(dt);
+    if (this.dead) return;
     this.root.position.copy(this.pos);
     this.root.rotation.y = this.yaw;
     this.animate(dt);
+    this.postAnimate(dt);
     this.updateFlash();
     this.updateSpheres();
+  }
+
+  // Süreli hasarlar: yanma (Firestarter/Overheat) ve matkap (Screwdriver)
+  dots(dt) {
+    const game = this.game;
+    if (this.burn > 0) {
+      this.burn -= dt;
+      this.burnTick = (this.burnTick || 0) - dt;
+      if (Math.random() < dt * 25) game.fx.sparkBurst(this.center().add(new THREE.Vector3(rand(-0.3, 0.3), rand(-0.6, 0.6), rand(-0.3, 0.3))), 1, 2, Math.random() < 0.5 ? 0xff7a20 : 0xffc040, 0.5, 0.1, -3);
+      if (this.burnTick <= 0) {
+        this.burnTick = 0.5;
+        this.hit({ dmg: 0.2, part: 'body', point: this.center(), weapon: 'rocket', quiet: true, burning: true });
+      }
+    }
+    if (this.drill > 0 && !this.dead) {
+      this.drill -= dt;
+      this.drillTick = (this.drillTick || 0) - dt;
+      if (this.drillTick <= 0) {
+        this.drillTick = 0.12;
+        this.hit({ dmg: 0.2, part: 'body', point: this.center(), weapon: 'rail', quiet: true });
+        game.fx.bloodBurst(this.center(), 3, 4);
+      }
+    }
+  }
+
+  // Ortak: kafa ile oyuncuyu takip, vurulma tepkisi
+  postAnimate(dt) {
+    const H = this.H;
+    if (!H) return;
+    const J = H.J;
+    const p = this.game.player;
+    let ty = 0, tp = 0;
+    if (this.state !== 'idle' && this.state !== 'spawn' && !p.dead) {
+      const dx = p.pos.x - this.pos.x, dz = p.pos.z - this.pos.z;
+      ty = clamp(wrapAngle(yawTo(dx, dz) - this.yaw), -0.9, 0.9);
+      const dy = p.pos.y + p.eye - (this.pos.y + this.h);
+      tp = clamp(Math.atan2(dy, Math.hypot(dx, dz)), -0.5, 0.6);
+    } else if (this.state === 'idle') {
+      ty = Math.sin(this.time * 0.5) * 0.5;
+    }
+    const k = 1 - Math.exp(-8 * dt);
+    this.lookYaw += (ty - this.lookYaw) * k;
+    this.lookPitch += (tp - this.lookPitch) * k;
+    this.hr.x *= Math.exp(-10 * dt);
+    this.hr.z *= Math.exp(-10 * dt);
+    J.head.rotation.y = this.lookYaw;
+    J.head.rotation.x = this.lookPitch * 0.7 + this.hr.x * 0.8;
+    J.head.rotation.z = this.hr.z;
+    J.spine.rotation.x += this.hr.x * 0.15;
+    J.spine.rotation.z = this.hr.z * 0.6;
   }
 
   setState(s) {
     this.state = s;
     this.st = 0;
-    if (s !== 'windup' && s !== 'attack') this.setParryable(false);
+    if (s !== 'windup' && s !== 'attack' && s !== 'pounce') this.setParryable(false);
   }
 
   physics(dt) {
@@ -310,12 +424,12 @@ export class Enemy {
       const r2 = world.moveBody(this, 0, -0.5, 0);
       if (r2.ground) grounded = true; else this.pos.y = oy;
     }
+    if (grounded && !wasGrounded && this.onLand) this.onLand();
     this.grounded = grounded;
     if (grounded) this.vel.y = 0;
     const kd = Math.exp(-dt * (grounded ? 7 : 1.5));
     this.knock.x *= kd;
     this.knock.z *= kd;
-    // tehlikeler
     const L = this.game.level;
     if (this.pos.y < L.killY) { this.die({ dmg: 99, weapon: null, silent: true }); return; }
     for (const z of L.hurtZones) {
@@ -336,14 +450,14 @@ export class Enemy {
     const f = this.flash;
     let r = f, g = f, b = f;
     if (this.parryable) {
-      const k = 0.35 + Math.sin(this.time * 40) * 0.2;
-      r = Math.max(r, 0.15 * k); g = Math.max(g, 0.45 * k); b = Math.max(b, 0.9 * k);
+      const k = 0.2 + Math.sin(this.time * 40) * 0.12;
+      r = Math.max(r, 0.1 * k); g = Math.max(g, 0.35 * k); b = Math.max(b, 0.8 * k);
     }
     if (this.enraged) r = Math.max(r, 0.35 + Math.sin(this.time * 10) * 0.1);
-    // hafif öz aydınlatma: karanlık arenalarda siluet okunur kalsın
-    const base = this.baseGlow ?? 0.1;
-    r = Math.max(r, base); g = Math.max(g, base * 0.85); b = Math.max(b, base * 0.8);
-    for (const m of this.mats) m.emissive.setRGB(r, g, b);
+    for (const m of this.mats) {
+      const gl = m.userData.glow;
+      m.emissive.setRGB(Math.max(r, gl.r), Math.max(g, gl.g), Math.max(b, gl.b));
+    }
   }
 
   hit(info) {
@@ -351,8 +465,9 @@ export class Enemy {
     const game = this.game;
     let dmg = info.dmg;
     if (info.part === 'head') dmg *= info.headMult ?? 2;
-    if (this.invuln) {
+    if (this.invuln || (this.onlyParry && !info.parried)) {
       game.fx.sparkBurst(info.point || this.center(), 6, 6, 0xffffff, 0.2, 0.05);
+      game.audio.play('empty', info.point || this.center());
       return;
     }
     if (this.dmgMul) dmg *= this.dmgMul;
@@ -364,20 +479,48 @@ export class Enemy {
       this.knock.z += info.dir.z * info.knock * this.knockMul;
       if (info.dir.y > 0.3 || info.explosion) this.vel.y = Math.max(this.vel.y, info.knock * 0.6 * this.knockMul);
     }
+    // vurulma tepkisi: gövde darbenin yönünde sarsılır
+    if (info.dir) {
+      const f = this.forward();
+      const into = f.x * info.dir.x + f.z * info.dir.z; // + arkadan
+      const side = f.x * info.dir.z - f.z * info.dir.x;
+      const k = Math.min(1, 0.35 + dmg * 0.3) / (this.big ? 2 : 1);
+      this.hr.x += (into > 0 ? -1 : 1) * k * (info.part === 'head' ? 1.4 : 1);
+      this.hr.z += side * k;
+    }
     const pt = info.point || this.center();
     game.fx.bloodBurst(pt, Math.min(45, 6 + Math.round(dmg * 10)), 5 + Math.min(dmg, 4) * 2, info.dir || null);
     if (!info.noHeal) game.bloodHeal(pt, dmg);
     const w = info.weapon;
-    const fw = w === 'revolver' || w === 'shotgun' || w === 'rail' ? w : null;
+    const fw = FRESH_W.has(w) ? w : null;
     game.style.addRaw(Math.min(dmg, 6) * 18, fw);
     if (!this.grounded && this.state !== 'spawn' && !this.flying && w !== 'lava') game.style.add('AIRSHOT', 35, fw);
-    game.audio.play(info.part === 'head' ? 'headshot' : 'enemyHit', pt);
+    if (!info.quiet || Math.random() < 0.25) game.audio.play(info.part === 'head' ? 'headshot' : 'enemyHit', pt);
     game.hud.hitmarker(this.hp <= 0);
     if (this.hp <= 0) this.die(info, wasFull, dmg);
-    else this.onHurt(info, dmg);
+    else {
+      // küçük düşmanlar sert darbede kısa sendeler (saldırıyı böler)
+      if (!this.big && !info.quiet && dmg >= 0.9 && this.state !== 'spawn' && this.state !== 'stagger' && this.state !== 'flinch' && this.H) {
+        if (this.parryable) game.style.add('INTERRUPTION', 50, fw);
+        this.resume = this.firstState || 'chase';
+        this.setState('flinch');
+      }
+      this.onHurt(info, dmg);
+    }
   }
 
   onHurt() {}
+
+  // Ölüm biçimi: parçalanma / kafa kopması / yığılma
+  deathMode(info, dmg) {
+    if (this.boss || this.type === 'trainer') return 'gib';
+    const w = info.weapon;
+    if (info.explosion || w === 'rail' || w === 'lava' || info.dmg >= 99) return 'gib';
+    if (dmg >= this.maxHp * 2.2 && !this.big) return 'gib';
+    if (w === 'shotgun' && (info.pellets || 0) >= 7) return 'gib';
+    if (info.part === 'head' && this.H) return 'decap';
+    return 'collapse';
+  }
 
   die(info, wasFull = false, dmg = 0) {
     if (this.dead) return;
@@ -385,24 +528,44 @@ export class Enemy {
     this.parryable = false;
     const game = this.game;
     const w = info.weapon;
-    const fw = w === 'revolver' || w === 'shotgun' || w === 'rail' ? w : null;
-    for (const m of this.mats) m.emissive.setRGB(0, 0, 0);
+    const fw = FRESH_W.has(w) ? w : null;
+    for (const m of this.mats) m.emissive.copy(m.userData.glow);
     const c = this.center();
     const dir = info.dir ? info.dir.clone() : new THREE.Vector3();
-    const force = info.explosion ? 12 : 4 + Math.min(info.knock || 0, 20) * 0.4;
+    const mode = this.deathMode(info, dmg);
     this.root.updateMatrixWorld(true);
-    const meshes = [];
-    this.root.traverseVisible((o) => { if (o.isMesh && !o.userData.noGib) meshes.push(o); });
-    for (const m of meshes) {
-      const v = new THREE.Vector3(rand(-1, 1), rand(0.3, 1.4), rand(-1, 1)).multiplyScalar(force * rand(0.4, 1)).addScaledVector(dir, force * 0.8);
-      game.fx.gibFromMesh(m, v);
+    if (mode === 'gib') {
+      const force = info.explosion ? 12 : 5 + Math.min(info.knock || 0, 20) * 0.4;
+      const meshes = [];
+      this.root.traverseVisible((o) => { if (o.isMesh && !o.userData.noGib) meshes.push(o); });
+      for (const m of meshes) {
+        const v = new THREE.Vector3(rand(-1, 1), rand(0.3, 1.4), rand(-1, 1)).multiplyScalar(force * rand(0.4, 1)).addScaledVector(dir, force * 0.8);
+        game.fx.gibFromMesh(m, v);
+      }
+      const gore = this.big ? 12 : 6;
+      for (let i = 0; i < gore; i++) {
+        game.fx.gibChunk(c.clone().add(new THREE.Vector3(rand(-0.3, 0.3), rand(-0.3, 0.3), rand(-0.3, 0.3))), new THREE.Vector3(rand(-6, 6), rand(3, 9), rand(-6, 6)), rand(0.08, 0.2), game.goreMat);
+      }
+      game.fx.bloodBurst(c, this.big ? 110 : 60, this.big ? 15 : 11, null, true);
+      game.scene.remove(this.root);
+    } else {
+      // Ceset: model sahnede kalır ve yığılır
+      if (mode === 'decap') {
+        const J = this.H.J;
+        const headMeshes = [];
+        J.head.traverseVisible((o) => { if (o.isMesh) headMeshes.push(o); });
+        const v = dir.clone().multiplyScalar(6).add(new THREE.Vector3(rand(-1, 1), 5, rand(-1, 1)));
+        for (const m of headMeshes) if (!m.userData.noGib) game.fx.gibFromMesh(m, v.clone().add(new THREE.Vector3(rand(-1, 1), rand(0, 1), rand(-1, 1))), 14);
+        J.head.visible = false;
+        game.fx.bloodBurst(this.headPos(), 40, 9, new THREE.Vector3(0, 1, 0), true);
+        game.fx.fountain(J.neck, 1.6);
+      } else game.fx.bloodBurst(c, 30, 8, dir, false);
+      const f = this.forward();
+      this.fallSign = f.x * dir.x + f.z * dir.z > 0 ? -1 : 1;
+      this.corpseT = 0;
+      this.corpseVel = new THREE.Vector3(dir.x, 0, dir.z).multiplyScalar(Math.min(8, 2 + (info.knock || 0) * 0.4));
+      game.corpses.push(this);
     }
-    const gore = this.big ? 10 : 4;
-    for (let i = 0; i < gore; i++) {
-      game.fx.gibChunk(c.clone().add(new THREE.Vector3(rand(-0.3, 0.3), rand(-0.3, 0.3), rand(-0.3, 0.3))), new THREE.Vector3(rand(-6, 6), rand(3, 9), rand(-6, 6)), rand(0.08, 0.2), game.goreMat);
-    }
-    game.fx.bloodBurst(c, this.big ? 90 : 45, this.big ? 14 : 10, null, true);
-    game.scene.remove(this.root);
     if (!info.silent) {
       game.audio.play('gore', c);
       if (!info.noHeal) game.bloodHeal(c, this.big ? 3 : 1.5);
@@ -411,12 +574,48 @@ export class Enemy {
       if (info.explosion) game.style.add('FRIED', 60, fw);
       if (wasFull && this.big && dmg >= this.maxHp) game.style.add('INSTAKILL', 100, fw);
       if (w === 'punch') game.style.add('SPLATTERED', 60, null);
+      if (info.burning) game.style.add('BURNED', 50, 'rocket');
       game.style.onKill(fw, this);
     }
     game.onEnemyKilled(this, info);
   }
 
-  // Oyuncu yakın saldırıyı savuşturdu
+  // Ceset animasyonu: öne/arkaya devrilir, uzuvlar gevşer, sonra yere gömülüp kaybolur
+  updateCorpse(dt) {
+    this.corpseT += dt;
+    const t = this.corpseT;
+    const world = this.game.world;
+    if (t < 0.7) {
+      this.corpseVel.multiplyScalar(Math.exp(-dt * 4));
+      this.vel.y -= G * dt;
+      const r = world.moveBody(this, this.corpseVel.x * dt, this.vel.y * dt, this.corpseVel.z * dt);
+      if (r.ground) this.vel.y = 0;
+    }
+    const k = Math.min(1, t / 0.55);
+    const fall = k * k * (Math.PI / 2 - 0.08);
+    this.root.position.copy(this.pos);
+    this.root.rotation.x = this.fallSign * fall;
+    if (this.H) {
+      const J = this.H.J;
+      const lk = 1 - Math.exp(-6 * dt);
+      const lerp = (j, x, z = 0) => { j.rotation.x += (x - j.rotation.x) * lk; j.rotation.z += (z - j.rotation.z) * lk; };
+      lerp(J.spine, 0.1 * this.fallSign);
+      lerp(J.shL, this.fallSign > 0 ? 2.4 : -0.5, -0.5);
+      lerp(J.shR, this.fallSign > 0 ? 2.1 : -0.3, 0.6);
+      lerp(J.elL, 0.3); lerp(J.elR, 0.6);
+      lerp(J.hipL, 0.4); lerp(J.hipR, -0.1);
+      lerp(J.knL, -0.8); lerp(J.knR, -0.2);
+    }
+    if (t > 0.5 && t < 0.56 && !this.landed) {
+      this.landed = true;
+      this.game.fx.addDecal(this.pos.x, this.pos.y + 0.01, this.pos.z, 0, 1, 0, 2.2);
+      this.game.audio.play('land', this.pos, { vol: 0.6 });
+    }
+    if (t > 7) this.root.position.y = this.pos.y - (t - 7) * 0.4;
+    if (t > 9) { this.game.scene.remove(this.root); return false; }
+    return true;
+  }
+
   parried(dir) {
     this.parryable = false;
     this.stun = this.parryStun || 0.9;
@@ -425,12 +624,11 @@ export class Enemy {
   }
 
   removeSilently() {
-    if (this.dead) return;
+    if (this.dead && this.corpseT === undefined) return;
     this.dead = true;
     this.game.scene.remove(this.root);
   }
 
-  // yardımcı: eklemi hedef açıya yumuşak döndür
   rot(j, x, y = 0, z = 0) {
     const k = this.k;
     j.rotation.x += (x - j.rotation.x) * k;
@@ -438,18 +636,19 @@ export class Enemy {
     j.rotation.z += (z - j.rotation.z) * k;
   }
 
-  walkPose(H, amt, armSwing = 1, armBase = 0, dt) {
+  walkPose(H, amt, armSwing = 1, armBase = 0) {
     const s = Math.sin(this.walkPhase), c = Math.cos(this.walkPhase);
     const J = H.J;
     this.rot(J.hipL, s * 0.75 * amt);
     this.rot(J.hipR, -s * 0.75 * amt);
-    this.rot(J.knL, -Math.max(0, c) * 1.2 * amt);
-    this.rot(J.knR, -Math.max(0, -c) * 1.2 * amt);
+    this.rot(J.knL, -Math.max(0, c) * 1.2 * amt - 0.05);
+    this.rot(J.knR, -Math.max(0, -c) * 1.2 * amt - 0.05);
     this.rot(J.shL, armBase - s * 0.6 * amt * armSwing, 0, -0.08);
     this.rot(J.shR, armBase + s * 0.6 * amt * armSwing, 0, 0.08);
     this.rot(J.elL, 0.35 + 0.3 * amt);
     this.rot(J.elR, 0.35 + 0.3 * amt);
     J.hips.position.y = H.hipY + Math.abs(c) * 0.06 * amt - 0.03 * amt;
+    J.hips.rotation.y = s * 0.12 * amt;
   }
 
   airPose(H) {
@@ -459,10 +658,14 @@ export class Enemy {
     this.rot(J.knL, -1.3);
     this.rot(J.knR, -0.9);
   }
+
+  breathe(H, amt = 0.04) {
+    H.J.spine.rotation.x += Math.sin(this.time * 2.2) * amt * this.k;
+  }
 }
 
 // ---------------------------------------------------------------------------
-// FILTH: kambur, hızlı yakın dövüşçü. Zıplar, ısırır.
+// FILTH: kambur, hızlı yakın dövüşçü. Koşar, sıçrayarak saldırır, ısırır.
 export class Filth extends Enemy {
   init() {
     const T = this.game.tex;
@@ -474,26 +677,34 @@ export class Filth extends Enemy {
     this.speed = 10.5 * difficulty().speed;
     this.killPts = 50;
     this.jumpCd = 0;
-    const skin = this.mat(T.skin, 0xd0c4b0);
-    const dark = this.mat(T.skin, 0x4a3a34);
-    this.H = buildHumanoid({ skin, dark, hunch: 0.6, torsoW: 0.4, torsoH: 0.5, headS: 0.3, armL: 1.3, legL: 0.95 });
-    const J = this.H.J;
-    // ağız ve göz çukurları
+    this.pounceCd = rand(1, 3);
+    const skin = this.mat(T.skinW, 0x9ec878);
+    const dark = this.mat(T.skinW, 0x5a3a28);
+    const bone = this.mat(T.bone, 0xfff0d0);
+    const flesh = this.mat(T.flesh, 0xff5050, 0.25);
+    this.H = buildHumanoid({ skin, dark, hunch: 0.62, torsoW: 0.42, torsoH: 0.52, torsoD: 0.3, headS: 0.3, armL: 1.35, legL: 0.95, taper: 0.7 });
+    const J = this.H.J, d = this.H.dims;
+    addRibs(J, d, bone, 4);
+    addVertebrae(J, d, bone, 5);
+    part(J.spine, bgeo(d.torsoW * 0.6, d.torsoH * 0.3, 0.02), flesh, 0, d.torsoH * 0.2, -d.torsoD * 0.45 - 0.005); // açık karın
+    // kafatası: çukur gözler, burun deliği, dişli çene
     const black = new THREE.MeshBasicMaterial({ color: 0x100404 });
-    const mouth = new THREE.Mesh(bgeo(0.2, 0.12, 0.02), black);
-    mouth.position.set(0, 0.1, -0.155);
+    const mouth = part(J.head, bgeo(0.22, 0.12, 0.02), black, 0, 0.1, -0.155, 0, 0, 0, true);
     mouth.userData.noGib = true;
-    J.head.add(mouth);
+    addTeeth(J.head, 0.14, -0.16, 0.18, bone, 6, true);
     this.jaw = joint(J.head, 0, 0.05, -0.02);
     limb(this.jaw, 0.24, 0.06, 0.26, dark, -0.03);
-    for (const x of [-0.07, 0.07]) {
-      const e = new THREE.Mesh(bgeo(0.06, 0.05, 0.02), black);
-      e.position.set(x, 0.22, -0.155);
-      e.userData.noGib = true;
-      J.head.add(e);
-    }
+    addTeeth(this.jaw, -0.0, -0.14, 0.16, bone, 5, false);
+    for (const x of [-0.075, 0.075]) part(J.head, bgeo(0.07, 0.06, 0.02), black, x, 0.22, -0.155, 0, 0, 0, true);
+    part(J.head, bgeo(0.04, 0.04, 0.02), black, 0, 0.17, -0.158, 0, 0, 0, true);
+    addClaws(J.haL, bone);
+    addClaws(J.haR, bone);
     this.root.add(this.H.root);
     this.humanoidSpheres(this.H, 1);
+  }
+
+  onLand() {
+    if (this.state === 'pounce') { this.setState('recover'); this.game.audio.play('land', this.pos, { vol: 0.5 }); }
   }
 
   think(dt) {
@@ -501,6 +712,7 @@ export class Filth extends Enemy {
     const aggro = difficulty().aggro;
     this.jumpCd -= dt;
     this.atkCd -= dt;
+    this.pounceCd -= dt;
     switch (this.state) {
       case 'chase': {
         this.faceYaw(yawTo(i.dx, i.dz), 10, dt);
@@ -517,7 +729,34 @@ export class Filth extends Enemy {
         if (i.dist < 2.9 && Math.abs(i.dy) < 2 && this.atkCd <= 0 && this.grounded) {
           this.setState('windup');
           this.game.audio.play('filthGrowl', this.pos);
+        } else if (i.dist > 4.5 && i.dist < 8 && Math.abs(i.dy) < 1.5 && this.pounceCd <= 0 && this.grounded && this.canSee) {
+          // sıçrayarak saldırı
+          this.setState('pounceWind');
+          this.game.audio.play('screech', this.pos);
         }
+        break;
+      }
+      case 'pounceWind': {
+        this.faceYaw(yawTo(i.dx, i.dz), 14, dt);
+        this.accelTo(0, 0, 40, dt);
+        if (this.st > 0.3 / aggro) {
+          this.state = 'pounce';
+          this.st = 0;
+          this.hitDone = false;
+          const s = Math.min(16, i.dist * 1.9);
+          this.vel.set(i.dx * s, 8.5, i.dz * s);
+          this.grounded = false;
+          this.pounceCd = rand(3, 5) / aggro;
+          this.setParryable(true, this.headPos());
+        }
+        break;
+      }
+      case 'pounce': {
+        if (this.st > 0.35) this.setParryable(false);
+        if (!this.hitDone && i.dist < 1.8) {
+          if (this.meleeHit(2.2, 18, -0.2)) this.hitDone = true;
+        }
+        if (this.st > 1.2) this.setState('recover');
         break;
       }
       case 'windup': {
@@ -542,7 +781,7 @@ export class Filth extends Enemy {
           if (this.st > 0.2) this.hitDone = true;
         }
         this.accelTo(0, 0, 25, dt);
-        if (this.st > 0.4) { this.setState('recover'); }
+        if (this.st > 0.4) this.setState('recover');
         break;
       }
       case 'recover': {
@@ -560,15 +799,22 @@ export class Filth extends Enemy {
     this.walkPhase += hsp * dt * 1.25;
     const amt = clamp(hsp / 8, 0, 1);
     let jawOpen = 0.1;
-    if (this.state === 'windup') {
-      this.rot(J.spine, -0.25);
+    if (this.state === 'windup' || this.state === 'pounceWind') {
+      this.rot(J.spine, this.state === 'pounceWind' ? -0.9 : -0.25);
       this.rot(J.shL, 2.7, 0, -0.3);
       this.rot(J.shR, 2.7, 0, 0.3);
       this.rot(J.elL, 0.6);
       this.rot(J.elR, 0.6);
-      this.rot(J.hipL, 0.3); this.rot(J.hipR, -0.3);
-      this.rot(J.knL, -0.5); this.rot(J.knR, -0.4);
+      this.rot(J.hipL, 0.5); this.rot(J.hipR, -0.2);
+      this.rot(J.knL, -0.9); this.rot(J.knR, -0.7);
       jawOpen = 0.6;
+    } else if (this.state === 'pounce') {
+      this.rot(J.spine, -0.9);
+      this.rot(J.shL, 1.8, 0, -0.5);
+      this.rot(J.shR, 1.8, 0, 0.5);
+      this.rot(J.elL, 0.1); this.rot(J.elR, 0.1);
+      this.airPose(H);
+      jawOpen = 0.9;
     } else if (this.state === 'attack') {
       this.rot(J.spine, -1.0);
       this.rot(J.shL, 0.5, 0, -0.1);
@@ -577,25 +823,29 @@ export class Filth extends Enemy {
       this.rot(J.elR, 0.2);
       jawOpen = 0.8;
     } else if (this.state === 'idle') {
-      const b = Math.sin(this.time * 2) * 0.05;
-      this.rot(J.spine, -0.6 + b);
+      this.rot(J.spine, -0.6);
       this.walkPose(H, 0, 0, 0.3);
-      this.rot(J.neck, 0.5 + Math.sin(this.time * 0.7) * 0.2, Math.sin(this.time * 0.5) * 0.4);
+      this.breathe(H, 0.05);
+    } else if (this.state === 'flinch' || this.state === 'stagger') {
+      this.rot(J.spine, 0.1);
+      this.rot(J.shL, -0.4, 0, -0.5);
+      this.rot(J.shR, -0.4, 0, 0.5);
+      jawOpen = 0.7;
     } else {
-      this.rot(J.spine, -0.6 - amt * 0.15);
-      this.walkPose(H, amt, 1.2, 0.5 + amt * 0.3);
+      // koşu: gövde öne eğik, kollar sarkık ve sallanır
+      this.rot(J.spine, -0.62 - amt * 0.25);
+      this.walkPose(H, amt, 1.3, 0.5 + amt * 0.4);
       if (!this.grounded && this.state !== 'spawn') this.airPose(H);
-      jawOpen = 0.2 + Math.abs(Math.sin(this.time * 6)) * 0.15;
+      jawOpen = 0.25 + Math.abs(Math.sin(this.time * 6)) * 0.2;
     }
-    if (this.state === 'stagger') { this.rot(J.spine, 0.2); this.rot(J.shL, -0.4); this.rot(J.shR, -0.4); }
     this.jaw.rotation.x = -jawOpen;
   }
 }
 
 // ---------------------------------------------------------------------------
-// STRAY: mesafeyi koruyup parlayan küre fırlatır (küre savuşturulabilir).
+// STRAY: kukuletalı; mesafeyi koruyup parlayan küre fırlatır (küre savuşturulabilir).
 export class Stray extends Enemy {
-  init() {
+  init(opts = {}) {
     const T = this.game.tex;
     this.type = 'stray';
     this.name = 'STRAY';
@@ -608,21 +858,28 @@ export class Stray extends Enemy {
     this.strafeT = rand(1, 2.5);
     this.atkCd = rand(1.0, 2.2);
     this.firstState = 'move';
-    const skin = this.mat(T.skin, 0xa89c8c);
-    const dark = this.mat(T.skin, 0x3a2c2a);
-    this.H = buildHumanoid({ skin, dark, hunch: 0.22, torsoW: 0.36, torsoH: 0.58, headS: 0.27, armL: 1.08, legL: 1.1, scale: 1.05 });
-    const J = this.H.J;
-    const black = new THREE.MeshBasicMaterial({ color: 0x100404 });
-    for (const x of [-0.065, 0.065]) {
-      const e = new THREE.Mesh(bgeo(0.05, 0.04, 0.02), new THREE.MeshBasicMaterial({ color: 0xffb040 }));
-      e.position.set(x, 0.2, -0.14);
-      e.userData.noGib = true;
-      J.head.add(e);
+    const skin = this.mat(T.skinW, opts.skinColor || 0xe0a882);
+    const dark = this.mat(T.skinW, 0x4a2a1c);
+    const cloth = this.mat(T.clothW, opts.clothColor || 0xd8581c);
+    const band = this.mat(T.bone, 0xfff0c0);
+    this.H = buildHumanoid({ skin, dark, hunch: 0.22, torsoW: 0.36, torsoH: 0.58, headS: 0.27, armL: 1.08, legL: 1.1, scale: 1.05, taper: 0.75 });
+    const J = this.H.J, d = this.H.dims;
+    // kukuleta ve pelerin
+    part(J.head, cgeo(0.23, 0.42, 6), cloth, 0, 0.26, 0.03, -0.25);
+    part(J.head, bgeo(0.3, 0.3, 0.06), cloth, 0, 0.15, 0.13);
+    part(J.spine, bgeo(d.torsoW + 0.08, d.torsoH * 0.9, 0.04), cloth, 0, d.torsoH * 0.55, d.torsoD / 2 + 0.03);
+    // bel paçavraları (yürürken sallanır)
+    this.rags = [];
+    for (const x of [-0.12, 0, 0.12]) {
+      const rj = joint(J.hips, x, -0.05, -0.12);
+      limb(rj, 0.1, 0.42, 0.02, cloth, -0.2);
+      this.rags.push(rj);
     }
-    const mouth = new THREE.Mesh(bgeo(0.14, 0.05, 0.02), black);
-    mouth.position.set(0, 0.08, -0.14);
-    mouth.userData.noGib = true;
-    J.head.add(mouth);
+    // kol sargıları
+    for (const s of ['L', 'R']) for (const y of [-0.1, -0.22]) part(J['el' + s], bgeo(0.11, 0.04, 0.11), band, 0, y, 0);
+    const glowEye = new THREE.MeshBasicMaterial({ color: 0xffb040 });
+    for (const x of [-0.065, 0.065]) part(J.head, bgeo(0.05, 0.035, 0.02), glowEye, x, 0.18, -0.14, 0, 0, 0, true);
+    part(J.head, bgeo(0.14, 0.05, 0.02), new THREE.MeshBasicMaterial({ color: 0x100404 }), 0, 0.08, -0.14, 0, 0, 0, true);
     // el küresi
     this.orb = new THREE.Group();
     const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.16, 1), new THREE.MeshBasicMaterial({ color: 0xfff2c0 }));
@@ -685,17 +942,21 @@ export class Stray extends Enemy {
     }
   }
 
-  throwOrb() {
+  onHurt() {
+    this.orb.visible = false;
+  }
+
+  throwOrb(speedMul = 1, dmg = 25) {
     const game = this.game;
     const p = game.player;
     const from = new THREE.Vector3();
     this.orb.getWorldPosition(from);
-    const speed = 27 * difficulty().speed;
+    const speed = 27 * difficulty().speed * speedMul;
     const target = new THREE.Vector3(p.pos.x, p.pos.y + p.h * 0.6, p.pos.z);
     const t = from.distanceTo(target) / speed;
     target.addScaledVector(p.vel, t * 0.4);
     const dir = target.sub(from).normalize();
-    game.addProjectile(new Projectile(game, { pos: from, vel: dir.multiplyScalar(speed), radius: 0.35, damage: 25 * difficulty().dmg, color: 0xff8a20, source: this }));
+    game.addProjectile(new Projectile(game, { pos: from, vel: dir.multiplyScalar(speed), radius: 0.35, damage: dmg * difficulty().dmg, color: 0xff8a20, source: this }));
     game.audio.play('orbThrow', from);
   }
 
@@ -707,27 +968,69 @@ export class Stray extends Enemy {
     const amt = clamp(hsp / 6, 0, 1);
     if (this.state === 'windup') {
       this.walkPose(H, 0, 0, 0);
-      this.rot(J.spine, -0.05, 0.35);
+      this.rot(J.spine, -0.05, 0.4);
       this.rot(J.shR, -2.5, 0, 0.3);
       this.rot(J.elR, 0.9);
       this.rot(J.shL, 0.6, 0, -0.4);
     } else if (this.state === 'throw') {
-      this.rot(J.spine, -0.45, -0.3);
+      this.rot(J.spine, -0.45, -0.35);
       this.rot(J.shR, 1.5, 0, 0.1);
       this.rot(J.elR, 0.1);
       this.rot(J.shL, -0.3);
+    } else if (this.state === 'flinch' || this.state === 'stagger') {
+      this.rot(J.spine, 0.25);
+      this.rot(J.shL, -0.3, 0, -0.4);
+      this.rot(J.shR, -0.3, 0, 0.4);
     } else {
       this.rot(J.spine, -0.22, 0);
       this.walkPose(H, amt, 0.8, 0.1);
       if (!this.grounded && this.state !== 'spawn') this.airPose(H);
-      this.rot(J.neck, 0.18, Math.sin(this.time * 1.3) * 0.2);
+      this.breathe(H, 0.03);
     }
-    if (this.state === 'stagger') this.rot(J.spine, 0.3);
+    // paçavralar hareketle savrulur
+    for (let k = 0; k < this.rags.length; k++) {
+      this.rags[k].rotation.x = 0.15 + amt * 0.5 + Math.sin(this.time * 7 + k) * 0.12;
+    }
+  }
+}
+
+// Parry eğitmeni: kafesteki hareketsiz Stray; yavaş küre fırlatır, yalnız savuşturulan
+// kendi küresiyle ölür.
+export class Trainer extends Stray {
+  init() {
+    super.init({ skinColor: 0xa8c0ff, clothColor: 0x2c50e0 });
+    this.type = 'trainer';
+    this.name = 'EĞİTMEN';
+    this.maxHp = 1;
+    this.onlyParry = true;
+    this.noCount = true;
+    this.killPts = 0;
+    this.speed = 0;
+    this.atkCd = 1.5;
+  }
+
+  think(dt) {
+    const i = this.playerInfo();
+    this.atkCd -= dt;
+    this.faceYaw(yawTo(i.dx, i.dz), 8, dt);
+    this.accelTo(0, 0, 30, dt);
+    if (this.state === 'move' && this.atkCd <= 0 && this.canSee && i.dist < 22) {
+      this.setState('windup');
+      this.game.audio.play('orbCharge', this.pos);
+    } else if (this.state === 'windup') {
+      const dur = 1.1;
+      this.orb.visible = true;
+      this.orb.scale.setScalar(0.3 + 0.9 * clamp(this.st / dur, 0, 1));
+      if (this.st >= dur) { this.state = 'throw'; this.st = 0; this.thrown = false; }
+    } else if (this.state === 'throw') {
+      if (!this.thrown && this.st > 0.1) { this.thrown = true; this.orb.visible = false; this.throwOrb(0.42, 6); }
+      if (this.st > 0.45) { this.setState('move'); this.atkCd = 2.0; }
+    }
   }
 }
 
 // ---------------------------------------------------------------------------
-// SCHISM: bıçak kollu, yatay/dikey mermi dizisi ateşler; yakında savurma yapar.
+// SCHISM: dikenli taçlı, bıçak kollu; yatay/dikey mermi dizisi ateşler, yakında savurur.
 export class Schism extends Enemy {
   init() {
     const T = this.game.tex;
@@ -745,39 +1048,38 @@ export class Schism extends Enemy {
     this.strafeT = 2;
     this.atkCd = rand(1.2, 2.0);
     this.meleeCd = 0;
-    const skin = this.mat(T.skin, 0x8c8478);
-    const dark = this.mat(T.skin, 0x3a2a26);
-    this.H = buildHumanoid({ skin, dark, hunch: 0.16, torsoW: 0.54, torsoH: 0.64, torsoD: 0.32, headS: 0.3, armL: 1.12, legL: 1.1, scale: 1.2 });
-    const J = this.H.J;
+    const skin = this.mat(T.skinW, 0xa08ae8);
+    const dark = this.mat(T.skinW, 0x38225a);
+    const bone = this.mat(T.bone, 0xfff0c0);
+    const flesh = this.mat(T.flesh, 0xff4a8a, 0.25);
+    this.H = buildHumanoid({ skin, dark, hunch: 0.16, torsoW: 0.56, torsoH: 0.66, torsoD: 0.34, headS: 0.3, armL: 1.12, legL: 1.1, scale: 1.2, taper: 0.8 });
+    const J = this.H.J, d = this.H.dims;
     J.foreL.visible = false;
     J.handL.visible = false;
-    const bladeMat = this.mat(T.bone, 0xd8d0c0);
-    const blade = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.13, 1.35, 5), bladeMat);
-    blade.position.y = -0.67;
+    const blade = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.14, 1.4, 5), bone);
+    blade.position.y = -0.7;
     J.elL.add(blade);
-    this.tip = joint(J.elL, 0, -1.35, 0);
+    const runeMat = new THREE.MeshBasicMaterial({ color: 0xffd040 });
+    for (let k = 0; k < 4; k++) part(J.elL, bgeo(0.03, 0.08, 0.03), runeMat, 0.06 - k * 0.005, -0.25 - k * 0.25, -0.05, 0, 0, 0, true);
+    this.tip = joint(J.elL, 0, -1.4, 0);
     const tipGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: T.glow, color: 0xffd040, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
     tipGlow.scale.setScalar(0.5);
     this.tipGlow = tipGlow;
     this.tip.add(tipGlow);
-    // omuz dikenleri
-    for (const x of [-0.2, 0, 0.2]) {
-      const sp = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.28, 4), dark);
-      sp.position.set(x, 0.66, 0.12);
-      sp.rotation.x = 0.5;
-      J.spine.add(sp);
+    // omuz ve taç dikenleri
+    for (const x of [-0.22, 0, 0.22]) part(J.spine, cgeo(0.06, 0.3, 4), dark, x, 0.68, 0.12, 0.5);
+    for (let k = 0; k < 5; k++) {
+      const a = (k / 4 - 0.5) * 1.6;
+      part(J.head, cgeo(0.035, 0.2, 4), bone, Math.sin(a) * 0.13, 0.36, Math.cos(a) * 0.05, -0.2, 0, -a * 0.6);
     }
+    // dikişli karın
+    part(J.spine, bgeo(d.torsoW * 0.5, d.torsoH * 0.35, 0.02), flesh, 0, d.torsoH * 0.25, -d.torsoD / 2 - 0.005);
+    for (let k = 0; k < 4; k++) part(J.spine, bgeo(0.16, 0.015, 0.03), dark, 0, d.torsoH * (0.14 + k * 0.07), -d.torsoD / 2 - 0.01);
+    addVertebrae(J, d, bone, 4);
     const black = new THREE.MeshBasicMaterial({ color: 0x100404 });
-    for (const x of [-0.07, 0.07]) {
-      const e = new THREE.Mesh(bgeo(0.06, 0.04, 0.02), new THREE.MeshBasicMaterial({ color: 0xffe060 }));
-      e.position.set(x, 0.21, -0.155);
-      e.userData.noGib = true;
-      J.head.add(e);
-    }
-    const mouth = new THREE.Mesh(bgeo(0.16, 0.06, 0.02), black);
-    mouth.position.set(0, 0.08, -0.155);
-    mouth.userData.noGib = true;
-    J.head.add(mouth);
+    for (const x of [-0.07, 0.07]) part(J.head, bgeo(0.06, 0.04, 0.02), new THREE.MeshBasicMaterial({ color: 0xffe060 }), x, 0.21, -0.155, 0, 0, 0, true);
+    part(J.head, bgeo(0.16, 0.06, 0.02), black, 0, 0.08, -0.155, 0, 0, 0, true);
+    addTeeth(J.head, 0.11, -0.16, 0.14, bone, 5, true);
     this.root.add(this.H.root);
     this.humanoidSpheres(this.H, 1.2);
     this.addSphere(this.tip, [0, 0.5, 0], 0.18, 'limb');
@@ -807,6 +1109,7 @@ export class Schism extends Enemy {
           this.mode = chance(0.5) ? 'H' : 'V';
           this.setState('wind');
           this.game.audio.play('windup', this.pos);
+          this.game.audio.play('filthGrowl', this.pos, { rate: 0.6, exactRate: true });
         }
         break;
       }
@@ -831,7 +1134,7 @@ export class Schism extends Enemy {
         this.accelTo(0, 0, 20, dt);
         const dur = 0.55 / aggro;
         if (this.st > dur - 0.26) this.setParryable(true, this.tip.getWorldPosition(new THREE.Vector3()));
-        if (this.st >= dur) { this.state = 'attack'; this.st = 0; this.hitDone = false; }
+        if (this.st >= dur) { this.state = 'attack'; this.st = 0; this.hitDone = false; this.game.audio.play('swing', this.pos); }
         break;
       }
       case 'attack': {
@@ -867,7 +1170,7 @@ export class Schism extends Enemy {
     const dir = new THREE.Vector3(Math.sin(yaw + dy) * cp, Math.sin(pitch + dp), Math.cos(yaw + dy) * cp);
     const speed = 30 * difficulty().speed;
     game.addProjectile(new Projectile(game, { pos: from, vel: dir.multiplyScalar(speed), radius: 0.26, damage: 20 * difficulty().dmg, color: 0xffd040, source: this }));
-    game.audio.play('schismShot', from);
+    game.audio.play('schismShot', from, { force: true });
   }
 
   animate(dt) {
@@ -896,18 +1199,20 @@ export class Schism extends Enemy {
       this.rot(J.spine, -0.35, -0.6);
       this.rot(J.shL, 1.7, 0, 0.2);
       this.rot(J.elL, 0.1);
+    } else if (this.state === 'stagger') {
+      this.rot(J.spine, 0.35);
     } else {
       this.rot(J.spine, -0.16, 0);
       this.walkPose(H, amt, 0.6, 0.05);
       this.rot(J.shL, 0.5 - Math.sin(this.walkPhase) * 0.3 * amt, 0, -0.15);
       this.rot(J.elL, 0.4);
+      this.breathe(H, 0.03);
     }
-    if (this.state === 'stagger') this.rot(J.spine, 0.35);
   }
 }
 
 // ---------------------------------------------------------------------------
-// SWORDSMACHINE (boss): kılıç kombosu (son vuruş savuşturulabilir), kılıç fırlatma,
+// SWORDSMACHINE (boss): kılıç kombosu (son vuruş savuşturulabilir), bumerang kılıç,
 // pompalı tüfek, atılma; yarı canda öfkelenir.
 export class Swordsmachine extends Enemy {
   init() {
@@ -931,53 +1236,49 @@ export class Swordsmachine extends Enemy {
     this.enraged = false;
     this.cdMul = 1;
     this.atkCd = 1.0;
-    const metal = this.mat(T.machine, 0x9aa0aa);
-    const dark = this.mat(T.machine, 0x3a3c42);
-    const H = (this.H = buildHumanoid({ skin: metal, dark, hunch: 0.1, torsoW: 0.58, torsoH: 0.64, torsoD: 0.34, headS: 0.3, armL: 1.08, legL: 1.08, scale: 1.32 }));
-    const J = H.J;
+    this.tint = 1;
+    const metal = this.mat(T.machine, 0xc8d0dc);
+    const dark = this.mat(T.machine, 0x3a3e4c);
+    const plate = this.mat(T.metal, 0xffb420, 0.18);
+    const H = (this.H = buildHumanoid({ skin: metal, dark, hunch: 0.1, torsoW: 0.58, torsoH: 0.64, torsoD: 0.34, headS: 0.3, armL: 1.08, legL: 1.08, scale: 1.32, taper: 0.7 }));
+    const J = H.J, d = H.dims;
     const orange = new THREE.MeshBasicMaterial({ color: 0xffa020 });
     this.visorMat = orange;
-    const visor = new THREE.Mesh(bgeo(0.26, 0.06, 0.02), orange);
-    visor.position.set(0, 0.2, -0.16);
-    visor.userData.noGib = true;
-    J.head.add(visor);
-    const core = new THREE.Mesh(bgeo(0.16, 0.16, 0.04), orange);
-    core.position.set(0, 0.42, -0.18);
-    core.userData.noGib = true;
-    J.spine.add(core);
-    for (const side of ['L', 'R']) {
-      const pad = new THREE.Mesh(bgeo(0.24, 0.13, 0.3), dark);
-      pad.position.set(0, 0.03, 0);
-      J['sh' + side].add(pad);
+    part(J.head, bgeo(0.28, 0.06, 0.02), orange, 0, 0.2, -0.16, 0, 0, 0, true);
+    part(J.head, bgeo(0.32, 0.08, 0.34), plate, 0, 0.34, 0); // miğfer
+    for (const x of [-0.12, 0.12]) part(J.head, cgeo(0.03, 0.22, 4), dark, x, 0.42, 0.08, -0.5, 0, x * 2); // boynuzlar
+    part(J.spine, bgeo(0.18, 0.18, 0.04), orange, 0, 0.42, -0.18, 0, 0, 0, true); // çekirdek
+    part(J.spine, bgeo(0.26, 0.24, 0.05), plate, -0.16, 0.5, -0.17, 0, 0.3, 0); // göğüs plakaları
+    part(J.spine, bgeo(0.26, 0.24, 0.05), plate, 0.16, 0.5, -0.17, 0, -0.3, 0);
+    for (let k = 0; k < 3; k++) part(J.spine, bgeo(d.torsoW * 0.7, 0.05, d.torsoD + 0.02), dark, 0, 0.08 + k * 0.08, 0); // karın segmentleri
+    for (const x of [-0.14, 0.14]) {
+      part(J.spine, new THREE.CylinderGeometry(0.05, 0.06, 0.4, 6), dark, x, 0.55, 0.22, 0.2); // egzoz boruları
     }
-    // kılıç (zincirli testere kılıcı)
+    this.exhaust = joint(J.spine, 0, 0.8, 0.26);
+    for (const side of ['L', 'R']) {
+      part(J['sh' + side], bgeo(0.26, 0.14, 0.32), plate, 0, 0.04, 0);
+      part(J['kn' + side], bgeo(0.16, 0.14, 0.08), plate, 0, 0.02, -0.08); // diz plakası
+    }
+    // kılıç (zincirli testere kılıcı, dişleri akar)
     const sword = new THREE.Group();
     const bladeMat = this.mat(T.metal, 0xc8ccd4);
-    const hilt = new THREE.Mesh(bgeo(0.06, 0.22, 0.06), dark);
-    hilt.position.y = -0.06;
-    const guard = new THREE.Mesh(bgeo(0.28, 0.05, 0.1), dark);
-    guard.position.y = -0.18;
-    const blade = new THREE.Mesh(bgeo(0.05, 1.35, 0.2), bladeMat);
-    blade.position.y = -0.88;
-    const edge = new THREE.Mesh(bgeo(0.055, 1.3, 0.025), orange);
-    edge.position.set(0, -0.88, -0.11);
-    sword.add(hilt, guard, blade, edge);
-    for (let k = 0; k < 9; k++) {
-      const tooth = new THREE.Mesh(bgeo(0.03, 0.06, 0.05), dark);
-      tooth.position.set(0, -0.3 - k * 0.14, -0.13);
-      tooth.userData.noGib = true;
-      sword.add(tooth);
+    part(sword, bgeo(0.06, 0.22, 0.06), dark, 0, -0.06, 0);
+    part(sword, bgeo(0.3, 0.05, 0.1), dark, 0, -0.18, 0);
+    part(sword, bgeo(0.05, 1.4, 0.2), bladeMat, 0, -0.9, 0);
+    part(sword, bgeo(0.055, 1.35, 0.025), orange, 0, -0.9, -0.11, 0, 0, 0, false);
+    this.teeth = [];
+    for (let k = 0; k < 10; k++) {
+      const tooth = part(sword, bgeo(0.035, 0.06, 0.05), dark, 0, -0.3 - k * 0.13, -0.135, 0, 0, 0, true);
+      this.teeth.push(tooth);
     }
     sword.rotation.x = Math.PI / 2;
     J.haR.add(sword);
     this.sword = sword;
     // pompalı tüfek (sol elde, kullanırken görünür)
     const gun = new THREE.Group();
-    const gb = new THREE.Mesh(bgeo(0.12, 0.62, 0.14), dark);
-    gb.position.y = -0.28;
-    const gbar = new THREE.Mesh(bgeo(0.07, 0.3, 0.07), metal);
-    gbar.position.set(0, -0.62, -0.02);
-    gun.add(gb, gbar);
+    part(gun, bgeo(0.12, 0.62, 0.14), dark, 0, -0.28, 0);
+    part(gun, bgeo(0.07, 0.3, 0.07), metal, 0, -0.62, -0.02);
+    part(gun, bgeo(0.13, 0.04, 0.15), orange, 0, -0.1, 0, 0, 0, 0, true);
     this.gunMuzzle = joint(gun, 0, -0.8, 0);
     J.haL.add(gun);
     gun.visible = false;
@@ -1016,10 +1317,10 @@ export class Swordsmachine extends Enemy {
         const sp = i.dist > 3 ? this.speed : 0;
         this.accelTo(i.dx * sp, i.dz * sp, 40, dt);
         if (this.atkCd <= 0) {
-          if (i.dist < 4.5 && this.hasSword) { this.combo = 0; this.setState('swingWind'); }
+          if (i.dist < 4.5 && this.hasSword) { this.combo = 0; this.setState('swingWind'); this.game.audio.play('chainsaw', this.pos); }
           else if (i.dist > 11 && this.hasSword && chance(0.45)) { this.setState('throwWind'); this.game.audio.play('windup', this.pos); }
           else if (chance(0.5) || !this.hasSword) { this.setState('gunWind'); this.gun.visible = true; this.game.audio.play('windup', this.pos); }
-          else if (this.hasSword) { this.setState('dash'); }
+          else if (this.hasSword) { this.setState('dash'); this.game.audio.play('dash', this.pos); }
           else this.atkCd = 0.3;
         }
         if (this.blocked > 0.5 && this.grounded) { this.vel.y = 14; this.blocked = 0; }
@@ -1052,7 +1353,7 @@ export class Swordsmachine extends Enemy {
         if (this.st > 0.1) this.setParryable(false);
         this.accelTo(0, 0, 40, dt);
         if (!this.hitDone && this.st > 0.05) {
-          if (this.meleeHit(4.3, 25, 0.15)) { this.hitDone = true; this.game.fx.bloodBurst(this.game.player.eyePos(), 10, 6); }
+          if (this.meleeHit(4.3, 25, 0.15)) this.hitDone = true;
           if (this.st > 0.18) this.hitDone = true;
         }
         if (this.st > 0.28) {
@@ -1096,6 +1397,7 @@ export class Swordsmachine extends Enemy {
       }
       case 'enrage': {
         this.accelTo(0, 0, 30, dt);
+        if (Math.random() < dt * 20) this.game.fx.sparkBurst(this.center(), 3, 8, 0xff4020, 0.4, 0.07);
         if (this.st > 1.3) {
           this.enraged = true;
           this.invuln = false;
@@ -1140,6 +1442,7 @@ export class Swordsmachine extends Enemy {
       game.addProjectile(new Projectile(game, { kind: 'pellet', pos: from, vel: d.multiplyScalar(65), radius: 0.2, damage: 9 * difficulty().dmg, color: 0xffc040, parryable: true, source: this, life: 1.5 }));
     }
     game.fx.sprite(from, 0xffd080, 1.5, 0.08, 'glow', 2);
+    game.fx.smoke(from, 3, 0x9a8a80, 0.6, 0.8, 0.6);
     game.flashLight(from, 0xffb040, 8, 18, 0.08);
     game.audio.play('bossShotgun', from);
   }
@@ -1164,6 +1467,10 @@ export class Swordsmachine extends Enemy {
     this.walkPhase += hsp * dt * 1.0;
     const amt = clamp(hsp / 9, 0, 1);
     const s = this.state;
+    // zincirli testere dişleri akar (saldırıda hızlı)
+    const saw = s === 'swing' || s === 'swingWind' || s === 'dash' ? 6 : 1.2;
+    for (let k = 0; k < this.teeth.length; k++) this.teeth[k].position.y = -0.3 - (((k * 0.13 + this.time * saw) % 1.3 + 1.3) % 1.3);
+    if (Math.random() < dt * (this.enraged ? 10 : 3)) this.game.fx.smoke(this.exhaust.getWorldPosition(new THREE.Vector3()), 1, this.enraged ? 0x602010 : 0x606060, 0.35, 0.8, 1.5);
     if (s === 'swingWind') {
       const alt = this.combo % 2 === 1;
       this.walkPose(H, 0);
@@ -1221,4 +1528,4 @@ export class Swordsmachine extends Enemy {
   }
 }
 
-export const ENEMY_TYPES = { filth: Filth, stray: Stray, schism: Schism, swordsmachine: Swordsmachine };
+export const ENEMY_TYPES = { filth: Filth, stray: Stray, schism: Schism, swordsmachine: Swordsmachine, trainer: Trainer };

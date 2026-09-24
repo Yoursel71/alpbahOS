@@ -14,6 +14,10 @@ export const KEYS = {
   w1: ['Digit1'],
   w2: ['Digit2'],
   w3: ['Digit3'],
+  w4: ['Digit4'],
+  w5: ['Digit5'],
+  arm: ['KeyG'],
+  hook: ['KeyE'],
   lastWeapon: ['KeyQ'],
   restart: ['KeyR'],
   stats: ['Tab'],
@@ -23,7 +27,7 @@ export const KEYS = {
   lookRight: ['ArrowRight'],
 };
 
-const PREVENT = new Set(['Space', 'Tab', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyC', 'KeyF', 'KeyQ', 'KeyR', 'Digit1', 'Digit2', 'Digit3', 'ShiftLeft', 'ShiftRight']);
+const PREVENT = new Set(['Space', 'Tab', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyC', 'KeyF', 'KeyQ', 'KeyR', 'KeyG', 'KeyE', 'Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'ShiftLeft', 'ShiftRight']);
 
 export class Input {
   constructor(canvas) {

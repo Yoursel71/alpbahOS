@@ -27,6 +27,10 @@ export const settings = {
   touchMode: 'auto', // 'auto' | 'on' | 'off'
   touchSens: 1.0,
   aimAssist: true,
+  touchScale: 1.0,
+  touchOpacity: 0.85,
+  touchLayout: null,
+  allWeapons: false,
 };
 
 export const progress = {
@@ -36,15 +40,18 @@ export const progress = {
   introSeen: false,
 };
 
+// Kayıtlı ayar yoksa false döner (ilk açılışta cihaza göre varsayılan seçmek için)
 export function loadSettings() {
+  let had = false;
   try {
     const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || 'null');
-    if (s && typeof s === 'object') for (const k of Object.keys(settings)) if (k in s) settings[k] = s[k];
+    if (s && typeof s === 'object') { had = true; for (const k of Object.keys(settings)) if (k in s) settings[k] = s[k]; }
   } catch (e) { /* depolama yok */ }
   try {
     const p = JSON.parse(localStorage.getItem(PROGRESS_KEY) || 'null');
     if (p && typeof p === 'object') Object.assign(progress, p);
   } catch (e) { /* depolama yok */ }
+  return had;
 }
 
 export function saveSettings() {

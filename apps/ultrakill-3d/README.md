@@ -11,6 +11,9 @@ oyunudur.
 (sunucu gerekmez, internet gerekmez; yalnız yazı tipleri çevrimiçiyse Google Fonts'tan gelir,
 değilse yedek yazı tiplerine düşer). WebGL2 gerekir.
 
+Bölüm gerçek oyundaki gibi **silahsız** başlar: önce tutorial kanadında hareket öğretilir,
+silahlar ilerledikçe sunaklardan alınır. Menüdeki "Tüm silahlarla başla" seçeneği bunu atlar.
+
 ### Klavye + fare
 
 | Tuş | Eylem |
@@ -21,8 +24,10 @@ değilse yedek yazı tiplerine düşer). WebGL2 gerekir.
 | C | Yerde kay · havada yere çak (slam); çakıştan hemen sonra zıpla = yüksek sıçrayış |
 | SHIFT → BOŞLUK | Atılma zıplaması (uzun atlayış) |
 | Sol / sağ tık | Ateş / alternatif ateş |
-| F | Yumruk (Feedbacker) ve PARRY |
-| 1 2 3 · Q · tekerlek | Silah seç (aynı tuş: varyant) · son silah · değiştir |
+| F | Yumruk ve PARRY |
+| G | Kol değiştir (Feedbacker ↔ Knuckleblaster) |
+| E | Whiplash kancası (hafif düşmanı kendine çek · ağır düşmana doğru fırla) |
+| 1 2 3 4 5 · Q · tekerlek | Silah seç (aynı tuşa tekrar: varyant) · son silah · değiştir |
 | TAB · R · ESC | İstatistik · ölünce checkpoint · duraklat |
 
 Kayma/çakma tuşu bilinçli olarak `C`'dir: tarayıcıda Ctrl+W sekmeyi kapatabilir.
@@ -30,26 +35,49 @@ Kayma/çakma tuşu bilinçli olarak `C`'dir: tarayıcıda Ctrl+W sekmeyi kapatab
 ### Dokunmatik (mobil)
 
 Dokunmatik cihazda kontroller otomatik açılır (Ayarlar → Dokunmatik: Otomatik/Açık/Kapalı).
-Sol altta kayan **joystick** ile yürü, ekranın sağ tarafında **sürükleyerek** bak (ATEŞ basılıyken
-de bakılabilir). Butonlar: ATEŞ, ALT (şarj/para/çekirdek/pompa), ZIPLA, ATIL, KAY (havada ÇAK),
-YUMRUK; üstte 1-2-3 silah, ≡ istatistik, ⛶ tam ekran, II duraklat. Dokunmatik modda hafif bir
-nişan yardımı vardır (Ayarlar'dan kapatılabilir). Telefonu yatay tut.
+Telefonu yatay tut.
+
+- Sol altta kayan **joystick** ile yürü (analog: az it = yavaş), ekranın sağ tarafında
+  **sürükleyerek** bak (ivmeli bakış; ATEŞ basılıyken de bakılabilir).
+- Rekabetçi düzen: büyük sağ ATEŞ, sol başparmak için ikinci **sol ATEŞ**, merkezde PARRY,
+  çevresinde ZIPLA / ATIL / KAY-ÇAK / ALT; kanca ve kol butonları yalnız alınınca görünür.
+  Üstte 1-5 silah, ≡ istatistik, ⛶ tam ekran, II duraklat.
+- Ayarlar → **SÜRÜKLE-YERLEŞTİR**: her buton ve joystick sürüklenip yeniden yerleştirilebilir;
+  konumlar ekran oranı olarak kaydedilir (farklı telefonlarda da çalışır). SIFIRLA varsayılana döner.
+- Ayarlanabilir: bakış hassasiyeti, nişan yardımı, buton boyutu ve saydamlığı. Desteklenen
+  cihazlarda titreşim geri bildirimi.
 
 ## İçerik
 
-- Açılış, ana menü (bölüm, zorluk, ayarlar, kontroller, hakkında), terminal introsu, bölüm başlık kartı
-- 0-1 "İLK KAN": düşüş odası, boşluklu koridor, sütunlu salon, kayarak geçilen engel, lav havuzu,
-  Swordsmachine arenası ve çıkış deliği; kilitlenen arenalar, dalgalar, 3 checkpoint, 3 gizli küre
-- Düşmanlar (eklem hiyerarşili 3D modeller, prosedürel animasyon): Filth, Stray (savuşturulabilir
-  küre), Schism (yatay/dikey mermi dizisi, bıçak savurma), boss Swordsmachine (kılıç kombosu,
-  bumerang kılıç, pompalı, atılma, yarı canda öfke fazı)
-- Silahlar: Revolver (Piercer şarjlı delici atış / Marksman bozuk para + RICOSHOT zinciri),
-  Shotgun (Core Eject bombası / Pump Charge, 3. pompada patlama), Railcannon
-- PARRY: mermiyi geri yollar ya da parlayan yakın saldırıyı bozar, canı tamamen doldurur, hitstop
-- Kanla iyileşme, sert hasar (hard damage), stamina, hasarsızlık kareleri
-- Stil ölçeri DESTRUCTIVE → ULTRAKILL, bonus listesi, silah tazeliği (FRESH/USED/STALE/DULL)
+- Açılış, ana menü (bölüm, zorluk, ayarlar, kontroller, hakkında), harf harf yazılan terminal
+  introsu ve büyük sarsıntılı başlık yazıları, bölüm başlık kartı
+- Ölüm ekranı: ağır çekim + gri/kırmızı görüntü, karartma, harf harf yazılan terminal satırları,
+  çarpan "ÖLDÜN" başlığı ve yeniden doğuş istemi; ölünce alınan silahlar kaybolmaz
+- 0-1 "İLK KAN":
+  - Tutorial kanadı: iniş odası → atılma zıplamasıyla geçilen boşluk → kayarak geçilen alçak
+    engel → duvar sıçramasıyla çıkılan kuyu → çakış sıçrayışıyla çıkılan çıkıntı → Revolver sunağı
+  - Arenalar arası sunaklar: Whiplash, Nailgun, Shotgun; parry eğitmeni (yalnız savuşturmayla ölen,
+    öldürünce kapı açılan mavi düşman); silah deposunda Railcannon, Rocket Launcher, Knuckleblaster
+  - Kilitlenen arenalar, dalgalar, checkpoint'ler, 3 gizli küre, boss Swordsmachine ve çıkış deliği
+- Silahlar (her biri 3 varyant, aynı tuşa tekrar basınca değişir):
+  - Revolver: Piercer (şarjlı delici) · Marksman (bozuk para, RICOSHOT) · Sharpshooter (seken ışın)
+  - Shotgun: Core Eject · Pump Charge (3. pompada patlama) · Sawed-On (geri dönen testere)
+  - Nailgun: Attractor (mıknatıs) · Overheat (ısıtılmış çivi → yanma) · Sawblade (seken testere)
+  - Railcannon: Electric · Screwdriver (delip sürekli hasar) · Malicious (patlama)
+  - Rocket Launcher: Freezeframe (roketleri dondur) · S.R.S. Cannon (gülle) · Firestarter (alev)
+  - Kollar: Feedbacker (parry) · Knuckleblaster (güçlü yumruk, basılı tut: şok dalgası) · Whiplash
+- PARRY: yumruktan sonra kısa tampon penceresi; geri yollanan mermi nişan alınan düşmana yönelir;
+  parlayan yakın saldırıyı bozar; çekirdek/roket/gülleyi fırlatır; bozuk parayı yumruklama; yakın
+  mesafede shotgun parry; can tamamen dolar, hitstop ve ekran nabzı. Knuckleblaster mermi savuşturmaz.
+- Düşmanlar (eklem hiyerarşili 3D model, prosedürel animasyon, renkli tipler): Filth (yeşil, atlayış
+  saldırısı), Stray (turuncu, savuşturulabilir küre), Schism (mor, mermi dizisi ve bıçak), boss
+  Swordsmachine (sarı zırh, 2 faz). Vuruş tepkisi, sersemleme/saldırı bölme, kafa takibi; ölüm
+  biçimleri: parçalanma, kafa kopması (kan fıskiyesi) ve cesedin yığılması.
+- Kanla iyileşme, sert hasar, stamina, hasarsızlık kareleri
+- Stil ölçeri DESTRUCTIVE → ULTRAKILL, bonus listesi, silah tazeliği, çoklu öldürme, ARSENAL
 - Bölüm sonu sıralaması: süre, öldürme, stil (D–S), gizliler, meydan okuma, toplam sıra ve P-rank
-- Sentezlenmiş ses efektleri ve stil rütbesine göre katman açan prosedürel müzik
+- Ses: JS içinde DSP ile üretilen örnekler (filtre, doygunluk, yankı), mekânsal konum ve mesafe
+  filtresi; stil rütbesine göre gitar/lead katmanı açan prosedürel müzik
 - Retro görünüm: düşük çözünürlük, renk sıkıştırma + dither, PSX köşe titremesi (ayarlanabilir)
 
 ## Geliştirme
@@ -58,24 +86,25 @@ nişan yardımı vardır (Ayarlar'dan kapatılabilir). Telefonu yatay tut.
 cd apps/ultrakill-3d
 npm install          # three, esbuild, playwright-core (yalnız geliştirme)
 npm run build        # → dist/ultrakill-3d.html
-CHROME=/yol/chrome npm test            # masaüstü duman testi (30 kontrol)
-CHROME=/yol/chrome node tests/mobile.mjs  # dokunmatik emülasyon testi (15 kontrol)
-CHROME=/yol/chrome node tests/tour.mjs    # görsel tur ekran görüntüleri
+CHROME=/yol/chrome npm test                 # masaüstü duman testi (36 kontrol)
+CHROME=/yol/chrome node tests/tutorial.mjs  # tutorial parkuru, parry eğitmeni, intro/ölüm (11 kontrol)
+CHROME=/yol/chrome node tests/mobile.mjs    # dokunmatik emülasyon testi (19 kontrol)
+CHROME=/yol/chrome node tests/tour.mjs      # görsel tur ekran görüntüleri
 ```
 
 Kaynak `src/` altında ES modülleridir; `build.mjs` hepsini esbuild ile tek HTML'e gömer.
 
 | Dosya | Görev |
 |---|---|
-| `main.js` | Oyun döngüsü, durum makinesi, arenalar, hasar/parry/patlama, ışık havuzu |
+| `main.js` | Oyun döngüsü, durum makinesi, arenalar, hasar/parry/patlama, ölüm, ışık havuzu |
 | `player.js` | V1 hareketi (dash, kayma, slam, duvar sıçraması), can/stamina |
-| `weapons.js` | Silahlar, bozuk para sekmesi, görünür silah modelleri ve animasyonları |
-| `enemies.js` | Düşman modelleri, yapay zekâ, parry pencereleri, parçalanma |
-| `projectiles.js` | Düşman mermileri, boss kılıcı, çekirdek bombası, bozuk paralar |
-| `level.js` | 0-1 geometrisi, kapılar, tetikleyiciler, gizliler, gökyüzü |
-| `style.js` · `hud.js` · `ui.js` | Stil ölçeri · oyun içi arayüz · menüler/intro/sonuç |
-| `touch.js` · `input.js` | Dokunmatik kontroller · klavye/fare/pointer lock |
-| `audio.js` · `music.js` | Ses sentezi · prosedürel müzik |
+| `weapons.js` | 5 silah × 3 varyant, kollar, kanca, bozuk para, görünür silah modelleri |
+| `enemies.js` | Düşman modelleri, yapay zekâ, parry pencereleri, ölüm biçimleri |
+| `projectiles.js` | Düşman mermileri, roket/gülle/çivi/testere/mıknatıs, bozuk paralar |
+| `level.js` | 0-1 geometrisi, tutorial kanadı, sunaklar, kapılar, tetikleyiciler, gizliler |
+| `style.js` · `hud.js` · `ui.js` · `typer.js` | Stil ölçeri · oyun içi arayüz ve ölüm ekranı · menüler/intro/sonuç · daktilo metni |
+| `touch.js` · `input.js` | Dokunmatik kontroller ve düzen düzenleyici · klavye/fare/pointer lock |
+| `audio.js` · `music.js` | DSP ses bankası · prosedürel müzik |
 | `physics.js` · `render.js` · `textures.js` · `fx.js` | AABB fizik · renderer/post · dokular · efektler |
 
 ## Lisans / atıf

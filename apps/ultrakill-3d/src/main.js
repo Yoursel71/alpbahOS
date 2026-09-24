@@ -17,7 +17,8 @@ import { UI, rankTime, rankKills, rankStyle, finalRank, betterRank } from './ui.
 import { ENEMY_TYPES } from './enemies.js';
 import { rand, clamp, damp, yawTo } from './util.js';
 import { Projectile } from './projectiles.js';
-import { TouchControls } from './touch.js';
+import { WEAPONS } from './weapons.js';
+import { TouchControls, touchDevice } from './touch.js';
 
 const _v = new THREE.Vector3();
 const _v2 = new THREE.Vector3();
@@ -35,7 +36,7 @@ class Arenas {
     a.wave = -1;
     a.enemies = [];
     a.delay = a.boss ? 2.4 : 0.35;
-    for (const id of a.lock) g.level.doors[id].close();
+    for (const id of a.lock) { const d = g.level.doors[id]; d.saved = d.target > 0.5; d.close(); }
     a.killsAtStart = g.stats.kills;
     if (a.boss) {
       g.music.setMode('boss');
@@ -80,7 +81,7 @@ class Arenas {
       a.state = 'idle';
       a.wave = -1;
       a.trig.fired = false;
-      for (const id of a.lock) g.level.doors[id].reset();
+      for (const id of a.lock) { const d = g.level.doors[id]; d.setInstant(d.saved ?? d.initialOpen); }
       for (const id of a.exits) g.level.doors[id].reset();
     }
   }
@@ -96,7 +97,9 @@ class Arenas {
 
 class Game {
   constructor() {
-    loadSettings();
+    const hadSettings = loadSettings();
+    this.mobile = touchDevice();
+    if (!hadSettings && this.mobile) { settings.resScale = 0.42; settings.shake = 0.8; }
     this.canvas = document.getElementById('game');
     this.uiRoot = document.getElementById('ui');
     this.renderer = new Renderer(this.canvas);
@@ -116,12 +119,23 @@ class Game {
     buildLevel01(this.level);
     this.player = new Player(this);
     this.weapons = new Weapons(this);
+    // sunaklarda dönen silah/kol modelleri
+    for (const pk of this.level.pickups) {
+      const src = typeof pk.weapon === 'number' ? this.weapons.models[pk.weapon].gun : pk.weapon === 'knuckle' ? this.weapons.armModels[1] : this.weapons.hookHand;
+      const m = src.clone();
+      m.visible = true;
+      m.traverse((o) => { o.visible = true; });
+      m.position.set(0, 0, 0);
+      m.rotation.set(0, Math.PI / 2, 0);
+      m.scale.setScalar(2.6);
+      pk.holder.add(m);
+    }
     this.style = new Style(this);
     this.hud = new HUD(this, this.uiRoot);
     this.touch = new TouchControls(this, this.uiRoot);
     this.input.touchMode = this.touch.active;
     this.ui = new UI(this, this.uiRoot);
-    this.hud.el.querySelector('#deathscreen').addEventListener('click', () => { if (this.deathT > 0.5) this.respawn(); });
+    this.hud.el.querySelector('#deathscreen').addEventListener('click', () => { if (this.deathT > 1.0) this.respawn(); });
     this.arenas = new Arenas(this);
     this.enemies = [];
     this.projectiles = [];
@@ -139,9 +153,11 @@ class Game {
     this.fpsT = 0;
     this.god = false;
     this.stats = { time: 0, kills: 0, restarts: 0, secrets: 0, parries: 0, damageTaken: 0 };
-    this.checkpoint = { pos: new THREE.Vector3(0, 0, 6), yaw: 0 };
+    this.checkpoint = { pos: new THREE.Vector3(...this.level.spawn.checkpoint), yaw: 0 };
+    this.corpses = [];
     this.totalEnemies = this.level.totalEnemies + this.level.extraEnemies.reduce((n, x) => n + x.list.length, 0);
     for (const ex of this.level.extraEnemies) {
+      if (!ex.trigger) continue;
       ex.trig = this.level.trigger(ex.trigger, () => { for (const s of ex.list) this.spawnEnemy(s.t, s.p, null); });
     }
     this.spawnDecor();
@@ -165,7 +181,8 @@ class Game {
     this.sun.position.set(0.4, 1, 0.6);
     s.add(this.sun);
     this.pool = [];
-    for (let i = 0; i < 6; i++) {
+    // mobilde daha az dinamik ışık (gölgelendirici maliyeti)
+    for (let i = 0; i < (this.mobile ? 4 : 6); i++) {
       const l = new THREE.PointLight(0xff8040, 0, 22, 1.2);
       l.userData.base = 0;
       s.add(l);
@@ -243,6 +260,11 @@ class Game {
     this.events.push({ t: this.time + delay, fn });
   }
 
+  haptic(pattern) {
+    if (!this.touch || !this.touch.active) return;
+    try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) { /* desteklenmiyor */ }
+  }
+
   hitstop(t) {
     this.hitstopT = Math.max(this.hitstopT, t);
   }
@@ -288,6 +310,7 @@ class Game {
     if (!ignoreIframes && p.iframes > 0) return false;
     if (this.god) { this.hud.damage(dmg); return true; }
     p.damage(dmg);
+    this.haptic(Math.min(120, 30 + dmg * 2));
     this.stats.damageTaken += dmg;
     this.style.onDamageTaken(dmg);
     this.hud.damage(dmg);
@@ -380,38 +403,51 @@ class Game {
     }
   }
 
-  // Feedbacker: mermi ve yakın saldırı savuşturma
-  tryParry() {
+  // Feedbacker: mermi ve yakın saldırı savuşturma. buffered=true: yumruktan hemen sonraki
+  // kısa pencerede (erken basılan yumruk) otomatik denemeler.
+  tryParry(buffered = false) {
     const p = this.player;
+    const w = this.weapons;
+    const knuckle = w.armId === 'knuckle';
     const o = p.eyePos();
     const d = p.aimDir();
+    // 1) Düşman mermileri (Knuckleblaster mermi savuşturamaz)
     const list = [];
-    for (const pr of this.projectiles) {
-      if (pr.dead || pr.owner !== 'enemy' || !pr.parryable) continue;
-      _v.subVectors(pr.pos, o);
-      const dist = _v.length();
-      if (dist > 4.8) continue;
-      const dot = _v.dot(d) / (dist || 1);
-      if (dot > 0.3 || dist < 1.8) list.push(pr);
+    if (!knuckle) {
+      for (const pr of this.projectiles) {
+        if (pr.dead || pr.owner !== 'enemy' || !pr.parryable) continue;
+        _v.subVectors(pr.pos, o);
+        const dist = _v.length();
+        if (dist > 5.2) continue;
+        const dot = _v.dot(d) / (dist || 1);
+        if (dot > 0.25 || dist < 2) list.push(pr);
+      }
     }
     if (list.length) {
+      // hedef: nişangâh; yakınında düşman varsa hafif güdüm ile ona
       const r = this.hitscan(o, d, 300, {});
-      const target = r.hits[0] ? r.hits[0].point : r.end;
+      let target = r.hits[0] ? r.hits[0].point : r.end;
+      const assist = w.assistDir(o, d, 0.26);
+      if (assist) {
+        const hit = this.hitscan(o, assist, 300, {});
+        if (hit.hits[0]) target = hit.hits[0].point;
+      }
       for (const pr of list) {
         const dir = target.clone().sub(pr.pos).normalize();
-        pr.parry(dir, Math.max(pr.vel.length() * 1.6, 60));
+        pr.parry(dir, Math.max(pr.vel.length() * 1.8, 65));
       }
       this.onParry(list[0].pos.clone(), list.length);
       return true;
     }
+    // 2) Parlayan yakın saldırı
     let best = null, bd = 1e9;
     for (const e of this.enemies) {
       if (e.dead || !e.parryable) continue;
       const c = e.center(_v);
       const dist = c.distanceTo(o);
-      if (dist > 4.8 + e.r) continue;
+      if (dist > 5 + e.r) continue;
       const to = c.clone().sub(o).normalize();
-      if (to.dot(d) < 0.25 && dist > 2) continue;
+      if (to.dot(d) < 0.2 && dist > 2.2) continue;
       if (dist < bd) { bd = dist; best = e; }
     }
     if (best) {
@@ -420,17 +456,33 @@ class Game {
       this.onParry(pos, 1, true);
       return true;
     }
+    if (buffered) return false;
+    // 3) Oyuncunun kendi mermileri: çekirdek/roket/gülle → hızlandır (PROJECTILE BOOST)
     for (const pr of this.projectiles) {
-      if (pr.dead || pr.owner !== 'player' || pr.kind !== 'core') continue;
+      if (pr.dead || pr.owner !== 'player' || !['core', 'rocket', 'cannonball'].includes(pr.kind)) continue;
       _v.subVectors(pr.pos, o);
       const dist = _v.length();
-      if (dist < 4 && _v.dot(d) / (dist || 1) > 0.2) {
-        pr.vel.copy(d).multiplyScalar(55);
+      if (dist < 4.5 && _v.dot(d) / (dist || 1) > 0.2) {
+        const assist = w.assistDir(o, d, 0.2);
+        pr.vel.copy(assist || d).multiplyScalar(pr.kind === 'cannonball' ? 60 : 70);
         pr.boosted = true;
-        pr.gravity = 4;
-        this.style.add('PROJECTILE BOOST', 90, 'shotgun');
+        pr.damage *= 1.5;
+        if (pr.kind === 'core') pr.gravity = 4;
+        this.style.add('PROJECTILE BOOST', 90, pr.kind === 'core' ? 'shotgun' : 'rocket');
         this.hitstop(0.06);
         this.audio.play('punchHit', pr.pos);
+        this.fx.sprite(pr.pos.clone(), 0xffffff, 2, 0.2, 'star', 1.6);
+        return true;
+      }
+    }
+    // 4) Bozuk parayı yumrukla → anında sekme (zincir bonusu)
+    for (const c of w.coins) {
+      if (!c.alive) continue;
+      _v.subVectors(c.pos, o);
+      const dist = _v.length();
+      if (dist < 3.5 && _v.dot(d) / (dist || 1) > 0.3) {
+        this.style.add('COIN PUNCH', 60, 'revolver');
+        w.ricochet(c, 1);
         return true;
       }
     }
@@ -440,19 +492,22 @@ class Game {
   onParry(pos, n = 1, melee = false) {
     const p = this.player;
     this.stats.parries++;
+    this.haptic([20, 30, 60]);
     p.hp = 100;
     p.hard = 0;
     this.audio.play('parry');
-    this.hitstop(melee ? 0.2 : 0.14);
+    this.hitstop(melee ? 0.22 : 0.15);
     this.hud.flash('rgba(255,255,255,0.85)', 0.22);
+    this.hud.parryPulse();
     this.shake(0.35);
     this.fx.sprite(pos, 0xffffff, 4, 0.3, 'star', 2);
+    this.fx.ring(pos.clone(), 0x9fd8ff, 3, 0.35, 0);
     this.fx.sparkBurst(pos, 24, 12, 0xbfe6ff, 0.5, 0.08);
     this.style.add('PARRY', 150, null, { count: n > 1 ? n : 0 });
     if (melee) this.style.add('INTERRUPTION', 60);
   }
 
-  meleePunch() {
+  meleePunch(knuckle = false) {
     const p = this.player;
     const o = p.eyePos();
     const d = p.aimDir();
@@ -461,23 +516,30 @@ class Game {
       if (e.dead || e.state === 'spawn') continue;
       const c = e.center(_v);
       const dist = c.distanceTo(o) - e.r;
-      if (dist > 3.2) continue;
+      if (dist > (knuckle ? 3.6 : 3.2)) continue;
       const to = c.clone().sub(o).normalize();
       if (to.dot(d) < 0.45) continue;
       if (dist < bd) { bd = dist; best = e; }
     }
-    if (best) {
-      const c = best.center();
-      const dir = d.clone();
-      dir.y = Math.max(dir.y, 0.35);
-      best.hit({ dmg: 1, part: 'body', point: c, dir, knock: 14, weapon: 'punch' });
-      this.audio.play('punchHit', c);
-      this.shake(0.15);
-      this.hitstop(0.05);
-      this.fx.sparkBurst(c, 10, 7, 0xffffff, 0.25, 0.06);
+    if (!best) return false;
+    const c = best.center();
+    const dir = d.clone();
+    dir.y = Math.max(dir.y, 0.35);
+    // SHOTGUN PARRY: yakından shotgun isabetinin hemen ardından yumruk
+    const sp = this.weapons.lastShotgunHit;
+    if (sp && sp.enemy === best && this.time - sp.time < 0.3 && !best.dead) {
+      this.weapons.lastShotgunHit = null;
+      best.hit({ dmg: 4, part: 'body', point: c, dir, knock: 24, weapon: 'shotgun' });
+      this.style.add('SHOTGUN PARRY', 160, 'shotgun');
+      this.onParry(c, 1, true);
       return true;
     }
-    return false;
+    best.hit({ dmg: knuckle ? 3 : 1, part: 'body', point: c, dir, knock: knuckle ? 30 : 14, weapon: 'punch' });
+    this.audio.play('punchHit', c, { rate: knuckle ? 0.7 : 1, exactRate: true });
+    this.shake(knuckle ? 0.35 : 0.15);
+    this.hitstop(knuckle ? 0.09 : 0.05);
+    this.fx.sparkBurst(c, knuckle ? 20 : 10, 7, knuckle ? 0xff8a60 : 0xffffff, 0.25, 0.06);
+    return true;
   }
 
   onSlamLand(pos, fall) {
@@ -495,7 +557,51 @@ class Game {
 
   onEnemyKilled(e) {
     if (e.decor) return;
+    if (e.type === 'trainer') {
+      const door = this.level.doors[e.trainerDoor];
+      if (door) this.schedule(0.8, () => door.open());
+      this.hud.message('PARRY ÖĞRENİLDİ', 2.2, 'secret');
+      this.hud.hint('Harika! Mermileri ve PARLAYAN saldırıları geri çevirmek canını tamamen doldurur. Kapı açıldı.', 7);
+      return;
+    }
+    if (e.noCount) return;
     this.stats.kills++;
+  }
+
+  spawnTrainers() {
+    for (const t of this.level.trainers) {
+      const e = this.spawnEnemy('trainer', t.p, null);
+      e.trainerDoor = t.door;
+      e.yaw = Math.PI / 2;
+    }
+  }
+
+  checkPickups() {
+    const p = this.player;
+    const c = _v.set(p.pos.x, p.pos.y + 0.9, p.pos.z);
+    for (const pk of this.level.pickups) {
+      if (pk.taken || pk.pos.distanceTo(c) > 2.0) continue;
+      pk.taken = true;
+      pk.holder.visible = false;
+      pk.ring.visible = false;
+      let first, name, sub;
+      if (typeof pk.weapon === 'number') {
+        first = this.weapons.give(pk.weapon);
+        name = WEAPONS[pk.weapon].name;
+        sub = `${pk.weapon + 1} · ${WEAPONS[pk.weapon].variants.map((v) => v.name).join(' / ')}`;
+      } else {
+        first = this.weapons.giveArm(pk.weapon);
+        name = pk.weapon === 'hook' ? 'WHIPLASH' : 'KNUCKLEBLASTER';
+        sub = pk.weapon === 'hook' ? 'E · KANCA' : 'G · KOL DEĞİŞTİR';
+      }
+      this.audio.play('pickup');
+      this.hitstop(0.08);
+      this.hud.flash('rgba(160,210,255,0.5)', 0.4);
+      this.hud.titleCard(`<div class="tc-layer">YENİ ${typeof pk.weapon === 'number' ? 'SİLAH' : 'KOL'}</div><div class="tc-name tc-weapon">${name}</div><div class="tc-layer small">${sub}</div>`, 3);
+      this.fx.sparkBurst(pk.pos.clone(), 30, 8, 0x9fd8ff, 0.7, 0.07, 0);
+      this.fx.ring(pk.pos.clone().setY(pk.pos.y - 1.5), 0x9fd8ff, 3, 0.6, 0);
+      if (first && pk.onTake) pk.onTake(this);
+    }
   }
 
   onBossDefeated() {
@@ -549,6 +655,11 @@ class Game {
     this.arenas.resetAll();
     this.level.resetTriggers();
     for (const s of this.level.secrets) { s.taken = false; s.group.visible = true; }
+    for (const pk of this.level.pickups) { pk.taken = false; pk.holder.visible = true; pk.ring.visible = true; }
+    for (const c of this.corpses) c.removeSilently();
+    this.corpses = [];
+    this.renderer.postMat.uniforms.uGray.value = 0;
+    this.renderer.postMat.uniforms.uTintAmt.value = 0;
     this.events = [];
     this.hud.boss(null);
     this.levelDone = false;
@@ -563,10 +674,13 @@ class Game {
     this.resetLevelState();
     this.hud.reset();
     this.hud.show(true);
-    this.player.reset(new THREE.Vector3(0, 48, 3), 0);
-    this.player.pitch = -0.45;
-    this.checkpoint = { pos: new THREE.Vector3(0, 0, 6), yaw: 0 };
+    const sp = this.level.spawn;
+    this.player.reset(new THREE.Vector3(...sp.pos), sp.yaw);
+    this.player.pitch = -0.5;
+    this.checkpoint = { pos: new THREE.Vector3(...sp.checkpoint), yaw: sp.yaw };
     this.weapons.reset();
+    if (settings.allWeapons) this.weapons.giveAll();
+    this.spawnTrainers();
     this.style.reset(true);
     this.stats = { time: 0, kills: 0, restarts: 0, secrets: 0, parries: 0, damageTaken: 0 };
     this.time = 0;
@@ -578,9 +692,6 @@ class Game {
     this.audio.muffle(0);
     this.music.setMode('calm');
     this.hud.titleCard('<div class="tc-layer">KATMAN 0: ARAF /// 0-1</div><div class="tc-name">İLK KAN</div>', 4.5);
-    this.schedule(2.6, () => this.hud.hint(this.touch.active
-      ? 'Sol joystick: yürü · sağa sürükle: bak · [ATIL] ile dash at — atılırken hasar almazsın · [KAY] yerde kayar, havada yere çakar'
-      : '[WASD] hareket · [BOŞLUK] zıpla · [SHIFT] atıl — atılırken hasar almazsın · [C] kay / yere çak', 8));
   }
 
   setCheckpoint(pos, yaw) {
@@ -596,8 +707,13 @@ class Game {
     p.hp = 0;
     this.state = 'dead';
     this.deathT = 0;
-    this.hud.death(true);
+    this.deaths = (this.deaths || 0) + 1;
+    this.hud.death(true, this.stats.restarts + 1);
+    this.hud.flash('rgba(255,0,0,0.8)', 0.5);
+    this.shake(0.8);
     this.audio.play('death');
+    this.audio.play('glitch');
+    this.audio.loop('pierce', false);
     this.audio.muffle(0.85);
     this.audio.stopAllLoops();
     this.fx.bloodBurst(p.eyePos(), 50, 8, null, true);
@@ -611,11 +727,11 @@ class Game {
     this.projectiles = [];
     for (const c of this.weapons.coins) c.kill();
     this.weapons.coins = [];
-    const cur = this.weapons.cur, variant = [...this.weapons.variant];
-    this.weapons.reset();
-    this.weapons.cur = cur;
-    this.weapons.variant = variant;
-    this.weapons.updateAccents();
+    const cur = this.weapons.cur;
+    this.weapons.reset(true);
+    if (cur >= 0) this.weapons.cur = cur;
+    this.renderer.postMat.uniforms.uGray.value = 0;
+    this.renderer.postMat.uniforms.uTintAmt.value = 0;
     this.player.reset(this.checkpoint.pos.clone(), this.checkpoint.yaw);
     this.style.reset(false);
     this.stats.restarts++;
@@ -668,7 +784,7 @@ class Game {
       if (this.state === 'playing' && (!this.input.locked || this.input.lockFailed)) this.pause();
       else if (this.state === 'paused' && performance.now() - (this.pauseTime || 0) > 400) this.resume();
     }
-    if (this.state === 'dead' && e.code === 'KeyR' && this.deathT > 0.4) this.respawn();
+    if (this.state === 'dead' && e.code === 'KeyR' && this.deathT > 1.0) this.respawn();
   }
 
   levelComplete() {
@@ -771,9 +887,16 @@ class Game {
       this.weapons.update(dt, input);
       this.hud.stats(input.is('stats'));
     } else {
-      this.time += dt;
+      // ölüm: dünya ağır çekimde akar, görüntü kırmızıya/griye döner
       this.deathT += realDt;
-      if (this.deathT > 0.6 && (input.pressed('restart') || input.pressed('fire'))) {
+      dt *= this.deathT < 1.5 ? 0.22 : 0.5;
+      this.time += dt;
+      const u = this.renderer.postMat.uniforms;
+      const k = Math.min(1, this.deathT / 0.9);
+      u.uGray.value = 0.8 * k;
+      u.uTint.value.setRGB(0.55, 0, 0.02);
+      u.uTintAmt.value = 0.3 * k;
+      if (this.deathT > 1.0 && (input.pressed('restart') || input.pressed('fire') || input.pressed('jump'))) {
         this.respawn();
         return;
       }
@@ -790,6 +913,7 @@ class Game {
 
     // düşmanlar
     for (const e of this.enemies) e.update(dt);
+    if (this.corpses.length) this.corpses = this.corpses.filter((c) => c.updateCorpse(dt));
     this.separate();
     this.enemies = this.enemies.filter((e) => !e.dead);
     // mermiler
@@ -805,6 +929,7 @@ class Game {
       this.arenas.update(dt);
       this.checkTriggers();
       this.checkSecrets();
+      this.checkPickups();
     }
     this.level.update(dt, this.time, this.camera.position);
     this.fx.update(dt);

@@ -898,3 +898,22 @@ PipeWire hatası için aynı gün ek tekrar: Guest `/tmp`'te 12 saniye 48 kHz st
 - Görev/sahip: Claude Code (bulut oturumu), dal `claude/3d-ultrakill-game-dev-qzqj42`. Dosya sınırı yalnız `apps/ultrakill-3d/**`; kernel, rootfs, paket manifesti, `alp`, build/mount işlemleri ve Hyper-V ortamına dokunulmadı. Bağımlılık yok.
 - Tarayıcıda çalışan 3D oyun (Three.js, tek HTML `apps/ultrakill-3d/dist/ultrakill-3d.html`): menü, intro, 0-1 bölümü, Filth/Stray/Schism/Swordsmachine, parry, stil ve bölüm sonu sıralaması, dokunmatik joystick ve butonlar.
 - Doğrulama (headless Chromium, yazılım GL): masaüstü duman testi 30/30, dokunmatik emülasyon testi 15/15. Gerçek cihazda insan testi ve ses dinleme çalıştırılmadı. Ayrıntı: [devir 010](handoffs/claude/010-ultrakill-3d-fan-game.md).
+
+## 24 Eylül 2026 — Claude: ULTRAKILL 3D ikinci tur (tutorial, tüm silahlar, parry, rekabetçi mobil düzen)
+
+- Görev/sahip: Claude Code (bulut oturumu), dal `claude/3d-ultrakill-game-dev-qzqj42`. Dosya sınırı yalnız `apps/ultrakill-3d/**`. Kernel, rootfs, paket manifesti, `alp`, build/mount işlemleri ve Hyper-V ortamına dokunulmadı.
+- Değişiklikler:
+  - Harf harf yazılan intro ve aşamalı ölüm ekranı.
+  - Silahsız başlayan tutorial kanadı (atılma zıplaması, kayma, duvar sıçraması, çakış sıçrayışı) ve silah sunakları.
+  - 5 silah × 3 varyant, Knuckleblaster ve Whiplash.
+  - Renkli ve daha ayrıntılı düşmanlar.
+  - Tampon pencereli ve hedefe yönelen parry.
+  - DSP ses bankası.
+  - Sürükle-yerleştir düzenleyicili rekabetçi mobil buton düzeni.
+- Doğrulama (headless Chromium, yazılım GL):
+  - Masaüstü duman testi 36/36.
+  - Tutorial bot testi 11/11.
+  - Dokunmatik emülasyon testi 19/19.
+  - Sayfa hatası 0.
+- Çalıştırılmadı: gerçek cihazda insan testi ve ses dinleme.
+- Ayrıntı: [devir 015](handoffs/claude/015-ultrakill-3d-v2.md).

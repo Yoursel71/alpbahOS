@@ -1,5 +1,8 @@
-// Prosedürel müzik: sakin (keşif) ve savaş katmanları arasında geçiş yapan
-// breakcore/endüstriyel döngü. Stil rütbesi yükseldikçe lead katmanı açılır.
+// Prosedürel müzik: sakin (keşif) ve savaş katmanları arasında geçiş yapan breakcore /
+// endüstriyel döngü. Davullar DSP ile örneklenir; bas, distorsiyonlu gitar ve pad gerçek
+// zamanlı çalınır. Stil rütbesi yükseldikçe gitar ve lead katmanları açılır.
+import { BQ, Osc, mk, rnd, sat } from './audio.js';
+
 const midi = (n) => 440 * Math.pow(2, (n - 69) / 12);
 
 const PROGS = {
@@ -24,6 +27,36 @@ const SNARES = [
   [0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1],
 ];
 const BASS_GATE = [1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1];
+const GTR_GATE = [1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0];
+
+const DRUMS = {
+  kick: (sr) => mk(sr, 0.45, (o, n) => {
+    const th = new Osc(sr), hp = new BQ(sr, 'hp', 2000);
+    for (let i = 0; i < n; i++) {
+      const t = i / sr;
+      o[i] = sat((th.run(45 + 140 * Math.exp(-t / 0.035)) * Math.exp(-t / 0.2) * 1.4 + hp.run(rnd()) * Math.exp(-t / 0.004) * 0.8) * 1.8);
+    }
+  }),
+  snare: (sr) => mk(sr, 0.35, (o, n) => {
+    const bp = new BQ(sr, 'bp', 2200, 0.7), th = new Osc(sr, 'tri'), hp = new BQ(sr, 'hp', 800);
+    for (let i = 0; i < n; i++) {
+      const t = i / sr, z = rnd();
+      o[i] = sat((bp.run(z) * Math.exp(-t / 0.09) * 1.4 + hp.run(z) * Math.exp(-t / 0.13) * 0.6 + th.run(180 * (1 + 0.6 * Math.exp(-t / 0.01))) * Math.exp(-t / 0.05) * 0.9) * 1.6);
+    }
+  }),
+  hat: (sr) => mk(sr, 0.06, (o, n) => {
+    const hp = new BQ(sr, 'hp', 8000), bp = new BQ(sr, 'bp', 10000, 2);
+    for (let i = 0; i < n; i++) { const t = i / sr, z = rnd(); o[i] = (hp.run(z) + bp.run(z)) * Math.exp(-t / 0.012); }
+  }),
+  ohat: (sr) => mk(sr, 0.3, (o, n) => {
+    const hp = new BQ(sr, 'hp', 7000), bp = new BQ(sr, 'bp', 9000, 2);
+    for (let i = 0; i < n; i++) { const t = i / sr, z = rnd(); o[i] = (hp.run(z) + bp.run(z)) * Math.exp(-t / 0.09); }
+  }),
+  crash: (sr) => mk(sr, 1.6, (o, n) => {
+    const hp = new BQ(sr, 'hp', 4000), bp = new BQ(sr, 'bp', 6000, 1);
+    for (let i = 0; i < n; i++) { const t = i / sr, z = rnd(); o[i] = (hp.run(z) * 0.8 + bp.run(z) * 0.6) * Math.exp(-t / 0.45); }
+  }),
+};
 
 export class Music {
   constructor(audio) {
@@ -44,8 +77,19 @@ export class Music {
     if (this.started) return true;
     const ctx = a.ctx;
     this.ctx = ctx;
-    const mk = () => { const g = ctx.createGain(); g.gain.value = 0; g.connect(a.musicIn); return g; };
-    this.L = { drums: mk(), bass: mk(), pad: mk(), lead: mk(), beat: mk() };
+    const mk2 = (verb = 0) => {
+      const g = ctx.createGain();
+      g.gain.value = 0;
+      g.connect(a.musicIn);
+      if (verb) {
+        const s = ctx.createGain();
+        s.gain.value = verb;
+        g.connect(s);
+        s.connect(a.musicVerb);
+      }
+      return g;
+    };
+    this.L = { drums: mk2(0.08), bass: mk2(), pad: mk2(0.5), lead: mk2(0.3), beat: mk2(0.2), gtr: mk2(0.12) };
     // lead için eko
     this.delay = ctx.createDelay(1.0);
     this.delay.delayTime.value = 0.265;
@@ -54,6 +98,26 @@ export class Music {
     this.delay.connect(this.fb);
     this.fb.connect(this.delay);
     this.delay.connect(this.L.lead);
+    // gitar zinciri: dağıtma → kabin filtresi
+    this.gtrIn = ctx.createGain();
+    const ws = ctx.createWaveShaper();
+    ws.curve = a.distCurve;
+    ws.oversample = '2x';
+    const cabL = ctx.createBiquadFilter();
+    cabL.type = 'lowpass'; cabL.frequency.value = 3200; cabL.Q.value = 0.9;
+    const cabH = ctx.createBiquadFilter();
+    cabH.type = 'highpass'; cabH.frequency.value = 90;
+    const mid = ctx.createBiquadFilter();
+    mid.type = 'peaking'; mid.frequency.value = 800; mid.gain.value = -5;
+    this.gtrIn.connect(ws); ws.connect(cabH); cabH.connect(mid); mid.connect(cabL); cabL.connect(this.L.gtr);
+    // davul örnekleri
+    this.drums = {};
+    for (const k of Object.keys(DRUMS)) {
+      const data = DRUMS[k](ctx.sampleRate);
+      const b = ctx.createBuffer(1, data.length, ctx.sampleRate);
+      b.getChannelData(0).set(data);
+      this.drums[k] = b;
+    }
     this.next = ctx.currentTime + 0.1;
     this.started = true;
     this.timer = setInterval(() => this.tick(), 25);
@@ -62,35 +126,45 @@ export class Music {
 
   setMode(mode) {
     if (!this.ensure()) { this.mode = mode; return; }
+    const prev = this.mode;
     this.mode = mode;
     const t = this.ctx.currentTime;
     const V = {
-      off: { drums: 0, bass: 0, pad: 0, lead: 0, beat: 0 },
-      menu: { drums: 0, bass: 0.0, pad: 0.35, lead: 0, beat: 0.6 },
-      calm: { drums: 0.0, bass: 0.0, pad: 0.4, lead: 0, beat: 0.55 },
-      combat: { drums: 0.75, bass: 0.55, pad: 0.22, lead: 0, beat: 0 },
-      boss: { drums: 0.85, bass: 0.65, pad: 0.2, lead: 0.35, beat: 0 },
+      off: { drums: 0, bass: 0, pad: 0, lead: 0, beat: 0, gtr: 0 },
+      menu: { drums: 0, bass: 0, pad: 0.4, lead: 0, beat: 0.55, gtr: 0 },
+      calm: { drums: 0, bass: 0, pad: 0.42, lead: 0, beat: 0.5, gtr: 0 },
+      combat: { drums: 0.8, bass: 0.55, pad: 0.18, lead: 0, beat: 0, gtr: 0 },
+      boss: { drums: 0.9, bass: 0.6, pad: 0.16, lead: 0.3, beat: 0, gtr: 0.32 },
     }[mode] || {};
     for (const k of Object.keys(this.L)) {
       this.L[k].gain.cancelScheduledValues(t);
-      this.L[k].gain.setTargetAtTime(V[k] || 0, t, mode === 'combat' || mode === 'boss' ? 0.08 : 0.8);
+      this.L[k].gain.setTargetAtTime(V[k] || 0, t, mode === 'combat' || mode === 'boss' ? 0.06 : 0.8);
     }
-    this.updateLead();
+    if ((mode === 'combat' || mode === 'boss') && prev !== 'combat' && prev !== 'boss') {
+      // savaşa girişte zil + bar başına hizalama
+      this.crashNext = true;
+      this.step = Math.ceil(this.step / 16) * 16;
+    }
+    this.updateLayers();
   }
 
   setStyleRank(r) {
     if (r === this.styleRank) return;
     this.styleRank = r;
-    this.updateLead();
+    this.updateLayers();
   }
 
-  updateLead() {
+  updateLayers() {
     if (!this.started) return;
     const t = this.ctx.currentTime;
-    let v = 0;
-    if (this.mode === 'combat') v = this.styleRank >= 3 ? 0.18 + (this.styleRank - 3) * 0.05 : 0;
-    if (this.mode === 'boss') v = 0.3 + this.styleRank * 0.02;
-    this.L.lead.gain.setTargetAtTime(v, t, 0.3);
+    let lead = 0, gtr = 0;
+    if (this.mode === 'combat') {
+      gtr = this.styleRank >= 2 ? 0.2 + (this.styleRank - 2) * 0.03 : 0;
+      lead = this.styleRank >= 4 ? 0.16 + (this.styleRank - 4) * 0.04 : 0;
+    }
+    if (this.mode === 'boss') { lead = 0.28 + this.styleRank * 0.02; gtr = 0.3; }
+    this.L.lead.gain.setTargetAtTime(lead, t, 0.3);
+    this.L.gtr.gain.setTargetAtTime(gtr, t, 0.3);
   }
 
   stop() {
@@ -121,89 +195,53 @@ export class Music {
     const root = prog.roots[bar];
     const chord = prog.chords[bar];
     const sd = this.stepDur();
+    const combat = this.mode === 'combat' || this.mode === 'boss';
 
     if (s === 0) {
       this.kickVar = Math.floor(Math.random() * KICKS.length);
       this.snareVar = Math.floor(Math.random() * SNARES.length);
       this.pad(t, chord, sd * 16);
+      if (combat && (this.crashNext || bar === 0)) { this.hit('crash', t, 0.5, this.L.drums); this.crashNext = false; }
     }
 
-    // Sakin nabız (menu/calm)
-    if (s === 0 || s === 3 || (this.mode === 'calm' && (s === 8 || s === 11))) this.kick(t, 0.5, this.L.beat);
-    if (this.mode === 'calm' && (s === 4 || s === 12)) this.hat(t, 0.08, true, this.L.beat);
+    // Sakin nabız (menü/keşif)
+    if (s === 0 || s === 3 || (this.mode === 'calm' && (s === 8 || s === 11))) this.hit('kick', t, 0.55, this.L.beat, 0.8);
+    if (this.mode === 'calm' && (s === 4 || s === 12)) this.hit('ohat', t, 0.08, this.L.beat);
     if (s === 0 && bar % 2 === 0) this.sub(t, root - 12, sd * 32, this.L.beat);
 
     // Savaş davulları
-    const fill = bar === 3 && s >= 12;
-    if (KICKS[this.kickVar][s]) this.kick(t, 1, this.L.drums);
-    if (fill) {
-      this.snare(t, 0.5 + (s - 12) * 0.15, this.L.drums);
-      this.snare(t + sd / 2, 0.4 + (s - 12) * 0.12, this.L.drums);
-    } else if (SNARES[this.snareVar][s]) this.snare(t, s === 4 || s === 12 ? 0.9 : 0.45, this.L.drums);
-    if (s % 2 === 0) this.hat(t, s % 4 === 2 ? 0.22 : 0.12, s % 8 === 6, this.L.drums);
-    else if (Math.random() < 0.35) this.hat(t, 0.06, false, this.L.drums);
+    if (combat) {
+      const fill = bar === 3 && s >= 12;
+      if (KICKS[this.kickVar][s]) this.hit('kick', t, 1, this.L.drums);
+      if (fill) {
+        this.hit('snare', t, 0.5 + (s - 12) * 0.14, this.L.drums, 1 + (s - 12) * 0.04);
+        this.hit('snare', t + sd / 2, 0.4 + (s - 12) * 0.12, this.L.drums, 1.05 + (s - 12) * 0.04);
+      } else if (SNARES[this.snareVar][s]) this.hit('snare', t, s === 4 || s === 12 ? 0.9 : 0.45, this.L.drums);
+      if (s % 2 === 0) this.hit(s % 8 === 6 ? 'ohat' : 'hat', t, s % 4 === 2 ? 0.3 : 0.18, this.L.drums);
+      else if (Math.random() < 0.35) this.hit('hat', t, 0.09, this.L.drums);
 
-    // Bas
-    if (BASS_GATE[s]) {
-      const n = root + (s % 4 === 3 ? 12 : 0) + (s === 14 ? 7 : 0);
-      this.bass(t, n, sd * 0.9, this.L.bass);
-    }
+      if (BASS_GATE[s]) this.bass(t, root + (s % 4 === 3 ? 12 : 0) + (s === 14 ? 7 : 0), sd * 0.9, this.L.bass);
+      if (GTR_GATE[s]) this.guitar(t, root, s % 8 === 0 ? sd * 1.8 : sd * 0.7, s % 8 === 0);
 
-    // Lead arpej
-    const arp = [0, 1, 2, 1, 2, 0, 2, 1];
-    if (s % 2 === 0 || this.mode === 'boss') {
-      const note = chord[arp[(step >> (this.mode === 'boss' ? 0 : 1)) % arp.length]] + 12;
-      this.lead(t, note, sd * 0.8);
+      const arp = [0, 1, 2, 1, 2, 0, 2, 1];
+      if (s % 2 === 0 || this.mode === 'boss') {
+        const note = chord[arp[(step >> (this.mode === 'boss' ? 0 : 1)) % arp.length]] + 12;
+        this.lead(t, note, sd * 0.8);
+      }
     }
   }
 
   // ---- enstrümanlar ----
-  kick(t, vol, dest) {
-    const ctx = this.ctx;
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
-    o.frequency.setValueAtTime(160, t);
-    o.frequency.exponentialRampToValueAtTime(42, t + 0.11);
-    g.gain.setValueAtTime(vol, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 0.32);
-    o.connect(g); g.connect(dest);
-    o.start(t); o.stop(t + 0.35);
-  }
-
-  snare(t, vol, dest) {
+  hit(name, t, vol, dest, rate = 1) {
     const ctx = this.ctx;
     const src = ctx.createBufferSource();
-    src.buffer = this.audio.noiseBuf;
-    const f = ctx.createBiquadFilter();
-    f.type = 'bandpass'; f.frequency.value = 1900; f.Q.value = 0.7;
+    src.buffer = this.drums[name];
+    src.playbackRate.value = rate;
     const g = ctx.createGain();
-    g.gain.setValueAtTime(vol * 0.55, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 0.17);
-    src.connect(f); f.connect(g); g.connect(dest);
-    src.start(t, Math.random(), 0.2);
-    const o = ctx.createOscillator();
-    o.type = 'triangle';
-    o.frequency.setValueAtTime(190, t);
-    o.frequency.exponentialRampToValueAtTime(140, t + 0.08);
-    const g2 = ctx.createGain();
-    g2.gain.setValueAtTime(vol * 0.4, t);
-    g2.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
-    o.connect(g2); g2.connect(dest);
-    o.start(t); o.stop(t + 0.12);
-  }
-
-  hat(t, vol, open, dest) {
-    const ctx = this.ctx;
-    const src = ctx.createBufferSource();
-    src.buffer = this.audio.noiseBuf;
-    const f = ctx.createBiquadFilter();
-    f.type = 'highpass'; f.frequency.value = 7500;
-    const g = ctx.createGain();
-    const d = open ? 0.14 : 0.035;
-    g.gain.setValueAtTime(vol, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t + d);
-    src.connect(f); f.connect(g); g.connect(dest);
-    src.start(t, Math.random(), d + 0.02);
+    g.gain.value = vol;
+    src.connect(g);
+    g.connect(dest);
+    src.start(t);
   }
 
   bass(t, n, dur, dest) {
@@ -226,6 +264,24 @@ export class Music {
     g.gain.exponentialRampToValueAtTime(0.001, t + dur);
     o.connect(ws); o2.connect(ws); ws.connect(f); f.connect(g); g.connect(dest);
     o.start(t); o2.start(t); o.stop(t + dur + 0.02); o2.stop(t + dur + 0.02);
+  }
+
+  // Distorsiyonlu güç akoru (kök + beşli + oktav)
+  guitar(t, root, dur, accent) {
+    const ctx = this.ctx;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(accent ? 0.22 : 0.16, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    g.connect(this.gtrIn);
+    for (const [iv, det] of [[0, -6], [0, 7], [7, 3], [12, -4]]) {
+      const o = ctx.createOscillator();
+      o.type = 'sawtooth';
+      o.frequency.value = midi(root + 12 + iv);
+      o.detune.value = det;
+      o.connect(g);
+      o.start(t);
+      o.stop(t + dur + 0.02);
+    }
   }
 
   sub(t, n, dur, dest) {
@@ -255,17 +311,20 @@ export class Music {
     o.start(t); o.stop(t + dur + 0.02);
   }
 
+  // Koro benzeri pad: formant filtreli, hafif ayrışmış testereler
   pad(t, notes, dur) {
     const ctx = this.ctx;
     const f = ctx.createBiquadFilter();
-    f.type = 'lowpass'; f.frequency.value = 850; f.Q.value = 0.5;
+    f.type = 'lowpass'; f.frequency.value = 900; f.Q.value = 0.6;
+    const form = ctx.createBiquadFilter();
+    form.type = 'peaking'; form.frequency.value = 700; form.gain.value = 6; form.Q.value = 2;
     const g = ctx.createGain();
     g.gain.setValueAtTime(0.0001, t);
     g.gain.exponentialRampToValueAtTime(0.09, t + dur * 0.3);
     g.gain.exponentialRampToValueAtTime(0.001, t + dur * 1.05);
-    f.connect(g); g.connect(this.L.pad);
+    f.connect(form); form.connect(g); g.connect(this.L.pad);
     for (const n of notes) {
-      for (const det of [-9, 9]) {
+      for (const det of [-11, 0, 11]) {
         const o = ctx.createOscillator();
         o.type = 'sawtooth';
         o.frequency.value = midi(n - 12);

@@ -26,7 +26,7 @@ await page.waitForTimeout(400);
 check('dokunmatik algılandı', await page.evaluate(() => window.__uk.touch.active && window.__uk.input.touchMode));
 check('dokunuşla menüye geçildi', await page.evaluate(() => window.__uk.state === 'menu'));
 await page.screenshot({ path: join(out, 'm01-menu.png') });
-await page.evaluate(() => { const g = window.__uk; g.startLevel(); g.god = true; for (let i = 0; i < 240; i++) g.step(1 / 60, false); for (const e of g.enemies) e.removeSilently(); g.enemies = []; g.level.arenas[0].state = 'cleared'; g.player.pos.set(0, 0, 8); g.player.yaw = 0; g.step(1 / 60); });
+await page.evaluate(() => { const g = window.__uk; g.startLevel(); g.god = true; g.weapons.giveAll(); g.weapons.select(0); for (let i = 0; i < 240; i++) g.step(1 / 60, false); for (const e of g.enemies) e.removeSilently(); g.enemies = []; g.level.arenas[0].state = 'cleared'; g.player.pos.set(0, 0, 8); g.player.yaw = 0; g.step(1 / 60); });
 await page.waitForTimeout(300);
 check('dokunmatik katman görünür', await page.evaluate(() => !document.getElementById('touch').classList.contains('hidden')));
 
@@ -52,7 +52,7 @@ await sim(2);
 check('parmak kalkınca joystick sıfırlandı', await page.evaluate(() => window.__uk.input.axisX === 0 && window.__uk.input.axisY === 0));
 
 // Zıpla butonu
-const [jx, jy] = await center('.t-jump');
+const [jx, jy] = await center('[data-id="jump"]');
 await touch('touchStart', [[jx, jy, 3]]);
 await sim(1);
 const vy = await page.evaluate(() => window.__uk.player.vel.y);
@@ -60,7 +60,7 @@ await touch('touchEnd', []);
 check('ZIPLA butonu', vy > 10, vy.toFixed(1));
 await sim(90);
 // Atıl
-const [dx, dy] = await center('.t-dash');
+const [dx, dy] = await center('[data-id="dash"]');
 await touch('touchStart', [[dx, dy, 4]]);
 await sim(1);
 const dash = await page.evaluate(() => window.__uk.player.dashT > 0);
@@ -69,7 +69,7 @@ check('ATIL butonu', dash);
 await sim(30);
 // Ateş: düşman koy, nişan yardımıyla vur
 await page.evaluate(() => { const g = window.__uk, p = g.player; p.pos.set(0, 0, 8); p.vel.set(0, 0, 0); p.yaw = 0.04; p.pitch = -0.02; const e = g.spawnEnemy('stray', [0, 0, -4], null); e.state = 'idle'; e.decor = true; for (let i = 0; i < 50; i++) g.step(1 / 60, false); });
-const [fx, fy] = await center('.t-fire');
+const [fx, fy] = await center('[data-id="fire"]');
 const hp0 = await page.evaluate(() => window.__uk.enemies[0].hp);
 await touch('touchStart', [[fx, fy, 5]]);
 await sim(2);
@@ -86,8 +86,32 @@ const wsel = await page.evaluate(() => window.__uk.weapons.cur);
 await touch('touchStart', [[w2x, w2y, 7]]); await sim(1); await touch('touchEnd', []); await sim(5);
 const wvar = await page.evaluate(() => window.__uk.weapons.varId);
 check('silah butonu ve varyant değişimi', wsel === 1 && wvar === 'pump', `${wsel} ${wvar}`);
+// Sol el ATEŞ, PARRY, KANCA, KOL butonları ve düzen editörü
+const extra = await page.evaluate(async () => {
+  const g = window.__uk, t = g.touch;
+  const vis = (id) => !t.btnEls.get(id).classList.contains('hide') && t.btnEls.get(id).getBoundingClientRect().width > 0;
+  return { fireL: vis('fireL'), parry: vis('parry'), hook: vis('hook'), arm: vis('arm'), slots: document.querySelectorAll('.t-top .t-sm[data-code^="Digit"]:not(.none)').length };
+});
+check('rekabetçi düzen: sol ATEŞ, PARRY, KANCA, KOL, 5 silah', extra.fireL && extra.parry && extra.hook && extra.arm && extra.slots === 5, JSON.stringify(extra));
+const [gx, gy] = await center('[data-id="arm"]');
+await touch('touchStart', [[gx, gy, 20]]); await sim(1); await touch('touchEnd', []); await sim(2);
+check('KOL butonu Knuckleblaster\'a geçirdi', await page.evaluate(() => window.__uk.weapons.armId === 'knuckle'));
+const [lx, ly] = await center('[data-id="fireL"]');
+await page.evaluate(() => { const g = window.__uk; g.weapons.select(0); for (let i = 0; i < 30; i++) g.step(1 / 60, false); g.weapons.cd[0] = 0; });
+const cd0 = await page.evaluate(() => window.__uk.weapons.cd[0]);
+await touch('touchStart', [[lx, ly, 21]]); await sim(1); await touch('touchEnd', []);
+check('sol el ATEŞ butonu ateş etti', await page.evaluate(() => window.__uk.weapons.cd[0] > 0), 'cd0=' + cd0);
+// düzen editörü: parry butonunu sürükle
+const moved = await page.evaluate(() => { const g = window.__uk; g.touch.editLayout(); return true; });
+const [px0, py0] = await center('[data-id="parry"]');
+await touch('touchStart', [[px0, py0, 22]]);
+await touch('touchMove', [[px0 - 60, py0 - 30, 22]]);
+await touch('touchEnd', []);
+const lay = await page.evaluate(() => { const g = window.__uk; const L = JSON.stringify(g.settings ? null : null); g.touch.endEdit(); return window.__ukSettings ? window.__ukSettings.touchLayout : null; });
+const [px1, py1] = await center('[data-id="parry"]');
+check('düzen editörü: PARRY butonu taşındı', Math.abs(px1 - (px0 - 60)) < 6 && Math.abs(py1 - (py0 - 30)) < 6, `${px0},${py0} → ${px1},${py1}`);
 // Yumruk
-const [px, py] = await center('.t-punch');
+const [px, py] = await center('[data-id="parry"]');
 await touch('touchStart', [[px, py, 8]]); await sim(1);
 const punch = await page.evaluate(() => window.__uk.weapons.punchT < 0.1);
 await touch('touchEnd', []);

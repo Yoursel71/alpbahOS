@@ -154,6 +154,26 @@ export function buildTextures() {
     return c;
   });
 
+  // Nötr (açık) deri ve kumaş: düşman renkleri malzeme rengiyle verilir
+  T.skinW = pixTex(64, (x, y) => {
+    const n = fbm(n1, x / 64, y / 64, 8, 4);
+    let c = mix(hex(0x9a9a9a), hex(0xffffff), n);
+    const b = fbm(n2, x / 64, y / 64, 4, 3);
+    if (b > 0.62) c = mix(c, hex(0x7a2020), (b - 0.62) * 2.2);
+    const v = Math.abs(fbm(n3, x / 64, y / 64, 4, 3) - 0.5);
+    if (v < 0.02) c = mul(c, 0.7);
+    return c;
+  });
+
+  T.clothW = pixTex(64, (x, y) => {
+    const n = fbm(n2, x / 64, y / 64, 8, 3);
+    let c = mix(hex(0x8a8a8a), hex(0xf0f0f0), n);
+    if ((x + y) % 4 === 0) c = mul(c, 0.85);
+    if (x % 4 === 0) c = mul(c, 0.9);
+    if (fbm(n3, x / 64, y / 64, 4, 2) > 0.66) c = mul(c, 0.55);
+    return c;
+  });
+
   T.machine = pixTex(64, (x, y) => {
     const n = fbm(n2, x / 64, y / 64, 4, 3);
     let c = mix(hex(0x2a2c30), hex(0x55595f), n * 0.8);
@@ -179,6 +199,16 @@ export function buildTextures() {
     const shade = fbm(n2, x / 64, y / 64, 4, 3);
     const c = mix(hex(0x3a0000), hex(0x8a0a06), shade);
     return [c[0], c[1], c[2], a * 235];
+  }, { repeat: false });
+
+  T.hole = pixTex(32, (x, y, s) => {
+    const cx = x - s / 2 + 0.5, cy = y - s / 2 + 0.5;
+    const r = Math.hypot(cx, cy) / (s / 2);
+    const jag = 0.55 + hash2(Math.floor(Math.atan2(cy, cx) * 3), 1, 5) * 0.25;
+    if (r < 0.28) return [8, 6, 6, 255];
+    if (r < jag) return [30, 24, 22, 200];
+    if (r < jag + 0.12) return [70, 60, 55, 110];
+    return [0, 0, 0, 0];
   }, { repeat: false });
 
   T.glow = (() => {

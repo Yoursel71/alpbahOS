@@ -82,7 +82,11 @@ export class Door {
   }
 
   reset() {
-    this.t = this.target = this.initialOpen ? 1 : 0;
+    this.setInstant(this.initialOpen);
+  }
+
+  setInstant(open) {
+    this.t = this.target = open ? 1 : 0;
     this.apply();
   }
 }
@@ -117,13 +121,16 @@ export class Level {
     this.fires = [];
     this.animated = [];
     this.extraEnemies = [];
+    this.pickups = [];
+    this.trainers = [];
+    this.spawn = { pos: [0, 40, 108], yaw: 0, checkpoint: [0, 0, 106] };
     this.killY = -40;
     this.totalEnemies = 0;
     this.lavaTex = T.lava;
   }
 
-  box(x0, y0, z0, x1, y1, z1, mat = 'stone', { solid = true, visible = true, texScale = 4 } = {}) {
-    if (solid) this.world.add(x0, y0, z0, x1, y1, z1, 'static');
+  box(x0, y0, z0, x1, y1, z1, mat = 'stone', { solid = true, visible = true, texScale = 4, playerOnly = false } = {}) {
+    if (solid) { const so = this.world.add(x0, y0, z0, x1, y1, z1, 'static'); so.playerOnly = playerOnly; }
     if (visible) {
       if (!this.buckets.has(mat)) this.buckets.set(mat, []);
       this.buckets.get(mat).push(boxGeo(Math.min(x0, x1), Math.min(y0, y1), Math.min(z0, z1), Math.max(x0, x1), Math.max(y0, y1), Math.max(z0, z1), texScale));
@@ -270,6 +277,29 @@ export class Level {
     this.box(x - w * 0.6, h, z - w * 0.6, x + w * 0.6, h + w * 3, z + w * 0.6, 'rock', { solid: false, texScale: 8 });
   }
 
+  // Silah sunağı: kaide + dönen silah modeli + ışık
+  // weapon: silah numarası (0-4) ya da 'knuckle' / 'hook'
+  altar(x, y, z, weapon, onTake) {
+    this.box(x - 0.8, y, z - 0.8, x + 0.8, y + 0.9, z + 0.8, 'metal');
+    this.box(x - 1.0, y + 0.9, z - 1.0, x + 1.0, y + 1.1, z + 1.0, 'dark');
+    const COLORS = { 0: 0x3aa0ff, 1: 0xff8a30, 2: 0x9adf5a, 3: 0x3aeaff, 4: 0xff3a2a, knuckle: 0xff5030, hook: 0x9adf5a };
+    const colors = COLORS;
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.9, 0.05, 6, 24), new THREE.MeshBasicMaterial({ color: colors[weapon] }));
+    ring.rotation.x = Math.PI / 2;
+    ring.position.set(x, y + 1.15, z);
+    this.scene.add(ring);
+    const holder = new THREE.Group();
+    holder.position.set(x, y + 2.0, z);
+    this.scene.add(holder);
+    const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.T.glow, color: colors[weapon], transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+    glow.scale.setScalar(3);
+    holder.add(glow);
+    const pk = { weapon, pos: new THREE.Vector3(x, y + 1.6, z), holder, ring, glow, taken: false, onTake, baseY: y + 2.0 };
+    this.pickups.push(pk);
+    this.lamps.push({ pos: new THREE.Vector3(x, y + 2.8, z), color: colors[weapon], power: 1.1, pickup: pk });
+    return pk;
+  }
+
   finalize() {
     for (const [mat, geos] of this.buckets) {
       const merged = mergeGeometries(geos, false);
@@ -326,6 +356,12 @@ export class Level {
       s.shell.rotation.y -= dt * 0.8;
       s.shell.rotation.x += dt * 0.5;
     }
+    for (const pk of this.pickups) {
+      if (pk.taken) continue;
+      pk.holder.position.y = pk.baseY + Math.sin(t * 2) * 0.12;
+      pk.holder.rotation.y = t * 1.3;
+      pk.ring.rotation.z = t * 0.6;
+    }
     for (const fn of this.animated) fn(t);
     this.lavaTex.offset.set(t * 0.03, t * 0.02);
     if (this.sky) {
@@ -343,9 +379,98 @@ export class Level {
 // 0-1 düzeni
 // ---------------------------------------------------------------------------
 export function buildLevel01(L) {
+  // ===================== TUTORIAL KANADI (güney, z 17..117) =====================
+  // T0 — İniş odası (x -7..7, z 100..116): gökten düşülür, silahsız başlanır
+  L.box(-8, -2, 99, 8, 0, 117, 'tiles');
+  L.box(-8, 0, 99, -7, 14, 117, 'stone');
+  L.box(7, 0, 99, 8, 14, 117, 'stone');
+  L.box(-8, 0, 116, 8, 14, 117, 'stone');
+  L.box(-8, 0, 99, -3, 14, 100, 'stone');
+  L.box(3, 0, 99, 8, 14, 100, 'stone');
+  L.box(-3, 6, 99, 3, 14, 100, 'stone');
+  L.brazier(-5, 0, 113);
+  L.brazier(5, 0, 113);
+  L.sigil(0, 0, 108, 8);
+  L.chain(-6.8, 13, 106, 6);
+  L.chain(6.8, 13, 110, 5);
+  L.skulls(-5, 0, 103, 5);
+  L.hint([-7, 0, 100, 7, 3, 116], '[WASD] yürü · [BOŞLUK] zıpla · fareyle bak. Silahın yok — önce hareketi öğren. Kuzeydeki kapıdan ilerle.', 9);
+
+  // T1 — Atılma boşluğu (z 76..99, boşluk z 81..94)
+  L.box(-4, -16, 94, 4, 0, 99, 'tiles');
+  L.box(-4, -16, 76, 4, 0, 81, 'tiles');
+  L.box(-4, -16, 81, -3, 0, 94, 'rock');
+  L.box(3, -16, 81, 4, 0, 94, 'rock');
+  L.box(-3, -18, 81, 3, -14, 94, 'rock');
+  L.lavaPlane(-3, 81, 3, 94, -13.5);
+  L.hurt([-3, -16, 81, 3, -12, 94], 0, 'pit');
+  L.box(-4, 0, 76, -3, 8, 99, 'stone');
+  L.box(3, 0, 76, 4, 8, 99, 'stone');
+  L.box(-4, 8, 76, 4, 9, 99, 'rock');
+  L.torch(-2.75, 5, 96);
+  L.torch(2.75, 5, 79);
+  L.hint([-3, 0, 95, 3, 5, 98.5], 'Boşluk normal zıplamak için fazla geniş! [SHIFT] ile ATIL, atılırken [BOŞLUK] → ATILMA ZIPLAMASI. Atılırken hasar da almazsın.', 10);
+
+  // T2 — Kayma koridoru (z 58..76)
+  L.box(-4, -2, 58, 4, 0, 76, 'tiles');
+  L.box(-4, 0, 58, -3, 6, 76, 'stone');
+  L.box(3, 0, 58, 4, 6, 76, 'stone');
+  L.box(-4, 6, 58, 4, 7, 76, 'metal');
+  L.box(-3, 1.1, 66, 3, 6, 68, 'metal');
+  L.box(-3, 1.1, 65.8, 3, 1.4, 68.2, 'door', { solid: false, texScale: 6 });
+  L.torch(-2.75, 4, 72);
+  L.hint([-3, 0, 72, 3, 5, 75], 'Alçak engel! Koşarken [C] basılı tut → KAY. Kayarken hızını korursun; kayarken zıplamak uzağa fırlatır.', 9);
+
+  // T3 — Duvar sıçrama kuyusu (x -2.5..2.5, z 44..58), çıkış çıkıntısı y=7
+  L.box(-3.5, -2, 43, 3.5, 0, 58, 'tiles');
+  L.box(-3.5, 0, 44, -2.5, 14, 58, 'stone');
+  L.box(2.5, 0, 44, 3.5, 14, 58, 'stone');
+  L.box(-2.5, 0, 44, 2.5, 7, 48, 'stone');
+  L.box(-2.5, 0, 52, -0.8, 2, 54.5, 'metal');
+  L.box(-3.5, 0, 43, 3.5, 7, 44, 'stone');
+  L.box(-3.5, 12.5, 43, 3.5, 14, 44, 'stone');
+  L.torch(-2.25, 9, 50);
+  L.torch(2.25, 9, 55);
+  L.hint([-2.5, 0, 55, 2.5, 5, 57.5], 'DUVAR SIÇRAMASI: havadayken duvara doğru [BOŞLUK] (yere değmeden 3 kez). İki duvar arasında sekerek yukarıdaki çıkıntıya tırman!', 11);
+
+  // T4 — Çakma odası (x -6..6, z 26..43); kuzey çıkıntısı y=6.5
+  L.box(-7, -2, 25, 7, 0, 44, 'tiles');
+  L.box(-7, 0, 25, -6, 14, 44, 'stone');
+  L.box(6, 0, 25, 7, 14, 44, 'stone');
+  L.box(-7, 0, 43, -3.5, 14, 44, 'stone');
+  L.box(3.5, 0, 43, 7, 14, 44, 'stone');
+  L.box(-6, 0, 26, 6, 6.5, 30, 'stone');
+  L.box(-7, 0, 25, -3, 14, 26, 'stone');
+  L.box(3, 0, 25, 7, 14, 26, 'stone');
+  L.box(-3, 12, 25, 3, 14, 26, 'stone');
+  L.sigil(0, 0, 36, 5);
+  L.brazier(-4.5, 0, 40.5);
+  L.brazier(4.5, 0, 40.5);
+  L.hint([-6, 0, 30.5, 6, 4, 42.5], 'Çıkıntı çok yüksek! Yüksekten düşerken [C] → YERE ÇAK. Yere çarptığın an [BOŞLUK] → ÇAKIŞ SIÇRAYIŞI. Tekrar denemek için duvar sıçramasıyla yüksel.', 12);
+
+  // T5 — Revolver sunağı (üst kat y=6.5, z 21..26; merdivenle y=3'e iner, kapı arenaya açılır)
+  L.box(-8, 1, 16, 8, 3, 21, 'tiles');
+  L.box(-8, 4.5, 21, 8, 6.5, 26, 'tiles');
+  L.stairsZ(-3, 3, 17, 21, 3, 6.5, 7, 'metal');
+  L.box(-8, 0, 16, -7, 14, 26, 'stone');
+  L.box(7, 0, 16, 8, 14, 26, 'stone');
+  L.box(-7, 6.5, 21, -3, 7.5, 21.4, 'metal', { solid: false });
+  L.box(3, 6.5, 21, 7, 7.5, 21.4, 'metal', { solid: false });
+  L.brazier(-5.5, 6.5, 24.5);
+  L.brazier(5.5, 6.5, 24.5);
+  L.altar(0, 6.5, 23.4, 0, (g) => g.schedule(2.4, () => {
+    g.hud.hint('REVOLVER: [SOL TIK] ateş · [SAĞ TIK] basılı tut → PIERCER şarjlı delici atış. [1]\'e tekrar bas: MARKSMAN (bozuk para at, paraya ateş et → RICOSHOT). Kafadan vuruş 2x hasar.', 12);
+    g.setCheckpoint(new THREE.Vector3(0, 6.5, 22), 0);
+    L.doors.dT.open();
+  }));
+
   // ===== ARENA 1: Düşüş odası (x -16..16, z -16..16) =====
   L.box(-17, -2, -17, 17, 0, 17, 'tiles');
-  L.box(-17, 0, 16, 17, 14, 17, 'stone');
+  L.box(-17, 0, 16, -3, 14, 17, 'stone');
+  L.box(3, 0, 16, 17, 14, 17, 'stone');
+  L.box(-3, 0, 16, 3, 3, 17, 'stone');
+  L.box(-3, 9, 16, 3, 14, 17, 'stone');
+  L.door('dT', -3, 3, 16.2, 3, 9, 16.8, { open: false });
   L.box(16, 0, -17, 17, 14, 17, 'stone');
   L.box(-17, 0, -17, -16, 14, 17, 'stone');
   L.box(-17, 0, -17, -3, 14, -16, 'stone');
@@ -378,13 +503,13 @@ export function buildLevel01(L) {
     id: 'a1',
     name: 'ARENA 1',
     trigger: [-16, 0, -16, 16, 2.5, 11],
-    lock: [],
+    lock: ['dT'],
     exits: ['d1'],
     waves: [
       [{ t: 'filth', p: [-8, 0, -13] }, { t: 'filth', p: [8, 0, -13] }, { t: 'filth', p: [0, 0, -14] }],
       [{ t: 'filth', p: [-13, 0, 0] }, { t: 'filth', p: [13, 0, 0] }, { t: 'filth', p: [-6, 0, -13] }, { t: 'filth', p: [6, 0, -13] }, { t: 'stray', p: [0, 3, 13.5] }],
     ],
-    onStart: (g) => g.hud.hint('[SOL TIK] ateş · [SAĞ TIK] alternatif ateş · [1][2][3] silah seç (tekrar bas: varyant) · [F] yumruk', 8),
+    onStart: (g) => g.hud.hint('Arena kilitlendi! Tüm düşmanları öldür — kapılar ancak alan temizlenince açılır. Havadaki düşmanı vurmak: +AIRSHOT', 8),
   });
 
   // ===== KORİDOR 1 (x -3..3, z -40..-17) =====
@@ -399,7 +524,19 @@ export function buildLevel01(L) {
   L.box(-4, 0, -34, -3, 7, -17, 'stone');
   L.box(-4, 0, -41, -3, 7, -37, 'stone');
   L.box(-4, 0, -37, -3, 3.5, -34, 'stone');
-  L.box(3, 0, -41, 4, 7, -17, 'stone');
+  L.box(3, 0, -35, 4, 7, -17, 'stone');
+  L.box(3, 0, -41, 4, 7, -39, 'stone');
+  // Parry eğitmeni kafesi (doğu nişi, parmaklıklar yalnız oyuncuyu durdurur)
+  L.box(4, -2, -40, 8, 0, -34, 'tiles');
+  L.box(7, 0, -40, 8, 7, -34, 'stone');
+  L.box(4, 0, -40, 8, 7, -39, 'stone');
+  L.box(4, 0, -35, 8, 7, -34, 'stone');
+  L.box(3, 7, -40, 8, 8, -34, 'rock');
+  for (const z of [-38.6, -37.8, -37.0, -36.2, -35.4]) L.box(3.35, 0, z - 0.07, 3.5, 7, z + 0.07, 'metal', { playerOnly: true, texScale: 1 });
+  L.box(3.3, 6.6, -39, 3.55, 7, -35, 'metal', { solid: false });
+  L.torch(6.75, 4.5, -37);
+  L.trainers.push({ p: [5.6, 0, -37], door: 'd2in' });
+  L.hint([-3, 0, -32, 3, 5, -30], 'PARRY EĞİTİMİ: Eğitmenin attığı küre sana çarpmadan hemen önce [F] ile yumrukla. Nişangâhı eğitmene çevir — küre geri seker, onu vurunca kapı açılır.', 12);
   L.box(-4, 7, -41, 4, 8, -17, 'rock');
   L.torch(-2.75, 4.5, -20);
   L.torch(2.75, 4.5, -36);
@@ -412,7 +549,8 @@ export function buildLevel01(L) {
   L.skulls(-8, 3.5, -36.8, 3);
   L.secret(-6.8, 4.7, -35.5);
 
-  L.hint([-3, 0, -21, 3, 5, -18], 'Boşluğu geç: koşarak zıpla ya da ATILIRKEN ZIPLA [SHIFT → BOŞLUK] ile uzağa fırla.', 7);
+  L.altar(0, 0, -19.6, 'hook', (g) => g.schedule(2.2, () => g.hud.hint('WHIPLASH: [E] kanca at. Hafif düşmanları sana çeker, ağır düşmanlara (Schism, boss) SENİ çeker. Boşlukları kapatmak için harika!', 10)));
+  L.hint([-3, 0, -23.5, 3, 5, -22], 'Boşluğu geç: koşarak zıpla ya da ATILIRKEN ZIPLA [SHIFT → BOŞLUK] ile uzağa fırla.', 7);
   L.hint([-3, 0, -33, 3, 5, -31], 'Havadayken duvara doğru [BOŞLUK]: DUVAR SIÇRAMASI (yere değmeden 3 kez).', 7);
   L.checkpoint([-3, 0, -39.5, 3, 4, -36.5], [0, 0, -38], 0);
 
@@ -423,7 +561,7 @@ export function buildLevel01(L) {
   L.box(-21, 0, -41, -3, 14, -40, 'stone');
   L.box(3, 0, -41, 21, 14, -40, 'stone');
   L.box(-3, 6, -41, 3, 14, -40, 'stone');
-  L.door('d2in', -3, 0, -40.8, 3, 6, -40.2, { open: true });
+  L.door('d2in', -3, 0, -40.8, 3, 6, -40.2, { open: false });
   L.box(-21, 0, -81, -3, 14, -80, 'stone');
   L.box(3, 0, -81, 21, 14, -80, 'stone');
   L.box(-3, 6, -81, 3, 14, -80, 'stone');
@@ -461,7 +599,7 @@ export function buildLevel01(L) {
       [{ t: 'stray', p: [-16.5, 4, -60] }, { t: 'stray', p: [16.5, 4, -58] }, { t: 'filth', p: [0, 0, -70] }, { t: 'filth', p: [-6, 0, -77] }, { t: 'filth', p: [6, 0, -77] }],
       [{ t: 'stray', p: [-16.5, 4, -70] }, { t: 'stray', p: [16.5, 4, -50] }, { t: 'stray', p: [0, 2, -60] }, { t: 'filth', p: [-12, 0, -78] }, { t: 'filth', p: [12, 0, -78] }, { t: 'filth', p: [0, 0, -77] }, { t: 'filth', p: [9, 0, -64] }],
     ],
-    onStart: (g) => g.hud.hint('[F] YUMRUK: Turuncu küreyi ya da PARLAYAN saldırıyı tam zamanında yumrukla → PARRY! Canını tamamen doldurur.', 9),
+    onStart: (g) => g.hud.hint('PARLAYAN (mavi yıldızlı) yakın saldırılar da [F] ile savuşturulur. PARRY canını tamamen doldurur!', 9),
   });
 
   // ===== KORİDOR 2 (x -3..3, z -100..-81) =====
@@ -485,10 +623,15 @@ export function buildLevel01(L) {
   L.box(6, 5, -88, 10, 6, -84, 'stone');
   L.secret(8.5, 1.3, -86);
   L.torch(-2.75, 4, -84);
+  L.altar(0, 0, -83.4, 2, (g) => g.schedule(2.2, () => g.hud.hint('NAILGUN: [SOL TIK] basılı tut → çivi yağmuru. ATTRACTOR: [SAĞ TIK] mıknatıs at, çiviler ona kıvrılır. [3]\'e tekrar bas: OVERHEAT / SAWBLADE.', 11)));
   L.torch(-2.75, 4, -96);
   L.hint([-3, 0, -84, 3, 5, -82], 'Yerdeyken [C]: KAY — alçak engellerin altından geç. Havadayken [C]: YERE ÇAK; çakıştan hemen sonra [BOŞLUK] = YÜKSEK SIÇRAYIŞ.', 9);
   L.checkpoint([-3, 0, -99, 3, 4, -96], [0, 0, -97.5], 0);
-  L.extraEnemies.push({ trigger: [-3, 0, -89, 3, 4, -87.5], list: [{ t: 'filth', p: [-1.5, 0, -97] }, { t: 'filth', p: [1.5, 0, -98] }] });
+  L.altar(0, 0, -95.5, 1, (g) => {
+    g.schedule(2.2, () => g.hud.hint('SHOTGUN: [SOL TIK] saçma · [SAĞ TIK] basılı tut → CORE EJECT bombası (ona ateş et: daha büyük patlama). [2]\'ye tekrar bas: PUMP CHARGE.', 11));
+    g.schedule(1.2, () => { for (const p of [[-2, 0, -99.3], [2, 0, -99.3], [0, 0, -99.5]]) g.spawnEnemy('filth', p, null); });
+  });
+  L.extraEnemies.push({ list: [{ t: 'filth' }, { t: 'filth' }, { t: 'filth' }] });
 
   // ===== ARENA 3: Lav havuzu (x -26..26, z -150..-101) =====
   L.box(-27, -2, -116, 27, 0, -100, 'tiles');
@@ -549,15 +692,21 @@ export function buildLevel01(L) {
   });
 
   // ===== KORİDOR 3 (x -3..3, z -170..-151) =====
-  L.box(-4, -2, -171, 4, 0, -150, 'tiles');
-  L.box(-4, 7, -170, 4, 8, -151, 'rock');
-  L.box(-4, 0, -170, -3, 7, -151, 'stone');
-  L.box(3, 0, -170, 4, 7, -151, 'stone');
-  L.torch(-2.75, 4.5, -160);
-  L.torch(2.75, 4.5, -160);
-  L.skulls(-2, 0, -156, 4);
-  L.hint([-3, 0, -156, 3, 5, -153], 'STİL: çeşitli oyna! Aynı silahı sürekli kullanırsan TAZELİK düşer ve daha az puan alırsın.', 8);
-  L.checkpoint([-3, 0, -168, 3, 4, -164], [0, 0, -166], 0);
+  // CEPHANELİK (koridor 3 genişletildi: x -8..8)
+  L.box(-9, -2, -171, 9, 0, -150, 'tiles');
+  L.box(-9, 8, -170, 9, 9, -151, 'metal');
+  L.box(-9, 0, -170, -8, 8, -151, 'metal');
+  L.box(8, 0, -170, 9, 8, -151, 'metal');
+  L.torch(-7.75, 5, -154);
+  L.torch(7.75, 5, -154);
+  L.torch(-7.75, 5, -166);
+  L.torch(7.75, 5, -166);
+  L.sigil(0, 0, -160, 6);
+  L.hint([-8, 0, -155, 8, 5, -152], 'CEPHANELİK. STİL: çeşitli oyna! Aynı silahı sürekli kullanırsan TAZELİK düşer. [1]-[5] silahlar, aynı tuş: varyant.', 8);
+  L.altar(-4.5, 0, -158, 3, (g) => g.schedule(2.2, () => g.hud.hint('RAILCANNON: tek atışta deler, sonra 12 sn şarj olur. ELECTRIC / SCREWDRIVER (matkap) / MALICIOUS (patlama). Boss için sakla!', 10)));
+  L.altar(4.5, 0, -158, 4, (g) => g.schedule(2.2, () => g.hud.hint('ROCKET LAUNCHER: roketle kendini fırlat (roket zıplaması)! FREEZEFRAME: [SAĞ TIK] roketleri dondur. S.R.S.: gülle. FIRESTARTER: alev.', 11)));
+  L.altar(0, 0, -163.5, 'knuckle', (g) => g.schedule(2.2, () => g.hud.hint('KNUCKLEBLASTER: [G] ile kol değiştir. Ağır yumruk; [F] basılı tut → ŞOK DALGASI. Mermi savuşturamaz — parry için FEEDBACKER\'a dön.', 11)));
+  L.checkpoint([-8, 0, -168.5, 8, 4, -166], [0, 0, -167], 0);
 
   // ===== BOSS ARENASI (x -22..22, z -215..-171) =====
   L.box(-23, 0, -171, -3, 18, -170, 'stone');

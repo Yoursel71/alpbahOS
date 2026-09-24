@@ -57,11 +57,22 @@ check('bölüm başladı', await page.evaluate(() => window.__uk.state === 'play
 await sim(0.4);
 await shot('04-falling');
 await sim(3.0);
-const landed = await page.evaluate(() => ({ y: window.__uk.player.pos.y, g: window.__uk.player.grounded }));
-check('oyuncu arenaya indi', landed.g && Math.abs(landed.y) < 0.2, JSON.stringify(landed));
+const landed = await page.evaluate(() => ({ y: window.__uk.player.pos.y, z: window.__uk.player.pos.z, g: window.__uk.player.grounded, armed: window.__uk.weapons.armed }));
+check('oyuncu tutorial odasına silahsız indi', landed.g && Math.abs(landed.y) < 0.2 && landed.z > 99 && !landed.armed, JSON.stringify(landed));
+check('parry eğitmeni kafeste bekliyor', await page.evaluate(() => window.__uk.enemies.some((e) => e.type === 'trainer')));
+// Revolver sunağına git → silah alınır, arena kapısı açılır
+const alt = await page.evaluate(() => {
+  const g = window.__uk, p = g.player;
+  p.pos.set(0, 6.5, 24.9); p.vel.set(0, 0, 0);
+  for (let i = 0; i < 330; i++) g.step(1 / 60, false);
+  return { armed: g.weapons.armed, cur: g.weapons.cur, door: g.level.doors.dT.t, cp: g.checkpoint.pos.z };
+});
+check('revolver sunaktan alındı, arena kapısı açıldı', alt.armed && alt.cur === 0 && alt.door > 0.9 && Math.abs(alt.cp - 22) < 0.1, JSON.stringify(alt));
+// diğer silahları test için ver
+await page.evaluate(() => { const g = window.__uk; g.weapons.giveAll(); g.weapons.select(0); g.player.pos.set(0, 0, 5); for (let i = 0; i < 30; i++) g.step(1 / 60, false); });
 await sim(1.5);
-const a1 = await page.evaluate(() => ({ state: window.__uk.level.arenas[0].state, n: window.__uk.enemies.length }));
-check('arena 1 başladı ve düşman doğdu', a1.state === 'active' && a1.n >= 3, JSON.stringify(a1));
+const a1 = await page.evaluate(() => ({ state: window.__uk.level.arenas[0].state, n: window.__uk.enemies.filter((e) => e.type !== 'trainer').length, door: window.__uk.level.doors.dT.target }));
+check('arena 1 başladı, tutorial kapısı kilitlendi, düşman doğdu', a1.state === 'active' && a1.n >= 3 && a1.door === 0, JSON.stringify(a1));
 await shot('05-arena1');
 
 // Hareket: dash, kayma, zıplama
@@ -115,7 +126,7 @@ const aimAt = (e) => `
 const shoot = await page.evaluate(`(() => {
   const g = window.__uk; const p = g.player;
   for (let i = 0; i < 60; i++) g.step(1/60, false);
-  const e = g.enemies.find(x => !x.dead && x.state !== 'spawn');
+  const e = g.enemies.find(x => !x.dead && x.state !== 'spawn' && x.type !== 'trainer');
   if (!e) return { err: 'düşman yok' };
   p.pos.set(e.pos.x, 0, e.pos.z + 6); p.vel.set(0,0,0);
   g.step(1/60, false);
@@ -137,7 +148,7 @@ const guns = await page.evaluate(`(() => {
   const g = window.__uk, p = g.player, w = g.weapons;
   const r = {};
   w.select(1); for (let i = 0; i < 20; i++) g.step(1/60, false);
-  let e = g.enemies.find(x => !x.dead && x.state !== 'spawn');
+  let e = g.enemies.find(x => !x.dead && x.state !== 'spawn' && x.type !== 'trainer');
   if (e) {
     p.pos.set(e.pos.x, e.pos.y, e.pos.z + 3); g.step(1/60, false);
     ${aimAt('e')}
@@ -145,8 +156,8 @@ const guns = await page.evaluate(`(() => {
     g.input.pressedSet.add('Mouse0'); g.input.down.add('Mouse0'); g.step(1/60, false); g.input.down.delete('Mouse0');
     r.shotgun = e.dead || e.hp < hp0;
   }
-  w.select(2); for (let i = 0; i < 20; i++) g.step(1/60, false);
-  e = g.enemies.find(x => !x.dead && x.state !== 'spawn');
+  w.select(3); for (let i = 0; i < 20; i++) g.step(1/60, false);
+  e = g.enemies.find(x => !x.dead && x.state !== 'spawn' && x.type !== 'trainer');
   if (e) {
     const tc = new e.pos.constructor(-e.pos.x, 0, -2 - e.pos.z).normalize();
     p.pos.set(e.pos.x + tc.x * 7, e.pos.y, e.pos.z + tc.z * 7); g.step(1/60, false);
@@ -163,6 +174,39 @@ const guns = await page.evaluate(`(() => {
 })()`);
 check('shotgun isabet', guns.shotgun === true, JSON.stringify(guns));
 check('railcannon isabet + şarj sıfırlandı', guns.rail === true && guns.railCharge < 0.1, JSON.stringify(guns));
+
+// Nailgun + Rocket Launcher + üçüncü varyantlar
+const more = await page.evaluate(`(() => {
+  const g = window.__uk, p = g.player, w = g.weapons, inp = g.input;
+  const r = {};
+  const target = () => { const e = g.spawnEnemy('schism', [0, 0, -8], null); e.state = 'idle'; e.decor = true; e.yaw = 0; for (let i = 0; i < 5; i++) g.step(1/60, false); return e; };
+  const face = (e, dist) => { const tc = new e.pos.constructor(-e.pos.x, 0, -2 - e.pos.z).normalize(); p.pos.set(e.pos.x + tc.x * dist, e.pos.y, e.pos.z + tc.z * dist); p.vel.set(0,0,0); g.step(1/60, false); ${aimAt('e')} };
+  let e = target();
+  if (e) {
+    w.select(2); for (let i = 0; i < 20; i++) g.step(1/60, false);
+    face(e, 6); const hp0 = e.hp;
+    inp.down.add('Mouse0'); for (let i = 0; i < 30; i++) { ${aimAt('e')}; g.step(1/60, false); } inp.down.delete('Mouse0');
+    r.nail = e.dead || e.hp < hp0;
+  }
+  e = target();
+  if (e) {
+    w.select(4); for (let i = 0; i < 20; i++) g.step(1/60, false);
+    face(e, 10); const hp0 = e.hp; w.cd[4] = 0;
+    inp.pressedSet.add('Mouse0'); inp.down.add('Mouse0'); g.step(1/60, false); inp.down.delete('Mouse0');
+    for (let i = 0; i < 40; i++) g.step(1/60, false);
+    r.rocket = e.dead || e.hp < hp0;
+  }
+  // varyantlar sırayla: sharpshooter, sawed-on, sawblade, malicious, cannon
+  w.cur = 4; w.variant[0] = 0; w.variant[1] = 0;
+  w.select(0); w.select(0); w.select(0); r.v0 = w.varId;
+  w.select(1); w.select(1); w.select(1); r.v1 = w.varId;
+  r.all = w.owned.every(Boolean) && w.armsOwned.every(Boolean) && w.hookOwned;
+  return r;
+})()`);
+check('nailgun isabet', more.nail === true, JSON.stringify(more));
+check('roket isabet (patlama)', more.rocket === true);
+check('üçüncü varyantlar (SHARPSHOOTER, SAWED-ON) seçilebiliyor', more.v0 === 'sharpshooter' && more.v1 === 'saw');
+check('tüm silahlar/kollar/kanca verildi', more.all === true);
 
 // Parry: Stray küresini yumrukla geri gönder
 const parry = await page.evaluate(`(() => {
@@ -189,7 +233,7 @@ check('mermi parry (sahip değişti, can doldu)', parry.parried && parry.owner =
 const clear1 = await page.evaluate(() => {
   const g = window.__uk;
   for (let k = 0; k < 20; k++) {
-    for (const e of g.enemies) if (!e.dead && e.state !== 'spawn') e.hit({ dmg: 99, part: 'body', point: e.center(), weapon: 'revolver' });
+    for (const e of g.enemies) if (!e.dead && e.state !== 'spawn' && e.type !== 'trainer') e.hit({ dmg: 99, part: 'body', point: e.center(), weapon: 'revolver' });
     for (let i = 0; i < 40; i++) g.step(1 / 60, false);
     if (g.level.arenas[0].state === 'cleared') break;
   }
@@ -227,7 +271,7 @@ const death = await page.evaluate(() => {
   g.god = false;
   g.damagePlayer(500, null, true);
   const dead = g.state === 'dead';
-  for (let i = 0; i < 60; i++) g.step(1 / 60, false);
+  for (let i = 0; i < 75; i++) g.step(1 / 60, false);
   g.input.pressedSet.add('KeyR');
   g.step(1 / 60, false);
   return { dead, state: g.state, z: p.pos.z, restarts: g.stats.restarts, hp: p.hp };

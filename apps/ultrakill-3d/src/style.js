@@ -30,6 +30,12 @@ export const BONUS_COLORS = {
   'PROJECTILE BOOST': '#3ee06a',
   'CORE SNIPE': '#ffae2a',
   'BIG HEADSHOT': '#ffffff',
+  'SHOTGUN PARRY': '#3ee06a',
+  'COIN PUNCH': '#ffae2a',
+  'HOOKED': '#9adf5a',
+  'DRILLED': '#3ee06a',
+  'BURNED': '#ff8a1f',
+  'SPLATTERED': '#ff5a4a',
 };
 
 export class Style {
@@ -43,7 +49,7 @@ export class Style {
     this.meter = 0;
     if (full) this.total = 0;
     this.bonuses = [];
-    this.fresh = { revolver: 1, shotgun: 1, rail: 1 };
+    this.fresh = { revolver: 1, shotgun: 1, nailgun: 1, rail: 1, rocket: 1 };
     this.lastKillT = -10;
     this.combo = 0;
     this.comboEntry = null;
@@ -98,7 +104,7 @@ export class Style {
     while (this.rank < RANKS.length - 1 && this.meter >= RANKS[this.rank].cap) {
       this.meter -= RANKS[this.rank].cap;
       this.rank++;
-      this.game.audio.play('rankUp', null, { rank: this.rank });
+      this.game.audio.play('rankUp', null, { rate: Math.pow(2, this.rank / 6), exactRate: true });
       this.game.hud.rankPulse();
     }
     if (this.rank === RANKS.length - 1) this.meter = Math.min(this.meter, RANKS[this.rank].cap);

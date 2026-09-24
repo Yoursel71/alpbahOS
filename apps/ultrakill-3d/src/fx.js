@@ -47,6 +47,21 @@ export class FX {
     this.decalIdx = 0;
     scene.add(this.decals);
 
+    // Mermi delikleri
+    this.holeMax = 160;
+    const hMat = new THREE.MeshBasicMaterial({ map: T.hole, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -6, alphaTest: 0.2 });
+    this.holes = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), hMat, this.holeMax);
+    this.holes.frustumCulled = false;
+    this.holes.count = 0;
+    this.holeIdx = 0;
+    scene.add(this.holes);
+    this.casingMat = new THREE.MeshLambertMaterial({ color: 0xd8a040, emissive: 0x302010 });
+    this.shellMatRed = new THREE.MeshLambertMaterial({ color: 0xc02018, emissive: 0x200404 });
+    this.casingGeo = new THREE.CylinderGeometry(0.018, 0.018, 0.06, 6);
+    this.shellGeoCase = new THREE.CylinderGeometry(0.03, 0.03, 0.09, 6);
+    this.smokes = [];
+    this.fountains = [];
+
     this.gibs = [];
     this.tracers = [];
     this.rings = [];
@@ -123,6 +138,61 @@ export class FX {
   clearDecals() {
     this.decals.count = 0;
     this.decalIdx = 0;
+    this.holes.count = 0;
+    this.holeIdx = 0;
+  }
+
+  bulletHole(x, y, z, nx, ny, nz, size = 0.16) {
+    const i = this.holeIdx;
+    this.holeIdx = (this.holeIdx + 1) % this.holeMax;
+    _n.set(nx, ny, nz);
+    _q.setFromUnitVectors(new THREE.Vector3(0, 0, 1), _n);
+    _p.set(x + nx * 0.015, y + ny * 0.015, z + nz * 0.015);
+    _s.set(size, size, size);
+    _m.compose(_p, _q, _s);
+    this.holes.setMatrixAt(i, _m);
+    this.holes.count = Math.max(this.holes.count, i + 1);
+    this.holes.instanceMatrix.needsUpdate = true;
+  }
+
+  // Duman / toz bulutu (normal karışım, yükselip genişler)
+  smoke(pos, count = 4, color = 0x8a807a, size = 0.5, life = 0.8, rise = 1.2) {
+    const T = this.game.tex;
+    for (let i = 0; i < count; i++) {
+      if (this.smokes.length > 120) { const o = this.smokes.shift(); this.scene.remove(o.s); o.s.material.dispose(); }
+      const mat = new THREE.SpriteMaterial({ map: T.glow, color, transparent: true, depthWrite: false, opacity: 0.5 });
+      const sp = new THREE.Sprite(mat);
+      sp.position.copy(pos).add(new THREE.Vector3(rand(-0.2, 0.2), rand(-0.1, 0.2), rand(-0.2, 0.2)));
+      sp.scale.setScalar(size * rand(0.6, 1));
+      this.scene.add(sp);
+      this.smokes.push({ s: sp, life: life * rand(0.7, 1.2), max: life, size, v: new THREE.Vector3(rand(-0.4, 0.4), rise * rand(0.5, 1), rand(-0.4, 0.4)) });
+    }
+  }
+
+  // Boş kovan / fişek (dünyada seker, "tink")
+  casing(pos, vel, red = false) {
+    const m = new THREE.Mesh(red ? this.shellGeoCase : this.casingGeo, red ? this.shellMatRed : this.casingMat);
+    m.position.copy(pos);
+    m.rotation.set(rand(0, 3), rand(0, 3), rand(0, 3));
+    this.scene.add(m);
+    this.pushGib({ mesh: m, v: vel.clone(), w: new THREE.Vector3(rand(-20, 20), rand(-20, 20), rand(-20, 20)), life: 4, r: 0.04, bleed: 0, casing: true });
+  }
+
+  // Kan fıskiyesi: hedef nesnenin (ör. boyun) dünya konumundan bir süre kan püskürtür
+  fountain(obj, dur = 1.2, dir = null) {
+    this.fountains.push({ obj, t: dur, dir });
+  }
+
+  // Zikzaklı şimşek ışını
+  lightning(from, to, color = 0x80f0ff, width = 0.05, life = 0.25, segs = 8, jitter = 0.35) {
+    let prev = from.clone();
+    const d = new THREE.Vector3().subVectors(to, from);
+    for (let k = 1; k <= segs; k++) {
+      const p = from.clone().addScaledVector(d, k / segs);
+      if (k < segs) p.add(new THREE.Vector3(rand(-jitter, jitter), rand(-jitter, jitter), rand(-jitter, jitter)));
+      this.tracer(prev, p, color, width, life);
+      prev = p;
+    }
   }
 
   // ---- et parçaları: düşman modelinin parçalarını fiziksel nesnelere dönüştür ----
@@ -150,9 +220,7 @@ export class FX {
       this.removeGib(old);
     }
     g.body = { pos: g.mesh.position, r: g.r, h: g.r * 2, isEnemy: true };
-    g.mesh.position.y -= g.r; // gövde: ayak tabanı
     g.offsetY = g.r;
-    g.mesh.position.y += g.r;
     this.gibs.push(g);
   }
 
@@ -291,6 +359,7 @@ export class FX {
         if (r.hitX) g.v.x *= -0.4;
         if (r.hitZ) g.v.z *= -0.4;
         if (r.ground) {
+          if (g.casing && Math.abs(g.v.y) > 1.5) this.game.audio.play('shell', b.pos, { vol: Math.min(1, Math.abs(g.v.y) / 5) });
           if (Math.abs(g.v.y) > 3 && g.bleed > 0 && Math.random() < 0.5) {
             this.addDecal(b.pos.x, b.pos.y - g.offsetY, b.pos.z, 0, 1, 0, rand(0.4, 1.0));
           }
@@ -312,6 +381,26 @@ export class FX {
       if (g.life < 1) g.mesh.scale.multiplyScalar(Math.max(0.0, 1 - dt * 2.5));
     }
 
+    for (let i = this.smokes.length - 1; i >= 0; i--) {
+      const o = this.smokes[i];
+      o.life -= dt;
+      if (o.life <= 0) { this.scene.remove(o.s); o.s.material.dispose(); this.smokes.splice(i, 1); continue; }
+      const k = 1 - o.life / o.max;
+      o.s.position.addScaledVector(o.v, dt);
+      o.v.multiplyScalar(Math.exp(-dt * 1.5));
+      o.s.scale.setScalar(o.size * (0.6 + k * 1.8));
+      o.s.material.opacity = 0.45 * (1 - k);
+    }
+    for (let i = this.fountains.length - 1; i >= 0; i--) {
+      const f = this.fountains[i];
+      f.t -= dt;
+      if (f.t <= 0 || !f.obj.parent) { this.fountains.splice(i, 1); continue; }
+      if (Math.random() < dt * 40) {
+        f.obj.getWorldPosition(_p);
+        const up = f.dir ? f.dir.clone() : new THREE.Vector3(0, 1, 0);
+        this.bloodBurst(_p.clone(), 3, 5 * Math.min(1, f.t + 0.3), up, false);
+      }
+    }
     for (let i = this.tracers.length - 1; i >= 0; i--) {
       const t = this.tracers[i];
       t.life -= dt;
@@ -368,6 +457,9 @@ export class FX {
   }
 
   clearAll() {
+    for (const o of this.smokes) this.scene.remove(o.s);
+    this.smokes.length = 0;
+    this.fountains.length = 0;
     for (const g of this.gibs) this.removeGib(g);
     this.gibs.length = 0;
     this.blood.parts.length = 0;
