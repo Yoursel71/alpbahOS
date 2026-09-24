@@ -1,0 +1,10 @@
+MISMATCH /usr/bin/file
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/file", "sha256": "2f89eeefb5c380c2cea02129627bcae68b164d7c1221636c771b7e3bae71274e", "size": 60304, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/bin/file", "sha256": "8cb35ca5ea06f0325cb1a7ae972d7914673e690eccb553672ae7ecec4f140bfa", "size": 60304, "type": "file", "uid": 0}
+MISMATCH /usr/lib/libmagic.so.1.0.0
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/libmagic.so.1.0.0", "sha256": "cff199bbffbd0c2aab8ef4e7fd16b31cea5ba80a204a48f04e4c11213a7ccd54", "size": 704528, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/libmagic.so.1.0.0", "sha256": "315355cc6803ec00df4259a0c876490de1776a7abcc90060725f6afc58ed0112", "size": 704520, "type": "file", "uid": 0}
+MISMATCH /usr/share/misc
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/misc", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/misc", "type": "directory", "uid": 1001}
+package=file version=5.46 entries=23 matched=20 mismatched=3

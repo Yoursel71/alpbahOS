@@ -1,0 +1,195 @@
+{
+  "captured_at": "2026-09-24T01:50:14+00:00",
+  "entries": [
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/file",
+      "sha256": "2f89eeefb5c380c2cea02129627bcae68b164d7c1221636c771b7e3bae71274e",
+      "size": 60304,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/include",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/magic.h",
+      "sha256": "a680f6681d422c270870f03a5303fc2fea3087219eb57f85ea085dc4b2a9499c",
+      "size": 6070,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libmagic.la",
+      "sha256": "e515e648b6d21de261556413e40eca50d18332457d023843f20e961d12e196a6",
+      "size": 967,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libmagic.so",
+      "target": "libmagic.so.1.0.0",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libmagic.so.1",
+      "target": "libmagic.so.1.0.0",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libmagic.so.1.0.0",
+      "sha256": "cff199bbffbd0c2aab8ef4e7fd16b31cea5ba80a204a48f04e4c11213a7ccd54",
+      "size": 704528,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/pkgconfig",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/pkgconfig/libmagic.pc",
+      "sha256": "6113f0eb3326c53695a249e67639cb28145710b00f544dec6a9b0378317a6b10",
+      "size": 254,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man/man1",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/file.1",
+      "sha256": "e066ee024c83dd6767cdb1edfc16d1526c05dbea5750fe19b3f84ca209aada2a",
+      "size": 22185,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man/man3",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/libmagic.3",
+      "sha256": "7568d640aad508e95bc7477e80ba069eec06398eaf79d97886933e0a058cf45d",
+      "size": 12553,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man/man4",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man4/magic.4",
+      "sha256": "b6be1a4e052e2b1eaf5ea9d159530dd99d07dead4dd2980fa99db5205c848dc8",
+      "size": 25892,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man/man5",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/misc",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/misc/magic.mgc",
+      "sha256": "a2f5cfb36910f30a9722d5adbddfdeeadba2d38ee128d29e8363a79e48248454",
+      "size": 10355472,
+      "type": "file",
+      "uid": 0
+    }
+  ],
+  "package": {
+    "name": "file",
+    "source": {
+      "sha256": "c9cc77c7c560c543135edc555af609d5619dbef011997e988ce40a3d75d86088",
+      "url": "https://astron.com/pub/file/file-5.46.tar.gz"
+    },
+    "version": "5.46"
+  },
+  "schema": "alpbahOS.package-files/v1"
+}
