@@ -15,9 +15,11 @@ import ast
 import hashlib
 import json
 import os
+import platform
 import re
 import shutil
 import stat
+import struct
 import subprocess
 import sys
 import threading
@@ -30,7 +32,7 @@ from typing import Any, Mapping, Sequence
 MARKER = ".m04-fixture-root"
 MARKER_TEXT = "DISPOSABLE M04 TRANSACTION FIXTURE ONLY v1\n"
 CAPTURE_DIR = ".m04-capture"
-SCHEMA = "alpbahOS.m04-install-event-capture/v2"
+SCHEMA = "alpbahOS.m04-install-event-capture/v3"
 SNAPSHOT_SCHEMA = "alpbahOS.m04-reconcile-snapshot/v2"
 WRITE_SYSCALLS = {
     "creat", "link", "linkat", "mkdir", "mkdirat", "mknod", "mknodat",
@@ -378,7 +380,8 @@ def _trace_observation_violations(trace_path: Path) -> list[str]:
 
 
 def _run_with_parent_logs(argv: Sequence[str], cwd: Path, env: Mapping[str, str],
-                          stdout_path: Path, stderr_path: Path) -> int:
+                          stdout_path: Path, stderr_path: Path,
+                          pass_fds: Sequence[int] = ()) -> int:
     """Run a command with pipe stdio; only this parent opens the regular logs.
 
     The drainers copy fixed-size chunks so command output does not accumulate in
@@ -386,7 +389,8 @@ def _run_with_parent_logs(argv: Sequence[str], cwd: Path, env: Mapping[str, str]
     neither it nor its descendants can inherit writable descriptors for them.
     """
     proc = subprocess.Popen(argv, cwd=str(cwd), env=dict(env), stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE, close_fds=True, bufsize=0)
+                            stderr=subprocess.PIPE, close_fds=True, bufsize=0,
+                            pass_fds=tuple(pass_fds))
     failures: list[BaseException] = []
 
     def drain(source: Any, destination: Path) -> None:
@@ -422,18 +426,45 @@ def _run_with_parent_logs(argv: Sequence[str], cwd: Path, env: Mapping[str, str]
     return status
 
 
+def _seccomp_deny_io_uring_program() -> bytes:
+    """Return native cBPF for seccomp(2), denying io_uring_setup with EPERM.
+
+    Linux x86_64/aarch64 are the only supported capture architectures. Unknown
+    ABIs fail closed because syscall numbers are architecture-specific.
+    """
+    syscall_numbers = {"x86_64": 425, "amd64": 425, "aarch64": 425, "arm64": 425}
+    machine = platform.machine().lower()
+    syscall_number = syscall_numbers.get(machine)
+    if syscall_number is None:
+        raise CaptureError(f"seccomp io_uring policy is unsupported on architecture {machine!r}")
+    # struct sock_filter { __u16 code; __u8 jt; __u8 jf; __u32 k; }
+    instructions = (
+        (0x20, 0, 0, 0),                         # BPF_LD | BPF_W | BPF_ABS: seccomp_data.nr
+        (0x15, 0, 1, syscall_number),             # BPF_JMP | BPF_JEQ | BPF_K
+        (0x06, 0, 0, 0x00050000 | 1),             # BPF_RET | BPF_K: ERRNO(EPERM)
+        (0x06, 0, 0, 0x7fff0000),                 # BPF_RET | BPF_K: ALLOW
+    )
+    return b"".join(struct.pack("=HBBI", *instruction) for instruction in instructions)
+
+
 def _execute(argv: Sequence[str], cwd: Path, env: Mapping[str, str], root: Path,
-             trace_path: Path, strace: str, bwrap: str,
+             trace_path: Path, seccomp_path: Path, strace: str, bwrap: str,
              stdout_path: Path, stderr_path: Path) -> int:
     # Request a read-only host and evidence store with only the fixture writable.
     # Effective isolation has not been verified by a real Linux integration run.
-    # io_uring_setup is traced and invalidates the event; this does not deny io_uring.
+    # io_uring_setup is denied by the seccomp policy and any traced attempt invalidates the event.
     event_store = root / CAPTURE_DIR / "events"
-    traced = [strace, "-f", "-qq", "-yy", "-e", "trace=%file,%desc,mmap,io_uring_setup", "-o", str(trace_path),
-              "--", bwrap, "--die-with-parent", "--unshare-all", "--ro-bind", "/", "/",
-              "--bind", str(root), str(root), "--ro-bind", str(event_store), str(event_store),
-              "--chdir", str(cwd), "--", *argv]
-    return _run_with_parent_logs(traced, cwd, env, stdout_path, stderr_path)
+    # Bubblewrap consumes and closes the seccomp FD while setting up its child.
+    # strace inherits it only to pass through exec; it is not an installer log FD.
+    with seccomp_path.open("rb") as policy:
+        seccomp_fd = policy.fileno()
+        traced = [strace, "-f", "-qq", "-yy", "-e", "trace=%file,%desc,mmap,io_uring_setup", "-o", str(trace_path),
+                  "--", bwrap, "--die-with-parent", "--unshare-all", "--seccomp", str(seccomp_fd),
+                  "--ro-bind", "/", "/", "--bind", str(root), str(root),
+                  "--ro-bind", str(event_store), str(event_store),
+                  "--chdir", str(cwd), "--", *argv]
+        return _run_with_parent_logs(traced, cwd, env, stdout_path, stderr_path,
+                                     pass_fds=(seccomp_fd,))
 
 
 def capture_install(root: Path, argv: Sequence[str], *, cwd: Path | None = None,
@@ -479,11 +510,13 @@ def capture_install(root: Path, argv: Sequence[str], *, cwd: Path | None = None,
         allowed[key] = value
     before_path = event_dir / "before.json"
     _write_json(before_path, before)
+    seccomp_path = event_dir / "seccomp-deny-io-uring.bpf"
+    seccomp_path.write_bytes(_seccomp_deny_io_uring_program())
     trace_path = event_dir / "strace-file-writes.log"
     stdout_path, stderr_path = event_dir / "stdout.log", event_dir / "stderr.log"
     start_ns = time.time_ns()
     try:
-        exit_status = _execute(argv, workdir, allowed, root, trace_path, strace, bwrap,
+        exit_status = _execute(argv, workdir, allowed, root, trace_path, seccomp_path, strace, bwrap,
                                stdout_path, stderr_path)
     except OSError as exc:
         shutil.rmtree(work_dir, ignore_errors=True)
@@ -503,9 +536,11 @@ def capture_install(root: Path, argv: Sequence[str], *, cwd: Path | None = None,
     changed = sorted(path for path in set(before["entries"]) | set(after["entries"])
                      if before["entries"].get(path) != after["entries"].get(path))
     files = {"before_snapshot": before_path, "after_snapshot": after_path,
-             "stdout": stdout_path, "stderr": stderr_path, "strace": trace_path}
+             "stdout": stdout_path, "stderr": stderr_path, "strace": trace_path,
+             "seccomp_policy": seccomp_path}
     event: dict[str, Any] = {
         "schema": SCHEMA, "event_id": event_id, "root_id": root_id,
+        "seccomp_architecture": platform.machine().lower(),
         "event_dir": str(event_dir.relative_to(root)),
         "package": package, "version": version,
         "argv": list(argv), "cwd": str(workdir), "environment": dict(sorted(allowed.items())),

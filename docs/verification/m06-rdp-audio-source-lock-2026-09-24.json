@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "purpose": "Candidate upstream identities for a separate M06 RDP audio experiment; this is not a source acquisition, trust decision, build, or acceptance result.",
+  "checked_date": "2026-09-24",
+  "sources": [
+    {
+      "name": "xrdp",
+      "version": "0.10.6.1",
+      "repository": "https://github.com/neutrinolabs/xrdp",
+      "tag": "v0.10.6.1",
+      "commit": "80c52879fead585d6347df5b3c587718adf8f5a5",
+      "release_url": "https://github.com/neutrinolabs/xrdp/releases/tag/v0.10.6.1",
+      "tag_signature": "GitHub reports verified; signing key 03993B4065E7193B is expired; independent key trust not established",
+      "archive_sha256": null
+    },
+    {
+      "name": "xorgxrdp",
+      "version": "0.10.5",
+      "repository": "https://github.com/neutrinolabs/xorgxrdp",
+      "tag": "v0.10.5",
+      "commit": "c2d3cbafebe00be3221f985c06ef6b97f1c63790",
+      "release_url": "https://github.com/neutrinolabs/xorgxrdp/releases/tag/v0.10.5",
+      "tag_signature": "GitHub reports verified; signing key 03993B4065E7193B is expired; independent key trust not established",
+      "compatibility": "Upstream says to use with xrdp v0.10.5 or later; selected xrdp v0.10.6.1 satisfies that stated minimum.",
+      "archive_sha256": null
+    },
+    {
+      "name": "pipewire-module-xrdp",
+      "version": "0.1",
+      "repository": "https://github.com/neutrinolabs/pipewire-module-xrdp",
+      "tag": "v0.1",
+      "commit": "e9c6c05dd4327fca43d8861535c1f75c9b258aef",
+      "release_url": "https://github.com/neutrinolabs/pipewire-module-xrdp/releases/tag/v0.1",
+      "tag_signature": "GitHub reports verified; signing key 03993B4065E7193B is expired; independent key trust not established",
+      "archive_sha256": null
+    }
+  ],
+  "pre_build_gates": [
+    "Acquire the exact source archives in the Builder source directory only after Builder's active GCC test is terminal.",
+    "Calculate and record SHA-256 for each acquired archive; no archive digest is asserted by this file.",
+    "Verify the release tag signatures against independently trusted maintainer keys; GitHub's expired-key verified badge alone is insufficient.",
+    "Verify the configured Xorg Server 21.1.18 source and its libxcvt, Pixman, and font-util build dependencies in the actual Builder/rootfs before starting the dependency-ordered build."
+  ],
+  "references": {
+    "xorg_server_blfs": "https://www.linuxfromscratch.org/blfs/view/12.4/x/xorg-server.html",
+    "xrdp_pipewire_module": "https://github.com/neutrinolabs/pipewire-module-xrdp",
+    "xrdp_module_release": "https://github.com/neutrinolabs/pipewire-module-xrdp/releases/tag/v0.1"
+  },
+  "evidence_limit": "Pins identify upstream release commits only. They do not establish source archive bytes, signature trust, Builder dependency availability, successful build/install, RDP audio routing, physical audio, or M06 completion."
+}

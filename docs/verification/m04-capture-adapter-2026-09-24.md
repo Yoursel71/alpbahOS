@@ -58,10 +58,14 @@ exclusive capture lock. A snapshot diff is not enough to attribute concurrent
 changes to the install command. The adapter must not manufacture that
 completeness assertion.
 
-The capture event schema is now v2 and includes `observation_violations`. The
-adapter rejects events with any recorded observation violation, including the
-fixture runner's detection of `io_uring_setup`. This is post-capture detection;
-it does not prevent the syscall or make the trace complete.
+The capture event schema is now v3 and includes `observation_violations` plus
+a hashed seccomp policy artifact. Bubblewrap receives a cBPF filter that denies
+`io_uring_setup` with `EPERM`; the adapter checks the artifact bytes against
+the supported architecture's expected policy and carries its hash into the
+integrity bundle. The trace still records an attempted `io_uring_setup` and
+rejects that event. This policy has unit-level encoding/adapter coverage only;
+Linux integration has not yet verified enforcement or descendant inheritance.
+It does not make the trace complete.
 
 Before reconciler conversion can be considered, capture must provide a
 validated complete write-observation boundary and exclusive/quiescent target

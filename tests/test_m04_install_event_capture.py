@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib.util
 import io
 import json
+import struct
 import subprocess
 import sys
 import tempfile
@@ -43,6 +44,8 @@ class InstallEventCaptureTests(unittest.TestCase):
         self.which.start()
         self.platform = mock.patch.object(capture.sys, "platform", "linux")
         self.platform.start()
+        self.machine = mock.patch.object(capture.platform, "machine", return_value="x86_64")
+        self.machine.start()
         self.listxattr = mock.patch.object(capture.os, "listxattr", return_value=[], create=True)
         self.listxattr.start()
         self.getxattr = mock.patch.object(capture.os, "getxattr", create=True)
@@ -54,7 +57,7 @@ class InstallEventCaptureTests(unittest.TestCase):
         mock.patch.stopall()
         self.fx.close()
 
-    def fake_execute(self, argv, cwd, env, root, trace_path, strace, bwrap, stdout_path, stderr_path):
+    def fake_execute(self, argv, cwd, env, root, trace_path, seccomp_path, strace, bwrap, stdout_path, stderr_path):
         action = argv[-1]
         (root / "usr/bin").mkdir(parents=True, exist_ok=True)
         trace_path.write_text("", encoding="utf-8")
@@ -252,13 +255,17 @@ class InstallEventCaptureTests(unittest.TestCase):
         fake_proc = SimpleNamespace(stdout=io.BytesIO(), stderr=io.BytesIO(),
                                     poll=lambda: 0, wait=lambda: 0)
         with mock.patch.object(capture.subprocess, "Popen", return_value=fake_proc) as run:
+            policy = self.fx.root / "policy.bpf"
+            policy.write_bytes(capture._seccomp_deny_io_uring_program())
             status = capture._execute(["installer"], self.fx.root, {}, self.fx.root,
-                                      trace, "/usr/bin/strace", "/usr/bin/bwrap", stdout, stderr)
+                                      trace, policy, "/usr/bin/strace", "/usr/bin/bwrap", stdout, stderr)
         self.assertEqual(status, 0)
         argv = run.call_args.args[0]
         self.assertEqual(run.call_args.kwargs["stdout"], subprocess.PIPE)
         self.assertEqual(run.call_args.kwargs["stderr"], subprocess.PIPE)
         self.assertTrue(run.call_args.kwargs["close_fds"])
+        self.assertEqual(len(run.call_args.kwargs["pass_fds"]), 1)
+        self.assertIn("--seccomp", argv)
         self.assertLess(argv.index("--ro-bind"), argv.index("--bind"))
         read_only = [index for index, arg in enumerate(argv) if arg == "--ro-bind"]
         self.assertGreater(read_only[1], argv.index("--bind"))
@@ -267,6 +274,16 @@ class InstallEventCaptureTests(unittest.TestCase):
         self.assertEqual(argv.count("--bind"), 1)
         trace_arg = argv[argv.index("-e") + 1]
         self.assertIn("io_uring_setup", trace_arg)
+
+    def test_seccomp_policy_denies_io_uring_and_allows_other_syscalls(self):
+        program = capture._seccomp_deny_io_uring_program()
+        self.assertEqual(len(program), 4 * 8)
+        instructions = [struct.unpack("=HBBI", program[index:index + 8])
+                        for index in range(0, len(program), 8)]
+        self.assertEqual(instructions[0], (0x20, 0, 0, 0))
+        self.assertEqual(instructions[1][0:3], (0x15, 0, 1))
+        self.assertEqual(instructions[2], (0x06, 0, 0, 0x00050001))
+        self.assertEqual(instructions[3], (0x06, 0, 0, 0x7FFF0000))
 
     def test_parent_streams_mocked_pipe_output_without_opening_logs_for_child(self):
         stdout_path, stderr_path = self.fx.root / "stdout.log", self.fx.root / "stderr.log"

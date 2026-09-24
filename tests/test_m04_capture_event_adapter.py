@@ -42,6 +42,7 @@ class CaptureEventAdapterTests(unittest.TestCase):
             "event_id": "event-1",
             "root_id": "0" * 32,
             "event_dir": ".m04-capture/events/event-1",
+            "seccomp_architecture": "x86_64",
             "package": "alpha",
             "version": "1.0",
             "argv": ["make", "install"],
@@ -65,6 +66,7 @@ class CaptureEventAdapterTests(unittest.TestCase):
             "stdout": b"install stdout\n",
             "stderr": b"install stderr\n",
             "strace": b"openat(...)=0\n",
+            "seccomp_policy": adapter._expected_seccomp_policy("x86_64"),
         }.items():
             path = self.artifact_dir / f"{key}.dat"
             path.write_bytes(content)
@@ -92,6 +94,11 @@ class CaptureEventAdapterTests(unittest.TestCase):
             "path": self.event["artifacts"]["strace"]["path"],
             "size": self.event["artifacts"]["strace"]["size"],
             "sha256": self.event["artifacts"]["strace"]["sha256"],
+        })
+        self.assertEqual(event["artifacts"]["confinement_policy"], {
+            "path": self.event["artifacts"]["seccomp_policy"]["path"],
+            "size": self.event["artifacts"]["seccomp_policy"]["size"],
+            "sha256": self.event["artifacts"]["seccomp_policy"]["sha256"],
         })
         combined = (self.root / event["artifacts"]["install_log"]["path"]).read_bytes()
         self.assertIn(b"=== stdout ===", combined)
@@ -131,6 +138,14 @@ class CaptureEventAdapterTests(unittest.TestCase):
         changed = self.artifact_dir / "strace.dat"
         changed.write_bytes(b"tampered")
         with self.assertRaisesRegex(adapter.AdapterError, "integrity checks"):
+            adapter.adapt_bundle_event(self.event, self.provenance, self.root)
+
+    def test_adapter_rejects_unexpected_seccomp_policy(self) -> None:
+        policy = self.artifact_dir / "seccomp_policy.dat"
+        policy.write_bytes(b"allow everything")
+        self.event["artifacts"]["seccomp_policy"]["size"] = policy.stat().st_size
+        self.event["artifacts"]["seccomp_policy"]["sha256"] = hashlib.sha256(policy.read_bytes()).hexdigest()
+        with self.assertRaisesRegex(adapter.AdapterError, "not the required io_uring-deny filter"):
             adapter.adapt_bundle_event(self.event, self.provenance, self.root)
 
     def test_reconciliation_is_refused_without_complete_capture_boundary(self) -> None:
