@@ -793,3 +793,22 @@ rootfs behavior. The experiment records no base-package ownership evidence
 and does not close M04. The 40 existing Chapter 8 manifests remain staged
 comparisons only; final-rootfs paths still have no authoritative package
 ownership records.
+
+## Stage-manifest collision audit — 24 September 2026
+
+A read-only parser rechecked the 40 package manifests in
+`docs/verification/manifests/` (excluding the Coreutils Chapter 6 preflight
+JSON): 15,824 entries total, comprising 1,734 directories, 12,971 regular
+files, and 1,119 symlinks. The counts agree with the coverage matrix.
+
+There are 117 repeated directory paths; their metadata agrees across the stage
+manifests. There is one repeated non-directory path: `/usr/share/info/dir` is
+a regular-file entry in nine package manifests (Binutils, DejaGNU, Flex, GDBM,
+GMP, Inetutils, Libtool, MPC, and MPFR), and all nine content hashes differ.
+It must be treated as a generated shared index with explicit update semantics,
+not as co-owned package payload. No symlink pathname collision was found.
+
+The known `/etc`, `/usr/share/doc`, and `/usr/share/info` rootfs metadata
+differences are shared-directory policy issues, not evidence of package
+ownership transfer. This audit describes staged payload collisions only; it
+adds no historical ownership evidence and does not close M04.
