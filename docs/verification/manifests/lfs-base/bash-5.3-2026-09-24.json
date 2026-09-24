@@ -1,0 +1,2166 @@
+{
+  "captured_at": "2026-09-24T03:03:38+00:00",
+  "entries": [
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/bash",
+      "sha256": "a2c81b101a5246c2127de6caa243523a7b3e187ea4f62f37674ffde1ad39d427",
+      "size": 3638496,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 365,
+      "path": "/usr/bin/bashbug",
+      "sha256": "86577b2f6b1acef289f654f36720e1c0a260914b29738d30f01780529979947d",
+      "size": 6804,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/bin/sh",
+      "target": "bash",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/include",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/include/bash",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/alias.h",
+      "sha256": "d153a6a66012bde58676c3104d2abf31428d1f0a7fc75eef9ad3f87e26cf7a2b",
+      "size": 2211,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/array.h",
+      "sha256": "9cb9af1ad5165cce13780a331d68dfadb6c6e5342815fd225793fc7036bfa53d",
+      "size": 5625,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/arrayfunc.h",
+      "sha256": "35b7f91c82a807119b0dfa7a71ecdd204b7ced891581ba560e416fffc4c2baf8",
+      "size": 6428,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/assoc.h",
+      "sha256": "8f0a58babbac4f9414059a24a662e735c31bdfbcd25c188cadd3eb8a66a9cf2c",
+      "size": 2372,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/bashansi.h",
+      "sha256": "4fa0b82d20a8cd87dd49ff793b38ce6f7bbe47105ff4bccde70a5ebfb1600970",
+      "size": 1735,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/bashintl.h",
+      "sha256": "3cb31529865eb8ccf63215d3aaf44684bee30bf698f6b1d0e7b9f93ee7b43331",
+      "size": 1462,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/bashjmp.h",
+      "sha256": "1bbaa794c2cdd21466fd392ee3c6d4e03721da187ae0cf08c48710b4e3fd478b",
+      "size": 1702,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/bashtypes.h",
+      "sha256": "67e1259cae980dc67a9432716ed6aa846fca737f42c5ce7e34e982f6965512e2",
+      "size": 1301,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/include/bash/builtins",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/builtins/bashgetopt.h",
+      "sha256": "ca2f6fbd0eacefe138d1b814df0cbbab897c255e404847702ca93e254a750706",
+      "size": 1284,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/builtins/builtext.h",
+      "sha256": "8e60c7826df28b7a560dede0c38f2f2b5b26b38b90d232add458932a5543f1da",
+      "size": 6432,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/builtins/common.h",
+      "sha256": "9a269a14937e7c4de487af5d2ebf991d00fefe3e8a2c801251cfd605533a98f0",
+      "size": 9782,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/builtins/getopt.h",
+      "sha256": "bda29e85c81dab70fc0469d2fc936adece74375d15a155275439a6ab99eefb27",
+      "size": 2522,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/builtins.h",
+      "sha256": "cdaf2732769e11c85e61bfa75b4a2d1bc0700edb0f7df7e1b0ce3f96e6383119",
+      "size": 2458,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/command.h",
+      "sha256": "664ec6c559c6b139b7efbef30d795387ee8a5fe074efc1802a3f2cb8c0fddd28",
+      "size": 15962,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/config-bot.h",
+      "sha256": "b57ae6e38bbfc3fcb2a8c559671b46c32f3282b366605da64272eb2cb2b44171",
+      "size": 6321,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/config-top.h",
+      "sha256": "16142a6ae0e1732ba2090f2b4f522e4b9632d3d645724501336379c074b80e60",
+      "size": 8247,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/config.h",
+      "sha256": "a716df64815f60c3e67a092ee6fd534ea222dbf1188f69e40ee59099155786a1",
+      "size": 36525,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/conftypes.h",
+      "sha256": "f92b0b3533b7a56190d5c31403a675ccb17d89cfd7710dca3966fc08c4ef7dac",
+      "size": 1709,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/dispose_cmd.h",
+      "sha256": "ed49dcc2e7de7232f60472caf23c757edbc1995b968c1fbec890bf3867461393",
+      "size": 1433,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/error.h",
+      "sha256": "3724eb2121eea35155f48e52832a7ec18e9021ff2d713aad175b36a149539981",
+      "size": 3249,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/execute_cmd.h",
+      "sha256": "62d0cb7bcc63f78dd3cf8e5ddbe12f9bff4f627ff7541185d5296fda32acd976",
+      "size": 4262,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/externs.h",
+      "sha256": "97cf8851450f6755f590b639b515b5ac23ab486d281e76a684595f7010e55762",
+      "size": 20357,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/general.h",
+      "sha256": "bf9251e3270c933d3387828a263a3d30e4f0de7ec02b802b1f0f99a60ad3f2f2",
+      "size": 11459,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/hashlib.h",
+      "sha256": "588dc97af2efa294279819bd7fce780c294d3ab03b1db89caf8acf8419fcb13d",
+      "size": 2763,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/include/bash/include",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/include/ansi_stdlib.h",
+      "sha256": "d71ec4c8dbca7ec5f0adedd3ae9c527beacdae29e49fa9086ef7325e2aaf68ad",
+      "size": 1381,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/include/chartypes.h",
+      "sha256": "be8f90e477389434df67a053811d98795b2717e7c92545631e71533f29dc2f16",
+      "size": 3654,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/include/filecntl.h",
+      "sha256": "0fec9b4d255ba190b5d213ea7dc8e6e4084238fc99b9da7e720c4de3e63291b4",
+      "size": 1581,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/include/gettext.h",
+      "sha256": "75f6e21e0e5d8ec4130ed8a19a6418b0c0cb7a221efd9aa21d2e22d49eeb1f0c",
+      "size": 2992,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/include/maxpath.h",
+      "sha256": "d4ad4091127abfb0b931fe07b1c3e33fb1092223094100f7e8a55ceaf82af24a",
+      "size": 2113,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/include/memalloc.h",
+      "sha256": "93953eeb2cca0cc479d721395f14e7a4f9c6ad559dfabfa35355efbac712c60d",
+      "size": 1744,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/include/ocache.h",
+      "sha256": "db53428385d35b476087a9a31de4422c09524cde39c33f6638dc1d26ab4e53bb",
+      "size": 3613,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/include/posixdir.h",
+      "sha256": "c4c12d8adb56129c3151976619f1a91eda1d47eed446deb1b728f251e85eec10",
+      "size": 2316,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/include/posixjmp.h",
+      "sha256": "4a79e5d83b9e87153cd057d76a5b2614922c04a5b58a9f5ae9ed23634dc70261",
+      "size": 1407,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/include/posixselect.h",
+      "sha256": "5330e1aaf639e393b2463a29d35d298e7a054ddb34727743e24d9a72c8fa3ad9",
+      "size": 1386,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/include/posixstat.h",
+      "sha256": "29de8968be3337d40918adbf6a943d2bda903ff4eace81c12d626da9234bf544",
+      "size": 5060,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/include/posixtime.h",
+      "sha256": "d28362696dddb64847b9642c437377b484bac0d2dc405137b0129fee749bb5ba",
+      "size": 2788,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/include/posixwait.h",
+      "sha256": "70539b19039ab4e0c0152d078ab79ad9918854ef8aaee7eafbb80cb30a5e85e2",
+      "size": 3160,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/include/shmbchar.h",
+      "sha256": "f330ce6b038ee88c4fb3280130799298063f6c5b3a45668fa138a38ffc24316d",
+      "size": 5456,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/include/shmbutil.h",
+      "sha256": "df45c27172b612e006fcefcc5c11ebe9710ef914cb8840e95d4e951aafe75061",
+      "size": 14953,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/include/shtty.h",
+      "sha256": "850fa663b352542c4e90adf7b95051c412945307ef1460cf771b6b7b05364fa9",
+      "size": 3546,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/include/stat-time.h",
+      "sha256": "b6b3bb0f986a7c542048d1a81c9b3ca383d9c6be361f9079d1e558164b1882a1",
+      "size": 6088,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/include/stdc.h",
+      "sha256": "169345595cffcc7d56861c3ac22e419b9cc4bc58852482dca711e63e715fe783",
+      "size": 2359,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/include/systimes.h",
+      "sha256": "bba76478f54c72212ddf149fde8bc325da8397a08c46d0b95fa977517ad311d0",
+      "size": 1760,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/include/timer.h",
+      "sha256": "aaaacacf60008dd3a15a392db20d56eb180cc2ce0d71ff00b16d723e8a5fa3b8",
+      "size": 1804,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/include/typemax.h",
+      "sha256": "8e5d7aecc1a107ba7a339da22eda581337a90529f43a403e9d908f34129cabb7",
+      "size": 3809,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/include/unionwait.h",
+      "sha256": "5a5c8024ce1a640bc3b9db746cd0d3e48e207f43c13cfd21dfb6a00c841e4d88",
+      "size": 2973,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/include/unlocked-io.h",
+      "sha256": "76e919132cfaa1fbc5350a23ad51128cea29a06217081d5f939f89a51bd39e92",
+      "size": 3933,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/jobs.h",
+      "sha256": "9d7fe9e1d7b45ca51870e6f171ca6e4a58fb74c9c07626117537ac5575dc8ce2",
+      "size": 11774,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/make_cmd.h",
+      "sha256": "e77d1268c92ea390b6684f40048c32c26680a217c5a87244e47fa462736c886d",
+      "size": 2825,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/pathnames.h",
+      "sha256": "a2d0cab8d7fc3818e6afb79e2286ef955d80d118e8fbc14182f6b639d72f2703",
+      "size": 1213,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/quit.h",
+      "sha256": "30d93da08af5a5bba698265dd57b1d584f0ca27bc0e318b71c5d9d04fef1f341",
+      "size": 2734,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/shell.h",
+      "sha256": "231edc00d19a7ad30aa38154e6c9855577b0177bda407c1c95821628781715cb",
+      "size": 6674,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/sig.h",
+      "sha256": "4319b8bf36fe526fff17d9359fd8d2a7ea44c5bcf2ddcfa9e70a609941b0f039",
+      "size": 4525,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/siglist.h",
+      "sha256": "50b8c6383287a8e1f1bb0b9a1d72a0990649195692f5f41b9136826086e3351c",
+      "size": 1539,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/signames.h",
+      "sha256": "bd876d675b43cc9702ce157cccea6e1fe0e0c75cc3ae8202a80a67dc2f573cf5",
+      "size": 1368,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/subst.h",
+      "sha256": "4c3284b23a1977c632c890836a2cd8049c74db65c74a32a565efa4c551026047",
+      "size": 16572,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/syntax.h",
+      "sha256": "f316e8df92cdc9fe996df1a930356eace03081d1c835f3902afce989af13dc09",
+      "size": 3550,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/unwind_prot.h",
+      "sha256": "e1a4fe78d9519c26cbbb9c313ae1dbd8afe550d39251a9d4a08309fb9db8214a",
+      "size": 2307,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/variables.h",
+      "sha256": "0f1f23f5e3968cc7427388a13c547940cc8690626cc91ae288c55283542cda26",
+      "size": 18602,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/version.h",
+      "sha256": "fcc1ab378a65f2646d2f6eae9481dbcbcb09d10f0f98e88c4c208f5f28532d28",
+      "size": 578,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/xmalloc.h",
+      "sha256": "8822321642dee6cf152575ca047b12542fbcf9888a17469d19d99ae6f40a6776",
+      "size": 2022,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bash/y.tab.h",
+      "sha256": "5732e888d67e969601f4a1fe6f8c418d2754490936eeeaa4fbe7be44a598993b",
+      "size": 6376,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/bash/Makefile.inc",
+      "sha256": "da4531bdb7c93a0bb0249db8103ec87672e864ac448d9a3332c0f1577b5b6e41",
+      "size": 2462,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/bash/Makefile.sample",
+      "sha256": "2d53e73935d2dc878b323f77fa75066edb3438ad676999241490b49a8b787230",
+      "size": 1419,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/accept",
+      "sha256": "69a5f20e8d8a6bb815345c74709d99ea0b93284ca24297d4e77ffac0daf40a7f",
+      "size": 26656,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/basename",
+      "sha256": "1051089bd6cc844a7cb5d7a6c22a6b36fe283fc3b30665a4c34ea95216f0caa5",
+      "size": 21064,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/chmod",
+      "sha256": "c5724ced7030bafab817c55617bdd89e1b2ce87eec2ec2aa13b8466ed53f6b3a",
+      "size": 21528,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/csv",
+      "sha256": "8e2e1e20ca5cf0a209e525d800d0b43f70f6cdaa86c652f933123e88972c9b56",
+      "size": 23232,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/cut",
+      "sha256": "274254aa5dbf21938e73f33ed52b9e5126ae05c8b540edb37e7dc208cfb88df2",
+      "size": 38600,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/dirname",
+      "sha256": "320598d5be56e0f6caea65971752fcbd90659c058f57fdc15e1e8815439c642a",
+      "size": 20816,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/dsv",
+      "sha256": "6a5d7eb1a87a6e9d81e7626b5bdb0d1dd1ad202b03c69b6693c6b7f8d89de9a8",
+      "size": 25016,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/fdflags",
+      "sha256": "43bf44462347f8eebc91bd71deb8a8769344f47a2e010b03314d2f63cbfdab1a",
+      "size": 26928,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/finfo",
+      "sha256": "ad72612645e64518db1481fcb5f30afc675536769fcbec112492cb45e5468bf1",
+      "size": 31440,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/fltexpr",
+      "sha256": "902ef5202fd6f648ba5144758d0d83a9216b8e2069d704d71ded93d7b4f04f96",
+      "size": 81160,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/getconf",
+      "sha256": "7e80b4c89d511cf5241681bc80cb98a061e7f1052e0a4909bfd3beef5517444e",
+      "size": 53888,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/head",
+      "sha256": "99db232569a4b3e6523cfb84495bb7f977ae19abfa53196879b0075cd7ded85e",
+      "size": 24336,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/id",
+      "sha256": "e9e5c469ac5fba53f36b3af97da174cb2f01baf8b811deda8d02052dd5cbb024",
+      "size": 26792,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/kv",
+      "sha256": "ec008c5b97d0be8ab5ae3c7772f63fc100db621a0ee2b9f5ea849b478ea21d63",
+      "size": 26216,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/ln",
+      "sha256": "13e929e7864b0e95c602855da1b4f8a8e97ecc30a047ba12377451337a0cbbc1",
+      "size": 24016,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/bash/loadables.h",
+      "sha256": "6d6454465c603205106fb0c29766de51f31cdf989c93f2cbe68114fe9d990ba6",
+      "size": 993,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/logname",
+      "sha256": "0147ba84d949820402bd27916b7afd674decf1cefa344175c902220543ff1c22",
+      "size": 19288,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/mkdir",
+      "sha256": "6826f630b0dd084c463f30700cad496eb789eb1cb96d0eabdc8ce25b6033900c",
+      "size": 24776,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/mkfifo",
+      "sha256": "7be79efa3d9ca54da7c3bd814966637eef7c5c08f70d46b01ec33470fbd15b7d",
+      "size": 20760,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/mktemp",
+      "sha256": "ad75562aed531a12f378139e760308cfa7fa93b3e0f09a1cdaae18e1f7bf0343",
+      "size": 22536,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/mypid",
+      "sha256": "1049ef08e9e1d4a69b3e8c868ddf21c513af192f270e16ae0b67e6bfe6ac4fb1",
+      "size": 20144,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/pathchk",
+      "sha256": "63a188087685d44b53a5be36da24a1c72f6d5e0612904682ed96a1c23793a7ae",
+      "size": 24072,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/print",
+      "sha256": "357d4fd3d9f38bcfbf81b406a839f2f56b6cdd53dee6367eaf35bb02a70691fd",
+      "size": 24192,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/printenv",
+      "sha256": "b24e96331c0dd41cf2e87b383db91724b02fa49a5770260ca2eca8eb66f88756",
+      "size": 20536,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/push",
+      "sha256": "ea64d2a1fd92367387bd3174263c5824e328576370cd3f4b78405c62e6acd0ea",
+      "size": 24496,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/realpath",
+      "sha256": "e09d8612f513a78ebc5f02826efa9c49fd979f4b2bcaa81e65e36a57be3cfeb3",
+      "size": 24344,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/rm",
+      "sha256": "d9060a5ea4314ef865150a5685373f46e31a92c2fba4b219b7b0e2dac947aa7d",
+      "size": 23088,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/rmdir",
+      "sha256": "61719247decec112fc9c2bee338cb716f92c47d34e47c394a2dc446214a796b6",
+      "size": 19160,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/seq",
+      "sha256": "b2ef659573fe9f8cdebdb1bbaca8426c54fbe2b1099bb06d9160ba5d57fb3ce6",
+      "size": 32944,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/setpgid",
+      "sha256": "d095e3fbf27690afe04dd4c64ce0028b5a7e8f2e426948979d28f8cdc2053e1a",
+      "size": 20096,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/sleep",
+      "sha256": "87b80da9d6945dc4931dc109ea9ec86bad4cf1b370b8dd69eddedd6cdf59117b",
+      "size": 21600,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/stat",
+      "sha256": "0ee5b4b9edb0ef857324d932db3dd12757deaec0a6c5ab787d4743d19f8f6501",
+      "size": 30016,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/strftime",
+      "sha256": "9e2fa6303601566d1f382b2600055729d50511e97d33b9b49d199da241df76c0",
+      "size": 21960,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/strptime",
+      "sha256": "35beba10435e0783d3bed44f4c4ed40f0727498cde2b74f657e25681e2cdceff",
+      "size": 27104,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/sync",
+      "sha256": "f300f8242c59225f94321d082dc91c336f30255b2e0cccb178bc86929b7106aa",
+      "size": 19832,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/tee",
+      "sha256": "3ed1b700b3f686e960c7a32db2a1a88774fdcd4ffd5d14f274f48c79cf52c125",
+      "size": 22400,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/truefalse",
+      "sha256": "e16a532667825e41dc380669471f9b7ba29845bf0f1ba05547d26dc05c2163a1",
+      "size": 18288,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/tty",
+      "sha256": "2fa29bddfa10c474023f9b86033502a15ea8e0a0a7ef27c8ce463c70791ff093",
+      "size": 19728,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/uname",
+      "sha256": "049d4916a5e62dc752be35c1bacdbd687814cd11ee55619ca08ea0939f105dbf",
+      "size": 21336,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/unlink",
+      "sha256": "f056fd7785ff95b6f7c20af649c155ce7e8ee9206f5bf34cb7b4824884bf1624",
+      "size": 19056,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bash/whoami",
+      "sha256": "b1ce748868caaa0d74ad4e31759149e6c0c1d37eb0a6b2f1ed07875648104aab",
+      "size": 19640,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/pkgconfig",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/pkgconfig/bash.pc",
+      "sha256": "711481ea1aaca3e5e1edd44d314a9d62c899dab92187f816fb547634408efa6f",
+      "size": 617,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/doc",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/doc/bash-5.3",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/bash-5.3/CHANGES",
+      "sha256": "270856b93e0ed9bf088377165ca4db25fc1e6a68d6bd8ff2a4382ca15ab457fe",
+      "size": 473382,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/bash-5.3/COMPAT",
+      "sha256": "e7bca221b50ce8413d775abda668ad79aa58c0b8fb2b09d855da1c694ea82bb1",
+      "size": 28581,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/bash-5.3/FAQ",
+      "sha256": "1a8838790362d6cefc1b4b0a230710769ea47f4eb96c8dcd24b846dd7d445db3",
+      "size": 99634,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/bash-5.3/INTRO",
+      "sha256": "88d4f438af6af108d5970aed3a88208a295b6dafc2d55b549169bb0a372ec1fb",
+      "size": 7072,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/bash-5.3/NEWS",
+      "sha256": "ae22dc293dc2c42dbe1098f4204ae467ec54badaa137f2ede47df5e76d11f637",
+      "size": 118334,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/bash-5.3/POSIX",
+      "sha256": "6f5fbc2204533ebae00c99f20954cbcae70c4efcf04fff1ad4014fc8b0cba10d",
+      "size": 18794,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/bash-5.3/RBASH",
+      "sha256": "0fd1c24613e7d8c698c3f743dcbbae8d75563cbd65f597f37eb93751d91acc29",
+      "size": 2747,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/bash-5.3/README",
+      "sha256": "0dda3f5817ac4d88c4cc17ecbe42f05223db368fb353d88e01fcb7259a50fe07",
+      "size": 4848,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/bash-5.3/bash.html",
+      "sha256": "79394ccb66e4d572f47d8b01634d3b08a87f705a230605006e25aecd5e033475",
+      "size": 426217,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/bash-5.3/bashref.html",
+      "sha256": "b91026acffb159bd1e842e3116a95539bf858e2b57cbfa74df9e3a53379177a4",
+      "size": 1040870,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/info",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/info/bash.info",
+      "sha256": "e64164b06027fad39355387b7c51c96a15610333b10c86c6d4ffe3e2f0f53670",
+      "size": 639890,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/af",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/af/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/af/LC_MESSAGES/bash.mo",
+      "sha256": "052d862b0c7cc51b401e6d9b261ceb8842a1e6cf22127db67499e3c479e3d26f",
+      "size": 1040,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/bg",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/bg/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/bg/LC_MESSAGES/bash.mo",
+      "sha256": "7cf93f86b0b15374b36e846593a7638f5f376c69d82b196f1aafd5a21402510f",
+      "size": 258404,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ca",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ca/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ca/LC_MESSAGES/bash.mo",
+      "sha256": "5cd7b6a86a1578c9e2f542346e1f6e5e415de8c557f58b820f50e98e5d769fbc",
+      "size": 128568,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/cs",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/cs/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/cs/LC_MESSAGES/bash.mo",
+      "sha256": "b34acb20879d0e617c9febcf1314ba216138eaab672e955651f87a05c48ee155",
+      "size": 192115,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/da",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/da/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/da/LC_MESSAGES/bash.mo",
+      "sha256": "65ef69ad05f96da1e3c6bb6b253947523f3eb9c392e1fd13533286fbc313901c",
+      "size": 60443,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/de",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/de/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/de/LC_MESSAGES/bash.mo",
+      "sha256": "e5f534536b7a2a8f84f66a62fe32240a6d7d22873db56d84ba69cef93ddaecf8",
+      "size": 182342,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/el",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/el/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/el/LC_MESSAGES/bash.mo",
+      "sha256": "4e7a21f92e762cd729a81916d2c61e5b9e30492883c8e73234b0e6a525ae2973",
+      "size": 77549,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/en@boldquot",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/en@boldquot/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/en@boldquot/LC_MESSAGES/bash.mo",
+      "sha256": "165af15b504a082c3f8d81c7b1d9bdf9caafb5cca8bb20e90a1987d77af6bbfd",
+      "size": 180619,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/en@quot",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/en@quot/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/en@quot/LC_MESSAGES/bash.mo",
+      "sha256": "2dd5196b9f028d850edf075d4bee1e240e2b5073d28ec1c05f706e08438aa345",
+      "size": 178923,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/eo",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/eo/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/eo/LC_MESSAGES/bash.mo",
+      "sha256": "08c37e5fe3aff8e97960d75db9812a7dd352a50fadb844b430938731cd536069",
+      "size": 118409,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/es",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/es/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/es/LC_MESSAGES/bash.mo",
+      "sha256": "2975e2a6c3a742fec6ddb3a172e164cf8b340569bd4676b9f78472621339a59e",
+      "size": 190295,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/et",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/et/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/et/LC_MESSAGES/bash.mo",
+      "sha256": "20d873ec22c8b8d24b94c9389af552cccd8f7e1e3fec89da5ac03901df5895b2",
+      "size": 27510,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/fi",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/fi/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/fi/LC_MESSAGES/bash.mo",
+      "sha256": "32e48f3ee9c6ac34b266645ba7aa220292754ce628325b204ceaca0a2db91f1b",
+      "size": 62932,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/fr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/fr/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/fr/LC_MESSAGES/bash.mo",
+      "sha256": "fe88029876d61cef07beea9344cb579dbd6b592079f7f3a7d6b1cd46bde9e6a4",
+      "size": 197028,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ga",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ga/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ga/LC_MESSAGES/bash.mo",
+      "sha256": "57e47b9137642888e4a58265fb7cba70c670f650438495fb3ffbab5a4a8a5438",
+      "size": 100049,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/gl",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/gl/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/gl/LC_MESSAGES/bash.mo",
+      "sha256": "63845467029bd90dfc3210fbb95d83a792938bb2f864a2c8538130b7c0f2c8bc",
+      "size": 48557,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/hr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/hr/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/hr/LC_MESSAGES/bash.mo",
+      "sha256": "81d6a15bf4c9ec83f147e13b55786e138898d6606d60bd4044849779d1296437",
+      "size": 184243,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/hu",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/hu/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/hu/LC_MESSAGES/bash.mo",
+      "sha256": "322f0a819ef2a10d25f6483884e85e7af59b0d73c1b7989a23472ebd051d4686",
+      "size": 116359,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/id",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/id/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/id/LC_MESSAGES/bash.mo",
+      "sha256": "9f007d9d964d72651cd28ca2d87be6bc7a22eaa4f449261e8c0c85c30b72cc2e",
+      "size": 81233,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/it",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/it/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/it/LC_MESSAGES/bash.mo",
+      "sha256": "0f8a4709db67ff45cdf3e9c50e96462eff3aa335b9d62051dee634eee3a16afd",
+      "size": 190431,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ja",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ja/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ja/LC_MESSAGES/bash.mo",
+      "sha256": "b4ac9e0e04e28f91f20fd11c7a0c6b6140386a65b909acc271f06707a4cd05af",
+      "size": 91569,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ka",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ka/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ka/LC_MESSAGES/bash.mo",
+      "sha256": "893c845936c6abce9ef8932a7a181ff02c745dccdebd68d52db47c6c88f66af0",
+      "size": 50697,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ko",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ko/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ko/LC_MESSAGES/bash.mo",
+      "sha256": "16aeaff4d13d4bee13090674cb43e1b10023c8c46c08cb64c877ff97a9dd8cc7",
+      "size": 192128,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/lt",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/lt/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/lt/LC_MESSAGES/bash.mo",
+      "sha256": "ad2e451bd88f90f25601d6c3b744fe6b3e6672344ae3b426b5a801f2cd69c7bc",
+      "size": 26385,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/nb",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/nb/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/nb/LC_MESSAGES/bash.mo",
+      "sha256": "49b7e31bad92c0e32046a54cf169870a043c6ec57d78a78e6bd1a2eb59dd8c9e",
+      "size": 120592,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/nl",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/nl/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/nl/LC_MESSAGES/bash.mo",
+      "sha256": "302272c10f6ab91e05dbafa6e341716014e62566873109fa5aa2382d94a5e663",
+      "size": 187509,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pl",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pl/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/pl/LC_MESSAGES/bash.mo",
+      "sha256": "d5c75d442a39991044d4df8fa4fcb8f77cc009dc7dd9c2da6e1bd57ff8e649d2",
+      "size": 190807,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pt",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pt/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/pt/LC_MESSAGES/bash.mo",
+      "sha256": "ce78e2981523565a801004a0c327877d60009b7cf61475098933d0d3728be19f",
+      "size": 186579,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pt_BR",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pt_BR/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/pt_BR/LC_MESSAGES/bash.mo",
+      "sha256": "7e2c259344b24cffbb374e49de1f0b9fc5a89ff1e98c77197e157444c9c4b2dd",
+      "size": 190756,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ro",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ro/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ro/LC_MESSAGES/bash.mo",
+      "sha256": "08a9e628435f2b94bab77270eef99fe4740d43a75171df3e177ff8433a7bb0a8",
+      "size": 197068,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ru",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ru/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ru/LC_MESSAGES/bash.mo",
+      "sha256": "152d9ae0666682c6ba97b77fa925fd34e098b947e5dc86921e7882a2bcd6ef66",
+      "size": 105270,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sk",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sk/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/sk/LC_MESSAGES/bash.mo",
+      "sha256": "9cb0e7ffa345484cfd79c025724f0d22b74f446ac9eb890c4726bb3ab30c8156",
+      "size": 69047,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sl",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sl/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/sl/LC_MESSAGES/bash.mo",
+      "sha256": "472eab42e4c1f3d71ab65040caeec9df927e7827c36099898f47ac74bfadf76c",
+      "size": 66641,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sq",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sq/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/sq/LC_MESSAGES/bash.mo",
+      "sha256": "4c4fa953f3bed011cc36932d626580bd6ab9183a0d86789f8d6db061b4a9d74b",
+      "size": 584,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sr/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/sr/LC_MESSAGES/bash.mo",
+      "sha256": "062240a475f44064c43e8a19b3da671f87275504554425214c95c89666a0a977",
+      "size": 241651,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sv",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sv/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/sv/LC_MESSAGES/bash.mo",
+      "sha256": "5a605b06bb3cac26d7b72395f3aa3d483e416900b29afe1ea03d6689540ebd2a",
+      "size": 183324,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/tr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/tr/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/tr/LC_MESSAGES/bash.mo",
+      "sha256": "44bed93c877535520ab19bb2dde2730a94f19b1b7e92f7483cd989c59f7d54b0",
+      "size": 96241,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/uk",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/uk/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/uk/LC_MESSAGES/bash.mo",
+      "sha256": "748c7f95114a384907c1824e953a4c6957e8fd12ea865e518334238a6a9f1d0e",
+      "size": 246838,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/vi",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/vi/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/vi/LC_MESSAGES/bash.mo",
+      "sha256": "20e77b23216dbbe50992ed239e76e2b589cb121404e5e2f4e615a8495d5be081",
+      "size": 108706,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/zh_CN",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/zh_CN/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/zh_CN/LC_MESSAGES/bash.mo",
+      "sha256": "f7e81c95e45b722686a9cff822f594ddf8bb8b49c4fee7b5764cb3943f945d43",
+      "size": 176530,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/zh_TW",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/zh_TW/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/zh_TW/LC_MESSAGES/bash.mo",
+      "sha256": "5fa4abd414259909b2bd94a1a28d9034983c80f82119f5642096555262c75f3a",
+      "size": 118863,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man/man1",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/bash.1",
+      "sha256": "23f7bd155c57125864094d2cb4e1f6ec9f8c2ea002e18bebeb3ed4bcfaad1971",
+      "size": 392678,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/bashbug.1",
+      "sha256": "e32a1b4f1ca110bd2bf232a49a68ac2c151048dd29d5bde49864b94931022af0",
+      "size": 1961,
+      "type": "file",
+      "uid": 0
+    }
+  ],
+  "package": {
+    "name": "bash",
+    "source": {
+      "sha256": "0d5cd86965f869a26cf64f4b71be7b96f90a3ba8b3d74e27e8e9d9d5550f31ba",
+      "url": "https://ftp.gnu.org/gnu/bash/bash-5.3.tar.gz"
+    },
+    "version": "5.3"
+  },
+  "schema": "alpbahOS.package-files/v1"
+}

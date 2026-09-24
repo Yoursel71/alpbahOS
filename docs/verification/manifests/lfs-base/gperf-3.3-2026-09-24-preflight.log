@@ -1,0 +1,16 @@
+MISMATCH /usr/bin/gperf
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/gperf", "sha256": "8582c9ffa20cb454ac4989c1276ae9714a47662197611aa007204e5c66f4a0ce", "size": 475184, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/bin/gperf", "sha256": "f3069452a61e6aebb770b3c2319ce037f40bd6a4ae470d1cfd51ca9a64944e25", "size": 475184, "type": "file", "uid": 0}
+MISMATCH /usr/share/doc
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/doc", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/doc", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/doc/gperf-3.3
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/doc/gperf-3.3", "type": "directory", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/gperf-3.3/gperf.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/gperf-3.3/gperf.html", "sha256": "52f09b87bdf78054a77bd7b58f89c774c94e5d94d55aad3ac6e45394a1ae0e6d", "size": 106180, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/info
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/info", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/info", "type": "directory", "uid": 1001}
+package=gperf version=3.3 entries=12 matched=7 mismatched=5

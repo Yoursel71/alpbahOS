@@ -1,0 +1,16 @@
+{
+  "counts": {
+    "file-same": 45,
+    "new-file-or-link": 104,
+    "replacement-proven-from-installed-bootstrap-build": 105,
+    "shared-directory-present": 146,
+    "symlink-same": 45
+  },
+  "manifest_entries": 445,
+  "problems": [],
+  "types": {
+    "directory": 146,
+    "file": 254,
+    "symlink": 45
+  }
+}

@@ -1,0 +1,3682 @@
+{
+  "captured_at": "2026-09-24T00:26:52+00:00",
+  "entries": [
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/[",
+      "sha256": "776c3cc38ace87c2840dcc55e884fb5a3439602cb6d1fc8ee98220cf048a2cca",
+      "size": 206752,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/b2sum",
+      "sha256": "520c7825ab2ca95152baddacbe07dad5cbe83c8cb007196fe9d33a7d838dc6b7",
+      "size": 306544,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/base32",
+      "sha256": "f1d54925204cbd8f0cc736248bdd5922b03f92e35d1d25cfaa99c1d22cc6be33",
+      "size": 205208,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/base64",
+      "sha256": "c9b2974fa7c81ac7697f74bc8fd8a0dd3448fc0b93a46f9880eac4f48f9065d8",
+      "size": 203752,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/basename",
+      "sha256": "6aa7d772dfac3ae21a0e90a6078e3624ee52fa59035d72e3840fbffddc086fbb",
+      "size": 174528,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/basenc",
+      "sha256": "a916fe513b61f2bc05578df9b71d1f7300ad4e670914d4523febb376692c84cc",
+      "size": 246440,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/cat",
+      "sha256": "87e22d71a0a01797e0dd14c8f19c91f94ea1826d4cf7561d5a22d5ab370ac935",
+      "size": 204816,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/chcon",
+      "sha256": "8437ad39f43d16e819b929f6cdb8d8429cc5656913664829e4dfcde508e18eec",
+      "size": 310000,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/chgrp",
+      "sha256": "e2b2b07642804c8321efca769971066648e3f8921f404cb6b7caff29cf81d3b5",
+      "size": 329920,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/chmod",
+      "sha256": "df7d591209eeba7b3c5b8fe6f88af1eb82fb6b2b4915d2dc7e3eafbe676063ae",
+      "size": 303128,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/chown",
+      "sha256": "cf6643064d610aea4d26f2b144102513de91d697370e0807f7de34b59fac411c",
+      "size": 329912,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/cksum",
+      "sha256": "c8bcbcc08bb965b47798621b1345f95f9281bd4c30213906aa1453790469ab1a",
+      "size": 6877440,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/comm",
+      "sha256": "d75ac626f4c943311e483aa10751529414b306fdeb3efad24a1230827492c395",
+      "size": 205616,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/cp",
+      "sha256": "058c54573727f0d4b1a629ae5340618d4b10ff945fdcafb431656d73dbe731f0",
+      "size": 543888,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/csplit",
+      "sha256": "0318b8b4e0a2d6082d06e2b4dbb1db1295f46913db15b7d4a85ac0c714b696bb",
+      "size": 246424,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/cut",
+      "sha256": "921ff50885e52c1454d00a2397a15b532fc2a7eb805016d79810660697773d1a",
+      "size": 235752,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/date",
+      "sha256": "c0a060374b68353421842a029f8dff146749717b5558c19bf169352395ad6885",
+      "size": 377752,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/dd",
+      "sha256": "530f7c3e26795772ade6df037ab9fc253b93ec75440609fd2349403cfe492b68",
+      "size": 302368,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/df",
+      "sha256": "ca4c8efd093b6fbf38d261156316922f3fc971f14bfe9698e32e3f96fec5db88",
+      "size": 458856,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/dir",
+      "sha256": "a60b6f741dbe6e30bdc63064c991faaa27820a0a1b98d6722802d86beb52f174",
+      "size": 657680,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/dircolors",
+      "sha256": "886b5c3fbf06df8c7634be0b5d5e5ceea6d2119b7dd795b72bbe58378ff3b001",
+      "size": 214576,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/dirname",
+      "sha256": "c4e3807bc745e688767947569b503139d5b21c64ac5bdddd3c100cb137fd1a14",
+      "size": 172872,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/du",
+      "sha256": "c86b598c6db6c2151df2726f886e990aaa8b5721dd8edb22d5f67ea1642b1260",
+      "size": 488752,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/echo",
+      "sha256": "ae08c4bc09fb22f05ce8004b5fef14328d4145d4ee5d0810d624b331a1a387bb",
+      "size": 171800,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/env",
+      "sha256": "979873eaf41e63ace22aea91295fa49b84f6d4f54b3c2abc8e5d6f258b318666",
+      "size": 218184,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/expand",
+      "sha256": "111fedb233f4b42af9764933d1a1142246f5566e35c4058fa947c0d637547dc6",
+      "size": 207376,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/expr",
+      "sha256": "5de888de210e17514780f9f67f9c4c751be8cb094b6917aaeab1aaa70e768d94",
+      "size": 229296,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/factor",
+      "sha256": "9daf732ce3b0d5f6c82bdc3b5e478deb1075857ad2befd3bd14724dc9834dcb1",
+      "size": 297456,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/false",
+      "sha256": "23cdd6c85b13d1ddb0245c01638554456301f67bbfff6e3ffa4d0d2f34eda9a2",
+      "size": 166280,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/fmt",
+      "sha256": "e11892b2d4729fdbad143827e99c92650d5a73d74133faa173f958f71044fec9",
+      "size": 208040,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/fold",
+      "sha256": "ffc350f005dddbd783aae3b331b0a28030272a9a2c61f4ffe4b0c8b8414f80c1",
+      "size": 201488,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/groups",
+      "sha256": "4a8a3a69a6325ece6aa577d5b0460e406b2263a52a753c40ea4fb7d3b0f30c55",
+      "size": 182280,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/head",
+      "sha256": "645e545ff99ca192463fe41bea0a61a41582bc779d790d95590b2842de3c99f1",
+      "size": 224920,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/hostid",
+      "sha256": "e165986324647bf1eab90b919b51e4ae5b5fc1050bf127436c30f68c5b3b7fc3",
+      "size": 171224,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/id",
+      "sha256": "454c603a2c63d269592d28468ced58bfa164445ca0dd3125c7ead6f5e7efb72e",
+      "size": 213912,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/install",
+      "sha256": "22ce4a15029e5911f847e233bb1a78b992ee434a4a25ae768ff075f594006330",
+      "size": 587552,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/join",
+      "sha256": "9c09a030fbebf173df9d1ccd5d9ceed88f55df5f410214abeba0583132993bc3",
+      "size": 262208,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/link",
+      "sha256": "9c939e1307c260a8054c4fec329d999c1873bee848787d2fe773b7803e310f2c",
+      "size": 171984,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/ln",
+      "sha256": "8ce179dfd609e70bdb31f13ceaa86b84e06b3f0820eba0c5cad2d452d5e0cf43",
+      "size": 338016,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/logname",
+      "sha256": "013bf38d7c014a0b88addfe0b22121df78fe8a60238fd0af6dc7adc5591eb29e",
+      "size": 171456,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/ls",
+      "sha256": "065e245611bf7712b0a255a18dbcb9e149b0a7bdfb7338bfaa108abf99660de0",
+      "size": 657672,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/md5sum",
+      "sha256": "8499624504b9e587377ae3ef77163b7cbf0927fcadc9e263bb7ffc870c51516d",
+      "size": 225056,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/mkdir",
+      "sha256": "896265aa2a179c1ee23635fbde386dce7ead577afc056797479d27998e0a3580",
+      "size": 221360,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/mkfifo",
+      "sha256": "417b854a7a0be69575cec2c9463f2437895f1a336db121bcc8bf71ed448a1e6e",
+      "size": 178328,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/mknod",
+      "sha256": "ed24594f18151b5bcbddfcb48926f92c9306f6363e98a4e6584ff57b6aae6084",
+      "size": 193280,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/mktemp",
+      "sha256": "1f00a85fcec6c754ebfe58bb18e2e677a450e06a631c38b59024e046bd4541ab",
+      "size": 191784,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/mv",
+      "sha256": "73708081baf1ecb77c713fc0235a7cc01160d070c30497fca02ee13b4dd542be",
+      "size": 610944,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/nice",
+      "sha256": "00ee44ad6e2b70d75d94411614086b88b39174cbaf58451372766acebb34d0a4",
+      "size": 179048,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/nl",
+      "sha256": "c362875e8ba93fff6e2dba3b2e02546a8934e576bc10736387300e48be4916ea",
+      "size": 200920,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/nohup",
+      "sha256": "f5fbaa6cedce554678f5a8549059f37144bf30f32fa4b24db0dba0539a0b6fdd",
+      "size": 193528,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/nproc",
+      "sha256": "c9f396df764ccbd180165aefe2bbae1d67036119a9060647c5f22565af0cf263",
+      "size": 188728,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/numfmt",
+      "sha256": "d595c8b439856340171d16527aaf9c5e6def0b11d5b9f9f8c797317d8a3e7648",
+      "size": 282568,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/od",
+      "sha256": "10c936c82ba82872f7636bc91bbe99e054d65a1c625b7c4c4b9a0b6992c1785f",
+      "size": 369648,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/paste",
+      "sha256": "e4f6187376bd189d6f5d5293c3ebb386fde07150da0943d03b2ac7cc7cada63a",
+      "size": 188936,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/pathchk",
+      "sha256": "7cd0f52909ccdc8191aa2d00f6ed315efb100b76889d06db3f5db5b3ad6a9693",
+      "size": 179912,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/pinky",
+      "sha256": "e0473418255c7eb9d3669d277d8f9549de47ba605c26295d92a2640a15e5773b",
+      "size": 219400,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/pr",
+      "sha256": "a8376e4d973919532494b68d890a8a9844278394685debd42c86a5c6e8270d72",
+      "size": 348200,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/printenv",
+      "sha256": "4a9de4daedae0ca7e27a75d6dcc09440a5032ec507674b8f4db3f10aeb5d2f31",
+      "size": 169296,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/printf",
+      "sha256": "1211cba2b148adae4a5b41b5f2eb5bbd657b530c8fb7e741202065b68e5c4510",
+      "size": 299744,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/ptx",
+      "sha256": "ba2d1e8c8addb34788c2a1d0566a118a7ace210f8d3aae33f09ce53260b92b69",
+      "size": 260784,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/pwd",
+      "sha256": "fed8cc271dd515e42ff617376c7e4b8e775b061a912dc5d09982d57eb780a7f2",
+      "size": 181296,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/readlink",
+      "sha256": "b57c11cf4dadb009787a234337685af83127dc17a93165ddff73442532e73567",
+      "size": 228352,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/realpath",
+      "sha256": "d66f5de6f2fea007e83d2d24f589f28a20e9cb9cbf812371e4eff1278a87f187",
+      "size": 235800,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/rm",
+      "sha256": "5773cbb41f79fd47d4d88cf9841e1f78ece98ae47abda9b9dddca526cd10b31f",
+      "size": 340024,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/rmdir",
+      "sha256": "5fb68faea300b17f4b705c8ffa889e3c7f980d612c38192349ad2d957299343f",
+      "size": 181192,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/runcon",
+      "sha256": "5b601b969de2510086b405654babf3781a48087dc831e23783e51bb2f0fa9dce",
+      "size": 170768,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/seq",
+      "sha256": "6ec2c3c7ad106c7b9f1beb0b7cbf78cdd502094f6e3b0c6cf7055f19c228e1a6",
+      "size": 202704,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/sha1sum",
+      "sha256": "039784551640609e65445be0eb168168b2cd25f1d6e9406487d89eb4933c73dd",
+      "size": 242040,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/sha224sum",
+      "sha256": "7473ade2f9943e7f8d8bcc98544471692ba34593389f81b07bac8e871afdf896",
+      "size": 6474592,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/sha256sum",
+      "sha256": "47420ac38be46133c65d48febcf20ed116c45c474e44fe64893fa35dc74cb624",
+      "size": 6474592,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/sha384sum",
+      "sha256": "34a1b7752c8a91489f3cf6cde74b7dc502706fd19ebac6b9a5ef73d621fdfa9c",
+      "size": 6474744,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/sha512sum",
+      "sha256": "fabbf859860f0796846b9178da6f745451b02193ecac580a819ecffb34ec3d8d",
+      "size": 6474744,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/shred",
+      "sha256": "c6c851abe9d32c19f09dd8e035b8db186ebad21fa711e939727b7a28a23cdf04",
+      "size": 298744,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/shuf",
+      "sha256": "78627c73bfd9631b4131b74332c87fb7c5f1997261275186bf550f9576ddfee7",
+      "size": 296824,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/sleep",
+      "sha256": "a445a19a0c52c960d10ad0eacf10dfa7f6eab88f7ca84b59f1c203fd780a3bcc",
+      "size": 181472,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/sort",
+      "sha256": "696212b889ca5f29e174986ae557ec22a9f0cf62b6e9de5dc1e7bc1b916d6c53",
+      "size": 586128,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/split",
+      "sha256": "f34762566df3c9809394ad50c3323b8688dd3f01af1dca4f65f214e1a3bf39ed",
+      "size": 294984,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/stat",
+      "sha256": "e358569262884e43587924e9ea24c0b8f01e2809c1f3c481162921a18cc1327e",
+      "size": 440224,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/stdbuf",
+      "sha256": "c0275bf0fc66906954ffd69839ad0020018d26bf0758297621257e36f02e6e78",
+      "size": 205792,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/stty",
+      "sha256": "66860a3d7e8da0e6803aca0795bb28514835ac8b1b4d1918ba2c527fd1b2ae63",
+      "size": 263824,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/sum",
+      "sha256": "add7047e7f2c9bb7f96c782620b93d66f89b9ba3a0b007cb039a5f48080de4ff",
+      "size": 233008,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/sync",
+      "sha256": "e446a7ca577690913a8339c20079763a6bd34f701da37ac26b6d869f3edc3898",
+      "size": 175344,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/tac",
+      "sha256": "a433264c604f0b62ef03429e5a6da7886bc9620055cb158a318e56da9055dc7c",
+      "size": 209160,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/tail",
+      "sha256": "2ccad6f948893135ae423afb57cebf5cc89e4dcd6f9ef35f00632a8b2b7aeb1a",
+      "size": 349352,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/tee",
+      "sha256": "c8e3f8150070b103d7c26f4786d18a980e183a7beb9fda06e6d6c68e7e876ebb",
+      "size": 206272,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/test",
+      "sha256": "3f19236ba0e771fc5c3d28bee64166f18d9f75b3d97fe8a1966e6aa63ae2111d",
+      "size": 186728,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/timeout",
+      "sha256": "9ef1c51d2328bb954c04ba92caf423cc49865350e7266c5110d0d6cbef6901fc",
+      "size": 200656,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/touch",
+      "sha256": "c03685d0a0b654305635a6b588876b977b832fb99c403c058df5a9dd3de5c311",
+      "size": 319888,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/tr",
+      "sha256": "3dfecdc2df6aa36d2cdabd62273883a1faee6f74de68fc011485845ebf9acf86",
+      "size": 237688,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/true",
+      "sha256": "855393a4df1c86e9c60dd324594a338ac9e58c3fb49d122022a36b2d62003d23",
+      "size": 166264,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/truncate",
+      "sha256": "3416c3b95bf046d0a06b7e4ba6117ad9c9b5ca3a4372cea41fd89d84d4ed9891",
+      "size": 191528,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/tsort",
+      "sha256": "f63f5e1b1b1356bcc6b7763602b510e5dfd1ae32fc401b7c8e64c797886f6021",
+      "size": 276504,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/tty",
+      "sha256": "d62641e4bc55447556c20cb504847f993ecafddb682e5d0b7671663329a2ae04",
+      "size": 168808,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/uname",
+      "sha256": "6b5ef536216c6e0183731f7bba57eee58593dcb3e397b45902bc8a583978db30",
+      "size": 172048,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/unexpand",
+      "sha256": "d07d7af59b7334401d9094ded7952fce0e1cb1e4873f8177bf16570efbf27f6f",
+      "size": 209656,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/uniq",
+      "sha256": "998fcd7c7508fe3cb81f5efa5a0d54ee4aadb5dea395e0fe604d349055fcf27f",
+      "size": 234464,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/unlink",
+      "sha256": "187fab97c487972de55e70db2cb1455476df777ad814e104efe8af383e7465ce",
+      "size": 171872,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/users",
+      "sha256": "35de21a809dab4fc980c8883a31003fe051f890d341da565fcf6327e1bcfdee6",
+      "size": 195568,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/vdir",
+      "sha256": "10a94a24bf2982711fb0f795f6708f217427c0464ec559a26ce7afc2a159286b",
+      "size": 657680,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/wc",
+      "sha256": "6c55ad983e4704e94d2cae90f08975f8579f54fa16172285137c8b42ac8d1be1",
+      "size": 341664,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/who",
+      "sha256": "73e1159e445f074ffe27fbe9d2f537e17e855e758fa76f078de6885368fcd77f",
+      "size": 224016,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/whoami",
+      "sha256": "3166a424a08960b0133db09b10b3bca5bb802e91644d73d28cf973a0c0d63a43",
+      "size": 172112,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/yes",
+      "sha256": "8ab70c5aa09fa619694d2109f0433a6530a44709cfb705c9ff190943c9adff7d",
+      "size": 175648,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/libexec",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/libexec/coreutils",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/libexec/coreutils/libstdbuf.so",
+      "sha256": "0c333d9249bb9d4a37d59839e0df9ef6e70eab570fe25ef4329d857fd5dcf793",
+      "size": 22840,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/sbin",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/sbin/chroot",
+      "sha256": "e32274ab2dabb4c135090db695b51ba7eab4b5ef6cf3c6fc9c4d8646062501a0",
+      "size": 214768,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/info",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/info/coreutils.info",
+      "sha256": "a397181bdd4dd7b1dc6bb67050d6698875c8a7fd2a8ce281c20a927cc9984d99",
+      "size": 999974,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/af",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/af/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/af/LC_MESSAGES/coreutils.mo",
+      "sha256": "518c4abd5f29d2cae7a34de47a0bb293e72561f88baa131b71976d3d59be2c82",
+      "size": 25802,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/af/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/af/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/be",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/be/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/be/LC_MESSAGES/coreutils.mo",
+      "sha256": "bf2c153814c87f45234c9c4a4752f65db43a7bc0aaacab16d064bf7669a10a6a",
+      "size": 52978,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/be/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/be/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/bg",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/bg/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/bg/LC_MESSAGES/coreutils.mo",
+      "sha256": "083e089e79a929b3e5452e0fb55aaad6878d12261d335b42180bfc9568be6d27",
+      "size": 506413,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/bg/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/bg/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ca",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ca/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ca/LC_MESSAGES/coreutils.mo",
+      "sha256": "57923b9e2a54e754d2a59874d5a74dfa9be4162e4829f5297b7805e18160b7f4",
+      "size": 365936,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ca/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/ca/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/cs",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/cs/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/cs/LC_MESSAGES/coreutils.mo",
+      "sha256": "3fdcf8b9a6d397eea4487f45e4c1db45f64f7d683dcb5b7c1bc053ce9efba2f4",
+      "size": 391405,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/cs/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/cs/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/da",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/da/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/da/LC_MESSAGES/coreutils.mo",
+      "sha256": "4a5dad1b6e8dbf4b6b2c76db2dc82d8cfde1ab4882de833a546c019edf9c12ea",
+      "size": 330228,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/da/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/da/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/de",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/de/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/de/LC_MESSAGES/coreutils.mo",
+      "sha256": "feec09baeafa968e3eca1fd69dae311abd98eca62b323ea9a391d5664935a45e",
+      "size": 394562,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/de/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/de/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/el",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/el/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/el/LC_MESSAGES/coreutils.mo",
+      "sha256": "5d13fd4f7bdb43267fba2fbb53f139c496a24923927d5984933d451279575369",
+      "size": 22723,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/el/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/el/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/eo",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/eo/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/eo/LC_MESSAGES/coreutils.mo",
+      "sha256": "088cd4ad94a486293efe308234b8c0d5bcdbb47d4d7959c33e46ae5e110877ac",
+      "size": 140293,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/eo/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/eo/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/es",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/es/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/es/LC_MESSAGES/coreutils.mo",
+      "sha256": "78b9f95cb3aca24f275a9de1342bca628f0c5eb481a7c32b46f50868d4b34902",
+      "size": 205563,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/es/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/es/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/et",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/et/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/et/LC_MESSAGES/coreutils.mo",
+      "sha256": "6c5dc28d70d42d76a5edf4119106dc129a4c39b2a7f6672f775fdd4be9f3a792",
+      "size": 361458,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/et/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/et/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/eu",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/eu/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/eu/LC_MESSAGES/coreutils.mo",
+      "sha256": "d4c3b5b8fe7c823742aec18f54b8bd98f3c97eb356bafe55a5b6bfbcc069ae9e",
+      "size": 25893,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/eu/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/eu/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/fi",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/fi/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/fi/LC_MESSAGES/coreutils.mo",
+      "sha256": "99219e3fd38d786909a0d1bf6758561c8f1ba7ed24199e75477fd0cfaf812b37",
+      "size": 106475,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/fi/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/fi/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/fr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/fr/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/fr/LC_MESSAGES/coreutils.mo",
+      "sha256": "02e2b25aef6862eeaad649918adc78de5e3381f32c1ce8542702271a4bf98ebd",
+      "size": 402472,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/fr/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/fr/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ga",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ga/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ga/LC_MESSAGES/coreutils.mo",
+      "sha256": "e8c80d2d80c6ebc1d17f7a5e95be6bc9f33ab9dfea6f23868290d09d06212020",
+      "size": 98979,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ga/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/ga/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/gl",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/gl/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/gl/LC_MESSAGES/coreutils.mo",
+      "sha256": "58c33027bee0817d72ed9ee9de88157b9b415011136f117b5e63f3980ee8d743",
+      "size": 24898,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/gl/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/gl/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/hr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/hr/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/hr/LC_MESSAGES/coreutils.mo",
+      "sha256": "9d454a45d269ed4bb978bc3f4c6f762158fd0b0bfa7b16fdba673ce9185c49d3",
+      "size": 376566,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/hr/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/hr/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/hu",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/hu/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/hu/LC_MESSAGES/coreutils.mo",
+      "sha256": "9c4818aea3ee8c6210250d6e23af68c51b968bd2558df55f081ad898fce1bc39",
+      "size": 277153,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/hu/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/hu/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ia",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ia/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ia/LC_MESSAGES/coreutils.mo",
+      "sha256": "58ce0969a12d2d8554fe6d34730a7c6f68edb8a707d6d73d348c89a9c2104b5a",
+      "size": 6890,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ia/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/ia/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/id",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/id/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/id/LC_MESSAGES/coreutils.mo",
+      "sha256": "bc759b159a3e0cf39d7aa1fb8ad8e60bde234456200a2dc50fd0ea9153b15554",
+      "size": 121518,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/id/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/id/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/it",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/it/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/it/LC_MESSAGES/coreutils.mo",
+      "sha256": "9172cdf1fff8bf4ccc22947039187223728cdca1c628beeaedcebe23931cc038",
+      "size": 136872,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/it/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/it/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ja",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ja/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ja/LC_MESSAGES/coreutils.mo",
+      "sha256": "d4a06b9bd0ae64f25bf8f8318725a61fedd2b893048e3154cbdf5a8ba5320d0a",
+      "size": 380541,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ja/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/ja/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ka",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ka/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ka/LC_MESSAGES/coreutils.mo",
+      "sha256": "84573d59f9befb9e1fed3ede92a3d6c6873e5f983c89f3050d0d11a3a97f4a6a",
+      "size": 120465,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ka/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/ka/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/kk",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/kk/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/kk/LC_MESSAGES/coreutils.mo",
+      "sha256": "f09f98ff6336c6e3c95624fac84c2e124b3c3842c25458ed1d71433970c4d892",
+      "size": 1615,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/kk/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/kk/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ko",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ko/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ko/LC_MESSAGES/coreutils.mo",
+      "sha256": "614e8b3240c547d4f6bc63018482ff8d18dd327632cca0c8768c1ef1cca50659",
+      "size": 398378,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ko/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/ko/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/lg",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/lg/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/lg/LC_MESSAGES/coreutils.mo",
+      "sha256": "75faa80a3620848727463a4d92e37106763fab293ef167b8cd42165c7048ae04",
+      "size": 175210,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/lg/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/lg/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/lt",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/lt/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/lt/LC_MESSAGES/coreutils.mo",
+      "sha256": "497cdf536c59de40c2e3ef650d5f63fe17388f016afc6dfbccea4948fc068f5e",
+      "size": 28220,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/lt/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/lt/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ms",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ms/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ms/LC_MESSAGES/coreutils.mo",
+      "sha256": "1a3463a444e73ed06318dcfbaf420b673646e8dadeef06ae0e4f202a8078eb2f",
+      "size": 20580,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ms/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/ms/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/nb",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/nb/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/nb/LC_MESSAGES/coreutils.mo",
+      "sha256": "70b753fc047565d589ff858b7fef24b05534da972d5b3968f15b586c60705332",
+      "size": 311991,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/nb/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/nb/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/nl",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/nl/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/nl/LC_MESSAGES/coreutils.mo",
+      "sha256": "f2c8f7fcb095daf2e802b57fd8041bd70cdc7ca5fac29c75ccd9486d7cee8d32",
+      "size": 358241,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/nl/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/nl/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pl",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pl/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/pl/LC_MESSAGES/coreutils.mo",
+      "sha256": "9392ba2d9a5b8eb1cfe44f592ed84296b4ec113873a027fda98765e422e87f03",
+      "size": 390859,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pl/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/pl/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pt",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pt/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/pt/LC_MESSAGES/coreutils.mo",
+      "sha256": "b1a8d4f85f86e1161af94bc30e5cafb4115e7726922fa01f6dc9e2cea6021e1c",
+      "size": 372180,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pt/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/pt/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pt_BR",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pt_BR/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/pt_BR/LC_MESSAGES/coreutils.mo",
+      "sha256": "9792e54601257f3a1d334b32eaeb12bcd5fa7e40fde3527641553a04e20a3ee6",
+      "size": 281633,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pt_BR/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/pt_BR/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ro",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ro/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ro/LC_MESSAGES/coreutils.mo",
+      "sha256": "75e6f8b691b4e394373d2dcb936eb31dcffd779b0419415d1be62e1a41974e5a",
+      "size": 405486,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ro/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/ro/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ru",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ru/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ru/LC_MESSAGES/coreutils.mo",
+      "sha256": "5fdfdf296edaa69d847c9ebbb42c3e59d0a88d05fd8d474141de128c85c88efa",
+      "size": 421052,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ru/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/ru/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sk",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sk/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/sk/LC_MESSAGES/coreutils.mo",
+      "sha256": "0d268fbc979ca871813c47e3036069a5ecaad56b6cdea1ad25fa2bd9a2a423c1",
+      "size": 64228,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sk/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/sk/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sl",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sl/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/sl/LC_MESSAGES/coreutils.mo",
+      "sha256": "87476d9a1cc88e2eab51c0104582f61723692dc157412235e19dc9096a1f5ff1",
+      "size": 319582,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sl/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/sl/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sr/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/sr/LC_MESSAGES/coreutils.mo",
+      "sha256": "2d5a2e08ae7e36c1a01dfe7ee3be94837b063de1b635bd4077d5e3b61b3da5d9",
+      "size": 473419,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sr/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/sr/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sv",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sv/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/sv/LC_MESSAGES/coreutils.mo",
+      "sha256": "a4fd2cc99a13d17a6a296b2056b981588e5100f7bc2aa6f698ce63b316ac8e32",
+      "size": 370124,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sv/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/sv/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ta",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ta/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ta/LC_MESSAGES/coreutils.mo",
+      "sha256": "e3e095716d00175c33f48460bf5898c4d3cbca0c49ceef38952418ba961f50a4",
+      "size": 52070,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ta/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/ta/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/tr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/tr/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/tr/LC_MESSAGES/coreutils.mo",
+      "sha256": "6c73e6e38d66803e4308297769217d903daa6e14aade59af6032505db2c5ff91",
+      "size": 316686,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/tr/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/tr/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/uk",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/uk/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/uk/LC_MESSAGES/coreutils.mo",
+      "sha256": "3b63c74cb1514ef055ddbdd72ca7cefc2b0f0ab4fd2824bf499ec63401eba606",
+      "size": 493259,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/uk/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/uk/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/vi",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/vi/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/vi/LC_MESSAGES/coreutils.mo",
+      "sha256": "40d7d12883f1fdc2b9115b9294a9461bff019ae38413f4ad60e3aadb28bc70e4",
+      "size": 289451,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/vi/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/vi/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/zh_CN",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/zh_CN/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/zh_CN/LC_MESSAGES/coreutils.mo",
+      "sha256": "ff09d2c40b932f75c4d04c54a914147138d0713371ed65cf1ab055ab567ee2e9",
+      "size": 366945,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/zh_CN/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/zh_CN/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/zh_TW",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/zh_TW/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/zh_TW/LC_MESSAGES/coreutils.mo",
+      "sha256": "5017c3217337fe99247e8b585cd7a29b6ea58c32d0fe89c34c4e545645058cff",
+      "size": 255415,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/zh_TW/LC_TIME",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/zh_TW/LC_TIME/coreutils.mo",
+      "target": "../LC_MESSAGES/coreutils.mo",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man/man1",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/b2sum.1",
+      "sha256": "53755d2a77036d23f2f1a0492078ea19b0ffe1983455b7bb1add9b95a2abb8ef",
+      "size": 2572,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/base32.1",
+      "sha256": "644b379b9568dd3556cc905327b2c9a213537be20673ec1024eac109fc8b4dab",
+      "size": 1838,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/base64.1",
+      "sha256": "afc4d082094398f44b873fa70709e7102762e0826d0f536569fd17aa37638a3e",
+      "size": 1838,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/basename.1",
+      "sha256": "96c76b4b6a53af2f7f7305c79dcc77785db03100166a2c6665927e947878b0bd",
+      "size": 1789,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/basenc.1",
+      "sha256": "5f46a1ea06ff55cc180529164b4bf6f3fec3f6d01881c4123e6430a420ac1a05",
+      "size": 2924,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/cat.1",
+      "sha256": "ec1f07b2eb69104c723e6fec8c0f61bc2fe08379ac747ec566087640458f8b2c",
+      "size": 1935,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/chcon.1",
+      "sha256": "e72c662c905f67958aa71cd7a4150a5a35bfa067a57954d79458f6fdf55d4355",
+      "size": 2859,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/chgrp.1",
+      "sha256": "f4447215a27ff5d61eb19f806ec61f31d72d84f76e4b1d01caf84b55b14a26be",
+      "size": 2949,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/chmod.1",
+      "sha256": "6271c1c592000def073eceeedbfba5bdd5c276617388d2ed166145e88de2a720",
+      "size": 7045,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/chown.1",
+      "sha256": "256a4ec5f5465a17e47289db31b9127540b9f88e69b914ccaea4b11fe1609bb4",
+      "size": 4114,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/cksum.1",
+      "sha256": "eeb3de6015d43298b1bb756cf9ce9ef0950f3c07b64a06a050795bd91027a6c3",
+      "size": 3059,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/comm.1",
+      "sha256": "ae7231a2b9c1b9d2f1a5bf2c9cf3967a0e2ff585ccbe0618f7004195ec0a3589",
+      "size": 2175,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/cp.1",
+      "sha256": "99b5f7957f2bf8ceb2eca8f455f6f9020bd2d3abaee552c798f2c591bb28ed26",
+      "size": 6646,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/csplit.1",
+      "sha256": "4020f56dc3ff946c3c96f821e72c065dac69927a45bc53c1db1cc900649c920a",
+      "size": 2315,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/cut.1",
+      "sha256": "4748413722cd0d81aeb596165020b3b4394daae6215d9ef70a19087e6a3c0c19",
+      "size": 2612,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/date.1",
+      "sha256": "2ebf67a6fad52408bd22d9f49fc931814b4ffd76ac852e3ad65436252a1b8659",
+      "size": 6460,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/dd.1",
+      "sha256": "6fb4427da82ff2d03d2ab1c44e6dec55be688d9a9a2865530ea41fe2497456d9",
+      "size": 3872,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/df.1",
+      "sha256": "3656d6ab0d831a37c48d9f58a85e4fc1aee700630839fab33c82d3d5cffb2206",
+      "size": 3979,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/dir.1",
+      "sha256": "79e98953f58acd6513fa90d6405c5356e01c5cd10fe7cd2e32c91a177a414f39",
+      "size": 7961,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/dircolors.1",
+      "sha256": "4503feb00d65fba11f6750a395c2cda0a848cd28f7ce716a92a14a0976049110",
+      "size": 1673,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/dirname.1",
+      "sha256": "3a967d1ddac13e9277dc15d72932326c99dd980a82496920d6d287feb323c6c8",
+      "size": 1463,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/du.1",
+      "sha256": "624111f420ac0a36c1dc12e8ddaaf0bc93cbd84b46ce1570c494485feda4af9d",
+      "size": 4959,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/echo.1",
+      "sha256": "a7c3eaeebba1d8e5de867ecfeb182d2d4f75c0c04954c7afed5c591019498492",
+      "size": 2003,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/env.1",
+      "sha256": "f8cf8e65374664121f55a70d09f76fe2a1ba70246b964aea15392427bc99d074",
+      "size": 3609,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/expand.1",
+      "sha256": "d017e7dacc934391e4c6f9bd8703994f25644786e564d3bad9f70519aa304f8d",
+      "size": 1752,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/expr.1",
+      "sha256": "29bb5fc74eea3af0a88e05b5845d3d9f4cccf83336b44b8ddc91214f900b5712",
+      "size": 2743,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/factor.1",
+      "sha256": "c01ac32eae6b1a9d5fee3df11e393222b2494640710b822a5a00eb369ca40604",
+      "size": 1270,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/false.1",
+      "sha256": "74ebfaf11ae96cbfa3d83ddfd2d0ef63ecb50779a31c1ac7eb0719782881b84e",
+      "size": 1291,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/fmt.1",
+      "sha256": "8b50963b4c5fab4467c94f7fc81ae6668fea2358cdccf72acf61803f91eeb933",
+      "size": 1967,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/fold.1",
+      "sha256": "fff37242fbec58222e9087fcbb44f521acb21ee6aa69f27e8c07422bc22b2454",
+      "size": 1523,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/groups.1",
+      "sha256": "127ff4c25b891273b4c0b2bb8180cdeb8c1a10c095a90ac459ac53bfca6f285e",
+      "size": 1238,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/head.1",
+      "sha256": "2c3d740d20263e2850b85c11aa56068751fccf8bfdb4f7e8f5d08e2d5f32375c",
+      "size": 2118,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/hostid.1",
+      "sha256": "1723b748f3a2321f8bfdd9e163556fc90f506438056e94a1b14d902a776dbf95",
+      "size": 1126,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/id.1",
+      "sha256": "8044885b26f098b4c371c33f45230fcbebeba412d97b28550ec19025fa3dec38",
+      "size": 1850,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/install.1",
+      "sha256": "61f3dcb4eab64b26e454d7137500d6f5b4f5aadf2f426e004d18a92257362b49",
+      "size": 4193,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/join.1",
+      "sha256": "b3b353a502a49b4e90f94fd4ffd24e326c549d11ddeb2d9b93c526faeed91383",
+      "size": 3201,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/link.1",
+      "sha256": "190a6e0a1ea0328635109e3aba353342253403f1b41012f74a07b783cb4c6687",
+      "size": 1150,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/ln.1",
+      "sha256": "d5af2d730cdc3873678c2376e0f7dfdada7404778a886e7299f27b2875c137ad",
+      "size": 3761,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/logname.1",
+      "sha256": "a2845915fea3465e942a8df914ff6bfbf3394e10dd2c25678ef151c79bfeccd2",
+      "size": 1068,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/ls.1",
+      "sha256": "a87fe748f206aa801d77991c12661261d8d451f5d88cbd92f791821787420f6e",
+      "size": 7983,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/md5sum.1",
+      "sha256": "d1e0bb2963977d2551aca971b77f130074d56c3624e87e3b4a5c37fab4d2082d",
+      "size": 2628,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/mkdir.1",
+      "sha256": "45920663b543e109f7fac9ee1f84cdc2eb2bb31b9f28806633a138c19bca9164",
+      "size": 1715,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/mkfifo.1",
+      "sha256": "556ffa161e748837ce045b1976f858d5af9a119218fa219eadd15e30f7129e8c",
+      "size": 1471,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/mknod.1",
+      "sha256": "6bd2e3e1d8add4a6fde3df619057eeb0b12f4c598ca0abb5d9e1663cffc81fbc",
+      "size": 2075,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/mktemp.1",
+      "sha256": "6a009b9b555d1f70e3d0f75deb06693d9991e9f6dc56c6e47bb8a14dc7428f4d",
+      "size": 2285,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/mv.1",
+      "sha256": "8902b30ea3a321581bb90a5543c6ff6641c6461bfc80a80cccf779cb9521bea3",
+      "size": 3812,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/nice.1",
+      "sha256": "6cb5f941e5ac3e5771f03083d67b62d3c6e82bb3e488912c65f15aff10f4a77b",
+      "size": 1875,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/nl.1",
+      "sha256": "c12be67430997fd04ba851f4f5b7a4ecb81b737ea72a1e07d94b831a368bf65a",
+      "size": 2999,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/nohup.1",
+      "sha256": "4b845670b6e24799d4bc6a6ce805af01bb8f26e2090c008f14f5b0226a688001",
+      "size": 1798,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/nproc.1",
+      "sha256": "036d420aa8f2a1a0fd1877189df932889d079fcff319fb40be059ad450296443",
+      "size": 1289,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/numfmt.1",
+      "sha256": "aea2a6d46a0a709ab80f91475a871a7d2b871c419d86e9acf1587d30cdc11290",
+      "size": 5206,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/od.1",
+      "sha256": "94d398e01debd2f6c050e9306cb33172be2eb8985f45aa45fd1aa8a4cce5e113",
+      "size": 4821,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/paste.1",
+      "sha256": "b5a9f11001b76022e5ede13e797dd30f92dcfce8b4247ef573bc725bf3c73829",
+      "size": 1547,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/pathchk.1",
+      "sha256": "cfa56565bb3b9086efb4285cc660645f8dfaba5e425beea48f58246a42a65658",
+      "size": 1320,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/pinky.1",
+      "sha256": "7fa83cdd5b61c292c59dc9754a8557d8de640d8f1a3816a979796e636b083b0d",
+      "size": 1803,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/pr.1",
+      "sha256": "7d53ccdcded5dcc7af54a4bec0aa773f289387666f3511597e9000954ef50205",
+      "size": 4769,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/printenv.1",
+      "sha256": "68f9060aa01d082023935af1a5897f16d94650c92f1d5989efbc4b46a014abe5",
+      "size": 1470,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/printf.1",
+      "sha256": "4d554fbe4c558a97f51ef3e892191758341b633ed918bfd914b3957cb3770352",
+      "size": 2326,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/ptx.1",
+      "sha256": "8b8d3c3b1deff64ff6099be3d920d20538d90be9ece37f8cb94b0f5f7cda7b3a",
+      "size": 2824,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/pwd.1",
+      "sha256": "6359ec2a709a2d548acbc5051e8b96273626655358efc6ce3f7e478c87665aa2",
+      "size": 1475,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/readlink.1",
+      "sha256": "190e86845cbc698d371822b26ede40924c8bef1d54146384f97a494e16957b53",
+      "size": 2083,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/realpath.1",
+      "sha256": "dc10eb038054cdc576823914a8aa8159156c81226666edbc2542191438f2ba57",
+      "size": 1886,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/rm.1",
+      "sha256": "73f1e21b6637e5299a1dc7ef3d1698f75fb766a19db2cf05b79b9d379fefb649",
+      "size": 3602,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/rmdir.1",
+      "sha256": "cd1f2aadbe1d38ed3a8f19e4ba36d4556017f65a1d8f4eaae92ecc229595bf91",
+      "size": 1403,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/runcon.1",
+      "sha256": "7487864756bb91a1f3a63d6184c551967348f261f398a29db0763442410bf112",
+      "size": 2360,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/seq.1",
+      "sha256": "11df0d25b0df67a501a065bb16f5514b2d1aaf964c13d5972b0ff3c2f904480d",
+      "size": 2259,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/sha1sum.1",
+      "sha256": "3cfdcf52ba979968b1d18f919f4e8fd2f3173f04749ed2d524e6dd9cea1d6415",
+      "size": 2641,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/sha224sum.1",
+      "sha256": "f81e5dce45b5aade649fe28241e97439997560b686e6f2f2366c7756def591a1",
+      "size": 2377,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/sha256sum.1",
+      "sha256": "d4f24d47f2fb991b27d7e46181ad763a4c60c72549c8e44de90f32f6ef48980d",
+      "size": 2381,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/sha384sum.1",
+      "sha256": "c1ce93ae9914d39a153de93ccbb17ce1043303a3d10213f1dce5ef8679b899c5",
+      "size": 2381,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/sha512sum.1",
+      "sha256": "ddfab3aab40da4649c706aa61929ca79fa762ace184dbfdb88b570984c5ece34",
+      "size": 2381,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/shred.1",
+      "sha256": "daa242acc12ff8cf394ef835e6f52539fcf8ef53aeb1586e05dbc68a9a10686e",
+      "size": 2867,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/shuf.1",
+      "sha256": "d4a2386fbc025842b23aed89411bb43595655a4fecf7f4dc7beb37b2f8b28eb1",
+      "size": 1890,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/sleep.1",
+      "sha256": "9914e60f2aa0c2648516d9a323f464bcee87f1ea015b8e596464da9726da87bf",
+      "size": 1304,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/sort.1",
+      "sha256": "34bc486bbde5870b4e31579d20704a8eb3072b7af01309d11cfd1afd255a938c",
+      "size": 5151,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/split.1",
+      "sha256": "fa2b3a2951d04c8d27f38f68a01d6d8654e476962637382cf1027d1d209e658a",
+      "size": 3226,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/stat.1",
+      "sha256": "3ff7852e4ab38f5bb60facd6e820746bd5f27b299cb1d94a0772a8cb626db836",
+      "size": 4653,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/stdbuf.1",
+      "sha256": "10985f375348c0063221578c9ca54944971f7ac96cdbce39ea3cd30e3de63bb9",
+      "size": 2695,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/stty.1",
+      "sha256": "b1f1c19ec534e5b553c4c164c69023679969b0261ed01857c564964cd6597798",
+      "size": 8782,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/sum.1",
+      "sha256": "49a8ee059422353238ae7788b328fa2d1a9d293aa61d02d00bd51450ab6fce1e",
+      "size": 1297,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/sync.1",
+      "sha256": "f0591781e1efb2d8bcd260c497ea6c5c9b30810892fc4c90da446fe0b1c6704e",
+      "size": 1523,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/tac.1",
+      "sha256": "58d130e30c2844250974657c7bfa4ff38e1c2a9e90e57117384ff643ab776629",
+      "size": 1526,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/tail.1",
+      "sha256": "aeedee1264ecefa3113b53b9959eefe5dd886b2699c62a925a8a5784db211d7b",
+      "size": 3516,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/tee.1",
+      "sha256": "e83f715e05436415050c8d025cd0cdc7fb108108c1fd25ec511f8189e823e0ea",
+      "size": 2047,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/test.1",
+      "sha256": "7a54d936804360fae4b3e1161122c44257807f6cb94c4524d8370463fec1317f",
+      "size": 4465,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/timeout.1",
+      "sha256": "4476d6b56097d1b3e136d13f5bdb5995bfe317d1b8d312782efbc9fa3ec8273a",
+      "size": 2856,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/touch.1",
+      "sha256": "1de0d1a6dd7a729d65d9b651702510d648490007a5107cec085ca409c5136bc7",
+      "size": 2854,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/tr.1",
+      "sha256": "c20cefc936f514281123531a3e06c4d5dc9a9d30cd3248a7bacbc232a58331af",
+      "size": 3422,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/true.1",
+      "sha256": "f711283d8e52e9ec730460951cb332f560a3ae1ced2f20419594629495a929e7",
+      "size": 1282,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/truncate.1",
+      "sha256": "8aa08c02b6a1ccbd89ee44091ebcf9b7738cb39cac3dfd8eecfacaa2808a25fc",
+      "size": 2205,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/tsort.1",
+      "sha256": "d980dada0f89bf29c699d1822cb1a93c4b036aac198812466ce64cc764aa9f1d",
+      "size": 1151,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/tty.1",
+      "sha256": "0d4c6cc1408962c78a44da39fac56dfce2a94b77060d87c727a6e05b90c4a37d",
+      "size": 1192,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/uname.1",
+      "sha256": "6742f67af140c4c41a39b4311ff9469e0d6daa9b8bb9c5800f076140c1229da7",
+      "size": 1796,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/unexpand.1",
+      "sha256": "8e766decea367fd64402e76a0eca8788aaec4946d6380144b1f09f3b28fa7ebc",
+      "size": 1885,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/uniq.1",
+      "sha256": "62af5e26ff9cb3f13be9d373f8f6a3690335033ce0bd5249408856e3fb3a03ed",
+      "size": 2607,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/unlink.1",
+      "sha256": "1fbbc7334507133bdb6846c445504f0d3ee10b3f3152e4094fb72aa03d9f50f3",
+      "size": 1142,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/users.1",
+      "sha256": "768c556a35dbc4ec06c1b959bf0bddf2bf9cc0ca64d946351ad2bb3cfc4803d0",
+      "size": 1280,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/vdir.1",
+      "sha256": "f2236699f8633a71fa94e2178921bcbb51f4117e4cc4313e91b944d4d8b97227",
+      "size": 7966,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/wc.1",
+      "sha256": "6a47b5e417869f01eef0d4e401ab3ae1b0dd8eb8b85b9302cfe1fda285e8979d",
+      "size": 2111,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/who.1",
+      "sha256": "9848fb89f6b81ad251d1e0933c6e76d71e96ef3d899d1c2516cc16f099a6d988",
+      "size": 2325,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/whoami.1",
+      "sha256": "30846523d63e447efff4812511211e29797cb6a69e949d3d8ced625530c0d63b",
+      "size": 1104,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/yes.1",
+      "sha256": "a78cad201864c6cd68e4fb4cbd1883f26a33077201e5e35017544caa19390995",
+      "size": 1103,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man/man8",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man8/chroot.8",
+      "sha256": "4fe5cee704c032f921236d77df5223222315c4ef9a7394ed5ae296329dd3e371",
+      "size": 1714,
+      "type": "file",
+      "uid": 0
+    }
+  ],
+  "package": {
+    "name": "coreutils",
+    "source": {
+      "sha256": "e8bb26ad0293f9b5a1fc43fb42ba970e312c66ce92c1b0b16713d7500db251bf",
+      "url": "https://ftp.gnu.org/gnu/coreutils/coreutils-9.7.tar.xz"
+    },
+    "version": "9.7"
+  },
+  "schema": "alpbahOS.package-files/v1"
+}

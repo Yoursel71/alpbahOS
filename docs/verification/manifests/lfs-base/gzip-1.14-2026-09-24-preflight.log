@@ -1,0 +1,82 @@
+MISMATCH /usr/bin/gunzip
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/gunzip", "sha256": "4f13375fc268dcc8f94112fdcf9e2a334487e8f14a0ba1d830ba3173da3aa3df", "size": 2266, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 493, "path": "/usr/bin/gunzip", "sha256": "b5bc88abd17778bc1d83e0975318a6dd5686957f8e8aa21464d7e9ba3746b7dc", "size": 2268, "type": "file", "uid": 1001}
+MISMATCH /usr/bin/gzexe
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/gzexe", "sha256": "cc8412a9e391cb1ec844a5cacbe8a037d117dae9ed73537382842fd120adc618", "size": 6379, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 493, "path": "/usr/bin/gzexe", "sha256": "2aa3c4d7fde7158479905dbfd24a5e6bdb62492f6df038427588a3215afeb7d6", "size": 6389, "type": "file", "uid": 1001}
+MISMATCH /usr/bin/gzip
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/gzip", "sha256": "07c79de58e310f531d672b56d8c6020cce0202e7a6192de48e8c8dcb16c8b6a4", "size": 388288, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 493, "path": "/usr/bin/gzip", "sha256": "346b195783d875d9cd93847516e61a9aa01be2175f8b8749cc0d1989021d117f", "size": 394352, "type": "file", "uid": 1001}
+MISMATCH /usr/bin/uncompress
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/uncompress", "sha256": "4f13375fc268dcc8f94112fdcf9e2a334487e8f14a0ba1d830ba3173da3aa3df", "size": 2266, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 493, "path": "/usr/bin/uncompress", "sha256": "b5bc88abd17778bc1d83e0975318a6dd5686957f8e8aa21464d7e9ba3746b7dc", "size": 2268, "type": "file", "uid": 1001}
+MISMATCH /usr/bin/zcat
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/zcat", "sha256": "92d54e643e95fe03732613bc48cf744d95bb7029779aa6be4ce1a32a58feb1ef", "size": 1904, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 493, "path": "/usr/bin/zcat", "sha256": "d4fe539bb0abe80938751b07d329d3fa19b7914c43f893313f9cc722bc99f8fb", "size": 1906, "type": "file", "uid": 1001}
+MISMATCH /usr/bin/zcmp
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/zcmp", "sha256": "4b2b07ca9fa39a3320eb0272ad563063eb23429738cc208a152fe66dd95a5ee9", "size": 1609, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 493, "path": "/usr/bin/zcmp", "sha256": "39d52e85572c87a6126337862806ef433f3d37658ec3c1b9ba560c3d22d3cb5f", "size": 1611, "type": "file", "uid": 1001}
+MISMATCH /usr/bin/zdiff
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/zdiff", "sha256": "89172285195f17bde1d1c8ebb5aca9c633f80722a7434632bf88fbce8171721d", "size": 6386, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 493, "path": "/usr/bin/zdiff", "sha256": "7b47f44736b4fefc39fbbd207006b5e6b62294a979cdce96197aafa51a08b350", "size": 6388, "type": "file", "uid": 1001}
+MISMATCH /usr/bin/zegrep
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/zegrep", "sha256": "67ee7fadec7ea53b4c1f8cfc3c81427b29c0b1381e80b55642617620c84d0bcc", "size": 29, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 493, "path": "/usr/bin/zegrep", "sha256": "e57244dceacd2c86f2516f309b413de26bf33dfb88f809bd3c99b8374b20a7d2", "size": 31, "type": "file", "uid": 1001}
+MISMATCH /usr/bin/zfgrep
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/zfgrep", "sha256": "87ab5f4c7cb344e409d614d1a69cc156b3b1053d6ae0b59d8e2c2131f3e63e5a", "size": 29, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 493, "path": "/usr/bin/zfgrep", "sha256": "6ff2d4bf718b73c9f90c3f9fa235a2dce14a97e340d81e085aa1cdeb615a1a1d", "size": 31, "type": "file", "uid": 1001}
+MISMATCH /usr/bin/zforce
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/zforce", "sha256": "b6deb64186017e612c46becbd205d1927fa4579b423db057b29375eb1f4781ff", "size": 2007, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 493, "path": "/usr/bin/zforce", "sha256": "2050fc3f5d406d41e59fd8f60b5eb9ae6b145ba560dafb92e25528df9d83f686", "size": 2009, "type": "file", "uid": 1001}
+MISMATCH /usr/bin/zgrep
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/zgrep", "sha256": "9ed2a55544f147a1d351ca0a6a968cfd85d6c217db922a7a57920665585f9a82", "size": 8145, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 493, "path": "/usr/bin/zgrep", "sha256": "147bd9ec5ea51a47c31ed81c1606017b53d90b092b553382bc69df8df7213e5c", "size": 8147, "type": "file", "uid": 1001}
+MISMATCH /usr/bin/zless
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/zless", "sha256": "1b059cb72e4584bdc3ddfe500d8ddbec48b98f502c4fb8e9d43278fdb15b8d0b", "size": 2365, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 493, "path": "/usr/bin/zless", "sha256": "aad864d90b476ae8e93b66fc210820d04dfc4cd5ced82fcf28e6ff763b7101e9", "size": 2367, "type": "file", "uid": 1001}
+MISMATCH /usr/bin/zmore
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/zmore", "sha256": "997095bd14389f3dac9949bf274f17b1ac0845ca7e81e406d386516fb3fa59b3", "size": 1768, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 493, "path": "/usr/bin/zmore", "sha256": "b30ddab3c5ad399f5728e55a02f0820125a0fe7b041c76a04a2d18541541fbba", "size": 1770, "type": "file", "uid": 1001}
+MISMATCH /usr/bin/znew
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/znew", "sha256": "73cdadc8caba21ce1b04d507b1499ad95974c5d1d4f95453d470f9e17746c151", "size": 4561, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 493, "path": "/usr/bin/znew", "sha256": "063af561d651f142b34e795923e0f787c8814fc637a118b81dadbe34d392a77b", "size": 4563, "type": "file", "uid": 1001}
+MISMATCH /usr/share/info
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/info", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/info", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/info/gzip.info
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/info/gzip.info", "sha256": "c351f2aa59b387a15dae76e187da38a47fa156b3fef7a0d70d77cdfcce569827", "size": 48302, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/man/man1/gunzip.1
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/man/man1/gunzip.1", "sha256": "022105f453b1822f8a8c36283ae127dd764cbd57ef0e990ab419f7ac53e8619a", "size": 16, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/man/man1/gzexe.1
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/man/man1/gzexe.1", "sha256": "f8d32e49ba7eed12eaae34c62a5091a2a2130e22a72f34b4cef7ddf587ca21a7", "size": 1443, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/man/man1/gzip.1
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/man/man1/gzip.1", "sha256": "107c35463c2fb970318b34ccca09db100e1b99bfab793196eab68ef91d350b78", "size": 16682, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/man/man1/zcat.1
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/man/man1/zcat.1", "sha256": "022105f453b1822f8a8c36283ae127dd764cbd57ef0e990ab419f7ac53e8619a", "size": 16, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/man/man1/zcmp.1
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/man/man1/zcmp.1", "sha256": "d5499ae1f25924d87bada83daa881e7f26564fec01b5a8953d31b7c2ac65782e", "size": 17, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/man/man1/zdiff.1
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/man/man1/zdiff.1", "sha256": "b8bd004f0bf4d81292281032ce1d0800e66e3aaa014bd66ead4bcaa996715c63", "size": 877, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/man/man1/zforce.1
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/man/man1/zforce.1", "sha256": "43ae0305a79822418342714eef863f26de32b9ad7f237b6b83ddc4560d2e63b3", "size": 605, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/man/man1/zgrep.1
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/man/man1/zgrep.1", "sha256": "e56da93c4f4a7aa814aeec9bfe0f73b171c5e9508c21c009e4566241dfbea2cc", "size": 1130, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/man/man1/zless.1
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/man/man1/zless.1", "sha256": "39f094008ab0283c3029ac23c0355c8b1dcf9b7e190cb86c5190a7da3218658f", "size": 2005, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/man/man1/zmore.1
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/man/man1/zmore.1", "sha256": "2338471b362ac4a2cdcb44dd1cecda8126909e6deca0b302b0f1aabd9b3d85df", "size": 3736, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/man/man1/znew.1
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/man/man1/znew.1", "sha256": "74b4d64751f796dd3d4818dd2f24c1fb613e5f0e7d5a0e123afced48cf7d95dc", "size": 1142, "type": "file", "uid": 0}
+  actual:   MISSING
+package=gzip version=1.14 entries=32 matched=5 mismatched=27

@@ -4,6 +4,8 @@
 >
 > **Neden yazıldı?** 23 Eylül 2026'da bir ajan, alpbahOS'u **test VM'inin içinde** (Gen1 guest) yeniden derlemeye kalktı. Oysa bütün derleme altyapısı Builder'da hazırdı. Test VM'i bir *ürün*dür, *atölye* değil.
 
+> **Güncel VM durumu (24 Eylül 2026):** Kullanıcı `alpbahOS-M2-SSH-Gen1` test VM'inin silindiğini doğruladı. Gen1 BIOS sonuçları tarihsel kanıttır; güncel canlı test hedefi Gen2'dir. Son dosya kontrolünde Gen1 release ve çalışma VHDX'leri F: üzerinde bulunuyordu; VM kaydının silinmesi bu dosyaların da silindiği anlamına gelmez.
+
 ---
 
 ## 1. Harita: dört ayrı yer, dört ayrı görev
@@ -23,7 +25,7 @@
 │   │  /mnt/lfs/tmp/alp-logs/  → derleme logları                                         │   │
 │   └────────────────────────────────────────────────────────────────────────────────────┘   │
 │                                                                                            │
-│   ┌──────────── Test VM'leri (Gen1 = BIOS, Gen2 = UEFI) — ör. alpbahOS-M2-SSH-Gen1 ─────┐  │
+│   ┌──────────── Test VM'i: güncel Gen2 = UEFI (Gen1 BIOS VM silindi) ──────────────────┐  │
 │   │  ÜRÜN. Rootfs'ten üretilmiş imajı açıp DENER. Derleme YAPILMAZ.                    │  │
 │   │  2 vCPU / 2 GiB RAM; derleyici yükü taşıyacak şekilde tasarlanmadı.                │  │
 │   └────────────────────────────────────────────────────────────────────────────────────┘  │
@@ -57,7 +59,7 @@
 | `alp`'in testlerini Linux'ta koşmak | **Builder → `/tmp/<ajan>-<iş>-XXXX`** | Geçici dizin kullan. `/mnt/lfs`'e ve Builder'daki Git reposuna dokunma; iş bitince dizini sil. |
 | Yeni VHDX imajı üretmek | **Builder** (rootfs'ten) → **F:\alpbahOS-build\artifacts** | Rootfs'ten üret, SHA-256 al, `.sha256` ve `.txt` manifestini yanına koy (§4.2). |
 | Kullanıcı hesabı, parola, SSH anahtarı eklemek | **Builder → rootfs'e provisioning betiğiyle** | M1 imajından kopyalama yok; tekrarlanabilir betik kullan (`docs/IMAGE_PROVISIONING.md`). |
-| Açılışı, ağı, reboot'u denemek | **Test VM** (Gen1 ve Gen2 ayrı ayrı) | login → `networkctl status` → hosttan ping → kontrollü reboot → tekrar. |
+| Açılışı, ağı, reboot'u denemek | **Güncel Gen2 test VM** | login → `networkctl status` → hosttan ping → kontrollü reboot → tekrar. Gen1 BIOS sonucu tarihsel kanıttır; VM silinmiştir. |
 | Plasma oturumunu denemek | **Test VM, VMConnect konsolu (tty1)** | SSH oturumu DRM seat vermez; SSH'den Plasma testi geçersizdir. |
 | Belge, karar, backlog güncellemek | **Windows → Git ağacı** | Durum → `CURRENT.md`, karar → `DECISIONS.md`, kanıt → `WORKLOG.md`. Başka yerde tekrarlama. |
 | Belge tutarlılığını kontrol etmek | **Windows → Git ağacı** | `python docs/handoffs/claude/tools/check_docs.py` → 0 bulgu olmalı. |
@@ -97,7 +99,7 @@ WORKLOG'a **commit'i ve hash'i** yaz. Hash eşleşmeden "şu commit kuruldu" yaz
 
 ### 4.4 Test VM'inde kabul testi
 
-Gen1 **ve** Gen2 için ayrı ayrı:
+Güncel canlı kabul testi Gen2 içindir; Gen1 VM kaydı silinmiştir ve BIOS sonuçları tarihsel kanıt olarak tutulur:
 1. Konsolda `alpbahos login:` istemi.
 2. Giriş → `networkctl status eth0` → DHCP adresi.
 3. Hosttan `ping` (4/4).

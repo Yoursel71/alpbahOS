@@ -1,0 +1,34 @@
+profile=pro-audio pipewire_sink=46 source=alsa_input.platform-snd_aloop.0.pro-input-1
+--- active PipeWire links ---
+alsa_output.platform-snd_aloop.0.pro-output-0:playback_AUX0
+  |<- pw-play:output_FL
+alsa_output.platform-snd_aloop.0.pro-output-0:playback_AUX1
+  |<- pw-play:output_FR
+alsa_input.platform-snd_aloop.0.pro-input-1:capture_AUX0
+  |-> pw-record:input_FL
+alsa_input.platform-snd_aloop.0.pro-input-1:capture_AUX1
+  |-> pw-record:input_FR
+pw-record:input_FL
+  |<- alsa_input.platform-snd_aloop.0.pro-input-1:capture_AUX0
+pw-record:input_FR
+  |<- alsa_input.platform-snd_aloop.0.pro-input-1:capture_AUX1
+pw-play:output_FL
+  |-> alsa_output.platform-snd_aloop.0.pro-output-0:playback_AUX0
+pw-play:output_FR
+  |-> alsa_output.platform-snd_aloop.0.pro-output-0:playback_AUX1
+--- active paired ALSA devices ---
+===pcm0p
+format: FLOAT_LE
+channels: 32
+rate: 48000 (48000/1)
+state: RUNNING
+owner_pid   : 6134
+===pcm1c
+format: FLOAT_LE
+channels: 32
+rate: 48000 (48000/1)
+state: RUNNING
+owner_pid   : 6134
+record_pipeline_exit=0 pw_play_exit=0
+c4397e32b68320f1356085996844dc081d2450b4d0e60030f352269792d0d7ed  /tmp/m06-pro-pair-final.raw
+bytes 960000 samples 480000 nonzero 456932 peak 16000 rms 11047.34

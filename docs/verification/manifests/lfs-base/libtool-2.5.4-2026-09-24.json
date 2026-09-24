@@ -1,0 +1,695 @@
+{
+  "captured_at": "2026-09-24T03:22:15+00:00",
+  "entries": [
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/libtool",
+      "sha256": "3bcaeed83b8b19efb3b347bf0688136a1d5e6aff2281ad8b1c567d745336e2b0",
+      "size": 378814,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/libtoolize",
+      "sha256": "269526cb4590d5878bdba9314b35aff5b2ca72dc7613f2467143d7d3b2942f48",
+      "size": 137597,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/include",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/include/libltdl",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/libltdl/lt_dlloader.h",
+      "sha256": "814d764d66bc893f3a24466fb35abd7cbd295e213894d3ddb2c9cf59d7b0f35b",
+      "size": 3040,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/libltdl/lt_error.h",
+      "sha256": "857438b35a213edae7613fdf6da4489a8c94c7e04b225e7ad716b34ed20fc94e",
+      "size": 3474,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/libltdl/lt_system.h",
+      "sha256": "2d533148595864a575c45382c77c10c287c955e86427844246eb8981aedb8dee",
+      "size": 5174,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/ltdl.h",
+      "sha256": "c5729b4caa34dbc9a08281edae86b96b98ef0c2c6693169ab71d0470e2855f89",
+      "size": 5534,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libltdl.la",
+      "sha256": "986522fcbcc6bef5c1fa4f0bb0470343622bd57a4fc4d931a65fdf7f54487bc3",
+      "size": 911,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libltdl.so",
+      "target": "libltdl.so.7.3.3",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libltdl.so.7",
+      "target": "libltdl.so.7.3.3",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libltdl.so.7.3.3",
+      "sha256": "f9d20a9886c8395c0b7e58bca354afcc8de30693dea6ff997e61602a1455f15a",
+      "size": 141608,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/aclocal",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/aclocal/libtool.m4",
+      "sha256": "fe3baac94510d4b563ed7562035bdff366e37f9e0ac274bf10e4f22d08e8664e",
+      "size": 310981,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/aclocal/ltargz.m4",
+      "sha256": "e7c3461b659aff0ce041eb1e6f7a174e2a6011262ee5ce23dbae6e7f9b2c5044",
+      "size": 2670,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/aclocal/ltdl.m4",
+      "sha256": "2242ebd05824be338a6e7158bfc6072fb57a43d3d47c48d593aaa7ba1d01e3d4",
+      "size": 30151,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/aclocal/ltoptions.m4",
+      "sha256": "4cc29b667909fcde7a08c984367bce1a1902c860acf8774794484a2e1adeb07b",
+      "size": 15441,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/aclocal/ltsugar.m4",
+      "sha256": "4f022724d2703c0c318eed04e04e833b82761b0a0cc02c865d0b7c1e5b2c6aba",
+      "size": 4395,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/aclocal/ltversion.m4",
+      "sha256": "40207e691ec7d3f06cedd592e50e44d7bc187b21ad791aeabdd50871b6606799",
+      "size": 714,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/aclocal/lt~obsolete.m4",
+      "sha256": "5a416905cc27c5d99ff81b61b9cf6a85c168b80178bb88f4c3eaf2e8f76c8cac",
+      "size": 6151,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/info",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/info/dir",
+      "sha256": "f0a689def4cf6c9601886c840b557d2279972e267b2b737745d67a05aef0b746",
+      "size": 910,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/info/libtool.info",
+      "sha256": "7076b015e3dfe0b526fe7d1135ebd9df4e723f9cfd49fd7e0896915b553c2a3e",
+      "size": 4430,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/info/libtool.info-1",
+      "sha256": "074c3c9e079dbccf7b2cef0a4c5681e419d1b2cc4699a890131e8d019adbdbaa",
+      "size": 300730,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/info/libtool.info-2",
+      "sha256": "d0cab2c609f70900527f4b867de8e4cc5e22eefc98e469653fb362a3534ff0dd",
+      "size": 69712,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/libtool",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/COPYING.LIB",
+      "sha256": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95",
+      "size": 26419,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/Makefile.am",
+      "sha256": "badcb6e4142a721960b893678da7a26f57c6a1464024d9100840f577d7829090",
+      "size": 4991,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/Makefile.in",
+      "sha256": "c7c709ac123905e424bc483acb7fda037f6618665b415a466d8bd84b03147d04",
+      "size": 57059,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/README",
+      "sha256": "26e2d89c51590f945f7b4c7ce1223568892ef654751ddb347d512370b725240d",
+      "size": 707,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/aclocal.m4",
+      "sha256": "c07c5e11911116a489314f15cae1de92a2fe8a662cc0aaf06ca102f115c83c0a",
+      "size": 48868,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/libtool/build-aux",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/libtool/build-aux/compile",
+      "sha256": "07089708e9aba8bcd58d7d4b150a6a7d9f6669dda23a169e6609a448332b9800",
+      "size": 7621,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/libtool/build-aux/config.guess",
+      "sha256": "e3d148130e9151735f8b9a8e69a70d06890ece51468a9762eb7ac0feddddcc2f",
+      "size": 50743,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/libtool/build-aux/config.sub",
+      "sha256": "11c54f55c3ac99e5d2c3dc2bb0bcccbf69f8223cc68f6b2438daa806cf0d16d8",
+      "size": 39713,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/libtool/build-aux/depcomp",
+      "sha256": "62cde010a373e569b5921b8ef1ef34e1f47f2c7b62086c7e8b4a67e4737b79c2",
+      "size": 23695,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/libtool/build-aux/install-sh",
+      "sha256": "250865025dcfc1b511e3899a16f793a7d7717d3ac2af1bdea8af9171bf1dc9ff",
+      "size": 15437,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/build-aux/ltmain.sh",
+      "sha256": "30712e3401deb6e6d5255c71f7bd57f374429d220cfc199ba1f2376ab42c2e35",
+      "size": 337554,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/libtool/build-aux/missing",
+      "sha256": "1509d72c676d3b757ab9a0b251cb4c2ff5f1391d694839e71091358cb5e18f69",
+      "size": 7728,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/config-h.in",
+      "sha256": "15129ff16d6860635d3509a68a4f4b79fe9cd0d93231a5cde2d4fda061153fa6",
+      "size": 5008,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/libtool/configure",
+      "sha256": "5753264ed8a2cf716b62cad35dcb06cb90f3f5303246e6cec1546a490a9c266e",
+      "size": 511153,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/configure.ac",
+      "sha256": "c613a794e52a013fad639a6ecc6419c805308d1fb57fb50d2c39fed53ee04fd2",
+      "size": 2452,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/libtool/libltdl",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/libltdl/lt__alloc.h",
+      "sha256": "42333b2306e6a5d806991715deedc74206576fb10f16242d7bbad8b219e2048a",
+      "size": 2012,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/libltdl/lt__argz_.h",
+      "sha256": "834b82a92305db1dbf7a7dcde8370d282b113534207cb1b8d2bb847f3bfe1a40",
+      "size": 2058,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/libltdl/lt__dirent.h",
+      "sha256": "fb234856158fe68a2de88be04bd03faec3d953b53697977efa6d184abcd15ea7",
+      "size": 2356,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/libltdl/lt__glibc.h",
+      "sha256": "60ef02eea0419a3be3196245cd422a410960cf9e5913b588f5e1e26d9ad78d39",
+      "size": 2647,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/libltdl/lt__private.h",
+      "sha256": "7aef91d9a031f3f935461a141f3109e84ce04b5686a5a17a78185bcf341801e0",
+      "size": 4341,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/libltdl/lt__strl.h",
+      "sha256": "aae487e948d0dfe2abb1af3626c5a049ca2a4c77038f941e48245a35ae091f84",
+      "size": 1820,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/libltdl/lt_dlloader.h",
+      "sha256": "814d764d66bc893f3a24466fb35abd7cbd295e213894d3ddb2c9cf59d7b0f35b",
+      "size": 3040,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/libltdl/lt_error.h",
+      "sha256": "857438b35a213edae7613fdf6da4489a8c94c7e04b225e7ad716b34ed20fc94e",
+      "size": 3474,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/libltdl/lt_system.h",
+      "sha256": "2d533148595864a575c45382c77c10c287c955e86427844246eb8981aedb8dee",
+      "size": 5174,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/libltdl/slist.h",
+      "sha256": "97e222679a63e4386fb3227958e36cf3880282e12f16249eafbb2a0bdbf323da",
+      "size": 3062,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/libtool/loaders",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/loaders/dld_link.c",
+      "sha256": "eab0bd421c3e8adb65013e74403b74f25376224f7571c8f4d9d778f90c6dae07",
+      "size": 4398,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/loaders/dlopen.c",
+      "sha256": "fa57385c1b95390d7b7fed33928383b6ab41627bf342754e12b2b3ef5f615350",
+      "size": 7414,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/loaders/dyld.c",
+      "sha256": "cf051bd5d6ea1a3726141ef3dfe512b0cd6961c22eb0c82b10d96362c38af3dd",
+      "size": 13446,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/loaders/load_add_on.c",
+      "sha256": "4a4b27fd3113923297d2945133579edb1afc730cc16b80d17e6328dbbb2e7df9",
+      "size": 4616,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/loaders/loadlibrary.c",
+      "sha256": "988570cf6ce81a2bb55ad693103f1fead92e6ef663d58bf53ace23dca9b7c74a",
+      "size": 10665,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/loaders/preopen.c",
+      "sha256": "8a9c9599f30766f8310a1aa7aedee25c6ca37b2245e6253133d3259455a27e52",
+      "size": 9642,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/loaders/shl_load.c",
+      "sha256": "f601ac9a1870832c6acca5143b11e6d351d974c3e1a006bc6f6da61462ab24a7",
+      "size": 6523,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/lt__alloc.c",
+      "sha256": "8e1c8753c9b3127b53762ad25a0c4aa996b6ff6e95d15c930cb8d927ac24b43d",
+      "size": 2127,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/lt__argz.c",
+      "sha256": "acb2441ba8cc5362f2bdcb0f91ca3738a60ca1e0dcd1df4ad1e545d688ceaa8a",
+      "size": 5726,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/lt__dirent.c",
+      "sha256": "ff14945ce45ba646755faac596125d94e72779b07f6b9c841fed82d52739208f",
+      "size": 2846,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/lt__strl.c",
+      "sha256": "cdd6579efd6fe6eb03294c8e0d1ab7a38bb403257dfa0190041c774fc2c44d5a",
+      "size": 3442,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/lt_dlloader.c",
+      "sha256": "47f23f4db3b2f41414961450d1591a7cff68851a60f8f8405d844a8182feafca",
+      "size": 5989,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/lt_error.c",
+      "sha256": "07b9b15ff27cf29b682d34038b19e24c971cc33cb5418073637b1abebe0ce6c2",
+      "size": 2796,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/ltdl.c",
+      "sha256": "aea3330a04c32f85d3b70a18c0cba7b751ce249bdfecf5f93c2e5389c4303976",
+      "size": 55153,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/ltdl.h",
+      "sha256": "c5729b4caa34dbc9a08281edae86b96b98ef0c2c6693169ab71d0470e2855f89",
+      "size": 5534,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/ltdl.mk",
+      "sha256": "2be64edc1da5f0960dd1be917445de889c30122b1794cde064968343e633e3e8",
+      "size": 5514,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/libtool/slist.c",
+      "sha256": "46ca8be347115d68b691eea8291a5ebcc7e8144ec592ebaa01436a952960ec6c",
+      "size": 9659,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man/man1",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/libtool.1",
+      "sha256": "b0bb0aeefb9764152c298b2699cde121bc30ad700ce2585c3f92b9112aed96e2",
+      "size": 3457,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/libtoolize.1",
+      "sha256": "16183b51f662e744c6ccc0e055f23a959302c56ff2abaf0bae27712ff55afc48",
+      "size": 3051,
+      "type": "file",
+      "uid": 0
+    }
+  ],
+  "package": {
+    "name": "libtool",
+    "source": {
+      "sha256": "f81f5860666b0bc7d84baddefa60d1cb9fa6fceb2398cc3baca6afaa60266675",
+      "url": "https://ftp.gnu.org/gnu/libtool/libtool-2.5.4.tar.xz"
+    },
+    "version": "2.5.4"
+  },
+  "schema": "alpbahOS.package-files/v1"
+}
