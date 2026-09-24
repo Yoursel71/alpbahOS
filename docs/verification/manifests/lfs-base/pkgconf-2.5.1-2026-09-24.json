@@ -1,0 +1,313 @@
+{
+  "captured_at": "2026-09-24T05:12:20+00:00",
+  "entries": [
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/bomtool",
+      "sha256": "1fdff87756fdf033230d9ee429eb8e9ba1a7ff5f248efa6f98293d68fecf3637",
+      "size": 50216,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/bin/pkg-config",
+      "target": "pkgconf",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/pkgconf",
+      "sha256": "e17617f1946df6c30d636fca0966cd32dd1dc819c78f2b2f9538bd26cac65895",
+      "size": 114664,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/include",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/include/pkgconf",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/include/pkgconf/libpkgconf",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/pkgconf/libpkgconf/bsdstubs.h",
+      "sha256": "6eb6463883aebfc66867f0bc73f4f6048cb976364149e6339400770e7a19b7ca",
+      "size": 1245,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/pkgconf/libpkgconf/iter.h",
+      "sha256": "cb503569a9e106f930c40b2b8bafeb016473b6ab65720469afc9d0e0ed8ca636",
+      "size": 2016,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/pkgconf/libpkgconf/libpkgconf-api.h",
+      "sha256": "26d56d01ab526d65c1839105d3541898cb1eb37665361abee00a208b843f4767",
+      "size": 599,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/pkgconf/libpkgconf/libpkgconf.h",
+      "sha256": "71bf9a7194de372a32e560605669c9dd8d31055b01572d8d5d797198677a6d09",
+      "size": 21302,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/pkgconf/libpkgconf/stdinc.h",
+      "sha256": "4b65b196d9cf8227851fcc3bbc52002bf9901a640a0c71db7b11349a815b7076",
+      "size": 1708,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libpkgconf.la",
+      "sha256": "d181dc039b1f86f1ca1f299c58a009764226340732d1a596309610bbdf0934f2",
+      "size": 919,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libpkgconf.so",
+      "target": "libpkgconf.so.7.0.0",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libpkgconf.so.7",
+      "target": "libpkgconf.so.7.0.0",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libpkgconf.so.7.0.0",
+      "sha256": "dd582063ba6be4890b93b407af8b0c7be6eea43a7b2a27fa0c2de52755cc3b9a",
+      "size": 295272,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/pkgconfig",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/pkgconfig/libpkgconf.pc",
+      "sha256": "a9445eb6392a9d9ff410cfeb85fa3f8655168a408f3ee53be86f5b420b3affb5",
+      "size": 338,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/aclocal",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/aclocal/pkg.m4",
+      "sha256": "07f90de7dad7478234c170dd8c85bdbab9252e4d9e3fc4d2c54ef274ff370141",
+      "size": 13147,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/doc",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/doc/pkgconf-2.5.1",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/pkgconf-2.5.1/AUTHORS",
+      "sha256": "1579e0bd23bd6e3e24aab6bc6bf7efa3bca6c25f83bb2a1f56c5bdbdbfb1d40f",
+      "size": 1498,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/pkgconf-2.5.1/README.md",
+      "sha256": "95193b9a21887126114d25e438132932af00a52a6864d8703923e911c55ddd3c",
+      "size": 5246,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man/man1",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/bomtool.1",
+      "sha256": "d9e0dd92697b0c834f0231d225ba75f65ff355efb49b5fd410aad6ac5614a0fb",
+      "size": 2818,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/man/man1/pkg-config.1",
+      "target": "pkgconf.1",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/pkgconf.1",
+      "sha256": "63a0c559c67780cb812c709e2c0274bf9dee4996cc96cbb2cfb6b9333cec7695",
+      "size": 21346,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man/man5",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man5/pc.5",
+      "sha256": "773cfe9409d3756d836fa0e780460f38225f182f54d934f97a80cb316e40aecc",
+      "size": 6022,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man5/pkgconf-personality.5",
+      "sha256": "b772f57e966c98c1a349aa9e768f0e4a1a78e1bef3aa0f1b0e4eadb56efcc962",
+      "size": 3417,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man/man7",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man7/pkg.m4.7",
+      "sha256": "6324cc3adf3c50b7f6ca91c1da81603a35f85442f0df19236977efeabf108e58",
+      "size": 4005,
+      "type": "file",
+      "uid": 0
+    }
+  ],
+  "package": {
+    "name": "pkgconf",
+    "source": {
+      "sha256": "cd05c9589b9f86ecf044c10a2269822bc9eb001eced2582cfffd658b0a50c243",
+      "url": "https://distfiles.ariadne.space/pkgconf/pkgconf-2.5.1.tar.xz"
+    },
+    "version": "2.5.1"
+  },
+  "schema": "alpbahOS.package-files/v1"
+}

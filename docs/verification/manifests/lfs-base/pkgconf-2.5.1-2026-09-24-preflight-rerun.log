@@ -1,0 +1,13 @@
+MISMATCH /usr/bin/bomtool
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/bomtool", "sha256": "1fdff87756fdf033230d9ee429eb8e9ba1a7ff5f248efa6f98293d68fecf3637", "size": 50216, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/bin/bomtool", "sha256": "dd50f7d057f6b1dee4da6755dbaaf77afea0fc2d108428283620ba86f7a67712", "size": 50208, "type": "file", "uid": 0}
+MISMATCH /usr/bin/pkgconf
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/pkgconf", "sha256": "e17617f1946df6c30d636fca0966cd32dd1dc819c78f2b2f9538bd26cac65895", "size": 114664, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/bin/pkgconf", "sha256": "e6356a2d3f0cb9e98cb1a47dae8b1c92b07eac3050fb156c9cf7c8f91fbdb4cf", "size": 114656, "type": "file", "uid": 0}
+MISMATCH /usr/lib/libpkgconf.so.7.0.0
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/libpkgconf.so.7.0.0", "sha256": "dd582063ba6be4890b93b407af8b0c7be6eea43a7b2a27fa0c2de52755cc3b9a", "size": 295272, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/libpkgconf.so.7.0.0", "sha256": "19008c4163e423dd30f3a4f94e402b66f805df7fde4a05d67edae873efe6bcb0", "size": 295264, "type": "file", "uid": 0}
+MISMATCH /usr/share/doc
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/doc", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/doc", "type": "directory", "uid": 1001}
+package=pkgconf version=2.5.1 entries=37 matched=33 mismatched=4
