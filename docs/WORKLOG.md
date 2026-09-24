@@ -1066,3 +1066,7 @@ PipeWire hatası için aynı gün ek tekrar: Guest `/tmp`'te 12 saniye 48 kHz st
 
 - Added a generator and focused tests for a 79-row ordered inventory of dedicated `build-m04-<package>-stage.sh` files. The scan found 29 present scripts with exact current-worktree SHA-256 values and 50 absent dedicated scripts. Each package row maps back to the pinned Chapter 8 list.
 - The inventory records its repository ref/commit, worktree state, and package-list hash, and explicitly says these are repository-file identities only. They do not prove historical Builder use, source/patch authenticity, a final-rootfs install event, or ownership. Verification: `tests/test_m04_recipe_identity_inventory.py` — 3 passed; `py_compile` passed. See [M04 recipe identity inventory](verification/m04-recipe-identity-inventory-2026-09-24.md).
+
+## 24 Eylül 2026 — GCC `make -k check` live poll (16:04 UTC)
+
+- Same Builder test handles remain live: wrapper PID `1451319`, make PIDs `1451325` and `1451331`, DejaGNU PID `2556218` (elapsed 2:47:10), active `xg++` PID `2605818`. `libstdc++.sum`: 10,356 PASS / 114 XFAIL / 594 unsupported / 0 FAIL. GCC remains at four `gcc.target/i386/pr90579.c` assembly scan failures (`vaddsd` offsets +40, +32, +24, +16); G++ has no unexpected failures. No aggregate finish marker or summary; `/mnt/lfs` last observed with 60 GiB free. This is a live, incomplete run; no process or Builder file was changed.
