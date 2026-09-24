@@ -1050,3 +1050,14 @@ PipeWire hatası için aynı gün ek tekrar: Guest `/tmp`'te 12 saniye 48 kHz st
 
 - Added `scripts/analyze-audio-capture.py` for WAV/raw S16_LE sample/frame counts, nonzero samples, peak/RMS, a channel-0 zero-crossing tone estimate, SHA-256, and optional acceptance thresholds. Added four tests covering stereo metrics, WAV header checks, malformed raw frame rejection, and CLI gate pass/fail behavior.
 - Verification on the Windows host: `python -m pytest -q tests/test_audio_capture_analysis.py` — 4 passed; `py_compile`, `check_docs.py` (0 findings), and `git diff --check` passed. This is offline signal analysis only; it does not prove physical audio routing or complete M06. See [M06 helper verification](verification/m06-audio-capture-analysis-2026-09-24.md).
+
+## 24 Eylül 2026 — M04 fixture capture-to-bundle adapter
+
+- Added `scripts/adapt-m04-capture-event.py` to convert one successful fixture event into the integrity-only evidence-bundle schema. Explicit source/recipe metadata is required and its hashes must match captured inputs; all referenced artifact hashes are rechecked. The one-event bundle is accepted by the existing integrity verifier.
+- Reconciler conversion deliberately fails closed: the capture runner still skips unknown trace records, does not deny `io_uring`, uses path-based snapshots, and has no exclusive/quiescent root guarantee. The adapter will not manufacture `write_set_complete=true`.
+- Focused validation: `python -m pytest -q tests/test_m04_capture_event_adapter.py tests/test_m04_evidence_bundle.py tests/test_m04_install_event_capture.py tests/test_m04_final_owner_reconciler.py` — 43 passed, 4 skipped; `py_compile`, `check_docs.py` (0 findings), and `git diff --check` passed. Source URL/recipe identity remain caller assertions; all use is fixture-only. M04 remains 0/79 observed rootfs install events. See [adapter verification](verification/m04-capture-adapter-2026-09-24.md).
+
+## 24 Eylül 2026 — M05 exit-condition audit
+
+- Independent read-only comparison of `MASTER_PLAN.md` §10/§10.1 with `CURRENT.md` and the recorded live evidence found no separate M05 runtime task remaining: BIOS/Gen1 boot evidence is historical, and Gen2 controlled reboot, PARTUUID/rootwait, network/DNS, ping, key-only SSH, services, and tty1 PAM/logind login are recorded. M05 formal closure remains pending the §10.1 base package ownership record from M04.
+- The 15:15 Gen2 check was a recheck, not a reboot; the earlier controlled reboot is the reboot proof. Effective `sshd -T` output was not produced in that 15:15 check; earlier config evidence and password-only rejection are recorded separately. The real Plasma session is M07, not an M05 closure condition. CURRENT's earlier section title was clarified to say technical acceptance evidence, not final milestone closure.
