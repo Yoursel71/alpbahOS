@@ -1,0 +1,757 @@
+MISMATCH /usr/share/doc
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/doc", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/doc", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/doc/ncurses-6.5-20250809
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/doc/ncurses-6.5-20250809", "type": "directory", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/hackguide.doc
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/hackguide.doc", "sha256": "bf4ae45a3e1c0d0a20873e8b0eec5684f51ff796c68aa64c1aadf80d37f71abe", "size": 32473, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/doc/ncurses-6.5-20250809/html", "type": "directory", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/Ada95.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/Ada95.html", "sha256": "1ed6b6b50a5d4c3bdb8c3d6a5de9cfef8d9a2a7380f52653230b69ca57e518fe", "size": 13238, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/NCURSES-Programming-HOWTO.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/NCURSES-Programming-HOWTO.html", "sha256": "f5318d636fc1e57f8fcf9c9353e59947af3c2e400a7a07ee3b6d68be812e15bf", "size": 262354, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada", "type": "directory", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/files
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/files", "type": "directory", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/files/T.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/files/T.htm", "sha256": "c4aaaf9f0fe0082c9f932f6189e22536f8f1c6c13cfc68c1b1f14950503b32d5", "size": 9955, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/files.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/files.htm", "sha256": "fed785cc120657df9225604381ddc03e498f370bb37ad86c5782121144a7f120", "size": 332, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/funcs
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/funcs", "type": "directory", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/A.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/A.htm", "sha256": "c54b00f1dffc832ba30030cd0a47172732b18a5a1015522ad505b5d0d8f0263d", "size": 2461, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/B.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/B.htm", "sha256": "cf2e6d698dc42cd41c1567c123ea83da303a7f5afc7a3d44d0c47b5ce03e3565", "size": 1772, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/C.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/C.htm", "sha256": "b5c228e47316f9c5a4a5010ccced7d9651bb66b274157f72ce70def5f2fffb96", "size": 6203, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/D.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/D.htm", "sha256": "3af5477cac7012085059a83408cb20e58c898cfcb8e26bf6bcd5ab8089ad1aae", "size": 4912, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/E.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/E.htm", "sha256": "67611994c6ff6020a94be97e24aa099f1780e4e112f5ef1d17e6349a3d37aa11", "size": 1332, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/F.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/F.htm", "sha256": "9ef004564226836d278f13ee1927ab39906c8faeacacbe77dd719f231512ca2b", "size": 5872, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/G.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/G.htm", "sha256": "b3820e49a1cc8ee3356ef5020e1f797412be556e104e2c1500301d611b292868", "size": 11545, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/H.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/H.htm", "sha256": "8ce1deeabcd6592b4f89dea0c3d42d2527558930e2cd387f2f8755dbaa970431", "size": 1708, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/I.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/I.htm", "sha256": "4bb3eb7413c2bfe66bd7e9fc8f1bdf8fe78c651230ea9125ab1bd1b6469eeac6", "size": 4841, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/K.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/K.htm", "sha256": "f8a482e81ca354723eb2a446387cfd0e40bd4edb21ef0d43d8aed75970486b29", "size": 1011, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/L.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/L.htm", "sha256": "f9f5285179bb3ee0f7b71ac648dafa0be50e79c7d99e8df9db88d2bf7053a7db", "size": 1960, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/M.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/M.htm", "sha256": "8354c727ae2e4f65aa6877956e61545b4747a914bd019ba8b40935c133f1cf6f", "size": 5280, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/N.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/N.htm", "sha256": "5b6c498a53d0ac8ff2c66a6e0ba4a4a8f4d0013d76fc6b1963de22e05409c846", "size": 3198, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/O.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/O.htm", "sha256": "3689b4422c3615c92a3aa37cdc4ca0f6e7ae4eb9773d75cdfe6095f34016d51e", "size": 916, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/P.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/P.htm", "sha256": "486bd061ad28529b99e90ec13d5e5d1eb240544a0479af4bf362209006882102", "size": 7007, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/Q.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/Q.htm", "sha256": "3d0ed346f7c3d754435e51af3f5b3527eff714a8fba59b0ec1531afc854bc9c8", "size": 390, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/R.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/R.htm", "sha256": "72f30954969ca1997474aaaff61daa127e06f40c431d9549506c7aeb80807eca", "size": 4047, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/S.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/S.htm", "sha256": "cc3650e161b7aeb70c3ce15e667696aa6e7928d6f588dabba4d3555e988fab18", "size": 22149, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/T.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/T.htm", "sha256": "94e49fa926bd5012e3d3eef61ac231aeb84984eddce72e544b576eae4ab86456", "size": 3808, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/U.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/U.htm", "sha256": "f95adc1c8400254daa851568099daa827cffcff23a52e22d880273197368328e", "size": 2005, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/V.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/V.htm", "sha256": "09adb40e921ab0b45c7dcf91aa4f19551bbb28f8879d02c755f3444c15899c3d", "size": 817, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/W.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/funcs/W.htm", "sha256": "291b4548cb772e3e82d0f1aca1fc9ecb8b8c7a643e169591c80e4d58ce49bf81", "size": 4566, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/funcs.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/funcs.htm", "sha256": "42cd42bf71de11793aa8088432152ee7733ea873d82ed2ee68b0e038ab829583", "size": 977, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/index.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/index.htm", "sha256": "9eca01c4a7cf35b75a8edb2d57e46a8b17712cfad93b1966ea5fa56f760a0b10", "size": 1169, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/main.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/main.htm", "sha256": "e24a83b48e6d4e5283c4849dacfb05ee18aadb7802f93ee368604af4824cb600", "size": 5499, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/table.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/table.html", "sha256": "470831a7b4649a1b9d8679874bf7852785116dc5fc6fa8507122368968ffc138", "size": 57943, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-aux__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-aux__adb.htm", "sha256": "4dd696578a28c67314a0072b3b31d258128032ff1f37b360a802cd22da65f1a6", "size": 13432, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-aux__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-aux__ads.htm", "sha256": "1d8686f6863adb4f1736d26ce4be1a35d0209f9b459b0b10b30f73a001c1d9f7", "size": 16049, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-alpha__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-alpha__adb.htm", "sha256": "2842aa196282c178ee83f7aee9f614e1e02cfe88fb0caa71390105cdf41831b5", "size": 8659, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-alpha__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-alpha__ads.htm", "sha256": "e63e498b0f00b6ea046b00b44b50cc010dee82e07a29949f97456fcdb98b163b", "size": 7342, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-alphanumeric__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-alphanumeric__adb.htm", "sha256": "aab677b428fa8f299179574a7a288fd6fa708174d584a4c677bf52e1ed1fa533", "size": 8792, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-alphanumeric__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-alphanumeric__ads.htm", "sha256": "94416a67ce5e65010195cfd1f326c10127b15fc0bd6ea0ad964166ba8bd6fdf9", "size": 7445, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-enumeration-ada__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-enumeration-ada__adb.htm", "sha256": "9f5c1789a5ee673e9cbe2530abf4611ed2485597d4a9213671572902b8c79342", "size": 13901, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-enumeration-ada__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-enumeration-ada__ads.htm", "sha256": "cecdf7dac062bc5bf88261e799abc40711475d4661e69799e11e935c05b4e2da", "size": 8976, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-enumeration__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-enumeration__adb.htm", "sha256": "53005156bd7056c548e1a56176cb3181297e5aa9f7b971a095ad5cc6347cbb7b", "size": 17944, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-enumeration__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-enumeration__ads.htm", "sha256": "4991197d8a0a82c66f33a8fc1b43a9fc27148a57c67e83286be91d737638becb", "size": 12402, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-intfield__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-intfield__adb.htm", "sha256": "9c79e23af1191cd456ad5e25272a04b8ec80af0b3a1b90ced079bed47bd0e73a", "size": 9828, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-intfield__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-intfield__ads.htm", "sha256": "cb995e4620dc86a9b7e5e0605ab044e8583da2af14304add071d849dc10e76c0", "size": 7541, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-ipv4_address__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-ipv4_address__adb.htm", "sha256": "cdef24ea080afc688b35446e0539ecff5b1c79f14445d572c5715e9e621f8dab", "size": 8261, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-ipv4_address__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-ipv4_address__ads.htm", "sha256": "488978eed08c175a813e66f6c99bbb39a3e336484ba9b386644eebc164ebc662", "size": 7341, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-numeric__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-numeric__adb.htm", "sha256": "a3d5771573b1f2fbd0892abd8cbced659056470206c3f7d187694cb87874d399", "size": 10104, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-numeric__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-numeric__ads.htm", "sha256": "a809f0a88beb4af09d305a6be59c63f7db53bcfeb20e483355fe6c3c5adf9753", "size": 7525, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-regexp__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-regexp__adb.htm", "sha256": "c2799f999b2eb1f50a08e79f5ca15ecc288224f39c6b041393b02211d7efecd2", "size": 8598, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-regexp__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-regexp__ads.htm", "sha256": "be09af2cb13d47b7944ba6ef621fbf3e300a3ae0dff1148a45063d2a4371e07d", "size": 7580, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-user-choice__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-user-choice__adb.htm", "sha256": "69061c6c8651fdfbe435a5efea52285b8ee717d6729d74a890fa31202820e4fb", "size": 15356, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-user-choice__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-user-choice__ads.htm", "sha256": "e54e0fdf03b0141babac1f44cb40102a09a62c60b7c8d1783a80934f7c0b31b8", "size": 11925, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-user__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-user__adb.htm", "sha256": "b39cbb54badbfddf377fd759adce33db4adf719f10a78c0071f01a2b3e0b7596", "size": 18637, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-user__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types-user__ads.htm", "sha256": "a9d0fb65f1c3c63119353ed2c74c94bccec22405b2bce2f0a26c83a5d1c6ffca", "size": 12239, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types__adb.htm", "sha256": "fd582ec72cf4e729516c7b1cc9dcd2471edcb45fb5fd50bea3b6770872faeb7a", "size": 38987, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_types__ads.htm", "sha256": "ad87c5bec519bda6be6b03f40c40718035419df87a265ba207a29ac7e3a9d776", "size": 30137, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_user_data__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_user_data__adb.htm", "sha256": "a1a731f0079faba6225fee8c4292b29361e0aa42c98589d74a071f193c76d53f", "size": 10792, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_user_data__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-field_user_data__ads.htm", "sha256": "cbc1b50defa44cb37db23cfc6d9706b12953463f0dbe33244450c1e9bff5af64", "size": 9246, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-form_user_data__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-form_user_data__adb.htm", "sha256": "19958b4291413035b7ef25f8bec9efcef3bb8cd7ed2db49e42c532cb4e1c74d8", "size": 10746, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-form_user_data__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms-form_user_data__ads.htm", "sha256": "db012813d44f741bee477ccb5c5d2076fc1ef1cdf8ca8d93fe53abd11eea9e48", "size": 9189, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms__adb.htm", "sha256": "76f2e4eac7eaaa732fcc9dd1451a897438becebd7b56479828e045ebc8d1e833", "size": 130480, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-forms__ads.htm", "sha256": "2afa580a8912600a558496b8ffd2b08fc94fe6a21aae1709b3d3bb39b67f39c6", "size": 108872, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-menus-item_user_data__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-menus-item_user_data__adb.htm", "sha256": "dc0cd83a742e2a0ce69a612bd2ca2ad4f4ef6f940082736cf804f630f0f10425", "size": 10081, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-menus-item_user_data__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-menus-item_user_data__ads.htm", "sha256": "d3ffa6cc33ddd430b2b862907aca3a288a2c17d101048a5cbb3ded2473c7c110", "size": 9607, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-menus-menu_user_data__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-menus-menu_user_data__adb.htm", "sha256": "742e0dfe4787e9adfd4249ef8dfd645edb7e933774816588e77f205b60dfb245", "size": 10082, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-menus-menu_user_data__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-menus-menu_user_data__ads.htm", "sha256": "053ffc26e031c2f6511d03967ab841d05e3c4b786a80c97971ae07cd802008bc", "size": 9189, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-menus__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-menus__adb.htm", "sha256": "8770f0e8f12761d5a14ba0a8ce451c27e929e465fdedce9295706b383a2abc41", "size": 124782, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-menus__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-menus__ads.htm", "sha256": "cc4de23177d51feab7818b25bc2c3ede2fb8768f78942db4fc8c68cb0ae47950", "size": 86171, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-mouse__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-mouse__adb.htm", "sha256": "1e0276f4c1a4896e3de948ec3db096063e89cbe88e253eecd1e7266971f3568a", "size": 29524, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-mouse__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-mouse__ads.htm", "sha256": "bba0d61a87481ef9b46690616b0f326419202b0827a10039e5301b5f180f0a2f", "size": 26911, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-panels-user_data__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-panels-user_data__adb.htm", "sha256": "bee5fd3978b47e9c21635349aa7470c19b693dc76f9f525f96a580bb9604c8a9", "size": 10724, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-panels-user_data__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-panels-user_data__ads.htm", "sha256": "7d5ddda6a60b5d1bae1cfd9feb588ee55e27cca4051ffe11f19a8a511fdf1b38", "size": 9093, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-panels__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-panels__adb.htm", "sha256": "174c600ebe2e12ff9e4e946571d5f331d3df55724fbe2867fe48a2209e45bb88", "size": 20561, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-panels__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-panels__ads.htm", "sha256": "f5d6cbbea399c40986947a70c924c53b27b9ace053d54e3d4bc1140656dee0b2", "size": 16569, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-putwin__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-putwin__adb.htm", "sha256": "c64b0fac3598515d1abf9036ea5a9a9a5423c33f27685daf815de13aad6aded5", "size": 9819, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-putwin__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-putwin__ads.htm", "sha256": "8be4fc94fec3b93b348bddd00bcb25600b6b396e53e574e194a07cb8aa3b712c", "size": 6322, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-termcap__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-termcap__adb.htm", "sha256": "0b6ac68d40395ccd6302b0ed02a4a9d9768187fc1a52a8699b50dc8bfd9e5dd9", "size": 19778, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-termcap__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-termcap__ads.htm", "sha256": "b1e12b4d35ca97d43911fb3e01829968a41442c2e3787d6820548dd09f08d8b8", "size": 9661, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-terminfo__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-terminfo__adb.htm", "sha256": "fa3d6b7610ea57d9b764e7df25a82744841132f32d46be6d7084475f2e4ddd52", "size": 19712, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-terminfo__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-terminfo__ads.htm", "sha256": "2f3b946076f7d0e6a242c27e3efb78db897891ae6a65c43ae52f9f09e670787f", "size": 9581, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-aux__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-aux__adb.htm", "sha256": "57c4c454ef52eba1ad99ee077915c96e90984f87a6116ee5610edb0bf7116949", "size": 16873, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-aux__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-aux__ads.htm", "sha256": "7de164a36eb7949905ba979ad6847ae2da4ca983d3cdf453b68355049db740b7", "size": 7436, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-complex_io__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-complex_io__adb.htm", "sha256": "93cdb40ee845492db351a1863c2a1581dcc03ea58db7cc614440abc99e978568", "size": 10800, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-complex_io__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-complex_io__ads.htm", "sha256": "b4ec8ef454c7a7e81e46093d7fa4845baa10e77dc7af6f3aa7955a39ece7a29a", "size": 8793, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-decimal_io__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-decimal_io__adb.htm", "sha256": "ae6cf06308c2f64628139e376347f5a6f004b6e857695c61658ca6f38f3443a6", "size": 11709, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-decimal_io__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-decimal_io__ads.htm", "sha256": "e6293a9f5b175d0d7fc46f5039e4326160d372273daf6a67b1f01bbb8a012666", "size": 9262, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-enumeration_io__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-enumeration_io__adb.htm", "sha256": "e05934514ed94268714477257c5a8cadc30f04245ce7c52e1cd875cd411a011d", "size": 11825, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-enumeration_io__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-enumeration_io__ads.htm", "sha256": "d4be91c3d4d8d5f9b391e373051d4d8d4b54f11d765150e439f30ed1d60b9acf", "size": 8503, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-fixed_io__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-fixed_io__adb.htm", "sha256": "ebf3330653df0b482fb892279bc3e4c4d2a9c9219ba67996244ff03eccdc8f4f", "size": 11617, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-fixed_io__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-fixed_io__ads.htm", "sha256": "59fd18dded0822caa17cf1c09587cacc5c11ef622c1843ad480052b8135ccaad", "size": 9185, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-float_io__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-float_io__adb.htm", "sha256": "ebb9c5b2ce99212bafaba3629527ff23748063c082cddc7079ffbee5912f897e", "size": 11616, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-float_io__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-float_io__ads.htm", "sha256": "08b9a6292f32fb4be4d665dcda92b0a75d57c446c4345318c857b67d4d682572", "size": 9118, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-integer_io__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-integer_io__adb.htm", "sha256": "771e21a5ade9a1380590c0be0dddbf440c364e58e50bedf9dbab37259ddff61f", "size": 10254, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-integer_io__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-integer_io__ads.htm", "sha256": "946e536bedf80ca0bf8ad428323514199449654d78bb97907da284c6e6a23845", "size": 8441, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-modular_io__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-modular_io__adb.htm", "sha256": "aaee5bd640f6ca0fb040c5923ce414f1114ca38a9c362ea8ac0a57f0c0a6f9cf", "size": 10254, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-modular_io__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io-modular_io__ads.htm", "sha256": "5924bc71c10c71b3d7d12525308a89d269c5b1d47bc8211e4dd0c7c61d6a7ffc", "size": 8439, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io__adb.htm", "sha256": "e30a0ef3fcc45a701f8786bb1cd588c0ccb3e2adb941cadad0fa944e57cd1cfe", "size": 39531, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-text_io__ads.htm", "sha256": "7ba5f08b2eea8c2987b0e989fae32afb878a03d7f6de78fca2d1d814352f16d2", "size": 18346, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-trace__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-trace__adb.htm", "sha256": "57488d637908ac68a43fb5b03828c668c722a8b3db20a159c6f2a6f3ca47458a", "size": 7467, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-trace__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses-trace__ads.htm", "sha256": "d0e7e667236af31dccaf1dcbf7b310b498137a2c05c8745757b2f11590a0585e", "size": 16720, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses__adb.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses__adb.htm", "sha256": "4112ae871aa4fa2ef006e2158e9d8b2ede8e4669fdcd8a7a55686521a4adbcea", "size": 321401, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses__ads.htm", "sha256": "419d84b671aa7e9192b89b492b4423bdc9ec5f7990c7cf4c589d204c11b85f26", "size": 273900, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses_constants__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface-curses_constants__ads.htm", "sha256": "afbd4da895f8f2648335fe844b59f6a5dc7f819253d6bb534e8126b92e3fa1ad", "size": 38449, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface__ads.htm
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ada/terminal_interface__ads.htm", "sha256": "17377c0071ff653cf9729928c911ad0306ac3a6524c7c9391c2be775bf9174da", "size": 5494, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/announce.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/announce.html", "sha256": "a07bb929d0f97ae47afa8d649ac9e3b415afba58f8acddeb2c9d90e94a184d0c", "size": 55367, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/hackguide.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/hackguide.html", "sha256": "997cf322ca7751a505eda1fd965d8ac8af92548f2aaf651d45a779fa725629c4", "size": 39432, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/index.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/index.html", "sha256": "6781869ddf773caee85a0daad40535d2de1ddada28cb46b5d685fa5e0e07e647", "size": 3304, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man", "type": "directory", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/adacursesw6-config.1.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/adacursesw6-config.1.html", "sha256": "42cb49515e2c633cb8a0e1205c8bbe44d0ab8a9d986338192a3b1d907e3ac798", "size": 6505, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/captoinfo.1m.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/captoinfo.1m.html", "sha256": "3871a4a04a30b52d2a6d924a98b9c7be9706a40b8ffe35d2bdeddeb69385ff33", "size": 13608, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/clear.1.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/clear.1.html", "sha256": "88f05d0a7eddfa5b39760d7be9f89e0951917e635467d63a11d4ef2d22dbbb61", "size": 8565, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_add_wch.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_add_wch.3x.html", "sha256": "769b592efb54096aaf93fbf70cf6047de2f6a2261c697d6aff74b900e670483e", "size": 33581, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_add_wchstr.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_add_wchstr.3x.html", "sha256": "e30fe2a9700a8a51fc567f295618743524b6db21f39bf828cef9a241936d4382", "size": 9923, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_addch.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_addch.3x.html", "sha256": "cc7c4c5f0a66bc7b869f10418bd4afd6c9640c124cff01fc1f152ed2cd6dd1ae", "size": 28940, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_addchstr.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_addchstr.3x.html", "sha256": "33e1c570f3f357ccaaff07366f18122bc3a1fc2072db8aaddcacd44db1dd22b1", "size": 9069, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_addstr.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_addstr.3x.html", "sha256": "a78457362cf0f2a721447b77e2bb2b07588e7fc21297324af80d325e79f577f9", "size": 8546, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_addwstr.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_addwstr.3x.html", "sha256": "be134a1689c44c3744e5e7e09880504d045d3861a7bb11f7d23d5d075c26a40d", "size": 9006, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_attr.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_attr.3x.html", "sha256": "119382a1d0b8cc3aeb8df546bff35da85aff23c90c41a022b60ed282cfdaf7d4", "size": 35225, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_beep.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_beep.3x.html", "sha256": "90b422befa8101d6a8c95c014cf8656c89a4c8a3659a75f6a3bf2ec9a9f6ec1a", "size": 5992, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_bkgd.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_bkgd.3x.html", "sha256": "e7f4fa0831a0d6c983a6aa63b0d5d4661082dd8b306fabf3d5bbeb55fa81ba1c", "size": 12268, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_bkgrnd.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_bkgrnd.3x.html", "sha256": "80debb86d51f2d1b0681b0ea576a7c187e0911c11592d3290e25fb6fab5aff17", "size": 12015, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_border.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_border.3x.html", "sha256": "f80e0f00e6691861657bd7816d07896943148a977efc28d52fb59ff0e3ab490f", "size": 11742, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_border_set.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_border_set.3x.html", "sha256": "431875c89fe548cefc4e4423e684b5d5715a036236c693a3729cdcc1fc9b974e", "size": 12306, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_clear.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_clear.3x.html", "sha256": "32e96ed53ef974c9d1763de56e22ac0e5ca62001efce2fd1c28e0d534f677a2a", "size": 8823, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_color.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_color.3x.html", "sha256": "0191380f49198286784a9e902de95f20d289b8f7ce2564c36e561ab560fec450", "size": 37360, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_delch.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_delch.3x.html", "sha256": "c86e0ebdaf1bcd6003d65eb1669d0a12d4c76a9d58206fda7c1140dfd112b875", "size": 6531, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_deleteln.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_deleteln.3x.html", "sha256": "0e0fc62616833cedba0d9819e239a29a5e2707cd9cc2850fec4d25086f18d9c2", "size": 7017, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_extend.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_extend.3x.html", "sha256": "7fbe3ba10a09297a77367fe23925fb021622cdfb5387ef8a663a3c5bb07070fa", "size": 7690, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_get_wch.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_get_wch.3x.html", "sha256": "f6a91564c5a6c428bf8d260dba82275cd7c82703c6e81c7245eb4ec6ebc8b875", "size": 13504, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_get_wstr.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_get_wstr.3x.html", "sha256": "b90fa44c83a256306f8405b53402e53654ab97eb94f34f52893a97e91f813df1", "size": 16230, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_getcchar.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_getcchar.3x.html", "sha256": "7d341d2122f57e7b5d10eec0f21996b95b7be892779005e6fd2760a0e54beec5", "size": 13013, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_getch.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_getch.3x.html", "sha256": "073541eab502c79cef4f1640d2f6abd56b66e643f2a358ca6007becc8c77ee8f", "size": 31345, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_getstr.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_getstr.3x.html", "sha256": "74e7ddca148ff2c21c4cd0f3abc358b9effca5782c146ac9568f2ba89617d132", "size": 18343, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_getyx.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_getyx.3x.html", "sha256": "85777c4d5581c27cd15918f0017ad101c4cd6824fd6490b21acb18c0827e7cdc", "size": 7870, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_in_wch.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_in_wch.3x.html", "sha256": "cd2f552af21f2dafd3455de1206078a700a7b73ab402db6360d45523dfb3c3fc", "size": 7113, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_in_wchstr.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_in_wchstr.3x.html", "sha256": "89f27bd8ca92f95daa3c78857a3636198e29f42e809be2b59fa5f7f4901c27f7", "size": 9212, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_inch.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_inch.3x.html", "sha256": "670ae8438d8ae4a8428754919227a4f0bbb908e903f87e3593809b24c0b8e040", "size": 7674, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_inchstr.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_inchstr.3x.html", "sha256": "02223b3901a26fb39e07df9c40608b7bf6ca208e51d6784a2d90375eea78f358", "size": 9031, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_initscr.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_initscr.3x.html", "sha256": "cea869867d306ff2a9c434402bfa409903657c91d1d956366d2a2be0a43f2e6b", "size": 22516, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_inopts.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_inopts.3x.html", "sha256": "a96317262f433e922f5c98deb4a1d93db15707efd2d233bd1117a73c665ae26e", "size": 30645, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_ins_wch.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_ins_wch.3x.html", "sha256": "71c74e4b60a3110bd58501fcd5287f767e2d5d9a66dba1a8582953d465f3c806", "size": 7477, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_ins_wstr.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_ins_wstr.3x.html", "sha256": "28a488ed65cb005cf1dcae58cb3011d0ba174b6bf22fc73ae7126f5c48340414", "size": 10263, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_insch.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_insch.3x.html", "sha256": "703b67738bc666e2b05a96cde852a99e03c727b5dbb2760b1c2020eeb4ae33fc", "size": 6849, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_insstr.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_insstr.3x.html", "sha256": "27a7e7513c828c070b45cbb2e714b1455067b0c79f39475c41abe86737509220", "size": 9924, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_instr.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_instr.3x.html", "sha256": "e1e93e1592ef0715c5310701995af45cbaa6ffa7784b74a180d2dc8c2c1bbce1", "size": 9917, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_inwstr.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_inwstr.3x.html", "sha256": "3ae183c241f6f2f1bba7f394527ad31a938168041f5c8e2daeef8fd2f586c0be", "size": 11035, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_kernel.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_kernel.3x.html", "sha256": "c45bc7fcd378fc0fa0c6b1146784e77f0b21050501d794fe25df59317f941735", "size": 19050, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_legacy.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_legacy.3x.html", "sha256": "f9befd566faa339186ce3f7287f44496f10afbd13c7eb569ee022ee1d9565428", "size": 7732, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_memleaks.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_memleaks.3x.html", "sha256": "18d3401fbe83f42208a562eebb2ae743838cf5999f56b627b69718d91587868c", "size": 8185, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_mouse.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_mouse.3x.html", "sha256": "cf21f308ddc730b9a574416977fe9b1364b149e542fb6b75362cfc2fdc008cad", "size": 27309, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_move.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_move.3x.html", "sha256": "cc0897577230c2b0bd2f082b38a0076a3d0fc8556687cd895b3e7b899f63054c", "size": 5887, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_opaque.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_opaque.3x.html", "sha256": "27777d974d4be6d6184512c59042510ac8876d23878a156d8ec93bed3ca19f06", "size": 10924, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_outopts.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_outopts.3x.html", "sha256": "a4f5123db48cfd87b0fb3ac4e69afd5220594dbfe93a60c3fa9c6527f92c66b6", "size": 15157, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_overlay.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_overlay.3x.html", "sha256": "4b1bb0c2caad16a375de0774f33f5a746531ba6c28c64fae7903e98f016fc623", "size": 7496, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_pad.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_pad.3x.html", "sha256": "bc01d4df77a6ccaa5e8cd42c35f7298a8b66bc0d369112bc2b73c4f7c4b70ea2", "size": 15629, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_print.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_print.3x.html", "sha256": "7d65d885d1966f8ed586b538e9c25dd16da51af1ceb88deb1f97764187b87ebf", "size": 6769, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_printw.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_printw.3x.html", "sha256": "ab7984f3738a159ba7f7fa0021d7d9f0110bf4901244b1c19103a174d952fa9f", "size": 10778, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_refresh.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_refresh.3x.html", "sha256": "6daa2fdfb01c4e0b5a7519681244e63f1fa2578b48d69d54217ba06db4ef8be2", "size": 10366, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_scanw.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_scanw.3x.html", "sha256": "91c803fe53f185b85baec1836d25607e495b4244a726768792da762e6e6b729c", "size": 12495, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_scr_dump.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_scr_dump.3x.html", "sha256": "e20f46deff4097cf90f68f4b0f3bde53d832f20e0198468969a1927d0e9b377d", "size": 10930, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_scroll.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_scroll.3x.html", "sha256": "3849361f60c884fa7ccb5bf25f9d1ac4ac55ccf905f7db1c78a6ef08e7986d21", "size": 7827, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_slk.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_slk.3x.html", "sha256": "9f513691e981ab092da772918643910408eaf57d2348f0aa05e64053b19245cc", "size": 18902, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_sp_funcs.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_sp_funcs.3x.html", "sha256": "8bb626d805bc9f4da8c3c2a9375432560eae3911f47206686c1bd99d364bc3ee", "size": 33644, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_termattrs.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_termattrs.3x.html", "sha256": "debc1e8476845ca299eb86b8c50ac41c58056bb22494aa9df606d64776eb26a6", "size": 10417, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_termcap.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_termcap.3x.html", "sha256": "80c710a7fcca123d84485eb9e67f07e9c6184eb87f5cb8606c1598e7fa146932", "size": 25232, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_terminfo.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_terminfo.3x.html", "sha256": "d00efc01fb7badbfd03d2524d7b9d365199ab370db58cf16aebd86f101b128f4", "size": 43035, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_threads.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_threads.3x.html", "sha256": "9c6f84f8a8785df35bd7d438f4043f09f3dff05afda6db7f36d16d105696405d", "size": 39102, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_touch.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_touch.3x.html", "sha256": "5b90208426870e3caab09094b2186373ee474dc5f2add834106e00d89dea057e", "size": 8966, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_trace.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_trace.3x.html", "sha256": "9169b4554c22fe39e6ddb9dc4896170406292cfc487ceb50b84d403da9b967e7", "size": 15296, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_util.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_util.3x.html", "sha256": "321e70f863aeddab5ae7dc8c560dfd4f04a55ed899bb410224b4978b6a9c2851", "size": 27123, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_variables.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_variables.3x.html", "sha256": "5c65ea4061d47b87bc013018f6086ebee184cee11059d78e21a214c10d7bfaed", "size": 19971, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/curs_window.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/curs_window.3x.html", "sha256": "483821e3c303f03ed451978c4b53dbc4a115e7469da317c0781ee019fbeac143", "size": 16427, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/default_colors.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/default_colors.3x.html", "sha256": "fbb22eb7743b8a5ee73542cbc79532d120a07e7a1d2eb9d12b176313c9456996", "size": 9522, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/define_key.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/define_key.3x.html", "sha256": "d1f8e0fb0f92fc58764207d60bda28244ab92b5feb092c98cf57ba7bdac9d49b", "size": 6286, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/form.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/form.3x.html", "sha256": "49e7a075e18ef0462826261a3da9c86de34601e871db74c40aaa07dfe07341d1", "size": 16274, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/form_cursor.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/form_cursor.3x.html", "sha256": "0d2efd2c04b778f7cc4fe50bd6d6b1edb72e917455b86545edd342078b2fc8c2", "size": 5190, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/form_data.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/form_data.3x.html", "sha256": "5d475a92ecfef1d1b2a9ef3c8ff6bdcf472e78b9e122d939f2f92896db6e2566", "size": 4857, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/form_driver.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/form_driver.3x.html", "sha256": "4a7ea3e5aa02e2a699997b292203bab4bfc8d2187a1588681f50e0f126963a26", "size": 16034, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/form_field.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/form_field.3x.html", "sha256": "75c5b4a3fb45fb868d7c1023367d82d3615b578e5a5f20f83cd9ce446d2925a6", "size": 6606, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/form_field_attributes.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/form_field_attributes.3x.html", "sha256": "eff2d29f460d092e316d7c69a6c915fcd8b7bfe1968abca83b510a7bde501a84", "size": 6600, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/form_field_buffer.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/form_field_buffer.3x.html", "sha256": "b4a3832815bf68f4df2f4fa9734d156cdb96b2e78105ce3093674fd8294f7ad4", "size": 9030, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/form_field_info.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/form_field_info.3x.html", "sha256": "930512f0b205dee2729015b8ba65eb73e681394e0a9eb704187146bee08faeac", "size": 6659, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/form_field_just.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/form_field_just.3x.html", "sha256": "6caec461c4d3e6615f9114051f9a001af17c201f4a80833ad4522433b8fc205b", "size": 5578, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/form_field_new.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/form_field_new.3x.html", "sha256": "7314198b70a24253611ffb43c3cf8fe8fabf1063fc60570f27e969e3070c4106", "size": 7389, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/form_field_opts.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/form_field_opts.3x.html", "sha256": "2dfa9dcb85e40803a03a23713a832fd9d2318bc6193be2ebd8295f1c54b459ad", "size": 8332, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/form_field_userptr.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/form_field_userptr.3x.html", "sha256": "6078b0a3d02740e0e41d2f8e02ec4420edb8203c0e5e480a03398498f0425686", "size": 5364, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/form_field_validation.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/form_field_validation.3x.html", "sha256": "91bd074558dadffbb195e41322d3dbd02a263eb15b5709662f866d8841337315", "size": 12535, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/form_fieldtype.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/form_fieldtype.3x.html", "sha256": "4810ddf9f8f32894ad440ef8a58e969f3552189bc5179c20b78d994e6c7666c6", "size": 11095, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/form_hook.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/form_hook.3x.html", "sha256": "97f655fc0c5a4d7c04220d1a17980f652cbe8be3e831c9edd097cfd60f84885d", "size": 7912, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/form_new.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/form_new.3x.html", "sha256": "eb3d575422ddc8753a0425e8756d5b4ac953b9d44bb0c30feecfd19abb9105f7", "size": 5718, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/form_new_page.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/form_new_page.3x.html", "sha256": "8a854dc2dd7cc62bf0344f7ff50924cf9956748d0c880430394ebaeba779d9cd", "size": 5423, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/form_opts.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/form_opts.3x.html", "sha256": "8a6ca256cc9949de4e90708dbba4bd0c8e4d61e663adf59a87e96640d0ab33b5", "size": 6275, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/form_page.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/form_page.3x.html", "sha256": "b75766e2c169b345a065af6c25e1311fab339741415981e33d78408f6d77d336", "size": 6878, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/form_post.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/form_post.3x.html", "sha256": "3a258d32b42dc40195207bf409d3e0ca3d0673bbeeb4c335f4da5e801e232de1", "size": 5878, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/form_requestname.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/form_requestname.3x.html", "sha256": "9aeb9f029693b12842cff894cc9b1f8ebbb6811f7e69d1f9830e7236c920869f", "size": 5446, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/form_userptr.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/form_userptr.3x.html", "sha256": "8bc198c4fcf378fc239a01d5b76c4ae723bcfc81c56dcf144e5dd91da061e266", "size": 5347, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/form_variables.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/form_variables.3x.html", "sha256": "3d9f6cb5728e0aec4ceec70629a3bc92e5bc92c73f11e35dae196a84ccfe5142", "size": 6216, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/form_win.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/form_win.3x.html", "sha256": "6e3c0a43b13a5301f9383b24916c5f71fdddb7c46c7702789c260a0aac12a63b", "size": 6819, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/index.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/index.html", "sha256": "8a954185e3523b1eab997887950438c8a54108bbb3d13842c0b27109726c2c04", "size": 5201, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/infocmp.1m.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/infocmp.1m.html", "sha256": "d2f4f320110ecc8bca23600b06165d0642391c5d1b058842d75c8b6dec349a61", "size": 32770, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/infotocap.1m.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/infotocap.1m.html", "sha256": "24b3c3b9995da3ecc15c7b373fd65f163cbe533e0ce32e8bd05aa33000f8a7a0", "size": 5646, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/key_defined.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/key_defined.3x.html", "sha256": "24832ab23bf6c651cd04af84934bd62d7db3315a13eeb70601528ab3d6841192", "size": 5357, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/keybound.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/keybound.3x.html", "sha256": "b728adbff4d1bb3792f0673229dd8f8ed238ec65c1638355e374009915ce5b96", "size": 6212, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/keyok.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/keyok.3x.html", "sha256": "05a194ad903882c6b527d6afee2ee4107fd9231c99138dd446821a52ff2a54db", "size": 5905, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/legacy_coding.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/legacy_coding.3x.html", "sha256": "ae9cda9b68cd29829e35a589727d17aa1d347437f1b4693fbe83d3da8d99b1a5", "size": 6275, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/menu.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/menu.3x.html", "sha256": "325ebf35d6bc0f85bdab5c5f9fe00050875b62a561749e31c88bf5f55885c54a", "size": 14185, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/menu_attributes.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/menu_attributes.3x.html", "sha256": "d144f65641aaca84b8dda923dbc6b115662bc98d2eaf620f64932f1cf693570d", "size": 7423, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/menu_cursor.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/menu_cursor.3x.html", "sha256": "af4bc676d139f208ab963f75a882ad30133572c574ff1d8cb278572920233e4d", "size": 5199, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/menu_driver.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/menu_driver.3x.html", "sha256": "d19c7a760e8546a3b5c601836f00cc3005ac41cf61bcc2f1218d4900edab91b7", "size": 10352, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/menu_format.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/menu_format.3x.html", "sha256": "45f35daf5f95559ae91cc6cee19d18b68a04590d4ca6d09c253331f2cc0c792d", "size": 6239, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/menu_hook.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/menu_hook.3x.html", "sha256": "57e77aee18a11742d0d62a49e16f1bccee6f324b57aedd5646e5a1811b3d7b3f", "size": 7298, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/menu_items.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/menu_items.3x.html", "sha256": "fa1b731c1d0e5bfbef4e1cecc3b8ce333c701329a0646c366d68f6de7c1bfe59", "size": 6312, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/menu_mark.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/menu_mark.3x.html", "sha256": "87e4efe1254cbc170d0c9d56a96172a383e1865646f9d6b6711510d892770c8a", "size": 6072, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/menu_new.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/menu_new.3x.html", "sha256": "d49d3256afa0666c6e32990e2c914de6626d34c1981cce428e503bdada698174", "size": 5660, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/menu_opts.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/menu_opts.3x.html", "sha256": "347c31893dc3df0a8c82dfcc0f3ef9b9027539f62d6dffa154d29812726ba7bb", "size": 6828, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/menu_pattern.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/menu_pattern.3x.html", "sha256": "973f9f778c9966a1826f2b47098798a2667e3487d3cbc32cfb035b4a69213a85", "size": 6314, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/menu_post.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/menu_post.3x.html", "sha256": "b87ae2a4b19a93617298e3f22282da11c8a96ed0e4b684ced1c24c8ec7e9c331", "size": 6057, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/menu_requestname.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/menu_requestname.3x.html", "sha256": "4aedac04bfe7267a1517a889ca7a63ace7da4c1d77be89348e4101d620cb1c2d", "size": 5456, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/menu_spacing.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/menu_spacing.3x.html", "sha256": "843b4896b371a77510043364cf223cb809995573d73ec8921c338fe9ace8988c", "size": 7208, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/menu_userptr.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/menu_userptr.3x.html", "sha256": "b85f2c8d735ea2d97bfba9fef57d600671b549e54d2f40115491258575d8d518", "size": 5321, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/menu_win.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/menu_win.3x.html", "sha256": "fc328142ce4840ebf346be8b132f5d378892ab4c8b7b627fe43ab8e1bfe1ca2d", "size": 6819, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/mitem_current.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/mitem_current.3x.html", "sha256": "a597651515c37b826e89fc09c30e0a128e365706c2435f5a1f086655af9c5c9d", "size": 7017, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/mitem_name.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/mitem_name.3x.html", "sha256": "f2115a314e6a4514d85f2e96c467f01bcd3d14f977a96854b262a6f525899613", "size": 5037, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/mitem_new.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/mitem_new.3x.html", "sha256": "0f1a1b03ee4488de2b8109c95d627685c59b1ce75c01897c70d0da2602f88fd1", "size": 6159, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/mitem_opts.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/mitem_opts.3x.html", "sha256": "75907b240c5f1073e2edab59193d73660569b36146edf041887a052ba32664aa", "size": 6052, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/mitem_userptr.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/mitem_userptr.3x.html", "sha256": "f627fb86efef0b37c21699d05f66f2993b29bd72b91ccaa68833f74d568c142a", "size": 5314, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/mitem_value.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/mitem_value.3x.html", "sha256": "c9914b36bf02fa22df04f4b05fbfd4c28919e761019fed68eb3af2c06fb2a24f", "size": 5583, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/mitem_visible.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/mitem_visible.3x.html", "sha256": "ddaa7b936580e111c42f7c6b770ed13ae7685c7b016a0ff1a54f9a3e48ef3648", "size": 4608, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/ncurses.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/ncurses.3x.html", "sha256": "3d1f87c5f4b196b1d90ecf11789d0f64c3fe3def7f5594c1b10ede7edc1bb641", "size": 119179, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/ncursesw6-config.1.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/ncursesw6-config.1.html", "sha256": "8f722770e623cbb4345c26a079f7b05d50e9b059b646d73d86e4d990fe8a1d21", "size": 6330, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/new_pair.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/new_pair.3x.html", "sha256": "d39ed39ed0c0f475953f020ff930059a8bde225ef96742b49279ab138e1043d1", "size": 9620, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/panel.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/panel.3x.html", "sha256": "d4fe459bf66c93fb0437dbe7eafbbeee5d7ba62b47a816de226753807cce2509", "size": 17182, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/resizeterm.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/resizeterm.3x.html", "sha256": "90af1b1587f6e1352b46fc3bce717d0a110142f2ecc764ac1db89c55e43e2390", "size": 11969, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/scr_dump.5.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/scr_dump.5.html", "sha256": "a1aa08eb4962f0d37f402809483ab2b79e8b141c78e507bd60adb34c900d6705", "size": 18400, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/tabs.1.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/tabs.1.html", "sha256": "2cecd99c9d969d1dd75eea5937cd5561efbb652c0de804950e354ab654cddc92", "size": 13822, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/term.5.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/term.5.html", "sha256": "8c2b2d36890a4b1aab643c458ed2c92c06115fa5ad510cb5984d5eab71c29d6c", "size": 22959, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/term.7.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/term.7.html", "sha256": "bfb9c487c6fee434fde1b912d1215efadc780eeaae37b54ec560bddb3097751e", "size": 12477, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/term_variables.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/term_variables.3x.html", "sha256": "cfebb83271677765eb58980e0faf7e4dd812406411b7aa237746febc277803b3", "size": 12352, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/terminfo.5.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/terminfo.5.html", "sha256": "e94fd8ea781fc3ae47fecbc1cba56ab8b4c371ad19c4ead7c2debbefa644cc1e", "size": 184273, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/tic.1m.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/tic.1m.html", "sha256": "fc67a7a1d9c8fa62953d534a61aaf6d0898a6abeef7e5d68e1b4d8d46af58b2d", "size": 28943, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/toe.1m.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/toe.1m.html", "sha256": "5bf5c4349c95df6296ecf6ee7d8db65655d24c33d7b4bc19a60b942fea043ade", "size": 10571, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/tput.1.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/tput.1.html", "sha256": "fc731b210bc8984a59287de85958d41e6ab192f8d50c8a4522c5e8f7290bd36f", "size": 34571, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/tset.1.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/tset.1.html", "sha256": "0019751c13e778e72e2b0168a805c39859a23efd306a6125b8af0e513e3c5322", "size": 23967, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/user_caps.5.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/user_caps.5.html", "sha256": "1c972d15609328ab75bd59993e8b0534bb35805fe7d6413207ed07a562f7a9ae", "size": 22392, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/man/wresize.3x.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/man/wresize.3x.html", "sha256": "79fa19810bffb34996c96c724bced66604b42a50dfd311a3cfdce6939e2b5bb3", "size": 6669, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/html/ncurses-intro.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/html/ncurses-intro.html", "sha256": "0a36dadc3e3aa93e78fa28536bfed2581cc0d245b47449972dbe784424b63df3", "size": 135454, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/ncurses-6.5-20250809/ncurses-intro.doc
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/ncurses-6.5-20250809/ncurses-intro.doc", "sha256": "842b35952ac68fe231f4ab28c17a17df848a6cb281efb5da97d22abf979927e8", "size": 114011, "type": "file", "uid": 0}
+  actual:   MISSING
+package=ncurses version=6.5-20250809 entries=4202 matched=3950 mismatched=252
