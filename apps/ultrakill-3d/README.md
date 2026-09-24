@@ -47,6 +47,18 @@ Telefonu yatay tut.
 - Ayarlanabilir: bakış hassasiyeti, nişan yardımı, buton boyutu ve saydamlığı. Desteklenen
   cihazlarda titreşim geri bildirimi.
 
+### Android APK
+
+`dist/ultrakill-3d.apk` (~500 KB) telefona kurulabilir. Uygulama aynı oyunu tam ekran, yatay ve
+**tamamen çevrimdışı** çalıştıran bir WebView kabuğudur (yazı tipleri de içinde; ağ izni yok).
+Gerekenler: Android 7.0+ ve güncel "Android System WebView" (WebGL2).
+
+- Kurulum: APK'yı telefona indir, aç, "bilinmeyen kaynaklardan yükleme" iznini ver. Play Protect
+  tanımadığı geliştirici uyarısı gösterebilir ("Yine de yükle").
+- GERİ tuşu: oyunda duraklat/devam, introyu geç, buton düzenleyiciyi kapat; ana menüde iki kez basınca çıkar.
+- Uygulama arka plana gidince oyun duraklar ve ses susar. Titreşim yerel Vibrator ile çalışır.
+- Yeniden derleme başka bir imza anahtarıyla yapıldıysa, güncellemeden önce eski uygulamayı kaldır.
+
 ## İçerik
 
 - Açılış, ana menü (bölüm, zorluk, ayarlar, kontroller, hakkında), harf harf yazılan terminal
@@ -90,7 +102,15 @@ CHROME=/yol/chrome npm test                 # masaüstü duman testi (36 kontrol
 CHROME=/yol/chrome node tests/tutorial.mjs  # tutorial parkuru, parry eğitmeni, intro/ölüm (11 kontrol)
 CHROME=/yol/chrome node tests/mobile.mjs    # dokunmatik emülasyon testi (19 kontrol)
 CHROME=/yol/chrome node tests/tour.mjs      # görsel tur ekran görüntüleri
+npm run apk                                 # → dist/ultrakill-3d.apk (Python 3 + JDK 11+, Android SDK gerekmez)
+CHROME=/yol/chrome npm run test:apk         # APK içeriği: yerel köken, köprü, yazı tipleri (10 kontrol)
 ```
+
+APK derleyicisi (`android/build_apk.py`) araçları Maven Central'dan indirip SHA-256 ile doğrular:
+apktool-lib'in aapt2'si ve çerçeve kaynakları, API 16 derleme saplamaları, `dx` ve `apksig` (v2 imza).
+İmza anahtarı `UK3D_KEYSTORE` / `UK3D_KEYSTORE_PASS` / `UK3D_KEY_ALIAS` ile verilir; verilmezse
+`~/.config/uk3d/debug.p12` oluşturulur. Anahtarı depoya koyma. Kabuk kodu `android/java/`, köprü
+betiği `android/assets-src/native-shim.js`, simge üreticisi `android/make_icons.mjs`.
 
 Kaynak `src/` altında ES modülleridir; `build.mjs` hepsini esbuild ile tek HTML'e gömer.
 
@@ -106,9 +126,11 @@ Kaynak `src/` altında ES modülleridir; `build.mjs` hepsini esbuild ile tek HTM
 | `touch.js` · `input.js` | Dokunmatik kontroller ve düzen düzenleyici · klavye/fare/pointer lock |
 | `audio.js` · `music.js` | DSP ses bankası · prosedürel müzik |
 | `physics.js` · `render.js` · `textures.js` · `fx.js` | AABB fizik · renderer/post · dokular · efektler |
+| `android/` | Android WebView kabuğu, yerel köprü, simgeler, çevrimdışı yazı tipleri (OFL), APK derleyicisi |
 
 ## Lisans / atıf
 
 Oyun kodu alpbahOS deposunun parçasıdır. Paket, MIT lisanslı three.js içerir
-(Copyright © 2010-2026 three.js authors). ULTRAKILL adı ve oyun tasarımı sahiplerine aittir;
+(Copyright © 2010-2026 three.js authors). APK, SIL Open Font License 1.1 lisanslı Anton, Chakra Petch
+ve VT323 yazı tiplerini içerir (lisans metinleri `android/assets-src/fonts/`). ULTRAKILL adı ve oyun tasarımı sahiplerine aittir;
 bu proje ticari olmayan bir hayran çalışmasıdır.

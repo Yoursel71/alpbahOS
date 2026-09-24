@@ -917,3 +917,23 @@ PipeWire hatası için aynı gün ek tekrar: Guest `/tmp`'te 12 saniye 48 kHz st
   - Sayfa hatası 0.
 - Çalıştırılmadı: gerçek cihazda insan testi ve ses dinleme.
 - Ayrıntı: [devir 015](handoffs/claude/015-ultrakill-3d-v2.md).
+
+## 24 Eylül 2026 — Claude: ULTRAKILL 3D Android APK (backlog dışı kullanıcı talebi)
+
+- Görev/sahip: Claude Code (bulut oturumu), dal `claude/3d-ultrakill-game-dev-qzqj42`. Dosya sınırı yalnız `apps/ultrakill-3d/**`. Kernel, rootfs, paket manifesti, `alp`, build/mount işlemleri ve Hyper-V ortamına dokunulmadı.
+- Oyun, tam ekran ve yatay bir WebView kabuğuna paketlendi: `apps/ultrakill-3d/dist/ultrakill-3d.apk`.
+  - Paket `org.alpbahos.uk3d` 1.0, minSdk 24, targetSdk 34, APK Signature Scheme v2 imzalı, ~495 KB.
+  - Çevrimdışı çalışır, gömülü OFL yazı tipleri vardır, ağ izni yoktur.
+  - Yerel köprü titreşimi, GERİ tuşunu ve arka plana geçişte duraklatmayı yönetir.
+- Android SDK kullanılmadı, çünkü `dl.google.com` ağ politikasında engelli (403). Araçlar Maven Central'dan SHA-256 ile sabitlendi: apktool-lib 3.0.3 (aapt2), android 4.1.1.4, dx 1.7, apksig 2.3.0.
+- APK SHA-256: `6213848bf0a12cde43f1950b0e050f0a534340e5443fef0df023357870c8b107`.
+- İmza sertifikası SHA-256: `ecfc75ebaeaa279ac35cdcf819010e45a8802128a6f9f1397b1a001e522795a3`. Anahtar depoda değildir.
+- Doğrulama:
+  - apksig v2 doğrulandı.
+  - `aapt2 dump badging` doğru.
+  - Sıkıştırılmamış girdiler 4 bayta hizalı.
+  - baksmali ile dex incelendi.
+  - `tests/apk-web.mjs` 10/10 geçti.
+  - Web testleri 36/36, 11/11 ve 19/19 geçti.
+- Çalıştırılmadı: gerçek Android cihaz veya emülatörde kurulum ve çalıştırma.
+- Ayrıntı: [devir 016](handoffs/claude/016-ultrakill-3d-android-apk.md).

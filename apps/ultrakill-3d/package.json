@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "build": "node build.mjs",
-    "test": "node tests/smoke.mjs"
+    "test": "node tests/smoke.mjs",
+    "apk": "node build.mjs && python3 android/build_apk.py",
+    "test:apk": "node tests/apk-web.mjs"
   },
   "devDependencies": {
     "esbuild": "0.28.2",

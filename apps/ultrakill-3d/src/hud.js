@@ -95,8 +95,8 @@ export class HUD {
 
   hint(text, dur = 7) {
     if (this.game.touch && this.game.touch.active) {
-      const map = { 'SHIFT': 'ATIL', 'BOŞLUK': 'ZIPLA', 'C': 'KAY', 'F': 'YUMRUK', 'SOL TIK': 'ATEŞ', 'SAĞ TIK': 'ALT', 'WASD': 'JOYSTICK', 'SHIFT → BOŞLUK': 'ATIL → ZIPLA' };
-      text = text.replace(/\[([^\]]+)\]/g, (m, k) => (map[k] ? `[${map[k]}]` : m));
+      const map = { 'SHIFT': 'ATIL', 'BOŞLUK': 'ZIPLA', 'C': 'KAY', 'F': 'YUMRUK', 'SOL TIK': 'ATEŞ', 'SAĞ TIK': 'ALT', 'WASD': 'JOYSTICK', 'SHIFT → BOŞLUK': 'ATIL → ZIPLA', 'E': 'KANCA', 'G': 'KOL' };
+      text = text.replace(/\[([^\]]+)\]/g, (m, k) => (map[k] ? `[${map[k]}]` : m)).replace('fareyle bak', 'sağda sürükleyerek bak');
     }
     this.$.hint.innerHTML = esc(text).replace(/\[([^\]]+)\]/g, '<b>[$1]</b>');
     this.$.hint.classList.remove('hidden');
