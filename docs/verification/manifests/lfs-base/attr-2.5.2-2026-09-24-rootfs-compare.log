@@ -1,0 +1,89 @@
+MISMATCH /etc
+  expected: {"gid": 0, "mode": 493, "path": "/etc", "type": "directory", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/etc", "type": "directory", "uid": 1001}
+MISMATCH /usr/bin/attr
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/attr", "sha256": "7a0ec998aa0d89cd60d637365d45c35692fe94f548f658874e2cc7d3486763da", "size": 28360, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/bin/attr", "sha256": "b005f2b9a94e5d5c7fd990e04926479a43f312a10bc32baff0aff5e6f1a8166f", "size": 28344, "type": "file", "uid": 0}
+MISMATCH /usr/bin/getfattr
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/getfattr", "sha256": "2b32d86b46fb9ca7a06937c402f44b1908f365ce2ebecefadad779236bf430c4", "size": 60400, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/bin/getfattr", "sha256": "f6b79d7beaa8942db803b43c1cec849177c7c5e0942f915e4eeb43d6c1d84162", "size": 60384, "type": "file", "uid": 0}
+MISMATCH /usr/bin/setfattr
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/setfattr", "sha256": "fdb684e8d6af44d38f6e774f7e33f5de0e56668951b2068086f95fa0dff299b9", "size": 53312, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/bin/setfattr", "sha256": "05e3a94a09549b9b579393486a0540dc2235d2dea5937eb5a8481ff0ba35d742", "size": 53296, "type": "file", "uid": 0}
+MISMATCH /usr/lib/libattr.so.1.1.2502
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/libattr.so.1.1.2502", "sha256": "cef59f4224de7a4eb661b5b36af1e2ec455a89ded61a8e58a8d1b13138bf59e6", "size": 70952, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/libattr.so.1.1.2502", "sha256": "936dc2d35c25f66398fce48859757e8966e33fa023614ecf7561d299c59c0158", "size": 70936, "type": "file", "uid": 0}
+MISMATCH /usr/share/doc
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/doc", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/doc", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/cs
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/cs", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/cs", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/cs/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/cs/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/cs/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/de
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/de", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/de", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/de/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/de/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/de/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/en@boldquot
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/en@boldquot", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/en@boldquot", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/en@boldquot/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/en@boldquot/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/en@boldquot/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/en@quot
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/en@quot", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/en@quot", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/en@quot/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/en@quot/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/en@quot/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/es
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/es", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/es", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/es/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/es/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/es/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/fr
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/fr", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/fr", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/fr/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/fr/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/fr/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/gl
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/gl", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/gl", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/gl/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/gl/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/gl/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ka
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ka", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ka", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ka/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ka/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ka/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/nl
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/nl", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/nl", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/nl/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/nl/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/nl/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/pl
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/pl", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/pl", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/pl/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/pl/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/pl/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/sv
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/sv", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/sv", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/sv/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/sv/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/sv/LC_MESSAGES", "type": "directory", "uid": 1001}
+package=attr version=2.5.2 entries=75 matched=46 mismatched=29
+COMPARATOR_EXIT=1
