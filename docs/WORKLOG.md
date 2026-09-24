@@ -1055,7 +1055,7 @@ PipeWire hatası için aynı gün ek tekrar: Guest `/tmp`'te 12 saniye 48 kHz st
 
 - Added `scripts/adapt-m04-capture-event.py` to convert one successful fixture event into the integrity-only evidence-bundle schema. Explicit source/recipe metadata is required and its hashes must match captured inputs; all referenced artifact hashes are rechecked. The one-event bundle is accepted by the existing integrity verifier.
 - Reconciler conversion deliberately fails closed: the capture runner still skips unknown trace records, does not deny `io_uring`, uses path-based snapshots, and has no exclusive/quiescent root guarantee. The adapter will not manufacture `write_set_complete=true`.
-- Focused validation: `python -m pytest -q tests/test_m04_capture_event_adapter.py tests/test_m04_evidence_bundle.py tests/test_m04_install_event_capture.py tests/test_m04_final_owner_reconciler.py` — 43 passed, 4 skipped; `py_compile`, `check_docs.py` (0 findings), and `git diff --check` passed. Source URL/recipe identity remain caller assertions; all use is fixture-only. M04 remains 0/79 observed rootfs install events. See [adapter verification](verification/m04-capture-adapter-2026-09-24.md).
+- Focused validation: `python -m pytest -q tests/test_m04_capture_event_adapter.py tests/test_m04_evidence_bundle.py tests/test_m04_install_event_capture.py tests/test_m04_final_owner_reconciler.py` — 44 passed, 4 skipped; `py_compile`, `check_docs.py` (0 findings), and `git diff --check` passed. Source URL/recipe identity remain caller assertions; all use is fixture-only. M04 remains 0/79 observed rootfs install events. See [adapter verification](verification/m04-capture-adapter-2026-09-24.md).
 
 ## 24 Eylül 2026 — M05 exit-condition audit
 

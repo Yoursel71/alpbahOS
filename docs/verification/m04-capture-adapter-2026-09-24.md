@@ -66,3 +66,10 @@ package identity pins. This adapter produces none of those. Linux integration
 and the production fixture probes in
 [`m04-production-capture-design-2026-09-24.md`](m04-production-capture-design-2026-09-24.md)
 remain required.
+
+## Validation
+
+- Windows host: `python -m pytest -q tests/test_m04_capture_event_adapter.py tests/test_m04_evidence_bundle.py tests/test_m04_install_event_capture.py tests/test_m04_final_owner_reconciler.py` — **44 passed, 4 skipped**. This includes a CLI-path fixture test that writes an adapted index and passes it through the existing bundle verifier.
+- `python -m py_compile scripts/adapt-m04-capture-event.py` — passed.
+- `python docs/handoffs/claude/tools/check_docs.py` — 0 findings.
+- `git diff --check` — passed.

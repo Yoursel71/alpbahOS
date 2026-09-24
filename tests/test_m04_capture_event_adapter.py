@@ -4,11 +4,14 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
+import io
 import json
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 from typing import Any
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -92,6 +95,20 @@ class CaptureEventAdapterTests(unittest.TestCase):
         combined = (self.root / event["artifacts"]["install_log"]["path"]).read_bytes()
         self.assertIn(b"=== stdout ===", combined)
         self.assertIn(b"=== stderr ===", combined)
+
+    def test_cli_writes_verifier_accepted_bundle_index(self) -> None:
+        event_path = self.root / "capture-event.json"
+        provenance_path = self.root / "provenance.json"
+        output_path = self.root / "adapted-index.json"
+        event_path.write_text(json.dumps(self.event), encoding="utf-8")
+        provenance_path.write_text(json.dumps(self.provenance), encoding="utf-8")
+        argv = [str(ADAPTER_SCRIPT), "--event", str(event_path), "--evidence-root", str(self.root),
+                "--provenance", str(provenance_path), "--bundle-index-out", str(output_path)]
+        with mock.patch.object(sys, "argv", argv), mock.patch.object(sys, "stdout", new_callable=io.StringIO):
+            self.assertEqual(adapter.main(), 0)
+
+        index = json.loads(output_path.read_text(encoding="utf-8"))
+        self.assertEqual(verifier.verify_bundle(index, self.root), 0)
 
     def test_source_and_recipe_hashes_must_match_captured_inputs(self) -> None:
         self.provenance["recipe_input_path"] = "/fixture/other-recipe.sh"
