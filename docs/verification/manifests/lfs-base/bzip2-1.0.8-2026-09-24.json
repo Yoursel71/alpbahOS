@@ -1,0 +1,312 @@
+{
+  "captured_at": "2026-09-24T01:44:53+00:00",
+  "entries": [
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/bin/bunzip2",
+      "target": "bzip2",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/bin/bzcat",
+      "target": "bzip2",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/bin/bzcmp",
+      "target": "bzdiff",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/bzdiff",
+      "sha256": "1c1f96193cdf14b85ea65f140a7557a07ece8783a53ec5ba6b5c30644a9d3012",
+      "size": 2140,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/bin/bzegrep",
+      "target": "bzgrep",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/bin/bzfgrep",
+      "target": "bzgrep",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/bzgrep",
+      "sha256": "a8e368a31766c7862b8d0feeffe274c3bb43b969e3ccb4f9e77d13bfa447a5c9",
+      "size": 2054,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/bzip2",
+      "sha256": "da4d91a2915f3655b74250d461b62717af996b0310dfb6be1d2b0f43c323bb1a",
+      "size": 90200,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/bzip2recover",
+      "sha256": "92f786d1b22f9a8b6ea92d1da94358da514c7ac4628b71a426c4a92f24d18af1",
+      "size": 33624,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/bin/bzless",
+      "target": "bzmore",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/bzmore",
+      "sha256": "836536d4c7469788c730355d59f8ae8d16ba07cb0754174878d99ed90f04448d",
+      "size": 1259,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/include",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bzlib.h",
+      "sha256": "6ac62e811669598ee30c9e1c379b9e627f6ff17a5a3dc1e0b4fa8b8ea75e580d",
+      "size": 6240,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libbz2.so",
+      "target": "libbz2.so.1.0.8",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 1001,
+      "mode": 511,
+      "path": "/usr/lib/libbz2.so.1.0",
+      "target": "libbz2.so.1.0.8",
+      "type": "symlink",
+      "uid": 1001
+    },
+    {
+      "gid": 1001,
+      "mode": 493,
+      "path": "/usr/lib/libbz2.so.1.0.8",
+      "sha256": "b707eadcd2eab0438f4189a8b0cf83044fa68906cd7644e15074c9b9c962a061",
+      "size": 228944,
+      "type": "file",
+      "uid": 1001
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/doc",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/doc/bzip2-1.0.8",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/bzip2-1.0.8/bzip2.txt",
+      "sha256": "4e25ed103828141f371ffa4ed0446d139e2c3626517e6f4335855bdad021afcd",
+      "size": 18997,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/bzip2-1.0.8/manual.html",
+      "sha256": "34f5eaeb37488b51662316b8d9f54228c96f72b54aec3bfc17cd731e3ce9bbd2",
+      "size": 126958,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/bzip2-1.0.8/manual.pdf",
+      "sha256": "1dd1f12b3dcb0894481708881ed8d052c769f3820c06839c702c8cfad973d7d3",
+      "size": 183803,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/bzip2-1.0.8/manual.ps",
+      "sha256": "18d0971311ef13e62463acb888435bade35748523341d45a26ec6fcad5c1c69b",
+      "size": 1766625,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man/man1",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/bzcmp.1",
+      "sha256": "172cde42c47a6d50c244e39d993097dcd3882427d57303078643849cf10a81c4",
+      "size": 18,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/bzdiff.1",
+      "sha256": "32d1a7cd115430398e58537532584ef2ab76343c9f094dcd1253d9c4c0f705bf",
+      "size": 897,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/bzegrep.1",
+      "sha256": "cf1c98d3fa055506c8af2f8bba4da9c17d367c6409c6ad83a2bc67ccb6630182",
+      "size": 18,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/bzfgrep.1",
+      "sha256": "cf1c98d3fa055506c8af2f8bba4da9c17d367c6409c6ad83a2bc67ccb6630182",
+      "size": 18,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/bzgrep.1",
+      "sha256": "924aa4a7c7c1467400181e4c0ee1b527db142b6399a717171f2351b72b5899df",
+      "size": 1297,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/bzip2.1",
+      "sha256": "27b984bb2e8bbee2651d11cda87449cfc4138d2e479b9eaa77b8f60fa5d0bf5d",
+      "size": 16266,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/bzless.1",
+      "sha256": "216898f9b8acf61eeb471ecf23e47c1452dfd648f7f38d7d3bf48627072dc52c",
+      "size": 18,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/bzmore.1",
+      "sha256": "ccfcf3f995e11adae3035e287252091bb72d165da21e0c385a4965d17c9051c7",
+      "size": 4310,
+      "type": "file",
+      "uid": 0
+    }
+  ],
+  "package": {
+    "name": "bzip2",
+    "source": {
+      "sha256": "ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0c4a2269",
+      "url": "https://www.sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz"
+    },
+    "version": "1.0.8"
+  },
+  "schema": "alpbahOS.package-files/v1"
+}

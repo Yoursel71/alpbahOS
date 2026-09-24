@@ -230,7 +230,7 @@ separate retry logs, and the successful run ended with
 The LFS 12.4-systemd Zlib instructions were followed:
 [Zlib-1.3.1](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/zlib.html).
 
-## Gzip, Zstd, and Xz staged comparison — 24 September 2026
+## Gzip, Zstd, Xz, and Bzip2 staged comparison — 24 September 2026
 
 Three more LFS base packages were built/tested in the Builder `/mnt/lfs`
 chroot and installed into separate DESTDIR trees. Their target-rootfs files
@@ -242,6 +242,8 @@ checksums before extraction.
 | Gzip 1.14 | `./configure --prefix=/usr`, `make -j2`, `make check`: 30/30 pass | 32 entries (6 directories, 26 files), SHA-256 `f4e1d9ea6deaa3ddfa4c9a8c9e8fe634b97e13c51426611efae9155355b8c150`; shared generated `/usr/share/info/dir` was omitted | 5 matched, 27 mismatched; installed command files are UID/GID 1001 Chapter 6 outputs with different hashes; final man pages are absent. Not installed to rootfs. |
 | Zstd 1.5.7 | `make prefix=/usr -j2`, `make check`: completed successfully; `make prefix=/usr install`, then static archive removal | 26 entries (8 directories, 11 files, 7 symlinks), SHA-256 `c4365a81edc9e6cca2d053fdf653ee3b4b502b34b4c6618969c97f925285dc49` | 24 matched, 2 mismatched; `/usr/bin/zstd` hash differs (stage 10,473,928 bytes; rootfs 10,473,808), and `libzstd.so.1.5.7` differs despite equal size. Not installed to rootfs. |
 | Xz 5.8.1 | `./configure --prefix=/usr --disable-static --docdir=/usr/share/doc/xz-5.8.1`, `make -j2`, `make check`: 19/19 pass | 348 entries (79 directories, 126 files, 143 symlinks), SHA-256 `d107d06674565c111d5d8873d3694a8dbcf611a7e2eb86aa9d8755358d0a1134` | 290 matched, 58 mismatched. Not installed to rootfs. |
+| Bzip2 1.0.8 | LFS patch applied; `make -f Makefile-libbz2_so -j2`, `make clean`, `make -j2`; all six source/reference round-trip comparisons passed | 36 entries (9 directories, 19 files, 8 symlinks), SHA-256 `c38c928beacb673344a083c8895707fab00842446cae6640c5130ec7b07e36a8` | 31 matched, 5 mismatched: bzip2 and bzip2recover binaries differ; libbz2 symlink target matches but file hash differs and stage/rootfs symlink ownership differs; shared `/usr/share/doc` mode/owner differs. Not installed to rootfs. |
+| Lz4 1.10.0 | `make BUILD_STATIC=no PREFIX=/usr -j2`; `make -j1 check` passed | 23 entries (8 directories, 7 files, 8 symlinks), SHA-256 `3a7f8a461c25b970509ea6a2bf1194489454ece67eff58bfaaf0fc74d7862730` | 23 matched, 0 mismatched. This is an exact staged file-set match. No install was merged to rootfs and no DB record was added. |
 
 The manifests and complete machine-readable mismatch reports are preserved as
 [`gzip manifest`](manifests/lfs-base/gzip-1.14-2026-09-24.json),
@@ -250,6 +252,10 @@ The manifests and complete machine-readable mismatch reports are preserved as
 [`Zstd preflight`](manifests/lfs-base/zstd-1.5.7-2026-09-24-preflight.log),
 [`Xz manifest`](manifests/lfs-base/xz-5.8.1-2026-09-24.json), and
 [`Xz preflight`](manifests/lfs-base/xz-5.8.1-2026-09-24-preflight.log).
+The Bzip2 evidence is preserved as [`Bzip2 manifest`](manifests/lfs-base/bzip2-1.0.8-2026-09-24.json)
+and [`Bzip2 preflight`](manifests/lfs-base/bzip2-1.0.8-2026-09-24-preflight.log).
+Lz4 evidence is preserved as [`Lz4 manifest`](manifests/lfs-base/lz4-1.10.0-2026-09-24.json)
+and [`Lz4 preflight`](manifests/lfs-base/lz4-1.10.0-2026-09-24-preflight.log).
 Build logs remain on Builder under `/mnt/lfs/tmp/alp-logs/`:
 `m04-gzip-1.14-build-20260924.log` (SHA-256
 `b62a9b3b58934b1b19ce7e726762abc58680625ca04713ed16cef6c6beb76f95`),
@@ -263,7 +269,42 @@ The checks show that passing upstream tests does not prove the current rootfs
 contains those final Chapter 8 install outputs. Stage-to-rootfs mismatches
 must be resolved before claiming those path sets for M04.
 
+Bzip2's successful retry used the extra `/mnt/lfs/tmp/alp-logs/` files
+`m04-bzip2-1.0.8-build-20260924-r2.log` (SHA-256
+`7746876e05b5d90acd4692f4b3dec183fe207723737258bb7603c40f243ca861`),
+`m04-bzip2-1.0.8-manifest-20260924-r2.json` (SHA-256
+`c38c928beacb673344a083c8895707fab00842446cae6640c5130ec7b07e36a8`), and
+`m04-bzip2-1.0.8-preflight-20260924-r2.log` (SHA-256
+`e072f18a5743fda452ff8b085fe18c384e40adea1f41863439efa96125cabe0e`). An
+earlier stage attempt logged a shell-expansion error and absolute symlinks in
+its isolated tree; that tree was not used. A fresh retry verified relative
+program symlinks before capturing the manifest. No rootfs or DB changes were
+made by either attempt.
+
+The Bzip2 source archive was verified against LFS MD5
+`67e051268d0c475ea773822f7500d0e5` (SHA-256
+`ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0c4a2269`); the
+documentation patch matched MD5 `6a5ac7e89b791aae556de0f745916f7f`.
+
+Lz4 was built in `/mnt/lfs/build/lz4-1.10.0-m04` from the verified source
+archive (MD5 `dead9f5f1966d9ae56e1e32761e4e675`, SHA-256
+`537512904744b35e232912055ccf8ec66d768639ff3abe5788d90d792ec5f48b`). The
+LFS commands `make BUILD_STATIC=no PREFIX=/usr`, `make -j1 check`, and
+`make BUILD_STATIC=no PREFIX=/usr DESTDIR=/tmp/alp-m04-lz4-stage install`
+completed successfully. Its build log SHA-256 is
+`d0a8d40c699c17c24f5d4ac42d12cd74b235a45f02763163ec80cb5563c2b8d9`; the 23
+entry manifest hash is `3a7f8a461c25b970509ea6a2bf1194489454ece67eff58bfaaf0fc74d7862730`.
+Read-only comparison reported `entries=23 matched=23 mismatched=0`; the full
+preflight output SHA-256 is
+`1741fe0a9ce8b38b81fd5c1d319a8fefdb11fdfe5ffa023a2d70a5219fe573b8`. This
+recovers a verified current Lz4 path set, but the rootfs and `alp` DB were not
+modified. LFS reference:
+[Lz4-1.10.0](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/lz4.html).
+
 Official LFS 12.4-systemd procedures:
 [Gzip-1.14](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/gzip.html),
 [Zstd-1.5.7](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/zstd.html),
 [Xz-5.8.1](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/xz.html).
+The patched shared-library Bzip2 procedure follows
+[Bzip2-1.0.8](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/bzip2.html)
+and the [LFS patch checksum list](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter03/patches.html).
