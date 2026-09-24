@@ -581,6 +581,40 @@ EXIT cleanup found no mounts below `/mnt/lfs`; NBD PID remained empty, 68 GiB
 was free, rootfs `alp.py` retained the pinned hash, and `db.json` remained
 empty. LFS reference: [Gperf 3.3 instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/gperf.html).
 
+## Expat 2.7.1 staged comparison — 24 September 2026
+
+Expat 2.7.1 follows the pinned LFS 12.4-systemd package definition. The
+Builder source archive `/mnt/lfs/sources/expat-2.7.1.tar.xz` matched LFS MD5
+`9f0c266ff4b9720beae0c6bd53ae4469` and SHA-256
+`354552544b8f99012e5062f7d570ec77f14b412a3ff5c7d8d0dae62c0d217c30`.
+Configuration was `--prefix=/usr --disable-static
+--docdir=/usr/share/doc/expat-2.7.1`; `make -j2` and `make check` ran in the
+`/mnt/lfs` chroot. The suite reported 2 PASS, 0 SKIP, 0 XFAIL, 0 FAIL, and
+0 ERROR. Installation, including the optional HTML/CSS documentation, went
+only to `/mnt/lfs/tmp/alp-m04-expat-stage-r1`. The stage-only `xmlwf` accepted
+a valid XML fixture with the staged shared library on `LD_LIBRARY_PATH`.
+
+The manifest has 31 entries (12 directories, 17 files, 2 symlinks), SHA-256
+`65aa6086b0176796af35b47ee6431a275be78aa9f6c376b41852918af6833fa0`;
+[manifest](manifests/lfs-base/expat-2.7.1-2026-09-24.json). Read-only
+preflight reported 25 exact matches and 6 mismatches; [full report](manifests/lfs-base/expat-2.7.1-2026-09-24-preflight.log),
+SHA-256 `f61101dc360e9d63e0112948c2cb0ca34b2814801072af1d0be797217008a543`.
+The mismatches are `/usr/bin/xmlwf`, `/usr/lib/libexpat.so.1.10.2`, shared
+`/usr/share/doc` metadata, and three HTML/CSS files absent from the current
+rootfs. No staged file was merged and no ownership record was added.
+
+Builder log `/mnt/lfs/tmp/alp-logs/m04-expat-2.7.1-stage-20260924-r1.log`
+SHA-256 `0a3a501c0c70695f9929e4d4effc3f8e4e472a3d706049722a3fe740bba23f70`.
+The EXIT trap found no mounts below `/mnt/lfs`; NBD PID remained empty, 68 GiB
+was free, the pinned rootfs `alp.py` hash was unchanged, and `db.json` stayed
+empty. LFS reference: [Expat 2.7.1 instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/expat.html).
+
+**Release security scope:** this stage deliberately matches LFS 12.4's pinned
+2.7.1 source; it is not a security update. The current LFS advisory identifies
+Expat 2.7.5 or later as the remediation version. A release candidate must
+resolve that update before it can be treated as current:
+[LFS/BLFS consolidated advisories](https://linuxfromscratch.org/blfs/advisories/consolidated.html).
+
 Official LFS 12.4-systemd procedures:
 [Gzip-1.14](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/gzip.html),
 [Zstd-1.5.7](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/zstd.html),

@@ -1,0 +1,19 @@
+MISMATCH /usr/bin/xmlwf
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/xmlwf", "sha256": "a8fd66ec3b8b9630946fa5cbf04d035fa0d02c8134e7ad94d6c6c2970c28b020", "size": 106880, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/bin/xmlwf", "sha256": "0e977ccb5b18b6a2b293bae6fea055643456240ee9a90823b4b0ba784789c7d2", "size": 106880, "type": "file", "uid": 0}
+MISMATCH /usr/lib/libexpat.so.1.10.2
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/libexpat.so.1.10.2", "sha256": "dff0e94db1c71cb9d4ca2182c3e7dfdc1e536ba2a48e217fcd668cbbdddfbdf7", "size": 536240, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/libexpat.so.1.10.2", "sha256": "b5e0250708930a092fbfe47207a2e06b329b61466b5a693a8b444d6237341110", "size": 536240, "type": "file", "uid": 0}
+MISMATCH /usr/share/doc
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/doc", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/doc", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/doc/expat-2.7.1/ok.min.css
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/expat-2.7.1/ok.min.css", "sha256": "1d0bc5cc99af72f19ba64f17279bf53e4c0cde17fbdc4fc0db6f604270c064ef", "size": 16001, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/expat-2.7.1/reference.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/expat-2.7.1/reference.html", "sha256": "0394e51680cc48a2061e86d952e4cbd6d728f0135c8b6a6d87cdaa3b45fc9e75", "size": 109171, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/expat-2.7.1/style.css
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/expat-2.7.1/style.css", "sha256": "f406460bc73980118d8d15186daa51918d52752562641e27d19eb453c0c0817e", "size": 1952, "type": "file", "uid": 0}
+  actual:   MISSING
+package=expat version=2.7.1 entries=31 matched=25 mismatched=6
