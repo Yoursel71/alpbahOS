@@ -37,6 +37,7 @@ trap cleanup EXIT
 trap 'printf "FAILED line %s: %s\n" "$LINENO" "$BASH_COMMAND" >&2' ERR
 
 [[ $EUID -eq 0 ]] || { echo 'Run as root.' >&2; exit 1; }
+[[ $ADMIN_PASSWORD == admin ]] || { echo 'The isolated test VM console account must remain admin/admin.' >&2; exit 1; }
 [[ $OUT == /* && $OUT != /tmp/* && $OUT != /mnt/lfs/* ]] || { echo 'OUT must be an absolute path outside /tmp and /mnt/lfs.' >&2; exit 1; }
 [[ -d $ROOTFS/etc && -x $ROOTFS/usr/bin/alp ]] || { echo "Invalid rootfs: $ROOTFS" >&2; exit 1; }
 [[ ! -e $OUT ]] || { echo "Refusing to overwrite existing image: $OUT" >&2; exit 1; }
@@ -65,7 +66,9 @@ grep -q '^ListenStream=%t/bus$' "$ROOTFS/usr/lib/systemd/user/dbus.socket"
 
 modprobe nbd max_part=8
 [[ -b $NBD ]] || { echo "$NBD is unavailable." >&2; exit 1; }
-if [[ -s /sys/block/nbd0/pid ]]; then
+PID_FILE=/sys/block/nbd0/pid
+[[ -r $PID_FILE ]] || { echo "$PID_FILE is unavailable; cannot prove $NBD is idle." >&2; exit 1; }
+if [[ -s $PID_FILE ]]; then
     echo "$NBD is already in use; refusing to attach." >&2
     exit 1
 fi

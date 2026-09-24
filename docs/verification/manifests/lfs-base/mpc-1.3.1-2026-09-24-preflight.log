@@ -1,0 +1,33 @@
+gmp_manifest_sha256=5e68e60e1fb1032940b25e5bd565a36e14bb0c42a6fc2a88af18ebb356f06e62
+mpfr_manifest_sha256=f26511ca6cd5f4e9eca631dc01bc78429ee576ec35c6911c05b98965ce361582
+package=gmp version=6.3.0 entries=171 matched=171 mismatched=0
+GMP_STAGE_MANIFEST_COMPARE_EXIT=0
+package=mpfr version=4.2.2 entries=81 matched=81 mismatched=0
+MPFR_STAGE_MANIFEST_COMPARE_EXIT=0
+package=mpc version=1.3.1
+source_url=https://ftp.gnu.org/gnu/mpc/mpc-1.3.1.tar.gz
+source_md5=5c9bc658c9fd0f940e8e3e0f09530c62
+source_sha256=ab642492f5cf882b74aa0cb730cd410a81edcdbec895183ce930e706c1c759b8
+gmp_manifest_sha256=5e68e60e1fb1032940b25e5bd565a36e14bb0c42a6fc2a88af18ebb356f06e62
+mpfr_manifest_sha256=f26511ca6cd5f4e9eca631dc01bc78429ee576ec35c6911c05b98965ce361582
+critical_tests=make check passed
+install_mode=DESTDIR; rootfs_merge=forbidden
+manifest=/mnt/lfs/tmp/alp-m04-mpc-1.3.1-manifest-20260924-r1.json
+entries=42 types={"directory": 8, "file": 32, "symlink": 2}
+MISMATCH /usr/lib/libmpc.la
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/libmpc.la", "sha256": "2a6d4cd962732d32aca4f2bb025c181193de65ecc7f1a57072bf82e6224bc0f3", "size": 1030, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/libmpc.la", "sha256": "0a60a21ddcd388c3a8b782d13930bd266470c50239cf9209d69302f076afaa67", "size": 938, "type": "file", "uid": 0}
+MISMATCH /usr/lib/libmpc.so.3.3.1
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/libmpc.so.3.3.1", "sha256": "dabbf0da3336d2304a96da4f1e442014ac306e1d1ce4c198d94ecf9735bdee75", "size": 156472, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/libmpc.so.3.3.1", "sha256": "1799443d84a699d7bb9fc282a4df51c0a72a0bc71fd4bb4c122434cc27e77b31", "size": 542112, "type": "file", "uid": 0}
+MISMATCH /usr/share/doc
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/doc", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/doc", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/info
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/info", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/info", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/info/dir
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/info/dir", "sha256": "916de057392f8a31f35b103e77336cecdff4f62329a06b2e4301e6b1bad82ccc", "size": 603, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 420, "path": "/usr/share/info/dir", "sha256": "fb80e5b75495213cb4b42a22e14aad3db7520b6443216725462f79cf12e87af7", "size": 107341, "type": "file", "uid": 0}
+package=mpc version=1.3.1 entries=42 matched=37 mismatched=5
+ROOTFS_PREFLIGHT=staged paths differ; review before adoption

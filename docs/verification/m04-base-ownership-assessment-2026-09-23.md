@@ -4,6 +4,36 @@
 
 M04 remains partial. The existing `/mnt/lfs` rootfs does not contain package-to-file ownership records for its LFS base installation, so no base package ownership claim is made from this audit.
 
+The official 79-entry LFS 12.4-systemd Chapter 8 scope and current stage coverage
+are tracked in the [M04 package coverage matrix](m04-lfs-12.4-package-coverage-2026-09-24.md).
+
+## Installed version and build provenance — 24 September 2026
+
+A read-only Builder audit queried installed program/library versions and
+inspected retained package `config.status` files and binary hashes. No version
+mismatch was found among the checked Chapter 8 packages: observed versions
+include Glibc 2.42, GCC 15.2.0, Binutils 2.45, Systemd 257.8, OpenSSL 3.5.2,
+Python 3.13.7, Coreutils 9.7, Bash 5.3, and the 22 packages already staged.
+
+The comparison deltas are materially explained by build provenance. The
+retained Coreutils, Gawk, Gzip, Findutils, and Diffutils build configurations
+include `--host=x86_64-lfs-linux-gnu`, indicating cross-build outputs. Current
+rootfs `/usr/bin/ls` has SHA-256
+`82e6f443cd7ca53ea05d2546872a034b2d873a387f02a0129e493339bdf485bf`, equal to
+`/mnt/lfs/build/coreutils-9.7/src/ls`; it is 776,856 bytes and owned by
+1001:1001. The final Chapter 8 stage manifest records `/usr/bin/ls` as
+657,672 bytes with SHA-256
+`065e245611bf7712b0a255a18dbcb9e149b0a7bdfb7338bfaa108abf99660de0`.
+Therefore the current rootfs still contains a Chapter 6 cross-build Coreutils
+binary, not the captured Chapter 8 build.
+
+Additional observed differences include bootstrap file owners (1001:1001 vs
+final-stage root:root), locale directory modes/owners, Bash configuration
+(`--with-installed-readline` and docdir in the captured stage), and Perl's
+static rootfs executable vs the shared-lib/thread configuration of the stage.
+These findings identify the root of several mismatches but do not prove
+ownership records. No rootfs/database changes were made during this audit.
+
 ## Builder evidence
 
 Environment: Builder VM `yrsk`, accessed as `sa` over SSH; target `/mnt/lfs`.
@@ -162,6 +192,33 @@ environment guide; this pilot did not modify it.
 Primary LFS references: [Coreutils 9.7 Chapter 8 instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/coreutils.html),
 [LFS 12.4 required patch checksums](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter03/patches.html),
 [Chapter 6 temporary Coreutils instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter06/coreutils.html).
+
+## Ownership-ledger validator prototype — 2026-09-24
+
+Added `scripts/validate-rootfs-ownership-ledger.py` and fixture tests in
+`tests/test_rootfs_ownership_ledger.py`. The validator checks a versioned
+ledger's schema and verifies that claimed regular-file and symlink metadata
+currently matches a supplied rootfs. It rejects unsafe/non-canonical paths,
+duplicate or overlapping ownership, unsupported entry types, and files that
+change while being read. The CLI labels its result `CONSISTENCY_ONLY`; an empty
+ledger is reported separately, and even a matching nonempty ledger explicitly
+returns `NOT_OWNERSHIP_PROOF`.
+
+Validation on Windows: `python -m unittest -v tests.test_rootfs_ownership_ledger`
+ran 16 tests successfully; four symlink-specific cases were skipped because
+this Windows environment lacks symlink creation privilege. A Linux run of the
+same fixture suite on Builder passed all 16 tests, including the symlink cases.
+`python -m py_compile scripts/validate-rootfs-ownership-ledger.py` and
+`git diff --check` also passed. No live ledger was created and no rootfs path
+or package database was changed.
+
+This is a consistency-check prototype only. It has no install-event capture,
+authenticated log verification, atomic transaction writer, or complete LFS
+base inventory; path-based traversal also requires a trusted, quiescent rootfs
+and is not dirfd-atomic. Its success cannot establish package installation,
+safe removal, or M04 completion. The requirement in `MASTER_PLAN.md` §10.1
+remains open until package installs are recorded transactionally and every
+final-base path is reconciled with authoritative ownership evidence.
 
 ## Package-removal guard recheck — 24 September 2026
 
@@ -716,3 +773,42 @@ rootfs ownership and does not close M04. The final Builder check found no
 mounts below `/mnt/lfs`, no active build command, 68 GiB available, and no NBD
 device. The restricted `/tmp` search produced permission notices for
 systemd-private directories, so VHDX absence was not claimed from that search.
+
+## Fixture-only install transaction experiment — 24 September 2026
+
+Added `scripts/m04-package-install-transaction.py`, its fixture-only test suite,
+and `scripts/M04_TRANSACTION_WRITER_EXPERIMENT.md`. An independent code review
+found no remaining blocker for committing this experiment within its stated
+fixture-only boundary. The Linux Builder run reported 18 tests passing in
+31.518 seconds. The current Windows Python cannot run this Linux-only suite
+because it has no `fcntl` module; syntax compilation and `git diff --check`
+passed locally, and `check_docs.py` reported zero findings.
+
+The writer refuses `/mnt/lfs` and any path below it, is not integrated with
+Alp, and does not alter the rootfs, its empty package database, or the test
+image. Tests use disposable temporary fixture roots and exercise simulated
+process interruptions and recovery. They do not cover real power loss,
+authenticated package inputs, concurrent hostile writers, or production
+rootfs behavior. The experiment records no base-package ownership evidence
+and does not close M04. The 40 existing Chapter 8 manifests remain staged
+comparisons only; final-rootfs paths still have no authoritative package
+ownership records.
+
+## Stage-manifest collision audit — 24 September 2026
+
+A read-only parser rechecked the 40 package manifests in
+`docs/verification/manifests/` (excluding the Coreutils Chapter 6 preflight
+JSON): 15,824 entries total, comprising 1,734 directories, 12,971 regular
+files, and 1,119 symlinks. The counts agree with the coverage matrix.
+
+There are 117 repeated directory paths; their metadata agrees across the stage
+manifests. There is one repeated non-directory path: `/usr/share/info/dir` is
+a regular-file entry in nine package manifests (Binutils, DejaGNU, Flex, GDBM,
+GMP, Inetutils, Libtool, MPC, and MPFR), and all nine content hashes differ.
+It must be treated as a generated shared index with explicit update semantics,
+not as co-owned package payload. No symlink pathname collision was found.
+
+The known `/etc`, `/usr/share/doc`, and `/usr/share/info` rootfs metadata
+differences are shared-directory policy issues, not evidence of package
+ownership transfer. This audit describes staged payload collisions only; it
+adds no historical ownership evidence and does not close M04.

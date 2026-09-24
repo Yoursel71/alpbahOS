@@ -1,0 +1,31 @@
+GMP_MANIFEST_SHA256=5e68e60e1fb1032940b25e5bd565a36e14bb0c42a6fc2a88af18ebb356f06e62
+package=gmp version=6.3.0 entries=171 matched=171 mismatched=0
+GMP_STAGE_MANIFEST_COMPARE_EXIT=0
+package=mpfr version=4.2.2
+source_url=https://ftp.gnu.org/gnu/mpfr/mpfr-4.2.2.tar.xz
+source_md5=7c32c39b8b6e3ae85f25156228156061
+source_sha256=b67ba0383ef7e8a8563734e2e889ef5ec3c3b898a01d00fa0a6869ad81c6ce01
+patches=none-required-by-LFS-12.4-systemd
+dependency=gmp 6.3.0; staged manifest SHA-256 pinned by GMP_MANIFEST_SHA256
+install_mode=DESTDIR; rootfs_merge=forbidden
+critical_tests=make check; TOTAL=198 PASS=198 FAIL=ERROR=XPASS=0
+builder=yrsk
+manifest=/mnt/lfs/tmp/alp-m04-mpfr-4.2.2-manifest-20260924-r1.json
+entries=81 types={"directory": 10, "file": 69, "symlink": 2}
+MISMATCH /usr/lib/libmpfr.la
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/libmpfr.la", "sha256": "0508f66b5c6f0615c05bbcced1448a613ef360f508a3284de3efde78b373d3c8", "size": 971, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/libmpfr.la", "sha256": "cdf9699885a6e9a2801b5bde853334861d4555885e95c5a049169213d268744f", "size": 935, "type": "file", "uid": 0}
+MISMATCH /usr/lib/libmpfr.so.6.2.2
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/libmpfr.so.6.2.2", "sha256": "c599dbc6b4c1f5025c8e847bfc7d4fdefaa00022fde563f4c327f2c9b11f858f", "size": 1551664, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/libmpfr.so.6.2.2", "sha256": "7dcb2e2c339c205852066d772f801241e67e6d07776264d73ee082813edc0bb3", "size": 1547576, "type": "file", "uid": 0}
+MISMATCH /usr/share/doc
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/doc", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/doc", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/info
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/info", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/info", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/info/dir
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/info/dir", "sha256": "ce770d9593f4b04b40178627f43dad6e3915d6db9494e0fc3581d38a13e1118a", "size": 680, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 420, "path": "/usr/share/info/dir", "sha256": "fb80e5b75495213cb4b42a22e14aad3db7520b6443216725462f79cf12e87af7", "size": 107341, "type": "file", "uid": 0}
+package=mpfr version=4.2.2 entries=81 matched=76 mismatched=5
+ROOTFS_PREFLIGHT=staged paths differ; review recorded mismatches before any adoption

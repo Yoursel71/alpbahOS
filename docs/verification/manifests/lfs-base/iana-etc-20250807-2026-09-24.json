@@ -1,0 +1,39 @@
+{
+  "captured_at": "2026-09-24T04:29:56+00:00",
+  "entries": [
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/etc",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/etc/protocols",
+      "sha256": "4e5305d4f7b92fd90e6b5036d8f55a07f1a02c8e54091701d7bbe145e4f011e6",
+      "size": 7818,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/etc/services",
+      "sha256": "16d37dec2db79af46c33ed020f6a5e6c61d1199e12ac9638c1105bfd70cd9133",
+      "size": 562152,
+      "type": "file",
+      "uid": 0
+    }
+  ],
+  "package": {
+    "name": "iana-etc",
+    "source": {
+      "sha256": "4f88470a2cac2a2f9568285aaff9aeaee0ab66c6ba3c12bba51adca915fa92b1",
+      "url": "https://github.com/Mic92/iana-etc/releases/download/20250807/iana-etc-20250807.tar.gz"
+    },
+    "version": "20250807"
+  },
+  "schema": "alpbahOS.package-files/v1"
+}

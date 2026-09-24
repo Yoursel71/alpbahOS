@@ -1,0 +1,152 @@
+=================================
+   acl 2.3.2: ./test-suite.log
+=================================
+
+# TOTAL: 15
+# PASS:  8
+# SKIP:  4
+# XFAIL: 2
+# FAIL:  1
+# XPASS: 0
+# ERROR: 0
+
+.. contents:: :depth: 2
+
+FAIL: test/cp
+=============
+
+Possible precedence issue with control flow operator (exit) at ./test/run line 147.
+[3] $ umask 022 -- ok
+[4] $ mkdir d -- ok
+[5] $ cd d -- ok
+[6] $ touch f -- ok
+[7] $ setfacl -m u:bin:rw f -- ok
+[8] $ ls -l f | awk -- '{ print $1 }' -- ok
+[11] $ cp f g -- ok
+[12] $ ls -l g | awk -- '{ print $1 }' | sed 's/\.$//g' -- ok
+[15] $ rm g -- ok
+[16] $ cp -p f g -- ok
+[17] $ ls -l g | awk -- '{ print $1 }' -- failed
+-rw-rw-r--                            != -rw-rw-r--+
+[20] $ mkdir h -- ok
+[21] $ echo blubb > h/x -- ok
+[22] $ cp -rp h i -- ok
+[23] $ cat i/x -- ok
+[26] $ rm -r i -- ok
+[27] $ setfacl -R -m u:bin:rwx h -- ok
+[28] $ getfacl --omit-header h/x -- ok
+[36] $ cp -rp h i -- ok
+[37] $ getfacl --omit-header i/x -- failed
+user::rw-                             == user::rw-
+group::rwx                            != user:bin:rwx
+other::r--                            != group::r--
+                                      != mask::rwx
+~                                     != other::r--
+~                                     != 
+[45] $ cd .. -- ok
+[46] $ rm -r d -- ok
+22 commands (20 passed, 2 failed)
+FAIL test/cp.test (exit status: 2)
+
+SKIP: test/root/getfacl
+=======================
+
+Possible precedence issue with control flow operator (exit) at ./test/run line 147.
+required root failed; skipping test at ./test/run line 286, <TEST_FILE> line 7.
+[6] $ require_root -- su: user root does not exist
+SKIP test/root/getfacl.test (exit status: 77)
+
+SKIP: test/root/permissions
+===========================
+
+Possible precedence issue with control flow operator (exit) at ./test/run line 147.
+required root failed; skipping test at ./test/run line 286, <TEST_FILE> line 13.
+[12] $ require_root -- su: user root does not exist
+SKIP test/root/permissions.test (exit status: 77)
+
+SKIP: test/root/restore
+=======================
+
+Possible precedence issue with control flow operator (exit) at ./test/run line 147.
+required root failed; skipping test at ./test/run line 286, <TEST_FILE> line 7.
+[6] $ require_root -- su: user root does not exist
+SKIP test/root/restore.test (exit status: 77)
+
+SKIP: test/root/setfacl
+=======================
+
+Possible precedence issue with control flow operator (exit) at ./test/run line 147.
+required root failed; skipping test at ./test/run line 286, <TEST_FILE> line 6.
+[5] $ require_root -- su: user root does not exist
+SKIP test/root/setfacl.test (exit status: 77)
+
+XFAIL: test/nfs/nfsacl
+======================
+
+Possible precedence issue with control flow operator (exit) at ./test/run line 147.
+[6] $ umask 022 -- ok
+[7] $ mkdir -p test/sub -- ok
+[8] $ echo blah > test/sub/blah -- ok
+[10] $ cp -rp test/sub test/sub2 -- ok
+[11] $ find test/sub2 | sort | xargs ls -dl | awk '{print $1,$8}' -- failed
+drwxr-xr-x 09:52                      != drwxr-xr-x test/sub2
+-rw-r--r-- 09:52                      != -rw-r--r-- test/sub2/blah
+[15] $ rm -rf test/sub2 -- ok
+[17] $ setfacl -m u:daemon:rwx test/sub -- ok
+[18] $ setfacl -dm u:daemon:rwx test/sub -- ok
+[19] $ getfattr -m- test/sub -- ok
+[25] $ cp -rp test/sub test/sub2 -- ok
+[26] $ find test/sub2 | sort | xargs ls -dl | awk '{print $1,$8}' -- failed
+drwxrwxr-x 09:52                      != drwxrwxr-x+ test/sub2
+-rw-r--r-- 09:52                      != -rw-r--r-- test/sub2/blah
+[30] $ rm -rf test/sub2 -- ok
+[32] $ setfacl -m u:daemon:rw test/sub/blah -- ok
+[33] $ cp -rp test/sub test/sub2 -- ok
+[34] $ find test/sub2 | sort | xargs ls -dl | awk '{print $1,$8}' -- failed
+drwxrwxr-x 09:52                      != drwxrwxr-x+ test/sub2
+-rw-rw-r-- 09:52                      != -rw-rw-r--+ test/sub2/blah
+[38] $ rm -rf test/sub2 -- ok
+[42] $ rm -rf test -- ok
+17 commands (14 passed, 3 failed)
+XFAIL test/nfs/nfsacl.test (exit status: 3)
+
+XFAIL: test/nfs/nfs-dir
+=======================
+
+Possible precedence issue with control flow operator (exit) at ./test/run line 147.
+Use of uninitialized value within %ENV in substitution iterator at ./test/run line 106, <TEST_FILE> line 11.
+Use of uninitialized value within %ENV in substitution iterator at ./test/run line 106, <TEST_FILE> line 12.
+[10] $ umask 022 -- ok
+[11] $ mkdir /test -- ok
+[12] $ echo blah > /test/blah -- ok
+[16] $ su bin -- failed
+su: user bin does not exist           != ~
+[17] $ cat test/blah -- failed
+cat: test/blah: No such file or directory != blah
+Use of uninitialized value within %ENV in substitution iterator at ./test/run line 106, <TEST_FILE> line 23.
+[22] $ su -- failed
+su: user root does not exist          != ~
+Use of uninitialized value within %ENV in substitution iterator at ./test/run line 106, <TEST_FILE> line 24.
+[23] $ chmod go-rwx /test -- ok
+Use of uninitialized value within %ENV in substitution iterator at ./test/run line 106, <TEST_FILE> line 25.
+[24] $ setfacl -m u:bin:rx /test -- ok
+Use of uninitialized value within %ENV in substitution iterator at ./test/run line 106, <TEST_FILE> line 27.
+[25] $ ls -dl /test | awk '{print $1, $3, $4}' -- failed
+drwxr-x---+ 1001 1001                 != drwxr-x---+ root root
+[27] $ getfacl --omit-header /test 2> /dev/null -- ok
+[38] $ su bin -- failed
+su: user bin does not exist           != ~
+[39] $ cat test/blah -- failed
+cat: test/blah: No such file or directory != blah
+[41] $ sleep 3 -- ok
+[42] $ cat test/blah -- failed
+cat: test/blah: No such file or directory != blah
+[44] $ cat test/blah -- failed
+cat: test/blah: No such file or directory != blah
+Use of uninitialized value within %ENV in substitution iterator at ./test/run line 106, <TEST_FILE> line 50.
+[49] $ su -- failed
+su: user root does not exist          != ~
+[50] $ rm -rf /test -- ok
+17 commands (8 passed, 9 failed)
+XFAIL test/nfs/nfs-dir.test (exit status: 9)
+

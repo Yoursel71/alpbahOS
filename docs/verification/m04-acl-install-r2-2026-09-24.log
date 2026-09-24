@@ -1,0 +1,112 @@
+Builder=yrsk source=97203a72cae99ab89a067fe2210c1cbf052bc492b479eca7d226d9830883b0bd  /mnt/lfs/sources/acl-2.3.2.tar.xz
+resume_from_build=/mnt/lfs/build/acl-2.3.2-m04-20260924-r1; r1_log_sha256=9b175f7b6c0afffdc5f7ff7e4bea29cf6c0fd5d3e1730898042beee22a52319d; r1_check_sha256=c2e87e59c64c8651c8170bf2946dc04b395df0e056dcd6f3afc912d0f13bee3b; r1_suite_sha256=cbbd1a56c207c4ed1c74d1491466f773e8928155a786b9197dc6d7afa347ab87
+r1_parser_sha256=b8f5b0eba08cb9dc3d988d630cc71a2223eb3ef58d6f947eb933e3cfef2c09b1 r2_validation_parser_sha256=f38c83ba7f0d43d1f3acf3606b6bb24ae54e146c8b6e4ecff341e4d33b819273
+operation=DESTDIR install only; configure/build/check are forbidden; rootfs_merge=forbidden
+attr_manifest_sha256=3482a3a2a6dfc24733de4cac0c79147520e86db628a8309e319f6561e50ef786 attr_stage_comparison=0 (75/75)
+ACL_R1_TEST_EVIDENCE=verified; TOTAL=15 PASS=8 SKIP=4 XFAIL=2 FAIL=1 XPASS=0 ERROR=0
+Making install in po
+Making install in po
+make[1]: Entering directory '/build/acl-2.3.2-m04-20260924-r1/po'
+make[1]: Entering directory '/build/acl-2.3.2-m04-20260924-r1/po'
+installing de.gmo as /tmp/alp-m04-acl-stage-20260924-r2/usr/share/locale/de/LC_MESSAGES/acl.mo
+installing de.gmo as /tmp/alp-m04-acl-stage-20260924-r2/usr/share/locale/de/LC_MESSAGES/acl.mo
+installing es.gmo as /tmp/alp-m04-acl-stage-20260924-r2/usr/share/locale/es/LC_MESSAGES/acl.mo
+installing es.gmo as /tmp/alp-m04-acl-stage-20260924-r2/usr/share/locale/es/LC_MESSAGES/acl.mo
+installing fr.gmo as /tmp/alp-m04-acl-stage-20260924-r2/usr/share/locale/fr/LC_MESSAGES/acl.mo
+installing fr.gmo as /tmp/alp-m04-acl-stage-20260924-r2/usr/share/locale/fr/LC_MESSAGES/acl.mo
+installing gl.gmo as /tmp/alp-m04-acl-stage-20260924-r2/usr/share/locale/gl/LC_MESSAGES/acl.mo
+installing gl.gmo as /tmp/alp-m04-acl-stage-20260924-r2/usr/share/locale/gl/LC_MESSAGES/acl.mo
+installing ka.gmo as /tmp/alp-m04-acl-stage-20260924-r2/usr/share/locale/ka/LC_MESSAGES/acl.mo
+installing ka.gmo as /tmp/alp-m04-acl-stage-20260924-r2/usr/share/locale/ka/LC_MESSAGES/acl.mo
+installing pl.gmo as /tmp/alp-m04-acl-stage-20260924-r2/usr/share/locale/pl/LC_MESSAGES/acl.mo
+installing pl.gmo as /tmp/alp-m04-acl-stage-20260924-r2/usr/share/locale/pl/LC_MESSAGES/acl.mo
+installing sv.gmo as /tmp/alp-m04-acl-stage-20260924-r2/usr/share/locale/sv/LC_MESSAGES/acl.mo
+installing sv.gmo as /tmp/alp-m04-acl-stage-20260924-r2/usr/share/locale/sv/LC_MESSAGES/acl.mo
+installing en@boldquot.gmo as /tmp/alp-m04-acl-stage-20260924-r2/usr/share/locale/en@boldquot/LC_MESSAGES/acl.mo
+installing en@boldquot.gmo as /tmp/alp-m04-acl-stage-20260924-r2/usr/share/locale/en@boldquot/LC_MESSAGES/acl.mo
+installing en@quot.gmo as /tmp/alp-m04-acl-stage-20260924-r2/usr/share/locale/en@quot/LC_MESSAGES/acl.mo
+installing en@quot.gmo as /tmp/alp-m04-acl-stage-20260924-r2/usr/share/locale/en@quot/LC_MESSAGES/acl.mo
+if test "acl" = "gettext-tools"; then \
+  /usr/bin/mkdir -p /tmp/alp-m04-acl-stage-20260924-r2/usr/share/gettext/po; \
+  for file in Makefile.in.in remove-potcdate.sin quot.sed boldquot.sed en@quot.header en@boldquot.header insert-header.sin Rules-quot   Makevars.template; do \
+    /usr/bin/install -c -m 644 ./$file \
+		    /tmp/alp-m04-acl-stage-20260924-r2/usr/share/gettext/po/$file; \
+  done; \
+  for file in Makevars; do \
+    rm -f /tmp/alp-m04-acl-stage-20260924-r2/usr/share/gettext/po/$file; \
+  done; \
+else \
+  : ; \
+fi
+if test "acl" = "gettext-tools"; then \
+  /usr/bin/mkdir -p /tmp/alp-m04-acl-stage-20260924-r2/usr/share/gettext/po; \
+  for file in Makefile.in.in remove-potcdate.sin quot.sed boldquot.sed en@quot.header en@boldquot.header insert-header.sin Rules-quot   Makevars.template; do \
+    /usr/bin/install -c -m 644 ./$file \
+		    /tmp/alp-m04-acl-stage-20260924-r2/usr/share/gettext/po/$file; \
+  done; \
+  for file in Makevars; do \
+    rm -f /tmp/alp-m04-acl-stage-20260924-r2/usr/share/gettext/po/$file; \
+  done; \
+else \
+  : ; \
+fi
+make[1]: Leaving directory '/build/acl-2.3.2-m04-20260924-r1/po'
+make[1]: Leaving directory '/build/acl-2.3.2-m04-20260924-r1/po'
+make[1]: Entering directory '/build/acl-2.3.2-m04-20260924-r1'
+make[1]: Entering directory '/build/acl-2.3.2-m04-20260924-r1'
+make[2]: Entering directory '/build/acl-2.3.2-m04-20260924-r1'
+make[2]: Entering directory '/build/acl-2.3.2-m04-20260924-r1'
+ /usr/bin/mkdir -p '/tmp/alp-m04-acl-stage-20260924-r2/usr/lib'
+ /usr/bin/mkdir -p '/tmp/alp-m04-acl-stage-20260924-r2/usr/lib'
+ /bin/sh ./libtool   --mode=install /usr/bin/install -c   libacl.la '/tmp/alp-m04-acl-stage-20260924-r2/usr/lib'
+ /bin/sh ./libtool   --mode=install /usr/bin/install -c   libacl.la '/tmp/alp-m04-acl-stage-20260924-r2/usr/lib'
+libtool: install: /usr/bin/install -c .libs/libacl.so.1.1.2302 /tmp/alp-m04-acl-stage-20260924-r2/usr/lib/libacl.so.1.1.2302
+libtool: install: /usr/bin/install -c .libs/libacl.so.1.1.2302 /tmp/alp-m04-acl-stage-20260924-r2/usr/lib/libacl.so.1.1.2302
+libtool: install: (cd /tmp/alp-m04-acl-stage-20260924-r2/usr/lib && { ln -s -f libacl.so.1.1.2302 libacl.so.1 || { rm -f libacl.so.1 && ln -s libacl.so.1.1.2302 libacl.so.1; }; })
+libtool: install: (cd /tmp/alp-m04-acl-stage-20260924-r2/usr/lib && { ln -s -f libacl.so.1.1.2302 libacl.so.1 || { rm -f libacl.so.1 && ln -s libacl.so.1.1.2302 libacl.so.1; }; })
+libtool: install: (cd /tmp/alp-m04-acl-stage-20260924-r2/usr/lib && { ln -s -f libacl.so.1.1.2302 libacl.so || { rm -f libacl.so && ln -s libacl.so.1.1.2302 libacl.so; }; })
+libtool: install: (cd /tmp/alp-m04-acl-stage-20260924-r2/usr/lib && { ln -s -f libacl.so.1.1.2302 libacl.so || { rm -f libacl.so && ln -s libacl.so.1.1.2302 libacl.so; }; })
+libtool: install: /usr/bin/install -c .libs/libacl.lai /tmp/alp-m04-acl-stage-20260924-r2/usr/lib/libacl.la
+libtool: install: /usr/bin/install -c .libs/libacl.lai /tmp/alp-m04-acl-stage-20260924-r2/usr/lib/libacl.la
+libtool: warning: remember to run 'libtool --finish /usr/lib'
+libtool: warning: remember to run 'libtool --finish /usr/lib'
+ /usr/bin/mkdir -p '/tmp/alp-m04-acl-stage-20260924-r2/usr/bin'
+ /usr/bin/mkdir -p '/tmp/alp-m04-acl-stage-20260924-r2/usr/bin'
+  /bin/sh ./libtool   --mode=install /usr/bin/install -c chacl getfacl setfacl '/tmp/alp-m04-acl-stage-20260924-r2/usr/bin'
+  /bin/sh ./libtool   --mode=install /usr/bin/install -c chacl getfacl setfacl '/tmp/alp-m04-acl-stage-20260924-r2/usr/bin'
+libtool: install: /usr/bin/install -c .libs/chacl /tmp/alp-m04-acl-stage-20260924-r2/usr/bin/chacl
+libtool: install: /usr/bin/install -c .libs/chacl /tmp/alp-m04-acl-stage-20260924-r2/usr/bin/chacl
+libtool: install: /usr/bin/install -c .libs/getfacl /tmp/alp-m04-acl-stage-20260924-r2/usr/bin/getfacl
+libtool: install: /usr/bin/install -c .libs/getfacl /tmp/alp-m04-acl-stage-20260924-r2/usr/bin/getfacl
+libtool: install: /usr/bin/install -c .libs/setfacl /tmp/alp-m04-acl-stage-20260924-r2/usr/bin/setfacl
+libtool: install: /usr/bin/install -c .libs/setfacl /tmp/alp-m04-acl-stage-20260924-r2/usr/bin/setfacl
+subst_install_header() { file=`echo "$1" | sed -e 's,^.*/,,'`; /usr/bin/sed -e "s/\<EXPORT\>/extern/" < "$1" > "include/$file.t" || exit 1; /usr/bin/mkdir -p "$2" || exit 1; /usr/bin/install -c -m 644 "include/$file.t" "$2/$file" || exit 1; rm -f "include/$file.t"; }; subst_install_header "include/libacl.h" "/tmp/alp-m04-acl-stage-20260924-r2/usr/include/acl"
+subst_install_header() { file=`echo "$1" | sed -e 's,^.*/,,'`; /usr/bin/sed -e "s/\<EXPORT\>/extern/" < "$1" > "include/$file.t" || exit 1; /usr/bin/mkdir -p "$2" || exit 1; /usr/bin/install -c -m 644 "include/$file.t" "$2/$file" || exit 1; rm -f "include/$file.t"; }; subst_install_header "include/libacl.h" "/tmp/alp-m04-acl-stage-20260924-r2/usr/include/acl"
+subst_install_header() { file=`echo "$1" | sed -e 's,^.*/,,'`; /usr/bin/sed -e "s/\<EXPORT\>/extern/" < "$1" > "include/$file.t" || exit 1; /usr/bin/mkdir -p "$2" || exit 1; /usr/bin/install -c -m 644 "include/$file.t" "$2/$file" || exit 1; rm -f "include/$file.t"; }; subst_install_header "include/acl.h" "/tmp/alp-m04-acl-stage-20260924-r2/usr/include/sys"
+subst_install_header() { file=`echo "$1" | sed -e 's,^.*/,,'`; /usr/bin/sed -e "s/\<EXPORT\>/extern/" < "$1" > "include/$file.t" || exit 1; /usr/bin/mkdir -p "$2" || exit 1; /usr/bin/install -c -m 644 "include/$file.t" "$2/$file" || exit 1; rm -f "include/$file.t"; }; subst_install_header "include/acl.h" "/tmp/alp-m04-acl-stage-20260924-r2/usr/include/sys"
+ /usr/bin/mkdir -p '/tmp/alp-m04-acl-stage-20260924-r2/usr/share/doc/acl-2.3.2'
+ /usr/bin/mkdir -p '/tmp/alp-m04-acl-stage-20260924-r2/usr/share/doc/acl-2.3.2'
+ /usr/bin/install -c -m 644 doc/CHANGES doc/COPYING doc/COPYING.LGPL doc/extensions.txt doc/libacl.txt '/tmp/alp-m04-acl-stage-20260924-r2/usr/share/doc/acl-2.3.2'
+ /usr/bin/install -c -m 644 doc/CHANGES doc/COPYING doc/COPYING.LGPL doc/extensions.txt doc/libacl.txt '/tmp/alp-m04-acl-stage-20260924-r2/usr/share/doc/acl-2.3.2'
+ /usr/bin/mkdir -p '/tmp/alp-m04-acl-stage-20260924-r2/usr/share/man/man1'
+ /usr/bin/mkdir -p '/tmp/alp-m04-acl-stage-20260924-r2/usr/share/man/man1'
+ /usr/bin/install -c -m 644 man/man1/chacl.1 man/man1/getfacl.1 man/man1/setfacl.1 '/tmp/alp-m04-acl-stage-20260924-r2/usr/share/man/man1'
+ /usr/bin/install -c -m 644 man/man1/chacl.1 man/man1/getfacl.1 man/man1/setfacl.1 '/tmp/alp-m04-acl-stage-20260924-r2/usr/share/man/man1'
+ /usr/bin/mkdir -p '/tmp/alp-m04-acl-stage-20260924-r2/usr/share/man/man3'
+ /usr/bin/mkdir -p '/tmp/alp-m04-acl-stage-20260924-r2/usr/share/man/man3'
+ /usr/bin/install -c -m 644 man/man3/acl_add_perm.3 man/man3/acl_calc_mask.3 man/man3/acl_check.3 man/man3/acl_clear_perms.3 man/man3/acl_cmp.3 man/man3/acl_copy_entry.3 man/man3/acl_copy_ext.3 man/man3/acl_copy_int.3 man/man3/acl_create_entry.3 man/man3/acl_delete_def_file.3 man/man3/acl_delete_entry.3 man/man3/acl_delete_perm.3 man/man3/acl_dup.3 man/man3/acl_entries.3 man/man3/acl_equiv_mode.3 man/man3/acl_error.3 man/man3/acl_extended_fd.3 man/man3/acl_extended_file.3 man/man3/acl_extended_file_nofollow.3 man/man3/acl_free.3 man/man3/acl_from_mode.3 man/man3/acl_from_text.3 man/man3/acl_get_entry.3 man/man3/acl_get_fd.3 man/man3/acl_get_file.3 man/man3/acl_get_perm.3 man/man3/acl_get_permset.3 man/man3/acl_get_qualifier.3 man/man3/acl_get_tag_type.3 man/man3/acl_init.3 man/man3/acl_set_fd.3 man/man3/acl_set_file.3 man/man3/acl_set_permset.3 man/man3/acl_set_qualifier.3 man/man3/acl_set_tag_type.3 man/man3/acl_size.3 man/man3/acl_to_any_text.3 man/man3/acl_to_text.3 man/man3/acl_valid.3 '/tmp/alp-m04-acl-stage-20260924-r2/usr/share/man/man3'
+ /usr/bin/install -c -m 644 man/man3/acl_add_perm.3 man/man3/acl_calc_mask.3 man/man3/acl_check.3 man/man3/acl_clear_perms.3 man/man3/acl_cmp.3 man/man3/acl_copy_entry.3 man/man3/acl_copy_ext.3 man/man3/acl_copy_int.3 man/man3/acl_create_entry.3 man/man3/acl_delete_def_file.3 man/man3/acl_delete_entry.3 man/man3/acl_delete_perm.3 man/man3/acl_dup.3 man/man3/acl_entries.3 man/man3/acl_equiv_mode.3 man/man3/acl_error.3 man/man3/acl_extended_fd.3 man/man3/acl_extended_file.3 man/man3/acl_extended_file_nofollow.3 man/man3/acl_free.3 man/man3/acl_from_mode.3 man/man3/acl_from_text.3 man/man3/acl_get_entry.3 man/man3/acl_get_fd.3 man/man3/acl_get_file.3 man/man3/acl_get_perm.3 man/man3/acl_get_permset.3 man/man3/acl_get_qualifier.3 man/man3/acl_get_tag_type.3 man/man3/acl_init.3 man/man3/acl_set_fd.3 man/man3/acl_set_file.3 man/man3/acl_set_permset.3 man/man3/acl_set_qualifier.3 man/man3/acl_set_tag_type.3 man/man3/acl_size.3 man/man3/acl_to_any_text.3 man/man3/acl_to_text.3 man/man3/acl_valid.3 '/tmp/alp-m04-acl-stage-20260924-r2/usr/share/man/man3'
+ /usr/bin/mkdir -p '/tmp/alp-m04-acl-stage-20260924-r2/usr/share/man/man5'
+ /usr/bin/mkdir -p '/tmp/alp-m04-acl-stage-20260924-r2/usr/share/man/man5'
+ /usr/bin/install -c -m 644 man/man5/acl.5 '/tmp/alp-m04-acl-stage-20260924-r2/usr/share/man/man5'
+ /usr/bin/install -c -m 644 man/man5/acl.5 '/tmp/alp-m04-acl-stage-20260924-r2/usr/share/man/man5'
+ /usr/bin/mkdir -p '/tmp/alp-m04-acl-stage-20260924-r2/usr/lib/pkgconfig'
+ /usr/bin/mkdir -p '/tmp/alp-m04-acl-stage-20260924-r2/usr/lib/pkgconfig'
+ /usr/bin/install -c -m 644 libacl.pc '/tmp/alp-m04-acl-stage-20260924-r2/usr/lib/pkgconfig'
+ /usr/bin/install -c -m 644 libacl.pc '/tmp/alp-m04-acl-stage-20260924-r2/usr/lib/pkgconfig'
+make[2]: Leaving directory '/build/acl-2.3.2-m04-20260924-r1'
+make[2]: Leaving directory '/build/acl-2.3.2-m04-20260924-r1'
+make[1]: Leaving directory '/build/acl-2.3.2-m04-20260924-r1'
+make[1]: Leaving directory '/build/acl-2.3.2-m04-20260924-r1'
+	not a dynamic executable
+STAGE_INCOMPLETE: preserve all r1/r2 evidence
