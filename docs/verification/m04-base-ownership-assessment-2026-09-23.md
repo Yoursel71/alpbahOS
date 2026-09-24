@@ -193,6 +193,33 @@ Primary LFS references: [Coreutils 9.7 Chapter 8 instructions](https://www.linux
 [LFS 12.4 required patch checksums](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter03/patches.html),
 [Chapter 6 temporary Coreutils instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter06/coreutils.html).
 
+## Ownership-ledger validator prototype — 2026-09-24
+
+Added `scripts/validate-rootfs-ownership-ledger.py` and fixture tests in
+`tests/test_rootfs_ownership_ledger.py`. The validator checks a versioned
+ledger's schema and verifies that claimed regular-file and symlink metadata
+currently matches a supplied rootfs. It rejects unsafe/non-canonical paths,
+duplicate or overlapping ownership, unsupported entry types, and files that
+change while being read. The CLI labels its result `CONSISTENCY_ONLY`; an empty
+ledger is reported separately, and even a matching nonempty ledger explicitly
+returns `NOT_OWNERSHIP_PROOF`.
+
+Validation on Windows: `python -m unittest -v tests.test_rootfs_ownership_ledger`
+ran 16 tests successfully; four symlink-specific cases were skipped because
+this Windows environment lacks symlink creation privilege. A Linux run of the
+same fixture suite on Builder passed all 16 tests, including the symlink cases.
+`python -m py_compile scripts/validate-rootfs-ownership-ledger.py` and
+`git diff --check` also passed. No live ledger was created and no rootfs path
+or package database was changed.
+
+This is a consistency-check prototype only. It has no install-event capture,
+authenticated log verification, atomic transaction writer, or complete LFS
+base inventory; path-based traversal also requires a trusted, quiescent rootfs
+and is not dirfd-atomic. Its success cannot establish package installation,
+safe removal, or M04 completion. The requirement in `MASTER_PLAN.md` §10.1
+remains open until package installs are recorded transactionally and every
+final-base path is reconciled with authoritative ownership evidence.
+
 ## Package-removal guard recheck — 24 September 2026
 
 Read-only inspection of `C:\alpbahOS-claude`, branch
