@@ -39,14 +39,14 @@ ssh -i C:\Users\thewo\.ssh\codex_alpbahos_m1 thewo@localhost
 
 ## 4. Canlı Hyper-V envanteri
 
-23 Eylül tarihli canlı envanter; Gen1 test VM'i daha sonra silinmiştir:
+23 Eylül tarihli canlı envanter; Gen1 test VM'i daha sonra silinmiştir. Bu tablo, Gen1'in silinmesinden sonraki kayıtlı envanteri gösterir:
 
 | VM | Durum | Nesil | Kaynak | Disk | MAC |
 |---|---|---:|---|---|---|
 | `alpbah-builder` | Running | Gen2 | 4 vCPU, dinamik RAM 3–6 GiB | `F:\alpbahOS-build\vhdx\alpbah-builder.vhdx` | `00-15-5D-00-02-04` |
 | `Yeni Sanal Makine` | Off | Gen1 | Eski/alakasız VM; kullanma | `C:\ProgramData\Microsoft\Windows\Virtual Hard Disks\Yeni Sanal Makine.vhdx` | `00-15-5D-00-02-03` |
 
-24 Eylül'de kullanıcı `alpbahOS-M2-SSH-Gen1` VM'inin silindiğini doğruladı. Son kayıtlı salt okunur Hyper-V envanterinde bu kayıt yoktu. Aynı gün yerel `Test-Path` kontrolleri Gen1 release artifact'i `F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen1.vhdx` ve eski Gen1 çalışma diski `F:\alpbahOS-build\vms\alpbahOS-M2-SSH-Gen1\alpbahOS-M2-SSH-Gen1.vhdx` için `True` döndürdü: VM silinmiş, VHDX dosyaları duruyor. Güncel test hedefi Gen2'dir. `Yeni Sanal Makine` alpbahOS çalışma hedefi değildir.
+24 Eylül'de kullanıcı `alpbahOS-M2-SSH-Gen1` VM kaydının silindiğini doğruladı. Son kayıtlı salt okunur Hyper-V envanterinde bu kayıt yoktu. Aynı gün yerel `Test-Path` kontrolleri Gen1 release artifact'i `F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen1.vhdx` ve eski Gen1 çalışma diski `F:\alpbahOS-build\vms\alpbahOS-M2-SSH-Gen1\alpbahOS-M2-SSH-Gen1.vhdx` için `True` döndürdü. Bu dosyaların güncel durumu yeniden kontrol edilmedi; VM kaydının silinmesi VHDX'lerin de silindiğini kanıtlamaz. Güncel test hedefi Gen2'dir. `Yeni Sanal Makine` alpbahOS çalışma hedefi değildir.
 
 ## 5. Builder Ubuntu
 
@@ -92,7 +92,7 @@ ssh -i C:\Users\thewo\.ssh\claude_alpbahos_m2 sa@172.28.162.172
 ## 7. Gen1 guest erişimi — VM silindi
 
 - `alpbahOS-M2-SSH-Gen1` Hyper-V VM kaydı güncel inventory'de yok; bu guest'e artık SSH/VMConnect ile bağlanma.
-- İlişkili Gen1 artifact ve çalışma VHDX dosyaları hâlâ disk üzerinde duruyor; salt okunur `Test-Path` ikisine de `True` verdi. Bunları silme veya yeni VM'ye bağlama için kullanıcı isteği yok.
+- Son kayıtlı salt okunur dosya kontrolünde ilişkili Gen1 artifact ve çalışma VHDX dosyaları mevcuttu (`Test-Path=True`); bugünkü varlık durumları doğrulanmadı. VM kaydının silinmesi dosyaların silinmiş olduğunu göstermez. Dosyalara dokunma veya yeni VM'ye bağlama.
 - Bu bölümdeki Gen1 test geçmişi yalnız arşiv bilgisi olarak kalsın; güncel M2 erişim hedefi Gen2'dir (bölüm 13).
 
 ## 8. Teknik olarak gerçekten tamamlananlar
