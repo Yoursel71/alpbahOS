@@ -529,6 +529,32 @@ The EXIT trap found no mounts below `/mnt/lfs`; NBD PID remained empty, the
 pinned rootfs `alp.py` hash was unchanged, and `db.json` remained empty. LFS
 reference: [Libtool 2.5.4 instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/libtool.html).
 
+## GDBM 1.26 staged comparison — 24 September 2026
+
+GDBM 1.26 was built in the Builder `/mnt/lfs` chroot from the LFS source
+archive with MD5 `aaa600665bc89e2febb3c7bd90679115` and SHA-256
+`6a24504a14de4a744103dcb936be976df6fbe88ccff26065e54c1c47946f4a5e`. The
+build used `./configure --prefix=/usr --disable-static
+--enable-libgdbm-compat`, `make -j2`, and `make check` as target UID 101. All
+38 GDBM package tests were successful; the stage-only smoke reported GDBM
+1.26 from `gdbm_dump` and `gdbm_load`.
+
+Installation went to `/mnt/lfs/tmp/alp-m04-gdbm-stage-r1`. The manifest has
+78 entries (42 directories, 32 files, 4 symlinks), SHA-256
+`9AAAEFDEE2C8E12D169B7574762F50168039DAC877D53A1208C13415B4AFEE88`;
+[manifest](manifests/lfs-base/gdbm-1.26-2026-09-24.json). Read-only preflight
+reported 38 exact matches and 40 mismatches; [full report](manifests/lfs-base/gdbm-1.26-2026-09-24-preflight.log),
+SHA-256 `E06E4AD03A1C3ADED2763D1B0F2687A703F3AB23095D30024978DBF2271577FB`.
+The mismatches include the three program binaries, both shared library
+binaries, and rootfs shared-info/directory metadata. No staged file was
+merged and no package ownership record was added.
+
+Builder log `/mnt/lfs/tmp/alp-logs/m04-gdbm-1.26-stage-20260924-r1.log`
+SHA-256 `805ca65ad4a2c112a1880f6d30cfc5925fe65d34397d2baf5132c681b41fd84f`.
+EXIT cleanup found no mounts below `/mnt/lfs`; NBD PID remained empty, 68 GiB
+was free, the pinned rootfs `alp.py` hash was unchanged, and `db.json` stayed
+empty. LFS reference: [GDBM 1.26 instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/gdbm.html).
+
 Official LFS 12.4-systemd procedures:
 [Gzip-1.14](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/gzip.html),
 [Zstd-1.5.7](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/zstd.html),

@@ -1,0 +1,628 @@
+{
+  "captured_at": "2026-09-24T03:27:14+00:00",
+  "entries": [
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/gdbm_dump",
+      "sha256": "414ee22b3506d94de6975adac2850045a9655eadf499cd2a6eb02f9fd443bd7e",
+      "size": 100936,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/gdbm_load",
+      "sha256": "632a1db299ec29ae6ebb65ea454daa4b39cc2163051d997023b73e1f56ef8604",
+      "size": 106800,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/gdbmtool",
+      "sha256": "03c937e57ad7a7809ebebec72601e7eb54fc9383e0e7a923ed466f135b6a368d",
+      "size": 479696,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/include",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/dbm.h",
+      "sha256": "3c768d13654d5b3d6c244bed70a51c6235834734a8deb9827e3876f7b50516a5",
+      "size": 1403,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/gdbm.h",
+      "sha256": "a80d8299ab9d711d658ce6c8480e95de922b4d9e1f3f2e699706ee5ff5f87bf6",
+      "size": 13626,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/ndbm.h",
+      "sha256": "dc4d40106f649d459e99e9ea25699edaf55b115d68fdfb14b10a3f782ce9ba9a",
+      "size": 2443,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libgdbm.la",
+      "sha256": "b49154a536f4e0f19f6e7048598a5580df0777517ede2840c3158e81a3747faa",
+      "size": 901,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libgdbm.so",
+      "target": "libgdbm.so.6.0.0",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libgdbm.so.6",
+      "target": "libgdbm.so.6.0.0",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libgdbm.so.6.0.0",
+      "sha256": "943eac1879995d76469b86d5fc64d56476d2cf68520e8ffeeca9e517faa630c4",
+      "size": 338176,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libgdbm_compat.la",
+      "sha256": "acb250b9d6443cd0f67819b19924dd2bd9f6274c9a17cd1dae0acfdf8f6952e6",
+      "size": 963,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libgdbm_compat.so",
+      "target": "libgdbm_compat.so.4.0.0",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libgdbm_compat.so.4",
+      "target": "libgdbm_compat.so.4.0.0",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libgdbm_compat.so.4.0.0",
+      "sha256": "9df64e927cce0a43cd38dea6ab58181542a4f70be5afd52212d219e1de06e102",
+      "size": 70928,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/info",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/info/dir",
+      "sha256": "f58c9b9c78a0547bda0db67e29d47f97e7b2e61bb64a756df89dbb368600e2dc",
+      "size": 841,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/info/gdbm.info",
+      "sha256": "85d71ac97a3e1db32a25e5517c516d3e249465c3abcc8bc7ee450c389d5987d0",
+      "size": 210650,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/da",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/da/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/da/LC_MESSAGES/gdbm.mo",
+      "sha256": "4de57072ce5c1f35d35bb010d7c73453e3cd1cfa0db1c5d8018f8446a622f17c",
+      "size": 11412,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/de",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/de/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/de/LC_MESSAGES/gdbm.mo",
+      "sha256": "e08084c6e36304e10abcd331b716531e9be5c137715df4a0cbcd2a2c363598f5",
+      "size": 23417,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/eo",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/eo/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/eo/LC_MESSAGES/gdbm.mo",
+      "sha256": "aea1f9ef2df36b8211a18ac2591d8f05826661bc5db6a6cb60b10cee95195087",
+      "size": 14493,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/es",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/es/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/es/LC_MESSAGES/gdbm.mo",
+      "sha256": "3ed01befd4790f809006d8030b6b0e3e3a16102fadeb25b3fd2c8add3b883441",
+      "size": 23118,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/fi",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/fi/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/fi/LC_MESSAGES/gdbm.mo",
+      "sha256": "f3fc3a94d3a752458fda5b09260d301cdd25698d7e9835525bd416cb4e4d51d0",
+      "size": 9844,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/fr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/fr/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/fr/LC_MESSAGES/gdbm.mo",
+      "sha256": "ba1b1ee273249f587417d5000097225b314f1450753d29e402fcb3bcc308c4be",
+      "size": 24131,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ja",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ja/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ja/LC_MESSAGES/gdbm.mo",
+      "sha256": "985ec7d513bd56928b6b650b3cd1264043a7fc34b38865bb25f003a61d3b8fb4",
+      "size": 4007,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ka",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ka/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ka/LC_MESSAGES/gdbm.mo",
+      "sha256": "6cc45ed31717ac4c88365191d3d98fe2beceabd8ef760e996fd48cbc77ecfb8f",
+      "size": 34345,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pl",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pl/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/pl/LC_MESSAGES/gdbm.mo",
+      "sha256": "7ed2c70abd7a43cac4b42bae23efadababfb6b75b007c237c02e12dd5adeaf03",
+      "size": 23181,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pt_BR",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pt_BR/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/pt_BR/LC_MESSAGES/gdbm.mo",
+      "sha256": "96de814f7e558fc1a8523122036716d6f490cdcc316ea46cb4c6a9b5f252d340",
+      "size": 19158,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ro",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ro/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ro/LC_MESSAGES/gdbm.mo",
+      "sha256": "a87dddee5586703918e263afbc89dc51e0c25424d7423fa017608c63236fb752",
+      "size": 24236,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ru",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ru/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ru/LC_MESSAGES/gdbm.mo",
+      "sha256": "4c7fb41ffb6d31589dfd9636f252e8d63f325dbb1dbc4f0eec442cb09db20655",
+      "size": 28725,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sr/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/sr/LC_MESSAGES/gdbm.mo",
+      "sha256": "2e67f97e10bfd1a2f706238e548d277355952caf0345dc4e5d3b6ffe77025135",
+      "size": 28507,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sv",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sv/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/sv/LC_MESSAGES/gdbm.mo",
+      "sha256": "91d9e6125d2a8a0dadcae257162b23c30a091bf9ed5ca484f28748e0dbae491a",
+      "size": 22325,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/uk",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/uk/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/uk/LC_MESSAGES/gdbm.mo",
+      "sha256": "f1111be2c0b06a3effb391e3d2e3ebb4022a8af38b7150398f8fe220c72c9565",
+      "size": 30256,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/vi",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/vi/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/vi/LC_MESSAGES/gdbm.mo",
+      "sha256": "90ce6bc9dfa59589a299e3afa8952bfe3f3d24f4b5aa0145ebc306459c202432",
+      "size": 14129,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man/man1",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/gdbm_dump.1",
+      "sha256": "26a010c322264fa87a16cbae3db04ce6070b8d20d3b7135c09d07253c06b637b",
+      "size": 3117,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/gdbm_load.1",
+      "sha256": "a1ffb27e6fd7ade40a4d9f1327f9344c5d916667e7d6787ee9cd562fee9b5e44",
+      "size": 3934,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/gdbmtool.1",
+      "sha256": "c82cacfb31e7e29405d432c8188964637723441ff293ba1b2a0d155babe40fa0",
+      "size": 14802,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man/man3",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/gdbm.3",
+      "sha256": "893ff19a1fd56268ad7ae04b889efc09e987d8e53a362768eae9bc9ee5d939a2",
+      "size": 46116,
+      "type": "file",
+      "uid": 0
+    }
+  ],
+  "package": {
+    "name": "gdbm",
+    "source": {
+      "sha256": "6a24504a14de4a744103dcb936be976df6fbe88ccff26065e54c1c47946f4a5e",
+      "url": "https://ftp.gnu.org/gnu/gdbm/gdbm-1.26.tar.gz"
+    },
+    "version": "1.26"
+  },
+  "schema": "alpbahOS.package-files/v1"
+}
