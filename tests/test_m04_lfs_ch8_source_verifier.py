@@ -11,6 +11,7 @@ import os
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "verify-lfs-ch8-sources.py"
@@ -143,6 +144,36 @@ class LfsChapter8SourceVerifierTests(unittest.TestCase):
         with self.assertRaisesRegex(verify.VerificationError, "differs from official"):
             verify.load_manifest(manifest_path, verify.DEFAULT_COVERAGE)
 
+    def test_modified_snapshot_bytes_are_rejected(self) -> None:
+        _manifest, manifest_path = self.copy_pinned_manifest("tampered-snapshot.json")
+        snapshot = manifest_path.parent / verify.OFFICIAL_MD5SUMS_FILENAME
+        snapshot.write_bytes(snapshot.read_bytes() + b"forged\n")
+
+        with self.assertRaisesRegex(verify.VerificationError, "snapshot SHA-256 mismatch"):
+            verify.load_manifest(manifest_path, verify.DEFAULT_COVERAGE)
+
+    def test_manifest_cannot_disable_or_substitute_pinned_snapshot(self) -> None:
+        mutations = [
+            (lambda data: data["source"].__setitem__("snapshot_file", None), "must be a nonempty string"),
+            (lambda data: data["source"].__setitem__("snapshot_sha256", "0" * 64), "pinned official digest"),
+            (lambda data: data["source"].__setitem__("url", "https://example.invalid/checksums"), "official LFS"),
+            (lambda data: data["source"].__setitem__("checksum_algorithm", "SHA-256"), "algorithm declaration"),
+        ]
+        for mutate, message in mutations:
+            with self.subTest(message=message):
+                manifest, manifest_path = self.copy_pinned_manifest("forged-source.json")
+                mutate(manifest)
+                manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+                with self.assertRaisesRegex(verify.VerificationError, message):
+                    verify.load_manifest(manifest_path, verify.DEFAULT_COVERAGE)
+
+    def test_cli_rejects_custom_manifest_and_coverage_overrides(self) -> None:
+        for option in ("--manifest", "--coverage"):
+            with self.subTest(option=option), contextlib.redirect_stderr(io.StringIO()):
+                with self.assertRaises(SystemExit) as raised:
+                    verify.main(["--source-dir", str(self.sources), option, "custom.json"])
+                self.assertEqual(raised.exception.code, 2)
+
     def test_report_is_json_lines_with_counts(self) -> None:
         self.write_payloads()
         results, counts, errors = verify.verify_sources(self.entries, self.sources)
@@ -217,55 +248,68 @@ class LfsChapter8SourceVerifierTests(unittest.TestCase):
         path = self.sources / "alpha.tar.xz"
         replacement = self.sources / "replacement.tmp"
         replacement.write_bytes(b"replacement archive\n")
-        original_open = Path.open
+        original_open = os.open
 
-        def replace_then_open(target: Path, *args, **kwargs):
-            if target == path:
+        def replace_then_open(target, flags, *args, **kwargs):
+            if Path(target) == path:
                 replacement.replace(path)
-            return original_open(target, *args, **kwargs)
+            return original_open(target, flags, *args, **kwargs)
 
-        from unittest import mock
-
-        with mock.patch.object(Path, "open", replace_then_open):
+        with mock.patch.object(os, "open", replace_then_open):
             with self.assertRaises(verify.SourceFileChangedError):
+                verify.digest_source_file(path)
+
+    def test_symlink_swap_before_open_is_rejected(self) -> None:
+        self.write_payloads()
+        path = self.sources / "alpha.tar.xz"
+        target = self.root / "outside-target"
+        target.write_bytes(b"outside source tree\n")
+        real_open = os.open
+
+        try:
+            def replace_with_symlink_then_open(candidate, flags, *args, **kwargs):
+                if Path(candidate) == path:
+                    path.unlink()
+                    path.symlink_to(target)
+                return real_open(candidate, flags, *args, **kwargs)
+
+            with mock.patch.object(os, "open", replace_with_symlink_then_open):
+                with self.assertRaises(verify.SourceFileChangedError):
+                    verify.digest_source_file(path)
+        except (OSError, NotImplementedError) as error:
+            self.skipTest(f"symlink creation is unavailable: {error}")
+
+    @unittest.skipUnless(hasattr(os, "mkfifo") and hasattr(os, "O_NONBLOCK"), "FIFO race test requires POSIX")
+    def test_fifo_swap_before_open_is_rejected_without_blocking(self) -> None:
+        self.write_payloads()
+        path = self.sources / "alpha.tar.xz"
+        real_open = os.open
+
+        def replace_with_fifo_then_open(candidate, flags, *args, **kwargs):
+            if Path(candidate) == path:
+                path.unlink()
+                os.mkfifo(path)
+            return real_open(candidate, flags, *args, **kwargs)
+
+        with mock.patch.object(os, "open", replace_with_fifo_then_open):
+            with self.assertRaises(verify.NonRegularSourceError):
                 verify.digest_source_file(path)
 
     def test_source_metadata_change_while_hashing_is_rejected(self) -> None:
         self.write_payloads()
         path = self.sources / "alpha.tar.xz"
-        original_open = Path.open
+        original_read = os.read
+        changed = False
 
-        class TouchDuringRead:
-            def __init__(self, stream):
-                self.stream = stream
-                self.changed = False
+        def touch_during_read(descriptor, size):
+            nonlocal changed
+            if not changed:
+                info = path.stat()
+                os.utime(path, ns=(info.st_atime_ns, info.st_mtime_ns + 1_000_000_000))
+                changed = True
+            return original_read(descriptor, size)
 
-            def __enter__(self):
-                return self
-
-            def __exit__(self, *args):
-                return self.stream.__exit__(*args)
-
-            def fileno(self):
-                return self.stream.fileno()
-
-            def read(self, size=-1):
-                if not self.changed:
-                    info = path.stat()
-                    os.utime(
-                        path,
-                        ns=(info.st_atime_ns, info.st_mtime_ns + 1_000_000_000),
-                    )
-                    self.changed = True
-                return self.stream.read(size)
-
-        def touch_on_open(target: Path, *args, **kwargs):
-            stream = original_open(target, *args, **kwargs)
-            return TouchDuringRead(stream) if target == path else stream
-
-        from unittest import mock
-
-        with mock.patch.object(Path, "open", touch_on_open):
+        with mock.patch.object(os, "read", touch_during_read):
             with self.assertRaises(verify.SourceFileChangedError):
                 verify.digest_source_file(path)
 
