@@ -91,3 +91,74 @@ ownership-recovery work had usable staging space:
 This capacity change reduces the Builder root-space constraint but does not
 close M04. A package-by-package base capture/rebuild plan is still required;
 do not backfill ownership from filesystem metadata.
+
+## Coreutils staged-install pilot — 2026-09-24
+
+This pilot used the Builder `yrsk` and kept all build/install work in the
+`/mnt/lfs` chroot. The target rootfs package database and installed `/usr`
+files were not changed. Only a separate source/build tree under
+`/mnt/lfs/build/coreutils-9.7-m04`, logs under `/mnt/lfs/tmp/alp-logs`, and a
+temporary DESTDIR tree under `/mnt/lfs/tmp/alp-m04-coreutils-stage` were
+created.
+
+### Source and build evidence
+
+- LFS 12.4-systemd identifies Coreutils 9.7 source archive
+  `https://ftp.gnu.org/gnu/coreutils/coreutils-9.7.tar.xz`, MD5
+  `6b7285faf7d5eb91592bdd689270d3f1`; the Builder archive matched. Its local
+  SHA-256 is `e8bb26ad0293f9b5a1fc43fb42ba970e312c66ce92c1b0b16713d7500db251bf`.
+- The two official LFS patches matched their published MD5 values:
+  upstream fix `96382a5aa85d6651a74f94ffb61785d9`, i18n fix
+  `33ebfad32b2dfb8417c3335c08671206`.
+- The native Chapter 8 build used `autoreconf -fv`, `automake -af`,
+  `FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=/usr
+  --enable-no-install-program=kill,uptime`, then `make -j2`. Build log:
+  `/mnt/lfs/tmp/alp-logs/m04-coreutils-9.7-staging-build.log`, SHA-256
+  `254368ccd1561d9f18cad0ac3b05376141a22d4a9ce914f55989e1a241a47339`.
+- `make -j1 install DESTDIR=/tmp/alp-m04-coreutils-stage` completed in the
+  chroot. The LFS FHS moves for `chroot` and its manual page were applied only
+  inside the stage. Install log SHA-256:
+  `07d97fb8278202cd96860bbeab28eed71606730acf0f3c70ed9e2e3b2e4f8ee9`.
+- After excluding `/usr/bin/hostname` (owned by Inetutils) and the shared
+  generated `/usr/share/info/dir`, the captured manifest has 445 entries:
+  146 directories, 254 regular files, and 45 symlinks. The JSON is preserved at
+  [`coreutils-9.7-2026-09-24.json`](manifests/lfs-base/coreutils-9.7-2026-09-24.json),
+  SHA-256 `942e0007d51e07b1857982576842105b1ca434973e458eaa3e24a7e260ca6260`.
+
+### What the comparison proves
+
+The preflight matched every current path to either the staged final package or
+the retained Chapter 6 bootstrap build; it found no unclassified file/type
+conflict:
+
+- 146 package directories already exist and are shared.
+- 105 current files that the final package would replace match the old
+  `coreutils-9.7` Chapter 6 build output byte-for-byte. This includes
+  `/usr/bin/ls`: installed SHA-256 `82e6f443cd7ca53ea05d2546872a034b2d873a387f02a0129e493339bdf485bf`,
+  owner `1001:1001`, size 776,856 bytes, equal to
+  `/mnt/lfs/build/coreutils-9.7/src/ls`.
+- 104 final documentation paths are absent from the rootfs and would be new.
+- 45 regular files and 45 symlinks already match the final stage exactly.
+- The preflight reported zero unresolved conflicts. Its summary is preserved in
+  [`coreutils-9.7-2026-09-24-preflight.json`](manifests/lfs-base/coreutils-9.7-2026-09-24-preflight.json).
+
+The final Chapter 8 Coreutils stage is therefore not a manifest for the current
+rootfs: the current executable set is still the temporary Chapter 6 build.
+Stage functional smoke checks passed for `ls`, `install`, `chroot`, and
+`printf` (each reported GNU Coreutils 9.7 or produced the expected output).
+
+### M04 decision
+
+The staged manifest and preflight are useful evidence, but they do not yet
+authorize a database ownership claim. `alp` currently treats every non-Flatpak
+record as removable; it has no protected/essential base-package behavior.
+Registering Coreutils in `db.json` would let `alp remove coreutils` unlink
+essential system commands. No package files or database entries were changed
+in this pilot. M04 remains open until the base-package lifecycle has an
+explicit protection mechanism and the complete installed LFS base has
+verified package-to-path records. The `alp` source is Claude-owned in the
+environment guide; this pilot did not modify it.
+
+Primary LFS references: [Coreutils 9.7 Chapter 8 instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/coreutils.html),
+[LFS 12.4 required patch checksums](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter03/patches.html),
+[Chapter 6 temporary Coreutils instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter06/coreutils.html).
