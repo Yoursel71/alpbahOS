@@ -944,3 +944,9 @@ PipeWire hatası için aynı gün ek tekrar: Guest `/tmp`'te 12 saniye 48 kHz st
 - Read-only shallow Builder check of `/mnt` found the named candidate directories `/mnt/base-ro`, `/mnt/alpbahos-clean`, `/mnt/efi-ro`, `/mnt/m2ssh`, `/mnt/m2candidate`, `/mnt/m1base`, and `/mnt/alpbahos-old` empty; `/mnt/alpbahos-root` contains only `boot/`; `/mnt/lfs` is the only full rootfs among these paths. `findmnt -R /mnt` returned no mount entries. No known pre-Chapter-8 checkpoint was located; do not treat these empty directories as a checkpoint.
 - `/sys/block/nbd0/pid` was unavailable because that sysfs device path is absent; no NBD device was used. A `du -sh` attempt returned no size data and is excluded from evidence; do not repeat size scans on the active GCC volume.
 - Current implication: the clean-rootfs route in the M04 evidence rule requires locating a separately verified pre-Chapter-8 rootfs/checkpoint or rebuilding the base system; it cannot start from an identified checkpoint under the inspected `/mnt` paths. The GCC test remained live during these shallow checks.
+
+
+## 24 Eylül 2026 — M04 GCC live poll (13:13 UTC)
+
+- Re-poll confirmed GCC runner bash/make/DejaGNU PIDs 1451319/1451325/2121972 remain alive. GCC suite `.sum`/`.log` did not change from 12:01:40 UTC; its recorded summary remains 211,480 PASS, 4 unexpected `pr90579.c` scan FAIL, 1,476 expected FAIL, 3,780 unsupported.
+- g++ suite advanced from 13:08: `.sum` grew 19,621,114 -> 20,320,194 bytes, `.log` 189,486,937 -> 200,463,535 bytes; mtime 13:13:28 UTC. Last seen suite `g++.pt`, with PASS entries. No final test summary or finish marker; `gcc-test-summary.log` is still empty. `/mnt/lfs` has 60 GiB free. No process or file was modified.
