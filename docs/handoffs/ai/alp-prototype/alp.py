@@ -42,12 +42,16 @@ import time
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
+from pathlib import PurePosixPath
 
 SCHEMA_VERSION = 1
 ALP_VERSION = "0.1.0-proto"
 DEFAULT_STATE_DIR = "var/lib/alp"
 DEFAULT_LOG_DIR = "var/log/alp"
 DOWNLOAD_TIMEOUT_S = 30
+BASE_MANIFEST_SCHEMA = "alpbahOS.package-files/v1"
+_SHA256_RE = re.compile(r"[0-9a-f]{64}\Z")
+_PACKAGE_NAME_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._+-]*\Z")
 
 
 class AlpError(RuntimeError):
@@ -181,6 +185,191 @@ def save_db(paths: Paths, db: dict) -> None:
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(db, f, indent=2, ensure_ascii=False, sort_keys=True)
     tmp.replace(paths.db_file)  # atomic rename on the same filesystem
+
+
+def _base_manifest_relpath(raw: object) -> str:
+    """Validate a captured absolute POSIX path and return its root-relative form."""
+    if not isinstance(raw, str) or not raw.startswith("/") or "\\" in raw or "\x00" in raw:
+        raise AlpError(f"Geçersiz taban manifest yolu: {raw!r}")
+    parts = raw[1:].split("/")
+    if not parts or any(part in ("", ".", "..") for part in parts):
+        raise AlpError(f"Normalize edilmemiş taban manifest yolu: {raw!r}")
+    path = PurePosixPath(*parts)
+    rel = path.as_posix()
+    if rel.startswith("var/lib/alp/") or rel in ("var/lib/alp", "var/log/alp") or rel.startswith("var/log/alp/"):
+        raise AlpError(f"alp veritabanı/log yolları taban paket sahipliğine alınamaz: {raw}")
+    return rel
+
+
+def _validate_base_manifest(path: Path, name: str, version: str, source_sha256: str,
+                            expected_manifest_sha256: str | None) -> tuple[dict, str]:
+    if not _PACKAGE_NAME_RE.fullmatch(name):
+        raise AlpError(f"Geçersiz paket adı: {name!r}")
+    if not isinstance(version, str) or not version or len(version) > 128 or any(c.isspace() for c in version):
+        raise AlpError(f"Geçersiz paket sürümü: {version!r}")
+    if not _SHA256_RE.fullmatch(source_sha256):
+        raise AlpError("Kaynak SHA-256 değeri 64 küçük hex karakteri olmalı.")
+    if expected_manifest_sha256 is not None and not _SHA256_RE.fullmatch(expected_manifest_sha256):
+        raise AlpError("Manifest SHA-256 değeri 64 küçük hex karakteri olmalı.")
+    try:
+        raw_bytes = path.read_bytes()
+        manifest_hash = hashlib.sha256(raw_bytes).hexdigest()
+        if expected_manifest_sha256 and manifest_hash != expected_manifest_sha256:
+            raise AlpError(f"Manifest SHA-256 uyuşmadı: beklenen {expected_manifest_sha256}, bulunan {manifest_hash}")
+        manifest = json.loads(raw_bytes)
+    except AlpError:
+        raise
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise AlpError(f"Taban manifesti okunamadı/geçersiz JSON: {exc}") from exc
+    if not isinstance(manifest, dict) or manifest.get("schema") != BASE_MANIFEST_SCHEMA:
+        raise AlpError(f"Desteklenmeyen taban manifest şeması: {manifest.get('schema') if isinstance(manifest, dict) else type(manifest).__name__}")
+    captured_at = manifest.get("captured_at")
+    package = manifest.get("package")
+    entries = manifest.get("entries")
+    if not isinstance(captured_at, str) or not captured_at or not isinstance(package, dict) or not isinstance(entries, list):
+        raise AlpError("Taban manifestinde captured_at, package ve entries alanları gerekli.")
+    source = package.get("source")
+    if (package.get("name") != name or package.get("version") != version or not isinstance(source, dict)
+            or source.get("sha256") != source_sha256 or not isinstance(source.get("url"), str)
+            or not source["url"].startswith("https://")):
+        raise AlpError("Manifest paket adı/sürümü/kaynak URL/SHA-256, istenen kimlikle uyuşmuyor.")
+    seen: set[str] = set()
+    normalized: list[tuple[str, dict]] = []
+    for entry in entries:
+        if not isinstance(entry, dict):
+            raise AlpError("Manifest entries içindeki kayıt nesne olmalı.")
+        rel = _base_manifest_relpath(entry.get("path"))
+        if rel in seen:
+            raise AlpError(f"Manifest aynı yolu birden çok kez içeriyor: {rel}")
+        seen.add(rel)
+        if (type(entry.get("uid")) is not int or entry["uid"] < 0
+                or type(entry.get("gid")) is not int or entry["gid"] < 0):
+            raise AlpError(f"Manifest uid/gid alanları geçersiz: {rel}")
+        kind = entry.get("type")
+        if kind == "directory":
+            normalized.append((rel, entry))
+            continue
+        if kind == "file":
+            if (not isinstance(entry.get("sha256"), str) or not _SHA256_RE.fullmatch(entry["sha256"])
+                    or type(entry.get("size")) is not int or entry["size"] < 0):
+                raise AlpError(f"Manifest dosya özeti geçersiz: {rel}")
+        elif kind == "symlink":
+            if not isinstance(entry.get("target"), str) or not entry["target"] or "\x00" in entry["target"]:
+                raise AlpError(f"Manifest symlink hedefi geçersiz: {rel}")
+        else:
+            raise AlpError(f"Desteklenmeyen manifest dosya türü ({kind!r}): {rel}")
+        if type(entry.get("mode")) is not int or entry["mode"] < 0 or entry["mode"] > 0o7777:
+            raise AlpError(f"Manifest dosya modu geçersiz: {rel}")
+        normalized.append((rel, entry))
+    if not normalized:
+        raise AlpError("Boş taban manifesti kabul edilmez.")
+    return {"captured_at": captured_at, "package": package, "entries": normalized}, manifest_hash
+
+
+def _verify_base_entry(root: Path, rel: str, entry: dict) -> None:
+    target = root.joinpath(*rel.split("/"))
+    # Do not follow an unexpected symlink in a parent directory: an apparently
+    # in-root manifest path must not escape or alias another owned path.
+    cursor = root
+    for part in rel.split("/")[:-1]:
+        cursor = cursor / part
+        if cursor.is_symlink() or not cursor.is_dir():
+            raise AlpError(f"Manifest polusunun üst dizini normal dizin değil: {rel}")
+    kind = entry["type"]
+    if kind == "directory":
+        if target.is_symlink() or not target.is_dir():
+            raise AlpError(f"Canlı rootfs dizin türü uyuşmuyor: /{rel}")
+        return
+    if kind == "symlink":
+        if not target.is_symlink() or os.readlink(target) != entry["target"]:
+            raise AlpError(f"Canlı rootfs symlink hedefi uyuşmuyor: /{rel}")
+    else:
+        if target.is_symlink() or not target.is_file():
+            raise AlpError(f"Canlı rootfs dosya türü uyuşmuyor: /{rel}")
+        if target.stat().st_size != entry["size"] or sha256_of(target) != entry["sha256"]:
+            raise AlpError(f"Canlı rootfs dosya içeriği uyuşmuyor: /{rel}")
+    if stat.S_IMODE(target.lstat().st_mode) != entry["mode"]:
+        raise AlpError(f"Canlı rootfs modu uyuşmuyor: /{rel}")
+    live_stat = target.lstat()
+    if live_stat.st_uid != entry["uid"] or live_stat.st_gid != entry["gid"]:
+        raise AlpError(f"Canlı rootfs sahibi/grubu uyuşmuyor: /{rel}")
+
+
+def cmd_adopt_base(args: argparse.Namespace, paths: Paths) -> int:
+    """Adopt live files from a manifest after the caller independently verifies its source.
+
+    The manifest binds exact rootfs paths and hashes; it cannot prove source
+    authenticity by itself. Callers must independently verify the source
+    archive and manifest, then pass the verified source SHA and (optionally)
+    expected manifest SHA here.
+    """
+    manifest, manifest_hash = _validate_base_manifest(
+        Path(args.manifest), args.name, args.version, args.source_sha256,
+        getattr(args, "manifest_sha256", None),
+    )
+    paths.ensure()
+    with DbLock(paths.lock_file):
+        _require_no_pending(paths)
+        db = load_db(paths)
+        packages = db["packages"]
+        existing = packages.get(args.name)
+        if existing is not None and not (
+            existing.get("method") == "lfs-base"
+            and existing.get("ownership", {}).get("manifest_sha256") == manifest_hash
+            and existing.get("source", {}).get("sha256") == args.source_sha256
+            and existing.get("version") == args.version
+        ):
+            raise AlpError(f"{args.name} zaten farklı bir kayıtla kurulu; taban sahipliği üzerine yazılmadı.")
+        claims: dict[str, str] = {}
+        for other_name, record in packages.items():
+            if other_name == args.name:
+                continue
+            for rel in [*record.get("files", []), *record.get("symlinks", [])]:
+                claims.setdefault(rel, other_name)
+        files: list[str] = []
+        symlinks: list[str] = []
+        for rel, entry in manifest["entries"]:
+            _verify_base_entry(paths.root, rel, entry)
+            if entry["type"] == "directory":
+                continue  # shared parents are validated, never claimed/removable
+            if rel in claims:
+                raise AlpError(f"/{rel} zaten {claims[rel]} paketine ait; sahiplik çakışması.")
+            (symlinks if entry["type"] == "symlink" else files).append(rel)
+        record = {
+            "name": args.name,
+            "version": args.version,
+            "method": "lfs-base",
+            "status": "installed",
+            "installed_at": existing.get("installed_at", _now()) if existing else _now(),
+            "installed_by": "alp/adopt-base",
+            "source": {"url": manifest["package"]["source"]["url"], "sha256": args.source_sha256},
+            "files": sorted(files),
+            "symlinks": sorted(symlinks),
+            "config_files": [],
+            "config_hashes": {},
+            "depends": [],
+            "conflicts": [],
+            "reason": "explicit",
+            "protected": True,
+            "ownership": {
+                "manifest_schema": BASE_MANIFEST_SCHEMA,
+                "manifest_sha256": manifest_hash,
+                "captured_at": manifest["captured_at"],
+            },
+        }
+        if existing is not None:
+            if existing == record:
+                print(f"{args.name} {args.version} taban sahipliği zaten kayıtlı ({manifest_hash}).")
+                return 0
+            raise AlpError(f"{args.name} için aynı manifestli korumalı kayıt var, ancak kayıt alanları değişmiş; üzerine yazılmadı.")
+        if getattr(args, "dry_run", False):
+            print("[dry-run] aşağıdaki korumalı taban paket kaydı eklenecekti; veritabanı değiştirilmedi:")
+            print(json.dumps(record, indent=2, ensure_ascii=False, sort_keys=True))
+            return 0
+        packages[args.name] = record
+        save_db(paths, db)
+    print(f"{args.name} {args.version} taban sahipliği kaydedildi; {len(files)} dosya, {len(symlinks)} symlink, dizin sahipliği yok.")
+    return 0
 
 
 # --------------------------------------------------------------------------
@@ -1165,6 +1354,8 @@ def remove_package(paths: Paths, db: dict, name: str, dry_run: bool, journal: Fi
     pkg = db["packages"].get(name)
     if pkg is None:
         raise AlpError(f"Kurulu değil: {name}")
+    if pkg.get("method") == "lfs-base":
+        raise AlpError(f"{name} LFS taban paketi; doğrudan kaldırılması kapalı.")
 
     if pkg["method"] == "flatpak":
         remove_flatpak(pkg["flatpak_ref"], dry_run)
@@ -1497,7 +1688,11 @@ def plan_remove(index: dict, installed: dict, targets: list[str], cascade: bool)
                     f"Onlarla birlikte kaldırmak için: alp remove --cascade {target}"
                 )
 
-    guarded = sorted(n for n in removing if (installed.get(n) or {}).get("protected"))
+    guarded = sorted(
+        n for n in removing
+        if (installed.get(n) or {}).get("protected")
+        or (installed.get(n) or {}).get("method") == "lfs-base"
+    )
     if guarded:
         raise AlpError(
             f"{', '.join(guarded)} korumalı (taban/sistem paketi); kaldırılamaz. "
@@ -1590,6 +1785,8 @@ def _upgrade_one(
     paths: Paths, name: str, entry: dict, index_dir: Path, old: dict, dry_run: bool, db: dict,
     journal: FileJournal | None = None,
 ) -> dict:
+    if old.get("method") == "lfs-base":
+        raise AlpError(f"{name} LFS taban paketi; alp ile yükseltilmesi kapalı. Önce resmi rootfs build/install akışını kullanın.")
     method = entry["method"]
     if method == "recipe":
         return upgrade_recipe(paths, entry, index_dir, old, dry_run, db=db, pkg_name=name, journal=journal)
@@ -1610,6 +1807,8 @@ def _run_plan(
         entry = index["entries"][step.name]
         old = db["packages"].get(step.name)
         try:
+            if step.action in ("upgrade", "reinstall") and old and old.get("method") == "lfs-base":
+                raise AlpError(f"{step.name} LFS taban paketi; catalog install/reinstall/upgrade ile değiştirilemez.")
             # One transaction per package: its files and its db record change
             # together, or every file change is rolled back (see FileJournal).
             with _maybe_transaction(paths, step.name, dry_run) as journal:
@@ -1650,6 +1849,16 @@ def _run_plan(
 
 
 def _plan_or_refuse(index: dict, installed: dict, steps: list[PlanStep]) -> None:
+    guarded_upgrades = sorted(
+        step.name for step in steps
+        if step.action in ("upgrade", "reinstall")
+        and (installed.get(step.name) or {}).get("method") == "lfs-base"
+    )
+    if guarded_upgrades:
+        raise AlpError(
+            "LFS taban paketleri catalog install/reinstall/upgrade ile değiştirilemez: "
+            + ", ".join(guarded_upgrades) + ". Resmi rootfs build/install akışını kullanın."
+        )
     problems = state_problems(index, installed, steps)
     if problems:
         raise AlpError(
@@ -1732,6 +1941,8 @@ def cmd_upgrade(args: argparse.Namespace, paths: Paths, index: dict, index_dir: 
         if name:
             if name not in installed:
                 raise AlpError(f"Kurulu değil: {name}. 'alp upgrade' yalnız kurulu paketler içindir.")
+            if installed[name].get("method") == "lfs-base":
+                raise AlpError(f"{name} LFS taban paketi; alp ile yükseltilmesi kapalı. Resmi rootfs build/install akışını kullanın.")
             if name not in index["entries"]:
                 raise AlpError(f"Bilinmeyen paket: {name!r}")
             if index["entries"][name]["method"] == "flatpak":
@@ -1740,6 +1951,8 @@ def cmd_upgrade(args: argparse.Namespace, paths: Paths, index: dict, index_dir: 
         else:
             targets, flatpaks, kept = [], [], []
             for pkg in sorted(installed):
+                if installed[pkg].get("method") == "lfs-base":
+                    continue
                 entry = index["entries"].get(pkg)
                 if entry is None:
                     continue
@@ -1865,6 +2078,8 @@ def cmd_protect(args: argparse.Namespace, paths: Paths, protect: bool) -> int:
         if protect:
             pkg["protected"] = True
         else:
+            if pkg.get("method") == "lfs-base":
+                raise AlpError(f"{args.name} LFS taban paketi kalıcı olarak korumalıdır.")
             pkg.pop("protected", None)
         if not args.dry_run:
             save_db(paths, db)
@@ -2026,7 +2241,7 @@ def cmd_update(args: argparse.Namespace, paths: Paths, index_path: Path, index: 
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="alp", description="alpbahOS hybrid package manager (prototype)")
     p.add_argument("--root", default=None, help="DESTROOT override for testing (default: /)")
-    p.add_argument("--index", required=True, help="Path to the local package index.json")
+    p.add_argument("--index", help="Path to the local package index.json (not needed for adopt-base)")
     p.add_argument("--dry-run", action="store_true", help="Print intended actions, touch nothing persistent")
     p.add_argument("--json", action="store_true", help="Machine-readable JSON output for search/list (info is always JSON)")
     p.add_argument("--keep-build", action="store_true", help="Keep build trees in var/lib/alp/cache after a successful install/upgrade")
@@ -2064,6 +2279,13 @@ def build_parser() -> argparse.ArgumentParser:
     sp = sub.add_parser("unprotect", help="Remove the protected mark")
     sp.add_argument("name")
 
+    sp = sub.add_parser("adopt-base", help="Record already-installed LFS files as protected package ownership; caller verifies source authenticity")
+    sp.add_argument("--manifest", required=True, help="Captured alpbahOS.package-files/v1 JSON manifest")
+    sp.add_argument("--name", required=True, help="Expected package name; must match the manifest")
+    sp.add_argument("--version", required=True, help="Expected package version; must match the manifest")
+    sp.add_argument("--source-sha256", required=True, help="Independently verified source archive SHA-256")
+    sp.add_argument("--manifest-sha256", help="Optional expected SHA-256 of the exact manifest bytes")
+
     sp = sub.add_parser("update", help="Refresh the catalog (index.json, or a catalog bundle) from a source")
     sp.add_argument("--source", help="https:// URL or local path of index.json or a .tar.gz catalog bundle "
                                      "(default: the current index's own \"source\" field)")
@@ -2075,10 +2297,13 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     paths = Paths.resolve(args.root)
-    index_path = Path(args.index).resolve()
-    index_dir = index_path.parent
-
     try:
+        if args.command == "adopt-base":
+            return cmd_adopt_base(args, paths)
+        if not args.index:
+            raise AlpError("Bu komut için --index PATH gereklidir.")
+        index_path = Path(args.index).resolve()
+        index_dir = index_path.parent
         index = load_index(index_path)
         if args.command == "search":
             return cmd_search(index, args.term, as_json=args.json)
