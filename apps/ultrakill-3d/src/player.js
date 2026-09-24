@@ -108,8 +108,8 @@ export class Player {
     return !blocked;
   }
 
-  look(input, dt) {
-    const s = settings.sens * 0.0021;
+  look(input, dt, mul = 1) {
+    const s = settings.sens * 0.0021 * mul;
     this.yaw -= input.mdx * s;
     this.pitch -= input.mdy * s * (settings.invertY ? -1 : 1);
     // Ok tuşlarıyla bakış (fare kilidi yoksa)

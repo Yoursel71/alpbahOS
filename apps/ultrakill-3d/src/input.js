@@ -18,6 +18,7 @@ export const KEYS = {
   w5: ['Digit5'],
   arm: ['KeyG'],
   hook: ['KeyE'],
+  shop: ['KeyB'],
   lastWeapon: ['KeyQ'],
   restart: ['KeyR'],
   stats: ['Tab'],

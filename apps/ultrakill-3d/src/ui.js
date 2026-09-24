@@ -3,6 +3,8 @@
 import { settings, saveSettings, progress, saveProgress, DIFFICULTIES } from './settings.js';
 import { fmtTime } from './util.js';
 import { Typer, drawNoise } from './typer.js';
+import { LEVELS } from './levels/index.js';
+import { SHOP_ITEMS, SHOP_GROUPS } from './shop.js';
 
 const RANK_COL = { D: '#4aa3ff', C: '#3ee06a', B: '#ffd21f', A: '#ff8a1f', S: '#ff3a24', P: '#ffd24a' };
 const ORDER = ['D', 'C', 'B', 'A', 'S', 'P'];
@@ -13,12 +15,10 @@ export const THRESH = {
   kills: [1, 0.9, 0.75, 0.5],
 };
 
-export function rankTime(t) {
-  const th = THRESH.time;
+export function rankTime(t, th = THRESH.time) {
   return t <= th[0] ? 'S' : t <= th[1] ? 'A' : t <= th[2] ? 'B' : t <= th[3] ? 'C' : 'D';
 }
-export function rankStyle(s) {
-  const th = THRESH.style;
+export function rankStyle(s, th = THRESH.style) {
   return s >= th[0] ? 'S' : s >= th[1] ? 'A' : s >= th[2] ? 'B' : s >= th[3] ? 'C' : 'D';
 }
 export function rankKills(f) {
@@ -62,7 +62,7 @@ export class UI {
       <div class="screen hidden" id="scr-menu">
         <div class="menu-left">
           <div class="logo small"><span class="l1">ULTRAKILL</span><span class="l2">3D</span></div>
-          <div class="sub">ARAF · HAYRAN YAPIMI</div>
+          <div class="sub">PRELUDE · HAYRAN YAPIMI</div>
           <nav>
             <button class="btn" data-panel="play">OYNA</button>
             <button class="btn" data-panel="settings">AYARLAR</button>
@@ -85,6 +85,7 @@ export class UI {
         </div>
       </div>
       <div class="screen hidden" id="scr-results"><div class="res-box"></div></div>
+      <div class="screen hidden" id="scr-shop"><div class="shop-box"></div></div>
     `;
     root.appendChild(el);
     this.el = el;
@@ -131,39 +132,46 @@ export class UI {
   }
 
   renderPlay(p) {
-    const best = progress.bestRank;
+    const n = Math.min(LEVELS.length, progress.unlocked || 1);
+    if (this.selLevel === undefined || this.selLevel >= n) this.selLevel = Math.min(n - 1, Math.max(0, this.game.levelIdx));
+    const sel = this.selLevel;
+    const cards = LEVELS.map((L, i) => {
+      const rec = progress.levels[L.id];
+      const locked = i >= n;
+      const rk = rec ? rec.rank : null;
+      return `<button class="lv-card ${i === sel ? 'sel' : ''} ${locked ? 'locked' : ''}" data-l="${i}" ${locked ? 'disabled' : ''}>
+        <span class="lv-id">${L.id}</span>
+        <span class="lv-name">${locked ? '— KİLİTLİ —' : L.name}</span>
+        <span class="lv-rank" style="color:${rk ? RANK_COL[rk] : '#555'}">${locked ? '🔒' : rk || '—'}</span>
+      </button>`;
+    }).join('');
+    const L = LEVELS[sel];
+    const rec = progress.levels[L.id];
     p.innerHTML = `
-      <h2>BÖLÜM SEÇ</h2>
-      <div class="level-card sel">
-        <div class="lc-thumb"><span>0-1</span></div>
-        <div class="lc-info">
-          <div class="lc-layer">KATMAN 0 · ARAF</div>
-          <div class="lc-name">0-1: İLK KAN</div>
-          <div class="lc-best">EN İYİ: <b style="color:${best ? RANK_COL[best] : '#888'}">${best || '—'}</b>${progress.bestTime ? ' · ' + fmtTime(progress.bestTime) : ''}</div>
-          <div class="lc-desc">Filth, Stray, Schism ve Swordsmachine. 4 arena, 3 gizli küre.</div>
-        </div>
-      </div>
-      <h3>ZORLUK</h3>
+      <h2>PRELUDE: İLK KAN <span class="h2-pts">P ${(progress.points || 0).toLocaleString('tr-TR')}</span></h2>
+      <div class="lv-grid">${cards}</div>
+      <div class="lv-info"><b>${L.id}: ${L.name}</b> — ${L.desc}${rec && rec.time ? ` <span class="muted">· EN İYİ ${rec.rank} ${fmtTime(rec.time)}</span>` : ''}</div>
       <div class="diffs">${DIFFICULTIES.map((d, i) => `<button class="btn diff ${i === settings.difficulty ? 'on' : ''}" data-d="${i}">${d.name}</button>`).join('')}</div>
       <div class="diff-desc">${DIFFICULTIES[settings.difficulty].desc}</div>
-      <label class="chk"><input type="checkbox" id="opt-skipintro" ${settings.skipIntro ? 'checked' : ''}> İntroyu atla</label>
-      <label class="chk"><input type="checkbox" id="opt-allweapons" ${settings.allWeapons ? 'checked' : ''}> Tüm silahlarla başla (5 silah × 3 varyant, 2 kol, kanca)</label>
-      <button class="btn big start" data-act="start">BAŞLA</button>
+      <div class="start-bar"><button class="btn big start" data-act="start">BAŞLA ▶ ${L.id}</button></div>
     `;
+    p.querySelectorAll('.lv-card:not(.locked)').forEach((b) => b.addEventListener('click', () => {
+      this.click();
+      this.selLevel = +b.dataset.l;
+      this.renderPlay(p);
+    }));
     p.querySelectorAll('.diff').forEach((b) => b.addEventListener('click', () => {
       this.click();
       settings.difficulty = +b.dataset.d;
       saveSettings();
       this.renderPlay(p);
     }));
-    p.querySelector('#opt-skipintro').addEventListener('change', (e) => { settings.skipIntro = e.target.checked; saveSettings(); });
-    p.querySelector('#opt-allweapons').addEventListener('change', (e) => { settings.allWeapons = e.target.checked; saveSettings(); });
     const st = p.querySelector('[data-act="start"]');
     st.addEventListener('mouseenter', () => this.game.audio.play('uiHover'));
     st.addEventListener('click', () => {
       this.click();
-      if (settings.skipIntro) this.game.startLevel();
-      else this.game.startIntro();
+      // intro yalnız 0-1'den önce
+      if (sel === 0 && !settings.skipIntro) { this.game.loadLevel(0); this.game.startIntro(); } else this.game.startLevel(sel);
     });
   }
 
@@ -173,11 +181,29 @@ export class UI {
       <div class="set-row"><label>${label}</label><input type="range" data-k="${key}" min="${min}" max="${max}" step="${step}" value="${S[key]}"><span class="val" data-v="${key}">${fmt(S[key])}</span></div>`;
     const toggle = (key, label) => `<div class="set-row"><label>${label}</label><button class="btn tog ${S[key] ? 'on' : ''}" data-t="${key}">${S[key] ? 'AÇIK' : 'KAPALI'}</button></div>`;
     const pct = (v) => Math.round(v * 100) + '%';
+    const touch = this.game.touch.active;
+    const CYC = { touchMode: [['auto', 'OTOMATİK'], ['on', 'AÇIK'], ['off', 'KAPALI']], aimAssist: [[0, 'KAPALI'], [1, 'HAFİF'], [2, 'GÜÇLÜ']] };
+    const cycle = (key, label) => {
+      const opt = CYC[key].find((o) => o[0] === S[key]) || CYC[key][0];
+      return `<div class="set-row"><label>${label}</label><button class="btn tog on" data-cycle="${key}">${opt[1]}</button></div>`;
+    };
+    const touchBlock = `
+      <h3>DOKUNMATİK</h3>
+      ${cycle('aimAssist', 'Nişan yardımı (güçlü: ateş ederken düşmana kayar)')}
+      ${slider('touchSens', 'Bakış hassasiyeti', 0.3, 3, 0.05, (v) => (+v).toFixed(2))}
+      <div class="set-row"><label>Buton düzeni</label><button class="btn tog" data-act="edit-layout">SÜRÜKLE-YERLEŞTİR</button></div>
+      ${slider('touchScale', 'Buton boyutu', 0.7, 1.5, 0.05, pct)}
+      ${slider('touchOpacity', 'Buton saydamlığı', 0.25, 1, 0.05, pct)}
+      ${cycle('touchMode', 'Dokunmatik kontroller')}`;
     p.innerHTML = `
       <h2>AYARLAR</h2>
+      ${touch ? touchBlock : ''}
       <h3>KONTROL</h3>
-      ${slider('sens', 'Fare hassasiyeti', 0.1, 4, 0.05, (v) => (+v).toFixed(2))}
+      ${touch ? '' : slider('sens', 'Fare hassasiyeti', 0.1, 4, 0.05, (v) => (+v).toFixed(2))}
       ${toggle('invertY', 'Y eksenini ters çevir')}
+      <h3>OYUN</h3>
+      ${toggle('skipIntro', 'İntroyu atla')}
+      ${toggle('allWeapons', 'Test modu: tüm silahlar (dükkânsız)')}
       <h3>GÖRÜNTÜ</h3>
       ${slider('fov', 'Görüş alanı (FOV)', 70, 120, 1)}
       ${slider('resScale', 'Çözünürlük ölçeği (piksel)', 0.25, 1, 0.05, pct)}
@@ -186,13 +212,7 @@ export class UI {
       ${slider('shake', 'Ekran sarsıntısı', 0, 1.5, 0.05, pct)}
       ${toggle('tilt', 'Kamera eğimi')}
       ${toggle('showFps', 'FPS göster')}
-      <h3>DOKUNMATİK</h3>
-      <div class="set-row"><label>Dokunmatik kontroller</label><button class="btn tog on" data-cycle="touchMode">${{ auto: 'OTOMATİK', on: 'AÇIK', off: 'KAPALI' }[S.touchMode || 'auto']}</button></div>
-      ${slider('touchSens', 'Dokunmatik bakış hassasiyeti', 0.3, 3, 0.05, (v) => (+v).toFixed(2))}
-      ${toggle('aimAssist', 'Nişan yardımı (yalnız dokunmatik)')}
-      <div class="set-row"><label>Buton düzeni</label><button class="btn tog" data-act="edit-layout">SÜRÜKLE-YERLEŞTİR</button></div>
-      ${slider('touchScale', 'Buton boyutu', 0.7, 1.5, 0.05, pct)}
-      ${slider('touchOpacity', 'Buton saydamlığı', 0.25, 1, 0.05, pct)}
+      ${touch ? '' : touchBlock}
       <h3>SES</h3>
       ${slider('master', 'Ana ses', 0, 1, 0.05, pct)}
       ${slider('music', 'Müzik', 0, 1, 0.05, pct)}
@@ -205,15 +225,17 @@ export class UI {
       this.game.touch.onEditDone = () => { if (prev) this.show(prev); if (prev === 'pause') { this.pausePanel.classList.remove('hidden'); this.renderSettings(this.pausePanel); } };
       this.game.touch.editLayout();
     });
-    const cyc = p.querySelector('[data-cycle]');
-    cyc.addEventListener('click', () => {
+    p.querySelectorAll('[data-cycle]').forEach((cyc) => cyc.addEventListener('click', () => {
       this.click();
-      const order = ['auto', 'on', 'off'];
-      S.touchMode = order[(order.indexOf(S.touchMode || 'auto') + 1) % 3];
-      cyc.textContent = { auto: 'OTOMATİK', on: 'AÇIK', off: 'KAPALI' }[S.touchMode];
+      const key = cyc.dataset.cycle;
+      const opts = CYC[key];
+      const i = opts.findIndex((o) => o[0] === S[key]);
+      const next = opts[(i + 1) % opts.length];
+      S[key] = next[0];
+      cyc.textContent = next[1];
       saveSettings();
       this.game.applySettings();
-    });
+    }));
     const fmts = { touchScale: pct, touchOpacity: pct, touchSens: (v) => (+v).toFixed(2), sens: (v) => (+v).toFixed(2), resScale: pct, shake: pct, master: pct, music: pct, sfx: pct, fov: (v) => v };
     p.querySelectorAll('input[type=range]').forEach((r) => r.addEventListener('input', () => {
       const k = r.dataset.k;
@@ -247,6 +269,7 @@ export class UI {
       ['1 2 3 4 5', 'Revolver · Shotgun · Nailgun · Railcannon · Rocket (aynı tuş: varyant)'],
       ['G', 'Kol değiştir: Feedbacker (parry) ↔ Knuckleblaster (ağır yumruk, basılı tut: şok dalgası)'],
       ['E', 'Whiplash kancası: hafif düşmanı çek / ağır düşmana atıl'],
+      ['B', 'Dükkân (yeşil terminalin önündeyken): silah, varyant ve kol satın al'],
       ['Q / TEKERLEK', 'Son silah / silah değiştir'],
       ['TAB', 'Bölüm istatistikleri'],
       ['R', 'Ölünce checkpoint\'ten devam'],
@@ -258,7 +281,8 @@ export class UI {
       ['ATEŞ / ALT', 'Ateş / alternatif ateş (şarj, para, çekirdek, pompa)'],
       ['ZIPLA · ATIL · KAY', 'Zıpla, dash, yerde kay / havada yere çak'],
       ['YUMRUK', 'Yumruk ve PARRY'],
-      ['1 2 3 · ≡ · ⛶ · II', 'Silah (tekrar dokun: varyant) · istatistik · tam ekran · duraklat'],
+      ['1-5 · ≡ · ⛶ · II', 'Silah (tekrar dokun: varyant) · istatistik · tam ekran · duraklat'],
+      ['DÜKKÂN', 'Yeşil terminalin önüne gelince çıkar'],
     ];
     p.innerHTML = `<h2>KONTROLLER</h2><h3>KLAVYE + FARE</h3><table class="keys">${rows.map(([k, v]) => `<tr><td><kbd>${k}</kbd></td><td>${v}</td></tr>`).join('')}</table>
       <h3>DOKUNMATİK (MOBİL)</h3><table class="keys">${touchRows.map(([k, v]) => `<tr><td><kbd>${k}</kbd></td><td>${v}</td></tr>`).join('')}</table>
@@ -269,17 +293,16 @@ export class UI {
 
   renderAbout(p) {
     p.innerHTML = `<h2>HAKKINDA</h2>
-      <p>ULTRAKILL'in ilk bölümüne (0-1) saygı duruşu olarak yapılmış, tarayıcıda çalışan 3D bir hayran oyunu. Tüm 3D modeller, dokular, sesler ve müzik çalışma anında kodla üretilir; orijinal oyundan hiçbir varlık kullanılmaz.</p>
+      <p>ULTRAKILL'in PRELUDE bölümlerine (0-1 → 0-5) saygı duruşu olarak yapılmış, tarayıcıda çalışan 3D bir hayran oyunu. Tüm 3D modeller, dokular, sesler ve müzik çalışma anında kodla üretilir; orijinal oyundan hiçbir varlık kullanılmaz.</p>
       <p>Resmî değildir; New Blood Interactive veya Arsi "Hakita" Patala ile bir bağı yoktur. Orijinal oyunu destekleyin.</p>
       <h3>İÇERİK</h3>
       <ul class="about-list">
-        <li>Menü, intro, bölüm başlığı ve bölüm sonu sıralaması (D–S, P)</li>
+        <li>5 bölüm: ATEŞİN İÇİNE, KIYMA MAKİNESİ, ÇİFTE BELA, TEK MAKİNELİK ORDU, CERBERUS</li>
+        <li>Revolver ile başla; diğer silahlar, varyantlar ve kollar dükkândan P ile</li>
         <li>V1 hareketi: dash, kayma, yere çakma, duvar sıçraması</li>
-        <li>Revolver (Piercer / Marksman + ricoshot), Shotgun (Core Eject / Pump Charge), Railcannon</li>
         <li>Feedbacker yumruk ve PARRY; kan ile iyileşme, sert hasar</li>
-        <li>Stil ölçeri: DESTRUCTIVE → ULTRAKILL, tazelik, bonuslar</li>
-        <li>Filth, Stray, Schism ve boss Swordsmachine</li>
-        <li>3 gizli küre, checkpoint'ler, prosedürel müzik</li>
+        <li>Filth, Stray, Schism, Malicious Face, Swordsmachine ve Cerberus</li>
+        <li>Stil ölçeri, bölüm sonu sıralaması (D–S, P), gizli küreler</li>
       </ul>
       <p class="note">Teknoloji: Three.js (MIT). Kaynak: alpbahOS/apps/ultrakill-3d</p>`;
   }
@@ -361,24 +384,61 @@ export class UI {
     }
   }
 
+  // ---- dükkân ----
+  showShop() {
+    this.show('shop');
+    this.renderShop();
+  }
+
+  renderShop() {
+    const box = this.scr.shop.querySelector('.shop-box');
+    const pts = progress.points || 0;
+    const test = settings.allWeapons;
+    const groups = SHOP_GROUPS.map((G) => {
+      const items = SHOP_ITEMS.filter((it) => it.group === G.id);
+      const rows = [];
+      if (G.id === 'revolver') rows.push(`<div class="sh-item owned"><i style="background:#3aa0ff"></i><span class="sh-name">PIERCER<small>temel · ücretsiz</small></span><b class="sh-tag">SENDE</b></div>`);
+      for (const it of items) {
+        const owned = test || !!progress.shop[it.id];
+        const locked = !owned && it.needs && !progress.shop[it.needs];
+        const cant = !owned && !locked && pts < it.price;
+        const tag = owned ? '<b class="sh-tag">SENDE</b>' : locked ? `<b class="sh-tag lock">🔒 ÖNCE ${it.needs.toUpperCase()}</b>` : `<button class="sh-buy ${cant ? 'cant' : ''}" data-buy="${it.id}">${it.price.toLocaleString('tr-TR')} P</button>`;
+        rows.push(`<div class="sh-item ${owned ? 'owned' : ''} ${locked ? 'locked' : ''}"><i style="background:${it.color}"></i><span class="sh-name">${it.name}<small>${it.sub}</small></span>${tag}</div>`);
+      }
+      return `<div class="sh-group"><div class="sh-gname">${G.name}</div>${rows.join('')}</div>`;
+    }).join('');
+    box.innerHTML = `
+      <div class="sh-head"><span class="sh-title">DÜKKÂN</span><span class="sh-pts">P <b>${pts.toLocaleString('tr-TR')}</b></span><button class="btn sh-close" data-act="close">KAPAT ✕</button></div>
+      ${test ? '<div class="sh-note">Test modu açık: tüm silahlar zaten sende.</div>' : '<div class="sh-note">Stil puanın P olarak birikir. Aldığın silah ve varyantlar kalıcıdır; aynı silah tuşuna tekrar basınca varyant değişir.</div>'}
+      <div class="sh-grid">${groups}</div>
+    `;
+    box.querySelector('[data-act="close"]').addEventListener('click', () => { this.click(); this.game.closeShop(); });
+    box.querySelectorAll('[data-buy]').forEach((b) => b.addEventListener('click', () => {
+      if (this.game.buy(b.dataset.buy)) this.renderShop();
+      else { b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); }
+    }));
+  }
+
   // ---- sonuçlar ----
   showResults(r) {
     this.show('results');
     const box = this.scr.results.querySelector('.res-box');
     const dots = Array.from({ length: r.secretsTotal }, (_, i) => (i < r.secrets ? '<i class="sec on"></i>' : '<i class="sec"></i>')).join('');
     box.innerHTML = `
-      <div class="res-title">0-1: İLK KAN <span>TAMAMLANDI</span></div>
+      <div class="res-title">${r.levelTitle} <span>TAMAMLANDI</span></div>
       <div class="res-rows">
         <div class="res-row" data-i="0"><span>SÜRE</span><b data-count="time">00:00.000</b><i class="rk">${r.timeRank}</i></div>
         <div class="res-row" data-i="1"><span>ÖLDÜRME</span><b data-count="kills">0</b><i class="rk">${r.killRank}</i></div>
         <div class="res-row" data-i="2"><span>STİL</span><b data-count="style">0</b><i class="rk">${r.styleRank}</i></div>
         <div class="res-row" data-i="3"><span>GİZLİLER</span><b class="secs">${dots}</b><i class="rk none"></i></div>
-        <div class="res-row challenge" data-i="4"><span>MEYDAN OKUMA</span><b>En az 5 PARRY yap (${r.parries})</b><i class="rk ${r.challenge ? 'ok' : 'no'}">${r.challenge ? '✔' : '✘'}</i></div>
+        <div class="res-row challenge" data-i="4"><span>MEYDAN OKUMA</span><b>${r.challengeText}</b><i class="rk ${r.challenge ? 'ok' : 'no'}">${r.challenge ? '✔' : '✘'}</i></div>
       </div>
       <div class="res-final hidden"><span>TOPLAM SIRA</span><div class="rank-big" style="color:${RANK_COL[r.final]}">${r.final}</div>${r.final === 'P' ? '<div class="prank">MÜKEMMEL!</div>' : ''}</div>
-      <div class="res-extra hidden">Zorluk: ${r.difficulty} · Yeniden doğuş: ${r.restarts} · Parry: ${r.parries} · Alınan hasar: ${Math.round(r.damage)}${r.newBest ? ' · <b>YENİ REKOR!</b>' : ''}</div>
-      <div class="res-btns hidden"><button class="btn" data-act="retry">TEKRAR OYNA</button><button class="btn" data-act="menu">ANA MENÜ</button></div>
+      <div class="res-extra hidden"><span class="res-p">+${r.pointsEarned.toLocaleString('tr-TR')} P kazanıldı (sıra ödülü ${r.rankBonus.toLocaleString('tr-TR')}) · Toplam P ${r.pointsTotal.toLocaleString('tr-TR')}</span><br>Zorluk: ${r.difficulty} · Yeniden doğuş: ${r.restarts} · Parry: ${r.parries} · Hasar: ${Math.round(r.damage)}${r.newBest ? ' · <b>YENİ REKOR!</b>' : ''}${r.last ? '<br><b>PRELUDE TAMAMLANDI — CEHENNEMİN KAPILARI AÇILDI.</b>' : ''}</div>
+      <div class="res-btns hidden">${r.hasNext ? '<button class="btn big next" data-act="next">SONRAKİ BÖLÜM ▶</button>' : ''}<button class="btn" data-act="retry">TEKRAR</button><button class="btn" data-act="menu">ANA MENÜ</button></div>
     `;
+    const nx = box.querySelector('[data-act="next"]');
+    if (nx) nx.addEventListener('click', () => { this.click(); this.game.nextLevel(); });
     box.querySelector('[data-act="retry"]').addEventListener('click', () => { this.click(); this.game.startLevel(); });
     box.querySelector('[data-act="menu"]').addEventListener('click', () => { this.click(); this.game.toMenu(); });
     box.querySelectorAll('.rk').forEach((e) => { if (RANK_COL[e.textContent]) e.style.color = RANK_COL[e.textContent]; });
@@ -387,6 +447,11 @@ export class UI {
     rows.forEach((row) => row.classList.add('pending'));
     const audio = this.game.audio;
     const counters = { time: [r.time, (v) => fmtTime(v)], kills: [r.kills, (v) => `${Math.round(v)} / ${r.killsTotal}`], style: [r.style, (v) => String(Math.round(v))] };
+    // dokunmatikte daha kısa; ekrana dokunmak animasyonu anında bitirir
+    const touch = this.game.touch.active;
+    let fast = false;
+    const T = (ms) => (fast ? 0 : touch ? ms * 0.55 : ms);
+    this.scr.results.onclick = (e) => { if (!e.target.closest('.btn')) fast = true; };
     let i = 0;
     const next = () => {
       if (i >= rows.length) {
@@ -397,8 +462,8 @@ export class UI {
           setTimeout(() => {
             box.querySelector('.res-extra').classList.remove('hidden');
             box.querySelector('.res-btns').classList.remove('hidden');
-          }, 500);
-        }, 350);
+          }, T(500));
+        }, T(350));
         return;
       }
       const row = rows[i++];
@@ -410,22 +475,22 @@ export class UI {
       if (b) {
         const [target, fmt] = counters[b.dataset.count];
         const t0 = performance.now();
-        const dur = 700;
+        const dur = T(700);
         const tick = () => {
-          const k = Math.min(1, (performance.now() - t0) / dur);
+          const k = fast || dur <= 0 ? 1 : Math.min(1, (performance.now() - t0) / dur);
           b.textContent = fmt(target * k);
-          if (Math.random() < 0.5) audio.play('tick');
+          if (!fast && Math.random() < 0.5) audio.play('tick');
           if (k < 1) requestAnimationFrame(tick);
-          else { rk.classList.remove('wait'); audio.play('rankStamp'); setTimeout(next, 250); }
+          else { rk.classList.remove('wait'); if (!fast) audio.play('rankStamp'); setTimeout(next, T(250)); }
         };
         tick();
       } else {
         rk.classList.remove('wait');
-        audio.play('tick');
-        setTimeout(next, 350);
+        if (!fast) audio.play('tick');
+        setTimeout(next, T(350));
       }
     };
-    setTimeout(next, 600);
+    setTimeout(next, T(600));
   }
 }
 

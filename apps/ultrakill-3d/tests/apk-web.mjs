@@ -84,12 +84,14 @@ const flow = await page.evaluate(async () => {
   window.__ukNativeLifecycle(true);
   await new Promise((res) => setTimeout(res, 150)); r.ctx4 = g.audio.ctx && g.audio.ctx.state;
   g.touch.editLayout(); r.b5 = window.__ukNativeBack(); r.edit = g.touch.editing;
+  g.state = 'playing'; g.openShop(); r.shopOpen = g.state === 'shop'; r.b6 = window.__ukNativeBack(); r.s6 = g.state;
   return r;
 });
 check('GERİ: oynarken duraklatır, duraklatılmışken devam ettirir', flow.b1 === 'ok' && flow.s1 === 'paused' && flow.b2 === 'ok' && flow.s2 === 'playing', JSON.stringify(flow));
 check('titreşim yerel köprüye gider', flow.vib.includes('12,30,12') && flow.vib.includes('25'), JSON.stringify(flow.vib));
 check('arka plana geçince duraklar ve ses askıya alınır, dönünce ses açılır', flow.s3 === 'paused' && flow.ctx3 === 'suspended' && flow.ctx4 === 'running', `${flow.s3} ${flow.ctx3} → ${flow.ctx4}`);
 check('buton düzenleyicide GERİ düzenlemeyi kapatır', flow.b5 === 'ok' && flow.edit === false);
+check('dükkânda GERİ dükkânı kapatır', flow.shopOpen && flow.b6 === 'ok' && flow.s6 === 'playing', JSON.stringify(flow));
 
 check('sayfa hatası yok', errors.length === 0, errors.join(' | '));
 await browser.close();

@@ -7,7 +7,9 @@ import { Music } from './music.js';
 import { buildTextures } from './textures.js';
 import { Renderer, psx } from './render.js';
 import { World } from './physics.js';
-import { Level, buildLevel01 } from './level.js';
+import { Level } from './level.js';
+import { LEVELS } from './levels/index.js';
+import { SHOP_ITEMS, ITEM_HINTS } from './shop.js';
 import { Player } from './player.js';
 import { Weapons } from './weapons.js';
 import { FX } from './fx.js';
@@ -15,7 +17,7 @@ import { Style } from './style.js';
 import { HUD } from './hud.js';
 import { UI, rankTime, rankKills, rankStyle, finalRank, betterRank } from './ui.js';
 import { ENEMY_TYPES } from './enemies.js';
-import { rand, clamp, damp, yawTo } from './util.js';
+import { rand, clamp, damp, yawTo, wrapAngle } from './util.js';
 import { Projectile } from './projectiles.js';
 import { WEAPONS } from './weapons.js';
 import { TouchControls, touchDevice } from './touch.js';
@@ -29,6 +31,15 @@ class Arenas {
     this.list = game.level.arenas;
   }
 
+  // prespawn: arenanın ilk dalgası bölüm başında yerinde bekler (ör. uyuyan Cerberus heykelleri)
+  prespawn() {
+    const g = this.game;
+    for (const a of this.list) {
+      if (!a.prespawn || a.state !== 'idle' || a.pre) continue;
+      a.pre = a.waves[0].map((s) => g.spawnEnemy(s.t, s.p, null, { ...(s.opts || {}), instant: true }));
+    }
+  }
+
   start(a) {
     const g = this.game;
     if (a.state !== 'idle' || g.state !== 'playing') return;
@@ -38,11 +49,20 @@ class Arenas {
     a.delay = a.boss ? 2.4 : 0.35;
     for (const id of a.lock) { const d = g.level.doors[id]; d.saved = d.target > 0.5; d.close(); }
     a.killsAtStart = g.stats.kills;
+    a.bossList = [];
     if (a.boss) {
       g.music.setMode('boss');
-      g.hud.titleCard(`<div class="tc-boss-sub">ARAF'IN BEKÇİSİ</div><div class="tc-boss">${a.name}</div>`, 3.2);
+      g.hud.titleCard(`<div class="tc-boss-sub">${a.bossSub || 'BOSS'}</div><div class="tc-boss">${a.name}</div>`, 3.2);
       g.audio.play('bossRoar');
     } else g.music.setMode('combat');
+    if (a.pre) {
+      a.wave = 0;
+      a.enemies = a.pre.filter((e) => !e.dead);
+      for (const e of a.enemies) { e.arena = a; if (e.boss) a.bossList.push(e); }
+      a.pre = null;
+      a.delay = 0.9;
+      if (a.onWave) a.onWave(g, 0, a);
+    }
     if (a.onStart) a.onStart(g);
   }
 
@@ -56,7 +76,11 @@ class Arenas {
       if (a.delay > 0) continue;
       if (a.wave + 1 < a.waves.length) {
         a.wave++;
-        for (const s of a.waves[a.wave]) g.spawnEnemy(s.t, s.p, a);
+        for (const s of a.waves[a.wave]) {
+          const e = g.spawnEnemy(s.t, s.p, a, s.opts);
+          if (e.boss) a.bossList.push(e);
+        }
+        if (a.onWave) a.onWave(g, a.wave, a);
         a.delay = 0.9;
       } else this.clear(a);
     }
@@ -76,7 +100,10 @@ class Arenas {
     for (const a of this.list) {
       if (a.state !== 'active') continue;
       for (const e of a.enemies) e.removeSilently();
+      for (const e of a.bossList || []) e.removeSilently();
       a.enemies = [];
+      a.bossList = [];
+      a.pre = null;
       if (a.killsAtStart !== undefined) g.stats.kills = a.killsAtStart;
       a.state = 'idle';
       a.wave = -1;
@@ -91,6 +118,8 @@ class Arenas {
       a.state = 'idle';
       a.wave = -1;
       a.enemies = [];
+      a.bossList = [];
+      a.pre = null;
     }
   }
 }
@@ -115,28 +144,16 @@ class Game {
     this.world = new World();
     this.fx = new FX(this);
     this.goreMat = psx(new THREE.MeshLambertMaterial({ map: this.tex.flesh, color: 0xff9090 }));
-    this.level = new Level(this);
-    buildLevel01(this.level);
+    this.level = null;
+    this.levelIdx = -1;
     this.player = new Player(this);
     this.weapons = new Weapons(this);
-    // sunaklarda dönen silah/kol modelleri
-    for (const pk of this.level.pickups) {
-      const src = typeof pk.weapon === 'number' ? this.weapons.models[pk.weapon].gun : pk.weapon === 'knuckle' ? this.weapons.armModels[1] : this.weapons.hookHand;
-      const m = src.clone();
-      m.visible = true;
-      m.traverse((o) => { o.visible = true; });
-      m.position.set(0, 0, 0);
-      m.rotation.set(0, Math.PI / 2, 0);
-      m.scale.setScalar(2.6);
-      pk.holder.add(m);
-    }
     this.style = new Style(this);
     this.hud = new HUD(this, this.uiRoot);
     this.touch = new TouchControls(this, this.uiRoot);
     this.input.touchMode = this.touch.active;
     this.ui = new UI(this, this.uiRoot);
     this.hud.el.querySelector('#deathscreen').addEventListener('click', () => { if (this.deathT > 1.0) this.respawn(); });
-    this.arenas = new Arenas(this);
     this.enemies = [];
     this.projectiles = [];
     this.decor = [];
@@ -153,13 +170,14 @@ class Game {
     this.fpsT = 0;
     this.god = false;
     this.stats = { time: 0, kills: 0, restarts: 0, secrets: 0, parries: 0, damageTaken: 0 };
-    this.checkpoint = { pos: new THREE.Vector3(...this.level.spawn.checkpoint), yaw: 0 };
     this.corpses = [];
-    this.totalEnemies = this.level.totalEnemies + this.level.extraEnemies.reduce((n, x) => n + x.list.length, 0);
-    for (const ex of this.level.extraEnemies) {
-      if (!ex.trigger) continue;
-      ex.trig = this.level.trigger(ex.trigger, () => { for (const s of ex.list) this.spawnEnemy(s.t, s.p, null); });
-    }
+    this.shocks = [];
+    this.bankedStyle = 0;
+    this.bonusP = 0;
+    this.levelP = 0;
+    this.aimFriction = 1;
+    this.frameAcc = 0;
+    this.loadLevel(Math.min(Math.max(0, (progress.unlocked || 1) - 1), LEVELS.length - 1));
     this.spawnDecor();
     this.onResize();
     window.addEventListener('resize', () => this.onResize());
@@ -176,7 +194,8 @@ class Game {
     const s = this.scene;
     this.hemi = new THREE.HemisphereLight(0xffa888, 0x3a1410, 1.9);
     s.add(this.hemi);
-    s.add(new THREE.AmbientLight(0x5a3030, 0.9));
+    this.ambient = new THREE.AmbientLight(0x5a3030, 0.9);
+    s.add(this.ambient);
     this.sun = new THREE.DirectionalLight(0xff9a70, 1.3);
     this.sun.position.set(0.4, 1, 0.6);
     s.add(this.sun);
@@ -240,6 +259,134 @@ class Game {
     }
   }
 
+  // ---------------------------------------------------------------- bölümler
+  // Bölümü kur (zaten yüklüyse bir şey yapmaz). Eski bölüm sahneden ve fizik dünyasından tamamen kalkar.
+  loadLevel(idx) {
+    idx = clamp(idx | 0, 0, LEVELS.length - 1);
+    if (this.level && this.levelIdx === idx) return false;
+    if (this.level) {
+      this.resetLevelState();
+      this.clearDecor();
+      this.level.dispose();
+    }
+    this.world.clear();
+    this.levelIdx = idx;
+    this.levelDef = LEVELS[idx];
+    const L = new Level(this);
+    this.level = L;
+    this.levelDef.build(L);
+    this.applyTheme(L.theme);
+    this.attachPickupModels();
+    this.arenas = new Arenas(this);
+    this.totalEnemies = L.totalEnemies + L.extraEnemies.reduce((n, x) => n + x.list.length, 0);
+    for (const ex of L.extraEnemies) {
+      if (!ex.trigger) continue;
+      ex.trig = L.trigger(ex.trigger, () => { for (const s of ex.list) this.spawnEnemy(s.t, s.p, null); });
+    }
+    this.checkpoint = { pos: new THREE.Vector3(...L.spawn.checkpoint), yaw: L.spawn.yaw };
+    return true;
+  }
+
+  applyTheme(th) {
+    this.scene.fog.color.setHex(th.fog);
+    this.scene.fog.near = th.fogNear;
+    this.scene.fog.far = th.fogFar;
+    this.hemi.color.setHex(th.hemiSky);
+    this.hemi.groundColor.setHex(th.hemiGround);
+    this.hemi.intensity = th.hemi;
+    this.ambient.color.setHex(th.ambient);
+    this.sun.color.setHex(th.sun);
+  }
+
+  // Sunaklarda dönen silah/kol modelleri
+  attachPickupModels() {
+    for (const pk of this.level.pickups) {
+      const src = typeof pk.weapon === 'number' ? this.weapons.models[pk.weapon].gun : pk.weapon === 'knuckle' ? this.weapons.armModels[1] : this.weapons.hookHand;
+      const m = src.clone();
+      m.visible = true;
+      m.traverse((o) => { o.visible = true; });
+      m.position.set(0, 0, 0);
+      m.rotation.set(0, Math.PI / 2, 0);
+      m.scale.setScalar(2.6);
+      pk.holder.add(m);
+    }
+  }
+
+  // Dükkân sahipliğini silahlara uygula (test modu: her şey)
+  applyLoadout() {
+    if (settings.allWeapons) this.weapons.giveAll();
+    else this.weapons.applyLoadout(progress.shop);
+  }
+
+  // ---------------------------------------------------------------- P (stil puanı parası)
+  // Stil puanı anında P olarak birikir; checkpoint'te, dükkânda ve bölüm sonunda kasaya girer.
+  // Ölünce son checkpoint'ten beri kazanılan P kaybolur.
+  get unbankedP() {
+    return Math.max(0, Math.floor(this.style.total) - this.bankedStyle) + this.bonusP;
+  }
+
+  bankPoints() {
+    const n = this.unbankedP;
+    progress.points = (progress.points || 0) + n;
+    this.levelP = (this.levelP || 0) + n;
+    this.bankedStyle = Math.floor(this.style.total);
+    this.bonusP = 0;
+    saveProgress();
+    return n;
+  }
+
+  dropUnbanked() {
+    this.bankedStyle = Math.floor(this.style.total);
+    this.bonusP = 0;
+  }
+
+  // ---------------------------------------------------------------- dükkân
+  openShop() {
+    if (this.state !== 'playing') return;
+    this.bankPoints();
+    this.state = 'shop';
+    this.pauseTime = performance.now();
+    this.input.exitLock();
+    this.audio.stopAllLoops();
+    this.audio.muffle(0.5);
+    this.audio.play('uiClick');
+    this.touch.releaseAll();
+    this.hud.stats(false);
+    this.ui.showShop();
+  }
+
+  closeShop() {
+    if (this.state !== 'shop') return;
+    this.state = 'playing';
+    this.ui.hideAll();
+    this.input.requestLock();
+    this.audio.muffle(0);
+  }
+
+  buy(id) {
+    const it = SHOP_ITEMS.find((x) => x.id === id);
+    if (!it || progress.shop[id] || settings.allWeapons) return false;
+    if (it.needs && !progress.shop[it.needs]) return false;
+    if ((progress.points || 0) < it.price) { this.audio.play('empty'); return false; }
+    progress.points -= it.price;
+    progress.shop[id] = true;
+    saveProgress();
+    this.applyLoadout();
+    if (it.w !== undefined) {
+      this.weapons.variant[it.w] = it.v;
+      this.weapons.updateAccents();
+      if (this.weapons.cur !== it.w) this.weapons.select(it.w);
+      else this.hud.weaponChanged();
+    } else if (id === 'arm.knuckle') {
+      this.weapons.arm = 1;
+      this.hud.weaponChanged();
+    }
+    this.audio.play('pickup');
+    this.hud.flash('rgba(90,255,140,0.35)', 0.3);
+    this.pendingHint = ITEM_HINTS[id] || null;
+    return true;
+  }
+
   // ---------------------------------------------------------------- yardımcılar
   onResize() {
     const a = window.innerWidth / Math.max(1, window.innerHeight);
@@ -273,11 +420,11 @@ class Game {
     this.trauma = Math.min(1, this.trauma + amount);
   }
 
-  spawnEnemy(type, p, arena) {
+  spawnEnemy(type, p, arena, opts = {}) {
     const Cls = ENEMY_TYPES[type];
     const pos = Array.isArray(p) ? new THREE.Vector3(...p) : p.clone();
     const pl = this.player.pos;
-    const e = new Cls(this, pos, { yaw: yawTo(pl.x - pos.x, pl.z - pos.z), arena });
+    const e = new Cls(this, pos, { yaw: yawTo(pl.x - pos.x, pl.z - pos.z), arena, ...opts });
     this.enemies.push(e);
     if (arena) arena.enemies.push(e);
     return e;
@@ -290,9 +437,8 @@ class Game {
 
   spawnDecor() {
     this.clearDecor();
-    const list = [['filth', [-4, 0, -6], 0.4], ['filth', [5, 0, -9], -0.3], ['filth', [-7, 0, 1], 1.2], ['schism', [2, 0, -12], 0.1], ['stray', [0, 3, 13.5], Math.PI]];
-    for (const [t, p, yaw] of list) {
-      const e = new ENEMY_TYPES[t](this, new THREE.Vector3(...p), { decor: true, yaw });
+    for (const [t, p, yaw, opts] of this.level.decor) {
+      const e = new ENEMY_TYPES[t](this, new THREE.Vector3(...p), { ...(opts || {}), decor: true, yaw });
       e.update(0.016);
       this.decor.push(e);
     }
@@ -418,9 +564,9 @@ class Game {
         if (pr.dead || pr.owner !== 'enemy' || !pr.parryable) continue;
         _v.subVectors(pr.pos, o);
         const dist = _v.length();
-        if (dist > 5.2) continue;
+        if (dist > 7) continue;
         const dot = _v.dot(d) / (dist || 1);
-        if (dot > 0.25 || dist < 2) list.push(pr);
+        if (dot > 0.2 || dist < 2.4) list.push(pr);
       }
     }
     if (list.length) {
@@ -440,15 +586,18 @@ class Game {
       return true;
     }
     // 2) Parlayan yakın saldırı
+    // en iyi aday: nişangâhın baktığı (yakın ve önde olan) parlayan düşman
     let best = null, bd = 1e9;
     for (const e of this.enemies) {
       if (e.dead || !e.parryable) continue;
       const c = e.center(_v);
       const dist = c.distanceTo(o);
-      if (dist > 5 + e.r) continue;
+      if (dist > 6.5 + e.r) continue;
       const to = c.clone().sub(o).normalize();
-      if (to.dot(d) < 0.2 && dist > 2.2) continue;
-      if (dist < bd) { bd = dist; best = e; }
+      const dot = to.dot(d);
+      if (dot < 0.15 && dist > 2.6) continue;
+      const score = dist * (1.6 - dot);
+      if (score < bd) { bd = score; best = e; }
     }
     if (best) {
       const pos = best.center();
@@ -462,7 +611,7 @@ class Game {
       if (pr.dead || pr.owner !== 'player' || !['core', 'rocket', 'cannonball'].includes(pr.kind)) continue;
       _v.subVectors(pr.pos, o);
       const dist = _v.length();
-      if (dist < 4.5 && _v.dot(d) / (dist || 1) > 0.2) {
+      if (dist < 5.5 && _v.dot(d) / (dist || 1) > 0.2) {
         const assist = w.assistDir(o, d, 0.2);
         pr.vel.copy(assist || d).multiplyScalar(pr.kind === 'cannonball' ? 60 : 70);
         pr.boosted = true;
@@ -480,7 +629,7 @@ class Game {
       if (!c.alive) continue;
       _v.subVectors(c.pos, o);
       const dist = _v.length();
-      if (dist < 3.5 && _v.dot(d) / (dist || 1) > 0.3) {
+      if (dist < 4.5 && _v.dot(d) / (dist || 1) > 0.3) {
         this.style.add('COIN PUNCH', 60, 'revolver');
         w.ricochet(c, 1);
         return true;
@@ -516,9 +665,9 @@ class Game {
       if (e.dead || e.state === 'spawn') continue;
       const c = e.center(_v);
       const dist = c.distanceTo(o) - e.r;
-      if (dist > (knuckle ? 3.6 : 3.2)) continue;
+      if (dist > (knuckle ? 4.6 : 4.2)) continue;
       const to = c.clone().sub(o).normalize();
-      if (to.dot(d) < 0.45) continue;
+      if (to.dot(d) < 0.4) continue;
       if (dist < bd) { bd = dist; best = e; }
     }
     if (!best) return false;
@@ -600,17 +749,15 @@ class Game {
       this.hud.titleCard(`<div class="tc-layer">YENİ ${typeof pk.weapon === 'number' ? 'SİLAH' : 'KOL'}</div><div class="tc-name tc-weapon">${name}</div><div class="tc-layer small">${sub}</div>`, 3);
       this.fx.sparkBurst(pk.pos.clone(), 30, 8, 0x9fd8ff, 0.7, 0.07, 0);
       this.fx.ring(pk.pos.clone().setY(pk.pos.y - 1.5), 0x9fd8ff, 3, 0.6, 0);
+      if (pk.onGive) pk.onGive(this);
       if (first && pk.onTake) pk.onTake(this);
     }
   }
 
-  onBossDefeated() {
-    this.hud.message('SWORDSMACHINE YOK EDİLDİ', 2.5, 'big');
+  onBossDefeated(msg, then) {
+    this.hud.message(msg, 2.5, 'big');
     this.music.setMode('calm');
-    this.schedule(2.0, () => {
-      this.level.doors.hatch.open();
-      this.hud.hint('Çıkış açıldı — arenanın ortasındaki DELİĞE atla!', 10);
-    });
+    if (then) this.schedule(2.0, then);
   }
 
   // ---------------------------------------------------------------- durumlar
@@ -658,30 +805,40 @@ class Game {
     for (const pk of this.level.pickups) { pk.taken = false; pk.holder.visible = true; pk.ring.visible = true; }
     for (const c of this.corpses) c.removeSilently();
     this.corpses = [];
+    for (const sh of this.shocks) sh.remove();
+    this.shocks = [];
     this.renderer.postMat.uniforms.uGray.value = 0;
     this.renderer.postMat.uniforms.uTintAmt.value = 0;
     this.events = [];
     this.hud.boss(null);
     this.levelDone = false;
+    this.nearShop = null;
   }
 
-  startLevel() {
+  // idx verilmezse yüklü bölüm yeniden başlar
+  startLevel(idx = this.levelIdx) {
     this.audio.init();
     this.ui.hideAll();
     progress.introSeen = true;
     saveProgress();
     this.clearDecor();
-    this.resetLevelState();
+    if (!this.loadLevel(idx)) this.resetLevelState();
     this.hud.reset();
     this.hud.show(true);
-    const sp = this.level.spawn;
+    const L = this.level;
+    const sp = L.spawn;
     this.player.reset(new THREE.Vector3(...sp.pos), sp.yaw);
-    this.player.pitch = -0.5;
+    this.player.pitch = sp.pitch ?? -0.5;
     this.checkpoint = { pos: new THREE.Vector3(...sp.checkpoint), yaw: sp.yaw };
     this.weapons.reset();
     if (settings.allWeapons) this.weapons.giveAll();
+    else if (L.startArmed) this.applyLoadout();
     this.spawnTrainers();
+    this.arenas.prespawn();
     this.style.reset(true);
+    this.bankedStyle = 0;
+    this.bonusP = 0;
+    this.levelP = 0;
     this.stats = { time: 0, kills: 0, restarts: 0, secrets: 0, parries: 0, damageTaken: 0 };
     this.time = 0;
     this.state = 'playing';
@@ -691,13 +848,16 @@ class Game {
     if (this.touch.active && !document.fullscreenElement && !document.webkitFullscreenElement) this.touch.toggleFullscreen();
     this.audio.muffle(0);
     this.music.setMode('calm');
-    this.hud.titleCard('<div class="tc-layer">KATMAN 0: ARAF /// 0-1</div><div class="tc-name">İLK KAN</div>', 4.5);
+    const def = this.levelDef;
+    this.hud.titleCard(`<div class="tc-layer">${def.layer} /// ${def.id}</div><div class="tc-name">${def.name}</div>`, 4.5);
+    if (L.onStart) L.onStart(this);
   }
 
   setCheckpoint(pos, yaw) {
     if (this.checkpoint.pos.distanceTo(pos) < 0.5) return;
     this.checkpoint = { pos: pos.clone(), yaw };
-    this.hud.message('CHECKPOINT', 1.5, 'cp');
+    const n = this.bankPoints();
+    this.hud.message(n > 0 ? `CHECKPOINT  +${n} P` : 'CHECKPOINT', 1.5, 'cp');
     this.audio.play('checkpoint');
   }
 
@@ -717,12 +877,15 @@ class Game {
     this.audio.muffle(0.85);
     this.audio.stopAllLoops();
     this.fx.bloodBurst(p.eyePos(), 50, 8, null, true);
+    this.lostP = this.unbankedP;
+    this.dropUnbanked();
     this.style.reset(false);
   }
 
   respawn(fromPause = false) {
     if (this.state !== 'dead' && !(fromPause && this.state === 'paused')) return;
     this.arenas.resetActive();
+    this.arenas.prespawn();
     for (const pr of this.projectiles) pr.remove();
     this.projectiles = [];
     for (const c of this.weapons.coins) c.kill();
@@ -732,7 +895,10 @@ class Game {
     if (cur >= 0) this.weapons.cur = cur;
     this.renderer.postMat.uniforms.uGray.value = 0;
     this.renderer.postMat.uniforms.uTintAmt.value = 0;
+    for (const sh of this.shocks) sh.remove();
+    this.shocks = [];
     this.player.reset(this.checkpoint.pos.clone(), this.checkpoint.yaw);
+    if (fromPause) this.dropUnbanked();
     this.style.reset(false);
     this.stats.restarts++;
     this.hud.death(false);
@@ -780,6 +946,7 @@ class Game {
   onKey(e) {
     if (this.state === 'splash') { this.onSplashClick(); return; }
     if (this.state === 'intro' && (e.code === 'Space' || e.code === 'Enter' || e.code === 'Escape')) { this.ui.introClick(); return; }
+    if (this.state === 'shop' && (e.code === 'Escape' || e.code === 'KeyB') && performance.now() - (this.pauseTime || 0) > 250) { this.closeShop(); return; }
     if (e.code === 'Escape') {
       if (this.state === 'playing' && (!this.input.locked || this.input.lockFailed)) this.pause();
       else if (this.state === 'paused' && performance.now() - (this.pauseTime || 0) > 400) this.resume();
@@ -812,25 +979,50 @@ class Game {
       damage: s.damageTaken,
       difficulty: difficulty().name,
     };
-    r.timeRank = rankTime(r.time);
+    const def = this.levelDef;
+    r.levelId = def.id;
+    r.levelTitle = `${def.id}: ${def.name}`;
+    r.timeRank = rankTime(r.time, def.thresh.time);
     r.killRank = rankKills(r.kills / Math.max(1, r.killsTotal));
-    r.styleRank = rankStyle(r.style);
+    r.styleRank = rankStyle(r.style, def.thresh.style);
     r.final = finalRank([r.timeRank, r.killRank, r.styleRank], r.restarts);
-    r.challenge = r.parries >= 5;
-    r.newBest = betterRank(progress.bestRank, r.final) || (progress.bestRank === r.final && (!progress.bestTime || r.time < progress.bestTime));
-    if (r.newBest) { progress.bestRank = r.final; progress.bestTime = r.time; }
-    progress.bestStyle = Math.max(progress.bestStyle || 0, r.style);
+    r.challenge = def.challenge.check(r);
+    r.challengeText = def.challenge.text(r);
+    // P: kasaya kalanı yatır + sıra ve meydan okuma ödülü
+    r.rankBonus = { P: 5000, S: 3000, A: 2000, B: 1200, C: 600, D: 300 }[r.final] + (r.challenge ? 1000 : 0);
+    this.bonusP += r.rankBonus;
+    this.bankPoints();
+    r.pointsEarned = this.levelP;
+    r.pointsTotal = progress.points;
+    const rec = progress.levels[def.id];
+    r.newBest = !rec || betterRank(rec.rank, r.final) || (rec.rank === r.final && (!rec.time || r.time < rec.time));
+    progress.levels[def.id] = r.newBest ? { rank: r.final, time: r.time, style: Math.max(r.style, rec ? rec.style || 0 : 0) } : { ...rec, style: Math.max(rec.style || 0, r.style) };
+    progress.unlocked = Math.max(progress.unlocked || 1, Math.min(LEVELS.length, this.levelIdx + 2));
+    r.hasNext = this.levelIdx + 1 < LEVELS.length;
+    r.last = !r.hasNext;
     saveProgress();
     this.lastResults = r;
     this.ui.showResults(r);
   }
 
+  nextLevel() {
+    if (this.levelIdx + 1 < LEVELS.length) this.startLevel(this.levelIdx + 1);
+    else this.toMenu();
+  }
+
   // ---------------------------------------------------------------- döngü
   loop(now) {
     requestAnimationFrame(this.loop);
-    const realDt = Math.min(0.05, Math.max(0, (now - this.lastT) / 1000));
+    const realDt = Math.min(0.1, Math.max(0, (now - this.lastT) / 1000));
     this.lastT = now;
-    this.step(realDt);
+    // Telefonda oyun dışı ekranlar daha seyrek çizilir (menü 30, duraklatma/dükkân 12 kare/sn)
+    const st = this.state;
+    const cap = !this.mobile ? 0 : st === 'paused' || st === 'shop' || st === 'results' ? 1 / 12 : st === 'menu' || st === 'splash' ? 1 / 30 : 0;
+    this.frameAcc += realDt;
+    if (cap && this.frameAcc < cap) return;
+    const dt = Math.min(0.05, this.frameAcc);
+    this.frameAcc = 0;
+    this.step(dt);
   }
 
   step(realDt, render = true) {
@@ -848,7 +1040,7 @@ class Game {
     else if (st === 'menu' || st === 'splash' || st === 'intro') this.updateMenu(realDt);
     else if (st === 'results') this.updateResults(realDt);
     if (st === 'intro') this.ui.updateIntro(realDt);
-    const showVM = st === 'playing' || st === 'paused';
+    const showVM = st === 'playing' || st === 'paused' || st === 'shop';
     this.touch.update();
     if (render) this.renderer.render(this.scene, this.camera, showVM && !this.player.dead ? this.weapons.scene : null, this.weapons.cam);
     this.input.endFrame();
@@ -858,8 +1050,10 @@ class Game {
     this.time += dt;
     const t = this.realTime * 0.06;
     const cam = this.camera;
-    cam.position.set(Math.sin(t) * 15, 5.5 + Math.sin(t * 2.3) * 0.8, -3 + Math.cos(t) * 15);
-    cam.lookAt(0, 2.2, -3);
+    const mc = this.level.menuCam;
+    const [tx, ty, tz] = mc.target;
+    cam.position.set(tx + Math.sin(t) * mc.radius, mc.height + Math.sin(t * 2.3) * 0.8, tz + Math.cos(t) * mc.radius);
+    cam.lookAt(tx, ty, tz);
     if (Math.abs(cam.fov - 75) > 0.01) { cam.fov = 75; cam.updateProjectionMatrix(); }
     for (const e of this.decor) e.update(dt);
     this.level.update(dt, this.time, cam.position);
@@ -882,7 +1076,8 @@ class Game {
     if (this.state === 'playing') {
       this.time += dt;
       this.stats.time += realDt;
-      p.look(input, realDt);
+      p.look(input, realDt, this.aimFriction);
+      this.aimMagnet(realDt);
       p.update(dt, input);
       this.weapons.update(dt, input);
       this.hud.stats(input.is('stats'));
@@ -924,13 +1119,17 @@ class Game {
       if (!pr.dead && pr.owner === 'enemy' && pr.parryable && pr.pos.distanceTo(eye) < 5) this.parryHintT = 0.1;
     }
     this.projectiles = this.projectiles.filter((pr) => !pr.dead);
+    if (this.shocks.length) this.shocks = this.shocks.filter((sh) => sh.update(dt));
 
     if (this.state === 'playing') {
       this.arenas.update(dt);
       this.checkTriggers();
       this.checkSecrets();
       this.checkPickups();
+      this.checkShops();
+      if (this.pendingHint) { this.hud.hint(this.pendingHint, 9); this.pendingHint = null; }
     }
+    this.updateBossBar();
     this.level.update(dt, this.time, this.camera.position);
     this.fx.update(dt);
     this.style.update(dt, this.weapons.curId);
@@ -991,6 +1190,66 @@ class Game {
     }
   }
 
+  checkShops() {
+    const p = this.player;
+    let near = null;
+    for (const sh of this.level.shops) {
+      const dx = sh.pos.x - p.pos.x, dz = sh.pos.z - p.pos.z;
+      if (dx * dx + dz * dz < 2.8 * 2.8 && Math.abs(sh.pos.y - p.pos.y) < 2) { near = sh; break; }
+    }
+    if (near !== this.nearShop) { this.nearShop = near; this.hud.shopPrompt(!!near); }
+    if (near && this.input.pressed('shop')) this.openShop();
+  }
+
+  // Boss çubuğu: etkin arenadaki boss'ların toplam canı
+  updateBossBar() {
+    let name = null, hp = 0, max = 0, enraged = false;
+    for (const a of this.arenas.list) {
+      if (a.state !== 'active' || !a.bossList || !a.bossList.length) continue;
+      name = a.boss ? a.name : a.bossList[0].name;
+      for (const e of a.bossList) { hp += Math.max(0, e.dead ? 0 : e.hp); max += e.maxHp; enraged = enraged || (!e.dead && !!e.enraged); }
+      break;
+    }
+    if (name && max > 0) this.hud.boss(name, hp / max, enraged);
+    else if (this.hud.bossActive) this.hud.boss(null);
+  }
+
+  // Nişan yardımı (dokunmatik, güçlü): ateş basılıyken bakış yakındaki düşmana doğru kayar;
+  // nişangâh düşmanın üstündeyken bakış yavaşlar (yapışkan nişan).
+  aimMagnet(dt) {
+    this.aimFriction = 1;
+    if (!this.touch.active || (settings.aimAssist | 0) < 2) return;
+    const p = this.player;
+    if (p.dead) return;
+    const input = this.input;
+    const firing = input.is('fire') || input.is('alt');
+    const o = p.eyePos(_v2);
+    const d = p.aimDir();
+    let best = null, bestScore = 1e9, bestA = 0;
+    const maxA = firing ? 0.32 : 0.14;
+    for (const e of this.enemies) {
+      if (e.dead || e.decor || e.state === 'spawn' || e.dormant) continue;
+      const c = e.center(_v);
+      const tx = c.x - o.x, ty = c.y - o.y, tz = c.z - o.z;
+      const dist = Math.hypot(tx, ty, tz);
+      if (dist > 70 || dist < 0.5) continue;
+      const a = Math.acos(clamp((tx * d.x + ty * d.y + tz * d.z) / dist, -1, 1));
+      if (a > maxA + (e.r || 0.5) / dist) continue;
+      const score = a + dist * 0.003;
+      if (score < bestScore && this.world.lineOfSight(o, c)) { bestScore = score; best = e; bestA = a; }
+    }
+    if (!best) return;
+    if (bestA < 0.09) this.aimFriction = 0.55;
+    if (!firing) return;
+    const c = best.center(_v);
+    const tx = c.x - o.x, ty = c.y - o.y, tz = c.z - o.z;
+    const tYaw = Math.atan2(-tx, -tz);
+    const tPitch = Math.atan2(ty, Math.hypot(tx, tz));
+    const k = 1 - Math.exp(-dt * 6);
+    p.yaw += wrapAngle(tYaw - p.yaw) * k;
+    p.pitch += (tPitch - p.pitch) * k;
+  }
+
   checkSecrets() {
     const p = this.player;
     const c = _v.set(p.pos.x, p.pos.y + 0.9, p.pos.z);
@@ -1000,8 +1259,9 @@ class Game {
         s.taken = true;
         s.group.visible = false;
         this.stats.secrets++;
+        this.bonusP += 1000;
         this.audio.play('secret');
-        this.hud.message(`GİZLİ KÜRE  ${this.stats.secrets} / ${this.level.secrets.length}`, 2.5, 'secret');
+        this.hud.message(`GİZLİ KÜRE  ${this.stats.secrets} / ${this.level.secrets.length}  +1000 P`, 2.5, 'secret');
         this.fx.sparkBurst(s.group.position.clone(), 30, 8, 0x80c8ff, 0.8, 0.08, 0);
         this.fx.ring(s.group.position.clone(), 0x80c8ff, 3, 0.6, 0);
       }
@@ -1043,6 +1303,11 @@ function boot() {
     const game = new Game();
     window.__uk = game;
     window.__ukProjectile = Projectile;
+    // test/hata ayıklama kancaları
+    window.__ukSettings = settings;
+    window.__ukProgress = progress;
+    window.__ukPoints = () => progress.points;
+    window.__ukSetPoints = (n) => { progress.points = n; };
   } catch (err) {
     console.error(err);
     const d = document.createElement('div');

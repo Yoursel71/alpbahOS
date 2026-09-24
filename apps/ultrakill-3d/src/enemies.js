@@ -1,4 +1,4 @@
-// Düşmanlar: Filth, Stray, Schism, boss Swordsmachine ve parry eğitmeni.
+// Düşmanlar: Filth, Stray, Schism, Malicious Face, boss Swordsmachine, boss Cerberus ve parry eğitmeni.
 // Modeller eklem hiyerarşisiyle kutu/koni/silindirlerden kurulur; animasyonlar prosedüreldir.
 // Ölümde: patlayıcı/ağır hasar → parçalanma, kafadan öldürme → kafa kopar + kan fıskiyesi,
 // diğerleri → ceset olarak yığılır.
@@ -163,7 +163,8 @@ export class Enemy {
     this.root.position.copy(this.pos);
     this.root.rotation.y = this.yaw;
     game.scene.add(this.root);
-    if (!this.decor) game.fx.spawnFX(this.pos, this.h);
+    if (opts.instant) { this.state = this.firstState || 'chase'; } // önceden yerleştirilmiş (ör. heykel)
+    else if (!this.decor) game.fx.spawnFX(this.pos, this.h);
     else { this.state = 'idle'; }
   }
 
@@ -1410,7 +1411,6 @@ export class Swordsmachine extends Enemy {
         break;
       }
     }
-    this.game.hud.boss(this.name, this.hp / this.maxHp, this.enraged);
   }
 
   throwSword() {
@@ -1453,7 +1453,6 @@ export class Swordsmachine extends Enemy {
   }
 
   die(info, wasFull, dmg) {
-    this.game.hud.boss(null);
     this.gun.visible = false;
     super.die(info, wasFull, dmg);
     this.game.explode(this.center(), 4, 0, { owner: 'none', playerDmg: 0, visualOnly: true });
@@ -1528,4 +1527,653 @@ export class Swordsmachine extends Enemy {
   }
 }
 
-export const ENEMY_TYPES = { filth: Filth, stray: Stray, schism: Schism, swordsmachine: Swordsmachine, trainer: Trainer };
+// ---------------------------------------------------------------------------
+// Yer sarsıntısı dalgası (Cerberus): zeminde genişleyen halka; yerdeysen vurur, üstünden zıpla.
+export class Shockwave {
+  constructor(game, pos, o = {}) {
+    this.game = game;
+    this.pos = pos.clone();
+    this.r = 0.6;
+    this.speed = o.speed || 17;
+    this.max = o.max || 24;
+    this.dmg = o.dmg || 20;
+    this.done = false;
+    const col = o.color || 0xff8a30;
+    this.ringMat = new THREE.MeshBasicMaterial({ color: col, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
+    this.ring = new THREE.Mesh(new THREE.TorusGeometry(1, 0.1, 4, 48), this.ringMat);
+    this.ring.rotation.x = Math.PI / 2;
+    this.ring.position.set(pos.x, pos.y + 0.25, pos.z);
+    this.wallMat = new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.3, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+    this.wall = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 0.8, 48, 1, true), this.wallMat);
+    this.wall.position.set(pos.x, pos.y + 0.4, pos.z);
+    game.scene.add(this.ring, this.wall);
+  }
+
+  update(dt) {
+    if (this.done) return false;
+    this.r += this.speed * dt;
+    const r = this.r;
+    this.ring.scale.set(r, r, 1);
+    this.wall.scale.set(r, 1, r);
+    const k = 1 - r / this.max;
+    this.ringMat.opacity = Math.min(1, k * 2);
+    this.wallMat.opacity = 0.3 * k;
+    const p = this.game.player;
+    if (!this.hitP && !p.dead) {
+      const d = Math.hypot(p.pos.x - this.pos.x, p.pos.z - this.pos.z);
+      if (Math.abs(d - r) < 0.9 && p.pos.y - this.pos.y < 0.85 && p.pos.y - this.pos.y > -1.5) {
+        this.hitP = true;
+        if (this.game.damagePlayer(this.dmg * difficulty().dmg, this.pos)) { p.vel.y = Math.max(p.vel.y, 9); p.grounded = false; }
+      }
+    }
+    if (r >= this.max) { this.remove(); return false; }
+    return true;
+  }
+
+  remove() {
+    if (this.done) return;
+    this.done = true;
+    this.game.scene.remove(this.ring, this.wall);
+    this.ring.geometry.dispose();
+    this.wall.geometry.dispose();
+    this.ringMat.dispose();
+    this.wallMat.dispose();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// MALICIOUS FACE: havada süzülen dev taş kafa. Ağzından küre yağmuru (savuşturulabilir) ve
+// uzun işaretli, dash ile kaçılan ışın. Gözler zayıf nokta. Ölünce düşer ve yere çarpınca patlar.
+export class MaliciousFace extends Enemy {
+  init() {
+    const T = this.game.tex;
+    this.type = 'maliciousface';
+    this.name = 'MALICIOUS FACE';
+    this.maxHp = 10;
+    this.r = 1.05;
+    this.h = 2.2;
+    this.flying = true;
+    this.big = true;
+    this.killPts = 280;
+    this.knockMul = 0.1;
+    this.firstState = 'hover';
+    this.spawnDur = 0.9;
+    this.speed = 4 * difficulty().speed;
+    this.hoverY = this.pos.y;
+    this.strafeDir = chance(0.5) ? 1 : -1;
+    this.strafeT = rand(2, 4);
+    this.atkCd = rand(1.4, 2.4);
+    this.nextBeam = chance(0.5);
+    this.jawOpen = 0;
+    this.tint = 1;
+    const stone = this.mat(T.stone, 0xc4b49e, 0.1);
+    const dark = this.mat(T.rock, 0x4e3e34, 0.08);
+    const bone = this.mat(T.bone, 0xf4e6c4, 0.12);
+    const H = new THREE.Group();
+    H.position.y = 1.1;
+    this.root.add(H);
+    this.head = H;
+    part(H, bgeo(1.9, 1.45, 1.8), stone, 0, 0.18, 0.05);
+    part(H, bgeo(1.55, 0.35, 1.45), stone, 0, 1.0, 0.12);
+    part(H, bgeo(2.08, 0.3, 0.5), dark, 0, 0.46, -0.82);
+    for (const x of [-0.82, 0.82]) part(H, bgeo(0.45, 0.62, 0.5), stone, x, -0.18, -0.74);
+    part(H, bgeo(0.32, 0.5, 0.36), stone, 0, 0.02, -0.98, 0.25);
+    const black = new THREE.MeshBasicMaterial({ color: 0x0a0204 });
+    for (const x of [-0.46, 0.46]) part(H, bgeo(0.52, 0.3, 0.1), black, x, 0.2, -0.94, 0, 0, 0, true);
+    this.eyeMat = new THREE.MeshBasicMaterial({ color: 0xff6a1a });
+    for (const x of [-0.46, 0.46]) part(H, bgeo(0.22, 0.14, 0.06), this.eyeMat, x, 0.2, -0.99, 0, 0, 0, true);
+    part(H, bgeo(1.35, 0.3, 0.1), black, 0, -0.52, -0.9, 0, 0, 0, true); // ağız boşluğu
+    addTeeth(H, -0.42, -0.95, 1.2, bone, 8, true);
+    this.jaw = joint(H, 0, -0.55, 0.2);
+    part(this.jaw, bgeo(1.6, 0.42, 1.55), stone, 0, -0.22, -0.2);
+    addTeeth(this.jaw, 0.02, -0.92, 1.15, bone, 7, false);
+    this.mouth = joint(H, 0, -0.62, -1.05);
+    this.mouthGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: T.glow, color: 0xff7a20, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+    this.mouthGlow.scale.setScalar(0.1);
+    this.mouth.add(this.mouthGlow);
+    for (const [x, rz] of [[-0.6, 0.5], [-0.2, 0.15], [0.25, -0.2], [0.65, -0.55]]) part(H, cgeo(0.14, 0.75, 5), dark, x, 1.45, 0.25, -0.35, 0, rz);
+    this.crackMat = new THREE.MeshBasicMaterial({ color: 0xa0301a });
+    part(H, bgeo(0.05, 0.75, 0.04), this.crackMat, -0.25, 0.72, -0.9, 0, 0, 0.45, true);
+    part(H, bgeo(0.05, 0.5, 0.04), this.crackMat, 0.62, -0.1, -0.99, 0, 0, -0.3, true);
+    part(H, bgeo(0.04, 0.6, 0.04), this.crackMat, 0.96, 0.4, -0.3, 0.2, 0, 0, true);
+    this.rubble = [];
+    for (let k = 0; k < 5; k++) {
+      const m = part(this.root, bgeo(rand(0.2, 0.35), rand(0.18, 0.3), rand(0.2, 0.35)), dark, 0, 0, 0);
+      this.rubble.push({ m, a: (k / 5) * Math.PI * 2, r: rand(1.5, 1.9), y: rand(0.3, 1.8), s: rand(0.6, 1.1) });
+    }
+    this.addSphere(H, [0, 0.12, 0.05], 1.15, 'body');
+    this.addSphere(H, [0, 0.2, -0.92], 0.42, 'head');
+    // ışın: işaret çizgisi ve asıl ışın (dünya sahnesinde)
+    this.laserMat = new THREE.MeshBasicMaterial({ color: 0xff3020, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false });
+    this.laser = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1).translate(0, 0, 0.5), this.laserMat);
+    this.laser.visible = false;
+    this.game.scene.add(this.laser);
+    this.aimPt = new THREE.Vector3();
+  }
+
+  think(dt) {
+    const i = this.playerInfo();
+    const aggro = difficulty().aggro;
+    const p = this.game.player;
+    this.atkCd -= dt;
+    const wantY = Math.max(this.hoverY, p.pos.y + 3) + Math.sin(this.time * 1.3) * 0.35;
+    this.vel.y = clamp((wantY - this.pos.y) * 2, -6, 6);
+    switch (this.state) {
+      case 'hover': {
+        this.faceYaw(yawTo(i.dx, i.dz), 3, dt);
+        this.strafeT -= dt;
+        if (this.strafeT <= 0) { this.strafeT = rand(2, 4); this.strafeDir *= -1; }
+        const want = i.dist > 26 ? 1 : i.dist < 12 ? -1 : 0;
+        const sp = this.speed;
+        this.accelTo(i.dx * want * sp - i.dz * this.strafeDir * sp * 0.6, i.dz * want * sp + i.dx * this.strafeDir * sp * 0.6, 8, dt);
+        if (this.blocked > 0.3) { this.strafeDir *= -1; this.blocked = 0; }
+        if (this.atkCd <= 0 && this.canSee && i.dist < 70) {
+          this.setState(this.nextBeam ? 'beamWind' : 'volleyWind');
+          this.nextBeam = !this.nextBeam;
+          this.game.audio.play(this.state === 'beamWind' ? 'windup' : 'orbCharge', this.pos, { rate: 0.6, exactRate: true, range: 80 });
+          this.aimPt.set(p.pos.x, p.pos.y + p.h * 0.5, p.pos.z);
+        }
+        break;
+      }
+      case 'volleyWind': {
+        this.faceYaw(yawTo(i.dx, i.dz), 5, dt);
+        this.accelTo(0, 0, 8, dt);
+        const dur = 0.85 / aggro;
+        this.jawOpen = clamp(this.st / dur, 0, 1);
+        this.mouthGlow.scale.setScalar(0.3 + this.jawOpen * 1.6);
+        if (this.st >= dur) { this.state = 'volley'; this.st = 0; this.shots = 0; }
+        break;
+      }
+      case 'volley': {
+        this.faceYaw(yawTo(i.dx, i.dz), 4, dt);
+        const n = 7;
+        while (this.shots < n && this.st >= this.shots * 0.07) { this.fireOrb(this.shots, n); this.shots++; }
+        if (this.st > n * 0.07 + 0.35) { this.setState('hover'); this.atkCd = rand(2.2, 3.4) / aggro; }
+        break;
+      }
+      case 'beamWind': {
+        this.accelTo(0, 0, 8, dt);
+        const dur = 1.45 / aggro;
+        const lock = dur - 0.38;
+        if (this.st < lock) {
+          this.faceYaw(yawTo(i.dx, i.dz), 4, dt);
+          _v1.set(p.pos.x, p.pos.y + p.h * 0.5, p.pos.z);
+          this.aimPt.lerp(_v1, 1 - Math.exp(-dt * 3.2));
+        } else if (!this.locked) {
+          this.locked = true;
+          this.game.audio.play('glint', this.pos, { range: 80 });
+        }
+        this.jawOpen = clamp(this.st / dur, 0, 1) * 0.7;
+        this.mouthGlow.scale.setScalar(0.3 + this.st * 1.4);
+        this.showLaser(this.st >= lock ? 0.09 : 0.035, this.st >= lock ? 0xffffff : 0xff3020, this.st >= lock ? 1 : 0.55 + Math.sin(this.time * 40) * 0.25);
+        if (this.st >= dur) { this.locked = false; this.fireBeam(); this.state = 'beam'; this.st = 0; }
+        break;
+      }
+      case 'beam': {
+        this.accelTo(0, 0, 8, dt);
+        const k = 1 - this.st / 0.35;
+        if (k > 0) this.showLaser(0.9 * k + 0.1, 0xffa060, k);
+        else this.laser.visible = false;
+        if (this.st > 0.7) { this.setState('hover'); this.atkCd = rand(2.6, 4) / aggro; }
+        break;
+      }
+    }
+  }
+
+  setState(s) {
+    super.setState(s);
+    if (s !== 'beamWind' && s !== 'beam' && this.laser) this.laser.visible = false;
+    this.locked = false;
+    if (s === 'hover') this.mouthGlow.scale.setScalar(0.1);
+  }
+
+  mouthWorld(out = new THREE.Vector3()) {
+    this.root.updateMatrixWorld(true);
+    return this.mouth.getWorldPosition(out);
+  }
+
+  showLaser(w, color, alpha) {
+    const from = this.mouthWorld(_v2);
+    const dir = _d.subVectors(this.aimPt, from).normalize();
+    const hit = this.game.world.raycast(from.x, from.y, from.z, dir.x, dir.y, dir.z, 150);
+    const len = hit ? hit.t : 150;
+    this.laser.visible = true;
+    this.laser.position.copy(from);
+    this.laser.lookAt(_v3.copy(from).add(dir));
+    this.laser.scale.set(w, w, len);
+    this.laserMat.color.setHex(color);
+    this.laserMat.opacity = alpha;
+    this.beamDir = dir.clone();
+    this.beamLen = len;
+  }
+
+  fireBeam() {
+    const game = this.game;
+    const from = this.mouthWorld(new THREE.Vector3());
+    const dir = this.beamDir || _d.subVectors(this.aimPt, from).normalize().clone();
+    const len = this.beamLen || 150;
+    const end = from.clone().addScaledVector(dir, len);
+    const p = game.player;
+    const pc = _v1.set(p.pos.x, p.pos.y + p.h * 0.5, p.pos.z);
+    const t = clamp(_v2.subVectors(pc, from).dot(dir), 0, len);
+    const closest = _v3.copy(from).addScaledVector(dir, t);
+    if (closest.distanceTo(pc) < 1.0) game.damagePlayer(32 * difficulty().dmg, from);
+    game.explode(end, 2.5, 0, { visualOnly: true });
+    game.fx.sparkBurst(from, 20, 10, 0xffc080, 0.4, 0.08);
+    game.flashLight(from, 0xff8040, 10, 20, 0.2);
+    game.audio.play('rail', from, { rate: 0.7, exactRate: true, range: 100 });
+    game.shake(0.25);
+  }
+
+  fireOrb(k, n) {
+    const game = this.game;
+    const p = game.player;
+    const from = this.mouthWorld(new THREE.Vector3());
+    const target = new THREE.Vector3(p.pos.x, p.pos.y + p.h * 0.5, p.pos.z);
+    const speed = 23 * difficulty().speed;
+    target.addScaledVector(p.vel, (from.distanceTo(target) / speed) * 0.3);
+    const dir = target.sub(from).normalize();
+    const spread = (k / (n - 1) - 0.5) * 0.5;
+    const c = Math.cos(spread), sn = Math.sin(spread);
+    const d = new THREE.Vector3(dir.x * c - dir.z * sn, dir.y + rand(-0.03, 0.03), dir.x * sn + dir.z * c).normalize();
+    game.addProjectile(new Projectile(game, { pos: from, vel: d.multiplyScalar(speed), radius: 0.4, damage: 14 * difficulty().dmg, color: 0xff6a1a, source: this }));
+    if (k === 0) game.audio.play('orbThrow', from, { rate: 0.7, exactRate: true });
+  }
+
+  onHurt() {
+    this.head.rotation.z = rand(-0.1, 0.1);
+  }
+
+  animate(dt) {
+    const H = this.head;
+    const k = 1 - Math.exp(-10 * dt);
+    if (this.state !== 'volleyWind' && this.state !== 'volley' && this.state !== 'beamWind') this.jawOpen = Math.max(0, this.jawOpen - dt * 2);
+    this.jaw.rotation.x += (-this.jawOpen * 0.55 - this.jaw.rotation.x) * k;
+    this.hr.x *= Math.exp(-8 * dt);
+    this.hr.z *= Math.exp(-8 * dt);
+    H.rotation.x = Math.sin(this.time * 0.9) * 0.05 + this.hr.x * 0.4;
+    H.rotation.z = Math.sin(this.time * 0.7) * 0.06 + this.hr.z * 0.4;
+    H.position.y = 1.1 + Math.sin(this.time * 1.7) * 0.06;
+    for (const r of this.rubble) {
+      const a = r.a + this.time * r.s;
+      r.m.position.set(Math.cos(a) * r.r, r.y + Math.sin(this.time * 2 + r.a) * 0.15, Math.sin(a) * r.r);
+      r.m.rotation.set(this.time * r.s, this.time * r.s * 0.7, 0);
+    }
+    const heat = this.state === 'beamWind' || this.state === 'volleyWind' ? 1 : 0.4;
+    this.eyeMat.color.setRGB(1, 0.35 + heat * 0.3, 0.1 * heat);
+  }
+
+  die(info, wasFull, dmg) {
+    if (this.laser) this.laser.visible = false;
+    this.mouthGlow.visible = false;
+    this.eyeMat.color.setHex(0x301008);
+    super.die(info, wasFull, dmg);
+  }
+
+  // Ceset: kafa dönerek düşer, yere çarpınca patlar ve parçalanır
+  updateCorpse(dt) {
+    this.corpseT += dt;
+    const game = this.game;
+    this.vel.y -= G * dt;
+    const r = game.world.moveBody(this, this.corpseVel.x * dt, this.vel.y * dt, this.corpseVel.z * dt);
+    this.root.position.copy(this.pos);
+    this.head.rotation.x += dt * 2.4 * this.fallSign;
+    this.head.rotation.z += dt * 1.2;
+    if (Math.random() < dt * 25) game.fx.smoke(this.center(), 1, 0x6a5a50, 0.7, 0.8, 1);
+    if (r.ground || this.corpseT > 3.5 || this.pos.y < game.level.killY) {
+      const c = this.center();
+      game.explode(c, 5, 2.5, { playerDmg: 20, knock: 18, weapon: 'explosion' });
+      this.root.updateMatrixWorld(true);
+      const meshes = [];
+      this.root.traverseVisible((o) => { if (o.isMesh && !o.userData.noGib) meshes.push(o); });
+      for (const m of meshes) game.fx.gibFromMesh(m, new THREE.Vector3(rand(-1, 1), rand(0.5, 1.5), rand(-1, 1)).multiplyScalar(9));
+      game.scene.remove(this.root);
+      this.disposeLaser();
+      return false;
+    }
+    return true;
+  }
+
+  disposeLaser() {
+    if (!this.laser) return;
+    this.game.scene.remove(this.laser);
+    this.laser.geometry.dispose();
+    this.laserMat.dispose();
+    this.laser = null;
+  }
+
+  removeSilently() {
+    this.disposeLaser();
+    super.removeSilently();
+    if (this.corpseT !== undefined) this.game.scene.remove(this.root);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// CERBERUS: canlanan dev taş heykel (boss). Büyük küre fırlatır, yere vurup sarsıntı dalgası
+// yollar (üstünden zıpla), parlayarak hücum eder (savuşturulabilir). İkiz heykel: biri
+// yarı cana inince diğeri uyanır, biri ölünce öteki öfkelenir.
+export class Cerberus extends Enemy {
+  init(opts = {}) {
+    const T = this.game.tex;
+    this.type = 'cerberus';
+    this.name = 'CERBERUS';
+    this.maxHp = 32;
+    this.r = 0.9;
+    this.h = 4.0;
+    this.big = true;
+    this.boss = true;
+    this.killPts = 600;
+    this.knockMul = 0.15;
+    this.parryDmg = 6;
+    this.parryStun = 1.4;
+    this.spawnDur = 0.9;
+    this.baseSpeed = 5.2 * difficulty().speed;
+    this.speed = this.baseSpeed;
+    this.cdMul = 1;
+    this.atkCd = 1.2;
+    this.tint = 1;
+    this.dormant = !!opts.dormant;
+    this.firstState = this.dormant ? 'dormant' : 'roar';
+    this.invuln = this.dormant;
+    const stone = this.mat(T.stone, 0xd0c8ba, 0.08);
+    const dark = this.mat(T.rock, 0x5e554c, 0.06);
+    const H = (this.H = buildHumanoid({ skin: stone, dark, hunch: 0.06, torsoW: 0.64, torsoH: 0.72, torsoD: 0.38, headS: 0.32, armL: 1.12, legL: 1.05, scale: 1.9, taper: 0.72 }));
+    const J = H.J, d = H.dims;
+    this.crackMat = new THREE.MeshBasicMaterial({ color: 0x2a1e18 });
+    this.eyeMat = new THREE.MeshBasicMaterial({ color: 0x1a1412 });
+    // miğfer ve defne tacı
+    part(J.head, bgeo(0.36, 0.14, 0.38), dark, 0, 0.36, 0);
+    for (let k = 0; k < 7; k++) {
+      const a = (k / 6 - 0.5) * 2.4;
+      part(J.head, cgeo(0.04, 0.2, 4), dark, Math.sin(a) * 0.18, 0.46, Math.cos(a) * 0.12, -0.25, 0, -a * 0.5);
+    }
+    for (const x of [-0.075, 0.075]) part(J.head, bgeo(0.07, 0.04, 0.02), this.eyeMat, x, 0.2, -0.165, 0, 0, 0, true);
+    part(J.head, bgeo(0.2, 0.06, 0.02), dark, 0, 0.08, -0.165); // ağız
+    // omuzluklar, göğüs zırhı, peştamal
+    for (const side of ['L', 'R']) {
+      part(J['sh' + side], bgeo(0.3, 0.16, 0.36), dark, 0, 0.06, 0);
+      part(J['sh' + side], cgeo(0.06, 0.22, 4), dark, 0, 0.2, 0);
+    }
+    part(J.spine, bgeo(d.torsoW * 0.9, d.torsoH * 0.35, 0.05), dark, 0, d.torsoH * 0.72, -d.torsoD / 2 - 0.02);
+    part(J.hips, bgeo(0.42, 0.5, 0.05), dark, 0, -0.3, -0.16);
+    part(J.hips, bgeo(0.42, 0.45, 0.05), dark, 0, -0.28, 0.16);
+    // parlayan çatlaklar (uyanınca turuncu)
+    const cr = (parent, x, y, z, h, rz) => part(parent, bgeo(0.025, h, 0.02), this.crackMat, x, y, z, 0, 0, rz, true);
+    cr(J.spine, -0.12, d.torsoH * 0.5, -d.torsoD / 2 - 0.05, 0.4, 0.4);
+    cr(J.spine, 0.1, d.torsoH * 0.3, -d.torsoD / 2 - 0.02, 0.3, -0.5);
+    cr(J.spine, 0.2, d.torsoH * 0.62, -d.torsoD / 2 - 0.05, 0.22, 0.2);
+    for (const side of ['L', 'R']) {
+      cr(J['upper' + side], 0, 0, -0.06, 0.25, 0.3);
+      cr(J['el' + side], 0, -0.15, -0.05, 0.2, -0.3);
+      cr(J['kn' + side], 0, -0.2, -0.065, 0.25, 0.2);
+    }
+    // küre (sağ el)
+    this.orb = new THREE.Group();
+    this.orbCoreMat = new THREE.MeshBasicMaterial({ color: 0x6a5a4a });
+    const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.2, 1), this.orbCoreMat);
+    core.userData.noGib = true;
+    this.orbGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: T.glow, color: 0xff8a20, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0 }));
+    this.orbGlow.scale.setScalar(1.4);
+    this.orb.add(core, this.orbGlow);
+    this.orb.position.set(0, -0.2, -0.04);
+    J.haR.add(this.orb);
+    this.root.add(H.root);
+    this.humanoidSpheres(H, 1.9);
+    if (this.dormant) this.setAwake(false);
+  }
+
+  setAwake(on) {
+    this.crackMat.color.setHex(on ? (this.enraged ? 0xff3010 : 0xff8a20) : 0x2a1e18);
+    this.eyeMat.color.setHex(on ? (this.enraged ? 0xff2010 : 0xffc040) : 0x1a1412);
+    this.orbCoreMat.color.setHex(on ? 0xfff0c0 : 0x6a5a4a);
+    this.orbGlow.material.opacity = on ? 1 : 0;
+  }
+
+  wake() {
+    if (!this.dormant || this.dead) return;
+    this.dormant = false;
+    this.invuln = false;
+    this.setAwake(true);
+    this.setState('roar');
+    const game = this.game;
+    game.audio.play('bossRoar', this.pos);
+    game.shake(0.5);
+    game.fx.sparkBurst(this.center(), 40, 8, 0xff9a40, 0.8, 0.08);
+    game.fx.smoke(this.pos.clone().setY(this.pos.y + 1), 8, 0x9a8a7a, 1.2, 1.2, 1);
+    game.hud.message('CERBERUS UYANDI', 1.6);
+  }
+
+  enrage() {
+    if (this.enraged || this.dead) return;
+    this.enraged = true;
+    this.speed = this.baseSpeed * 1.3;
+    this.cdMul = 0.65;
+    this.setAwake(true);
+    this.game.audio.play('bossRoar', this.pos, { rate: 0.8, exactRate: true });
+    this.game.style.add('ENRAGED', 50);
+  }
+
+  onHurt() {
+    const pa = this.partner;
+    if (pa && pa.dormant && this.hp < this.maxHp * 0.55) pa.wake();
+  }
+
+  think(dt) {
+    const i = this.playerInfo();
+    const aggro = difficulty().aggro;
+    const cd = this.cdMul / aggro;
+    if (this.state !== 'dormant' && this.state !== 'roar') this.atkCd -= dt;
+    switch (this.state) {
+      case 'dormant':
+        this.accelTo(0, 0, 30, dt);
+        break;
+      case 'roar':
+        this.accelTo(0, 0, 30, dt);
+        this.faceYaw(yawTo(i.dx, i.dz), 4, dt);
+        if (this.st > 1.1) { this.firstState = 'chase'; this.setState('chase'); this.atkCd = 0.6; }
+        break;
+      case 'chase': {
+        this.faceYaw(yawTo(i.dx, i.dz), 5, dt);
+        const sp = i.dist > 5 ? this.speed : 0;
+        this.accelTo(i.dx * sp, i.dz * sp, 25, dt);
+        if (this.atkCd <= 0) {
+          const r = Math.random();
+          if (i.dist < 4.2) { this.setState('swipeWind'); this.game.audio.play('windup', this.pos); }
+          else if (r < 0.4 && this.canSee) { this.setState('orbWind'); this.game.audio.play('orbCharge', this.pos, { rate: 0.7, exactRate: true }); }
+          else if (r < 0.7) { this.setState('stompWind'); this.game.audio.play('slamStart', this.pos, { rate: 0.6, exactRate: true }); }
+          else if (this.canSee && i.dist > 6) { this.setState('tackleWind'); this.game.audio.play('windup', this.pos, { rate: 0.7, exactRate: true }); }
+          else { this.setState('stompWind'); this.game.audio.play('slamStart', this.pos, { rate: 0.6, exactRate: true }); }
+        }
+        break;
+      }
+      case 'orbWind': {
+        this.faceYaw(yawTo(i.dx, i.dz), 7, dt);
+        this.accelTo(0, 0, 30, dt);
+        const dur = 0.8 * cd;
+        this.orbGlow.scale.setScalar(1.4 + (this.st / dur) * 2);
+        if (this.st >= dur) { this.throwOrb(); this.orbGlow.scale.setScalar(1.4); this.state = 'recover'; this.st = 0; this.atkCd = rand(1.5, 2.5) * cd; }
+        break;
+      }
+      case 'stompWind': {
+        this.accelTo(0, 0, 30, dt);
+        if (this.st >= 0.65 * cd) { this.stomp(); this.state = 'recover'; this.st = 0; this.atkCd = rand(1.4, 2.4) * cd; }
+        break;
+      }
+      case 'tackleWind': {
+        this.faceYaw(yawTo(i.dx, i.dz), 6, dt);
+        this.accelTo(0, 0, 30, dt);
+        const dur = 0.7 * cd;
+        this.setParryable(this.st > dur - 0.4, this.headPos());
+        if (this.st >= dur) {
+          this.tackleDir = new THREE.Vector3(i.dx, 0, i.dz);
+          this.tackleHit = false;
+          this.state = 'tackle';
+          this.st = 0;
+          this.game.audio.play('dash', this.pos, { rate: 0.6, exactRate: true });
+        }
+        break;
+      }
+      case 'tackle': {
+        const sp = 28 * difficulty().speed;
+        this.vel.x = this.tackleDir.x * sp;
+        this.vel.z = this.tackleDir.z * sp;
+        this.setParryable(this.st < 0.2, this.headPos());
+        if (!this.tackleHit && i.dist < 1.9 && Math.abs(i.dy) < 2.5) {
+          this.tackleHit = true;
+          if (this.game.damagePlayer(25 * difficulty().dmg, this.pos)) {
+            const p = this.game.player;
+            p.vel.x += this.tackleDir.x * 18;
+            p.vel.z += this.tackleDir.z * 18;
+            p.vel.y = Math.max(p.vel.y, 8);
+          }
+        }
+        if (Math.random() < dt * 30) this.game.fx.smoke(this.pos.clone().setY(this.pos.y + 0.2), 1, 0x8a7a6a, 0.6, 0.5, 0.5);
+        if (this.blocked > 0.05 && this.st > 0.1) {
+          // duvara çarptı: sersemler
+          this.game.shake(0.4);
+          this.game.audio.play('slam', this.pos, { vol: 0.8 });
+          this.stun = 1.1;
+          this.vel.set(0, 0, 0);
+          this.setState('stagger');
+          this.atkCd = rand(1, 1.8) * cd;
+        } else if (this.st > 0.75) { this.state = 'recover'; this.st = 0; this.setParryable(false); this.atkCd = rand(1.2, 2) * cd; }
+        break;
+      }
+      case 'swipeWind': {
+        this.faceYaw(yawTo(i.dx, i.dz), 8, dt);
+        this.accelTo(0, 0, 30, dt);
+        const dur = 0.5 * cd;
+        this.setParryable(this.st > dur - 0.3, this.H.J.haL.getWorldPosition(new THREE.Vector3()));
+        if (this.st >= dur) {
+          this.setParryable(false);
+          this.game.audio.play('swing', this.pos, { rate: 0.7, exactRate: true });
+          this.meleeHit(4.4, 22, 0.1);
+          this.state = 'recover';
+          this.st = 0;
+          this.atkCd = rand(0.9, 1.6) * cd;
+        }
+        break;
+      }
+      case 'recover':
+        this.accelTo(0, 0, 30, dt);
+        if (this.st > 0.5) this.setState('chase');
+        break;
+    }
+  }
+
+  throwOrb() {
+    const game = this.game;
+    const p = game.player;
+    const from = this.orb.getWorldPosition(new THREE.Vector3());
+    const speed = 24 * difficulty().speed;
+    const target = new THREE.Vector3(p.pos.x, p.pos.y + p.h * 0.5, p.pos.z);
+    target.addScaledVector(p.vel, (from.distanceTo(target) / speed) * 0.35);
+    const dir = target.sub(from).normalize();
+    game.addProjectile(new Projectile(game, { pos: from, vel: dir.multiplyScalar(speed), radius: 0.6, damage: 25 * difficulty().dmg, color: 0xff7a20, source: this }));
+    game.audio.play('orbThrow', from, { rate: 0.6, exactRate: true });
+  }
+
+  stomp() {
+    const game = this.game;
+    const pos = this.pos.clone();
+    game.shocks.push(new Shockwave(game, pos, { dmg: 20, speed: 17, max: 24, color: this.enraged ? 0xff3a20 : 0xff8a30 }));
+    game.fx.ring(pos.clone(), 0xffb060, 5, 0.4, 0.05);
+    game.fx.smoke(pos.clone().setY(pos.y + 0.3), 10, 0x9a8a7a, 1.4, 1, 0.8);
+    game.fx.sparkBurst(pos.clone().setY(pos.y + 0.3), 30, 10, 0xffc080, 0.5, 0.08);
+    game.audio.play('slam', pos, { rate: 0.7, exactRate: true, range: 80 });
+    game.shake(clamp(0.7 - pos.distanceTo(game.player.pos) / 40, 0.15, 0.6));
+    const i = this.playerInfo();
+    if (i.dist < 3.2 && Math.abs(i.dy) < 1.5) game.damagePlayer(18 * difficulty().dmg, pos);
+  }
+
+  parried(dir) {
+    super.parried(dir);
+    if (!this.dead) this.game.audio.play('bossRoar', this.pos, { vol: 0.5, rate: 1.2, exactRate: true });
+  }
+
+  die(info, wasFull, dmg) {
+    const pa = this.partner;
+    super.die(info, wasFull, dmg);
+    this.game.explode(this.center(), 4, 0, { visualOnly: true });
+    this.game.hitstop(0.3);
+    if (pa && !pa.dead) {
+      if (pa.dormant) pa.wake();
+      pa.enrage();
+    }
+  }
+
+  animate(dt) {
+    this.k = 1 - Math.exp(-12 * dt);
+    const H = this.H, J = H.J;
+    const hsp = Math.hypot(this.vel.x, this.vel.z);
+    this.walkPhase += hsp * dt * 0.9;
+    const amt = clamp(hsp / 5, 0, 1);
+    switch (this.state) {
+      case 'dormant':
+        this.walkPose(H, 0, 0, 0);
+        this.rot(J.shR, -1.2, 0, 0.2);
+        this.rot(J.elR, 1.4);
+        this.rot(J.shL, 0.1, 0, -0.15);
+        this.rot(J.spine, 0.02);
+        break;
+      case 'roar':
+        this.rot(J.spine, -0.35);
+        this.rot(J.shL, -2.6, 0, -0.5);
+        this.rot(J.shR, -2.6, 0, 0.5);
+        this.rot(J.elL, 0.3); this.rot(J.elR, 0.3);
+        this.walkPose(H, 0, 0, 0);
+        break;
+      case 'orbWind':
+        this.rot(J.spine, -0.15, 0.5);
+        this.rot(J.shR, -2.7, 0, 0.3);
+        this.rot(J.elR, 0.6);
+        this.rot(J.shL, 0.6, 0, -0.4);
+        break;
+      case 'stompWind': {
+        const k = clamp(this.st / 0.65, 0, 1);
+        this.rot(J.hipR, 1.2 * k);
+        this.rot(J.knR, -1.5 * k);
+        this.rot(J.spine, -0.15 * k);
+        this.rot(J.shL, -0.8 * k, 0, -0.6);
+        this.rot(J.shR, -0.8 * k, 0, 0.6);
+        break;
+      }
+      case 'tackleWind':
+        this.rot(J.spine, 0.55);
+        this.rot(J.shL, 0.9, 0, -0.5);
+        this.rot(J.shR, 0.9, 0, 0.5);
+        this.rot(J.hipL, 0.6); this.rot(J.knL, -1.0);
+        this.rot(J.hipR, -0.3); this.rot(J.knR, -0.5);
+        break;
+      case 'tackle':
+        this.rot(J.spine, 0.7);
+        this.rot(J.shL, -1.6, 0, -0.2);
+        this.rot(J.shR, -1.6, 0, 0.2);
+        this.walkPhase += dt * 14;
+        this.walkPose(H, 1, 0, -1.6);
+        break;
+      case 'swipeWind':
+        this.rot(J.spine, -0.1, -0.7);
+        this.rot(J.shL, -1.8, 0, -1.2);
+        this.rot(J.elL, 0.4);
+        break;
+      case 'recover':
+      case 'stagger':
+      case 'flinch':
+        this.rot(J.spine, 0.25, 0.3);
+        this.rot(J.shL, 0.3, 0, -0.3);
+        this.rot(J.shR, 0.3, 0, 0.3);
+        this.walkPose(H, 0, 0, 0);
+        break;
+      default:
+        this.rot(J.spine, 0.05);
+        this.walkPose(H, amt, 0.6, 0.1);
+        this.rot(J.shR, -1.0, 0, 0.2);
+        this.rot(J.elR, 1.2);
+        this.breathe(H, 0.02);
+    }
+  }
+}
+
+export const ENEMY_TYPES = { filth: Filth, stray: Stray, schism: Schism, swordsmachine: Swordsmachine, trainer: Trainer, maliciousface: MaliciousFace, cerberus: Cerberus };

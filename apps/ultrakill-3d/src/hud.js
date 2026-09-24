@@ -2,7 +2,7 @@
 // ipuçları, mesajlar, isabet işareti, hasar/parry parlamaları, istatistikler.
 import { RANKS } from './style.js';
 import { fmtTime, clamp } from './util.js';
-import { settings } from './settings.js';
+import { settings, progress } from './settings.js';
 import { Typer, drawNoise } from './typer.js';
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -28,6 +28,7 @@ export class HUD {
         </div>
         <div class="wpn-extra"></div>
         <div class="wpn-slots"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><em class="arm-ind"></em><em class="hook-ind">E</em></div>
+        <div class="pts-row">P <b class="pts-bank">0</b> <i class="pts-run"></i></div>
       </div>
       <div id="hud-style" class="panel hidden">
         <div class="st-head"><div class="st-rank">D</div><div class="st-name">DESTRUCTIVE</div></div>
@@ -37,6 +38,7 @@ export class HUD {
       </div>
       <div id="bossbar" class="hidden"><div class="bb-name"></div><div class="bb-bar"><i class="bb-lag"></i><i class="bb-fill"></i></div></div>
       <div id="hint" class="hidden"></div>
+      <div id="shopprompt" class="hidden"><b>[B]</b> DÜKKÂN</div>
       <div id="msg"></div>
       <div id="stats" class="panel hidden"></div>
       <div id="titlecard" class="hidden"></div>
@@ -60,6 +62,7 @@ export class HUD {
       boss: q('#bossbar'), bName: q('.bb-name'), bFill: q('.bb-fill'), bLag: q('.bb-lag'),
       hint: q('#hint'), msg: q('#msg'), stats: q('#stats'), flash: q('#flash'), vig: q('#dmgvig'),
       hit: q('#hitmark'), title: q('#titlecard'), death: q('#deathscreen'), fps: q('#fps'), lockhint: q('#lockhint'),
+      ptsBank: q('.pts-bank'), ptsRun: q('.pts-run'), shopPrompt: q('#shopprompt'),
       chHp: q('.ch-hp i'), chSt: q('.ch-st i'), cross: q('#crosshair'), armInd: q('.arm-ind'), hookInd: q('.hook-ind'), pulse: q('#parrypulse'),
     };
     this.hintT = 0;
@@ -94,6 +97,8 @@ export class HUD {
   }
 
   hint(text, dur = 7) {
+    // başlık kartı ekrandayken ipucu beklesin (üst üste binmesin)
+    if (this.titleT > 0.4) { this.queuedHint = [text, dur]; return; }
     if (this.game.touch && this.game.touch.active) {
       const map = { 'SHIFT': 'ATIL', 'BOŞLUK': 'ZIPLA', 'C': 'KAY', 'F': 'YUMRUK', 'SOL TIK': 'ATEŞ', 'SAĞ TIK': 'ALT', 'WASD': 'JOYSTICK', 'SHIFT → BOŞLUK': 'ATIL → ZIPLA', 'E': 'KANCA', 'G': 'KOL' };
       text = text.replace(/\[([^\]]+)\]/g, (m, k) => (map[k] ? `[${map[k]}]` : m)).replace('fareyle bak', 'sağda sürükleyerek bak');
@@ -153,6 +158,11 @@ export class HUD {
     this.$.boss.classList.toggle('enraged', !!enraged);
     this.set('bName', this.$.bName, 'text', name);
     this.bossFrac = clamp(frac, 0, 1);
+  }
+
+  shopPrompt(on) {
+    this.$.shopPrompt.classList.toggle('hidden', !on);
+    if (on) this.game.audio.play('beep');
   }
 
   titleCard(html, dur = 4) {
@@ -238,6 +248,7 @@ export class HUD {
 
   reset() {
     this.boss(null);
+    this.$.shopPrompt.classList.add('hidden');
     this.$.hint.classList.add('hidden');
     this.$.msg.className = '';
     this.$.title.classList.add('hidden');
@@ -248,6 +259,7 @@ export class HUD {
     this.bonusEls.clear();
     this.cache = {};
     this.hintT = this.msgT = this.titleT = 0;
+    this.queuedHint = null;
   }
 
   update(dt, realDt) {
@@ -273,6 +285,10 @@ export class HUD {
       $.stam[i].parentElement.classList.toggle('full', v >= 1);
     }
     this.set('chSt', $.chSt, 'width', ((p.stamina / 3) * 100).toFixed(0) + '%');
+    // P: kasa + henüz yatırılmamış
+    this.set('ptsBank', $.ptsBank, 'text', (progress.points || 0).toLocaleString('tr-TR'));
+    const run = g.unbankedP;
+    this.set('ptsRun', $.ptsRun, 'text', run > 0 ? '+' + run.toLocaleString('tr-TR') : '');
     // Silah
     const w = g.weapons.hudInfo();
     const key = w.name + w.variant + w.owned.join() + w.arm + w.hook;
@@ -370,7 +386,10 @@ export class HUD {
     if (this.titleT > 0) {
       this.titleT -= realDt;
       if (this.titleT <= 0.6 && !$.title.classList.contains('out')) $.title.classList.add('out');
-      if (this.titleT <= 0) $.title.classList.add('hidden');
+      if (this.titleT <= 0) {
+        $.title.classList.add('hidden');
+        if (this.queuedHint) { const [t, d] = this.queuedHint; this.queuedHint = null; this.hint(t, d); }
+      }
     }
     $.cross.classList.toggle('parry', g.parryHintT > 0);
     this.updateDeath(realDt);

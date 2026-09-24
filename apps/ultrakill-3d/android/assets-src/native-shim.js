@@ -36,6 +36,7 @@
       case 'intro': g.ui.introClick(); return 'ok';
       case 'playing': g.pause(); return 'ok';
       case 'paused': g.resume(); return 'ok';
+      case 'shop': g.closeShop(); return 'ok';
       case 'results': g.toMenu(); return 'ok';
       case 'dead': return 'ok';
       default: return 'exit';

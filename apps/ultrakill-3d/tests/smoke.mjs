@@ -128,6 +128,7 @@ const shoot = await page.evaluate(`(() => {
   for (let i = 0; i < 60; i++) g.step(1/60, false);
   const e = g.enemies.find(x => !x.dead && x.state !== 'spawn' && x.type !== 'trainer');
   if (!e) return { err: 'düşman yok' };
+  for (const x of g.enemies) if (x !== e) x.removeSilently();
   p.pos.set(e.pos.x, 0, e.pos.z + 6); p.vel.set(0,0,0);
   g.step(1/60, false);
   ${aimAt('e')}
@@ -149,6 +150,7 @@ const guns = await page.evaluate(`(() => {
   const r = {};
   w.select(1); for (let i = 0; i < 20; i++) g.step(1/60, false);
   let e = g.enemies.find(x => !x.dead && x.state !== 'spawn' && x.type !== 'trainer');
+  if (!e) { e = g.spawnEnemy('schism', [-4, 0, -8], null); for (let i = 0; i < 50; i++) g.step(1/60, false); e.state = 'idle'; }
   if (e) {
     p.pos.set(e.pos.x, e.pos.y, e.pos.z + 3); g.step(1/60, false);
     ${aimAt('e')}
@@ -158,6 +160,7 @@ const guns = await page.evaluate(`(() => {
   }
   w.select(3); for (let i = 0; i < 20; i++) g.step(1/60, false);
   e = g.enemies.find(x => !x.dead && x.state !== 'spawn' && x.type !== 'trainer');
+  if (!e) { e = g.spawnEnemy('schism', [4, 0, -8], null); for (let i = 0; i < 50; i++) g.step(1/60, false); e.state = 'idle'; }
   if (e) {
     const tc = new e.pos.constructor(-e.pos.x, 0, -2 - e.pos.z).normalize();
     p.pos.set(e.pos.x + tc.x * 7, e.pos.y, e.pos.z + tc.z * 7); g.step(1/60, false);
@@ -179,7 +182,12 @@ check('railcannon isabet + şarj sıfırlandı', guns.rail === true && guns.rail
 const more = await page.evaluate(`(() => {
   const g = window.__uk, p = g.player, w = g.weapons, inp = g.input;
   const r = {};
-  const target = () => { const e = g.spawnEnemy('schism', [0, 0, -8], null); e.state = 'idle'; e.decor = true; e.yaw = 0; for (let i = 0; i < 5; i++) g.step(1/60, false); return e; };
+  // hedef dışındaki düşmanlar atışları kesmesin; bu sırada arena dalgası beklesin
+  for (const a of g.level.arenas) if (a.state === 'active') a.delay = 1e9;
+  const target = (z = -8) => {
+    for (const x of g.enemies) if (!x.dead && x.type !== 'trainer') x.removeSilently();
+    const e = g.spawnEnemy('schism', [0, 0, z], null); e.state = 'idle'; e.decor = true; e.yaw = 0; for (let i = 0; i < 5; i++) g.step(1/60, false); return e;
+  };
   const face = (e, dist) => { const tc = new e.pos.constructor(-e.pos.x, 0, -2 - e.pos.z).normalize(); p.pos.set(e.pos.x + tc.x * dist, e.pos.y, e.pos.z + tc.z * dist); p.vel.set(0,0,0); g.step(1/60, false); ${aimAt('e')} };
   let e = target();
   if (e) {
@@ -188,12 +196,15 @@ const more = await page.evaluate(`(() => {
     inp.down.add('Mouse0'); for (let i = 0; i < 30; i++) { ${aimAt('e')}; g.step(1/60, false); } inp.down.delete('Mouse0');
     r.nail = e.dead || e.hp < hp0;
   }
-  e = target();
+  e = target(-12.5);
   if (e) {
     w.select(4); for (let i = 0; i < 20; i++) g.step(1/60, false);
-    face(e, 10); const hp0 = e.hp; w.cd[4] = 0;
-    inp.pressedSet.add('Mouse0'); inp.down.add('Mouse0'); g.step(1/60, false); inp.down.delete('Mouse0');
-    for (let i = 0; i < 40; i++) g.step(1/60, false);
+    face(e, 10); const hp0 = e.hp;
+    for (let k = 0; k < 3 && !(e.dead || e.hp < hp0); k++) {
+      w.cd[4] = 0; w.rocketLoadT = 1; ${aimAt('e')}
+      inp.pressedSet.add('Mouse0'); inp.down.add('Mouse0'); g.step(1/60, false); inp.down.delete('Mouse0');
+      for (let i = 0; i < 40; i++) g.step(1/60, false);
+    }
     r.rocket = e.dead || e.hp < hp0;
   }
   // varyantlar sırayla: sharpshooter, sawed-on, sawblade, malicious, cannon
@@ -201,6 +212,8 @@ const more = await page.evaluate(`(() => {
   w.select(0); w.select(0); w.select(0); r.v0 = w.varId;
   w.select(1); w.select(1); w.select(1); r.v1 = w.varId;
   r.all = w.owned.every(Boolean) && w.armsOwned.every(Boolean) && w.hookOwned;
+  for (const x of g.enemies) if (x.decor) x.removeSilently();
+  for (const a of g.level.arenas) if (a.state === 'active') a.delay = 0.3;
   return r;
 })()`);
 check('nailgun isabet', more.nail === true, JSON.stringify(more));
@@ -285,8 +298,10 @@ const a2 = await page.evaluate(() => {
   p.pos.set(0, 0, -43.5); p.vel.set(0, 0, 0);
   for (let i = 0; i < 180; i++) g.step(1 / 60, false);
   const strays = g.enemies.filter((e) => e.type === 'stray');
+  // salonun ortasına geç: balkon korkulukları görüşü kesmesin
+  p.pos.set(0, 2, -60); p.vel.set(0, 0, 0);
   let thrown = 0;
-  for (let i = 0; i < 360; i++) { g.step(1 / 60, false); thrown = Math.max(thrown, g.projectiles.filter((x) => x.owner === 'enemy').length); }
+  for (let i = 0; i < 600 && !thrown; i++) { g.step(1 / 60, false); thrown = Math.max(thrown, g.projectiles.filter((x) => x.owner === 'enemy').length); }
   return { state: g.level.arenas[1].state, door: g.level.doors.d2in.target, strays: strays.length, thrown };
 });
 check('arena 2 kilitlendi, Stray doğdu', a2.state === 'active' && a2.door === 0 && a2.strays >= 2, JSON.stringify(a2));
@@ -297,6 +312,8 @@ await shot('08-arena2');
 const sch = await page.evaluate(() => {
   const g = window.__uk, p = g.player;
   const e = g.spawnEnemy('schism', [0, 0, -60], null);
+  // diğer düşmanlar bu sırada saldırmasın (en yakın parlayan saldırı onlarınki olmasın)
+  for (const x of g.enemies) if (x !== e && !x.dead && x.state !== 'spawn') { x.stun = 6; x.setState('stagger'); }
   for (let i = 0; i < 60; i++) g.step(1 / 60, false);
   p.pos.set(0, 0, -57.6);
   e.atkCd = 99; e.meleeCd = 0;
@@ -305,7 +322,8 @@ const sch = await page.evaluate(() => {
   const c = e.center(); const eye = p.eyePos();
   p.yaw = Math.atan2(-(c.x - eye.x), -(c.z - eye.z)); p.pitch = Math.atan2(c.y - eye.y, Math.hypot(c.x - eye.x, c.z - eye.z));
   const hp0 = e.hp;
-  g.weapons.punchCd = 0;
+  g.weapons.punchCd = 0; g.weapons.arm = 0; // Feedbacker
+  for (const x of g.projectiles) if (x.owner === 'enemy') x.remove(); // yakındaki Stray küreleri parry'yi çalmasın
   g.input.pressedSet.add('KeyF');
   g.step(1 / 60, false);
   return { parryable, state: e.state, dmg: hp0 - e.hp, dead: e.dead };

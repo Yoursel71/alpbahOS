@@ -112,6 +112,7 @@ export class Weapons {
     game.scene.add(this.hookMesh);
 
     this.owned = new Array(N).fill(false);
+    this.varOwned = WEAPONS.map((w) => w.variants.map(() => false));
     this.armsOwned = [true, false];
     this.hookOwned = false;
     this.reset();
@@ -120,6 +121,7 @@ export class Weapons {
   reset(keepOwned = false) {
     if (!keepOwned) {
       this.owned = new Array(N).fill(false);
+      this.varOwned = WEAPONS.map((w) => w.variants.map(() => false));
       this.armsOwned = [true, false];
       this.hookOwned = false;
       this.variant = new Array(N).fill(0);
@@ -189,6 +191,8 @@ export class Weapons {
   give(i) {
     const first = !this.owned[i];
     this.owned[i] = true;
+    if (!this.varOwned[i].some(Boolean)) this.varOwned[i][0] = true;
+    if (!this.varOwned[i][this.variant[i]]) this.variant[i] = this.varOwned[i].indexOf(true);
     this.last = this.cur;
     this.cur = i;
     this.switchT = 0;
@@ -209,8 +213,26 @@ export class Weapons {
     return first;
   }
 
+  // Dükkân sahipliğini uygula: owned = { 'shotgun': true, 'shotgun.pump': true, 'arm.knuckle': true, ... }
+  // Revolver (Piercer) her zaman vardır. Seçili silah korunur.
+  applyLoadout(owned) {
+    for (let i = 0; i < N; i++) {
+      const W = WEAPONS[i];
+      const base = i === 0 || !!owned[W.id];
+      this.owned[i] = base;
+      this.varOwned[i] = W.variants.map((v, k) => base && (k === 0 || !!owned[W.id + '.' + v.id]));
+      if (!this.varOwned[i][this.variant[i]]) this.variant[i] = 0;
+    }
+    this.armsOwned = [true, !!owned['arm.knuckle']];
+    if (!this.armsOwned[this.arm]) this.arm = 0;
+    this.hookOwned = !!owned['arm.hook'];
+    if (this.cur < 0 || !this.owned[this.cur]) { this.cur = 0; this.switchT = 0; this.equipSpin = 1; this.switchTime = this.game.time; }
+    this.updateAccents();
+    this.game.hud.weaponChanged();
+  }
+
   giveAll() {
-    for (let i = 0; i < N; i++) this.owned[i] = true;
+    for (let i = 0; i < N; i++) { this.owned[i] = true; this.varOwned[i] = WEAPONS[i].variants.map(() => true); }
     this.armsOwned = [true, true];
     this.hookOwned = true;
     if (this.cur < 0) this.cur = 0;
@@ -419,6 +441,7 @@ export class Weapons {
     const M = this.M;
     const g = new THREE.Group();
     box(0.12, 0.12, 0.44, M.blue, 0, 0, 0.14, g);
+    box(0.09, 0.09, 0.45, M.armDark, 0, -0.02, 0.5, g); // uzatılmış ön kol
     box(0.135, 0.05, 0.14, M.armDark, 0, 0.05, 0.2, g);
     box(0.13, 0.13, 0.05, M.black, 0, 0, -0.08, g);
     box(0.15, 0.14, 0.15, M.blue, 0, 0, -0.17, g);
@@ -433,6 +456,7 @@ export class Weapons {
     const M = this.M;
     const g = new THREE.Group();
     box(0.15, 0.15, 0.46, M.red, 0, 0, 0.14, g);
+    box(0.11, 0.11, 0.45, M.black, 0, -0.02, 0.5, g); // uzatılmış ön kol
     box(0.17, 0.08, 0.2, M.black, 0, 0.07, 0.18, g);
     box(0.21, 0.2, 0.2, M.red, 0, 0, -0.18, g);
     for (let k = 0; k < 4; k++) box(0.045, 0.05, 0.05, M.black, -0.075 + k * 0.05, 0.06, -0.3, g);
@@ -478,7 +502,11 @@ export class Weapons {
     const game = this.game;
     if (i < 0 || i >= N || !this.owned[i]) return;
     if (i === this.cur) {
-      this.variant[i] = (this.variant[i] + 1) % WEAPONS[i].variants.length;
+      const nv = WEAPONS[i].variants.length;
+      let v = this.variant[i];
+      for (let k = 1; k <= nv; k++) { const c = (this.variant[i] + k) % nv; if (this.varOwned[i][c]) { v = c; break; } }
+      if (v === this.variant[i]) return; // tek varyant: değişecek bir şey yok
+      this.variant[i] = v;
       this.switchT = 0.3;
       this.equipSpin = i === 0 ? 1 : 0;
       this.cancelCharges();
@@ -533,7 +561,7 @@ export class Weapons {
     const p = game.player;
     const o = p.eyePos(), d = p.aimDir();
     if (game.touch && game.touch.active && settings.aimAssist) {
-      const best = this.assistDir(o, d, 0.075);
+      const best = this.assistDir(o, d, settings.aimAssist >= 2 ? 0.1 : 0.075);
       if (best) return { o, d: best };
     }
     return { o, d };
@@ -1175,7 +1203,7 @@ export class Weapons {
     this.punchT = 0;
     game.audio.play('punch', null, { rate: knuckle ? 0.7 : 1, exactRate: true });
     if (game.tryParry()) return;
-    this.parryBuffer = 0.12; // erken basılan yumruk da yakalasın
+    this.parryBuffer = 0.18; // erken basılan yumruk da yakalasın
     game.meleePunch(knuckle);
   }
 
@@ -1361,11 +1389,11 @@ export class Weapons {
     const pt = this.punchT;
     for (let i = 0; i < this.armModels.length; i++) {
       const a = this.armModels[i];
-      if (i !== this.arm || pt >= 0.34) { a.visible = false; continue; }
-      const k = pt < 0.08 ? easeOut(pt / 0.08) : 1 - easeOut((pt - 0.08) / 0.26);
+      if (i !== this.arm || pt >= 0.4) { a.visible = false; continue; }
+      const k = pt < 0.07 ? easeOut(pt / 0.07) : pt < 0.13 ? 1 : 1 - easeOut((pt - 0.13) / 0.27);
       a.visible = true;
-      a.position.set(-0.42 + 0.3 * k, -0.52 + 0.34 * k, -0.25 - 0.5 * k);
-      a.rotation.set(0.25 - 0.25 * k, 0.35 - 0.3 * k, 0);
+      a.position.set(-0.42 + 0.34 * k, -0.52 + 0.38 * k, -0.25 - 0.95 * k);
+      a.rotation.set(0.25 - 0.25 * k, 0.35 - 0.33 * k, 0);
     }
     if (this.hook) this.hookHand.position.set(-0.28, -0.3, -0.62);
 

@@ -26,7 +26,7 @@ export const settings = {
   skipIntro: false,
   touchMode: 'auto', // 'auto' | 'on' | 'off'
   touchSens: 1.0,
-  aimAssist: true,
+  aimAssist: 2, // 0 kapalı · 1 hafif (mermi bükme) · 2 güçlü (+ ateş ederken kamera hedefe kayar)
   touchScale: 1.0,
   touchOpacity: 0.85,
   touchLayout: null,
@@ -34,10 +34,14 @@ export const settings = {
 };
 
 export const progress = {
-  bestRank: null, // 'D'..'S' | 'P'
+  bestRank: null, // eski sürüm (yalnız 0-1); levels['0-1']'e taşınır
   bestTime: null,
   bestStyle: 0,
   introSeen: false,
+  levels: {}, // '0-1': { rank, time, style }
+  unlocked: 1, // açık bölüm sayısı
+  points: 0, // harcanabilir P
+  shop: {}, // satın alınanlar: { 'shotgun': true, 'shotgun.pump': true, 'arm.knuckle': true, ... }
 };
 
 // Kayıtlı ayar yoksa false döner (ilk açılışta cihaza göre varsayılan seçmek için)
@@ -51,6 +55,14 @@ export function loadSettings() {
     const p = JSON.parse(localStorage.getItem(PROGRESS_KEY) || 'null');
     if (p && typeof p === 'object') Object.assign(progress, p);
   } catch (e) { /* depolama yok */ }
+  // eski kayıtları uyumlu hâle getir
+  if (settings.aimAssist === true) settings.aimAssist = 2;
+  if (settings.aimAssist === false) settings.aimAssist = 0;
+  if (!progress.levels || typeof progress.levels !== 'object') progress.levels = {};
+  if (!progress.shop || typeof progress.shop !== 'object') progress.shop = {};
+  if (progress.bestRank && !progress.levels['0-1']) progress.levels['0-1'] = { rank: progress.bestRank, time: progress.bestTime, style: progress.bestStyle || 0 };
+  if (progress.levels['0-1'] && progress.unlocked < 2) progress.unlocked = 2;
+  progress.points = Math.max(0, Math.floor(+progress.points || 0));
   return had;
 }
 

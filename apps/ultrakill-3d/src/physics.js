@@ -16,6 +16,10 @@ export class World {
     this.solids = [];
   }
 
+  clear() {
+    this.solids = [];
+  }
+
   add(minX, minY, minZ, maxX, maxY, maxZ, tag) {
     const s = new Solid(Math.min(minX, maxX), Math.min(minY, maxY), Math.min(minZ, maxZ), Math.max(minX, maxX), Math.max(minY, maxY), Math.max(minZ, maxZ), tag);
     this.solids.push(s);

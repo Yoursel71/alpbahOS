@@ -125,6 +125,43 @@ await page.screenshot({ path: join(out, 'm04-pause.png') });
 await page.evaluate(() => window.__uk.resume());
 await page.waitForTimeout(200);
 check('taklit fare tıklaması istemsiz ateş etmedi', await page.evaluate(() => !window.__uk.input.down.has('Mouse0')));
+
+// Dükkân: terminalin önüne gelince DÜKKÂN butonu çıkar, dokununca dükkân açılır, satın alınır
+const shopHidden = await page.evaluate(() => document.querySelector('[data-id="shop"]').classList.contains('hide'));
+await page.evaluate(() => { const g = window.__uk; window.__ukSetPoints(5000); const sh = g.level.shops[0]; g.player.pos.copy(sh.pos); g.player.vel.set(0, 0, 0); for (let i = 0; i < 5; i++) g.step(1 / 60, false); g.step(1 / 60); });
+await page.waitForTimeout(200);
+const shopShown = await page.evaluate(() => !document.querySelector('[data-id="shop"]').classList.contains('hide'));
+const [bx, by] = await center('[data-id="shop"]');
+await touch('touchStart', [[bx, by, 10]]); await sim(1); await touch('touchEnd', []);
+await page.waitForTimeout(200);
+const shopOpen = await page.evaluate(() => window.__uk.state === 'shop');
+const ptsOpen = await page.evaluate(() => window.__ukPoints()); // açılışta yatırılmamış P kasaya girer
+await page.screenshot({ path: join(out, 'm05-shop.png') });
+// test modu (tüm silahlar) kapalıyken bir öğe satın al
+await page.evaluate(() => { window.__ukSettings.allWeapons = false; window.__uk.ui.renderShop(); });
+const buyBtn = await center('[data-buy="revolver.marksman"]');
+await page.touchscreen.tap(buyBtn[0], buyBtn[1]);
+await page.waitForTimeout(200);
+const buyInfo = await page.evaluate(() => ({ owned: !!window.__ukProgress.shop['revolver.marksman'], pts: window.__ukPoints() }));
+const bought = buyInfo.owned && buyInfo.pts === ptsOpen - 1500;
+const [cx, cy] = await center('.sh-close');
+await page.touchscreen.tap(cx, cy);
+await page.waitForTimeout(200);
+check('DÜKKÂN butonu yalnız terminal önünde çıkar ve dükkânı açar', shopHidden && shopShown && shopOpen, JSON.stringify({ shopHidden, shopShown, shopOpen }));
+check('dokunarak satın alma ve dükkânı kapatma', bought && await page.evaluate(() => window.__uk.state === 'playing'), JSON.stringify(buyInfo));
+
+// Menü: bölüm kartına dokun, yapışkan BAŞLA görünür; menüde kare sınırı (telefonda 30 fps)
+await page.evaluate(() => { window.__ukProgress.unlocked = 3; window.__uk.toMenu(); });
+await page.waitForTimeout(300);
+const card = await center('.lv-card[data-l="2"]');
+await page.touchscreen.tap(card[0], card[1]);
+await page.waitForTimeout(200);
+const menu = await page.evaluate(() => {
+  const st = document.querySelector('[data-act="start"]').getBoundingClientRect();
+  return { label: document.querySelector('[data-act="start"]').textContent, visible: st.bottom <= window.innerHeight + 1 && st.top >= 0 };
+});
+check('menü: bölüm kartı seçildi, BAŞLA ekranda', /0-3/.test(menu.label) && menu.visible, JSON.stringify(menu));
+await page.screenshot({ path: join(out, 'm06-menu-levels.png') });
 check('sayfa hatası yok', errors.length === 0, errors.join(' | '));
 await browser.close();
 console.log(`\n${results.filter(Boolean).length}/${results.length} mobil kontrol geçti.`);

@@ -937,3 +937,19 @@ PipeWire hatası için aynı gün ek tekrar: Guest `/tmp`'te 12 saniye 48 kHz st
   - Web testleri 36/36, 11/11 ve 19/19 geçti.
 - Çalıştırılmadı: gerçek Android cihaz veya emülatörde kurulum ve çalıştırma.
 - Ayrıntı: [devir 016](handoffs/claude/016-ultrakill-3d-android-apk.md).
+
+## 24 Eylül 2026 — Claude: ULTRAKILL 3D PRELUDE 0-2 → 0-5, dükkân, nişan yardımı, uzun parry
+
+- Görev/sahip: Claude Code (bulut oturumu), dal `claude/3d-ultrakill-game-dev-qzqj42`. Dosya sınırı yalnız `apps/ultrakill-3d/**`. Kernel, rootfs, paket manifesti, `alp`, build/mount işlemleri ve Hyper-V ortamına dokunulmadı.
+- Değişiklikler:
+  - Çok bölümlü yapı ve 4 yeni bölüm: 0-2 KIYMA MAKİNESİ, 0-3 ÇİFTE BELA, 0-4 TEK MAKİNELİK ORDU, 0-5 CERBERUS.
+  - Yeni düşmanlar: Malicious Face ve boss Cerberus.
+  - Yalnız Revolver ile başlama; diğer her şey stil puanından biriken P ile dükkândan alınır.
+  - Dokunmatikte ateş ederken düşmana kayan nişan yardımı.
+  - Daha uzun parry kolu ve menzili.
+  - Sade ve daha az kare çizen mobil menüler.
+  - APK 1.1 (aynı imza).
+- Doğrulama (headless Chromium, yazılım GL): smoke 36/36, tutorial 11/11, mobil 22/22, PRELUDE 22/22 (yeni), APK içerik 11/11.
+- APK SHA-256: `5811e88bf41d6b9b15bd88642dc0df0c5f2c32ba2d5f9b571e3764338b1233d4`.
+- Çalıştırılmadı: gerçek cihazda insan testi, ses dinleme, Android'de kurulum.
+- Ayrıntı: [devir 017](handoffs/claude/017-ultrakill-3d-prelude.md).

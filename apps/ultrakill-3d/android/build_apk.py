@@ -34,8 +34,8 @@ BUILD = os.path.join(HERE, "build")
 DIST_HTML = os.path.join(ROOT, "dist", "ultrakill-3d.html")
 OUT_APK = os.path.join(ROOT, "dist", "ultrakill-3d.apk")
 
-VERSION_CODE = 1
-VERSION_NAME = "1.0"
+VERSION_CODE = 2
+VERSION_NAME = "1.1"
 MIN_SDK = 24  # Android 7.0; WebGL2 için güncel Android System WebView gerekir
 TARGET_SDK = 34
 

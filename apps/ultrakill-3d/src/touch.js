@@ -19,6 +19,7 @@ export const BUTTONS = [
   { id: 'slide', code: 'KeyC', label: 'KAY', x: 0.645, y: 0.82, s: 58, cls: '' },
   { id: 'hook', code: 'KeyE', label: 'KANCA', x: 0.7, y: 0.26, s: 54, cls: 't-green', needs: 'hook' },
   { id: 'arm', code: 'KeyG', label: 'KOL', x: 0.795, y: 0.22, s: 48, cls: 't-red', needs: 'arm2' },
+  { id: 'shop', code: 'KeyB', label: 'DÜKKÂN', x: 0.5, y: 0.7, s: 84, cls: 't-shop', needs: 'shop' },
 ];
 const JOY_DEFAULT = { x: 0.13, y: 0.72 };
 
@@ -262,6 +263,7 @@ export class TouchControls {
     });
     this.btnEls.get('hook').classList.toggle('hide', !w.hookOwned);
     this.btnEls.get('arm').classList.toggle('hide', !w.armsOwned[1]);
+    this.btnEls.get('shop').classList.toggle('hide', !this.game.nearShop);
     const setLabel = (id, txt) => { const s = this.btnEls.get(id).firstChild; if (s.textContent !== txt) s.textContent = txt; };
     setLabel('fire', w.armed ? 'ATEŞ' : 'YUMRUK');
     setLabel('fireL', w.armed ? 'ATEŞ' : 'YUMRUK');
