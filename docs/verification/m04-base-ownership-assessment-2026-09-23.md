@@ -59,3 +59,35 @@ Read-only verification from Windows via `ssh alp-builder`:
 
 No rootfs files, package database, VHDX, or mounts were changed by this check.
 M04 remains open: no LFS-base path ownership is claimed.
+
+## Builder storage and ownership recheck — 24 September 2026
+
+The Builder VHDX and LVM capacity were checked to determine whether the
+ownership-recovery work had usable staging space:
+
+- Windows Hyper-V reports Builder disk `F:\alpbahOS-build\vhdx\alpbah-builder.vhdx`
+  as dynamic VHDX, 210 GiB virtual size and 104,492,695,552 bytes on host at
+  inspection. Builder guest sees `/dev/sda` 210 GiB; `/dev/sda3` is a 206.95
+  GiB LVM PV. The root LV had been limited to 100 GiB despite 106.95 GiB free
+  extents.
+- `sudo -n lvextend --test -r -L +60G /dev/ubuntu-vg/ubuntu-lv` reported a
+  100→160 GiB resize without updating metadata. Before applying, no `make`,
+  `ninja`, or `cmake` process was active, `/sys/block/nbd0/pid` was absent
+  (no NBD image attached), and a root-readable scan found no VHDX under Builder
+  `/tmp`. `lsblk` lists configured `nbd0`–`nbd15` nodes at 0 B; they are idle.
+- The online command `sudo -n lvextend -r -L +60G
+  /dev/ubuntu-vg/ubuntu-lv` succeeded. `resize2fs` grew the mounted ext4
+  filesystem without stopping Builder. Result: root LV 160 GiB, ext4 157 GiB,
+  81 GiB used / 69 GiB free; VG now has 46.95 GiB free. `/mnt/lfs` remains on
+  Builder `/`, not a separate mount.
+- Read-only `du` measured `/mnt/lfs` 54 GiB total, `sources` 19 GiB, `tmp` 430
+  MiB, and `/usr` 4.9 GiB. `/mnt/lfs/var/lib/alp/db.json` remains empty and
+  `alp.py` retains the expected SHA-256. No LFS-base package manifest was
+  created by this capacity change.
+- Host F: volume had 136,840,237,056 bytes free at the same inspection. The
+  dynamic VHDX can grow within its 210 GiB virtual cap; keep the project storage
+  budget in view before staging a complete rebuild.
+
+This capacity change reduces the Builder root-space constraint but does not
+close M04. A package-by-package base capture/rebuild plan is still required;
+do not backfill ownership from filesystem metadata.
