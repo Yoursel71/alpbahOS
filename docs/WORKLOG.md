@@ -918,3 +918,9 @@ PipeWire hatası için aynı gün ek tekrar: Guest `/tmp`'te 12 saniye 48 kHz st
 - `/mnt/lfs/build/gcc-15.2.0-m04-20260924-r1/build/gcc/testsuite/gcc/gcc.sum`: mtime 12:01:40 UTC, 17,243,590 bytes; last complete GCC summary is 211,480 expected PASS, 4 unexpected `gcc.target/i386/pr90579.c` assembly-scan FAIL, 1,476 expected FAIL, 3,780 unsupported.
 - The C++ suite remains active: `g++.sum` mtime 12:56:36 UTC, 18,077,766 bytes; `gcc-test-summary.log` is still empty (mtime 09:51:16 UTC). Independent same-time read-only recheck counted 216,815 g++ PASS lines and 0 FAIL lines so far. The DejaGNU process was in disk sleep at 12:55:49 UTC; this is not a terminal result.
 - `df -h /mnt/lfs`: 157 GiB total, 91 GiB used, 60 GiB available. No build, rootfs, image, mount, or NBD state was changed by this poll. Do not start another build or patch the live GCC source tree. After this process terminates, preserve final `.sum`, `.log`, and runner summary, then resolve the four C suite failures before accepting GCC.
+
+
+## 24 Eylül 2026 — M05 çıkış koşulu ve M04 bağımlılığının uzlaştırılması
+
+- `docs/MASTER_PLAN.md` §10 M05’i M04’e bağımlı kılıyor; §10.1 nihai temel sistemde paket dosya sahipliği kaydını M03–M05 kritik kontrol noktası olarak şart koşuyor. M05’in BIOS/UEFI boot, ağ ve reboot test kanıtları mevcut olsa da M04 paketi sahiplik kapısı hâlâ açık.
+- `CURRENT.md` ve `docs/MASTER_PLAN.md` bu nedenle boot testlerini geçmiş kanıt olarak koruyor, fakat M05’in resmî kapanışını M04 tamamlanmasına bağlıyor. Yeni boot deneyi yapılmadı; test sonuçları değiştirilmedi.
