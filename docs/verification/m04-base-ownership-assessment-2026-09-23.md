@@ -678,3 +678,41 @@ Official LFS 12.4-systemd procedures:
 The patched shared-library Bzip2 procedure follows
 [Bzip2-1.0.8](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/bzip2.html)
 and the [LFS patch checksum list](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter03/patches.html).
+
+## Perl 5.42.0 staged comparison — 24 September 2026
+
+Perl 5.42.0 was built in the Builder `/mnt/lfs` chroot from the LFS source
+archive with MD5 `7a6950a9f12d01eb96a9d2ed2f4e0072` and SHA-256
+`73cf6cc1ea2b2b1c110a18c14bbbc73a362073003893ffcedc26d22ebdbdd0c3`. The
+LFS configuration enabled shared libperl and threads and disabled bundled
+zlib/bzip2 builds. `TEST_JOBS=2 make test_harness` reported all 2,915 files
+and 1,350,925 tests successful in 431 seconds; expected skips include tests
+requiring optional host features or about 4 GiB of memory, and two TODO tests
+passed.
+
+The install went only to `/mnt/lfs/tmp/alp-m04-perl-stage-r1`. An initial
+stage smoke failed because its library path omitted Perl's staged `CORE`
+directory; this was a test invocation issue, not a rootfs install. After
+correcting `LD_LIBRARY_PATH`, the verify-only run reported `perl=v5.42.0
+usedl=define threads=define`, `threads=loaded`, and `PERL_STAGE_SMOKE=passed`.
+The final log is
+`/mnt/lfs/tmp/alp-logs/m04-perl-5.42.0-stage-20260924-r1.log`, SHA-256
+`e3ea8a86ce19ef34af2543a24157b403b7e6429685e67762390b6a042973d959`.
+
+The manifest has 3,181 entries (333 directories, 2,848 files), SHA-256
+`8ff4a1e236d37de36ea1addbd8c1b2138f088fae6af1875a9c375ecd30891a53`;
+[manifest](manifests/lfs-base/perl-5.42.0-2026-09-24.json). Read-only
+preflight matched 2,164 entries and found 1,017 mismatches; [full report](manifests/lfs-base/perl-5.42.0-2026-09-24-preflight.log),
+SHA-256 `a580e88860131079ee3a2d9742b5b7bafaf9a1d95be871004405d5cab3886f03`.
+Among the differences, the staged launcher is small while the current rootfs
+Perl executable is statically linked, and many staged modules are absent from
+the existing tree. No files were merged into `/mnt/lfs/usr`; the pinned
+`alp.py` remains unchanged and the package database remains empty.
+
+The reusable script is `scripts/build-m04-perl-stage.sh`, SHA-256
+`43713637f5882b07e9c58d63937d99cfd2aff9a73d7204bc39f685abb9cda6af`. It has
+an error trap and a verify-only mode. This staged set does not prove historical
+rootfs ownership and does not close M04. The final Builder check found no
+mounts below `/mnt/lfs`, no active build command, 68 GiB available, and no NBD
+device. The restricted `/tmp` search produced permission notices for
+systemd-private directories, so VHDX absence was not claimed from that search.
