@@ -162,3 +162,29 @@ environment guide; this pilot did not modify it.
 Primary LFS references: [Coreutils 9.7 Chapter 8 instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/coreutils.html),
 [LFS 12.4 required patch checksums](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter03/patches.html),
 [Chapter 6 temporary Coreutils instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter06/coreutils.html).
+
+## Package-removal guard recheck — 24 September 2026
+
+Read-only inspection of `C:\alpbahOS-claude`, branch
+`claude/desktop-bootstrap`, HEAD `8df1ac410d1401b51e11b0220fbfa8173331cbb6`
+(one commit ahead of its remote), found a newer `alp.py` than the exact
+`e8b0376` source pinned for the installed rootfs. Its file SHA-256 is
+`a34b796d64d14ea20d8228708f1add135e37e2328eac96efbca448b2b95f510e`; it was
+not installed.
+
+That version defines `_is_protected()` for a fixed set of system directories
+and alp's state directory. `_remove_owned_paths()` skips those exact paths,
+but it does not protect files merely because they belong to an essential base
+package. `remove_package()` still passes all other recorded files to deletion
+and removes the package record from the database. Therefore the newer Claude
+branch does not yet make an `lfs-base`/Coreutils DB record safe to remove. The
+rootfs's required `e8b0376` hash remains the pin; no `alp.py`, `/usr`, or DB
+changes were made during this inspection.
+
+Builder inventory at this recheck: no active `make`/`ninja`/`cmake`, no NBD
+device, 69 GiB free on `/`, 128 regular source files at the top level of
+`/mnt/lfs/sources`, and `/mnt/lfs/var/lib/alp/db.json` still reports zero
+packages. Sources make controlled per-package staging possible, but they do
+not supply historical installed-path ownership. M04 remains open pending
+complete base-package manifests and a package-level removal guard from the
+`alp` owner.
