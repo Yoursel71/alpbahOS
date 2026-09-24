@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib.util
 import io
 import json
+import stat
 import struct
 import subprocess
 import sys
@@ -86,6 +87,15 @@ class InstallEventCaptureTests(unittest.TestCase):
             trace_path.write_text("io_uring_setup(2, 0x7ffc1234) = -1 ENOSYS (Function not implemented)\n",
                                   encoding="utf-8")
             return 0
+        if action == "change-root-id":
+            (root / capture.CAPTURE_DIR / "root-id").write_text("f" * 32 + "\n", encoding="ascii")
+            return 0
+        if action == "attempt-root-id":
+            root_id = root / capture.CAPTURE_DIR / "root-id"
+            trace_path.write_text(
+                f'openat(AT_FDCWD, {json.dumps(str(root_id))}, O_WRONLY|O_TRUNC) = -1 EROFS (Read-only file system)\n',
+                encoding="utf-8")
+            return 0
         raise AssertionError(action)
 
     def test_install_write_records_command_environment_logs_trace_and_snapshots(self):
@@ -112,7 +122,7 @@ class InstallEventCaptureTests(unittest.TestCase):
         self.assertTrue((self.fx.root / event["artifacts"]["before_snapshot"]["path"]).is_file())
         self.assertTrue((self.fx.root / event["artifacts"]["after_snapshot"]["path"]).is_file())
         snapshot = json.loads((self.fx.root / event["artifacts"]["before_snapshot"]["path"]).read_text())
-        self.assertEqual(snapshot["schema"], "alpbahOS.m04-reconcile-snapshot/v2")
+        self.assertEqual(snapshot["schema"], "alpbahOS.m04-reconcile-snapshot/v3")
         reconciler._snapshot(snapshot, event["root_id"], "captured fixture snapshot")
         entry = snapshot["entries"]["/recipe.sh"]
         self.assertEqual(set(entry["metadata_support"]), {
@@ -151,7 +161,7 @@ class InstallEventCaptureTests(unittest.TestCase):
         self.assertRegex(event["outside_root_write_attempts"][0], r"etc[\\/]passwd")
 
     def test_io_uring_setup_invalidates_event_as_observation_violation(self):
-        with self.assertRaisesRegex(capture.CaptureError, r"observation violations \(io_uring_setup\)"):
+        with self.assertRaisesRegex(capture.CaptureError, "observation/integrity violations"):
             capture.capture_install(self.fx.root, ["installer", "io-uring"], cwd=self.fx.root)
         event_files = list((self.fx.root / capture.CAPTURE_DIR / "events").glob("*/event.json"))
         self.assertEqual(len(event_files), 1)
@@ -160,6 +170,27 @@ class InstallEventCaptureTests(unittest.TestCase):
         self.assertEqual(len(event["observation_violations"]), 1)
         self.assertIn("io_uring_setup observed", event["observation_violations"][0])
         self.assertTrue(event["observation_violations"][0].startswith("line 1:"))
+
+    def test_root_id_mutation_is_detected_and_persisted_as_integrity_violation(self):
+        with self.assertRaisesRegex(capture.CaptureError, "observation/integrity violations"):
+            capture.capture_install(self.fx.root, ["installer", "change-root-id"], cwd=self.fx.root)
+        event_files = list((self.fx.root / capture.CAPTURE_DIR / "events").glob("*/event.json"))
+        self.assertEqual(len(event_files), 1)
+        event = json.loads(event_files[0].read_text(encoding="utf-8"))
+        self.assertEqual(event["exit_status"], 0)
+        self.assertTrue(any("root-id content or inode metadata changed" in item
+                            for item in event["observation_violations"]))
+
+    def test_denied_root_id_write_attempt_and_errno_are_persisted(self):
+        with self.assertRaisesRegex(capture.CaptureError, "observation/integrity violations"):
+            capture.capture_install(self.fx.root, ["installer", "attempt-root-id"], cwd=self.fx.root)
+        event_files = list((self.fx.root / capture.CAPTURE_DIR / "events").glob("*/event.json"))
+        event = json.loads(event_files[0].read_text(encoding="utf-8"))
+        self.assertEqual(len(event["root_id_write_attempts"]), 1)
+        self.assertIn("O_WRONLY|O_TRUNC", event["root_id_write_attempts"][0])
+        self.assertIn("EROFS (Read-only file system)", event["root_id_write_attempts"][0])
+        self.assertEqual((self.fx.root / capture.CAPTURE_DIR / "root-id").read_text(encoding="ascii"),
+                         event["root_id"] + "\n")
 
     def test_trace_observation_parser_detects_pid_prefixed_io_uring_setup(self):
         trace = self.fx.root / "trace.log"
@@ -250,6 +281,8 @@ class InstallEventCaptureTests(unittest.TestCase):
         self.execute.stop()
         event_store = self.fx.root / capture.CAPTURE_DIR / "events"
         event_store.mkdir(parents=True)
+        root_id_path = self.fx.root / capture.CAPTURE_DIR / "root-id"
+        root_id_path.write_text("0" * 32 + "\n", encoding="ascii")
         trace = self.fx.root / "trace.log"
         stdout, stderr = self.fx.root / "stdout.log", self.fx.root / "stderr.log"
         fake_proc = SimpleNamespace(stdout=io.BytesIO(), stderr=io.BytesIO(),
@@ -270,7 +303,8 @@ class InstallEventCaptureTests(unittest.TestCase):
         read_only = [index for index, arg in enumerate(argv) if arg == "--ro-bind"]
         self.assertGreater(read_only[1], argv.index("--bind"))
         self.assertIn(str(event_store), argv)
-        self.assertEqual(argv.count("--ro-bind"), 2)
+        self.assertIn(str(root_id_path), argv)
+        self.assertEqual(argv.count("--ro-bind"), 3)
         self.assertEqual(argv.count("--bind"), 1)
         trace_arg = argv[argv.index("-e") + 1]
         self.assertIn("io_uring_setup", trace_arg)
@@ -363,6 +397,21 @@ class InstallEventCaptureTests(unittest.TestCase):
         with mock.patch.object(capture.os, "listxattr", side_effect=OSError("denied"), create=True):
             with self.assertRaisesRegex(capture.CaptureError, "cannot read xattrs"):
                 capture._metadata_support(path, path.lstat())
+
+    def test_snapshot_fingerprint_preserves_special_node_subtype(self):
+        path = self.fx.root / "special-node"
+        support = {"xattrs_sha256": "0" * 64, "capabilities_sha256": "0" * 64,
+                   "hardlink_count": 1, "hardlink_group_sha256": None}
+        fifo_info = SimpleNamespace(st_mode=stat.S_IFIFO | 0o644, st_uid=0, st_gid=0, st_rdev=0)
+        socket_info = SimpleNamespace(st_mode=stat.S_IFSOCK | 0o644, st_uid=0, st_gid=0, st_rdev=0)
+        with mock.patch.object(capture.os, "lstat", side_effect=[fifo_info, socket_info]), \
+                mock.patch.object(capture, "_metadata_support", return_value=support):
+            fifo = capture._fingerprint(path, self.fx.root)
+            socket = capture._fingerprint(path, self.fx.root)
+        self.assertEqual(fifo["type"], "special")
+        self.assertEqual(fifo["special_type"], "fifo")
+        self.assertEqual(socket["special_type"], "socket")
+        self.assertNotEqual(fifo, socket)
 
     def test_hardlink_count_and_group_identity_are_emitted(self):
         first, second = self.fx.root / "hardlink-a", self.fx.root / "hardlink-b"

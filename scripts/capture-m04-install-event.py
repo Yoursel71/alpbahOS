@@ -33,7 +33,7 @@ MARKER = ".m04-fixture-root"
 MARKER_TEXT = "DISPOSABLE M04 TRANSACTION FIXTURE ONLY v1\n"
 CAPTURE_DIR = ".m04-capture"
 SCHEMA = "alpbahOS.m04-install-event-capture/v3"
-SNAPSHOT_SCHEMA = "alpbahOS.m04-reconcile-snapshot/v2"
+SNAPSHOT_SCHEMA = "alpbahOS.m04-reconcile-snapshot/v3"
 WRITE_SYSCALLS = {
     "creat", "link", "linkat", "mkdir", "mkdirat", "mknod", "mknodat",
     "open", "openat", "openat2", "rename", "renameat", "renameat2",
@@ -165,7 +165,13 @@ def _fingerprint(path: Path, root: Path) -> dict[str, Any]:
                 raise CaptureError(f"symlink target escapes fixture: {path} -> {target}")
         result.update(type="symlink", target=target)
     else:
-        result.update(type="special", rdev=info.st_rdev)
+        special_type = next((name for predicate, name in (
+            (stat.S_ISFIFO, "fifo"), (stat.S_ISSOCK, "socket"),
+            (stat.S_ISCHR, "character-device"), (stat.S_ISBLK, "block-device"),
+        ) if predicate(info.st_mode)), None)
+        if special_type is None:
+            raise CaptureError(f"unsupported filesystem node type for {path}: {info.st_mode:#o}")
+        result.update(type="special", special_type=special_type, rdev=info.st_rdev)
     return result
 
 
@@ -237,8 +243,8 @@ def _fixture_root_id(capture_root: Path) -> str:
     except FileNotFoundError:
         value = uuid.uuid4().hex + "\n"
         try:
-            with path.open("x", encoding="ascii") as stream:
-                stream.write(value)
+            with path.open("xb") as stream:
+                stream.write(value.encode("ascii"))
         except FileExistsError:
             value = path.read_text(encoding="ascii")
     except OSError as exc:
@@ -247,6 +253,46 @@ def _fixture_root_id(capture_root: Path) -> str:
     if value != root_id + "\n" or not re.fullmatch(r"[0-9a-f]{32}", root_id):
         raise CaptureError(f"invalid fixture root identity file: {path}")
     return root_id
+
+
+def _root_id_signature(path: Path) -> tuple[Any, ...]:
+    """Return content and inode metadata used to detect root-id mutation."""
+    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
+    try:
+        fd = os.open(path, flags)
+        with os.fdopen(fd, "rb") as stream:
+            before = os.fstat(stream.fileno())
+            if not stat.S_ISREG(before.st_mode):
+                raise CaptureError("fixture root-id is not a regular file")
+            data = stream.read()
+            after = os.fstat(stream.fileno())
+        current = os.lstat(path)
+    except OSError as exc:
+        raise CaptureError(f"cannot verify fixture root-id integrity: {exc}") from exc
+    stable = (before.st_dev, before.st_ino, before.st_mode, before.st_uid, before.st_gid,
+              before.st_size, before.st_mtime_ns, before.st_ctime_ns)
+    after_stable = (after.st_dev, after.st_ino, after.st_mode, after.st_uid, after.st_gid,
+                    after.st_size, after.st_mtime_ns, after.st_ctime_ns)
+    path_stable = (current.st_dev, current.st_ino, current.st_mode, current.st_uid,
+                   current.st_gid, current.st_size, current.st_mtime_ns, current.st_ctime_ns)
+    path_metadata_matches = stable == path_stable
+    if os.name == "nt":
+        # Windows' lstat and descriptor fstat can report different ctime precision.
+        path_metadata_matches = stable[:-1] == path_stable[:-1]
+    if not stat.S_ISREG(current.st_mode) or stable != after_stable or not path_metadata_matches:
+        raise CaptureError("fixture root-id changed while it was being inspected")
+    return (*stable, hashlib.sha256(data).hexdigest(), data)
+
+
+def _root_id_integrity_violations(path: Path, expected: tuple[Any, ...], root_id: str) -> list[str]:
+    try:
+        actual = _root_id_signature(path)
+    except CaptureError as exc:
+        return [f"fixture root-id integrity check failed: {exc}"]
+    expected_data = (root_id + "\n").encode("ascii")
+    if actual != expected or actual[-1] != expected_data:
+        return ["fixture root-id content or inode metadata changed during install"]
+    return []
 
 
 def _hash_inputs(paths: Sequence[Path]) -> list[dict[str, str]]:
@@ -379,6 +425,49 @@ def _trace_observation_violations(trace_path: Path) -> list[str]:
     return violations
 
 
+def _trace_root_id_write_attempts(trace_path: Path, root_id_path: Path, cwd: Path) -> list[str]:
+    """Preserve traced attempts to modify the capture identity, including denied calls."""
+    target = Path(os.path.abspath(os.fspath(root_id_path)))
+    attempts: list[str] = []
+    for line_no, line in enumerate(trace_path.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
+        match = SYSCALL_RE.match(line)
+        if not match or match.group(1) not in WRITE_SYSCALLS:
+            continue
+        syscall, body = match.groups()
+        args = _split_strace_arguments(body)
+        if syscall in {"open", "openat", "openat2"} and not _trace_open_writes(syscall, args):
+            continue
+        if syscall == "mmap" and not _trace_mmap_writes(args):
+            continue
+        paths = PATH_ARGUMENTS.get(syscall)
+        matched = False
+        if paths is not None:
+            for path_index in paths:
+                raw = _decode_trace_path(args, path_index)
+                if raw is None:
+                    continue
+                dirfd_index = DIRFD_ARGUMENTS.get(syscall, {}).get(path_index)
+                dirfd_arg = args[dirfd_index] if dirfd_index is not None and dirfd_index < len(args) else "AT_FDCWD"
+                dirfd_match = re.fullmatch(r"\d+<([^>]+)>", dirfd_arg)
+                if not os.path.isabs(raw) and dirfd_arg != "AT_FDCWD" and not dirfd_match:
+                    continue
+                dirfd_path = Path(dirfd_match.group(1)) if dirfd_match else cwd
+                candidate = Path(os.path.abspath(os.fspath(Path(raw) if os.path.isabs(raw) else dirfd_path / raw)))
+                if candidate == target:
+                    matched = True
+                    break
+        else:
+            for fd_index in FD_WRITE_ARGUMENTS.get(syscall, ()):
+                fd_arg = args[fd_index] if fd_index < len(args) else ""
+                fd_match = re.search(r"\d+<([^>]+)>", fd_arg)
+                if fd_match and Path(os.path.abspath(fd_match.group(1))) == target:
+                    matched = True
+                    break
+        if matched:
+            attempts.append(f"line {line_no}: root-id write/mutation attempt: {line.strip()}")
+    return attempts
+
+
 def _run_with_parent_logs(argv: Sequence[str], cwd: Path, env: Mapping[str, str],
                           stdout_path: Path, stderr_path: Path,
                           pass_fds: Sequence[int] = ()) -> int:
@@ -454,6 +543,7 @@ def _execute(argv: Sequence[str], cwd: Path, env: Mapping[str, str], root: Path,
     # Effective isolation has not been verified by a real Linux integration run.
     # io_uring_setup is denied by the seccomp policy and any traced attempt invalidates the event.
     event_store = root / CAPTURE_DIR / "events"
+    root_id_path = root / CAPTURE_DIR / "root-id"
     # Bubblewrap consumes and closes the seccomp FD while setting up its child.
     # strace inherits it only to pass through exec; it is not an installer log FD.
     with seccomp_path.open("rb") as policy:
@@ -462,6 +552,7 @@ def _execute(argv: Sequence[str], cwd: Path, env: Mapping[str, str], root: Path,
                   "--", bwrap, "--die-with-parent", "--unshare-all", "--seccomp", str(seccomp_fd),
                   "--ro-bind", "/", "/", "--bind", str(root), str(root),
                   "--ro-bind", str(event_store), str(event_store),
+                  "--ro-bind", str(root_id_path), str(root_id_path),
                   "--chdir", str(cwd), "--", *argv]
         return _run_with_parent_logs(traced, cwd, env, stdout_path, stderr_path,
                                      pass_fds=(seccomp_fd,))
@@ -496,6 +587,7 @@ def capture_install(root: Path, argv: Sequence[str], *, cwd: Path | None = None,
     work_dir.mkdir(parents=True, mode=0o700)
     _inside(root, event_dir)
     root_id = _fixture_root_id(capture_root)
+    root_id_signature = _root_id_signature(capture_root / "root-id")
     before = _snapshot(root, root_id)
     hashed_inputs = _hash_inputs(input_paths)
     home_dir, temp_dir = work_dir / "home", work_dir / "tmp"
@@ -526,10 +618,14 @@ def capture_install(root: Path, argv: Sequence[str], *, cwd: Path | None = None,
     except OSError as exc:
         raise CaptureError(f"could not clean command scratch directory {work_dir}: {exc}") from exc
     end_ns = time.time_ns()
+    root_id_violations = _root_id_integrity_violations(
+        capture_root / "root-id", root_id_signature, root_id)
     if not trace_path.is_file():
         raise CaptureError("strace did not produce its trace; event is incomplete")
     violations = _trace_outside_writes(trace_path, root, workdir)
-    observation_violations = _trace_observation_violations(trace_path)
+    root_id_attempts = _trace_root_id_write_attempts(trace_path, capture_root / "root-id", workdir)
+    observation_violations = (_trace_observation_violations(trace_path) + root_id_violations
+                              + root_id_attempts)
     after = _snapshot(root, root_id)
     after_path = event_dir / "after.json"
     _write_json(after_path, after)
@@ -547,6 +643,7 @@ def capture_install(root: Path, argv: Sequence[str], *, cwd: Path | None = None,
         "started_unix_ns": start_ns, "ended_unix_ns": end_ns, "exit_status": exit_status,
         "changed_paths": changed, "outside_root_write_attempts": violations,
         "observation_violations": observation_violations,
+        "root_id_write_attempts": root_id_attempts,
         "inputs": hashed_inputs, "artifacts": {
             name: {"path": str(path.relative_to(root)), "size": path.stat().st_size,
                    "sha256": _sha256(path)} for name, path in files.items()
@@ -559,7 +656,7 @@ def capture_install(root: Path, argv: Sequence[str], *, cwd: Path | None = None,
     if violations:
         raise CaptureError("trace contains writes outside the fixture; see " + str(event_path))
     if observation_violations:
-        raise CaptureError("trace contains observation violations (io_uring_setup); see " + str(event_path))
+        raise CaptureError("capture contains observation/integrity violations; see " + str(event_path))
     if exit_status != 0:
         raise InstallCommandFailed(event)
     return event
