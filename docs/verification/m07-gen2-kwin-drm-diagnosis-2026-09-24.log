@@ -60,7 +60,28 @@ Hyper-V'nin sentetik ekran kartı yalnız mod ayarlama (KMS) yapabiliyor, kendi 
 
 Süreç (`kwin_wayland`, PID 69399) çökmüyor, canlı kalıyor ama render edemediği için ekranda hiçbir şey görünmüyor; `PipeWire screencast` bağlantısı da aynı nedenle başarısız oluyor.
 
-**Bu M06/Mesa build kapsamına giren bir eksik, benim (Claude) düzeltebileceğim bir şey değil — Codex'in Mesa'yı `kms_swrast`/llvmpipe DRI sürücüsünü üretip doğru dizine (`/usr/lib/dri` ya da Mesa'nın `LIBGL_DRIVERS_PATH` bekliği neyse) kurması gerekiyor.** Muhtemel eksik yapılandırma bayrağı: Meson `-Dgallium-drivers=swrast` (ya da `llvmpipe`) ile birlikte `-Ddri-drivers=` / DRI loader entegrasyonunun etkin olmaması, ya da derlenen `.so` dosyasının `ninja install` adımında hedef dizine kopyalanmaması.
+## 3b. Kesin ve doğrulanabilir alt-neden (25 Eylül gece yarısı, Builder kaynak ağacı + build günlüğü incelemesi)
+
+Yukarıdaki `kmsro: driver missing` mesajının **tam olarak neden** çıktığı bulundu, Mesa kaynak kodundan:
+
+- `/mnt/lfs/sources/mesa-25.1.8/meson.build`: `with_gallium_kmsro` yalnızca `asahi/etnaviv/freedreno/lima/panfrost/v3d/vc4` (ARM SoC 3D sürücüleri) etkinse `true` oluyor. **`softpipe` bu listede hiç yok.** Yani Mesa'nın "kmsro" (KMS render-only eşleştirme) mekanizması zaten Hyper-V'nin sanal ekran kartı gibi x86 sentetik aygıtlar için tasarlanmamış; bu mesaj beklenen bir "uygun değil" reddi.
+- Asıl potansiyel çözüm yolu farklı: modern Mesa (bu sürüm dahil) artık her sürücü için ayrı `.so` **üretmiyor**; hepsini tek bir "megadriver" (`libgallium-<sürüm>.so`) olarak derleyip DRI yükleyicisinin beklediği eski adlarla (`swrast_dri.so`, `kms_swrast_dri.so`) **sembolik bağlantı** kurması gerekiyor. Build günlüğü (`/mnt/lfs/tmp/alp-logs/mesa-build.log`) bunu doğruluyor:
+  - `Gallium: Drivers: softpipe, Platforms: surfaceless drm` — yapılandırma doğru.
+  - `Linking target src/gallium/targets/dri/libgallium-25.1.8.so` — **megadriver gerçekten derlendi.**
+  - `Installing src/gallium/targets/dri/libgallium-25.1.8.so to /usr/lib` — **ama `/usr/lib/dri/` dizinine değil, düz `/usr/lib`'e kuruldu.**
+  - Günlükte `/usr/lib/dri` ya da herhangi bir `swrast_dri.so`/`kms_swrast_dri.so` sembolik bağlantı oluşturma adımı **hiç yok**.
+- Canlı Gen2'de doğrulandı: `/usr/lib/libgallium-25.1.8.so` **var** (19 MB, gerçek dosya), ama `/usr/lib/dri/` dizini **hiç yok**.
+- **Kernel tarafında ek bir eksik daha:** `/mnt/lfs/boot/config-6.16.1-alpbahOS` → `CONFIG_DRM_VGEM is not set`. `/dev/dri/` altında yalnız `card0` var, render node (`renderD1XX`) yok. `vgem` (sanal GEM), ARM-dışı/sentetik ekran kartlarını bir yazılım render node'una eşlemenin standart yollarından biri; bu da etkin değil.
+
+**Test edilmek istenen ama gece yarısı GUI kazası yüzünden tamamlanamayan deney:** `/usr/lib/dri/kms_swrast_dri.so` ve `swrast_dri.so`'yu `/usr/lib/libgallium-25.1.8.so`'ya sembolik bağlayıp KWin'i tekrar denemek. Betik hazır (`/tmp/mkdri`, canlı Gen2'de kalmış olabilir, reboot'ta gitmiş olabilir), **çalıştırılamadı**. Bu düşük riskli, kolayca test edilebilir bir sonraki adım — hem Claude hem Codex tarafından tekrarlanabilir, `/mnt/lfs`'ye yazmadan önce canlı Gen2'de denenmeli.
+
+**Bu, M06/Mesa build kapsamına giren bir eksik, benim (Claude) tek başıma kapatabileceğim bir şey değil.** İki ayrı olası düzeltme var, ikisi de Codex'in Builder/kernel alanında:
+1. **(Düşük risk, hızlı test)** Mevcut derlenmiş `libgallium-25.1.8.so`'ya `/usr/lib/dri/{swrast,kms_swrast}_dri.so` sembolik bağlantıları eklemek — Mesa'yı yeniden derlemeden.
+2. **(Kalıcı, doğru çözüm)** Mesa'nın `meson.build`/kurulum betiğini inceleyip DRI sürücü sembolik bağlantılarını `ninja install`'un neden oluşturmadığını bulmak (BLFS tarifinde eksik bir adım olabilir) ve kernelde `CONFIG_DRM_VGEM=y` etkinleştirmeyi değerlendirmek.
+
+## 4b. Gece yarısı GUI kazası (şeffaflık için kaydedildi)
+
+Mesa dri-symlink deneyini konsolda uygulamaya çalışırken, VMConnect'in "Eylem" menüsü yanlışlıkla açık kalmış olmalı ve sonraki tek harfli tuş vuruşlarım (`a`,`d`,`m`,`i`,`n`) menü kısayolu/mnemonic olarak yorumlanıp **Gen2 VM'inin gücünü kapattı** ("Gücü Kapat"). Fark edilir edilmez `Start-VM` ile (PowerShell/SSH, GUI'siz) güvenli şekilde yeniden açıldı; VM zaten her turda temiz reboot ediliyordu (canlı düzeltmeler kalıcı değildi), bu yüzden **veri/durum kaybı yok**. `/mnt/lfs` bu olaydan etkilenmedi. Ders: bu konsolda tek harfli tuş dizileri göndermeden önce **her zaman** bir tam ekran görüntüsüyle açık menü olmadığı doğrulanmalı; daha güvenilir yöntem, komutu SSH'den bir `/tmp` betiğine yazıp panoya kopyalayıp **Pano → Pano Metnini Yaz** ile tek seferde göndermek (bu turda da menü tıklamaları güvenilmez çıktı — birkaç denemede "Pano" yerine "Medya"/"Eylem" menüsüne denk geldi; muhtemelen art arda gelen tıklama+bekleme aralığı çok kısaydı). Bir sonraki turda bu menü etkileşimini tamamen SSH-yazılan-betik + tek bir dikkatli "Pano Metnini Yaz" çağrısına indirmek, aradaki tüm ekstra tıklamalardan kaçınmak gerekir.
 
 ## 4. Ortam sınırlamaları (yarın için not)
 
