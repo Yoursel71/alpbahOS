@@ -448,6 +448,29 @@ Cleanup detached all mounts; NBD PID was empty, 69 GiB remained free, and
 the pinned `alp.py` hash and empty database were unchanged. LFS reference:
 [Gawk 5.3.2 build instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/gawk.html).
 
+## Grep 3.12 staged comparison — 24 September 2026
+
+Grep 3.12 was built in the Builder `/mnt/lfs` chroot from the archive whose
+LFS MD5 is `5d9301ed9d209c4a88c8d3a6fd08b9ac` and SHA-256 is
+`2649b27c0e90e632eadcd757be06c6e9a4f48d941de51e7c0f83ff76408a07b9`. The
+build followed LFS: silence the obsolete `egrep.sh` warning, configure
+`--prefix=/usr`, build with `make -j2`, and run `make check`. Package tests
+reported 111 PASS, 15 SKIP, 2 XFAIL; gnulib tests reported 257 PASS, 58 SKIP;
+there were no FAIL or ERROR results. Locale-dependent tests were skipped for
+missing locales; `glibc-infloop` was XFAIL. A staged grep smoke reported
+version 3.12 and matched its sample input.
+
+The manifest contains 147 entries (97 directories, 50 files), SHA-256
+`C21657D5C08585F8828E8DA027BCDF6CE2073AEF8B00F304EE27B521EEC79591`;
+[manifest](manifests/lfs-base/grep-3.12-2026-09-24.json). Read-only
+preflight reported 52 matches and 95 mismatches; [full report](manifests/lfs-base/grep-3.12-2026-09-24-preflight.log),
+SHA-256 `BBB540DF6FB11882A57F88169E3EFFB22E7E43AE392F1A8756CE3296560507D7`.
+The report includes stage locale directories with UID/GID 1001 and mode
+0775. No stage files were merged and no ownership record was created. The
+EXIT trap detached all mounts; NBD PID was empty, 69 GiB remained free, and
+the pinned `alp.py` hash and empty `db.json` were unchanged. LFS reference:
+[Grep 3.12 build instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/grep.html).
+
 Official LFS 12.4-systemd procedures:
 [Gzip-1.14](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/gzip.html),
 [Zstd-1.5.7](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/zstd.html),
