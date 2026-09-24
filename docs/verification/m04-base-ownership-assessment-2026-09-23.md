@@ -354,6 +354,34 @@ required SHA-256 and `db.json` remained empty. LFS references:
 [Readline 8.3 build instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/readline.html),
 [official archive checksum](https://www.linuxfromscratch.org/lfs/view/stable/chapter03/packages.html).
 
+## M4 1.4.20 staged comparison — 24 September 2026
+
+M4 1.4.20 was built in the Builder `/mnt/lfs` chroot from the verified source
+archive (SHA-256
+`e236ea3a1ccf5f6c270b1c4bb60726f371fa49459a8eaaebc90b216b328daf2b`), using
+`./configure --prefix=/usr`, `make -j2`, and `make check`. The test log records
+306 PASS, 60 SKIP, 0 FAIL, and 0 ERROR. A stage-only smoke test expanded a
+definition to `42`. The install went to
+`/mnt/lfs/tmp/alp-m04-m4-stage-r1`, not the rootfs.
+
+The manifest contains 93 entries (61 directories, 32 files), SHA-256
+`CBD3B8B1444DA81BF841E75005D63151415324A5B02C7A5D0F54D75896181F89`;
+[manifest](manifests/lfs-base/m4-1.4.20-2026-09-24.json). Read-only preflight
+reported 36 matches and 57 mismatches; [full report](manifests/lfs-base/m4-1.4.20-2026-09-24-preflight.log),
+SHA-256 `47D0823D095508A88F763CEF0F72DC096131C61BAF5EA6ED8A2E481E463B261C`.
+The staged `/usr/bin/m4` differs from the current rootfs binary by 8 bytes;
+56 directory metadata records differ because stage directories were created
+as UID/GID 1001 with mode 0775. No stage files were merged and no `alp`
+ownership record was added. Rootfs `alp.py` retained its required hash and
+`db.json` remained empty.
+
+The build log is preserved on Builder at
+`/mnt/lfs/tmp/alp-logs/m04-m4-1.4.20-stage-20260924-r2.log`, SHA-256
+`64be1b32854535c4093c87f5f7e686b4289ba8b3377b9ce3bac3739864e7e489`. The
+EXIT trap confirmed no mounts remained below `/mnt/lfs`; `/sys/block/nbd0/pid`
+was empty and 69 GiB remained free on Builder `/`. LFS reference:
+[M4 1.4.20 build instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/m4.html).
+
 Official LFS 12.4-systemd procedures:
 [Gzip-1.14](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/gzip.html),
 [Zstd-1.5.7](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/zstd.html),
