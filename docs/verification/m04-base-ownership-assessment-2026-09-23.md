@@ -773,3 +773,23 @@ rootfs ownership and does not close M04. The final Builder check found no
 mounts below `/mnt/lfs`, no active build command, 68 GiB available, and no NBD
 device. The restricted `/tmp` search produced permission notices for
 systemd-private directories, so VHDX absence was not claimed from that search.
+
+## Fixture-only install transaction experiment — 24 September 2026
+
+Added `scripts/m04-package-install-transaction.py`, its fixture-only test suite,
+and `scripts/M04_TRANSACTION_WRITER_EXPERIMENT.md`. An independent code review
+found no remaining blocker for committing this experiment within its stated
+fixture-only boundary. The Linux Builder run reported 18 tests passing in
+31.518 seconds. The current Windows Python cannot run this Linux-only suite
+because it has no `fcntl` module; syntax compilation and `git diff --check`
+passed locally, and `check_docs.py` reported zero findings.
+
+The writer refuses `/mnt/lfs` and any path below it, is not integrated with
+Alp, and does not alter the rootfs, its empty package database, or the test
+image. Tests use disposable temporary fixture roots and exercise simulated
+process interruptions and recovery. They do not cover real power loss,
+authenticated package inputs, concurrent hostile writers, or production
+rootfs behavior. The experiment records no base-package ownership evidence
+and does not close M04. The 40 existing Chapter 8 manifests remain staged
+comparisons only; final-rootfs paths still have no authoritative package
+ownership records.
