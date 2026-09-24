@@ -62,14 +62,17 @@ every changed path in the before/after tree must reconcile to an observed
 installer operation or an explicitly documented generated-state action.
 
 `io_uring` is a known gap: kernel-mediated operations may not appear as the
-underlying file syscalls in a ptrace trace. The fixture runner now explicitly
-requests `io_uring_setup` in the strace filter and records any occurrence as an
-`observation_violation`, invalidating the event. This detects and rejects a
-reported call; it does not deny `io_uring`, and Linux integration has not
-verified the filter/parser behavior. Production must deny `io_uring_setup`
-through a verified seccomp policy or use an independently validated observer
-that accounts for its operations. Apply the same rule to any other write
-mechanism the trace cannot fully observe. Treat unresolved
+underlying file syscalls in a ptrace trace. The fixture runner now supplies
+Bubblewrap a native cBPF seccomp filter that returns `EPERM` for
+`io_uring_setup`, saves the exact filter bytes as a hashed event artifact, and
+requires the adapter to verify those bytes. The trace still requests
+`io_uring_setup`; observing an attempt records an `observation_violation` and
+invalidates the event, even when seccomp denied it. Unit tests verify the
+program encoding, recorded architecture, and adapter enforcement, but Linux
+integration has not verified that Bubblewrap installs the filter on the intended descendants or
+that the traced syscall is observable under the target kernel. This is a
+concrete hardening step, not production readiness. Apply the same rule to any
+other write mechanism the trace cannot fully observe. Treat unresolved
 relative dirfds, descriptor paths, absolute/relative symlink escapes, and
 writes outside the selected target as event failures. A detected escape
 attempt invalidates the event even when the kernel denied the write.
@@ -147,8 +150,9 @@ canonical event ledger retains full chronological provenance.
 
 Before any candidate-rootfs replay, run a single synthetic package install on
 a disposable Linux fixture with the production-intended bwrap/strace/seccomp
-configuration. The probe must exercise regular files, symlinks, directory
-metadata, descriptor writes, rename/unlink, xattrs where supported, and a
+configuration, including the recorded io_uring-deny filter. The probe must
+exercise regular files, symlinks, directory metadata, descriptor writes,
+rename/unlink, xattrs where supported, and a
 shared writable mapping. It must also attempt writes to host sentinels using
 absolute paths, `..`, symlink traversal, relative paths, dirfd-relative calls,
 and inherited output descriptors. Include a nested-mount probe and an

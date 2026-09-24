@@ -27,7 +27,7 @@ SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 ARTIFACTS_REQUIRED = {
     "install_log", "syscall_trace", "rootfs_before", "rootfs_after",
 }
-ARTIFACTS_OPTIONAL = {"stage_before", "stage_after"}
+ARTIFACTS_OPTIONAL = {"stage_before", "stage_after", "confinement_policy"}
 
 
 class BundleError(ValueError):

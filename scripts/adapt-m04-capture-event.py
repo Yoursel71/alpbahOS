@@ -15,13 +15,14 @@ import json
 import os
 import re
 import stat
+import struct
 import sys
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 from typing import Any
 
 
-CAPTURE_SCHEMA = "alpbahOS.m04-install-event-capture/v2"
+CAPTURE_SCHEMA = "alpbahOS.m04-install-event-capture/v3"
 PROVENANCE_SCHEMA = "alpbahOS.m04-capture-adapter-provenance/v1"
 BUNDLE_SCHEMA = "alpbahOS.m04-install-evidence/v1"
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
@@ -79,6 +80,22 @@ def _safe_artifact(root: Path, raw: Any, label: str) -> tuple[Path, dict[str, An
     return candidate, raw
 
 
+def _expected_seccomp_policy(machine: str) -> bytes:
+    """Mirror the capture runner's narrow, architecture-gated cBPF policy."""
+    syscall_numbers = {"x86_64": 425, "amd64": 425, "aarch64": 425, "arm64": 425}
+    machine = machine.lower()
+    syscall_number = syscall_numbers.get(machine)
+    if syscall_number is None:
+        raise AdapterError(f"cannot verify seccomp policy for architecture {machine!r}")
+    instructions = (
+        (0x20, 0, 0, 0),
+        (0x15, 0, 1, syscall_number),
+        (0x06, 0, 0, 0x00050001),
+        (0x06, 0, 0, 0x7fff0000),
+    )
+    return b"".join(struct.pack("=HBBI", *instruction) for instruction in instructions)
+
+
 def _iso_from_ns(value: Any, label: str) -> str:
     if type(value) is not int or value < 0:
         raise AdapterError(f"capture {label} must be a nonnegative integer nanosecond timestamp")
@@ -93,7 +110,7 @@ def _iso_from_ns(value: Any, label: str) -> str:
 def _validate_capture(raw: Any) -> dict[str, Any]:
     if not isinstance(raw, dict) or raw.get("schema") != CAPTURE_SCHEMA:
         raise AdapterError(f"event schema must be {CAPTURE_SCHEMA}")
-    required = {"schema", "event_id", "root_id", "event_dir", "package", "version", "argv",
+    required = {"schema", "event_id", "root_id", "event_dir", "seccomp_architecture", "package", "version", "argv",
                 "cwd", "environment", "started_unix_ns", "ended_unix_ns", "exit_status",
                 "changed_paths", "outside_root_write_attempts", "observation_violations", "inputs", "artifacts"}
     if not required <= set(raw):
@@ -188,10 +205,15 @@ def adapt_bundle_event(event_raw: Any, provenance_raw: Any, evidence_root_arg: P
     if not isinstance(artifacts, dict):
         raise AdapterError("capture artifacts must be an object")
     artifact_paths: dict[str, tuple[Path, dict[str, Any]]] = {}
-    for key in ("before_snapshot", "after_snapshot", "stdout", "stderr", "strace"):
+    for key in ("before_snapshot", "after_snapshot", "stdout", "stderr", "strace", "seccomp_policy"):
         if key not in artifacts:
             raise AdapterError(f"capture is missing required artifact {key}")
         artifact_paths[key] = _safe_artifact(root, artifacts[key], f"capture.artifacts.{key}")
+    architecture = event.get("seccomp_architecture")
+    if not isinstance(architecture, str) or not architecture:
+        raise AdapterError("capture seccomp_architecture is missing")
+    if artifact_paths["seccomp_policy"][0].read_bytes() != _expected_seccomp_policy(architecture):
+        raise AdapterError("capture seccomp policy is not the required io_uring-deny filter")
 
     stdout = artifact_paths["stdout"][0].read_bytes()
     stderr = artifact_paths["stderr"][0].read_bytes()
@@ -233,6 +255,7 @@ def adapt_bundle_event(event_raw: Any, provenance_raw: Any, evidence_root_arg: P
         "artifacts": {
             "install_log": log_artifact,
             "syscall_trace": bundle_artifact("strace"),
+            "confinement_policy": bundle_artifact("seccomp_policy"),
             "rootfs_before": bundle_artifact("before_snapshot"),
             "rootfs_after": bundle_artifact("after_snapshot"),
         },
@@ -243,7 +266,8 @@ def refuse_reconciliation() -> None:
     raise AdapterError(
         "refusing reconciler conversion: this fixture runner cannot establish a complete, "
         "exclusive write set or attribute concurrent tree changes to the install command. "
-        "Its trace parser skips unknown syscall records and does not deny io_uring; snapshots "
+        "Its trace parser skips unknown syscall records; the new seccomp deny policy is not yet "
+        "validated in Linux integration; snapshots "
         "are path-based and lack a quiescent-root/exclusive-lock guarantee. A complete 79-event "
         "chain, independently pinned package identities, and a validated complete observation "
         "boundary are still required. No write_set_complete=true assertion was generated."
