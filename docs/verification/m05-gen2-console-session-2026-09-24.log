@@ -1,0 +1,92 @@
+# M05 Gen2 console session — read-only live recheck
+
+- Captured: 2026-09-24 17:15:31–17:15:32 UTC (guest reports 17:15:32 UTC).
+- Scope: bounded SSH read-only queries to the existing Gen2 guest, authenticated as `sa`; no admin login, GUI/Plasma command, or guest write was attempted.
+- SSH alias: `alp-m2-gen2` resolves in the local config to stale `172.28.171.21`.
+- Endpoint override: `ssh -T -o BatchMode=yes -o ConnectTimeout=6 -o ConnectionAttempts=1 -o HostName=172.28.164.164 alp-m2-gen2 '<read-only query>'`; only the endpoint was overridden, preserving alias user/key settings.
+- The single remote shell query ran `date -u`, `hostname`, printed `$SSH_CONNECTION`, read `/proc/sys/kernel/random/boot_id`, ran `loginctl list-sessions --no-legend`, iterated admin sessions with `loginctl show-session` for the properties below, filtered current-boot journal lines for the login PAM session, checked `systemctl is-enabled` and `is-active` for the three named units, counted `systemctl --failed --no-legend --no-pager`, then probed `command -v ip` and `ip -brief address`.
+- Local SSH process exit status: `0`.
+
+## Transcript
+
+```text
+guest_utc=2026-09-24T17:15:32Z
+guest_clock_rc=0
+hostname=alpbahos-m2-gen2
+hostname_rc=0
+ssh_connection=172.28.160.1 50555 172.28.164.164 22
+boot_id=6df39e0d-a48d-4e8f-a138-6ec5c4e4a663
+boot_id_rc=0
+
+sessions_begin
+27 1001 admin seat0 181   user    tty1 yes 1h 38min ago
+28 1001 admin -     5789  manager -    no  -
+70 1000 sa    -     16021 user    -    no  -
+71 1000 sa    -     16026 manager -    no  -
+sessions_rc=0
+
+admin_session_properties_begin
+admin_session_id=27
+User=1001
+Name=admin
+Timestamp=Thu 2026-09-24 06:57:27 +03
+TimestampMonotonic=25955638946
+VTNr=1
+Seat=seat0
+TTY=tty1
+Remote=no
+Service=login
+Leader=181
+Type=tty
+Class=user
+Active=yes
+State=active
+show_session_rc=0
+admin_session_id=28
+User=1001
+Name=admin
+Timestamp=Thu 2026-09-24 06:57:27 +03
+TimestampMonotonic=25955664458
+VTNr=0
+Seat=
+TTY=
+Remote=no
+Service=systemd-user
+Leader=5789
+Type=unspecified
+Class=manager
+Active=yes
+State=active
+show_session_rc=0
+admin_session_pipeline_rc=0
+
+pam_journal_begin
+2026-09-24T06:57:27+03:00 alpbahos-m2-gen2 login[181]: pam_unix(login:session): session opened for user admin(uid=1001) by (uid=0)
+pam_journal_pipeline_rc=0
+
+enabled/active results (each command returned status 0)
+getty@tty1.service: is-enabled=enabled; is-active=active
+systemd-resolved.service: is-enabled=enabled; is-active=active
+sshd.service: is-enabled=enabled; is-active=active
+
+failed_units_begin
+<empty>
+failed_units_count=0
+failed_command_rc=0
+
+ip_probe_begin
+ip_probe_rc=1
+ip_command_rc=127
+bash: line 1: ip: command not found
+
+ssh_exit_code=0
+capture_end_utc=2026-09-24T17:15:32Z
+```
+
+## Interpretation and limits
+
+- The SSH transport confirms the responding guest endpoint `172.28.164.164:22`; the guest-side `ip` command is absent, so this capture did not enumerate addresses from inside the guest.
+- Session 27 is a current active local login session on `seat0`/`tty1`, with `Service=login`, `Type=tty`, and `Remote=no`. The journal records the PAM login session opening. This proves the login/PAM/logind session state at capture, not a Plasma session.
+- The guest wall clock at capture was 17:15:32 UTC, while the login timestamp is 06:57:27 +03 and the session listing reports an idle interval of 1h38min. These fields are not used to claim a fresh login at capture; current `Active=yes`/`State=active` and the PAM record are reported separately. Exact login onset should not be inferred from the rounded idle display.
+- `getty@tty1`, `systemd-resolved`, and `sshd` are enabled and active; zero loaded failed units were reported.
+- The captured `sa` read-only SSH session was the only action. No guest files/configuration, admin credentials, GUI, or Plasma runtime were touched.

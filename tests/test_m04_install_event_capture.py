@@ -121,6 +121,14 @@ class InstallEventCaptureTests(unittest.TestCase):
             self.fx.root / event["artifacts"]["stdout"]["path"]))
         self.assertTrue((self.fx.root / event["artifacts"]["before_snapshot"]["path"]).is_file())
         self.assertTrue((self.fx.root / event["artifacts"]["after_snapshot"]["path"]).is_file())
+        manifest_path = self.fx.root / event["event_manifest"]["path"]
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        persisted_event_path = self.fx.root / manifest["event_path"]
+        event_bytes = persisted_event_path.read_bytes()
+        self.assertEqual(manifest["schema"], capture.EVENT_MANIFEST_SCHEMA)
+        self.assertEqual(manifest["size"], len(event_bytes))
+        self.assertEqual(manifest["sha256"], capture.hashlib.sha256(event_bytes).hexdigest())
+        self.assertNotIn("event_manifest", json.loads(event_bytes))
         snapshot = json.loads((self.fx.root / event["artifacts"]["before_snapshot"]["path"]).read_text())
         self.assertEqual(snapshot["schema"], "alpbahOS.m04-reconcile-snapshot/v3")
         reconciler._snapshot(snapshot, event["root_id"], "captured fixture snapshot")

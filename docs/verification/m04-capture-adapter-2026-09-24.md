@@ -32,6 +32,18 @@ then maps the trace and snapshots to the verifier's required artifact names.
 The resulting one-event index can be checked without strict package coverage;
 sequence/identity inputs for a complete bundle remain caller-managed.
 
+Before conversion, the adapter also requires the detached
+`event.json.manifest.json` sibling. It checks the sidecar schema, canonical event
+path, byte size, and SHA-256 against a stable no-follow read of `event.json`.
+On Linux, the stable-read identity check includes inode change time as well as
+device/inode/type/size/mtime; Windows uses its portable subset because its
+`st_ctime` represents creation time rather than Linux inode change time.
+The capture runner writes both under `.m04-capture/events/`, which is mounted
+read-only inside the installer namespace. This detects missing or changed event
+bytes during conversion. It does not authenticate either file: a party able to
+replace both can recompute the hash, and the sidecar is not a trusted
+append-only ledger or proof of a real install.
+
 Example:
 
 ```text
@@ -78,7 +90,8 @@ remain required.
 
 ## Validation
 
-- Windows host: `python -m pytest -q tests/test_m04_capture_event_adapter.py tests/test_m04_evidence_bundle.py tests/test_m04_install_event_capture.py tests/test_m04_final_owner_reconciler.py` — **46 passed, 4 skipped**. This includes a CLI-path fixture test that writes an adapted index and passes it through the existing bundle verifier, plus `io_uring_setup` rejection.
-- `python -m py_compile scripts/adapt-m04-capture-event.py` — passed.
+- Windows host: focused M04 capture/adapter/bundle/reconciler/identity and audio-analysis suite, `python -m pytest -q tests/test_m04_install_event_capture.py tests/test_m04_capture_event_adapter.py tests/test_m04_evidence_bundle.py tests/test_m04_final_owner_reconciler.py tests/test_m04_recipe_identity_inventory.py tests/test_audio_capture_analysis.py tests/test_m04_linux_seccomp_integration.py` — **62 passed, 6 skipped**. This includes correct, missing, and tampered detached event-manifest cases, a CLI-path fixture test that writes an adapted index and passes it through the existing bundle verifier, and the opt-in Linux integration tests skipped on Windows.
+- `python -m py_compile scripts/capture-m04-install-event.py scripts/adapt-m04-capture-event.py tests/test_m04_install_event_capture.py tests/test_m04_capture_event_adapter.py tests/test_m04_linux_seccomp_integration.py` — passed.
 - `python docs/handoffs/claude/tools/check_docs.py` — 0 findings.
 - `git diff --check` — passed.
+- The Linux integration probe remains unrun. The Windows pass is unit/fixture evidence only and does not establish Linux ctime behavior, seccomp enforcement, or production capture readiness.
