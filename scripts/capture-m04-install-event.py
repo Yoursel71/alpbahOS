@@ -30,7 +30,7 @@ from typing import Any, Mapping, Sequence
 MARKER = ".m04-fixture-root"
 MARKER_TEXT = "DISPOSABLE M04 TRANSACTION FIXTURE ONLY v1\n"
 CAPTURE_DIR = ".m04-capture"
-SCHEMA = "alpbahOS.m04-install-event-capture/v1"
+SCHEMA = "alpbahOS.m04-install-event-capture/v2"
 SNAPSHOT_SCHEMA = "alpbahOS.m04-reconcile-snapshot/v2"
 WRITE_SYSCALLS = {
     "creat", "link", "linkat", "mkdir", "mkdirat", "mknod", "mknodat",
@@ -365,6 +365,18 @@ def _trace_outside_writes(trace_path: Path, root: Path, cwd: Path) -> list[str]:
     return violations
 
 
+def _trace_observation_violations(trace_path: Path) -> list[str]:
+    """Return recognized syscalls whose effects are not fully observed here."""
+    violations: list[str] = []
+    for line_no, line in enumerate(trace_path.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
+        match = SYSCALL_RE.match(line)
+        if match and match.group(1) == "io_uring_setup":
+            violations.append(
+                f"line {line_no}: io_uring_setup observed; fixture event invalid because io_uring operations are not fully observed"
+            )
+    return violations
+
+
 def _run_with_parent_logs(argv: Sequence[str], cwd: Path, env: Mapping[str, str],
                           stdout_path: Path, stderr_path: Path) -> int:
     """Run a command with pipe stdio; only this parent opens the regular logs.
@@ -415,8 +427,9 @@ def _execute(argv: Sequence[str], cwd: Path, env: Mapping[str, str], root: Path,
              stdout_path: Path, stderr_path: Path) -> int:
     # Request a read-only host and evidence store with only the fixture writable.
     # Effective isolation has not been verified by a real Linux integration run.
+    # io_uring_setup is traced and invalidates the event; this does not deny io_uring.
     event_store = root / CAPTURE_DIR / "events"
-    traced = [strace, "-f", "-qq", "-yy", "-e", "trace=%file,%desc,mmap", "-o", str(trace_path),
+    traced = [strace, "-f", "-qq", "-yy", "-e", "trace=%file,%desc,mmap,io_uring_setup", "-o", str(trace_path),
               "--", bwrap, "--die-with-parent", "--unshare-all", "--ro-bind", "/", "/",
               "--bind", str(root), str(root), "--ro-bind", str(event_store), str(event_store),
               "--chdir", str(cwd), "--", *argv]
@@ -483,6 +496,7 @@ def capture_install(root: Path, argv: Sequence[str], *, cwd: Path | None = None,
     if not trace_path.is_file():
         raise CaptureError("strace did not produce its trace; event is incomplete")
     violations = _trace_outside_writes(trace_path, root, workdir)
+    observation_violations = _trace_observation_violations(trace_path)
     after = _snapshot(root, root_id)
     after_path = event_dir / "after.json"
     _write_json(after_path, after)
@@ -497,6 +511,7 @@ def capture_install(root: Path, argv: Sequence[str], *, cwd: Path | None = None,
         "argv": list(argv), "cwd": str(workdir), "environment": dict(sorted(allowed.items())),
         "started_unix_ns": start_ns, "ended_unix_ns": end_ns, "exit_status": exit_status,
         "changed_paths": changed, "outside_root_write_attempts": violations,
+        "observation_violations": observation_violations,
         "inputs": hashed_inputs, "artifacts": {
             name: {"path": str(path.relative_to(root)), "size": path.stat().st_size,
                    "sha256": _sha256(path)} for name, path in files.items()
@@ -508,6 +523,8 @@ def capture_install(root: Path, argv: Sequence[str], *, cwd: Path | None = None,
                                "sha256": _sha256(event_path)}
     if violations:
         raise CaptureError("trace contains writes outside the fixture; see " + str(event_path))
+    if observation_violations:
+        raise CaptureError("trace contains observation violations (io_uring_setup); see " + str(event_path))
     if exit_status != 0:
         raise InstallCommandFailed(event)
     return event
