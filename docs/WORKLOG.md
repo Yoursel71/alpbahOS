@@ -924,3 +924,10 @@ PipeWire hatası için aynı gün ek tekrar: Guest `/tmp`'te 12 saniye 48 kHz st
 
 - `docs/MASTER_PLAN.md` §10 M05’i M04’e bağımlı kılıyor; §10.1 nihai temel sistemde paket dosya sahipliği kaydını M03–M05 kritik kontrol noktası olarak şart koşuyor. M05’in BIOS/UEFI boot, ağ ve reboot test kanıtları mevcut olsa da M04 paketi sahiplik kapısı hâlâ açık.
 - `CURRENT.md` ve `docs/MASTER_PLAN.md` bu nedenle boot testlerini geçmiş kanıt olarak koruyor, fakat M05’in resmî kapanışını M04 tamamlanmasına bağlıyor. Yeni boot deneyi yapılmadı; test sonuçları değiştirilmedi.
+
+
+## 24 Eylül 2026 — M06 RDP audio upstream gate review
+
+- Primary-source review confirmed xrdp v0.10.6.1 is the current upstream release; its notes report ten vulnerability fixes and one regression fix. Candidate versions are xorgxrdp v0.10.5 and PipeWire module v0.1. xorgxrdp v0.10.5 requires paired xrdp >= 0.10.5. GitHub displays the release tag signatures as verified but marks their keys expired; signature trust must be independently checked before use. No release-page SHA-256 values were published.
+- BLFS 12.4 Xorg Server is 21.1.18, MD5 `43225ddc1fd8d7ae7671c25ab6d1f927`, with libxcvt, Pixman and font-util required. Builder records do not yet confirm these dependencies. Existing PipeWire/SPA headers satisfy the recorded version-level prerequisite for the module, but configure/build remains untested. Safe order: Xorg Server -> xrdp -> xorgxrdp -> PipeWire module.
+- Acceptance is specified as separate RDP playback and microphone tests with deterministic PCM, Windows WASAPI loopback/host endpoint records, guest captures, signal metrics and hashes. WASAPI loopback does not prove acoustic speaker output. This was upstream research only; no source download, Builder build, rootfs, image, or VM modification occurred. References are linked in `verification/m06-gen2-audio-2026-09-24.md`.
