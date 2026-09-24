@@ -1,0 +1,68 @@
+   1266459:	find library=libm.so.6 [0]; searching
+   1266459:	 search path=/build/mpfr-4.2.2-m04-r1/src/.libs/glibc-hwcaps/x86-64-v3:/build/mpfr-4.2.2-m04-r1/src/.libs/glibc-hwcaps/x86-64-v2:/build/mpfr-4.2.2-m04-r1/src/.libs:/usr/lib/../lib/glibc-hwcaps/x86-64-v3:/usr/lib/../lib/glibc-hwcaps/x86-64-v2:/usr/lib/../lib		(RPATH from file /build/mpfr-4.2.2-m04-r1/tests/tversion)
+   1266459:	  trying file=/build/mpfr-4.2.2-m04-r1/src/.libs/glibc-hwcaps/x86-64-v3/libm.so.6
+   1266459:	  trying file=/build/mpfr-4.2.2-m04-r1/src/.libs/glibc-hwcaps/x86-64-v2/libm.so.6
+   1266459:	  trying file=/build/mpfr-4.2.2-m04-r1/src/.libs/libm.so.6
+   1266459:	  trying file=/usr/lib/../lib/glibc-hwcaps/x86-64-v3/libm.so.6
+   1266459:	  trying file=/usr/lib/../lib/glibc-hwcaps/x86-64-v2/libm.so.6
+   1266459:	  trying file=/usr/lib/../lib/libm.so.6
+   1266459:	
+   1266459:	find library=libquadmath.so.0 [0]; searching
+   1266459:	 search path=/build/mpfr-4.2.2-m04-r1/src/.libs:/usr/lib/../lib		(RPATH from file /build/mpfr-4.2.2-m04-r1/tests/tversion)
+   1266459:	  trying file=/build/mpfr-4.2.2-m04-r1/src/.libs/libquadmath.so.0
+   1266459:	  trying file=/usr/lib/../lib/libquadmath.so.0
+   1266459:	
+   1266459:	find library=libmpfr.so.6 [0]; searching
+   1266459:	 search path=/build/mpfr-4.2.2-m04-r1/src/.libs:/usr/lib/../lib		(RPATH from file /build/mpfr-4.2.2-m04-r1/tests/tversion)
+   1266459:	  trying file=/build/mpfr-4.2.2-m04-r1/src/.libs/libmpfr.so.6
+   1266459:	
+   1266459:	find library=libc.so.6 [0]; searching
+   1266459:	 search path=/build/mpfr-4.2.2-m04-r1/src/.libs:/usr/lib/../lib		(RPATH from file /build/mpfr-4.2.2-m04-r1/tests/tversion)
+   1266459:	  trying file=/build/mpfr-4.2.2-m04-r1/src/.libs/libc.so.6
+   1266459:	  trying file=/usr/lib/../lib/libc.so.6
+   1266459:	
+   1266459:	
+   1266459:	calling init: /lib64/ld-linux-x86-64.so.2
+   1266459:	
+   1266459:	
+   1266459:	calling init: /usr/lib/../lib/libc.so.6
+   1266459:	
+   1266459:	
+   1266459:	calling init: /tmp/alp-m04-gmp-stage-r1/usr/lib/libgmp.so.10.5.0
+   1266459:	
+   1266459:	
+   1266459:	calling init: /build/mpfr-4.2.2-m04-r1/src/.libs/libmpfr.so.6
+   1266459:	
+   1266459:	
+   1266459:	calling init: /usr/lib/../lib/libm.so.6
+   1266459:	
+   1266459:	
+   1266459:	calling init: /usr/lib/../lib/libquadmath.so.0
+   1266459:	
+   1266459:	
+   1266459:	initialize program: /build/mpfr-4.2.2-m04-r1/tests/tversion
+   1266459:	
+   1266459:	
+   1266459:	transferring control: /build/mpfr-4.2.2-m04-r1/tests/tversion
+   1266459:	
+   1266459:	
+   1266459:	calling fini:  [0]
+   1266459:	
+   1266459:	
+   1266459:	calling fini: /usr/lib/../lib/libquadmath.so.0 [0]
+   1266459:	
+   1266459:	
+   1266459:	calling fini: /usr/lib/../lib/libm.so.6 [0]
+   1266459:	
+   1266459:	
+   1266459:	calling fini: /build/mpfr-4.2.2-m04-r1/src/.libs/libmpfr.so.6 [0]
+   1266459:	
+   1266459:	
+   1266459:	calling fini: /tmp/alp-m04-gmp-stage-r1/usr/lib/libgmp.so.10.5.0 [0]
+   1266459:	
+   1266459:	
+   1266459:	calling fini: /usr/lib/../lib/libc.so.6 [0]
+   1266459:	
+   1266459:	
+   1266459:	calling fini: /lib64/ld-linux-x86-64.so.2 [0]
+   1266459:	
