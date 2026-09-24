@@ -1,0 +1,16 @@
+{
+  "name": "alpbahos-ultrakill-3d",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ULTRAKILL tarzı 3D hayran oyunu (tarayıcıda, Three.js). Resmi değildir.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node tests/smoke.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "playwright-core": "1.63.0",
+    "three": "0.186.0"
+  }
+}
