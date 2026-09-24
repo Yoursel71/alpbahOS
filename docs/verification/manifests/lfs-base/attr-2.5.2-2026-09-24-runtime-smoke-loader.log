@@ -1,0 +1,140 @@
+   1292685:	find library=libncursesw.so.6 [0]; searching
+   1292685:	 search path=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v3:/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v2:/tmp/alp-m04-attr-stage-20260924-r3/usr/lib		(LD_LIBRARY_PATH)
+   1292685:	  trying file=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v3/libncursesw.so.6
+   1292685:	  trying file=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v2/libncursesw.so.6
+   1292685:	  trying file=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/libncursesw.so.6
+   1292685:	 search cache=/etc/ld.so.cache
+   1292685:	  trying file=/usr/lib/libncursesw.so.6
+   1292685:	
+   1292685:	find library=libc.so.6 [0]; searching
+   1292685:	 search path=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib		(LD_LIBRARY_PATH)
+   1292685:	  trying file=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/libc.so.6
+   1292685:	 search cache=/etc/ld.so.cache
+   1292685:	  trying file=/usr/lib/libc.so.6
+   1292685:	
+   1292685:	
+   1292685:	calling init: /lib64/ld-linux-x86-64.so.2
+   1292685:	
+   1292685:	
+   1292685:	calling init: /usr/lib/libc.so.6
+   1292685:	
+   1292685:	
+   1292685:	calling init: /usr/lib/libncursesw.so.6
+   1292685:	
+   1292685:	
+   1292685:	initialize program: /bin/bash
+   1292685:	
+   1292685:	
+   1292685:	transferring control: /bin/bash
+   1292685:	
+   1292686:	find library=libattr.so.1 [0]; searching
+   1292686:	 search path=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v3:/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v2:/tmp/alp-m04-attr-stage-20260924-r3/usr/lib		(LD_LIBRARY_PATH)
+   1292686:	  trying file=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v3/libattr.so.1
+   1292686:	  trying file=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v2/libattr.so.1
+   1292686:	  trying file=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/libattr.so.1
+   1292686:	
+   1292686:	find library=libc.so.6 [0]; searching
+   1292686:	 search path=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib		(LD_LIBRARY_PATH)
+   1292686:	  trying file=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/libc.so.6
+   1292686:	 search cache=/etc/ld.so.cache
+   1292686:	  trying file=/usr/lib/libc.so.6
+   1292686:	
+   1292686:	
+   1292686:	calling init: /lib64/ld-linux-x86-64.so.2
+   1292686:	
+   1292686:	
+   1292686:	calling init: /usr/lib/libc.so.6
+   1292686:	
+   1292686:	
+   1292686:	calling init: /tmp/alp-m04-attr-stage-20260924-r3/usr/lib/libattr.so.1
+   1292686:	
+   1292686:	
+   1292686:	initialize program: /tmp/alp-m04-attr-stage-20260924-r3/usr/bin/setfattr
+   1292686:	
+   1292686:	
+   1292686:	transferring control: /tmp/alp-m04-attr-stage-20260924-r3/usr/bin/setfattr
+   1292686:	
+   1292686:	
+   1292686:	calling fini:  [0]
+   1292686:	
+   1292686:	
+   1292686:	calling fini: /tmp/alp-m04-attr-stage-20260924-r3/usr/lib/libattr.so.1 [0]
+   1292686:	
+   1292686:	
+   1292686:	calling fini: /usr/lib/libc.so.6 [0]
+   1292686:	
+   1292686:	
+   1292686:	calling fini: /lib64/ld-linux-x86-64.so.2 [0]
+   1292686:	
+   1292687:	find library=libattr.so.1 [0]; searching
+   1292687:	 search path=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v3:/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v2:/tmp/alp-m04-attr-stage-20260924-r3/usr/lib		(LD_LIBRARY_PATH)
+   1292687:	  trying file=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v3/libattr.so.1
+   1292687:	  trying file=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v2/libattr.so.1
+   1292687:	  trying file=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/libattr.so.1
+   1292687:	
+   1292688:	find library=libc.so.6 [0]; searching
+   1292688:	 search path=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v3:/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v2:/tmp/alp-m04-attr-stage-20260924-r3/usr/lib		(LD_LIBRARY_PATH)
+   1292688:	  trying file=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v3/libc.so.6
+   1292688:	  trying file=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v2/libc.so.6
+   1292688:	  trying file=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/libc.so.6
+   1292687:	find library=libc.so.6 [0]; searching
+   1292688:	 search cache=/etc/ld.so.cache
+   1292687:	 search path=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib		(LD_LIBRARY_PATH)
+   1292687:	  trying file=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/libc.so.6
+   1292687:	 search cache=/etc/ld.so.cache
+   1292688:	  trying file=/usr/lib/libc.so.6
+   1292688:	
+   1292687:	  trying file=/usr/lib/libc.so.6
+   1292687:	
+   1292688:	
+   1292688:	calling init: /lib64/ld-linux-x86-64.so.2
+   1292688:	
+   1292688:	
+   1292688:	calling init: /usr/lib/libc.so.6
+   1292688:	
+   1292687:	
+   1292687:	calling init: /lib64/ld-linux-x86-64.so.2
+   1292687:	
+   1292687:	
+   1292687:	calling init: /usr/lib/libc.so.6
+   1292687:	
+   1292688:	
+   1292688:	initialize program: grep
+   1292688:	
+   1292688:	
+   1292688:	transferring control: grep
+   1292688:	
+   1292687:	
+   1292687:	calling init: /tmp/alp-m04-attr-stage-20260924-r3/usr/lib/libattr.so.1
+   1292687:	
+   1292687:	
+   1292687:	initialize program: /tmp/alp-m04-attr-stage-20260924-r3/usr/bin/getfattr
+   1292687:	
+   1292687:	
+   1292687:	transferring control: /tmp/alp-m04-attr-stage-20260924-r3/usr/bin/getfattr
+   1292687:	
+getfattr: Removing leading '/' from absolute path names
+   1292687:	
+   1292687:	calling fini:  [0]
+   1292687:	
+   1292687:	
+   1292687:	calling fini: /tmp/alp-m04-attr-stage-20260924-r3/usr/lib/libattr.so.1 [0]
+   1292687:	
+   1292687:	
+   1292687:	calling fini: /usr/lib/libc.so.6 [0]
+   1292687:	
+   1292687:	
+   1292687:	calling fini: /lib64/ld-linux-x86-64.so.2 [0]
+   1292687:	
+   1292685:	
+   1292685:	calling fini:  [0]
+   1292685:	
+   1292685:	
+   1292685:	calling fini: /usr/lib/libncursesw.so.6 [0]
+   1292685:	
+   1292685:	
+   1292685:	calling fini: /usr/lib/libc.so.6 [0]
+   1292685:	
+   1292685:	
+   1292685:	calling fini: /lib64/ld-linux-x86-64.so.2 [0]
+   1292685:	
