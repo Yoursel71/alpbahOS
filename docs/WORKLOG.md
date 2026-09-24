@@ -547,3 +547,11 @@ PipeWire hatası için aynı gün ek tekrar: Guest `/tmp`'te 12 saniye 48 kHz st
 
 - `alpbahOS-M2-SSH-Gen2-DBus` SSH guest `172.28.171.33` üzerinde `systemctl --user cat plasma-kwin_wayland.service` taban birimde `ExecStart=/opt/kf6/bin/kwin_wayland_wrapper --xwayland` gösterdi; drop-in `10-wayland-only.conf` bunu temizleyip `ExecStart=/opt/kf6/bin/kwin_wayland_wrapper` ile değiştiriyor. `systemctl --user show` etkin `ExecStart` değerinde `--xwayland` yok; FragmentPath `/usr/lib/systemd/user/plasma-kwin_wayland.service`, DropInPaths doğru.
 - `loginctl seat-status seat0` DRM `card0`/`Virtual-1` ve AT keyboard aygıtını gösterdi. `loginctl list-sessions --no-legend` bu sorguda yalnız `sa` user/manager oturumlarını gösterdi; `admin` veya `Type=tty` session yok. KWin kapısı geçmiş durumda ama gerçek Plasma/DRM-seat testi başlamadı; VMConnect tty1 admin login + `pam_systemd`/`loginctl` kanıtı bekliyor.
+- Sonraki canlı SSH sorgusunda guest boot ID `67e367ff-b6a0-4f6f-9e55-0e2202675d84`; `loginctl` yine yalnız `sa` user/manager session'larını verdi, `seat0` DRM/keyboard aygıtları görüldü ve etkin KWin ExecStart `/opt/kf6/bin/kwin_wayland_wrapper` olarak kaldı. Admin tty/PAM oturumu oluşmamış.
+
+## 24 Eylül 2026 — M06 ters ALSA→PipeWire probe
+
+- `alpbahOS-M2-SSH-Gen2-Audio` (`172.28.174.20`) üzerinde tek SSH session içinde user D-Bus, PipeWire, WirePlumber ve `pipewire-pulse.socket` başlatıldı; `wpctl status` sink 45/source 46 gösterdi.
+- `speaker-test -D hw:Loopback,1,0 -t sine -f 440 -r 48000 -c 2 -F S32_LE -s 1 -l 5` exit 0 oldu. Aynı PCM `S16_LE` biçimini reddetti; test S32_LE ile yinelendi.
+- `pw-record --target=46 --rate=48000 --channels=2 --format=s32` kaydı beklenen SIGINT cleanup sınırında kapanmadı; kısa ölçüm penceresinde WAV 990,941,184 byte (946 MiB) büyüdü ve recorder exit 1 verdi. Ses örnekleri ölçülmedi; PipeWire capture/roundtrip başarılı sayılmıyor. Bu VM'deki son `/tmp` ölçümü 11 MiB kullanım ve 946 MiB boş gösterdi.
+- Yalnız bu probe'un oluşturduğu `/tmp/m06-inverse-pw-record.wav`, speaker-test/recorder logları kaldırıldı; package, kalıcı config, VM image veya rootfs değişmedi. Sonraki probe çıktı boyutuna sert sınır koymalı. Ayrıntı [M06 verification](verification/m06-gen2-audio-2026-09-24.md#inverse-alsa-to-pipewire-probe--24-september-2026).
