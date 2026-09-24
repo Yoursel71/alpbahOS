@@ -962,3 +962,24 @@ PipeWire hatası için aynı gün ek tekrar: Guest `/tmp`'te 12 saniye 48 kHz st
 
 - Same GCC wrapper/make PIDs 1451319/1451325 remain live; g++ DejaGNU PID 2121972 has ended. The terminal g++ suite summary is 248,538 expected PASS, 2,282 expected FAIL, 2,046 unsupported, with no unexpected-failure entry.
 - GCC C suite remains 211,480 expected PASS, 4 unexpected `gcc.target/i386/pr90579.c` scan FAIL, 1,476 expected FAIL, 3,780 unsupported. The overall runner has not emitted its finish marker, `gcc-test-summary.log` remains empty, and full `make -k check` is not accepted. `/mnt/lfs` has 60 GiB free. No build source or process was modified.
+
+
+## 24 Eylül 2026 — M04 GCC live poll (13:24:52 UTC)
+
+- Read-only `ssh alp-builder` poll confirmed the same wrapper/make/child PIDs 1451319/1451325/1451331 remain live (elapsed 3:25:44); libstdc++ DejaGNU PID 2556218 is live (elapsed 7:27) in `abi.exp` and `conformance.exp`. The wrapper log tail has not advanced since 13:17:34 and no finish marker exists, so this poll proves liveness but not recent test progress or completion.
+- `/mnt/lfs` remains 157 GiB total, 91 GiB used, 60 GiB free. No process, Builder file, rootfs, image, mount, or NBD state was changed. Do not modify the live GCC build/test tree; re-poll the same PIDs and preserve terminal suite summaries after the runner exits.
+
+- A second read-only poll at 13:26:22 UTC again found the same wrapper, make, and DejaGNU processes alive. DejaGNU had an active `xg++` child compiling `libstdc++-v3/testsuite/20_util/bind/48698.cc`; the top-level wrapper log and suite summary timestamps were unchanged. This confirms active child work despite no recent wrapper-log append. `/proc/2556218/io` was not readable under the SSH account, so no I/O counters are claimed.
+
+
+## 24 Eylül 2026 — M04 rootfs/script safety recheck
+
+- Read-only Builder check confirmed `/mnt/lfs` has the tty1 getty, resolved sysinit unit, D-Bus resolver alias, and stub `resolv.conf` symlinks with expected targets; installed Alp SHA-256 remains `7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132`, and its package DB remains empty. No rootfs or image changes were made by this check.
+- Updated `scripts/build-m2-gen2-test-image.sh` to fail closed when `/sys/block/nbd0/pid` is missing, and to enforce the requested test-only `admin/admin` console credentials. Git Bash `bash -n scripts/build-m2-gen2-test-image.sh` passed. Image creation remains deferred while the GCC test process is live; the release image is not targeted.
+
+
+## 24 Eylül 2026 — M04 fixture install-event capture prototype
+
+- Added `scripts/capture-m04-install-event.py`, separate from the fixture transaction writer. It requires a disposable marker, rejects `/mnt/lfs`, requires Linux `strace` and `bwrap`, runs with the host read-only and only the marked fixture writable, mounts the evidence store read-only during the install, and records command/environment, inputs, status, logs, trace hash, snapshots, and changed paths. It is still fixture-only and is not evidence for a real package install or `/mnt/lfs`.
+- Focused Windows fixture tests: `python tests/test_m04_install_event_capture.py` — 7 tests, 6 passed and the symlink-escape case skipped because Windows denied symlink creation. `python -m py_compile scripts/capture-m04-install-event.py tests/test_m04_install_event_capture.py` and `git diff --check` passed. No real Linux `strace`/`bwrap` execution was performed; no Builder/rootfs/image was changed.
+- M04 remains open with 40/79 staged manifests but 0/79 observed install events and no final ownership reconciliation. The active GCC `make -k check` is still the Builder gate before any Linux integration test or rootfs candidate work.
