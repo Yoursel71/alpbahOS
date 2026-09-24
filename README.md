@@ -4,7 +4,7 @@
 
 Windows'tan geçenler için kolay, Türkçe, kişiselleştirilebilir ve kaynak kullanımına dikkat eden LFS tabanlı x86_64 masaüstü projesi.
 
-**Durum:** Plan ve görev paylaşımı hazır. Linux derlemesi/ISO henüz üretilmedi. Repo özel kullanım içindir; test edilmemiş özellikler ürün desteği değildir.
+**Durum:** M1 temel sistem tamamlandı. LFS 12.4-systemd tabanı BIOS/UEFI emülasyonunda ve Hyper-V Gen2 üzerinde gerçek kernel, giriş istemi, DHCP ağı ve kontrollü yeniden başlatmayla doğrulandı. alpbahOS Gen1 test VM'i silindi; Gen1 sonuçları tarihsel kanıttır. Güncel test hedefi Gen2'dir. Grafik masaüstü ve canlı ISO sonraki aşamalardadır.
 
 Özel kaynak deposu: [Yoursel71/alpbahOS](https://github.com/Yoursel71/alpbahOS).
 
@@ -17,9 +17,10 @@ Windows'tan geçenler için kolay, Türkçe, kişiselleştirilebilir ve kaynak k
 - [Ortak ajan kuralları](AGENTS.md)
 - [Claude talimatları](CLAUDE.md) ve [ilk görev](docs/CLAUDE_START.md)
 - [İş kaydı](docs/WORKLOG.md)
+- [M01 önyükleme doğrulaması](docs/M1_BOOT_VERIFICATION.md)
 - [Tasarım referansı](docs/alpbahOS-design-mockups.md)
 
-Başlangıç seçimleri: LFS/BLFS, KDE Plasma/KWin, Konsole/Zsh, pacman/libalpm + `pkg`, Discover, Solid/Glass profilleri, Atatürk masaüstü/kilit ekranı, Türkçe Q. Steam/Wine için 32-bit kullanıcı alanı uyumluluğu toolchain aşamasında planlanır.
+Başlangıç seçimleri: LFS/BLFS, KDE Plasma/KWin, Konsole/Zsh, `alp` paket motoru, grafik mağaza, Solid/Glass profilleri, Atatürk masaüstü/kilit ekranı, Türkçe Q. Steam/Wine hedefi D22 ile, ilk sürümün saf x86_64 kapsamı D32 ile kayıtlıdır; aralarındaki uyumluluk kararı açık kalır. D32 gereği 32-bit kullanıcı alanı/multilib kapsam dışıdır.
 
 Önce Hyper-V masaüstü ve Legacy+UEFI canlı ISO; sonra Calamares ile grafik/offline/Windows yanında kurulum. Düşük RAM bütçesi ve sürücü uyumluluğu test kapılarıdır.
 

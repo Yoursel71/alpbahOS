@@ -1,0 +1,358 @@
+MISMATCH /usr/bin/cmp
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/cmp", "sha256": "364c83ab9aac39b41bdfc899848e36b7b71ec46084df1c4a040b8fc62a06b0c7", "size": 227344, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 493, "path": "/usr/bin/cmp", "sha256": "683a9565b6e8a02ae80bb0d81dd9f381da61e9b61856da424c4601b5aaae435e", "size": 248392, "type": "file", "uid": 1001}
+MISMATCH /usr/bin/diff
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/diff", "sha256": "967456026289568b50ff05929e5bcec78f0db8e422a034101ebd6e7852fb2587", "size": 649272, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 493, "path": "/usr/bin/diff", "sha256": "9c972d2606441f3d3a726a2be9e04e33ca0257943fc42716f99f8269549ba775", "size": 1062904, "type": "file", "uid": 1001}
+MISMATCH /usr/bin/diff3
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/diff3", "sha256": "0deaeb291cc433a5910e9424e8c390df08d2c82917eb956c41ccdb5de5c209b4", "size": 252224, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 493, "path": "/usr/bin/diff3", "sha256": "b00d345890eab1aadf31fa0a9a6691078c2b783836e0cedc7e40c1b99c5718e6", "size": 276664, "type": "file", "uid": 1001}
+MISMATCH /usr/bin/sdiff
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/sdiff", "sha256": "ef080cc7c3bbd2d17f64b7981394a5cc25c5ca9f86c79ce1554a67186739d80d", "size": 240736, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 493, "path": "/usr/bin/sdiff", "sha256": "b23f41df6e38d75362e543fb4dcf4c5914e1d54702d20776de4d068eeac75e84", "size": 274176, "type": "file", "uid": 1001}
+MISMATCH /usr/share/info
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/info", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/info", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/info/diffutils.info
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/info/diffutils.info", "sha256": "d1ac1df641e3f19d72c9371e154aa233ced030cc16ac01adf66f7d929a794462", "size": 229906, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/locale
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/bg
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/bg", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/bg", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/bg/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/bg/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/bg/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/bg/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/bg/LC_MESSAGES/diffutils.mo", "sha256": "48150a94eb582ccafa29d1ea4a1e67f1fb1ca8d01332ff31c646f51d7421f154", "size": 49014, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/bg/LC_MESSAGES/diffutils.mo", "sha256": "48150a94eb582ccafa29d1ea4a1e67f1fb1ca8d01332ff31c646f51d7421f154", "size": 49014, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/ca
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ca", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ca", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ca/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ca/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ca/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ca/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/ca/LC_MESSAGES/diffutils.mo", "sha256": "20053c91a30218c152e54f922403baa4d14afbc22835bb31aef495a26c9fc7ec", "size": 7792, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/ca/LC_MESSAGES/diffutils.mo", "sha256": "20053c91a30218c152e54f922403baa4d14afbc22835bb31aef495a26c9fc7ec", "size": 7792, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/cs
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/cs", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/cs", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/cs/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/cs/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/cs/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/cs/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/cs/LC_MESSAGES/diffutils.mo", "sha256": "444501b30bdf9a7614e1404190b783f3a0eeb540d1de15d96b474f75c3adae3b", "size": 37477, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/cs/LC_MESSAGES/diffutils.mo", "sha256": "444501b30bdf9a7614e1404190b783f3a0eeb540d1de15d96b474f75c3adae3b", "size": 37477, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/da
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/da", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/da", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/da/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/da/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/da/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/da/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/da/LC_MESSAGES/diffutils.mo", "sha256": "1046b57f3eb41adf92849b8710a0c4aeba1e9c4db9cc5194bacbc0251404e592", "size": 32644, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/da/LC_MESSAGES/diffutils.mo", "sha256": "1046b57f3eb41adf92849b8710a0c4aeba1e9c4db9cc5194bacbc0251404e592", "size": 32644, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/de
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/de", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/de", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/de/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/de/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/de/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/de/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/de/LC_MESSAGES/diffutils.mo", "sha256": "f8111eeb32262e80b3f2fb89561e91f5f33dc7e30de98c9267ddfa4704191c61", "size": 38766, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/de/LC_MESSAGES/diffutils.mo", "sha256": "f8111eeb32262e80b3f2fb89561e91f5f33dc7e30de98c9267ddfa4704191c61", "size": 38766, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/el
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/el", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/el", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/el/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/el/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/el/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/el/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/el/LC_MESSAGES/diffutils.mo", "sha256": "1685a40c29f9fddd0f40fac8778aa156d2c219aa6c8358a22e753d14a85fdbf6", "size": 40836, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/el/LC_MESSAGES/diffutils.mo", "sha256": "1685a40c29f9fddd0f40fac8778aa156d2c219aa6c8358a22e753d14a85fdbf6", "size": 40836, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/eo
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/eo", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/eo", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/eo/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/eo/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/eo/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/eo/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/eo/LC_MESSAGES/diffutils.mo", "sha256": "582d72cbe842771da3756b80441a2567a338af2ea02f91813c31352450f02a65", "size": 32425, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/eo/LC_MESSAGES/diffutils.mo", "sha256": "582d72cbe842771da3756b80441a2567a338af2ea02f91813c31352450f02a65", "size": 32425, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/es
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/es", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/es", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/es/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/es/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/es/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/es/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/es/LC_MESSAGES/diffutils.mo", "sha256": "521b8c99d7ca8e04f0c2634d85056d7531e277b9925d81136d283da80f655515", "size": 34985, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/es/LC_MESSAGES/diffutils.mo", "sha256": "521b8c99d7ca8e04f0c2634d85056d7531e277b9925d81136d283da80f655515", "size": 34985, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/fi
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/fi", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/fi", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/fi/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/fi/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/fi/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/fi/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/fi/LC_MESSAGES/diffutils.mo", "sha256": "3248bac4ef9bf52cde96d3abfce59e84d6985406710fe9fcd8154382086aa611", "size": 33724, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/fi/LC_MESSAGES/diffutils.mo", "sha256": "3248bac4ef9bf52cde96d3abfce59e84d6985406710fe9fcd8154382086aa611", "size": 33724, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/fr
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/fr", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/fr", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/fr/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/fr/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/fr/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/fr/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/fr/LC_MESSAGES/diffutils.mo", "sha256": "e6c33248e449b885cb3ae3f71f1c0b54c776349ff424f8c683ae80c8a2476f0d", "size": 38647, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/fr/LC_MESSAGES/diffutils.mo", "sha256": "e6c33248e449b885cb3ae3f71f1c0b54c776349ff424f8c683ae80c8a2476f0d", "size": 38647, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/ga
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ga", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ga", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ga/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ga/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ga/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ga/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/ga/LC_MESSAGES/diffutils.mo", "sha256": "ab0f3a129b6b59105229a8d1e4d3b918e0a5a1b624946a2112996109f1c72234", "size": 7627, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/ga/LC_MESSAGES/diffutils.mo", "sha256": "ab0f3a129b6b59105229a8d1e4d3b918e0a5a1b624946a2112996109f1c72234", "size": 7627, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/gl
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/gl", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/gl", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/gl/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/gl/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/gl/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/gl/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/gl/LC_MESSAGES/diffutils.mo", "sha256": "2abac14bffa92963e0fb7b8f0702cf5e31d266bac177c44d29100c6cd97cca5a", "size": 9889, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/gl/LC_MESSAGES/diffutils.mo", "sha256": "2abac14bffa92963e0fb7b8f0702cf5e31d266bac177c44d29100c6cd97cca5a", "size": 9889, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/he
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/he", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/he", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/he/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/he/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/he/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/he/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/he/LC_MESSAGES/diffutils.mo", "sha256": "e19f0371e1818c752b9b5a9cf7c4a12d05f6e2c132e9e61bb206626168f1e7c5", "size": 7111, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/he/LC_MESSAGES/diffutils.mo", "sha256": "e19f0371e1818c752b9b5a9cf7c4a12d05f6e2c132e9e61bb206626168f1e7c5", "size": 7111, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/hr
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/hr", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/hr", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/hr/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/hr/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/hr/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/hr/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/hr/LC_MESSAGES/diffutils.mo", "sha256": "f39440d5432772c9f977c3bcd9cfb52f48853e59c601cbbe3806c5d9ba376e42", "size": 37272, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/hr/LC_MESSAGES/diffutils.mo", "sha256": "f39440d5432772c9f977c3bcd9cfb52f48853e59c601cbbe3806c5d9ba376e42", "size": 37272, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/hu
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/hu", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/hu", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/hu/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/hu/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/hu/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/hu/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/hu/LC_MESSAGES/diffutils.mo", "sha256": "7cfe2fd9fd6039f337bc2beafcdb7a9f0b492eab8486d5268357aa0356f0b133", "size": 35287, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/hu/LC_MESSAGES/diffutils.mo", "sha256": "7cfe2fd9fd6039f337bc2beafcdb7a9f0b492eab8486d5268357aa0356f0b133", "size": 35287, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/id
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/id", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/id", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/id/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/id/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/id/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/id/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/id/LC_MESSAGES/diffutils.mo", "sha256": "2ead1da02be32a33495b4a3975187f1ca8e07653bcd36442d1768a19f6d99df0", "size": 35663, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/id/LC_MESSAGES/diffutils.mo", "sha256": "2ead1da02be32a33495b4a3975187f1ca8e07653bcd36442d1768a19f6d99df0", "size": 35663, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/it
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/it", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/it", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/it/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/it/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/it/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/it/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/it/LC_MESSAGES/diffutils.mo", "sha256": "d5ef9d8ca8ee5128c221acf5f3e45d3328572d8e1504b5927115ba4c0a86ea1b", "size": 31597, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/it/LC_MESSAGES/diffutils.mo", "sha256": "d5ef9d8ca8ee5128c221acf5f3e45d3328572d8e1504b5927115ba4c0a86ea1b", "size": 31597, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/ja
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ja", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ja", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ja/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ja/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ja/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ja/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/ja/LC_MESSAGES/diffutils.mo", "sha256": "65cdf8bb8f3f5a8d47900f1fe18d382fb8135cdb5b3f1f3647ccb911220010c4", "size": 29997, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/ja/LC_MESSAGES/diffutils.mo", "sha256": "65cdf8bb8f3f5a8d47900f1fe18d382fb8135cdb5b3f1f3647ccb911220010c4", "size": 29997, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/ka
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ka", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ka", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ka/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ka/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ka/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ka/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/ka/LC_MESSAGES/diffutils.mo", "sha256": "895a7b575b2c85637d78f039402a401e1eb32af58f8b725a53f7a807cd31c484", "size": 42289, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/ka/LC_MESSAGES/diffutils.mo", "sha256": "895a7b575b2c85637d78f039402a401e1eb32af58f8b725a53f7a807cd31c484", "size": 42289, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/ko
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ko", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ko", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ko/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ko/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ko/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ko/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/ko/LC_MESSAGES/diffutils.mo", "sha256": "7e6de9b09be0e0240d984f6922c000e85e91ba6ceb55c0365b358eb15ad28219", "size": 34063, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/ko/LC_MESSAGES/diffutils.mo", "sha256": "7e6de9b09be0e0240d984f6922c000e85e91ba6ceb55c0365b358eb15ad28219", "size": 34063, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/lv
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/lv", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/lv", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/lv/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/lv/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/lv/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/lv/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/lv/LC_MESSAGES/diffutils.mo", "sha256": "0dc55a17b6be00badfbca10edd1574193e6b0686909dcf15ad69b106545a1b04", "size": 35698, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/lv/LC_MESSAGES/diffutils.mo", "sha256": "0dc55a17b6be00badfbca10edd1574193e6b0686909dcf15ad69b106545a1b04", "size": 35698, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/ms
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ms", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ms", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ms/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ms/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ms/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ms/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/ms/LC_MESSAGES/diffutils.mo", "sha256": "19efff968b74d7939514e7151a694f6c6759c9154b301f96d5fc7e8ee46aef54", "size": 34221, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/ms/LC_MESSAGES/diffutils.mo", "sha256": "19efff968b74d7939514e7151a694f6c6759c9154b301f96d5fc7e8ee46aef54", "size": 34221, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/nb
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/nb", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/nb", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/nb/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/nb/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/nb/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/nb/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/nb/LC_MESSAGES/diffutils.mo", "sha256": "49bdbc923635a2dd1b62b48f0397afefe486acbeaa8a025664580686202dfc30", "size": 32689, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/nb/LC_MESSAGES/diffutils.mo", "sha256": "49bdbc923635a2dd1b62b48f0397afefe486acbeaa8a025664580686202dfc30", "size": 32689, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/nl
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/nl", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/nl", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/nl/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/nl/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/nl/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/nl/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/nl/LC_MESSAGES/diffutils.mo", "sha256": "ccb551f71e078b85c575d72076909d538252fea6cfa47526fc5d39ce3e6cb44d", "size": 38046, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/nl/LC_MESSAGES/diffutils.mo", "sha256": "ccb551f71e078b85c575d72076909d538252fea6cfa47526fc5d39ce3e6cb44d", "size": 38046, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/pl
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/pl", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/pl", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/pl/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/pl/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/pl/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/pl/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/pl/LC_MESSAGES/diffutils.mo", "sha256": "a77b0a342f51be66f17e3c8fd34ffa30e33971932edba7ca0880abb5cff0c279", "size": 37267, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/pl/LC_MESSAGES/diffutils.mo", "sha256": "a77b0a342f51be66f17e3c8fd34ffa30e33971932edba7ca0880abb5cff0c279", "size": 37267, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/pt
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/pt", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/pt", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/pt/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/pt/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/pt/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/pt/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/pt/LC_MESSAGES/diffutils.mo", "sha256": "15e85f4ba65be9ae8019dafb379be668f6643528e465c49dfecab2ea90d33d8c", "size": 36267, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/pt/LC_MESSAGES/diffutils.mo", "sha256": "15e85f4ba65be9ae8019dafb379be668f6643528e465c49dfecab2ea90d33d8c", "size": 36267, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/pt_BR
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/pt_BR", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/pt_BR", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/pt_BR/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/pt_BR/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/pt_BR/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/pt_BR/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/pt_BR/LC_MESSAGES/diffutils.mo", "sha256": "2d70af67390d8cb1791b017964638b66fa941371264b5a7b442e38a1c1b5b98b", "size": 38638, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/pt_BR/LC_MESSAGES/diffutils.mo", "sha256": "2d70af67390d8cb1791b017964638b66fa941371264b5a7b442e38a1c1b5b98b", "size": 38638, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/ro
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ro", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ro", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ro/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ro/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ro/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ro/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/ro/LC_MESSAGES/diffutils.mo", "sha256": "971a0cabc6265e1c61625daec9670898f24ca5e2c1a142b40609f67fcb7cbe3e", "size": 39701, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/ro/LC_MESSAGES/diffutils.mo", "sha256": "971a0cabc6265e1c61625daec9670898f24ca5e2c1a142b40609f67fcb7cbe3e", "size": 39701, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/ru
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ru", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ru", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ru/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ru/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ru/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ru/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/ru/LC_MESSAGES/diffutils.mo", "sha256": "747d8dd426e89892e98b0a808f1a4d2b7cccc99b4cacc44451b4a9fa13292dfd", "size": 41754, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/ru/LC_MESSAGES/diffutils.mo", "sha256": "747d8dd426e89892e98b0a808f1a4d2b7cccc99b4cacc44451b4a9fa13292dfd", "size": 41754, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/sr
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/sr", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/sr", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/sr/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/sr/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/sr/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/sr/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/sr/LC_MESSAGES/diffutils.mo", "sha256": "d008c0631dca8459375faed7a91ae8c2d68be023bf1ac9d1ad635b68a5aa29c4", "size": 44274, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/sr/LC_MESSAGES/diffutils.mo", "sha256": "d008c0631dca8459375faed7a91ae8c2d68be023bf1ac9d1ad635b68a5aa29c4", "size": 44274, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/sv
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/sv", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/sv", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/sv/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/sv/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/sv/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/sv/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/sv/LC_MESSAGES/diffutils.mo", "sha256": "dbfcb548e614585e3e3072af43f079fd585a5d22a5012e1cde713a756527648e", "size": 35641, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/sv/LC_MESSAGES/diffutils.mo", "sha256": "dbfcb548e614585e3e3072af43f079fd585a5d22a5012e1cde713a756527648e", "size": 35641, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/tr
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/tr", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/tr", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/tr/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/tr/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/tr/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/tr/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/tr/LC_MESSAGES/diffutils.mo", "sha256": "bb70a4cb289026a9685a9a4d324ee45fbcde79e0900b347738b595b66d88a30a", "size": 33866, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/tr/LC_MESSAGES/diffutils.mo", "sha256": "bb70a4cb289026a9685a9a4d324ee45fbcde79e0900b347738b595b66d88a30a", "size": 33866, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/uk
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/uk", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/uk", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/uk/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/uk/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/uk/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/uk/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/uk/LC_MESSAGES/diffutils.mo", "sha256": "6866586ae7e2bae5f63db0e023e7a0903514a1b938070113f01e1d4e306e2502", "size": 47093, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/uk/LC_MESSAGES/diffutils.mo", "sha256": "6866586ae7e2bae5f63db0e023e7a0903514a1b938070113f01e1d4e306e2502", "size": 47093, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/vi
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/vi", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/vi", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/vi/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/vi/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/vi/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/vi/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/vi/LC_MESSAGES/diffutils.mo", "sha256": "c4b78e6aeea889d04837a6e86309b7652464aa0c979144f502551cfe251de9d7", "size": 35548, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/vi/LC_MESSAGES/diffutils.mo", "sha256": "c4b78e6aeea889d04837a6e86309b7652464aa0c979144f502551cfe251de9d7", "size": 35548, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/zh_CN
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/zh_CN", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/zh_CN", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/zh_CN/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/zh_CN/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/zh_CN/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/zh_CN/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/zh_CN/LC_MESSAGES/diffutils.mo", "sha256": "a38643078c7e4da4586a4df7fce089e5042815c3afe03a48732aa32e95e83077", "size": 35965, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/zh_CN/LC_MESSAGES/diffutils.mo", "sha256": "a38643078c7e4da4586a4df7fce089e5042815c3afe03a48732aa32e95e83077", "size": 35965, "type": "file", "uid": 1001}
+MISMATCH /usr/share/locale/zh_TW
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/zh_TW", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/zh_TW", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/zh_TW/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/zh_TW/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/zh_TW/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/zh_TW/LC_MESSAGES/diffutils.mo
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/locale/zh_TW/LC_MESSAGES/diffutils.mo", "sha256": "bf155547d1e1aa151be9cb36c77527d434bd29a88e72a748d0cc78079e1ccf6d", "size": 35426, "type": "file", "uid": 0}
+  actual:   {"gid": 1001, "mode": 420, "path": "/usr/share/locale/zh_TW/LC_MESSAGES/diffutils.mo", "sha256": "bf155547d1e1aa151be9cb36c77527d434bd29a88e72a748d0cc78079e1ccf6d", "size": 35426, "type": "file", "uid": 1001}
+MISMATCH /usr/share/man/man1/cmp.1
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/man/man1/cmp.1", "sha256": "f64f05638150d8d4284b7e0a183302f459fd8ee0f2e4e15e7cc0a82fbc5de119", "size": 2272, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/man/man1/diff.1
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/man/man1/diff.1", "sha256": "abd1e4feebc9db8e78054f103649afb285b4e8cd79bc46ac4a2ed8c04868b17d", "size": 6544, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/man/man1/diff3.1
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/man/man1/diff3.1", "sha256": "7994cd27b5aa9f59444477ed172b6e6b803fa67e95db4a35db4d42eecb301a4a", "size": 2869, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/man/man1/sdiff.1
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/man/man1/sdiff.1", "sha256": "a7d1ead3e419482bbe0d0a0571670df6f992c0617ddfd86f564ddfded5a8beb7", "size": 2892, "type": "file", "uid": 0}
+  actual:   MISSING
+package=diffutils version=3.12 entries=124 matched=5 mismatched=119

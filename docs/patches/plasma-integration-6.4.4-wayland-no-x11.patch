@@ -1,0 +1,64 @@
+--- a/qt6/src/platformtheme/CMakeLists.txt
++++ b/qt6/src/platformtheme/CMakeLists.txt
+@@ -22,7 +22,6 @@
+     kfiletreeview.cpp
+     kdirselectdialog.cpp
+     kwaylandintegration.cpp kwaylandintegration.h
+-    x11integration.cpp x11integration.h
+     main.cpp
+     qxdgdesktopportalfiledialog.cpp
+     qtquickrenderersettings.cpp
+@@ -30,6 +29,10 @@
+     kioopenwith.cpp
+     kiodelegate.cpp
+ )
++
++if(HAVE_X11)
++    list(APPEND platformtheme_SRCS x11integration.cpp x11integration.h)
++endif()
+ 
+ qt6_add_dbus_interface(platformtheme_SRCS org.kde.StatusNotifierWatcher.xml statusnotifierwatcher_interface)
+ kconfig_add_kcfg_files(platformtheme_SRCS renderersettings.kcfgc)
+--- a/qt6/src/platformtheme/kdeplatformtheme.h
++++ b/qt6/src/platformtheme/kdeplatformtheme.h
+@@ -6,6 +6,8 @@
+ 
+ #ifndef KDEPLATFORMTHEME_H
+ #define KDEPLATFORMTHEME_H
++
++#include <config-platformtheme.h>
+ 
+ #include <QHash>
+ #include <QKeySequence>
+@@ -19,7 +21,9 @@
+ class KHintsSettings;
+ class KFontSettingsData;
+ class KWaylandIntegration;
++#if HAVE_X11
+ class X11Integration;
++#endif
+ class QIconEngine;
+ class QWindow;
+ 
+@@ -63,7 +67,9 @@
+     KHintsSettings *m_hints = nullptr;
+     KFontSettingsData *m_fontsData = nullptr;
+     QScopedPointer<KWaylandIntegration> m_kwaylandIntegration;
++#if HAVE_X11
+     QScopedPointer<X11Integration> m_x11Integration;
++#endif
+ };
+ 
+ #endif // KDEPLATFORMTHEME_H
+--- a/qt6/src/platformtheme/kdeplatformtheme.cpp
++++ b/qt6/src/platformtheme/kdeplatformtheme.cpp
+@@ -19,7 +19,9 @@
+ #if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
+ #include "qdbusmenubarwrapper.h"
+ #endif
++#if HAVE_X11
+ #include "x11integration.h"
++#endif
+ 
+ #include <QApplication>
+ #include <QDBusConnection>

@@ -1,0 +1,267 @@
+{
+  "captured_at": "2026-09-24T03:35:35+00:00",
+  "entries": [
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/xmlwf",
+      "sha256": "a8fd66ec3b8b9630946fa5cbf04d035fa0d02c8134e7ad94d6c6c2970c28b020",
+      "size": 106880,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/include",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/expat.h",
+      "sha256": "7c16a5cf0eea844ae579db083b8d75f23a71859cac77e3c4cb7a8fa3b7621685",
+      "size": 44120,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/expat_config.h",
+      "sha256": "9484d152714449775dfd66662b1ea993691ce5ad138f4ac83c9e9049b98d3667",
+      "size": 4165,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/expat_external.h",
+      "sha256": "7ca9ed28dd5e08eac425931894fabd4c876db8f4be26f9b9a33c2e4f70a0d6c3",
+      "size": 6029,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/cmake",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/cmake/expat-2.7.1",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/cmake/expat-2.7.1/expat-config-version.cmake",
+      "sha256": "5f42039a32496ebd9143f675bd8b3acc2136c2fc1efc585e9b12d338c2485342",
+      "size": 2762,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/cmake/expat-2.7.1/expat-config.cmake",
+      "sha256": "33708544410c5b5fc7d1a25d1700804719deb4e4cb57358d4d9d2e7328418bcb",
+      "size": 3637,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/cmake/expat-2.7.1/expat-noconfig.cmake",
+      "sha256": "41752d5fb8bd74d765d2372fd65e98ab4ae558668a1415ef451806d2cf8d00da",
+      "size": 844,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/cmake/expat-2.7.1/expat.cmake",
+      "sha256": "861fd3e8d6ab95b5a4cfad1779367553b1275339d475b9089bc1e1e4a03a737d",
+      "size": 4135,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libexpat.la",
+      "sha256": "063a753f597c5d53a531a9d62f4a943ca38d67f9d85d25191fed4aeb9cad1620",
+      "size": 914,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libexpat.so",
+      "target": "libexpat.so.1.10.2",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libexpat.so.1",
+      "target": "libexpat.so.1.10.2",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libexpat.so.1.10.2",
+      "sha256": "dff0e94db1c71cb9d4ca2182c3e7dfdc1e536ba2a48e217fcd668cbbdddfbdf7",
+      "size": 536240,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/pkgconfig",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/pkgconfig/expat.pc",
+      "sha256": "bf345c6946eb151df9e485748caa5376ad12ca27a0b0c73dfc1d0a9e385723a5",
+      "size": 277,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/doc",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/doc/expat-2.7.1",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/expat-2.7.1/AUTHORS",
+      "sha256": "59f14371c6b75912cfebb46e6247ee5146766e803a0365b124e5d3011e7d0877",
+      "size": 142,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/expat-2.7.1/changelog",
+      "sha256": "9d8bb6625d503b969882fa15178b450ac0ccffdfdac1c720f74d92de243e3580",
+      "size": 84961,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/expat-2.7.1/ok.min.css",
+      "sha256": "1d0bc5cc99af72f19ba64f17279bf53e4c0cde17fbdc4fc0db6f604270c064ef",
+      "size": 16001,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/expat-2.7.1/reference.html",
+      "sha256": "0394e51680cc48a2061e86d952e4cbd6d728f0135c8b6a6d87cdaa3b45fc9e75",
+      "size": 109171,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/expat-2.7.1/style.css",
+      "sha256": "f406460bc73980118d8d15186daa51918d52752562641e27d19eb453c0c0817e",
+      "size": 1952,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man/man1",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/xmlwf.1",
+      "sha256": "3d7a6e32305cb05a677cf7576ce6715f23cb613d542671509ea1f7eca81f7f25",
+      "size": 10944,
+      "type": "file",
+      "uid": 0
+    }
+  ],
+  "package": {
+    "name": "expat",
+    "source": {
+      "sha256": "354552544b8f99012e5062f7d570ec77f14b412a3ff5c7d8d0dae62c0d217c30",
+      "url": "https://github.com/libexpat/libexpat/releases/download/R_2_7_1/expat-2.7.1.tar.xz"
+    },
+    "version": "2.7.1"
+  },
+  "schema": "alpbahOS.package-files/v1"
+}

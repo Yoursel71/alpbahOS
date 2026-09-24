@@ -23,7 +23,7 @@ Kullanıcının kabul ettiği deneyim:
 - Premium, minimalist, opak temel profil; kişiselleştirilebilir akıcı animasyonlar.
 - Steam ve Wine; Office 2016/2019/2021 ailesi için sürüm bazlı uyumluluk testleri.
 - Legacy BIOS ve UEFI; daha sonraki kurucuda internetsiz kurulum ve Windows yanında kurulum.
-- Yerel Hyper-V geliştirme, 300 GB depolama bütçesi; bulut derleme/depolama kullanılmaz.
+- Yerel Hyper-V geliştirme, 300 GB depolama bütçesi; bulut derleme/depolama kullanılmaz. C: NVMe çalışma alanı, F: SATA HDD artifact/build-VM alanıdır.
 - Günde 1–2 saat kullanıcı katkısı; Claude Code ve Codex için özel Git deposunda ayrı çalışma alanları.
 
 Önceki canlı USB/VM tercihi ilk alfayı tanımlar. Sonraki “hepsi olsun” yanıtı grafik, çevrimdışı ve Windows yanında kurulum özelliklerini genel yol haritasına ekler; ilk alfa ile kurulabilir beta ayrı teslimlerdir.
@@ -32,13 +32,13 @@ Kullanıcının kabul ettiği deneyim:
 
 ## 2. Mevcut durum ve kaynaklar
 
-Mevcut Windows bilgisayarı: Ryzen 7 5700, yaklaşık 24 GiB RAM, RTX 5060. F: sürücüsü ST500LT012 SATA HDD ve yaklaşık 350 GiB boş alana sahip. Kullanıcı 300 GB proje bütçesi ayırdı; fiziksel bölüm oluşturulmadı. HDD erişim süresi özellikle çok küçük dosyalı build'leri etkileyebilir; ölçüme göre iş sayısı ayarlanacak.
+Mevcut Windows bilgisayarı: Ryzen 7 5700, yaklaşık 24 GiB RAM, RTX 5060. Kullanıcının 23 Eylül 2026 tarihli disk düzeni bilgisine göre C: NVMe SSD, F: SATA HDD'dir. Bu oturumda `Get-Volume` ile C: 117,789,728,768 byte (~109.7 GiB), F: 182,085,091,328 byte (~169.5 GiB) boş okundu; değerler zamanla değişebilir. Kullanıcı 300 GB proje bütçesi ayırdı; fiziksel bölüm oluşturulmadı. F: üzerindeki HDD erişim süresi özellikle çok küçük dosyalı build'leri etkileyebilir; ölçüme göre iş sayısı ayarlanacak.
 
-Hyper-V PowerShell modülü mevcut, fakat mevcut oturumda VM hostunu okuma yetkisi yok. Özelliğin etkinliği ve VM oluşturma yetkisi kurulum aşamasında doğrulanacak. Bu kontrol için yetki engeli, plan/doküman/Git çalışmasını engellemez. Rootlu, SSH erişimli Mi 9 telefonu yardımcı cihaz olarak mevcut; x86_64 ana derleme hostu veya uyumluluk kanıtı olarak kullanılmayacak.
+Hyper-V PowerShell modülü mevcut. Normal yerel PowerShell oturumu VM envanter yetkisine sahip değil; Windows hostun yerel OpenSSH yönetici hesabına public-key erişim sağlandı ve salt okunur `Get-VM` envanteri bu yoldan doğrulanabiliyor. Hyper-V değişiklik komutları yine yalnız görev gerektirip açıkça yetkilendirildiğinde kullanılmalı. Rootlu, SSH erişimli Mi 9 telefonu yardımcı cihaz olarak mevcut; x86_64 ana derleme hostu veya uyumluluk kanıtı olarak kullanılmayacak.
 
-Mevcut dosyalar tasarım belgeleri ve logo varlıklarıdır. Linux host, rootfs, paket deposu, boot eden imaj veya ISO henüz yoktur. Tasarım mockup'ındaki sürümler, paket sayıları, CPU/RAM ve `pacman` satırları örnek metindir.
+Mevcut dosyalar tasarım belgeleri ve logo varlıklarıdır. Linux host, rootfs, paket deposu, boot eden imaj veya ISO henüz yoktur. Tasarım mockup'ındaki sürümler, eski paket yöneticisi örnekleri, paket sayıları ve CPU/RAM değerleri örnek metindir.
 
-Başlangıç kaynakları: [LFS 13.1-systemd](https://www.linuxfromscratch.org/lfs/view/13.1-systemd/) ve [BLFS 13.1](https://www.linuxfromscratch.org/blfs/view/13.1-systemd/). Steam için gereken multilib uzantısı aşağıdaki karar kapısında sabitlenecek. Kitap sürümleri ve kullanılan düzeltmeler birlikte sabitlenecek; yalnız bir paketi rastgele en yeni sürüme geçirmek standart süreç olmayacak.
+Mevcut build tabanı [LFS 12.4-systemd](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/) ve eşleşen [BLFS 12.4-systemd](https://www.linuxfromscratch.org/blfs/view/12.4-systemd/) olarak D33 ile sabitlendi. Bu, önceki 13.1+multilib taslak tercihinin yerine geçti. D32 saf 64-bit kararı ile D22 Steam hedefi çelişiyor; kullanıcı kararı açık kalır.
 
 ## 3. Seçilen başlangıç mimarisi
 
@@ -46,27 +46,27 @@ Kullanıcı teknik seçimleri devrettiği için aşağıdaki başlangıç mimari
 
 | Katman | Aday / yaklaşım | Doğrulama |
 |---|---|---|
-| Temel sistem | LFS 13.1-systemd + Steam için sabitlenecek multilib uzantısı | Host kontrolü; ELF32/ELF64, linker ve test logları |
-| Ek sistem bileşenleri | Eşleşen BLFS; ağ, TLS sertifikaları, ses, grafik, oturum | Gerçek işlev testleri |
+| Temel sistem | LFS 12.4-systemd + eşleşen BLFS 12.4-systemd (D33). D32 saf 64-bit kabulü kayıtlı; D22 Steam isteğiyle çelişki kullanıcı kararında açık. | Mevcut rootfs/build kayıtları; D22/D32 kararı netleşmeden Steam/multilib çıkış koşulu yok |
+| Ek sistem bileşenleri | BLFS 12.4-systemd; ağ, TLS sertifikaları, ses, grafik, oturum | Gerçek işlev testleri |
 | Masaüstü | KDE Plasma / KWin | İlk sanal masaüstü oturumu ve donanım testi |
-| Görüntü protokolü | Wayland öncelikli; eski GPU/Hyper-V için ölçüme bağlı X11 uyumluluk oturumu | Seçilen Plasma sürümünde her iki oturumun sağlanabilirliği doğrulanır |
+| Görüntü protokolü | Wayland öncelikli. X11/Xwayland build tercihi açık kullanıcı kararı; Qt XCB ve Xwayland şu an kapalı. | P02 uyumluluk yolu kullanıcı yanıtı ve build sonrası test bekliyor |
 | Terminal | Konsole + etkileşimli Zsh | Öneri, düzeltme, Unicode ve kısayol testleri |
-| Paket deneyimi | pacman/libalpm + ince `pkg` arayüzü + kendi imzalı yerel depomuz | Bootstrap ve işlem testleri; Arch deposu kullanılmaz |
-| Uygulama mağazası | Discover + PackageKit alpm backend + AppStream metadata | Aynı libalpm veritabanı ve kilit; entegrasyon prototipi zorunlu |
+| Paket deneyimi | `alp`: recipe/kaynaktan derleme, Flatpak sarmalayıcı ve alpbahOS core arşivi (D31/P13) | Kod `docs/handoffs/claude/alp-prototype/`; rootfs motoru commit ve SHA-256 ile eşleşmeli |
+| Uygulama mağazası | `alp` PackageKit backend taslağı; Discover/GUI entegrasyonu doğrulanmış değil | Ortak veritabanı, işlem kilidi ve paket işlemleri uçtan uca test edilmeden hazır sayılmaz |
 | Ses/ağ | PipeWire + WirePlumber; NetworkManager; Bluetooth için BlueZ | Ses, ağ geçişi ve cihaz testleri |
 | Kurucu | Sonraki sürümde Calamares özelleştirmesi | Offline, BIOS/UEFI, boş disk ve dual-boot sanal disk senaryoları |
 | Marka/tema | alpbahOS görünüm ve varsayılan ayar paketleri | Temiz kullanıcı hesabında görünüm doğrulaması |
 | Dağıtım çıktısı | Sanal disk imajı ve canlı ISO | Boot, ağ, oturum, yeniden başlatma |
 
-Plasma, tema ve efekt altyapısı nedeniyle uygun adaydır. BLFS'de [Plasma derleme bölümü](https://www.linuxfromscratch.org/blfs/view/13.1-systemd/kde/plasma-all.html) vardır; bu bölümün bulunması tek başına tüm alpbahOS entegrasyonlarının hazır olduğu anlamına gelmez.
+Plasma, tema ve efekt altyapısı nedeniyle uygun adaydır. BLFS'de [Plasma derleme bölümü](https://www.linuxfromscratch.org/blfs/view/12.4-systemd/kde/plasma-all.html) vardır; bu bölümün bulunması tek başına tüm alpbahOS entegrasyonlarının hazır olduğu anlamına gelmez.
 
 Grafik uygulamalarda önce mevcut dosya yöneticisi, ayarlar, terminal, ağ ve ses bileşenleri kullanılır. GTK/Qt/Flatpak uygulamalarında tema kapsamı ayrı ayrı test edilir; tek tema paketinin tüm arayüzleri aynı şekilde değiştireceği varsayılmaz.
 
-### 3.1 Steam ve 32-bit uyumluluk kapısı
+### 3.1 Steam/Wine ve x86_64 kapsam kararı
 
-[Standart LFS x86_64](https://www.linuxfromscratch.org/lfs/view/13.1-systemd/prologue/architecture.html) saf 64-bit sistem üretir. [Valve gereksinimleri](https://github.com/ValveSoftware/steam-for-linux) Steam için 32/64-bit glibc ve grafik kullanıcı alanı desteğini belirtir. Bu nedenle Steam sonradan rastgele birkaç paket eklenerek çözülecek iş olarak ertelenmez.
+[Standart LFS x86_64](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/prologue/architecture.html) saf 64-bit sistem üretir. D22 Steam/Wine hedefini ister; D32 ilk sürüm için 32-bit kullanıcı alanı ve multilib'i kapsam dışı bırakır. Bu iki kararın Steam istemcisiyle uyumluluğu `docs/DECISIONS.md` içinde açık kullanıcı kararıdır.
 
-M02'de LFS belgesinin bağladığı [multilib dalının](https://www.linuxfromscratch.org/~thomas/multilib/index.html) kullanılabilir sürüm/commit'i incelenir. LFS 13.1 ile eşleşme doğrulanmadan sürüm numarası uydurulmaz. Başlangıç kararı x86_64 kernel + i686 kullanıcı alanı uyumluluğudur; ayrı 32-bit dağıtım değildir. Dizilim, libc/derleyici seçenekleri ve lib32 grafik paketleri manifestte açıkça tanımlanır. 32-bit çalıştırılabilir test ve loader doğrulaması geçmeden M03 tam derlemesi başlamaz. Gerekirse uyumlu sabit kitap çifti ADR ile revize edilir.
+M03'teki 32-bit/multilib ve ELF32 kabul ölçütleri D32 ile kapsam dışıdır; bu kapsam için toolchain derlemesi yapılmaz. Steam/Wine uyumluluğu, D22/D32 kararı netleşmeden vaat edilmez veya tamamlandı işaretlenmez.
 
 ### 3.2 Eski PC ve RAM bütçesi
 
@@ -81,7 +81,7 @@ Test hedefleri garanti edilmiş minimumlar değildir; ölçümden sonra yayımla
 
 Tarayıcı, Steam, Wine, dosya indeksleme ve mağaza arka planda otomatik başlatılmaz. Çok uygulamanın kurulu olması hepsinin RAM'de çalışması anlamına gelmez. Gereksiz sürekli servisler kapalı, erişilebilirlik bileşenleri talebe göre etkin olur. Kullanılan RAM/CPU, süreçlerin PSS toplamı ve bellek baskısı aynı yöntemle raporlanır. Solid bütçesi geçmezse önce servis/tema optimizasyonu yapılır; bu yetmezse ayrı hafif masaüstü profili ölçülmüş alternatif olarak ele alınır.
 
-Genel taban için `-march=native` kullanılmaz; x86_64 uyumluluk tabanı korunur. Steam/Chrome gibi uygulamaların ek CPU talimat gereksinimleri ayrı kontrol edilir. Eski 32-bit CPU'lar, Mi 9 gibi ARM cihazlar ve desteği kesilmiş tüm GPU'lar hedef dışı/ayrı test sınıfıdır; “hepsinde” isteği geniş x86_64 uyumluluk matrisi olarak uygulanır.
+Genel taban için `-march=native` kullanılmaz; x86_64 uyumluluk tabanı korunur. Steam/Chrome gibi uygulamaların ek CPU talimat gereksinimleri ayrı kontrol edilir. Yalnız 32-bit çalışan CPU desteği D32/P01 kapsamında dışıdır; Mi 9 gibi ARM cihazlar ve desteği kesilmiş GPU'lar hedef dışı/ayrı test sınıfıdır; “hepsinde” isteği geniş x86_64 uyumluluk matrisi olarak uygulanır.
 
 ## 4. Terminal deneyimi
 
@@ -115,11 +115,13 @@ Etkileşimli Zsh kullanımı build scriptlerinin yorumlayıcısını veya `/bin/
 
 ## 5. Paket ve mağaza deneyimi
 
-### 5.1 Kullanıcıya sunulacak komut ailesi
+> **21 Eylül 2026 güncellemesi (D31/P13):** pacman/libalpm + Discover/PackageKit alpm altyapısı terk edildi ve `alp` motoru seçildi; sahipliği Claude'a geçti. Motor kodu bu repodaki `docs/handoffs/claude/alp-prototype/alp.py` ve yardımcı dosyalardadır. Ayrı [alpbahOS-alp tarif deposu](https://github.com/Yoursel71/alpbahOS-alp) tarif/index içeriğini taşır. Rootfs'ye kurulu motor, kaynak commit blob SHA-256'sı ile aynı değilse güncel kabul edilmez. Discover/PackageKit hazır entegrasyon gibi sunulmaz.
 
-Aşağıdakiler planlanan arayüzdür; henüz çalışan komutlar değildir.
+### 5.1 Kullanıcıya sunulacak komut ailesi (tarihsel — bkz. yukarıdaki güncelleme)
 
-| Komut | Önerilen anlam |
+Aşağıdakiler planlanan arayüzdür; henüz çalışan komutlar değildir. `pkg` adı, D31 pivotundan sonra `alp` ile değiştirildi; tablo eski adla korunuyor.
+
+| Komut (eski ad `pkg`, güncel ad `alp`) | Önerilen anlam |
 |---|---|
 | `pkg search <ad>` | Paketleri arar; kurulum yapmaz. |
 | `pkg info <ad>` | Sürüm, kaynak, boyut, bağımlılık ve açıklamayı gösterir. |
@@ -132,11 +134,11 @@ Aşağıdakiler planlanan arayüzdür; henüz çalışan komutlar değildir.
 
 `update` ile `upgrade` farkı yardımda ve mağazada açık olmalıdır. Kullanıcı bunların farklı anlamda birleşmesini isterse semantik karar kaydı güncellenir.
 
-### 5.2 Altyapı seçimi
+### 5.2 Altyapı seçimi (tarihsel — bkz. §5 başındaki 21 Eylül 2026 güncellemesi, D31/P13)
 
-LFS belirli bir paket yöneticisi sağlamaz. [LFS paket yönetimi bölümü](https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter08/pkgmgt.html) temel yöntemleri açıklar. Sistem dosyaları ilk kurulduğunda sahiplik ve sürüm bilgisi yakalanmalıdır; bu yüzden motor/manifest yaklaşımı nihai LFS sistem kurulumundan önce seçilir.
+LFS belirli bir paket yöneticisi sağlamaz. [LFS 12.4 paket yönetimi bölümü](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/pkgmgt.html) temel yöntemleri açıklar. Sistem dosyaları ilk kurulduğunda sahiplik ve sürüm bilgisi yakalanmalıdır; bu yüzden motor/manifest yaklaşımı nihai LFS sistem kurulumundan önce seçilir.
 
-Başlangıç tercihi pacman/libalpm'dir; [pacman kılavuzu](https://man.archlinux.org/man/pacman.8) ve [depo yapılandırması](https://man.archlinux.org/man/pacman.conf.5) esas alınır. Mağaza için [Discover](https://apps.kde.org/discover/) ile [PackageKit alpm backend](https://github.com/PackageKit/PackageKit/tree/main/backends/alpm) entegrasyonu test edilir. Backend'in kaynak ağacında olması seçilen sürümlerin uyumlu olduğunu kanıtlamaz. M02 başarısızsa dpkg/APT + PackageKit alternatifine gerekçeli geçiş değerlendirilir. Deney ölçütleri:
+Güncel paket motoru `alp`'tir (D31/P13). Kaynak motorun commit ve SHA-256 değeri rootfs'deki dosyayla eşleşmelidir. `alp` GUI yolu, veri tabanı, işlem kilidi ve güvenli kurulum/kaldırma testleri tamamlanmadan hazır sayılmaz.
 
 - LFS üzerinde bootstrap ve paket üretim zorluğu.
 - Bağımlılık çözümü, dosya sahipliği, yapılandırma korunması, imza ve transaction kilidi.
@@ -147,11 +149,11 @@ Başlangıç tercihi pacman/libalpm'dir; [pacman kılavuzu](https://man.archlinu
 
 `pkg` komutları motorun üzerine ince, testli bir arayüz olur; ikinci bir paket veri tabanı veya sıfırdan bağımlılık çözücü oluşturmaz. Debian/Ubuntu/Arch taban depoları alpbahOS sistem paketlerine doğrudan karıştırılmaz. APT gibi bir araç seçilmesi yabancı dağıtım paketleriyle otomatik uyumluluk sağlamaz.
 
-Başlangıçta tek native paket yöneticisi pacman'dır. `apt`, `pacman` ve `pkg` ayrı ayrı bağımsız veri tabanlarıyla aynı sisteme kurulmaz. Kullanıcının kolaylık isteği `pkg` ile karşılanır; pacman uzman erişimi belgelenir. APT seçilmiş bir kullanıcı zorunluluğu değildir.
+Tek native paket motoru `alp`'tir; ikinci bir bağımsız sistem paket veritabanı eklenmez. Kolay kullanıcı arayüzü `pkg`/mağaza için tasarlanır, ancak gerçek GUI entegrasyonu ayrıca kanıtlanmalıdır.
 
 İlk depo yerel `file://` kaynağı ve canlı/kurulum medyasındaki paket deposudur. İnternetten kendiliğinden güncellenen genel bir alpbahOS sunucusu varsayılmaz. Kullanıcı bulut depolama istemediğinden ISO/paketler yerelde tutulur; özel GitHub deposu yalnız kaynak/belge eşgüdümü içindir.
 
-Pacman tam sistem güncellemesi gerektiren kütüphane geçişlerinde kısmi yükseltmeye izin verilmez. `pkg update` indeks/plan yeniler; sonrasında install/upgrade güvenli, tutarlı işlem planı üretir. AppStream metadata ve paket manifestleri aynı sürüm kümesine bağlıdır.
+Sistem güncellemeleri kütüphane geçişlerini kısmi bırakmamalıdır. `alp update` ve kur/upgrade işlemlerinin güvenli, tutarlı işlem planı üretmesi ayrıca test edilmelidir; AppStream metadata ve paket manifestleri aynı sürüm kümesine bağlanır.
 
 ### 5.3 Mağaza sözleşmesi
 
@@ -161,7 +163,7 @@ Pacman tam sistem güncellemesi gerektiren kütüphane geçişlerinde kısmi yü
 - Uydurma puan, güvenlik rozeti veya indirme sayısı gösterilmez.
 - Birden fazla paket kaynağı varsa kaynak ve kapsam kullanıcıya görünürdür.
 - Flatpak gibi ek uygulama kanalları ayrıca seçilir; taban sistemin paket yönetiminin yerine geçmez.
-- Discover seçimi backend entegrasyon deneyi geçmeden uygulanmış/çalışır sayılmaz.
+- Discover/PackageKit alpm seçimi D31 ile terk edildi; mevcut mağaza entegrasyonu doğrulanmış değildir.
 
 ## 6. Windows'a tanıdık kısayol profili
 
@@ -228,11 +230,11 @@ Liquid için önce küçük bir prototip hazırlanır. Ekran örnekleme/kırılm
 
 ## 8. Derleme ortamı ve tekrar üretilebilirlik
 
-Seçilen ortam Hyper-V'dir. Bir Gen2 Linux builder, bir Gen2 UEFI test tanımı ve bir Gen1 Legacy test tanımı hazırlanacak. Builder için minimal Ubuntu 24.04 LTS amd64 host seçildi; ISO checksum ve LFS host koşulları kurulumda doğrulanır. [Hyper-V Gen1/Gen2 ayrımı](https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/plan/should-i-create-a-generation-1-or-2-virtual-machine-in-hyper-v) iki boot yolunun ayrı testini gerektirir. WSL bu planın ana ortamı değildir.
+Seçilen ortam Hyper-V'dir. Ubuntu 24.04 LTS amd64 Gen2 Builder ile Gen2/UEFI test hedefi kuruldu. Gen1/Legacy boot yolu tarihsel testlerle doğrulandı; kullanılan Gen1 alpbahOS VM kaydı silinmiştir. İleride canlı Gen1 tekrarı gerekirse yeni VM tanımı ve test diski gerekir. [Hyper-V Gen1/Gen2 ayrımı](https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/plan/should-i-create-a-generation-1-or-2-virtual-machine-in-hyper-v) iki boot yolunun ayrı testini gerektirir. WSL bu planın ana ortamı değildir.
 
 Linux build ağacı Linux dosya sisteminde tutulur. Windows'taki `C:\alpbahOS` belgeleri ve repo kopyası doğrudan Linux rootfs kurulum hedefi değildir. VM disk dosyası NTFS üzerinde bulunabilir; VM içindeki rootfs yine Linux dosya sisteminde olur.
 
-Builder: 6 vCPU, 12 GiB sabit RAM; başlangıç build paralelliği 4, ölçüme göre 6. Test VMs: 2 vCPU ve 4 GiB RAM, sırayla çalışır. Ağ için mevcut uygun Hyper-V sanal anahtarı seçilir; Windows ağını bozacak yeni köprü otomatik kurulmaz. Hostta editör/ajanlar için RAM bırakılır. Hyper-V framebuffer ile fiziksel NVIDIA GPU performansı eşit sayılmaz; GPU passthrough ilk kurulumun önkoşulu değildir.
+Builder'ın gerçek ayarı 4 vCPU, 3 GiB başlangıç/en az ve 6 GiB en çok RAM'dir (23 Eylül 2026 gözlemi; eski 6 vCPU/12 GiB planı geçersizdir). Build paralelliği RAM ve ölçüme göre belirlenir. Test VMs: 2 vCPU ve 4 GiB RAM, sırayla çalışır. Ağ için mevcut uygun Hyper-V sanal anahtarı seçilir; Windows ağını bozacak yeni köprü otomatik kurulmaz. Hostta editör/ajanlar için RAM bırakılır. Hyper-V framebuffer ile fiziksel NVIDIA GPU performansı eşit sayılmaz; GPU passthrough ilk kurulumun önkoşulu değildir.
 
 Depolama kökü planı: `F:\alpbahOS-build`. Kullanıcının 300 GB sınırı decimal bütçe olarak ele alınır (yaklaşık 279 GiB). Plan: builder VHDX üst sınırı 210 GB; sırayla kullanılan test diskleri toplam 40 GB; ISO/çıktı 20 GB; checkpoint ve büyüme payı 30 GB. Kaynak cache'i builder alanına dahildir. Checkpoint'ler bu payı aşabilir; gerçek tüketim izlenir ve bütçeyi aşacak işlem durur. Sürekli snapshot biriktirilmez. NTFS üzerinde symlink/izin gerektiren Linux rootfs açılmaz.
 
@@ -302,12 +304,12 @@ Aşamalar oturum planına bağlanır; gerçek derleme ölçümleri olmadan takvi
 |---|---|---|---|
 | M00 | Gereksinimler, teknik seçimler, özel repo ve görev paylaşımı | Kullanıcı cevapları | Bu plan + ajan dosyaları + repo doğrulaması |
 | M01 | Linux host, disk alanı, ağ, LFS araç kontrolü, log düzeni | Ortam ve alan tercihi | Host kontrolü geçer; kontrollü dosya sistemi ve build kökü |
-| M02 | Kaynak manifesti, tarif şablonu, paket motoru/mağaza prototipi | M01 | Küçük paketi üret/kur/güncelle/kaldır; sahiplik ve GUI yolu kanıtı |
-| M03 | Multilib cross-toolchain ve geçici araçlar | M01, M02 ABI kararı, sabit kaynaklar | ELF32/64 dahil kitap sırasındaki doğrulamalar geçer |
-| M04 | Chroot ve nihai LFS temel sistemi | M02 kararları, M03 | Paket kayıtları, kritik testler, linker ve dosya sistemi doğrulaması |
-| M05 | Kernel, init, bootloader ve ilk VM açılışı | M04 | Hedef imajdan giriş, gerçek kernel, ağ, yeniden başlatma |
-| M06 | BLFS altyapısı: grafik, ses, oturum, ağ ve sertifikalar | M05 | Grafik test oturumu; ağ/TLS/ses doğrulaması |
-| M07 | Hazır masaüstü ve temel uygulama profili | M06 | Temiz kullanıcıda çalışan masaüstü, ayarlar ve dosya yöneticisi |
+| M02 | Kaynak manifesti, tarif şablonu, paket motoru/mağaza prototipi | M01 | Kısmi: `alp` başlangıç motoru; Windows Python 3.14.7 TTY test koşusunda 82 geçti, 10 POSIX-özelliği testi atlandı. htop install/list/run/remove bir Gen2 test imajında geçti. `update`, gerçek rootfs upgrade/rollback, sistem tabanı sahipliği ve GUI yolu açık. Kanıt: `docs/verification/m02-alp-tests-2026-09-24.md`. |
+| M03 | ABI ve geçici araçlar | M01, M02 ABI kararı, sabit kaynaklar | Saf x86_64 kapsamı D32 ile sabit; 32-bit/multilib ve ELF32 ölçütleri kapsam dışı |
+| M04 | Chroot ve nihai LFS temel sistemi | M02 kararları, M03 | Kısmi: Coreutils, Zlib, Gzip, Zstd, Xz, Bzip2, Lz4, File, Readline, M4, Diffutils, Findutils, Gawk, Grep, Bash, Libtool, GDBM, Gperf, Expat, Inetutils, Less ve Perl için izole stage manifestleri/preflight kanıtı var; bazıları rootfs ile uyuşmuyor ve tam temel paket kapsamı yok. Grep 3.12 `make check`: 368 PASS/73 SKIP/2 XFAIL/0 FAIL; smoke geçti, 52/147 match. Bash 5.3 LFS Expect `make tests` exited 0 with environment-sensitive output differences; 119/261 match. Libtool 2.5.4 `make check`: 144 expected/32 SKIP, gnulib 4 PASS/2 SKIP; 75/79 match. GDBM 1.26 `make check`: all 38 tests successful; 38/78 matches. Gperf 3.3 `make check` exited 0; 7/12 matches. Expat 2.7.1 `make check`: 2 PASS; `xmlwf` smoke passed; 25/31 matches. Inetutils 2.6 `make check`: 9 PASS/3 SKIP/0 FAIL; `ftp` smoke passed; 16/30 matches. Less 679 `make check`: 17 tests, 0 errors; `less --version` smoke passed; 8/11 matches. Perl 5.42.0 `TEST_JOBS=2 make test_harness`: 2,915 test files/1,350,925 tests PASS; staged thread smoke passed; 2,164/3,181 matches. Expat version follows the pinned LFS 12.4 book; update to the version identified by current LFS advisories before release. Rootfs `alp` DB boş, base-package removal guard yok; kayıt eklemek güvenli değil. Hiçbir uyuşmayan stage birleştirilmedi. [Değerlendirme](verification/m04-base-ownership-assessment-2026-09-23.md). |
+| M05 | Kernel, init, bootloader ve ilk VM açılışı | M04 | BIOS ve UEFI yollarında hedef kernel'den giriş, ağ, yeniden başlatma doğrulandı. 24 Eyl canlı Gen2/UEFI tekrarında `6.16.1-alpbahOS`, PARTUUID+rootwait, online DHCP/DNS, key-only SSH, etkin getty/resolved/sshd, 0 failed unit ve host ping 4/4 görüldü; [WORKLOG kanıtı](WORKLOG.md). |
+| M06 | BLFS altyapısı: grafik, ses, oturum, ağ ve sertifikalar | M05 | Kısmi: DNS/TLS, D-Bus user bus, iki yönlü ALSA `snd-aloop`, ayrıca açık `pro-audio` uçlarıyla 48 kHz sanal PipeWire playback→capture roundtrip'i geçti. Fiziksel audio ve grafik test oturumu açık. Kanıt: `docs/verification/m06-gen2-audio-2026-09-24.md` ve `docs/verification/m06-pipewire-proaudio-retest-2026-09-24.log`. |
+| M07 | Hazır masaüstü ve temel uygulama profili | M06 | P0 KWin unit/Wayland-only kapısı geçti. Temiz yerel PAM/seat oturumu, gerçek Plasma, ayarlar ve dosya yöneticisi kanıtı bekliyor. Plasma başlatmak için önce tty1 `admin/admin` oturumu `loginctl` ile doğrulanmalı. |
 | M08 | Terminal yardımı, pkg+mağaza, kısayollar ve Atatürk/Glass temaları | M02, M07 | İstenen özelliklerin kullanıcı senaryoları geçer |
 | M09 | Canlı rootfs, initramfs, canlı ISO ve VM imajı paketleme | M08 | Canlı medyadan açılış ve oturum; kurulumsuz kullanım |
 | M10 | Alfa doğrulaması, yayın adayının hazırlanması | M09 | Test matrisi, bilinen sorunlar, checksum ve kullanım yönergesi |
@@ -352,7 +354,7 @@ Bağımlılık zinciri korunur. Tasarım, terminal yapılandırma taslağı ve k
 | Sistem ve disk | Plasma System Monitor, disk kullanım aracı | Süreç/bellek/disk bilgisi |
 | Tarayıcı | Firefox hazır; Chrome için doğrulanmış kurulum seçeneği | İnternet/TLS, indirme, varsayılan ilişki |
 | Ofis | LibreOffice Writer/Calc/Impress | DOCX/XLSX/PPTX örnekleri; birebir Word garantisi yok |
-| Mağaza | Özelleştirilmiş Discover | Kendi depomuzdan uygulama işlemi |
+| Mağaza | `alp` ile bütünleşecek grafik arayüz | Kendi depomuzdan uygulama işlemi; GUI yolu doğrulanmalı |
 | Windows uygulamaları | Wine + ayarlardan prefix/uyumluluk erişimi | 32/64-bit test programı; seçili Office sürümü |
 | Oyun | Steam istemcisi ve Proton kullanım yolu | Giriş/indirme ve seçilmiş test oyunu |
 
@@ -360,7 +362,7 @@ Bağımlılık zinciri korunur. Tasarım, terminal yapılandırma taslağı ve k
 
 Wine kurulu gelir. Kullanıcı Office 2016/2019/2021 ailesini belirtti; tam sürüm, lisanslı kurulum medyası ve Click-to-Run/MSI ayrımı uyumluluk testi sırasında kaydedilecek. Her sürüm temiz ayrı Wine prefix'inde açma/kaydetme/yazdırma senaryolarıyla denenir. Hiçbiri çalıştırılmadan “Word çalışıyor” denmez. Microsoft Office ISO'ya gömülmez; kullanıcı lisanslı medyasıyla kurar. LibreOffice günlük belge işlerini ilk günden sağlar; Microsoft Word ile aynı uygulama diye sunulmaz.
 
-Steam'in ilk kurulum/hesap ve oyun indirmesi internet gerektirir; offline sistem kurulumu bunu değiştirmez. Native multilib grafik yığını test edilir; kapalı anti-cheat kullanan her oyunun çalışacağı iddia edilmez. Özel oyun listesi sonraki test genişletmesidir.
+Steam'in ilk kurulum/hesap ve oyun indirmesi internet gerektirir; offline sistem kurulumu bunu değiştirmez. D22/D32 kararı çözülmeden Steam istemcisi veya 32-bit grafik yığını uyumluluğu vaat edilmez; kapalı anti-cheat kullanan her oyunun çalışacağı iddia edilmez. Özel oyun listesi sonraki test genişletmesidir.
 
 ### 11.1 Sürücü matrisi
 
@@ -408,7 +410,9 @@ Gizlilik/sürücü/uyumluluk seçenekleri Ayarlar'dan erişilebilir. Telemetri v
 
 ## 14. Codex ve Claude iş bölümü
 
-Kullanıcının devrettiği rol seçimi: Codex build sistemi, LFS, multilib, paket entegrasyonu, Hyper-V/ISO ve entegrasyon sahibi; Claude Code masaüstü profilleri, terminal kullanıcı deneyimi, kısayollar, tema ve ikinci göz inceleme sahibi. Bu sahiplik planıdır; Claude işlemi başlatılmış değildir.
+Kullanıcının devrettiği rol seçimi: Codex build sistemi, LFS, ABI kapsamı, Hyper-V/ISO ve entegrasyon sahibi; Claude Code masaüstü profilleri, terminal kullanıcı deneyimi, kısayollar, tema, **paket motoru (`alp`, bkz. D31/P13, 21 Eylül 2026)** ve ikinci göz inceleme sahibi. Bu sahiplik planıdır.
+
+**Not (21 Eylül 2026):** Önceki sürümde "paket entegrasyonu" Codex'in sahiplik alanındaydı (pacman/libalpm + PackageKit backend'i, PKG-01/PKG-02). Kullanıcı D31 ile bu kararı değiştirdi: motor artık `alp`, sahibi Claude. Codex'in rolü bu noktadan sonra LFS temel sistemine `alp`'i (saf Python, stdlib-only bir script; ek bağımlılık gerektirmez) yerleştirmek ve BLFS grafik/oturum zincirini ilerletmekle sınırlı; PackageKit/Discover backend'i artık bu planın kapsamında değildir (`alp`'in kendi GUI entegrasyon yolu ayrıca ele alınacak, proposal §6'da "Yok" olarak işaretli açık eksiklik).
 
 Ana kaynak kökü `C:\alpbahOS`; Claude için ayrı Git worktree `C:\alpbahOS-claude`. Ortak `main` üzerinde eşzamanlı yazılmaz. Kod, küçük varlıklar ve Markdown dosyaları özel repoda; büyük çıktılar F: üzerinde. Claude aynı makinede değilse kendi clone/branch'inde aynı kuralları izler. İlk devir belgesi [CLAUDE_START.md](CLAUDE_START.md), görev listesi [BACKLOG.md](BACKLOG.md).
 
@@ -417,7 +421,7 @@ Her görevde: ID, sahip, dosya sınırı, girdi/çıktı, bağımlılık, test y
 Önceden anlaşılacak entegrasyon sözleşmeleri:
 
 - Tema token'ları, profil adları ve kurulum hedefleri.
-- `pkg` CLI semantiği, hata kodları ve mağaza erişim yöntemi.
+- `alp` CLI semantiği (eski ad `pkg`), hata kodları ve mağaza erişim yöntemi.
 - Kısayol tanımlarının tek kaynağı.
 - Paket manifesti ve build artifact yolları.
 - Test raporu, log ve görev devri biçimi.
@@ -444,7 +448,7 @@ Her 1–2 saatlik kullanıcı oturumu: 10 dk devir/log inceleme, 40–75 dk tek 
 
 1. Plan/repo/devir düzeni ve Hyper-V yetki kontrolü.
 2. Builder hazırlığı, ağ/SSH ve LFS host-check.
-3. Kaynak/kitap sabitleme, multilib ve paket motoru küçük deneyleri.
+3. Kaynak/kitap sabitleme, ABI kapsamı ve paket motoru küçük deneyleri.
 4. Geçici toolchain başlatma; Claude tarafında tema/kısayol dosyalarının hazırlanması.
 5. Sonuçları doğrulama ve ölçümlerle sonraki oturumları planlama.
 

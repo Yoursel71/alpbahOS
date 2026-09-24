@@ -1,0 +1,16 @@
+MISMATCH /usr/bin/bzip2
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/bzip2", "sha256": "da4d91a2915f3655b74250d461b62717af996b0310dfb6be1d2b0f43c323bb1a", "size": 90200, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/bin/bzip2", "sha256": "a59ed5c9c52277341acccb0aedc312436b0d8f2413b2088c0eb90f4571686fba", "size": 90192, "type": "file", "uid": 0}
+MISMATCH /usr/bin/bzip2recover
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/bzip2recover", "sha256": "92f786d1b22f9a8b6ea92d1da94358da514c7ac4628b71a426c4a92f24d18af1", "size": 33624, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/bin/bzip2recover", "sha256": "10b5b9e11ff79b61fdf4085d387feb70352f5624abbe88bccd7a7b775024f7fd", "size": 33616, "type": "file", "uid": 0}
+MISMATCH /usr/lib/libbz2.so.1.0
+  expected: {"gid": 1001, "mode": 511, "path": "/usr/lib/libbz2.so.1.0", "target": "libbz2.so.1.0.8", "type": "symlink", "uid": 1001}
+  actual:   {"gid": 0, "mode": 511, "path": "/usr/lib/libbz2.so.1.0", "target": "libbz2.so.1.0.8", "type": "symlink", "uid": 0}
+MISMATCH /usr/lib/libbz2.so.1.0.8
+  expected: {"gid": 1001, "mode": 493, "path": "/usr/lib/libbz2.so.1.0.8", "sha256": "b707eadcd2eab0438f4189a8b0cf83044fa68906cd7644e15074c9b9c962a061", "size": 228944, "type": "file", "uid": 1001}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/libbz2.so.1.0.8", "sha256": "5908826c6cbf46c2dd75f61a9c5549fe81c75e335e37394ef0f26b90b8aafa59", "size": 228944, "type": "file", "uid": 0}
+MISMATCH /usr/share/doc
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/doc", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/doc", "type": "directory", "uid": 1001}
+package=bzip2 version=1.0.8 entries=36 matched=31 mismatched=5

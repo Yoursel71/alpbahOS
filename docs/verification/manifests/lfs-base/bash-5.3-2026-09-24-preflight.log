@@ -1,0 +1,427 @@
+MISMATCH /usr/bin/bash
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/bash", "sha256": "a2c81b101a5246c2127de6caa243523a7b3e187ea4f62f37674ffde1ad39d427", "size": 3638496, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/bin/bash", "sha256": "5ebdc463369b9e9ec8aa9138748f662260e3270aafd0f2b0381020eae51eb7b8", "size": 4636376, "type": "file", "uid": 0}
+MISMATCH /usr/include/bash
+  expected: {"gid": 0, "mode": 493, "path": "/usr/include/bash", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/include/bash", "type": "directory", "uid": 1001}
+MISMATCH /usr/include/bash/builtins
+  expected: {"gid": 0, "mode": 493, "path": "/usr/include/bash/builtins", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/include/bash/builtins", "type": "directory", "uid": 1001}
+MISMATCH /usr/include/bash/include
+  expected: {"gid": 0, "mode": 493, "path": "/usr/include/bash/include", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/include/bash/include", "type": "directory", "uid": 1001}
+MISMATCH /usr/lib/bash
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/lib/bash", "type": "directory", "uid": 1001}
+MISMATCH /usr/lib/bash/Makefile.inc
+  expected: {"gid": 0, "mode": 420, "path": "/usr/lib/bash/Makefile.inc", "sha256": "da4531bdb7c93a0bb0249db8103ec87672e864ac448d9a3332c0f1577b5b6e41", "size": 2462, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 420, "path": "/usr/lib/bash/Makefile.inc", "sha256": "483e1665210a1bb53d51ad2d7ce8c232c85073ae1413a12e9f23b8645ce74753", "size": 2461, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/accept
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/accept", "sha256": "69a5f20e8d8a6bb815345c74709d99ea0b93284ca24297d4e77ffac0daf40a7f", "size": 26656, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/accept", "sha256": "3813845f902027d9208cdeb8efc4c3a1d687151acc61c044142faa6ef3a204fd", "size": 26656, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/basename
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/basename", "sha256": "1051089bd6cc844a7cb5d7a6c22a6b36fe283fc3b30665a4c34ea95216f0caa5", "size": 21064, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/basename", "sha256": "3dce389b8c974b133459f463fdef823a0e7df8d4cfe5735854c1a4fb0704ffd8", "size": 21056, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/chmod
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/chmod", "sha256": "c5724ced7030bafab817c55617bdd89e1b2ce87eec2ec2aa13b8466ed53f6b3a", "size": 21528, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/chmod", "sha256": "74f3071237a4e018ec58e5c309aebd07d5bb30028c62ab444357442aa58e90dc", "size": 21520, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/csv
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/csv", "sha256": "8e2e1e20ca5cf0a209e525d800d0b43f70f6cdaa86c652f933123e88972c9b56", "size": 23232, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/csv", "sha256": "bc3c29e6cac28adf62f04bf4dd6f7356339fffd7c738eaa40269b68b2b73f01d", "size": 23232, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/cut
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/cut", "sha256": "274254aa5dbf21938e73f33ed52b9e5126ae05c8b540edb37e7dc208cfb88df2", "size": 38600, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/cut", "sha256": "3d1dd8b3fff192456acbebecfc4025779de44b48cdd54d14ba0b0be0b6d01db9", "size": 38600, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/dirname
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/dirname", "sha256": "320598d5be56e0f6caea65971752fcbd90659c058f57fdc15e1e8815439c642a", "size": 20816, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/dirname", "sha256": "0027a6455bd6141199712a44c1cb9f58c6e33d638d9fed7a4b458cbca4e04011", "size": 20816, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/dsv
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/dsv", "sha256": "6a5d7eb1a87a6e9d81e7626b5bdb0d1dd1ad202b03c69b6693c6b7f8d89de9a8", "size": 25016, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/dsv", "sha256": "837fdfa62f123343e74df37677e42f823bd895dac178283d180a95cc4458d524", "size": 25016, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/fdflags
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/fdflags", "sha256": "43bf44462347f8eebc91bd71deb8a8769344f47a2e010b03314d2f63cbfdab1a", "size": 26928, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/fdflags", "sha256": "9c14254ebac3654150ab4ccf9ae133fd4a399d6b77f1315f9c0b391c85ed9db5", "size": 26928, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/finfo
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/finfo", "sha256": "ad72612645e64518db1481fcb5f30afc675536769fcbec112492cb45e5468bf1", "size": 31440, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/finfo", "sha256": "c6c9f029774ddbdc98c2a207899b239edd3e84916803bca206356782ad97ee64", "size": 31440, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/fltexpr
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/fltexpr", "sha256": "902ef5202fd6f648ba5144758d0d83a9216b8e2069d704d71ded93d7b4f04f96", "size": 81160, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/fltexpr", "sha256": "105859a0ec7b27fd74ecf412b576317b01d618644fb2154ae5324bdc4c9e19c7", "size": 81160, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/getconf
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/getconf", "sha256": "7e80b4c89d511cf5241681bc80cb98a061e7f1052e0a4909bfd3beef5517444e", "size": 53888, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/getconf", "sha256": "96ce9a2691590b78cff4fd73da31b3212535ba09710adfd1aea39016d7183720", "size": 53888, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/head
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/head", "sha256": "99db232569a4b3e6523cfb84495bb7f977ae19abfa53196879b0075cd7ded85e", "size": 24336, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/head", "sha256": "50a6e9849321e9f1f2485be25f9ee7a9d52f9e10344b7446ff2ffa3b1083a777", "size": 24336, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/id
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/id", "sha256": "e9e5c469ac5fba53f36b3af97da174cb2f01baf8b811deda8d02052dd5cbb024", "size": 26792, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/id", "sha256": "af61b43c6703bd76bae21f90e413c2b80b5edd7b7b604a1087da034c13260d70", "size": 26792, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/kv
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/kv", "sha256": "ec008c5b97d0be8ab5ae3c7772f63fc100db621a0ee2b9f5ea849b478ea21d63", "size": 26216, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/kv", "sha256": "e5556f8590d5ea11a814cd6ced7e501c19185a9eea81b10a7174a5272e4d1cfd", "size": 26208, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/ln
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/ln", "sha256": "13e929e7864b0e95c602855da1b4f8a8e97ecc30a047ba12377451337a0cbbc1", "size": 24016, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/ln", "sha256": "2951c3f79b15794641895a9fbc4248aec9bb8b5d31cc7f5e2e0168f4acbf529a", "size": 24016, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/logname
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/logname", "sha256": "0147ba84d949820402bd27916b7afd674decf1cefa344175c902220543ff1c22", "size": 19288, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/logname", "sha256": "b90af85755871c8f18f4eb9f8f53877aa618ecf6a44e0835469ebe4d6d510104", "size": 19288, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/mkdir
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/mkdir", "sha256": "6826f630b0dd084c463f30700cad496eb789eb1cb96d0eabdc8ce25b6033900c", "size": 24776, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/mkdir", "sha256": "8b277330a23a5a22c6d957d304bbef7359ff7261c56f25c4fb5c77099d5b4aba", "size": 24776, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/mkfifo
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/mkfifo", "sha256": "7be79efa3d9ca54da7c3bd814966637eef7c5c08f70d46b01ec33470fbd15b7d", "size": 20760, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/mkfifo", "sha256": "cd7fbd1ba5c3623d7953b28dd104e358249922db07d7148909b0610651be12fe", "size": 20760, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/mktemp
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/mktemp", "sha256": "ad75562aed531a12f378139e760308cfa7fa93b3e0f09a1cdaae18e1f7bf0343", "size": 22536, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/mktemp", "sha256": "0e2f8999d72fa5190ee5537c15fe8cfc7136ddd03e42938d82b390b2bc19fc63", "size": 22536, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/mypid
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/mypid", "sha256": "1049ef08e9e1d4a69b3e8c868ddf21c513af192f270e16ae0b67e6bfe6ac4fb1", "size": 20144, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/mypid", "sha256": "bb7f20b69b2d8377390de983c3ed38dba5e290a3af878b02ff7fc8e23d8971b2", "size": 20144, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/pathchk
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/pathchk", "sha256": "63a188087685d44b53a5be36da24a1c72f6d5e0612904682ed96a1c23793a7ae", "size": 24072, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/pathchk", "sha256": "14c04e3f779fafd04fcd6e0bab1a6922e4188f76eaffcfd076dd18850e508ba3", "size": 24072, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/print
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/print", "sha256": "357d4fd3d9f38bcfbf81b406a839f2f56b6cdd53dee6367eaf35bb02a70691fd", "size": 24192, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/print", "sha256": "521f82b62c114aaabfc2e442df73745fa1d49d756941ecaee0d69d11f41c9f50", "size": 24192, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/printenv
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/printenv", "sha256": "b24e96331c0dd41cf2e87b383db91724b02fa49a5770260ca2eca8eb66f88756", "size": 20536, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/printenv", "sha256": "d7e68a8c572d68ffdbb8b5961dd1cb5149c013f44f43cfdf009e63e582e78cd6", "size": 20536, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/push
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/push", "sha256": "ea64d2a1fd92367387bd3174263c5824e328576370cd3f4b78405c62e6acd0ea", "size": 24496, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/push", "sha256": "2772c7f1530bcfadf476375a8f39b8476974b341aa193c9d0fecb7f060ffd5f0", "size": 24488, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/realpath
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/realpath", "sha256": "e09d8612f513a78ebc5f02826efa9c49fd979f4b2bcaa81e65e36a57be3cfeb3", "size": 24344, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/realpath", "sha256": "4622972950164eb4105a46e097c2df13f6f91bf5bb03a692aad19d5c93f1d8c2", "size": 24344, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/rm
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/rm", "sha256": "d9060a5ea4314ef865150a5685373f46e31a92c2fba4b219b7b0e2dac947aa7d", "size": 23088, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/rm", "sha256": "c1cdbe87a5dbf2a882ed2beb3d166d3674f259026d9e91776e0a80f019f4e80c", "size": 23088, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/rmdir
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/rmdir", "sha256": "61719247decec112fc9c2bee338cb716f92c47d34e47c394a2dc446214a796b6", "size": 19160, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/rmdir", "sha256": "bdbe58a0f14213638043fc44b2b3b477d1c48935f1c80011a5a743809af174b5", "size": 19160, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/seq
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/seq", "sha256": "b2ef659573fe9f8cdebdb1bbaca8426c54fbe2b1099bb06d9160ba5d57fb3ce6", "size": 32944, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/seq", "sha256": "0b5bf1cfcb1d25cf38522c7f0c8abe7e484176974954e96b177b963cb0fbfcb9", "size": 32944, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/setpgid
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/setpgid", "sha256": "d095e3fbf27690afe04dd4c64ce0028b5a7e8f2e426948979d28f8cdc2053e1a", "size": 20096, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/setpgid", "sha256": "ce8837ce3021c7a989b6f84b4ce0fdf695f94b8ec699febb24d78c4879e79478", "size": 20096, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/sleep
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/sleep", "sha256": "87b80da9d6945dc4931dc109ea9ec86bad4cf1b370b8dd69eddedd6cdf59117b", "size": 21600, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/sleep", "sha256": "892e722e4c766257b9e59dbff0b09478d0ade466a383ee630023055f88012d69", "size": 21600, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/stat
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/stat", "sha256": "0ee5b4b9edb0ef857324d932db3dd12757deaec0a6c5ab787d4743d19f8f6501", "size": 30016, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/stat", "sha256": "570bff0bc41e0884f676886a06191d5c259a176d903913c282f724ecf3ba9470", "size": 30016, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/strftime
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/strftime", "sha256": "9e2fa6303601566d1f382b2600055729d50511e97d33b9b49d199da241df76c0", "size": 21960, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/strftime", "sha256": "4061c2049439ef636e50ce8ab68a923363be3cf1fe569bc389df29ea14fd91ef", "size": 21952, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/strptime
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/strptime", "sha256": "35beba10435e0783d3bed44f4c4ed40f0727498cde2b74f657e25681e2cdceff", "size": 27104, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/strptime", "sha256": "fd7b2d54f6bcbeff509e40aafe0b0a91a12a24cd651003166d5eb5e3e4b72e1a", "size": 27096, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/sync
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/sync", "sha256": "f300f8242c59225f94321d082dc91c336f30255b2e0cccb178bc86929b7106aa", "size": 19832, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/sync", "sha256": "9bfa4f5595770a1a694b6878e4770ab719f5564708a00c95659ade44b660bb93", "size": 19832, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/tee
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/tee", "sha256": "3ed1b700b3f686e960c7a32db2a1a88774fdcd4ffd5d14f274f48c79cf52c125", "size": 22400, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/tee", "sha256": "d2762a13c34b9790eda44e7074ec2a2ac5b421b2e8c9413d2c595a8c0db9941c", "size": 22400, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/truefalse
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/truefalse", "sha256": "e16a532667825e41dc380669471f9b7ba29845bf0f1ba05547d26dc05c2163a1", "size": 18288, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/truefalse", "sha256": "085b6fa0be4510c95e067e825504859cc1670147ba494dafc6abea14c1df3a98", "size": 18288, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/tty
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/tty", "sha256": "2fa29bddfa10c474023f9b86033502a15ea8e0a0a7ef27c8ce463c70791ff093", "size": 19728, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/tty", "sha256": "d7a191cb27d3ed2f3f67df6907b149a6eaf8c0108381da6c82839ea12c4248f2", "size": 19728, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/uname
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/uname", "sha256": "049d4916a5e62dc752be35c1bacdbd687814cd11ee55619ca08ea0939f105dbf", "size": 21336, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/uname", "sha256": "01475388586463541fe39f0a0731dde3047263020f313e6ae1c831f9922ff42c", "size": 21336, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/unlink
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/unlink", "sha256": "f056fd7785ff95b6f7c20af649c155ce7e8ee9206f5bf34cb7b4824884bf1624", "size": 19056, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/unlink", "sha256": "1b95b39fdf981d0214b86c369367b0957f7c91d7cccfe7f655815bd8653b7ac8", "size": 19056, "type": "file", "uid": 0}
+MISMATCH /usr/lib/bash/whoami
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/bash/whoami", "sha256": "b1ce748868caaa0d74ad4e31759149e6c0c1d37eb0a6b2f1ed07875648104aab", "size": 19640, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/bash/whoami", "sha256": "e1fc820d484eba905d6645de5d718c2285aa939b9c672e5adcf0b0e95cbf249e", "size": 19640, "type": "file", "uid": 0}
+MISMATCH /usr/share/doc
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/doc", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/doc", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/doc/bash-5.3
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/doc/bash-5.3", "type": "directory", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/bash-5.3/CHANGES
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/bash-5.3/CHANGES", "sha256": "270856b93e0ed9bf088377165ca4db25fc1e6a68d6bd8ff2a4382ca15ab457fe", "size": 473382, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/bash-5.3/COMPAT
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/bash-5.3/COMPAT", "sha256": "e7bca221b50ce8413d775abda668ad79aa58c0b8fb2b09d855da1c694ea82bb1", "size": 28581, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/bash-5.3/FAQ
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/bash-5.3/FAQ", "sha256": "1a8838790362d6cefc1b4b0a230710769ea47f4eb96c8dcd24b846dd7d445db3", "size": 99634, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/bash-5.3/INTRO
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/bash-5.3/INTRO", "sha256": "88d4f438af6af108d5970aed3a88208a295b6dafc2d55b549169bb0a372ec1fb", "size": 7072, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/bash-5.3/NEWS
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/bash-5.3/NEWS", "sha256": "ae22dc293dc2c42dbe1098f4204ae467ec54badaa137f2ede47df5e76d11f637", "size": 118334, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/bash-5.3/POSIX
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/bash-5.3/POSIX", "sha256": "6f5fbc2204533ebae00c99f20954cbcae70c4efcf04fff1ad4014fc8b0cba10d", "size": 18794, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/bash-5.3/RBASH
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/bash-5.3/RBASH", "sha256": "0fd1c24613e7d8c698c3f743dcbbae8d75563cbd65f597f37eb93751d91acc29", "size": 2747, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/bash-5.3/README
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/bash-5.3/README", "sha256": "0dda3f5817ac4d88c4cc17ecbe42f05223db368fb353d88e01fcb7259a50fe07", "size": 4848, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/bash-5.3/bash.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/bash-5.3/bash.html", "sha256": "79394ccb66e4d572f47d8b01634d3b08a87f705a230605006e25aecd5e033475", "size": 426217, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/doc/bash-5.3/bashref.html
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/doc/bash-5.3/bashref.html", "sha256": "b91026acffb159bd1e842e3116a95539bf858e2b57cbfa74df9e3a53379177a4", "size": 1040870, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/share/info
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/info", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/info", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/af
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/af", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/af", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/af/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/af/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/af/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/bg
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/bg", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/bg", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/bg/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/bg/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/bg/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ca
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ca", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ca", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ca/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ca/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ca/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/cs
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/cs", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/cs", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/cs/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/cs/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/cs/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/da
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/da", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/da", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/da/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/da/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/da/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/de
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/de", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/de", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/de/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/de/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/de/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/el
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/el", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/el", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/el/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/el/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/el/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/en@boldquot
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/en@boldquot", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/en@boldquot", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/en@boldquot/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/en@boldquot/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/en@boldquot/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/en@quot
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/en@quot", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/en@quot", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/en@quot/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/en@quot/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/en@quot/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/eo
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/eo", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/eo", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/eo/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/eo/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/eo/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/es
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/es", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/es", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/es/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/es/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/es/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/et
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/et", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/et", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/et/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/et/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/et/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/fi
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/fi", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/fi", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/fi/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/fi/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/fi/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/fr
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/fr", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/fr", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/fr/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/fr/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/fr/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ga
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ga", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ga", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ga/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ga/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ga/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/gl
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/gl", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/gl", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/gl/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/gl/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/gl/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/hr
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/hr", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/hr", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/hr/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/hr/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/hr/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/hu
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/hu", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/hu", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/hu/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/hu/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/hu/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/id
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/id", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/id", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/id/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/id/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/id/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/it
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/it", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/it", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/it/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/it/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/it/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ja
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ja", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ja", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ja/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ja/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ja/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ka
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ka", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ka", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ka/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ka/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ka/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ko
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ko", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ko", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ko/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ko/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ko/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/lt
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/lt", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/lt", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/lt/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/lt/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/lt/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/nb
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/nb", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/nb", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/nb/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/nb/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/nb/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/nl
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/nl", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/nl", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/nl/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/nl/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/nl/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/pl
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/pl", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/pl", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/pl/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/pl/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/pl/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/pt
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/pt", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/pt", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/pt/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/pt/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/pt/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/pt_BR
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/pt_BR", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/pt_BR", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/pt_BR/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/pt_BR/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/pt_BR/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ro
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ro", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ro", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ro/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ro/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ro/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ru
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ru", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ru", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/ru/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/ru/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/ru/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/sk
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/sk", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/sk", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/sk/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/sk/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/sk/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/sl
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/sl", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/sl", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/sl/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/sl/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/sl/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/sq
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/sq", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/sq", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/sq/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/sq/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/sq/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/sr
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/sr", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/sr", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/sr/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/sr/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/sr/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/sv
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/sv", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/sv", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/sv/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/sv/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/sv/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/tr
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/tr", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/tr", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/tr/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/tr/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/tr/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/uk
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/uk", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/uk", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/uk/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/uk/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/uk/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/vi
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/vi", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/vi", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/vi/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/vi/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/vi/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/zh_CN
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/zh_CN", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/zh_CN", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/zh_CN/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/zh_CN/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/zh_CN/LC_MESSAGES", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/zh_TW
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/zh_TW", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/zh_TW", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/locale/zh_TW/LC_MESSAGES
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/locale/zh_TW/LC_MESSAGES", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/locale/zh_TW/LC_MESSAGES", "type": "directory", "uid": 1001}
+package=bash version=5.3 entries=261 matched=119 mismatched=142

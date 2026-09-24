@@ -1,0 +1,7 @@
+MISMATCH /usr/bin/zstd
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/zstd", "sha256": "1d5418485b0519f454800f3dff305b9513c33bfe19ccc340e67a568b6cb4a509", "size": 10473928, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/bin/zstd", "sha256": "6f85ef97eb03ffa4dd65c0c93b2fd795823ae167ec4161915d2bbcfa10942f9b", "size": 10473808, "type": "file", "uid": 0}
+MISMATCH /usr/lib/libzstd.so.1.5.7
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/libzstd.so.1.5.7", "sha256": "f63ac52354ff24c2cb3e4092a5a91fcedc04ea34f8b38535e93e11a8635f0f4e", "size": 1067400, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/libzstd.so.1.5.7", "sha256": "901e4586fcf4a6a6715cc27e136e53c3034ee6b80e78407d35664a88a61c47a4", "size": 1067400, "type": "file", "uid": 0}
+package=zstd version=1.5.7 entries=26 matched=24 mismatched=2

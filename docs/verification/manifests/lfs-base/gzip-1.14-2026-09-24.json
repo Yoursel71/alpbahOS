@@ -1,0 +1,290 @@
+{
+  "captured_at": "2026-09-24T01:33:37+00:00",
+  "entries": [
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/gunzip",
+      "sha256": "4f13375fc268dcc8f94112fdcf9e2a334487e8f14a0ba1d830ba3173da3aa3df",
+      "size": 2266,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/gzexe",
+      "sha256": "cc8412a9e391cb1ec844a5cacbe8a037d117dae9ed73537382842fd120adc618",
+      "size": 6379,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/gzip",
+      "sha256": "07c79de58e310f531d672b56d8c6020cce0202e7a6192de48e8c8dcb16c8b6a4",
+      "size": 388288,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/uncompress",
+      "sha256": "4f13375fc268dcc8f94112fdcf9e2a334487e8f14a0ba1d830ba3173da3aa3df",
+      "size": 2266,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/zcat",
+      "sha256": "92d54e643e95fe03732613bc48cf744d95bb7029779aa6be4ce1a32a58feb1ef",
+      "size": 1904,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/zcmp",
+      "sha256": "4b2b07ca9fa39a3320eb0272ad563063eb23429738cc208a152fe66dd95a5ee9",
+      "size": 1609,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/zdiff",
+      "sha256": "89172285195f17bde1d1c8ebb5aca9c633f80722a7434632bf88fbce8171721d",
+      "size": 6386,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/zegrep",
+      "sha256": "67ee7fadec7ea53b4c1f8cfc3c81427b29c0b1381e80b55642617620c84d0bcc",
+      "size": 29,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/zfgrep",
+      "sha256": "87ab5f4c7cb344e409d614d1a69cc156b3b1053d6ae0b59d8e2c2131f3e63e5a",
+      "size": 29,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/zforce",
+      "sha256": "b6deb64186017e612c46becbd205d1927fa4579b423db057b29375eb1f4781ff",
+      "size": 2007,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/zgrep",
+      "sha256": "9ed2a55544f147a1d351ca0a6a968cfd85d6c217db922a7a57920665585f9a82",
+      "size": 8145,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/zless",
+      "sha256": "1b059cb72e4584bdc3ddfe500d8ddbec48b98f502c4fb8e9d43278fdb15b8d0b",
+      "size": 2365,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/zmore",
+      "sha256": "997095bd14389f3dac9949bf274f17b1ac0845ca7e81e406d386516fb3fa59b3",
+      "size": 1768,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/znew",
+      "sha256": "73cdadc8caba21ce1b04d507b1499ad95974c5d1d4f95453d470f9e17746c151",
+      "size": 4561,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/info",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/info/gzip.info",
+      "sha256": "c351f2aa59b387a15dae76e187da38a47fa156b3fef7a0d70d77cdfcce569827",
+      "size": 48302,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man/man1",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/gunzip.1",
+      "sha256": "022105f453b1822f8a8c36283ae127dd764cbd57ef0e990ab419f7ac53e8619a",
+      "size": 16,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/gzexe.1",
+      "sha256": "f8d32e49ba7eed12eaae34c62a5091a2a2130e22a72f34b4cef7ddf587ca21a7",
+      "size": 1443,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/gzip.1",
+      "sha256": "107c35463c2fb970318b34ccca09db100e1b99bfab793196eab68ef91d350b78",
+      "size": 16682,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/zcat.1",
+      "sha256": "022105f453b1822f8a8c36283ae127dd764cbd57ef0e990ab419f7ac53e8619a",
+      "size": 16,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/zcmp.1",
+      "sha256": "d5499ae1f25924d87bada83daa881e7f26564fec01b5a8953d31b7c2ac65782e",
+      "size": 17,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/zdiff.1",
+      "sha256": "b8bd004f0bf4d81292281032ce1d0800e66e3aaa014bd66ead4bcaa996715c63",
+      "size": 877,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/zforce.1",
+      "sha256": "43ae0305a79822418342714eef863f26de32b9ad7f237b6b83ddc4560d2e63b3",
+      "size": 605,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/zgrep.1",
+      "sha256": "e56da93c4f4a7aa814aeec9bfe0f73b171c5e9508c21c009e4566241dfbea2cc",
+      "size": 1130,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/zless.1",
+      "sha256": "39f094008ab0283c3029ac23c0355c8b1dcf9b7e190cb86c5190a7da3218658f",
+      "size": 2005,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/zmore.1",
+      "sha256": "2338471b362ac4a2cdcb44dd1cecda8126909e6deca0b302b0f1aabd9b3d85df",
+      "size": 3736,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/znew.1",
+      "sha256": "74b4d64751f796dd3d4818dd2f24c1fb613e5f0e7d5a0e123afced48cf7d95dc",
+      "size": 1142,
+      "type": "file",
+      "uid": 0
+    }
+  ],
+  "package": {
+    "name": "gzip",
+    "source": {
+      "sha256": "01a7b881bd220bfdf615f97b8718f80bdfd3f6add385b993dcf6efd14e8c0ac6",
+      "url": "https://ftp.gnu.org/gnu/gzip/gzip-1.14.tar.xz"
+    },
+    "version": "1.14"
+  },
+  "schema": "alpbahOS.package-files/v1"
+}
