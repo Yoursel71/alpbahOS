@@ -8,6 +8,7 @@ source directory to the pinned 79-archive list and does not alter that tree.
 from __future__ import annotations
 
 import argparse
+import errno
 import hashlib
 import json
 import os
@@ -33,6 +34,9 @@ SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 OFFICIAL_MD5SUMS_URL = (
     "https://www.linuxfromscratch.org/lfs/downloads/12.4-systemd/md5sums"
 )
+OFFICIAL_MD5SUMS_FILENAME = "m04-lfs-12.4-systemd-official-md5sums.txt"
+OFFICIAL_MD5SUMS_SHA256 = "d18a55ca1aa4eb0f483f134cd44287ea8d48eeb1def5fa0c8d07fe44f38dbb17"
+OFFICIAL_CHECKSUM_ALGORITHM = "MD5 as published by official LFS 12.4-systemd md5sums"
 MANIFEST_FIELDS = {
     "schema", "book", "scope", "source", "package_order_source",
     "expected_count", "entries",
@@ -135,43 +139,41 @@ def load_manifest(path: Path, coverage_path: Path | None = None) -> dict[str, An
             raise VerificationError(f"source field {name!r} must be a nonempty string")
     snapshot = source.get("snapshot_file")
     snapshot_hash = source.get("snapshot_sha256")
-    if snapshot is not None or snapshot_hash is not None:
-        if (
-            not isinstance(snapshot, str)
-            or not _is_basename(snapshot)
-            or not isinstance(snapshot_hash, str)
-            or not SHA256_RE.fullmatch(snapshot_hash)
-        ):
-            raise VerificationError("invalid checksum-source snapshot metadata")
-        snapshot_path = path.parent / snapshot
-        try:
-            actual_hash = sha256_file(snapshot_path)
-        except OSError as error:
+    if snapshot != OFFICIAL_MD5SUMS_FILENAME:
+        raise VerificationError("checksum-source snapshot filename is not the committed official snapshot")
+    if snapshot_hash != OFFICIAL_MD5SUMS_SHA256:
+        raise VerificationError("checksum-source snapshot SHA-256 is not the pinned official digest")
+    if source.get("url") != OFFICIAL_MD5SUMS_URL:
+        raise VerificationError("checksum source URL is not the official LFS 12.4 list")
+    if source.get("checksum_algorithm") != OFFICIAL_CHECKSUM_ALGORITHM:
+        raise VerificationError("checksum algorithm declaration is not the pinned official MD5 source")
+    snapshot_path = path.parent / OFFICIAL_MD5SUMS_FILENAME
+    try:
+        actual_hash = sha256_file(snapshot_path)
+    except OSError as error:
+        raise VerificationError(
+            f"cannot read checksum-source snapshot {snapshot_path}: {error}"
+        ) from error
+    if actual_hash != OFFICIAL_MD5SUMS_SHA256:
+        raise VerificationError(
+            f"checksum-source snapshot SHA-256 mismatch: expected={OFFICIAL_MD5SUMS_SHA256} actual={actual_hash}"
+        )
+    try:
+        official_checksums = read_official_md5sums(snapshot_path)
+    except (OSError, UnicodeDecodeError, VerificationError) as error:
+        raise VerificationError(
+            f"cannot parse official checksum snapshot {snapshot_path}: {error}"
+        ) from error
+    for entry in entries:
+        official_md5 = official_checksums.get(entry["archive"])
+        if official_md5 is None:
             raise VerificationError(
-                f"cannot read checksum-source snapshot {snapshot_path}: {error}"
-            ) from error
-        if actual_hash != snapshot_hash:
-            raise VerificationError(
-                f"checksum-source snapshot SHA-256 mismatch: expected={snapshot_hash} actual={actual_hash}"
+                f"archive is absent from official checksum snapshot: {entry['archive']}"
             )
-        if source.get("url") != OFFICIAL_MD5SUMS_URL:
-            raise VerificationError("checksum source URL is not the official LFS 12.4 list")
-        try:
-            official_checksums = read_official_md5sums(snapshot_path)
-        except (OSError, UnicodeDecodeError, VerificationError) as error:
+        if entry["md5"] != official_md5:
             raise VerificationError(
-                f"cannot parse official checksum snapshot {snapshot_path}: {error}"
-            ) from error
-        for entry in entries:
-            official_md5 = official_checksums.get(entry["archive"])
-            if official_md5 is None:
-                raise VerificationError(
-                    f"archive is absent from official checksum snapshot: {entry['archive']}"
-                )
-            if entry["md5"] != official_md5:
-                raise VerificationError(
-                    f"manifest MD5 differs from official snapshot for {entry['archive']}"
-                )
+                f"manifest MD5 differs from official snapshot for {entry['archive']}"
+            )
 
     order_source = data.get("package_order_source")
     if not isinstance(order_source, str) or not _is_basename(order_source):
@@ -227,11 +229,8 @@ def read_official_md5sums(path: Path) -> dict[str, str]:
 
 
 def sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        for block in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(block)
-    return digest.hexdigest()
+    """Hash a stable regular file through a pinned, no-follow descriptor."""
+    return _digest_regular_file(path, (hashlib.sha256(),))[0]
 
 
 def _file_signature(
@@ -242,6 +241,7 @@ def _file_signature(
     signature: tuple[int | None, ...] = (
         getattr(metadata, "st_dev", None),
         inode if inode else None,
+        stat.S_IFMT(metadata.st_mode),
         metadata.st_size,
         getattr(metadata, "st_mtime_ns", int(metadata.st_mtime * 1_000_000_000)),
     )
@@ -252,39 +252,55 @@ def _file_signature(
     return signature
 
 
-def digest_source_file(path: Path) -> tuple[str, str]:
-    """Return (MD5, SHA-256) in one read and reject observed file changes."""
-    # MD5 is used only to compare against the official LFS book checksum.
-    md5 = hashlib.md5(usedforsecurity=False)
-    sha256 = hashlib.sha256()
+def _digest_regular_file(path: Path, digests: tuple[Any, ...]) -> tuple[str, ...]:
+    """Hash a regular file while checking path and descriptor identity throughout.
+
+    O_NOFOLLOW prevents opening a final-component symlink where supported;
+    O_NONBLOCK prevents a raced FIFO from hanging before fstat rejects it.
+    """
     before_path = path.lstat()
     if not stat.S_ISREG(before_path.st_mode):
-        raise NonRegularSourceError("matching source path is not a regular file")
-
-    with path.open("rb") as stream:
-        before_fd = os.fstat(stream.fileno())
-        if (
-            not stat.S_ISREG(before_fd.st_mode)
-            or _file_signature(before_path) != _file_signature(before_fd)
-        ):
+        raise NonRegularSourceError("matching path is not a regular file")
+    flags = os.O_RDONLY | getattr(os, "O_BINARY", 0)
+    flags |= getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0)
+    try:
+        descriptor = os.open(path, flags)
+    except OSError as error:
+        if error.errno == errno.ELOOP:
+            raise SourceFileChangedError("source path became a symlink before opening") from error
+        raise
+    try:
+        before_fd = os.fstat(descriptor)
+        if not stat.S_ISREG(before_fd.st_mode):
+            raise NonRegularSourceError("opened path is not a regular file")
+        if _file_signature(before_path) != _file_signature(before_fd):
             raise SourceFileChangedError("source path changed before hashing began")
-        for block in iter(lambda: stream.read(1024 * 1024), b""):
-            md5.update(block)
-            sha256.update(block)
-        after_fd = os.fstat(stream.fileno())
+        for block in iter(lambda: os.read(descriptor, 1024 * 1024), b""):
+            for digest in digests:
+                digest.update(block)
+        after_fd = os.fstat(descriptor)
+    finally:
+        os.close(descriptor)
 
     after_path = path.lstat()
-    before_signature = _file_signature(before_path)
     if (
-        before_signature != _file_signature(before_fd)
+        _file_signature(before_path) != _file_signature(before_fd)
         or _file_signature(before_fd, include_change_time=True)
         != _file_signature(after_fd, include_change_time=True)
         or _file_signature(before_path, include_change_time=True)
         != _file_signature(after_path, include_change_time=True)
-        or before_signature != _file_signature(after_path)
+        or _file_signature(after_path) != _file_signature(after_fd)
     ):
-        raise SourceFileChangedError("source file changed while being hashed")
-    return md5.hexdigest(), sha256.hexdigest()
+        raise SourceFileChangedError("source file changed or was replaced while being hashed")
+    return tuple(digest.hexdigest() for digest in digests)
+
+
+def digest_source_file(path: Path) -> tuple[str, str]:
+    """Return (MD5, SHA-256) in one read and reject observed file changes."""
+    # MD5 is used only to compare against the official LFS book checksum.
+    return _digest_regular_file(
+        path, (hashlib.md5(usedforsecurity=False), hashlib.sha256())
+    )
 
 
 def index_source_files(source_dir: Path) -> tuple[dict[str, list[Path]], list[str]]:
@@ -399,20 +415,12 @@ def main(argv: list[str] | None = None) -> int:
         type=Path,
         help="read-only directory containing source archives (searched recursively)",
     )
-    parser.add_argument(
-        "--manifest", type=Path, default=DEFAULT_MANIFEST,
-        help=f"pinned official checksum manifest (default: {DEFAULT_MANIFEST})",
-    )
-    parser.add_argument(
-        "--coverage", type=Path, default=DEFAULT_COVERAGE,
-        help="ordered M04 Chapter 8 package table used to validate the manifest",
-    )
     args = parser.parse_args(argv)
 
     if not args.source_dir.is_dir():
         parser.error(f"source directory does not exist or is not a directory: {args.source_dir}")
     try:
-        manifest = load_manifest(args.manifest, args.coverage)
+        manifest = load_manifest(DEFAULT_MANIFEST, DEFAULT_COVERAGE)
     except VerificationError as error:
         print(f"manifest error: {error}", file=sys.stderr)
         return 2
