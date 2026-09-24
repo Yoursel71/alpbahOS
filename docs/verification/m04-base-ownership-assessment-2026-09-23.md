@@ -4,6 +4,36 @@
 
 M04 remains partial. The existing `/mnt/lfs` rootfs does not contain package-to-file ownership records for its LFS base installation, so no base package ownership claim is made from this audit.
 
+The official 79-entry LFS 12.4-systemd Chapter 8 scope and current stage coverage
+are tracked in the [M04 package coverage matrix](m04-lfs-12.4-package-coverage-2026-09-24.md).
+
+## Installed version and build provenance — 24 September 2026
+
+A read-only Builder audit queried installed program/library versions and
+inspected retained package `config.status` files and binary hashes. No version
+mismatch was found among the checked Chapter 8 packages: observed versions
+include Glibc 2.42, GCC 15.2.0, Binutils 2.45, Systemd 257.8, OpenSSL 3.5.2,
+Python 3.13.7, Coreutils 9.7, Bash 5.3, and the 22 packages already staged.
+
+The comparison deltas are materially explained by build provenance. The
+retained Coreutils, Gawk, Gzip, Findutils, and Diffutils build configurations
+include `--host=x86_64-lfs-linux-gnu`, indicating cross-build outputs. Current
+rootfs `/usr/bin/ls` has SHA-256
+`82e6f443cd7ca53ea05d2546872a034b2d873a387f02a0129e493339bdf485bf`, equal to
+`/mnt/lfs/build/coreutils-9.7/src/ls`; it is 776,856 bytes and owned by
+1001:1001. The final Chapter 8 stage manifest records `/usr/bin/ls` as
+657,672 bytes with SHA-256
+`065e245611bf7712b0a255a18dbcb9e149b0a7bdfb7338bfaa108abf99660de0`.
+Therefore the current rootfs still contains a Chapter 6 cross-build Coreutils
+binary, not the captured Chapter 8 build.
+
+Additional observed differences include bootstrap file owners (1001:1001 vs
+final-stage root:root), locale directory modes/owners, Bash configuration
+(`--with-installed-readline` and docdir in the captured stage), and Perl's
+static rootfs executable vs the shared-lib/thread configuration of the stage.
+These findings identify the root of several mismatches but do not prove
+ownership records. No rootfs/database changes were made during this audit.
+
 ## Builder evidence
 
 Environment: Builder VM `yrsk`, accessed as `sa` over SSH; target `/mnt/lfs`.

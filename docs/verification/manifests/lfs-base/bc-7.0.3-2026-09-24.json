@@ -1,0 +1,511 @@
+{
+  "captured_at": "2026-09-24T04:35:38+00:00",
+  "entries": [
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/bc",
+      "sha256": "b2c4655a669654df996801302870a87232bc33e75148bced06180f98cd464526",
+      "size": 199176,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/bin/dc",
+      "target": "bc",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/de_AT.UTF-8",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/de_AT.UTF-8/bc",
+      "target": "../de_DE.UTF-8/bc",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/de_CH.UTF-8",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/de_CH.UTF-8/bc",
+      "target": "../de_DE.UTF-8/bc",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/de_DE.UTF-8",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/de_DE.UTF-8/bc",
+      "sha256": "e2345722060803019025f22b2d8b7ef4f0b6f19f2d93adbf87bad13e3dfd6431",
+      "size": 4353,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/en_AU.UTF-8",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/en_AU.UTF-8/bc",
+      "target": "../en_US/bc",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/en_CA.UTF-8",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/en_CA.UTF-8/bc",
+      "target": "../en_US/bc",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/en_GB.UTF-8",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/en_GB.UTF-8/bc",
+      "target": "../en_US/bc",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/en_IE.UTF-8",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/en_IE.UTF-8/bc",
+      "target": "../en_US/bc",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/en_NZ.UTF-8",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/en_NZ.UTF-8/bc",
+      "target": "../en_US/bc",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/en_US",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/en_US/bc",
+      "sha256": "52237de8195771249e419d8573abbb6b30b4ca7b45d9fa06076501eaf010bf9c",
+      "size": 4004,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/en_US.UTF-8",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/en_US.UTF-8/bc",
+      "target": "../en_US/bc",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/es_ES.UTF-8",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/es_ES.UTF-8/bc",
+      "sha256": "44a234c1714ab21f546b07a48a34a53384157b65b1729d5289a59c65e87548ad",
+      "size": 4499,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/fr_BE.UTF-8",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/fr_BE.UTF-8/bc",
+      "target": "../fr_FR.UTF-8/bc",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/fr_CA.UTF-8",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/fr_CA.UTF-8/bc",
+      "target": "../fr_FR.UTF-8/bc",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/fr_CH.UTF-8",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/fr_CH.UTF-8/bc",
+      "target": "../fr_FR.UTF-8/bc",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/fr_FR.UTF-8",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/fr_FR.UTF-8/bc",
+      "sha256": "bbe4097895515fe9fde9f1000f77a836f866a383a4fb39a8232a3f10ef63c44a",
+      "size": 4430,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ja_JP.UTF-8",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ja_JP.UTF-8/bc",
+      "sha256": "fb0fc429bc07eb1bfa735e7cb53c7cbb7b2813402b04128411a219e02263ec5d",
+      "size": 4761,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/nl_NL.UTF-8",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/nl_NL.UTF-8/bc",
+      "sha256": "f8b5736585873c9a938c880fbe38f0614ff3d5c75d641b797bc1f413590147d5",
+      "size": 4192,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pl_PL.UTF-8",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/pl_PL.UTF-8/bc",
+      "sha256": "a4ccc00cf6db710d665ce0d3254e5859b25805f9b08b8959e95f5c3e213cd6c3",
+      "size": 4387,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pt_BR.UTF-8",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/share/locale/pt_BR.UTF-8/bc",
+      "target": "../pt_PT.UTF-8/bc",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pt_PT.UTF-8",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/pt_PT.UTF-8/bc",
+      "sha256": "6c38b02e94a89e10d86978af7016f0145c84829ce12e6ab5633e7c18e319f5bf",
+      "size": 4361,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ru_RU.CP1251",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ru_RU.CP1251/bc",
+      "sha256": "59511e4549cc53c413e4b86d009128a16786e2f8a2a432d45ded23b625c212a0",
+      "size": 36,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ru_RU.KOI8-R",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ru_RU.KOI8-R/bc",
+      "sha256": "59511e4549cc53c413e4b86d009128a16786e2f8a2a432d45ded23b625c212a0",
+      "size": 36,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ru_RU.UTF-8",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ru_RU.UTF-8/bc",
+      "sha256": "3fc71e8d1f5d3ee487b167c752cfec40b8a50a4148e9267b161450292c2aae92",
+      "size": 6050,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/zh_CN.GB18030",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/zh_CN.GB18030/bc",
+      "sha256": "59511e4549cc53c413e4b86d009128a16786e2f8a2a432d45ded23b625c212a0",
+      "size": 36,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/zh_CN.GB2312",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/zh_CN.GB2312/bc",
+      "sha256": "59511e4549cc53c413e4b86d009128a16786e2f8a2a432d45ded23b625c212a0",
+      "size": 36,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/zh_CN.GBK",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/zh_CN.GBK/bc",
+      "sha256": "59511e4549cc53c413e4b86d009128a16786e2f8a2a432d45ded23b625c212a0",
+      "size": 36,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/zh_CN.UTF-8",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/zh_CN.UTF-8/bc",
+      "sha256": "04d2cfe9f6ff773a9a2088cd8d3a0407aa6286426c871aa30a9d9b9608acfe0d",
+      "size": 3750,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man/man1",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/bc.1",
+      "sha256": "ad732b2753dfef30e8b2e3a300efb96cca7d79f701e0057f2d1a33df8d65da47",
+      "size": 106023,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/dc.1",
+      "sha256": "0022bca126438ff4cc75e9e0bac09e937df22fcf35e9e11f819be692627693b4",
+      "size": 62940,
+      "type": "file",
+      "uid": 0
+    }
+  ],
+  "package": {
+    "name": "bc",
+    "source": {
+      "sha256": "91eb74caed0ee6655b669711a4f350c25579778694df248e28363318e03c7fc4",
+      "url": "https://github.com/gavinhoward/bc/releases/download/7.0.3/bc-7.0.3.tar.xz"
+    },
+    "version": "7.0.3"
+  },
+  "schema": "alpbahOS.package-files/v1"
+}
