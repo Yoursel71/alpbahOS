@@ -39,11 +39,14 @@ ssh -i C:\Users\thewo\.ssh\codex_alpbahos_m1 thewo@localhost
 
 ## 4. Canlı Hyper-V envanteri
 
-23 Eylül tarihli canlı envanter; Gen1 test VM'i daha sonra silinmiştir. Bu tablo, Gen1'in silinmesinden sonraki kayıtlı envanteri gösterir:
+24 Eylül 2026 tarihli son kayıtlı salt okunur envanter özeti. `alpbahOS-M2-SSH-Gen1` VM kaydı silinmiştir; Gen1 VHDX dosyalarının bugünkü varlığı bilinmiyor. Gen2 ve Builder hedefleri için adresleri kullanmadan önce güncel canlı erişimi doğrula:
 
 | VM | Durum | Nesil | Kaynak | Disk | MAC |
 |---|---|---:|---|---|---|
-| `alpbah-builder` | Running | Gen2 | 4 vCPU, dinamik RAM 3–6 GiB | `F:\alpbahOS-build\vhdx\alpbah-builder.vhdx` | `00-15-5D-00-02-04` |
+| `alpbah-builder` | Running (son kayıtlı envanter) | Gen2 | 4 vCPU, dinamik RAM 3–6 GiB | `F:\alpbahOS-build\vhdx\alpbah-builder.vhdx` | `00-15-5D-00-02-04` |
+| `alpbahOS-M2-SSH-Gen2` | Running (son kayıtlı envanter) | Gen2 | Güncel ayrıntıyı yeniden doğrula | F: üzerindeki Gen2 çalışma diski | `00-15-5D-00-02-09` |
+| `alpbahOS-M2-SSH-Gen2-DBus` | Running (son kayıtlı envanter) | Gen2 | tty/PAM testi için ayrılmış | Ayrı test imajı | Son kayıtta alınmadı |
+| `alpbahOS-M2-SSH-Gen2-Audio` | Running (son kayıtlı envanter) | Gen2 | Sanal ses test imajı | Ayrı test imajı | Son kayıtta alınmadı |
 | `Yeni Sanal Makine` | Off | Gen1 | Eski/alakasız VM; kullanma | `C:\ProgramData\Microsoft\Windows\Virtual Hard Disks\Yeni Sanal Makine.vhdx` | `00-15-5D-00-02-03` |
 
 24 Eylül'de kullanıcı `alpbahOS-M2-SSH-Gen1` VM kaydının silindiğini doğruladı. Son kayıtlı salt okunur Hyper-V envanterinde bu kayıt yoktu. Aynı gün yerel `Test-Path` kontrolleri Gen1 release artifact'i `F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen1.vhdx` ve eski Gen1 çalışma diski `F:\alpbahOS-build\vms\alpbahOS-M2-SSH-Gen1\alpbahOS-M2-SSH-Gen1.vhdx` için `True` döndürdü. Bu dosyaların güncel durumu yeniden kontrol edilmedi; VM kaydının silinmesi VHDX'lerin de silindiğini kanıtlamaz. Güncel test hedefi Gen2'dir. `Yeni Sanal Makine` alpbahOS çalışma hedefi değildir.
@@ -113,7 +116,7 @@ M07 hâlâ açık: çalışan Gen2 test VM'inde VMConnect `tty1` üzerinden `adm
 
 İlk sonraki akış:
 
-1. Test VM'i: çalışan `alpbahOS-M2-SSH-Gen2`; Gen1 VM silinmiştir.
+1. Test VM'i: Gen2 hedefi; Gen1 VM kaydı silinmiştir. VM adresini ve durumunu canlı işlem öncesi yeniden doğrula.
 2. Kullanıcı VMConnect `tty1` ekranında `admin/admin` ile giriş yapsın.
 3. Guest SSH'sinden `loginctl` ile admin'in `seat0`, `Type=tty`, `Active=yes` PAM/systemd oturumunu doğrula.
 4. Yalnız bu kanıttan sonra konsol oturumunda Plasma Wayland başlat; siyah ekran/çökme varsa journal ve KWin logundan kök nedeni araştır.

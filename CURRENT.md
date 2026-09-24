@@ -4,7 +4,7 @@
 
 Son güncelleme: 24 Eylül 2026
 
-> **Güncel VM envanteri (24 Eylül 2026):** Kullanıcı `alpbahOS-M2-SSH-Gen1` VM'inin silindiğini doğruladı. Son kayıtlı salt okunur Hyper-V envanterinde bu VM yok; Builder ve `alpbahOS-M2-SSH-Gen2` çalışır durumdaydı. Bugünkü yerel dosya kontrolünde Gen1 release VHDX'i ve eski VM çalışma VHDX'i hâlâ F: üzerinde (`Test-Path=True`); VM kaydı silinmiş, disk dosyaları silinmemiştir. Güncel test hedefi Gen2'dir. Gen1 sonuçları tarihsel kanıttır.
+> **Güncel VM durumu (24 Eylül 2026):** Kullanıcı `alpbahOS-M2-SSH-Gen1` Hyper-V VM kaydının silindiğini doğruladı; son kayıtlı salt okunur envanterde de bu kayıt yok. Builder ve Gen2 test VM’leri mevcut son envanterde çalışıyordu. Gen1 release ve çalışma VHDX’leri son yerel kontrolde F: üzerinde bulunmuştu; dosyaların bugünkü durumu doğrulanmadı. Gen1 VM’ine bağlanma veya eski disklerini yeni VM’ye takma. Güncel canlı test hedefi Gen2’dir; Gen1 sonuçları yalnız tarihsel kanıttır.
 
 ## Tamamlanan M1
 
@@ -13,7 +13,7 @@ Son güncelleme: 24 Eylül 2026
 - SHA-256: `200da434d4581ab29ef40600498b18d0d21e2b451555e13d086d04789820e945` (current file hash, independently re-read 23 Sep 2026). Older M1 verification notes record `07123bf1e653e8b735e6c68324fed20d2402f68ba39657d30a521738f37ade86`; this mismatch predates this turn's work and needs reconciliation. M1 VHDX was not modified in this turn.
 - QEMU BIOS ve OVMF UEFI açılışları `alpbahos login:` istemine kadar geçti.
 - Hyper-V Gen2 açılışı, framebuffer konsolu ve `alpbahos login:` istemi kullanıcı görüntüsüyle doğrulandı.
-- M2/BOOT-01 Gen1 testi: ayrı `alpbahOS-M2-Gen1` Hyper-V Generation 1 VM'i 2 GiB sabit RAM ile çalıştırıldı; kullanıcı `alpbahos login:` istemini ve reboot öncesi `networkctl status` içindeki `eth0` DHCP adresini (`172.28.165.181/20`, gateway/DNS `172.28.160.1`) ekran görüntüsüyle doğruladı. Kontrollü reboot + yeniden login sonrası hostta aynı VM NIC MAC (`00-15-5D-00-02-06`) yeni `172.28.171.186` adresinde göründü; ping 3/3, TTL 64 geçti. BOOT-01 Gen1 ağı/reboot'u doğrulandı.
+- M2/BOOT-01 Gen1 testi (tarihsel; VM kaydı silindi): ayrı `alpbahOS-M2-Gen1` Hyper-V Generation 1 VM'i 2 GiB sabit RAM ile çalıştırıldı; kullanıcı `alpbahos login:` istemini ve reboot öncesi `networkctl status` içindeki `eth0` DHCP adresini (`172.28.165.181/20`, gateway/DNS `172.28.160.1`) ekran görüntüsüyle doğruladı. Kontrollü reboot + yeniden login sonrası hostta aynı VM NIC MAC (`00-15-5D-00-02-06`) yeni `172.28.171.186` adresinde göründü; ping 3/3, TTL 64 geçti. BOOT-01 Gen1 ağı/reboot'u doğrulandı.
 - Hyper-V Default Switch üzerinden DHCP ve hosttan ping doğrulandı.
 - Kontrollü `Running -> Off -> Running` testi sonrası heartbeat, yeni DHCP adresi ve ping tekrar geçti.
 - FAT/ext4 bölümleri çevrimdışı `fsck` kontrolünden hatasız geçti.
@@ -34,9 +34,8 @@ Plan, BOOT-01 Gen1 kolunu ayrı test VM'inde doğrulayıp ardından BLFS-01 sert
 
 ### Başladı — 22 Eylül 2026
 
-- Sahip: Codex (LFS/BLFS, Gen1 doğrulaması, `alp` entegrasyonu ve Plasma); kullanıcı istemi M2 uygulamasına başladı.
-- Ortam: Windows host `C:\alpbahOS`, branch `main`; Builder Ubuntu `sa@172.28.162.172`; kaynak M1 final VHDX. M2 SSH sürümü `F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen1.vhdx`, çalışan VM `alpbahOS-M2-SSH-Gen1` (Gen1, 2 vCPU, 2 GiB sabit RAM).
-- Gen1 giriş istemi doğrulandı; VM `alpbahOS-M2-Gen1`, Generation 1, 2 GiB sabit RAM. Test kaynağı M1 VHDX'in ayrı `F:\alpbahOS-build\vms\alpbahOS-M2-Gen1\alpbahOS-M2-Gen1.vhdx` kopyasıdır.
+- Sahip: Codex (LFS/BLFS, tarihsel Gen1 doğrulaması, `alp` entegrasyonu ve Plasma); kullanıcı istemi M2 uygulamasını başlattı.
+- **Tarihsel ortam (22–23 Eylül):** M2 SSH imajı `F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen1.vhdx` ile `alpbahOS-M2-SSH-Gen1` VM'i (Gen1, 2 vCPU, 2 GiB sabit RAM) kullanıldı. Ayrı çalışma kopyası `F:\alpbahOS-build\vms\alpbahOS-M2-Gen1\alpbahOS-M2-Gen1.vhdx` idi; login ve DHCP/reboot testleri o sırada geçti. Kullanıcı VM kaydının silindiğini doğruladı; bu Gen1 ortamı artık erişim hedefi değildir. Dosyaların mevcut durumu için `docs/NEW_SESSION_HANDOFF.md` §4–7'ye bak.
 - Htop geçmiş testindeki dosya modu hatasını `a82f872` commit'ine atfetmek yanlıştı: Builder rootfs'deki motor SHA-256 `d06c72ee…`, `36f5240` + `copyfile→copy2` yamasına karşılık geliyor; `a82f872` içindeki kaynak motor hash'i farklıdır. Main'e alınan güncel güvenlik düzeltmesi `e8b0376`; beklenen dosya SHA-256 `7b2998a5…`. Rootfs'ye henüz kurulmadı; eski rootfs motorunda `alp remove`/`alp upgrade` çalıştırma.
 - BLFS ağ/TLS kesiti geçti: libtasn1, libunistring, libidn2, make-ca, libpsl ve cURL LFS rootfs'ye kuruldu. `p11-kit` ilk 66/67 test koşusundaki `test-path` SIGSEGV'inin kökü doğrulandı: hedef rootfs'de build UID 1000 yok; `p11_path_expand()` başarısız passwd aramasında NULL/ESRCH döndürüyor, fakat test bu NULL'u `strstr()`'e verip çöküyor. UID 101 ile aynı ikili 9/9 geçti; trust list 172 CA anchor verdi. Bu test-fixture/korunmasız test iddiasıdır, trust-store üretim yolu hatasına kanıt değildir. CA bundle ve LFS chroot TLS testi geçti. Ayrıntı `docs/WORKLOG.md`.
 - D-Bus 1.16.2, Linux-PAM 1.7.1, `pam_systemd.so` ve logind bileşenleri rootfs'ye kurulu. **PAM/login zinciri tamamlanmadı:** salt okunur Builder incelemesinde rootfs'de `/etc/shadow` ve `/etc/pam.d/login` yok. Önceki “PAM/systemd zinciri tamamlandı” ifadesi düzeltildi; bkz. 23 Eylül P0 audit ve `docs/WORKLOG.md`.
@@ -74,7 +73,7 @@ Sprint adlarının resmî aşamaları atlayarak ilerlemiş gibi görünmesinin n
 
 M2 hedefi, M1'de açılan metin tabanlı LFS sistemini ilk kullanılabilir grafik oturuma taşımaktır:
 
-1. BOOT-01 Gen1 testini kapat (tamamlandı: DHCP, host ping ve reboot sonrası ping).
+1. BOOT-01 Gen1 testi tarihsel olarak tamamlandı (DHCP, host ping ve reboot sonrası ping); Gen1 VM kaydı silindi.
 2. Sertifika/TLS, indirme araçları, D-Bus/polkit ve temel ağ katmanını kur.
 3. Grafik, giriş, font ve PipeWire ses zincirini kurup ayrı ayrı doğrula (EGL ve PipeWire sanal graph kanıtı var; fiziksel aygıt ve gerçek oturum açık).
 4. Claude'un `alp` paket motorunu gerçek LFS köküne yerleştir; örnek paket için kur/güncelle/kaldır, kilit, checksum ve dosya sahipliği testlerini geçir.
@@ -87,7 +86,7 @@ Takvim tahmini yeniden hesaplanmadı. Önceki 4–7/7–10 günlük tahmin günd
 
 - Windows'ta M1 teslimi `C:\alpbahOS\artifacts\alpbahOS-m1-final-v2.vhdx` olarak korunur. Kullanıcının isteğiyle yeni release ve test artifact'leri `F:\alpbahOS-build\artifacts` altına yazılır.
 - Builder'da `alpbahOS-m1-clean.raw` düzenlenebilir temiz kaynak, `alpbahOS-m1-final-v2.vhdx` ise doğrulanmış teslim olarak tutulur.
-- `F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen1.vhdx`, SHA-256 `fa29d47608a4444e043a3cbfa26753fd32a3c7e0b2078179dbcd852eab322c78`, **eski geliştirme/test imajıdır; PAM/login və Plasma düzeltmelerini içermez** (Claude'un disk karşılaştırması). Bu turda imaj salt okunur bağlanıp bağımsız tekrar karşılaştırılamadı. Dağıtım imajı olarak kullanma. Yeni imaj yalnız doğrulanmış Builder `/mnt/lfs` rootfs'sinden üretilecek.
+- Gen1 release VHDX `F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen1.vhdx` (son kayıtlı SHA-256 `fa29d47608a4444e043a3cbfa26753fd32a3c7e0b2078179dbcd852eab322c78`) eski geliştirme/test imajıdır; PAM/login ve Plasma düzeltmelerini içermez. Son salt okunur file check'te vardı, bugünkü varlık durumu doğrulanmadı. Silinmiş Gen1 VM kaydına bağlanma veya dağıtım için kullanma. Yeni imaj yalnız doğrulanmış Builder `/mnt/lfs` rootfs'sinden üretilir.
 - Eski boot/debug/framebuffer denemeleri ve geçici loglar M1 kapanışında temizlenmiştir.
 
 ## M2 temel kapıları — 22 Eylül 2026 denetimi

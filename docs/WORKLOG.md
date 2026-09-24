@@ -526,6 +526,12 @@ PipeWire hatası için aynı gün ek tekrar: Guest `/tmp`'te 12 saniye 48 kHz st
 - Yerel `Test-Path` kontrolleri Gen1 release VHDX'i (`F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen1.vhdx`) ve eski Gen1 çalışma VHDX'i (`F:\alpbahOS-build\vms\alpbahOS-M2-SSH-Gen1\alpbahOS-M2-SSH-Gen1.vhdx`) için `True` verdi. VM kaydı silinmiş; dosyalar duruyor ve bu güncellemede değiştirilmedi.
 - Eski Gen1 test ve DHCP/reboot kayıtları tarihsel kanıt olarak korunur. Gen1 VMConnect/SSH talimatları güncel adım değildir; tty/PAM/Plasma doğrulaması Gen2 DBus test VM'inde yapılır.
 
+## 24 Eylül 2026 — Gen1 durumu için belge sınırı
+
+- Kullanıcı Gen1 test VM'inin silindiğini yeniden bildirdi. `CURRENT.md` ve yeni oturum devri Gen1 VM'ine SSH/VMConnect yapılmaması gerektiğini açıkça belirtiyor.
+- Gen1 boot, DHCP, SSH ve reboot sonuçları tarihsel kanıt olarak korundu; bu kayıtlar mevcut canlı VM veya disk erişimi anlamına gelmez.
+- Son kaydedilmiş yerel `Test-Path` kontrollerinde Gen1 release ve çalışma VHDX'leri mevcuttu. Bu güncellemede dosyalar yeniden kontrol edilmedi ve hiçbir VHDX'e dokunulmadı. Yeni canlı doğrulama hedefi Gen2'dir.
+
 ## 24 Eylül 2026 — M04 Coreutils DESTDIR sahiplik pilotu
 
 - Builder `yrsk` üzerinde NBD bağlı olmadığı (`/sys/block/nbd0/pid` yok), etkin `make`/`ninja`/`cmake` bulunmadığı ve `/` üzerinde 69 GiB boş alan olduğu doğrulandı. Build yalnız `/mnt/lfs` chroot'unda yürütüldü.
