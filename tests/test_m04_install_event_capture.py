@@ -19,6 +19,11 @@ SPEC = importlib.util.spec_from_file_location("m04_install_capture", SCRIPT)
 capture = importlib.util.module_from_spec(SPEC)
 assert SPEC and SPEC.loader
 SPEC.loader.exec_module(capture)
+RECONCILER_SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "reconcile-m04-final-owners.py"
+RECONCILER_SPEC = importlib.util.spec_from_file_location("m04_final_owner_reconciler_for_capture", RECONCILER_SCRIPT)
+reconciler = importlib.util.module_from_spec(RECONCILER_SPEC)
+assert RECONCILER_SPEC and RECONCILER_SPEC.loader
+RECONCILER_SPEC.loader.exec_module(reconciler)
 
 
 class Fixture:
@@ -38,6 +43,10 @@ class InstallEventCaptureTests(unittest.TestCase):
         self.which.start()
         self.platform = mock.patch.object(capture.sys, "platform", "linux")
         self.platform.start()
+        self.listxattr = mock.patch.object(capture.os, "listxattr", return_value=[], create=True)
+        self.listxattr.start()
+        self.getxattr = mock.patch.object(capture.os, "getxattr", create=True)
+        self.getxattr.start()
         self.execute = mock.patch.object(capture, "_execute", side_effect=self.fake_execute)
         self.execute_mock = self.execute.start()
 
@@ -81,6 +90,8 @@ class InstallEventCaptureTests(unittest.TestCase):
         self.assertEqual(event["argv"], ["make", "install", "write"])
         self.assertEqual(event["environment"]["DESTDIR"], "/fixture")
         self.assertEqual(event["exit_status"], 0)
+        self.assertEqual(event["root_id"], json.loads(
+            (self.fx.root / event["artifacts"]["before_snapshot"]["path"]).read_text())["root_id"])
         self.assertTrue(event["environment"]["HOME"].startswith(str(self.fx.root / capture.CAPTURE_DIR / "work")))
         self.assertTrue(event["environment"]["TMPDIR"].startswith(str(self.fx.root / capture.CAPTURE_DIR / "work")))
         self.assertNotIn("/events/", event["environment"]["HOME"].replace("\\", "/"))
@@ -93,6 +104,14 @@ class InstallEventCaptureTests(unittest.TestCase):
             self.fx.root / event["artifacts"]["stdout"]["path"]))
         self.assertTrue((self.fx.root / event["artifacts"]["before_snapshot"]["path"]).is_file())
         self.assertTrue((self.fx.root / event["artifacts"]["after_snapshot"]["path"]).is_file())
+        snapshot = json.loads((self.fx.root / event["artifacts"]["before_snapshot"]["path"]).read_text())
+        self.assertEqual(snapshot["schema"], "alpbahOS.m04-reconcile-snapshot/v2")
+        reconciler._snapshot(snapshot, event["root_id"], "captured fixture snapshot")
+        entry = snapshot["entries"]["/recipe.sh"]
+        self.assertEqual(set(entry["metadata_support"]), {
+            "xattrs_sha256", "capabilities_sha256", "hardlink_count", "hardlink_group_sha256"})
+        self.assertEqual(entry["metadata_support"]["hardlink_count"], 1)
+        self.assertIsNone(entry["metadata_support"]["hardlink_group_sha256"])
 
     def test_overwrite_and_delete_are_visible_in_before_after_diff(self):
         (self.fx.root / "usr/bin").mkdir(parents=True)
@@ -282,7 +301,37 @@ class InstallEventCaptureTests(unittest.TestCase):
         except (OSError, NotImplementedError) as exc:
             self.skipTest(f"symlink creation is unavailable: {exc}")
         with self.assertRaisesRegex(capture.CaptureError, "symlink target escapes"):
-            capture._snapshot(self.fx.root)
+            capture._snapshot(self.fx.root, "fixture-root-id")
+
+    def test_metadata_hashes_xattrs_and_capabilities_and_fails_closed(self):
+        path = self.fx.root / "metadata-file"
+        path.write_bytes(b"payload")
+        values = {"user.example": b"value", "security.capability": b"cap-data"}
+        with mock.patch.object(capture.os, "listxattr", return_value=list(values), create=True), \
+                mock.patch.object(capture.os, "getxattr", side_effect=lambda _path, name, **_kw: values[name], create=True):
+            metadata = capture._metadata_support(path, path.lstat())
+        canonical = json.dumps([
+            {"name": name, "value_sha256": capture.hashlib.sha256(value).hexdigest()}
+            for name, value in sorted(values.items())],
+            sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+        self.assertEqual(metadata["xattrs_sha256"], capture.hashlib.sha256(canonical).hexdigest())
+        self.assertEqual(metadata["capabilities_sha256"], capture.hashlib.sha256(b"cap-data").hexdigest())
+        with mock.patch.object(capture.os, "listxattr", side_effect=OSError("denied"), create=True):
+            with self.assertRaisesRegex(capture.CaptureError, "cannot read xattrs"):
+                capture._metadata_support(path, path.lstat())
+
+    def test_hardlink_count_and_group_identity_are_emitted(self):
+        first, second = self.fx.root / "hardlink-a", self.fx.root / "hardlink-b"
+        first.write_bytes(b"shared inode")
+        try:
+            second.hardlink_to(first)
+        except (OSError, NotImplementedError) as exc:
+            self.skipTest(f"hardlinks are unavailable: {exc}")
+        one = capture._metadata_support(first, first.lstat())
+        two = capture._metadata_support(second, second.lstat())
+        self.assertEqual(one["hardlink_count"], 2)
+        self.assertEqual(two["hardlink_count"], 2)
+        self.assertEqual(one["hardlink_group_sha256"], two["hardlink_group_sha256"])
 
 
 if __name__ == "__main__":

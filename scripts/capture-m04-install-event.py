@@ -31,6 +31,7 @@ MARKER = ".m04-fixture-root"
 MARKER_TEXT = "DISPOSABLE M04 TRANSACTION FIXTURE ONLY v1\n"
 CAPTURE_DIR = ".m04-capture"
 SCHEMA = "alpbahOS.m04-install-event-capture/v1"
+SNAPSHOT_SCHEMA = "alpbahOS.m04-reconcile-snapshot/v2"
 WRITE_SYSCALLS = {
     "creat", "link", "linkat", "mkdir", "mkdirat", "mknod", "mknodat",
     "open", "openat", "openat2", "rename", "renameat", "renameat2",
@@ -141,6 +142,7 @@ def _fingerprint(path: Path, root: Path) -> dict[str, Any]:
     result: dict[str, Any] = {
         "mode": stat.S_IMODE(info.st_mode), "uid": info.st_uid, "gid": info.st_gid,
     }
+    result["metadata_support"] = _metadata_support(path, info)
     if stat.S_ISREG(info.st_mode):
         result.update(type="file", size=info.st_size, sha256=_sha256(path))
     elif stat.S_ISDIR(info.st_mode):
@@ -165,7 +167,54 @@ def _fingerprint(path: Path, root: Path) -> dict[str, Any]:
     return result
 
 
-def _snapshot(root: Path) -> dict[str, Any]:
+def _metadata_support(path: Path, info: os.stat_result) -> dict[str, Any]:
+    """Hash all readable xattrs and capabilities; fail closed on read errors."""
+    listxattr = getattr(os, "listxattr", None)
+    getxattr = getattr(os, "getxattr", None)
+    if listxattr is None or getxattr is None:
+        raise CaptureError(f"xattr inspection is unavailable for {path}")
+    try:
+        names = sorted(listxattr(path, follow_symlinks=False))
+        attributes = []
+        capability_value: bytes | None = None
+        for name in names:
+            value = getxattr(path, name, follow_symlinks=False)
+            if not isinstance(value, bytes):
+                raise CaptureError(f"xattr reader returned non-bytes data for {path}: {name!r}")
+            attributes.append({"name": name, "value_sha256": hashlib.sha256(value).hexdigest()})
+            if name == "security.capability":
+                capability_value = value
+    except (OSError, TypeError, ValueError) as exc:
+        raise CaptureError(f"cannot read xattrs for {path}: {exc}") from exc
+    encoded = json.dumps(attributes, sort_keys=True, separators=(",", ":"),
+                         ensure_ascii=False).encode("utf-8")
+    link_count: int | None
+    group_hash: str | None
+    if stat.S_ISDIR(info.st_mode):
+        # POSIX directory st_nlink counts child directories, not hardlinks.
+        link_count, group_hash = None, None
+    else:
+        raw_count = getattr(info, "st_nlink", None)
+        if type(raw_count) is not int or raw_count < 1:
+            raise CaptureError(f"cannot read hardlink count for {path}")
+        link_count = raw_count
+        if raw_count > 1:
+            device, inode = getattr(info, "st_dev", None), getattr(info, "st_ino", None)
+            if type(device) is not int or type(inode) is not int or inode < 0:
+                raise CaptureError(f"cannot read hardlink identity for {path}")
+            identity = json.dumps([device, inode], separators=(",", ":")).encode("ascii")
+            group_hash = hashlib.sha256(identity).hexdigest()
+        else:
+            group_hash = None
+    return {
+        "xattrs_sha256": hashlib.sha256(encoded).hexdigest(),
+        "capabilities_sha256": hashlib.sha256(capability_value or b"").hexdigest(),
+        "hardlink_count": link_count,
+        "hardlink_group_sha256": group_hash,
+    }
+
+
+def _snapshot(root: Path, root_id: str) -> dict[str, Any]:
     entries: dict[str, Any] = {}
     for base, dirs, files in os.walk(root, topdown=True, followlinks=False):
         base_path = Path(base)
@@ -175,7 +224,27 @@ def _snapshot(root: Path) -> dict[str, Any]:
             path = base_path / name
             rel = "/" + path.relative_to(root).as_posix()
             entries[rel] = _fingerprint(path, root)
-    return {"schema": "alpbahOS.m04-root-snapshot/v1", "entries": entries}
+    return {"schema": SNAPSHOT_SCHEMA, "root_id": root_id, "entries": entries}
+
+
+def _fixture_root_id(capture_root: Path) -> str:
+    path = capture_root / "root-id"
+    _reject_symlink_ancestors(path, allow_missing=True)
+    try:
+        value = path.read_text(encoding="ascii")
+    except FileNotFoundError:
+        value = uuid.uuid4().hex + "\n"
+        try:
+            with path.open("x", encoding="ascii") as stream:
+                stream.write(value)
+        except FileExistsError:
+            value = path.read_text(encoding="ascii")
+    except OSError as exc:
+        raise CaptureError(f"cannot read fixture root identity {path}: {exc}") from exc
+    root_id = value.rstrip("\n")
+    if value != root_id + "\n" or not re.fullmatch(r"[0-9a-f]{32}", root_id):
+        raise CaptureError(f"invalid fixture root identity file: {path}")
+    return root_id
 
 
 def _hash_inputs(paths: Sequence[Path]) -> list[dict[str, str]]:
@@ -382,7 +451,8 @@ def capture_install(root: Path, argv: Sequence[str], *, cwd: Path | None = None,
     event_dir.mkdir(parents=True, mode=0o700)
     work_dir.mkdir(parents=True, mode=0o700)
     _inside(root, event_dir)
-    before = _snapshot(root)
+    root_id = _fixture_root_id(capture_root)
+    before = _snapshot(root, root_id)
     hashed_inputs = _hash_inputs(input_paths)
     home_dir, temp_dir = work_dir / "home", work_dir / "tmp"
     home_dir.mkdir(parents=True, mode=0o700)
@@ -413,7 +483,7 @@ def capture_install(root: Path, argv: Sequence[str], *, cwd: Path | None = None,
     if not trace_path.is_file():
         raise CaptureError("strace did not produce its trace; event is incomplete")
     violations = _trace_outside_writes(trace_path, root, workdir)
-    after = _snapshot(root)
+    after = _snapshot(root, root_id)
     after_path = event_dir / "after.json"
     _write_json(after_path, after)
     changed = sorted(path for path in set(before["entries"]) | set(after["entries"])
@@ -421,7 +491,8 @@ def capture_install(root: Path, argv: Sequence[str], *, cwd: Path | None = None,
     files = {"before_snapshot": before_path, "after_snapshot": after_path,
              "stdout": stdout_path, "stderr": stderr_path, "strace": trace_path}
     event: dict[str, Any] = {
-        "schema": SCHEMA, "event_id": event_id, "event_dir": str(event_dir.relative_to(root)),
+        "schema": SCHEMA, "event_id": event_id, "root_id": root_id,
+        "event_dir": str(event_dir.relative_to(root)),
         "package": package, "version": version,
         "argv": list(argv), "cwd": str(workdir), "environment": dict(sorted(allowed.items())),
         "started_unix_ns": start_ns, "ended_unix_ns": end_ns, "exit_status": exit_status,
