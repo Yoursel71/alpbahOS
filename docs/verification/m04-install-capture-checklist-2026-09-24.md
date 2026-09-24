@@ -27,7 +27,7 @@ or that the artifacts truthfully describe `/mnt/lfs`. No real install-event
 bundle has been captured yet.
 
 Its fixture tests run with `python -m unittest -v
-tests.test_m04_evidence_bundle`. The 10 tests passed on Builder Linux, including
+tests.test_m04_evidence_bundle`. The 11 tests passed on Builder Linux, including
 the symlink rejection test that Windows skipped because symlink creation was
 unavailable there. The Linux test used a disposable `/tmp` copy and removed it
 afterward; it did not touch `/mnt/lfs`.
