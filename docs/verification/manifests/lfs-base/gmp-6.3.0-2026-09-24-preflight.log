@@ -1,0 +1,35 @@
+package=gmp version=6.3.0
+source_url=https://ftp.gnu.org/gnu/gmp/gmp-6.3.0.tar.xz
+source_md5=956dc04e864001a9c22429f761f2c283
+source_sha256=a3c2b80201b89e68616f4ad30bc66aee4927c3ce50e33929ca819d5c43538898
+patches=none-required-by-LFS-12.4-systemd
+install_mode=DESTDIR; rootfs_merge=forbidden
+critical_tests=make check; PASS >=199
+builder=yrsk
+manifest=/mnt/lfs/tmp/alp-m04-gmp-6.3.0-manifest-20260924-r1.json
+entries=171 types={"directory": 9, "file": 158, "symlink": 4}
+package=gmp version=6.3.0 entries=171 matched=171 mismatched=0
+GMP_STAGE_MANIFEST_COMPARE_EXIT=0
+MISMATCH /usr/include/gmp.h
+  expected: {"gid": 0, "mode": 420, "path": "/usr/include/gmp.h", "sha256": "7a879361f2894189812170599ad04158180369ea89a75c8554f959d14bd256a5", "size": 84303, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 420, "path": "/usr/include/gmp.h", "sha256": "6aea62ba5bd8891dd07b417cd4b9fd9bda5cbf9f458f600f647b5b8e577fc91e", "size": 84249, "type": "file", "uid": 0}
+MISMATCH /usr/lib/libgmp.so.10.5.0
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/libgmp.so.10.5.0", "sha256": "55ac7af0900477c863b1640c05b6c214cbeab57b9aa280be467e92ed07c19641", "size": 554664, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/libgmp.so.10.5.0", "sha256": "e311c0db491006b2a2365142277e6ccdad71d375a216b895d9e975ad18bae4a5", "size": 608576, "type": "file", "uid": 0}
+MISMATCH /usr/lib/libgmpxx.la
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/libgmpxx.la", "sha256": "184611d6680b4becff47461c85a0b6db79ab3bf49ba9a9b9321b8b379f50dcd2", "size": 956, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/libgmpxx.la", "sha256": "eee7f60cae36c92ce3dc34c47df47c6da243d43163f89527564bba861d6b8c0b", "size": 927, "type": "file", "uid": 0}
+MISMATCH /usr/lib/libgmpxx.so.4.7.0
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/libgmpxx.so.4.7.0", "sha256": "a530f9b1553b3ebf4bf30b20fcf4e815f0d782c7b2aa733662613d3273c44115", "size": 43664, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/libgmpxx.so.4.7.0", "sha256": "dc092b2525a5a461b05288649fed2e054badb8b68050989b05047704b8e47bc7", "size": 43664, "type": "file", "uid": 0}
+MISMATCH /usr/share/doc
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/doc", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/doc", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/info
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/info", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/info", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/info/dir
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/info/dir", "sha256": "bcd16a689d647f6be83a95587c202c45e1d24ba748b3b74999449d3513e309e7", "size": 631, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 420, "path": "/usr/share/info/dir", "sha256": "fb80e5b75495213cb4b42a22e14aad3db7520b6443216725462f79cf12e87af7", "size": 107341, "type": "file", "uid": 0}
+package=gmp version=6.3.0 entries=171 matched=164 mismatched=7
+ROOTFS_PREFLIGHT=staged paths differ; review recorded mismatches before any adoption

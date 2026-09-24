@@ -1,0 +1,5 @@
+MPC_STAGE_SMOKE_EXIT=0
+LD_PRELOAD=/tmp/alp-m04-mpc-stage-r1/usr/lib/libmpc.so.3.3.1:/tmp/alp-m04-mpfr-stage-r1/usr/lib/libmpfr.so.6.2.2:/tmp/alp-m04-gmp-stage-r1/usr/lib/libgmp.so.10.5.0
+dabbf0da3336d2304a96da4f1e442014ac306e1d1ce4c198d94ecf9735bdee75  /mnt/lfs/tmp/alp-m04-mpc-stage-r1/usr/lib/libmpc.so.3.3.1
+c599dbc6b4c1f5025c8e847bfc7d4fdefaa00022fde563f4c327f2c9b11f858f  /mnt/lfs/tmp/alp-m04-mpfr-stage-r1/usr/lib/libmpfr.so.6.2.2
+55ac7af0900477c863b1640c05b6c214cbeab57b9aa280be467e92ed07c19641  /mnt/lfs/tmp/alp-m04-gmp-stage-r1/usr/lib/libgmp.so.10.5.0

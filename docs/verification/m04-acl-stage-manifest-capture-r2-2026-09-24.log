@@ -1,0 +1,2 @@
+manifest=/mnt/lfs/tmp/alp-m04-acl-2.3.2-stage-manifest-20260924-r2.json
+entries=100 types={"directory": 33, "file": 65, "symlink": 2}

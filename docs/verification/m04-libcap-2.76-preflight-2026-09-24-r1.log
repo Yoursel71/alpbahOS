@@ -1,0 +1,21 @@
+package=libcap version=2.76
+source_url=https://www.kernel.org/pub/linux/libs/security/linux-privs/libcap2/libcap-2.76.tar.xz
+source_md5=449ade7d620b5c4eeb15a632fbaa4f74 (LFS package list)
+source_sha256=629da4ab29900d0f7fcc36227073743119925fd711c99a1689bbf5c9b40c8e6f (kernel.org signed sha256sums.asc)
+critical_tests=make test passed
+smoke_loader_trace=/mnt/lfs/build/libcap-2.76-m04-r1/libcap-stage-loader-trace.log sha256=f94a4f3c435d20eb64d6f9a5da2678caead4391a826892a8c77fc72bce123286
+install_mode=DESTDIR; rootfs_merge=forbidden
+manifest=/mnt/lfs/tmp/alp-m04-libcap-2.76-manifest-20260924-r1.json
+entries=110 types={"directory": 14, "file": 92, "symlink": 4}
+STAGE_COMPARE_OK: entries=110 matched=110 mismatched=0
+MISMATCH /usr/include/sys
+  expected: {"gid": 0, "mode": 493, "path": "/usr/include/sys", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/include/sys", "type": "directory", "uid": 1001}
+MISMATCH /usr/lib/security/pam_cap.so
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/security/pam_cap.so", "sha256": "da5ceee067f97d20e3d959c2c3fe14cde0531b4cded8519622392f6df1850ba1", "size": 17984, "type": "file", "uid": 0}
+  actual:   MISSING
+MISMATCH /usr/sbin
+  expected: {"gid": 0, "mode": 493, "path": "/usr/sbin", "type": "directory", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/sbin", "type": "directory", "uid": 1001}
+package=libcap version=2.76 entries=110 matched=107 mismatched=3
+ROOTFS_PREFLIGHT=staged paths differ; review before adoption

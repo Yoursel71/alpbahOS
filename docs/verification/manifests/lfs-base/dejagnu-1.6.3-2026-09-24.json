@@ -1,0 +1,1075 @@
+{
+  "captured_at": "2026-09-24T05:02:53+00:00",
+  "entries": [
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/dejagnu",
+      "sha256": "43ec09469d8b50fc029199c93f8013541ec93e6c9c14e4615a5fa87a301186b3",
+      "size": 12969,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/runtest",
+      "sha256": "c285da648b5514e9e06a506f6b6b229657a8001c8c8506d0e35a2bf0f754ab08",
+      "size": 4631,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/include",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/dejagnu.h",
+      "sha256": "1809d1c087a24d5b0829ebf40d757fe018f4d33a36ce802c42967048c734c0c7",
+      "size": 5791,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/dejagnu",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/dejagnu/baseboards",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/README",
+      "sha256": "43ce70ec1c78e7c31715f19f96587eeb9dc870c98c34c451e45bbcbdfe09d721",
+      "size": 735,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/aarch64-sim.exp",
+      "sha256": "96522af4ea780e17a9a5e3a56ec50f767852894de7622e4fa854cecfa1d94311",
+      "size": 2092,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/am33_2.0-libremote.exp",
+      "sha256": "9f281e759810eecf1b2112be387bf1b16d69dc0203583888464aa1f3462b745c",
+      "size": 1667,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/androideabi.exp",
+      "sha256": "dddf616bf8a358e8c54450e4c03529e53246fb1d648e10457b2b3ef1f5e41e32",
+      "size": 3524,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/arm-ice.exp",
+      "sha256": "5174fdba0053cf80ccbbc156e9cdfb4e60e63446dce215383b5ce04597731dc0",
+      "size": 2323,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/arm-sid.exp",
+      "sha256": "7adfe4364922fdc4b42250fd342519f031abdf05d9e2d2989584dedd9ee11f52",
+      "size": 1213,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/arm-sim.exp",
+      "sha256": "86e90c4088994bf92dabf45d2dcf09c56b00883dc49f9f1b1af10260a55a98fd",
+      "size": 2463,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/basic-sid.exp",
+      "sha256": "622fbbf85dc6819bba2596a279917390a3eed84056693fcd13f4eb85a8defab6",
+      "size": 2407,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/basic-sim.exp",
+      "sha256": "73ff68465833d6a9f366706ff8eba6c001602e274de27609806b67a6edbbc007",
+      "size": 2158,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/cris-sim.exp",
+      "sha256": "4463279ff7ac3d48d2a18d4ebefdd0e571f260d03597abc1a9a33e6855e46e32",
+      "size": 2819,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/d30v-sim.exp",
+      "sha256": "c9438dc605aaef651380d8bed881dd099dfd53821841f1ed85c6fd064e8346db",
+      "size": 1951,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/fr30-sim.exp",
+      "sha256": "470a6c6ef9befbea2f3c229cd204a250bca99ff0557e755b148e8302cb2776f1",
+      "size": 2004,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/frv-sim.exp",
+      "sha256": "69a434f34ce09b25debd9df5523c8ca0b98d0e998f887930fc4488f258a624c1",
+      "size": 2006,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/gdbserver-sample.exp",
+      "sha256": "ea13db7880b1c44487f4fc1d16db7df0c33eb09a17536a978d00571608932188",
+      "size": 2101,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/generic-sim.exp",
+      "sha256": "f395d117e85d9fd60da9dad0e500652313def95efc6a13cac5484940d50c34a8",
+      "size": 2865,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/i386-sid.exp",
+      "sha256": "5c7995383ef8f51acca1570d0d49f7811552290ec0b155115ab689553f805d15",
+      "size": 1655,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/iq2000-sim.exp",
+      "sha256": "6207141991c19e788635a1b24ffbb600cac5007e2d8297bf8a3d2d1475126dc5",
+      "size": 2006,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/jmr3904-sim.exp",
+      "sha256": "fbebb16a26130d8dc709c055d01fdbaa7a11c15db5558385464c7d71d4bab113",
+      "size": 1229,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/linux-gdbserver.exp",
+      "sha256": "1e8cd99944d397713f14a7990a02bf935a7800a5dc73dc7f445eba0887c442cf",
+      "size": 1686,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/linux-libremote.exp",
+      "sha256": "0c35b1118edcdb4b4238539d199131aae637f61b602fc96876aa4b0e89891b83",
+      "size": 1704,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/m68k-sid.exp",
+      "sha256": "9c80c55d9fd8d4ea171003d0a46be8f10baaedd88679d17b41275fc0d6b55e39",
+      "size": 1094,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/mcore-moto-sim.exp",
+      "sha256": "4d145299b32fa8994e183c8f26d8560d44126250b11eead80e61b768e4889830",
+      "size": 4377,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/mcore-sim.exp",
+      "sha256": "35c02c82fc52aaa6e9082695a725de7eec423789c0163d18d34e7c7f00797397",
+      "size": 2071,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/mips-lnews-sim.exp",
+      "sha256": "f4b2b98c6985a7e898d48c074fe6153160bef0ffd2ba1b453695325427e9dde1",
+      "size": 944,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/mips-lsi-sim.exp",
+      "sha256": "9ab284826b80a43f5908fa0f279fbcd757d18474ec6db4d54c3fdf0261268156",
+      "size": 1004,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/mips-sim-idt32.exp",
+      "sha256": "c53b22671bb8e08d890491ecb0696c554f6dc33715b987dd49efd78d1d523173",
+      "size": 1850,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/mips-sim-idt64.exp",
+      "sha256": "cf0a8de3777182ea4ea57ccd90ac4c0876383d411dac01263f094627984778a5",
+      "size": 1850,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/mips-sim-mti32.exp",
+      "sha256": "095fc2d4c05115f3b84844a8a8e037f25e36e15279448d3da0e1d87d113faf27",
+      "size": 1848,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/mips-sim-mti64.exp",
+      "sha256": "c42c835f3196d139998829e772476fc290e55db5d56d837959f8f60936403bc0",
+      "size": 1848,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/mips-sim-mti64_64.exp",
+      "sha256": "f6544a073cb566d3f74fe02c0a6196c2d26ebd5d23a179eaca7538240652d56b",
+      "size": 1854,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/mips-sim-mti64_n32.exp",
+      "sha256": "4699a32b0d78f03fef305c4c31b2799ccbdfe83366f310abfee1d5cfefe95dcc",
+      "size": 1856,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/mips-sim-sde32.exp",
+      "sha256": "0c8157ab807b295e66d3560765edb62f5deba751f36869f60eda6ff45c8e00b0",
+      "size": 1848,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/mips-sim-sde64.exp",
+      "sha256": "0ea1c52d96fa48664739bb85a94484211a8b0a9ee7c02551ddd3998d671891e8",
+      "size": 1848,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/mips-sim.exp",
+      "sha256": "585e65c6093a3dffef46187f54969253b199948066f7c00a13c5c6451438efa8",
+      "size": 1635,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/mmixware-sim.exp",
+      "sha256": "31a3e76fb03b646783d99dedee2512ec4ca175987205b592e9033fa9618bb7c3",
+      "size": 2775,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/mn10200-sim.exp",
+      "sha256": "44fa63f80c043f90cccff08f2adddedb6fb1326937b83acc6d9ed509d545dcd7",
+      "size": 2211,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/mn10300-sim.exp",
+      "sha256": "2bd7ce843465da751b533e81aa99aeac854f12fc886a8b10724d9b7557792745",
+      "size": 2078,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/moxie-sim.exp",
+      "sha256": "ada9ed7aa2e0fa3dfb6b877543d7f9a3c2b6dc8ff9ecda6e85d0b96328aef200",
+      "size": 2072,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/msp430-sim.exp",
+      "sha256": "eac11f3d63f8746a73bbe53852c1401e2ed202a42304d59019fdbcc6b2071a8b",
+      "size": 2009,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/mt-sid.exp",
+      "sha256": "ffb70ec5a5d6887173dc7d5ec3a722f0753c0ac752005ca437c4afd719eba2d6",
+      "size": 2003,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/multi-sim.exp",
+      "sha256": "66893d79979ed20822a4ee988d784beb5befa215a731d995598dfa1f5c12bc0f",
+      "size": 6104,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/pi.exp",
+      "sha256": "d04e4c2fa5dfdfdc144b06963170a8d9782e5d2d3b9186b57d421fe1f4e4cc99",
+      "size": 1976,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/powerpc-sim.exp",
+      "sha256": "ef52938006cc980d449aae16f04d1e506a74f641198e4d7cfc6e21c32832c09e",
+      "size": 1606,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/powerpcle-sim.exp",
+      "sha256": "986640070a7055872b22b2c872230f5e4dc0f347925102f0a81525a3ae5aab9c",
+      "size": 1606,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/pru-sim.exp",
+      "sha256": "b8e3c8e4222a428754ef865758df614d766ef92eee3a64d06ae21d8b2d0cac0f",
+      "size": 2537,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/qemu.exp",
+      "sha256": "605565f1a6861c62931c476ac8f619fc3e13fbdcd90ffeb85e81ddf23956957e",
+      "size": 7515,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/riscv-sim.exp",
+      "sha256": "9b34d063b774683c2fb8cabe12112f09dbbf4479395b9dffe8b1096d19c2470e",
+      "size": 1975,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/rx-sim.exp",
+      "sha256": "b5675e94e76ec297b78d488877d9b4e328e84bf0f0ea65955b140a8ecfdf5c17",
+      "size": 1558,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/sh-sid.exp",
+      "sha256": "39e30e96b1739240b30b83211bf29e186089304d38af88d50d7390e2d9ddd941",
+      "size": 1585,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/sh-sim.exp",
+      "sha256": "40fe15cc6a186e97b00a39e6044b27e42192760102333d6ce93ff72634a1e8c0",
+      "size": 2235,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/sparc-sim.exp",
+      "sha256": "19ff03d64445e144633a249a813333d265550dd5c63e490c445f6f8998035917",
+      "size": 1982,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/sparc64-sim.exp",
+      "sha256": "5a4ece497dbf3abe55ada24800898208bca000e1befa2b7206a8f6615a795df5",
+      "size": 1897,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/sparclite-sim-le.exp",
+      "sha256": "9ffbe5e89ec33ddcffacf235a230e5e97083dc82b3caa01ce6815af49a7894d8",
+      "size": 2311,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/sparclite-sim.exp",
+      "sha256": "a5e6b7a85e758e244018ea1d34d862c6cb2e749472d75964a1552e40960932cf",
+      "size": 1984,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/tx39-sim.exp",
+      "sha256": "4ed1f1666db7246339a2816b5da7a83066560311efab10fbb6337fcf355f8e93",
+      "size": 928,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/unix.exp",
+      "sha256": "afed4efa6e7082d9110a2133de00ff24e9b872a83f3ff5cd7f06fe6bbb41d50b",
+      "size": 1286,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/v850-sim.exp",
+      "sha256": "1b9931e2f3ccb39c8b05f34bab8c599cd95224c64fa1d0184fb7538e48234e79",
+      "size": 1862,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/visium-sim.exp",
+      "sha256": "cbb6d04f1c19c60fcc31c647184d0ca18741a80fbe670644e2f06ffd5e5b576d",
+      "size": 1632,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/vr4100-sim.exp",
+      "sha256": "2bd2fcf3e470c7ae534fe7d8e92f16b1fb035aaf0670350090da66b728e4b136",
+      "size": 1134,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/vr4111-sim.exp",
+      "sha256": "2bd2fcf3e470c7ae534fe7d8e92f16b1fb035aaf0670350090da66b728e4b136",
+      "size": 1134,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/vr4300-sim.exp",
+      "sha256": "2bd2fcf3e470c7ae534fe7d8e92f16b1fb035aaf0670350090da66b728e4b136",
+      "size": 1134,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/baseboards/xtensa-sim.exp",
+      "sha256": "44f580c29b908496abfa2d6b093117b287bac6e67f32c7cd1c4d04d1b0dc2a2e",
+      "size": 1639,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/dejagnu/commands",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/commands/help.sh",
+      "sha256": "c718aa9015a87d78d61d5f7611c1e2aaac58ef2c25bd14afe64bf724b63ed8bb",
+      "size": 3005,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/commands/report-card.awk",
+      "sha256": "8034c969cb73497ea55b38604ff0616346b182c4415274c3cbc61097f903886a",
+      "size": 6857,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/dejagnu/config",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/config/README",
+      "sha256": "9a50cd7d78baa6fae9fdfc016c3250629a92d002701716c4ecf61e66d29583e1",
+      "size": 1262,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/config/aarch64-fv8.exp",
+      "sha256": "6583b075af83e2e4ef0c5c298945d37a64d4c5e5b1f8b7820f8ec325a37dc10f",
+      "size": 1736,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/config/adb.exp",
+      "sha256": "e422ee00b7f850057a44f6275c3cf7c7f22adb96c83496b53f592b59edace595",
+      "size": 5176,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/config/default.exp",
+      "sha256": "d712dec5a1dcf10f7a1f434f7e484ce11bfc3cb450ec394bf433ad0165995fb9",
+      "size": 1162,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/config/gdb-comm.exp",
+      "sha256": "1a4fbb0b65fc2345b9dcf254b27615bae7c600d44c109cb9e859f3bdd4bf43cd",
+      "size": 15766,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/config/gdb_stub.exp",
+      "sha256": "1132602a79f8957081df78c1cd103da6181bd929482af04fb4cc4ac51832472c",
+      "size": 15307,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/config/sid.exp",
+      "sha256": "6938d7360a57df34953ff961553fda29ca1ba91080ccacecf316815c345d32eb",
+      "size": 2634,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/config/sim.exp",
+      "sha256": "a2104f33a6e6f23380d92aeb07617e455df634f7a55c7c459029605fa9bf6bdb",
+      "size": 3983,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/config/unix.exp",
+      "sha256": "c0c9bae718db6e114d01e92035c92e08c0131dee096ece5902e41394b03ee3f1",
+      "size": 4748,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/config/vxworks.exp",
+      "sha256": "15ecdfcfdcf17c9a68c00c06cc96774d99baec7e6a7576ffa1e7a1198557534f",
+      "size": 12445,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/debugger.exp",
+      "sha256": "79ba81da9ccb20c3527bcb89bbd16efe24291712073ba323aa913cb8ea124d78",
+      "size": 5320,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/dejagnu.exp",
+      "sha256": "a0f99ea41b128a790e95dc45f0cc7b3b5ea6e3ce6ce00953765ade2e9be2235d",
+      "size": 5695,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/dg.exp",
+      "sha256": "077ad124a343b7af6a406e44570539b267285007adfd665ce5acba064261f5e5",
+      "size": 27437,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/dmucs.exp",
+      "sha256": "63e00bcd60b72edaabe21acc06202e404d31abed08fdfa3bbb0440b4cba50457",
+      "size": 1931,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/framework.exp",
+      "sha256": "fca1e1ff90a073035dd941ecb1d3e0748cbc1f31dc470e5bd5b15b8a7d3bf20f",
+      "size": 32493,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/ftp.exp",
+      "sha256": "3ee00a3d5c5ff7ca62d95ba5b8979482943d88a16ef0f67a1ada1aacb706be6f",
+      "size": 5564,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/kermit.exp",
+      "sha256": "3c533367c89df9682520c4b01871c70e75e69de8c47b7feb23af8b9490e71416",
+      "size": 4495,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/dejagnu/libexec",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/dejagnu/libexec/config.guess",
+      "sha256": "81b72a182cabcea27a91ea79d97bd22801a82a6da5a0602a5f25b2785ffb9022",
+      "size": 49482,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/libgloss.exp",
+      "sha256": "ffddd75ea503cb889bf76fd2d95002698b33c68170cdb1023145098d02afb836",
+      "size": 24716,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/remote.exp",
+      "sha256": "6b898b0bdf8e5000cbde3264ee557081576b2b732c63d370e80bda1883209e9c",
+      "size": 39280,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/rlogin.exp",
+      "sha256": "e6ff25f45704103ed6fa99194a4026694fe3b29d92deab986e236327cfe1632e",
+      "size": 4327,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/rsh.exp",
+      "sha256": "55477e66242a5fb7775404b643a8f61b6ab60d63bdb8892b9d23717b3cb7a454",
+      "size": 7480,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/runtest.exp",
+      "sha256": "f3a48b4e84b36b4a12d52ea389a072f5cbc9f9005d671669f6f5af7513a7a46e",
+      "size": 57417,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/ssh.exp",
+      "sha256": "41b2b763579ccce6c54ee4d01368cbe5ddf92fecd44367597364f41760b08653",
+      "size": 6974,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/standard.exp",
+      "sha256": "862a94124dd6b5f57a931c480f62ad0ccbdc6fb17126c7f74ed1ddfd29049a14",
+      "size": 1320,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/stub-loader.c",
+      "sha256": "04ac86e59cb03ecedf6458a20a1cd0f4803727331b005162f2538dd5ce471af5",
+      "size": 85,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/target.exp",
+      "sha256": "1725543d1306d4332e2c6da709369da58a1ea0467eb51b704acda7702c703b05",
+      "size": 29561,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/targetdb.exp",
+      "sha256": "86ec2b8e701a66001fbab2b4b93d266db3fa74b0ca25f4d6a803aa3865946fb6",
+      "size": 2760,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/telnet.exp",
+      "sha256": "ddb285871b3dca1aea087d82c5fb9599d61b693579c1617e7c927189e65b722e",
+      "size": 6139,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/testglue.c",
+      "sha256": "2bd15286cf293ffff9ff39c8ddf18fa8161ef850e137cbece2d54c78f6b753d4",
+      "size": 3463,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/tip.exp",
+      "sha256": "3578e41c42838757c63b1547051178106fcd42d0d949408359c65760168fd86a",
+      "size": 4285,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/dejagnu/utils.exp",
+      "sha256": "c1bdc6bda71a46e74f48ce2b5bac989daa19086b87fe702bd9f8cce78b9aceed",
+      "size": 9679,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/doc",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/doc/dejagnu-1.6.3",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/dejagnu-1.6.3/dejagnu.html",
+      "sha256": "508f04a63ce889819939bb69039b45b8ff35ae3d67509f97213fd5621a3d8661",
+      "size": 490041,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/dejagnu-1.6.3/dejagnu.txt",
+      "sha256": "9db7755f03fe90e5b7fd09c57e0115ffc75e35940e25ade45b476c5f25737c25",
+      "size": 207201,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/info",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/info/dejagnu.info",
+      "sha256": "a077ef113c7e9401eb27e1e5f09e5b4514cdcb3d971d1d32a8c51dfe013501b1",
+      "size": 254332,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/info/dir",
+      "sha256": "332dcb798ae44c5c625da4f128b7fd85c827917a74fc24127e83dacc19072a5e",
+      "size": 622,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man/man1",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/dejagnu-help.1",
+      "sha256": "5004556870af63200024c5e83088f8fefe0df152a11f1ed03645b3affd19df6d",
+      "size": 1132,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/dejagnu-report-card.1",
+      "sha256": "bb1258d32d035348ff380181649ceda642c7d3d625cb03b771284fd53568078e",
+      "size": 5557,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/dejagnu.1",
+      "sha256": "e880360ef6332bf754eac1ebf5d2682a7190714cbcade8170d906095dfe4c8b6",
+      "size": 3667,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/runtest.1",
+      "sha256": "35a46580c8ecfeab81f8c7adbaa291d1c1535c3fea4a77be90e4be3f2e9ca398",
+      "size": 4347,
+      "type": "file",
+      "uid": 0
+    }
+  ],
+  "package": {
+    "name": "dejagnu",
+    "source": {
+      "sha256": "87daefacd7958b4a69f88c6856dbd1634261963c414079d0c371f589cd66a2e3",
+      "url": "https://ftp.gnu.org/gnu/dejagnu/dejagnu-1.6.3.tar.gz"
+    },
+    "version": "1.6.3"
+  },
+  "schema": "alpbahOS.package-files/v1"
+}

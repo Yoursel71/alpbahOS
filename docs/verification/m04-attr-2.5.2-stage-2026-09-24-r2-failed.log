@@ -1,0 +1,22 @@
+Builder=yrsk source=39bf67452fa41d0948c2197601053f48b3d78a029389734332a6309a680c6c87  /mnt/lfs/sources/attr-2.5.2.tar.gz
+filesystem_probe=xattr+POSIX_ACL passed
+LFS_REQUIRED_PATCH=none; install_mode=DESTDIR; rootfs_merge=forbidden
+Filesystem                         Size  Used Avail Use% Mounted on
+/dev/mapper/ubuntu--vg-ubuntu--lv  157G   84G   67G  56% /
+/bin/bash: line 3: ./configure: No such file or directory
+make: TMPDIR value /build/attr-2.5.2-m04-r1/tmp: No such file or directory
+make: using default temporary directory '/tmp'
+make: *** No targets specified and no makefile found.  Stop.
+tee: attr-check-log: Permission denied
+make: TMPDIR value /build/attr-2.5.2-m04-r1/tmp: No such file or directory
+make: using default temporary directory '/tmp'
+make: *** No rule to make target 'check'.  Stop.
+cat: attr-check-log: No such file or directory
+FAILED line 79 status 1: chroot --userspec=1001:1001 "$LFS" /usr/bin/env -i HOME=/home/lfs TERM=xterm PATH=/usr/bin:/usr/sbin:/bin:/sbin LC_ALL=C.UTF-8 TMPDIR=/build/attr-2.5.2-m04-r1/tmp /bin/bash --noprofile --norc -c '
+  cd /build/attr-2.5.2-m04-r1
+  ./configure --prefix=/usr --disable-static --sysconfdir=/etc --docdir=/usr/share/doc/attr-2.5.2
+  make
+  set -o pipefail
+  if make check 2>&1 | tee attr-check-log; then :; else status=$?; cat attr-check-log >&2; exit "$status"; fi
+'
+STAGE_INCOMPLETE: preserve files for diagnosis

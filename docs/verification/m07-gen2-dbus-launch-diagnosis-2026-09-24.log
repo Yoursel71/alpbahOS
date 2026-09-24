@@ -1,0 +1,21 @@
+# M07 Gen2 Plasma D-Bus launch diagnosis
+
+Date: 2026-09-24, live SSH check 17:53:07 UTC; console evidence supplied by the user in an attached VMConnect screenshot during the same work session.
+
+## Evidence
+
+- In the screenshot, the Gen2 tty1 shell ran `startplasma-wayland` directly (the installed binary is `/opt/kf6/bin/startplasma-wayland`). The console returned: `startplasmacompositor: Could not start D-Bus. Can you call qdbus?` No Plasma desktop became visible in the supplied capture.
+- A fresh read-only guest check found `/usr/bin/dbus-run-session` and `/usr/bin/dbus-daemon`, but no `qdbus`/`qdbus6` in the `sa` SSH PATH. The guest system D-Bus service was active. Admin's `/run/user/1001` was not readable by `sa`, and no admin D-Bus/user compositor processes were visible to `sa`.
+- The installed session definition `/opt/kf6/share/wayland-sessions/plasma.desktop` launches `/opt/kf6/libexec/plasma-dbus-run-session-if-needed /opt/kf6/bin/startplasma-wayland` and sets `DesktopNames=KDE`.
+- The wrapper source is a shell script: if `DBUS_SESSION_BUS_ADDRESS` is unset, it executes the given program through `dbus-run-session`; otherwise it executes the program directly.
+- Probe command, run over SSH only:
+
+  ```sh
+  /opt/kf6/libexec/plasma-dbus-run-session-if-needed /usr/bin/dbus-send --session --type=method_call --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.ListNames
+  ```
+
+  Exit code 0; D-Bus replied with `org.freedesktop.DBus` and `:1.0`. This verifies that the wrapper can provide a temporary session bus for its child. It is not a graphical or seat/DRM test.
+
+## Conclusion and limits
+
+The screenshot's direct binary invocation bypassed the wrapper selected by the installed Plasma Wayland session entry. This is a likely explanation for the missing session bus, supported by the wrapper source and the successful SSH bus probe; it has not been confirmed by launching the wrapper on tty1. No guest file or service was changed, no process was launched as admin, and no Plasma session is claimed. M07 still requires the Wayland session entry/wrapper to be used on tty1 and then a real session to be observed. The Codex CUA surface continues to expose no native app (`apps: []`), so Codex could not enter or observe the attached VMConnect console.
