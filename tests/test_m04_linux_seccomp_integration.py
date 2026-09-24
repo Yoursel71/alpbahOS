@@ -153,9 +153,17 @@ class LinuxSeccompIntegrationTests(unittest.TestCase):
         self.assertTrue(event_path.is_file())
         on_disk = json.loads(event_path.read_text(encoding="utf-8"))
         self.assertEqual(on_disk["event_id"], event["event_id"])
+        manifest_path = event_path.with_name(event_path.name + ".manifest.json")
+        self.assertTrue(manifest_path.is_file())
+        detached = json.loads(manifest_path.read_text(encoding="utf-8"))
+        event_bytes = event_path.read_bytes()
+        self.assertEqual(detached["schema"], "alpbahOS.m04-install-event-manifest/v1")
+        self.assertEqual(detached["event_path"], event_path.relative_to(root).as_posix())
+        self.assertEqual(detached["size"], len(event_bytes))
+        self.assertEqual(detached["sha256"], hashlib.sha256(event_bytes).hexdigest())
         manifest = event.get("event_manifest")
         if manifest is not None:  # capture_install returns this; persisted JSON predates it.
-            self.assertEqual(manifest["sha256"], hashlib.sha256(event_path.read_bytes()).hexdigest())
+            self.assertEqual(root / manifest["path"], manifest_path)
         for artifact in event["artifacts"].values():
             path = root / artifact["path"]
             self.assertTrue(path.is_file(), artifact["path"])

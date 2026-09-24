@@ -33,6 +33,7 @@ class CaptureEventAdapterTests(unittest.TestCase):
         self.root = Path(self.temp.name)
         self.artifact_dir = self.root / ".m04-capture" / "events" / "event-1"
         self.artifact_dir.mkdir(parents=True)
+        self.event_path = self.root / "capture-event.json"
         self.source_path = "/fixture/source.tar.xz"
         self.recipe_path = "/fixture/recipe.sh"
         source_hash = "a" * 64
@@ -83,11 +84,27 @@ class CaptureEventAdapterTests(unittest.TestCase):
             "recipe_input_path": self.recipe_path,
         }
 
+    def _write_event_and_manifest(self) -> None:
+        event_bytes = (json.dumps(self.event, sort_keys=True) + "\n").encode("utf-8")
+        self.event_path.write_bytes(event_bytes)
+        manifest = {
+            "schema": adapter.EVENT_MANIFEST_SCHEMA,
+            "event_path": self.event_path.relative_to(self.root).as_posix(),
+            "size": len(event_bytes),
+            "sha256": hashlib.sha256(event_bytes).hexdigest(),
+        }
+        self.event_path.with_name(self.event_path.name + ".manifest.json").write_text(
+            json.dumps(manifest, sort_keys=True) + "\n", encoding="utf-8")
+
+    def _adapt(self) -> dict[str, Any]:
+        self._write_event_and_manifest()
+        return adapter.adapt_bundle_event(self.event, self.provenance, self.root, self.event_path)
+
     def tearDown(self) -> None:
         self.temp.cleanup()
 
     def test_adapted_event_is_accepted_by_integrity_verifier(self) -> None:
-        event = adapter.adapt_bundle_event(self.event, self.provenance, self.root)
+        event = self._adapt()
         index = {"schema": adapter.BUNDLE_SCHEMA, "events": [event]}
         self.assertEqual(verifier.verify_bundle(index, self.root), 0)
         self.assertEqual(event["artifacts"]["syscall_trace"], {
@@ -105,10 +122,10 @@ class CaptureEventAdapterTests(unittest.TestCase):
         self.assertIn(b"=== stderr ===", combined)
 
     def test_cli_writes_verifier_accepted_bundle_index(self) -> None:
-        event_path = self.root / "capture-event.json"
+        event_path = self.event_path
         provenance_path = self.root / "provenance.json"
         output_path = self.root / "adapted-index.json"
-        event_path.write_text(json.dumps(self.event), encoding="utf-8")
+        self._write_event_and_manifest()
         provenance_path.write_text(json.dumps(self.provenance), encoding="utf-8")
         argv = [str(ADAPTER_SCRIPT), "--event", str(event_path), "--evidence-root", str(self.root),
                 "--provenance", str(provenance_path), "--bundle-index-out", str(output_path)]
@@ -121,24 +138,29 @@ class CaptureEventAdapterTests(unittest.TestCase):
     def test_source_and_recipe_hashes_must_match_captured_inputs(self) -> None:
         self.provenance["recipe_input_path"] = "/fixture/other-recipe.sh"
         with self.assertRaisesRegex(adapter.AdapterError, "match exactly one captured input"):
-            adapter.adapt_bundle_event(self.event, self.provenance, self.root)
+            self._adapt()
 
     def test_adapter_refuses_failed_or_escape_attempt_events(self) -> None:
-        failed = dict(self.event, exit_status=1)
+        original = self.event
+        failed = dict(original, exit_status=1)
         with self.assertRaisesRegex(adapter.AdapterError, "failed capture"):
-            adapter.adapt_bundle_event(failed, self.provenance, self.root)
-        escaped = dict(self.event, outside_root_write_attempts=["fixture escape"])
+            self.event = failed
+            self._adapt()
+        escaped = dict(original, outside_root_write_attempts=["fixture escape"])
         with self.assertRaisesRegex(adapter.AdapterError, "outside-root"):
-            adapter.adapt_bundle_event(escaped, self.provenance, self.root)
-        incomplete = dict(self.event, observation_violations=["io_uring_setup was used"])
+            self.event = escaped
+            self._adapt()
+        incomplete = dict(original, observation_violations=["io_uring_setup was used"])
         with self.assertRaisesRegex(adapter.AdapterError, "incomplete observation"):
-            adapter.adapt_bundle_event(incomplete, self.provenance, self.root)
+            self.event = incomplete
+            self._adapt()
+        self.event = original
 
     def test_adapter_rejects_artifact_hash_mismatch(self) -> None:
         changed = self.artifact_dir / "strace.dat"
         changed.write_bytes(b"tampered")
         with self.assertRaisesRegex(adapter.AdapterError, "integrity checks"):
-            adapter.adapt_bundle_event(self.event, self.provenance, self.root)
+            self._adapt()
 
     def test_adapter_rejects_unexpected_seccomp_policy(self) -> None:
         policy = self.artifact_dir / "seccomp_policy.dat"
@@ -146,7 +168,27 @@ class CaptureEventAdapterTests(unittest.TestCase):
         self.event["artifacts"]["seccomp_policy"]["size"] = policy.stat().st_size
         self.event["artifacts"]["seccomp_policy"]["sha256"] = hashlib.sha256(policy.read_bytes()).hexdigest()
         with self.assertRaisesRegex(adapter.AdapterError, "not the required io_uring-deny filter"):
-            adapter.adapt_bundle_event(self.event, self.provenance, self.root)
+            self._adapt()
+
+    def test_adapter_rejects_missing_event_manifest(self) -> None:
+        self.event_path.write_text(json.dumps(self.event), encoding="utf-8")
+        with self.assertRaisesRegex(adapter.AdapterError, "capture event manifest cannot be inspected"):
+            adapter.adapt_bundle_event(self.event, self.provenance, self.root, self.event_path)
+
+    def test_adapter_rejects_tampered_manifest_and_event_bytes(self) -> None:
+        self._write_event_and_manifest()
+        sidecar = self.event_path.with_name(self.event_path.name + ".manifest.json")
+        manifest = json.loads(sidecar.read_text(encoding="utf-8"))
+        manifest["sha256"] = "f" * 64
+        sidecar.write_text(json.dumps(manifest), encoding="utf-8")
+        with self.assertRaisesRegex(adapter.AdapterError, "capture event manifest mismatch"):
+            adapter.adapt_bundle_event(self.event, self.provenance, self.root, self.event_path)
+
+        self._write_event_and_manifest()
+        with self.event_path.open("ab") as stream:
+            stream.write(b" ")
+        with self.assertRaisesRegex(adapter.AdapterError, "capture event manifest mismatch"):
+            adapter.adapt_bundle_event(self.event, self.provenance, self.root, self.event_path)
 
     def test_reconciliation_is_refused_without_complete_capture_boundary(self) -> None:
         with self.assertRaisesRegex(adapter.AdapterError, "cannot establish a complete, exclusive write set"):

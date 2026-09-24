@@ -33,6 +33,7 @@ MARKER = ".m04-fixture-root"
 MARKER_TEXT = "DISPOSABLE M04 TRANSACTION FIXTURE ONLY v1\n"
 CAPTURE_DIR = ".m04-capture"
 SCHEMA = "alpbahOS.m04-install-event-capture/v3"
+EVENT_MANIFEST_SCHEMA = "alpbahOS.m04-install-event-manifest/v1"
 SNAPSHOT_SCHEMA = "alpbahOS.m04-reconcile-snapshot/v3"
 WRITE_SYSCALLS = {
     "creat", "link", "linkat", "mkdir", "mkdirat", "mknod", "mknodat",
@@ -651,8 +652,16 @@ def capture_install(root: Path, argv: Sequence[str], *, cwd: Path | None = None,
     }
     event_path = event_dir / "event.json"
     _write_json(event_path, event)
-    event["event_manifest"] = {"path": str(event_path.relative_to(root)),
-                               "sha256": _sha256(event_path)}
+    event_bytes = event_path.read_bytes()
+    event_manifest = {
+        "schema": EVENT_MANIFEST_SCHEMA,
+        "event_path": event_path.relative_to(root).as_posix(),
+        "size": len(event_bytes),
+        "sha256": hashlib.sha256(event_bytes).hexdigest(),
+    }
+    manifest_path = event_dir / "event.json.manifest.json"
+    _write_json(manifest_path, event_manifest)
+    event["event_manifest"] = {"path": manifest_path.relative_to(root).as_posix()}
     if violations:
         raise CaptureError("trace contains writes outside the fixture; see " + str(event_path))
     if observation_violations:

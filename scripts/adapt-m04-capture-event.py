@@ -23,6 +23,7 @@ from typing import Any
 
 
 CAPTURE_SCHEMA = "alpbahOS.m04-install-event-capture/v3"
+EVENT_MANIFEST_SCHEMA = "alpbahOS.m04-install-event-manifest/v1"
 PROVENANCE_SCHEMA = "alpbahOS.m04-capture-adapter-provenance/v1"
 BUNDLE_SCHEMA = "alpbahOS.m04-install-evidence/v1"
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
@@ -47,6 +48,101 @@ def _read_json(path: Path, label: str) -> Any:
         return json.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         raise AdapterError(f"cannot read {label}: {exc}") from exc
+
+
+def _safe_capture_path(root: Path, path: Path, label: str) -> tuple[Path, str]:
+    candidate = Path(os.path.abspath(os.fspath(path if path.is_absolute() else root / path)))
+    try:
+        relative = candidate.relative_to(root).as_posix()
+    except ValueError as exc:
+        raise AdapterError(f"{label} must be inside the evidence root") from exc
+    if (not relative or "\\" in relative or ":" in relative or "\x00" in relative
+            or any(part in ("", ".", "..") for part in relative.split("/"))):
+        raise AdapterError(f"{label} path is unsafe or noncanonical")
+    cursor = root
+    parts = relative.split("/")
+    for index, part in enumerate(parts):
+        cursor = cursor / part
+        try:
+            info = os.lstat(cursor)
+        except OSError as exc:
+            raise AdapterError(f"{label} cannot be inspected: {exc}") from exc
+        if stat.S_ISLNK(info.st_mode):
+            raise AdapterError(f"{label} traverses a symlink")
+        if index < len(parts) - 1 and not stat.S_ISDIR(info.st_mode):
+            raise AdapterError(f"{label} parent is not a directory")
+    if not stat.S_ISREG(os.lstat(candidate).st_mode):
+        raise AdapterError(f"{label} must be a regular file")
+    return candidate, relative
+
+
+def _read_stable_bytes(path: Path, label: str) -> bytes:
+    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
+    try:
+        fd = os.open(path, flags)
+        with os.fdopen(fd, "rb") as stream:
+            before = os.fstat(stream.fileno())
+            if not stat.S_ISREG(before.st_mode):
+                raise AdapterError(f"{label} changed type while opening")
+            data = stream.read()
+            after = os.fstat(stream.fileno())
+        current = os.lstat(path)
+    except OSError as exc:
+        raise AdapterError(f"{label} could not be read safely: {exc}") from exc
+    def signature(info: os.stat_result) -> tuple[int, ...]:
+        # Windows reports st_ctime as file creation time; Linux reports inode
+        # change time. Only the latter detects an in-place rewrite with a
+        # restored mtime, so compare it on the Linux adapter target.
+        common = (info.st_dev, info.st_ino, info.st_mode, info.st_size, info.st_mtime_ns)
+        return common + ((info.st_ctime_ns,) if os.name != "nt" else ())
+    if signature(before) != signature(after) or signature(after) != signature(current):
+        raise AdapterError(f"{label} changed while being read")
+    return data
+
+
+def _verified_capture_event(event_path_arg: Path, evidence_root_arg: Path) -> dict[str, Any]:
+    if ".." in evidence_root_arg.parts or evidence_root_arg.is_symlink():
+        raise AdapterError("evidence root must be a real directory without '..' components")
+    try:
+        root = evidence_root_arg.resolve(strict=True)
+    except OSError as exc:
+        raise AdapterError(f"evidence root cannot be resolved: {exc}") from exc
+    if not root.is_dir():
+        raise AdapterError("evidence root must be a directory")
+    event_path, event_relative = _safe_capture_path(root, event_path_arg, "capture event")
+    sidecar_path_arg = event_path.with_name(event_path.name + ".manifest.json")
+    sidecar_path, _ = _safe_capture_path(root, sidecar_path_arg, "capture event manifest")
+    sidecar_bytes = _read_stable_bytes(sidecar_path, "capture event manifest")
+    try:
+        manifest = json.loads(sidecar_bytes)
+    except (UnicodeError, json.JSONDecodeError) as exc:
+        raise AdapterError(f"capture event manifest is not valid UTF-8 JSON: {exc}") from exc
+    if not isinstance(manifest, dict) or set(manifest) != {"schema", "event_path", "size", "sha256"}:
+        raise AdapterError("capture event manifest must contain exactly schema/event_path/size/sha256")
+    if manifest["schema"] != EVENT_MANIFEST_SCHEMA:
+        raise AdapterError(f"capture event manifest schema must be {EVENT_MANIFEST_SCHEMA}")
+    if manifest["event_path"] != event_relative:
+        raise AdapterError("capture event manifest path does not match the selected event")
+    expected_size = manifest["size"]
+    digest = manifest["sha256"]
+    if type(expected_size) is not int or expected_size < 0:
+        raise AdapterError("capture event manifest size must be a nonnegative integer")
+    if not isinstance(digest, str) or not SHA256_RE.fullmatch(digest):
+        raise AdapterError("capture event manifest SHA-256 is invalid")
+    event_bytes = _read_stable_bytes(event_path, "capture event")
+    actual_digest = hashlib.sha256(event_bytes).hexdigest()
+    if len(event_bytes) != expected_size or actual_digest != digest:
+        raise AdapterError(
+            f"capture event manifest mismatch: expected size={expected_size} sha256={digest}; "
+            f"actual size={len(event_bytes)} sha256={actual_digest}"
+        )
+    try:
+        event = json.loads(event_bytes)
+    except (UnicodeError, json.JSONDecodeError) as exc:
+        raise AdapterError(f"capture event is not valid UTF-8 JSON: {exc}") from exc
+    if not isinstance(event, dict):
+        raise AdapterError("capture event must be a JSON object")
+    return event
 
 
 def _safe_artifact(root: Path, raw: Any, label: str) -> tuple[Path, dict[str, Any]]:
@@ -174,7 +270,11 @@ def _mkdirs_without_symlinks(root: Path, relative_dir: str) -> Path:
     return current
 
 
-def adapt_bundle_event(event_raw: Any, provenance_raw: Any, evidence_root_arg: Path) -> dict[str, Any]:
+def adapt_bundle_event(event_raw: Any, provenance_raw: Any, evidence_root_arg: Path,
+                       event_path: Path) -> dict[str, Any]:
+    verified_event = _verified_capture_event(event_path, evidence_root_arg)
+    if event_raw != verified_event:
+        raise AdapterError("provided capture event does not match the manifest-verified event.json")
     event = _validate_capture(event_raw)
     if not isinstance(provenance_raw, dict) or set(provenance_raw) != {
             "schema", "sequence", "source_url", "source_input_path", "recipe_identity", "recipe_input_path"}:
@@ -290,7 +390,7 @@ def main() -> int:
         if args.provenance is None or args.bundle_index_out is None:
             raise AdapterError("bundle conversion requires --provenance and --bundle-index-out")
         provenance = _read_json(args.provenance, "adapter provenance")
-        adapted = adapt_bundle_event(event, provenance, args.evidence_root)
+        adapted = adapt_bundle_event(event, provenance, args.evidence_root, args.event)
         index = {"schema": BUNDLE_SCHEMA, "events": [adapted]}
         args.bundle_index_out.parent.mkdir(parents=True, exist_ok=True)
         args.bundle_index_out.write_text(json.dumps(index, indent=2, sort_keys=True) + "\n", encoding="utf-8")
