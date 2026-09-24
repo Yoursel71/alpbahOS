@@ -1,0 +1,846 @@
+{
+  "captured_at": "2026-09-24T07:21:03+00:00",
+  "entries": [
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/chacl",
+      "sha256": "080455ce03d6a6e040daca9eca71a29026784561510327f431caf552d768da3f",
+      "size": 33864,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/getfacl",
+      "sha256": "3bdee1aa37471ad738c958d0f98b9e21112f73cd379e7be33c6fcc40f0c2b1b9",
+      "size": 76448,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/setfacl",
+      "sha256": "6f786a5b825a2f00d5d85c54dd684a621f34a8f14a2c565d4ec0a9c95d724a86",
+      "size": 116888,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/include",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/include/acl",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/acl/libacl.h",
+      "sha256": "20e0c4ec0cbb0cc6fab715739b337a6302b0c31daf6ecafea0d351cdc8e339a7",
+      "size": 2625,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/include/sys",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/sys/acl.h",
+      "sha256": "c91d3557037e273792128a6433913d5dd85fa912097571191c255de50ee33d6e",
+      "size": 3636,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libacl.la",
+      "sha256": "7e28c7e0c0f3dfe87de799bf72c4ea0e12eee31326318f3e95263e259d725cda",
+      "size": 967,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libacl.so",
+      "target": "libacl.so.1.1.2302",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libacl.so.1",
+      "target": "libacl.so.1.1.2302",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libacl.so.1.1.2302",
+      "sha256": "3749b956053361fbf32283bd53c4e1fca1310775cabcc56686112ad10b6bc9cd",
+      "size": 177416,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/pkgconfig",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/pkgconfig/libacl.pc",
+      "sha256": "41ec84412c29c473420dc7588d4ed5ddeb1970f3b07c9002ec3c9b3b545b58c0",
+      "size": 223,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/doc",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/doc/acl-2.3.2",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/acl-2.3.2/CHANGES",
+      "sha256": "da1ac0149b1eda93a13ca173aa95dff9a3e6c5676e1819cf354a519e86f6b8c3",
+      "size": 21819,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/acl-2.3.2/COPYING",
+      "sha256": "a45a845012742796534f7e91fe623262ccfb99460a2bd04015bd28d66fba95b8",
+      "size": 18311,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/acl-2.3.2/COPYING.LGPL",
+      "sha256": "01b1f9f2c8ee648a7a596a1abe8aa4ed7899b1c9e5551bda06da6e422b04aa55",
+      "size": 26762,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/acl-2.3.2/extensions.txt",
+      "sha256": "57eeb90da1a4b9a62351b77605681f65b990e14da942c2cc2c8cb1a678b3cbde",
+      "size": 2257,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/acl-2.3.2/libacl.txt",
+      "sha256": "270f395d9177cbb0d60278413099b9e7a7b02bab2b8be453a68b5cb20e33738e",
+      "size": 2961,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/de",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/de/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/de/LC_MESSAGES/acl.mo",
+      "sha256": "39584e610fa70ca7a77169d04a30f5d5b52dd2884406f00efa499ca18a7e146f",
+      "size": 8722,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/en@boldquot",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/en@boldquot/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/en@boldquot/LC_MESSAGES/acl.mo",
+      "sha256": "5071dfe946cd117f1679307ca94612a7938e4e54ecb3d967290ecc6bd8e0b2e5",
+      "size": 8581,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/en@quot",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/en@quot/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/en@quot/LC_MESSAGES/acl.mo",
+      "sha256": "43cbd78cd174a72cac24ba00d6a232676a426e9b083aeaba9bacf2e67d4d5e93",
+      "size": 8497,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/es",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/es/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/es/LC_MESSAGES/acl.mo",
+      "sha256": "8ff4f6947407b9fdd802a0e8a407b967dd2a913a9b7d501ef8a8139017ca3a26",
+      "size": 6972,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/fr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/fr/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/fr/LC_MESSAGES/acl.mo",
+      "sha256": "8b95d52f75255628a93b17e5e463618afabd90c9ddd9548dfefbc954d8af1b3b",
+      "size": 7691,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/gl",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/gl/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/gl/LC_MESSAGES/acl.mo",
+      "sha256": "33cdbde000fbe8ac1ae1e4cd253a38361f5f5ef1424251db70ac633a2c00e991",
+      "size": 6970,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ka",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ka/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ka/LC_MESSAGES/acl.mo",
+      "sha256": "ba6c4394cde7d253ad7b6bf7e17c4d22bb8bf0bfe8ef794f0c8813685d29435d",
+      "size": 13107,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pl",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pl/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/pl/LC_MESSAGES/acl.mo",
+      "sha256": "a4841fcf463deea89b8a92218d07ca664c4d10970ae9d521c1dfd2e013288d3c",
+      "size": 9321,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sv",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sv/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/sv/LC_MESSAGES/acl.mo",
+      "sha256": "1cb1155949d1ad120c7499cc75de22c3a7e2c0f73f15a564acd327d8c414cbf9",
+      "size": 6704,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man/man1",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/chacl.1",
+      "sha256": "68cd21da23d8581ca83356152f0003300047e9b374d29bbbc420550dfa1077f5",
+      "size": 4864,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/getfacl.1",
+      "sha256": "b210effb595ef929da4bf125edfb6bd80abaf9fc73b0d2e8d7d74807eda0e203",
+      "size": 6359,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/setfacl.1",
+      "sha256": "079b8efe91696bcdd96c804d443dbb0c3acf6f49a1ec191ad2d14d379177da7f",
+      "size": 10665,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man/man3",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_add_perm.3",
+      "sha256": "0d40a7e49333025cc8257a6b3488ad3d1170e28637003e605b4f339dc2e87866",
+      "size": 2516,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_calc_mask.3",
+      "sha256": "888570f22f765fed26e512a4d3bf34b8cff5ab50accd5d8968bcf7880034c0d8",
+      "size": 3235,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_check.3",
+      "sha256": "81cdcbdc3fb53d9576d1d6eb324a93851ad9f177ac914c0cf19bc02e8f443cad",
+      "size": 3549,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_clear_perms.3",
+      "sha256": "4affe5dd5f56304cc73bceafce1155e60d1fce23930d3ffb4320c6607a28b2a5",
+      "size": 2274,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_cmp.3",
+      "sha256": "9e155eeac5f8db25a0b2890fd35784e96fcd06eea26e433745da8abafaa97fa4",
+      "size": 2351,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_copy_entry.3",
+      "sha256": "c51490bd9a515033ce5784debeb168c4e11641cc507eaf530d6d3954dd38f708",
+      "size": 2245,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_copy_ext.3",
+      "sha256": "25363c69d1e577d0964b3f3cde04d1425ab27043d052cc385aa3afef864b4968",
+      "size": 3293,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_copy_int.3",
+      "sha256": "3f4c14a8fa3af645329f2d889ffe535c724dd65dfeaa46d9e2941b35c6d07566",
+      "size": 2691,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_create_entry.3",
+      "sha256": "72ceb0cc2bab3b7341dcc17b3b44dc55bd2c8f687ee6ce512ccd3e3773e25ca0",
+      "size": 3344,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_delete_def_file.3",
+      "sha256": "29eaf9f904822cb0131e38dbdc2759b3f9bb1cda8448b1622f57dc8e7e6d29bb",
+      "size": 2789,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_delete_entry.3",
+      "sha256": "36ccf1de296013870ddcb91ee6cd3a9ac8c90966e6fa7e53319f914d4b88ab70",
+      "size": 2539,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_delete_perm.3",
+      "sha256": "3abbf1bdd52a5d877fadd2a50e43134030911af71383100612af49559cbe58cf",
+      "size": 2540,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_dup.3",
+      "sha256": "5daa1396d30e9893865135c4af03ddde79b7613e50d6e034b3ff75c4769e1f38",
+      "size": 2471,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_entries.3",
+      "sha256": "009c2a1530c82808cd7ec1f89144cf1d2630dcf330063d318652f6aac26d79f5",
+      "size": 2131,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_equiv_mode.3",
+      "sha256": "9d5305c386b116e6d0344eede49ed6ccab0d0d6ee826249c775451e0e3bfbabb",
+      "size": 2726,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_error.3",
+      "sha256": "27841bd7ac2f795e19999cc61705802ff3dcef83ad3336a051becb90b1399483",
+      "size": 2231,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_extended_fd.3",
+      "sha256": "3bd6d3d00c0b04833cd8f8ca0d0597cd27871e28e91fcfdcd68de594d6734948",
+      "size": 3117,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_extended_file.3",
+      "sha256": "99252f886e2977fc338d2ece607641560fb43eea3c95dda0ff392bd7fd60b16f",
+      "size": 3914,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_extended_file_nofollow.3",
+      "sha256": "95e623de9585fa7941f5ecae227d4e96a878084be23681c2955882290724ea1d",
+      "size": 29,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_free.3",
+      "sha256": "c29bbf1e55f265ff23f6ddabe6129dac7467187ada04cc22a3ad9c8e2e370b36",
+      "size": 2387,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_from_mode.3",
+      "sha256": "20eda8724fc3d92f44b19d2886488bf2839c9eefaf6b8111b9d0bb2ad726a17b",
+      "size": 2363,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_from_text.3",
+      "sha256": "0a1860f39f663d1e89969b6289d72729a7371cc108d4f57d67395a0dd3b19797",
+      "size": 2766,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_get_entry.3",
+      "sha256": "a68e8188875343477a4885bedc747380b22e59ccee695db22fd5a669796df0e7",
+      "size": 3921,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_get_fd.3",
+      "sha256": "f6a6d6338b503367af26113e7fbfc4255c7cf65c924e97cee0ab75f4a0e9d7b5",
+      "size": 2878,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_get_file.3",
+      "sha256": "dd3123f995c614bb5213851cff9ac692e0f22123b38197022aa7cb91ed2f0232",
+      "size": 4081,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_get_perm.3",
+      "sha256": "c511da7bcfcf46037706b3dc58b9f44fd809ec7d82582b02347841a605a4dc22",
+      "size": 2714,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_get_permset.3",
+      "sha256": "02491439ed838c9d2a139ca1ac44ba6942a72b0be0f2d25b4f533bd0ba7d9ae4",
+      "size": 2520,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_get_qualifier.3",
+      "sha256": "dbfd49c34bbf5b2bcd5a583119115668b03b64757f0e86b7ac83338f396a5e66",
+      "size": 3961,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_get_tag_type.3",
+      "sha256": "7220659637d692d4e39d6c691590742840b2c85d0bde9e7d120c5f787e27b6a2",
+      "size": 2443,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_init.3",
+      "sha256": "da4ab465941c7c3953f44bfa5b9fab32f4e3b45f8bea2e9bc4f2de2ba21b35d6",
+      "size": 2600,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_set_fd.3",
+      "sha256": "3392c1bbe8e04813b45497ac79ca702c70b371ed5f5efd89bef69d0975520d0c",
+      "size": 2845,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_set_file.3",
+      "sha256": "1d3e8b5f8393df753950f4fe47938663d5693f828ea49de3a89fac13a0a7f321",
+      "size": 4856,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_set_permset.3",
+      "sha256": "1f563805eb01b2d7254a34f90e5f66a794b52ffe9ad47ed51a6c46ba777ca5d9",
+      "size": 2832,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_set_qualifier.3",
+      "sha256": "1680e6b450c6f02c3631e0a60ed87f9c6be69d4b595242d7579df114400b9069",
+      "size": 3385,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_set_tag_type.3",
+      "sha256": "01ca5aa198f9b8665a5726ef89c64e6e7820aea64f1665ebb2329a115ad05b63",
+      "size": 2403,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_size.3",
+      "sha256": "04d9a52ccb454478f70dfb01715c76dfb690c9c76a81a24648acbcc36b56aea6",
+      "size": 2554,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_to_any_text.3",
+      "sha256": "244c98b678e7bc4fb64353c58544ce638c058b52391b0bb6a2faef572d5f07b5",
+      "size": 5012,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_to_text.3",
+      "sha256": "1bf689f017b27103f78f27484ef935498d97c40561fc852de9a4364b0af1f4d9",
+      "size": 3144,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man3/acl_valid.3",
+      "sha256": "9a5d4dda13bd0dbe2873c6123934b74763463c6ae1f1b54b6797a4b317b5dee6",
+      "size": 2527,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man/man5",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man5/acl.5",
+      "sha256": "913a8527ccbc3e07447e0ac36ec7d1d88360df5f286a4e9b6947fde420fcc851",
+      "size": 16440,
+      "type": "file",
+      "uid": 0
+    }
+  ],
+  "package": {
+    "name": "acl",
+    "source": {
+      "sha256": "97203a72cae99ab89a067fe2210c1cbf052bc492b479eca7d226d9830883b0bd",
+      "url": "https://download.savannah.gnu.org/releases/acl/acl-2.3.2.tar.xz"
+    },
+    "version": "2.3.2"
+  },
+  "schema": "alpbahOS.package-files/v1"
+}

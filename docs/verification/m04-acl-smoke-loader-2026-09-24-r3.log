@@ -1,0 +1,183 @@
+   1302624:	find library=libncursesw.so.6 [0]; searching
+   1302624:	 search path=/tmp/alp-m04-acl-stage-20260924-r2/usr/lib/glibc-hwcaps/x86-64-v3:/tmp/alp-m04-acl-stage-20260924-r2/usr/lib/glibc-hwcaps/x86-64-v2:/tmp/alp-m04-acl-stage-20260924-r2/usr/lib:/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v3:/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v2:/tmp/alp-m04-attr-stage-20260924-r3/usr/lib		(LD_LIBRARY_PATH)
+   1302624:	  trying file=/tmp/alp-m04-acl-stage-20260924-r2/usr/lib/glibc-hwcaps/x86-64-v3/libncursesw.so.6
+   1302624:	  trying file=/tmp/alp-m04-acl-stage-20260924-r2/usr/lib/glibc-hwcaps/x86-64-v2/libncursesw.so.6
+   1302624:	  trying file=/tmp/alp-m04-acl-stage-20260924-r2/usr/lib/libncursesw.so.6
+   1302624:	  trying file=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v3/libncursesw.so.6
+   1302624:	  trying file=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v2/libncursesw.so.6
+   1302624:	  trying file=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/libncursesw.so.6
+   1302624:	 search cache=/etc/ld.so.cache
+   1302624:	  trying file=/usr/lib/libncursesw.so.6
+   1302624:	
+   1302624:	find library=libc.so.6 [0]; searching
+   1302624:	 search path=/tmp/alp-m04-acl-stage-20260924-r2/usr/lib:/tmp/alp-m04-attr-stage-20260924-r3/usr/lib		(LD_LIBRARY_PATH)
+   1302624:	  trying file=/tmp/alp-m04-acl-stage-20260924-r2/usr/lib/libc.so.6
+   1302624:	  trying file=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/libc.so.6
+   1302624:	 search cache=/etc/ld.so.cache
+   1302624:	  trying file=/usr/lib/libc.so.6
+   1302624:	
+   1302624:	
+   1302624:	calling init: /lib64/ld-linux-x86-64.so.2
+   1302624:	
+   1302624:	
+   1302624:	calling init: /usr/lib/libc.so.6
+   1302624:	
+   1302624:	
+   1302624:	calling init: /usr/lib/libncursesw.so.6
+   1302624:	
+   1302624:	
+   1302624:	initialize program: /bin/bash
+   1302624:	
+   1302624:	
+   1302624:	transferring control: /bin/bash
+   1302624:	
+   1302625:	find library=libacl.so.1 [0]; searching
+   1302625:	 search path=/tmp/alp-m04-acl-stage-20260924-r2/usr/lib/glibc-hwcaps/x86-64-v3:/tmp/alp-m04-acl-stage-20260924-r2/usr/lib/glibc-hwcaps/x86-64-v2:/tmp/alp-m04-acl-stage-20260924-r2/usr/lib:/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v3:/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v2:/tmp/alp-m04-attr-stage-20260924-r3/usr/lib		(LD_LIBRARY_PATH)
+   1302625:	  trying file=/tmp/alp-m04-acl-stage-20260924-r2/usr/lib/glibc-hwcaps/x86-64-v3/libacl.so.1
+   1302625:	  trying file=/tmp/alp-m04-acl-stage-20260924-r2/usr/lib/glibc-hwcaps/x86-64-v2/libacl.so.1
+   1302625:	  trying file=/tmp/alp-m04-acl-stage-20260924-r2/usr/lib/libacl.so.1
+   1302625:	
+   1302625:	find library=libattr.so.1 [0]; searching
+   1302625:	 search path=/tmp/alp-m04-acl-stage-20260924-r2/usr/lib:/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v3:/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v2:/tmp/alp-m04-attr-stage-20260924-r3/usr/lib		(LD_LIBRARY_PATH)
+   1302625:	  trying file=/tmp/alp-m04-acl-stage-20260924-r2/usr/lib/libattr.so.1
+   1302625:	  trying file=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v3/libattr.so.1
+   1302625:	  trying file=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v2/libattr.so.1
+   1302625:	  trying file=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/libattr.so.1
+   1302625:	
+   1302625:	find library=libc.so.6 [0]; searching
+   1302625:	 search path=/tmp/alp-m04-acl-stage-20260924-r2/usr/lib:/tmp/alp-m04-attr-stage-20260924-r3/usr/lib		(LD_LIBRARY_PATH)
+   1302625:	  trying file=/tmp/alp-m04-acl-stage-20260924-r2/usr/lib/libc.so.6
+   1302625:	  trying file=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/libc.so.6
+   1302625:	 search cache=/etc/ld.so.cache
+   1302625:	  trying file=/usr/lib/libc.so.6
+   1302625:	
+   1302625:	
+   1302625:	calling init: /lib64/ld-linux-x86-64.so.2
+   1302625:	
+   1302625:	
+   1302625:	calling init: /usr/lib/libc.so.6
+   1302625:	
+   1302625:	
+   1302625:	calling init: /tmp/alp-m04-attr-stage-20260924-r3/usr/lib/libattr.so.1
+   1302625:	
+   1302625:	
+   1302625:	calling init: /tmp/alp-m04-acl-stage-20260924-r2/usr/lib/libacl.so.1
+   1302625:	
+   1302625:	
+   1302625:	initialize program: /tmp/alp-m04-acl-stage-20260924-r2/usr/bin/setfacl
+   1302625:	
+   1302625:	
+   1302625:	transferring control: /tmp/alp-m04-acl-stage-20260924-r2/usr/bin/setfacl
+   1302625:	
+   1302625:	
+   1302625:	calling fini:  [0]
+   1302625:	
+   1302625:	
+   1302625:	calling fini: /tmp/alp-m04-acl-stage-20260924-r2/usr/lib/libacl.so.1 [0]
+   1302625:	
+   1302625:	
+   1302625:	calling fini: /tmp/alp-m04-attr-stage-20260924-r3/usr/lib/libattr.so.1 [0]
+   1302625:	
+   1302625:	
+   1302625:	calling fini: /usr/lib/libc.so.6 [0]
+   1302625:	
+   1302625:	
+   1302625:	calling fini: /lib64/ld-linux-x86-64.so.2 [0]
+   1302625:	
+   1302626:	find library=libacl.so.1 [0]; searching
+   1302626:	 search path=/tmp/alp-m04-acl-stage-20260924-r2/usr/lib/glibc-hwcaps/x86-64-v3:/tmp/alp-m04-acl-stage-20260924-r2/usr/lib/glibc-hwcaps/x86-64-v2:/tmp/alp-m04-acl-stage-20260924-r2/usr/lib:/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v3:/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v2:/tmp/alp-m04-attr-stage-20260924-r3/usr/lib		(LD_LIBRARY_PATH)
+   1302626:	  trying file=/tmp/alp-m04-acl-stage-20260924-r2/usr/lib/glibc-hwcaps/x86-64-v3/libacl.so.1
+   1302626:	  trying file=/tmp/alp-m04-acl-stage-20260924-r2/usr/lib/glibc-hwcaps/x86-64-v2/libacl.so.1
+   1302626:	  trying file=/tmp/alp-m04-acl-stage-20260924-r2/usr/lib/libacl.so.1
+   1302626:	
+   1302626:	find library=libattr.so.1 [0]; searching
+   1302626:	 search path=/tmp/alp-m04-acl-stage-20260924-r2/usr/lib:/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v3:/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v2:/tmp/alp-m04-attr-stage-20260924-r3/usr/lib		(LD_LIBRARY_PATH)
+   1302626:	  trying file=/tmp/alp-m04-acl-stage-20260924-r2/usr/lib/libattr.so.1
+   1302626:	  trying file=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v3/libattr.so.1
+   1302626:	  trying file=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v2/libattr.so.1
+   1302626:	  trying file=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/libattr.so.1
+   1302626:	
+   1302626:	find library=libc.so.6 [0]; searching
+   1302626:	 search path=/tmp/alp-m04-acl-stage-20260924-r2/usr/lib:/tmp/alp-m04-attr-stage-20260924-r3/usr/lib		(LD_LIBRARY_PATH)
+   1302626:	  trying file=/tmp/alp-m04-acl-stage-20260924-r2/usr/lib/libc.so.6
+   1302626:	  trying file=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/libc.so.6
+   1302626:	 search cache=/etc/ld.so.cache
+   1302626:	  trying file=/usr/lib/libc.so.6
+   1302626:	
+   1302626:	
+   1302626:	calling init: /lib64/ld-linux-x86-64.so.2
+   1302626:	
+   1302626:	
+   1302626:	calling init: /usr/lib/libc.so.6
+   1302626:	
+   1302626:	
+   1302626:	calling init: /tmp/alp-m04-attr-stage-20260924-r3/usr/lib/libattr.so.1
+   1302626:	
+   1302626:	
+   1302626:	calling init: /tmp/alp-m04-acl-stage-20260924-r2/usr/lib/libacl.so.1
+   1302626:	
+   1302626:	
+   1302626:	initialize program: /tmp/alp-m04-acl-stage-20260924-r2/usr/bin/getfacl
+   1302626:	
+   1302626:	
+   1302626:	transferring control: /tmp/alp-m04-acl-stage-20260924-r2/usr/bin/getfacl
+   1302626:	
+   1302626:	
+   1302626:	calling fini:  [0]
+   1302626:	
+   1302626:	
+   1302626:	calling fini: /tmp/alp-m04-acl-stage-20260924-r2/usr/lib/libacl.so.1 [0]
+   1302626:	
+   1302626:	
+   1302626:	calling fini: /tmp/alp-m04-attr-stage-20260924-r3/usr/lib/libattr.so.1 [0]
+   1302626:	
+   1302626:	
+   1302626:	calling fini: /usr/lib/libc.so.6 [0]
+   1302626:	
+   1302626:	
+   1302626:	calling fini: /lib64/ld-linux-x86-64.so.2 [0]
+   1302626:	
+   1302627:	find library=libc.so.6 [0]; searching
+   1302627:	 search path=/tmp/alp-m04-acl-stage-20260924-r2/usr/lib/glibc-hwcaps/x86-64-v3:/tmp/alp-m04-acl-stage-20260924-r2/usr/lib/glibc-hwcaps/x86-64-v2:/tmp/alp-m04-acl-stage-20260924-r2/usr/lib:/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v3:/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v2:/tmp/alp-m04-attr-stage-20260924-r3/usr/lib		(LD_LIBRARY_PATH)
+   1302627:	  trying file=/tmp/alp-m04-acl-stage-20260924-r2/usr/lib/glibc-hwcaps/x86-64-v3/libc.so.6
+   1302627:	  trying file=/tmp/alp-m04-acl-stage-20260924-r2/usr/lib/glibc-hwcaps/x86-64-v2/libc.so.6
+   1302627:	  trying file=/tmp/alp-m04-acl-stage-20260924-r2/usr/lib/libc.so.6
+   1302627:	  trying file=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v3/libc.so.6
+   1302627:	  trying file=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/glibc-hwcaps/x86-64-v2/libc.so.6
+   1302627:	  trying file=/tmp/alp-m04-attr-stage-20260924-r3/usr/lib/libc.so.6
+   1302627:	 search cache=/etc/ld.so.cache
+   1302627:	  trying file=/usr/lib/libc.so.6
+   1302627:	
+   1302627:	
+   1302627:	calling init: /lib64/ld-linux-x86-64.so.2
+   1302627:	
+   1302627:	
+   1302627:	calling init: /usr/lib/libc.so.6
+   1302627:	
+   1302627:	
+   1302627:	initialize program: grep
+   1302627:	
+   1302627:	
+   1302627:	transferring control: grep
+   1302627:	
+   1302627:	
+   1302627:	calling fini:  [0]
+   1302627:	
+   1302627:	
+   1302627:	calling fini: /usr/lib/libc.so.6 [0]
+   1302627:	
+   1302627:	
+   1302627:	calling fini: /lib64/ld-linux-x86-64.so.2 [0]
+   1302627:	
+   1302624:	
+   1302624:	calling fini:  [0]
+   1302624:	
+   1302624:	
+   1302624:	calling fini: /usr/lib/libncursesw.so.6 [0]
+   1302624:	
+   1302624:	
+   1302624:	calling fini: /usr/lib/libc.so.6 [0]
+   1302624:	
+   1302624:	
+   1302624:	calling fini: /lib64/ld-linux-x86-64.so.2 [0]
+   1302624:	
