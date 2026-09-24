@@ -45,6 +45,8 @@ export const progress = {
   levels: {}, // '0-1': { rank, time, style }
   unlocked: 1, // açık bölüm sayısı
   points: 0, // harcanabilir P
+  v2Unlocked: false, // 1-4'te V2 yenilince oynanabilir karakter
+  alt: {}, // alternatif silah kullanımı: { revolver: true } → Slab Revolver
   shop: {}, // satın alınanlar: { 'shotgun': true, 'shotgun.pump': true, 'arm.knuckle': true, ... }
 };
 

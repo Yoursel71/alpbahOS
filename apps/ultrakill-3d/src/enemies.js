@@ -2177,4 +2177,6 @@ export class Cerberus extends Enemy {
   }
 }
 
+export { bgeo, cgeo, joint, limb, part, addTeeth };
+
 export const ENEMY_TYPES = { filth: Filth, stray: Stray, schism: Schism, swordsmachine: Swordsmachine, trainer: Trainer, maliciousface: MaliciousFace, cerberus: Cerberus };

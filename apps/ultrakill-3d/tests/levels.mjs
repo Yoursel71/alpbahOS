@@ -1,4 +1,4 @@
-// PRELUDE testi: 5 bölüm (0-1 → 0-5), dükkân ve P ekonomisi, Malicious Face, Cerberus,
+// PRELUDE testi: 5 bölüm (0-1 → 0-5; ARAF ve Siber Öğütücü tests/araf.mjs'de), dükkân ve P ekonomisi, Malicious Face, Cerberus,
 // çift boss çubuğu, nişan mıknatısı, uzun parry menzili, bölüm geçişinde sahne temizliği.
 // Kullanım: CHROME=/yol/chrome node tests/levels.mjs
 import { chromium } from 'playwright-core';
@@ -34,7 +34,7 @@ const sel = await page.evaluate(() => {
   const cards = [...document.querySelectorAll('.lv-card')];
   return { n: cards.length, locked: cards.filter((c) => c.classList.contains('locked')).length, start: document.querySelector('[data-act="start"]').textContent };
 });
-check('bölüm seçimi: 5 bölüm, yalnız 0-1 açık', sel.n === 5 && sel.locked === 4 && /0-1/.test(sel.start), JSON.stringify(sel));
+check('bölüm seçimi: 10 kart (PRELUDE + ARAF + Siber Öğütücü), yalnız 0-1 açık', sel.n === 10 && sel.locked === 9 && /0-1/.test(sel.start), JSON.stringify(sel));
 
 // 2) Her bölüm: iniş, arenalar, sıkışan düşman yok, çıkış → sonuç ekranı ve kilit açma
 for (let li = 0; li < 5; li++) {
@@ -74,8 +74,8 @@ for (let li = 0; li < 5; li++) {
   const ok = r.grounded && (li === 0 ? !r.armed : r.armed && r.owned >= 1) && r.shops >= 1 && r.stuck.length === 0 && r.arenas.every((x) => x.startsWith('cleared')) && r.state === 'results' && r.hasNext && r.p > 0;
   check(`bölüm ${r.id}: iniş, arenalar temizlendi, çıkış → sonuç, P kazanıldı`, ok, JSON.stringify(r));
 }
-const unl = await page.evaluate(() => { const g = window.__uk; g.toMenu(); g.ui.showPanel('play'); return { locked: document.querySelectorAll('.lv-card.locked').length }; });
-check('tüm bölümler bitince kilitler açıldı', unl.locked === 0, JSON.stringify(unl));
+const unl = await page.evaluate(() => { const g = window.__uk; g.toMenu(); g.ui.showPanel('play'); const ids = [...document.querySelectorAll('.lv-card:not(.locked) .lv-id')].map((e) => e.textContent); return { locked: document.querySelectorAll('.lv-card.locked').length, ids }; });
+check('PRELUDE bitince 1-1 ve Siber Öğütücü açıldı, 1-2..1-4 kilitli', unl.locked === 3 && unl.ids.includes('1-1') && unl.ids.includes('∞'), JSON.stringify(unl));
 
 // 3) P ekonomisi: checkpoint'te kasaya girer, ölünce yatırılmamış P kaybolur
 const eco = await page.evaluate(() => {

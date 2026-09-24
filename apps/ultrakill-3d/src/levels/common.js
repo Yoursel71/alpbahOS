@@ -1,4 +1,5 @@
 // Bölüm düzenleri için ortak yardımcılar: kapı boşluklu duvarlar ve odalar.
+import * as THREE from 'three';
 // Kenarlar: n = z0 tarafı (en küçük z, ilerleme yönü), s = z1 tarafı, w = x0 tarafı, e = x1 tarafı.
 // Boşluk (gap): [a, b, üst = 6, alt = 0] — duvar boyunca a..b aralığı, alt..üst yüksekliği açık.
 
@@ -64,4 +65,48 @@ export function pillar(L, x, z, h = 12, w = 1, mat = 'stone', y = 0) {
 
 export function spires(L, list) {
   for (const [x, z, h, w] of list) L.spire(x, z, h, w);
+}
+
+// ARAF (Limbo) teması: mavi gökyüzü, beyaz bulutlar, yumuşak gün ışığı
+export const LIMBO = {
+  fog: 0xa8b8d0, fogNear: 40, fogFar: 210,
+  skyTop: [0.16, 0.32, 0.66], skyHor: [0.7, 0.78, 0.9], skyCloud: [0.55, 0.55, 0.58], skyGlow: [0.9, 0.72, 0.4],
+  hemiSky: 0xf4f8ff, hemiGround: 0x5a6a48, hemi: 2.3, ambient: 0x7a8090, sun: 0xfff2d8,
+};
+
+// Ağaç: gövde + iki katlı yaprak kütlesi (katı gövde, yapraklar geçilebilir değil)
+export function tree(L, x, z, h = 5, y = 0) {
+  L.box(x - 0.35, y, z - 0.35, x + 0.35, y + h, z + 0.35, 'ruin');
+  L.box(x - 1.8, y + h - 0.6, z - 1.8, x + 1.8, y + h + 1.4, z + 1.8, 'grass', { texScale: 2 });
+  L.box(x - 1.1, y + h + 1.4, z - 1.1, x + 1.1, y + h + 2.4, z + 1.1, 'grass', { texScale: 2 });
+}
+
+// Basit ev: dört duvar, kapı boşluğu ve düz çatı (yanarken üstünde ateş)
+export function house(L, x0, z0, x1, z1, { h = 5, mat = 'castleDark', door = 's', burning = false } = {}) {
+  const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
+  const gaps = {};
+  if (door === 's' || door === 'n') gaps[door] = [cx - 1.2, cx + 1.2, 3];
+  else gaps[door] = [cz - 1.2, cz + 1.2, 3];
+  room(L, x0, z0, x1, z1, { h, mat, floor: null, gaps });
+  L.box(x0 - 1.4, h, z0 - 1.4, x1 + 1.4, h + 0.6, z1 + 1.4, 'ruin');
+  if (burning) {
+    L.fire(cx - (x1 - x0) * 0.25, h + 0.6, cz, 2.6);
+    L.fire(cx + (x1 - x0) * 0.2, h + 0.6, cz + 0.6, 2);
+    L.lamps.push({ pos: new THREE.Vector3(cx, h + 2, cz), color: 0xff7a30, power: 1.2 });
+    L.animated.push((t) => { if (Math.random() < 0.12) L.game.fx.smoke(new THREE.Vector3(cx + Math.sin(t * 3) * 1.5, h + 2.5, cz), 1, 0x3a3230, 1.4, 2.2, 3); });
+  }
+}
+
+// Bölüm çıkışı: parlayan kapı + girince bölüm biter
+export function portal(L, x, z, { y = 0, color = 0xff3010, glowColor = 0xff5020, w = 8, h = 10 } = {}) {
+  const pm = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+  pm.position.set(x, y + h / 2, z);
+  L.scene.add(pm);
+  const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: L.T.glow, color: glowColor, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+  glow.position.set(x, y + h / 2, z + 1.1);
+  glow.scale.set(w * 1.7, h * 1.6, 1);
+  L.scene.add(glow);
+  L.animated.push((t) => { pm.material.opacity = 0.7 + Math.sin(t * 3) * 0.15; glow.material.rotation = t * 0.3; });
+  L.lamps.push({ pos: new THREE.Vector3(x, y + h / 2, z + 3), color: glowColor, power: 1.6 });
+  L.trigger([x - w / 2, y, z - 0.5, x + w / 2, y + h, z + 2.5], () => L.game.levelComplete());
 }

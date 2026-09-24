@@ -9,7 +9,7 @@
 import * as THREE from 'three';
 import { clamp, damp, rand } from './util.js';
 import { Coin, Projectile } from './projectiles.js';
-import { settings } from './settings.js';
+import { settings, progress } from './settings.js';
 import { ViewArms, Spring, buildArm, setCurl } from './arms.js';
 
 const BLUE = 0x3aa0ff, GREEN = 0x3ee06a, RED = 0xff3a2a;
@@ -142,6 +142,7 @@ export class Weapons {
     this.switchTime = -10;
     this.equipSpin = 0;
     this.cd = new Array(N).fill(0);
+    this.applyAlt();
     this.pierceCharge = 0;
     this.pierceReady = false;
     this.sharpCharge = 0;
@@ -239,6 +240,23 @@ export class Weapons {
     this.game.hud.weaponChanged();
   }
 
+  // Alternatif silah seçimi (dükkânda KULLAN/ÇIKAR): 0 → Slab Revolver, 1 → Jackhammer
+  applyAlt() {
+    const alt = progress.alt || {};
+    this.alt = WEAPONS.map((W) => !!alt[W.id] && (!!progress.shop['alt.' + W.id] || settings.allWeapons));
+    if (!this.models) return;
+    for (let i = 0; i < N; i++) {
+      const m = this.models[i];
+      if (!m.altGun) continue;
+      m.gun.visible = !this.alt[i];
+      m.altGun.visible = this.alt[i];
+      m.muzzle.position.copy(this.alt[i] ? m.muzzleAlt : m.muzzleBase);
+      (this.alt[i] ? m.altGun : m.gun).add(m.muzzle);
+    }
+  }
+
+  altName(i) { return i === 0 && this.alt[0] ? 'SLAB REVOLVER' : i === 1 && this.alt[1] ? 'JACKHAMMER' : WEAPONS[i].name; }
+
   giveAll() {
     for (let i = 0; i < N; i++) { this.owned[i] = true; this.varOwned[i] = WEAPONS[i].variants.map(() => true); }
     this.armsOwned = [true, true];
@@ -315,7 +333,45 @@ export class Weapons {
     gun.add(muzzle);
     this.buildHand(gun, 0.0, -0.1, 0.1);
     g.position.set(0.25, -0.26, -0.52);
-    return { group: g, gun, muzzle, drum, hammer, base: new THREE.Vector3(0.25, -0.26, -0.52), ry: 0.05 };
+    const altGun = this.buildSlab(g, A);
+    return { group: g, gun, altGun, muzzle, drum, hammer, base: new THREE.Vector3(0.25, -0.26, -0.52), ry: 0.05, muzzleBase: muzzle.position.clone(), muzzleAlt: new THREE.Vector3(0, 0.05, -0.46) };
+  }
+
+  // Alternatif revolver: kalın gövdeli, ağır "Slab" (yavaş ama güçlü)
+  buildSlab(g, A) {
+    const M = this.M;
+    const gun = new THREE.Group();
+    gun.visible = false;
+    g.add(gun);
+    box(0.1, 0.12, 0.26, M.dark, 0, 0.01, -0.06, gun);
+    box(0.09, 0.07, 0.36, M.gun, 0, 0.05, -0.2, gun);
+    box(0.06, 0.05, 0.1, M.black, 0, 0.05, -0.42, gun);
+    box(0.104, 0.02, 0.2, A, 0, 0.09, -0.12, gun);
+    for (let k = 0; k < 3; k++) box(0.106, 0.012, 0.02, M.black, 0, 0.02, -0.14 + k * 0.05, gun);
+    cylZ(0.065, 0.065, 0.12, M.gun, 0, 0.02, -0.02, gun, 6);
+    box(0.07, 0.19, 0.09, M.grip, 0, -0.11, 0.1, gun).rotation.x = -0.32;
+    box(0.074, 0.03, 0.04, A, 0, -0.06, 0.08, gun).rotation.x = -0.32;
+    this.buildHand(gun, 0.0, -0.11, 0.11);
+    return gun;
+  }
+
+  // Alternatif shotgun: pistonlu "Jackhammer" (kısa menzilli dev darbe)
+  buildJackhammer(g, A) {
+    const M = this.M;
+    const gun = new THREE.Group();
+    gun.visible = false;
+    g.add(gun);
+    box(0.14, 0.16, 0.34, M.dark, 0, 0, -0.04, gun);
+    box(0.12, 0.05, 0.3, M.gun, 0, 0.1, -0.04, gun);
+    cylZ(0.07, 0.07, 0.34, M.gun, 0, 0.0, -0.36, gun, 8);
+    cylZ(0.05, 0.05, 0.2, M.black, 0, 0.0, -0.56, gun, 8);
+    cylZ(0.085, 0.085, 0.06, A, 0, 0.0, -0.66, gun, 6);
+    for (let k = 0; k < 3; k++) cylZ(0.074, 0.074, 0.018, M.black, 0, 0, -0.26 - k * 0.07, gun, 8);
+    box(0.16, 0.03, 0.12, A, 0, -0.07, -0.02, gun);
+    box(0.02, 0.12, 0.14, M.black, 0.08, 0.02, -0.06, gun);
+    box(0.08, 0.2, 0.09, M.grip, 0, -0.14, 0.1, gun).rotation.x = -0.2;
+    this.buildHand(gun, 0.0, -0.11, 0.1, -0.2);
+    return gun;
   }
 
   buildShotgun() {
@@ -357,7 +413,8 @@ export class Weapons {
     gun.add(eject);
     this.buildHand(gun, 0.0, -0.1, 0.1, -0.2);
     g.position.set(0.27, -0.3, -0.6);
-    return { group: g, gun, muzzle, pump, coreCell, saw, eject, base: new THREE.Vector3(0.27, -0.3, -0.6), ry: 0.05 };
+    const altGun = this.buildJackhammer(g, A);
+    return { group: g, gun, altGun, muzzle, pump, coreCell, saw, eject, base: new THREE.Vector3(0.27, -0.3, -0.6), ry: 0.05, muzzleBase: muzzle.position.clone(), muzzleAlt: new THREE.Vector3(0, 0.02, -0.7) };
   }
 
   buildNailgun() {
@@ -810,11 +867,13 @@ export class Weapons {
   // ---------------------------------------------------------------- revolver
   fireRevolver() {
     const game = this.game;
-    this.cd[0] = 0.36;
-    this.kick(0.8, 1.2);
+    const slab = this.alt[0];
+    this.cd[0] = slab ? 0.62 : 0.36;
+    this.kick(slab ? 1.5 : 0.8, 1.2);
     this.drumTarget += Math.PI / 3;
     this.hammerT = 0;
-    game.audio.play('revolver');
+    game.audio.play('revolver', null, slab ? { rate: 0.72, exactRate: true } : undefined);
+    if (slab) game.shake(0.12);
     const { o, d: d0 } = this.aim();
     const d = this.coinAssistDir(o, this.game.player.aimDir()) || d0;
     const r = game.hitscan(o, d, 400, { coins: true, cores: true });
@@ -827,12 +886,12 @@ export class Weapons {
         h.core.boosted = true; h.core.explode(); h.core.remove();
         game.style.add('CORE SNIPE', 80, 'revolver');
       } else {
-        h.enemy.hit({ dmg: 1, part: h.part, point: h.point, dir: d, weapon: 'revolver', knock: 3 });
+        h.enemy.hit({ dmg: slab ? 1.7 : 1, part: h.part, point: h.point, dir: d, weapon: 'revolver', knock: slab ? 7 : 3 });
         this.quickdrawCheck();
       }
     } else this.impact(r);
     const from = this.muzzleWorld();
-    game.fx.tracer(from, end, 0xfff0b0, 0.035, 0.09);
+    game.fx.tracer(from, end, slab ? 0xffb070 : 0xfff0b0, slab ? 0.06 : 0.035, 0.09);
     game.fx.tracer(from, from.clone().lerp(end, Math.min(1, 3 / Math.max(1, from.distanceTo(end)))), 0xffffff, 0.06, 0.05);
     game.fx.smoke(from, 1, 0xb0a090, 0.25, 0.4, 0.5);
     game.flashLight(game.camera.position, 0xffc070, 3, 10, 0.05);
@@ -854,7 +913,7 @@ export class Weapons {
     for (const h of r.hits) {
       if (h.coin) { this.ricochet(h.coin, 1); end = h.point; stopped = true; break; }
       if (h.core) { h.core.boosted = true; h.core.explode(); h.core.remove(); game.style.add('CORE SNIPE', 80, 'revolver'); end = h.point; stopped = true; break; }
-      h.enemy.hit({ dmg: 2.5, part: h.part, point: h.point, dir: d, weapon: 'revolver', knock: 8, headMult: 1.5 });
+      h.enemy.hit({ dmg: this.alt[0] ? 3.4 : 2.5, part: h.part, point: h.point, dir: d, weapon: 'revolver', knock: 8, headMult: 1.5 });
       this.quickdrawCheck();
     }
     if (!stopped) this.impact(r, true);
@@ -963,6 +1022,7 @@ export class Weapons {
 
   // ---------------------------------------------------------------- shotgun
   fireShotgun(pumps) {
+    if (this.alt[1]) return this.fireJackhammer(pumps);
     const game = this.game;
     this.cd[1] = 0.95;
     this.kick(1.6 + pumps * 0.4, 1.4);
@@ -1010,6 +1070,58 @@ export class Weapons {
     game.fx.smoke(from, 3, 0xa09080, 0.5, 0.7, 0.6);
     game.flashLight(game.camera.position, 0xffb060, 5, 12, 0.07);
     this.pendingCasing = 0.36;
+  }
+
+  // JACKHAMMER: önündeki koniye dev piston darbesi. Pompa şarjı gücü ve menzili artırır.
+  // Havada yere doğru ateşlemek oyuncuyu yukarı fırlatır (JACKHAMMER JUMP).
+  fireJackhammer(pumps) {
+    const game = this.game;
+    const p = game.player;
+    this.cd[1] = 1.05;
+    this.kick(2.6 + pumps * 0.5, 1.6);
+    this.pumpAnim = 0;
+    game.audio.play('shotgun', null, { rate: 0.68, exactRate: true });
+    game.audio.play('punchHit', null, { rate: 0.8 });
+    game.audio.play('pump', null, { delay: 0.4, rate: 0.8 });
+    game.shake(0.35 + pumps * 0.1);
+    const { o, d } = this.aim();
+    const range = 7.5 + pumps * 1.5;
+    const dmg = 4.2 * (1 + pumps * 0.35);
+    let hits = 0;
+    for (const e of game.enemies) {
+      if (e.dead || (e.state === 'spawn' && e.st < 0.2)) continue;
+      const c = e.center();
+      const v = c.clone().sub(o);
+      const dist = v.length();
+      if (dist > range + e.r) continue;
+      const dot = v.dot(d) / (dist || 1);
+      if (dot < 0.8 && dist > 1.6) continue;
+      if (!game.world.lineOfSight(o, c)) continue;
+      const k = 1 - clamp(dist / (range * 2.2), 0, 0.5);
+      e.hit({ dmg: dmg * k, part: 'body', point: c, dir: d.clone().setY(Math.max(d.y, 0.25)).normalize(), weapon: 'shotgun', knock: 24 + pumps * 6, pellets: 12 });
+      hits++;
+    }
+    if (hits) { this.quickdrawCheck(); if (hits > 1) game.style.add('JACKHAMMERED', 60 * hits, 'shotgun'); }
+    const r = game.hitscan(o, d, range, {});
+    if (r.world) {
+      const n = new THREE.Vector3(r.world.nx, r.world.ny, r.world.nz);
+      game.fx.sparkDir(r.end, n, 18, 9, 0xffd080, 0.35, 0.07, 0.9);
+      game.fx.ring(r.end.clone().addScaledVector(n, 0.05), 0xffb060, 2.4, 0.35, 0);
+      game.fx.bulletHole(r.world.x, r.world.y, r.world.z, n.x, n.y, n.z, 0.4);
+      // yere/duvara yakın darbe: geri itme ve zıplatma
+      const near = 1 - r.world.t / range;
+      if (d.y < -0.55 && near > 0.2) {
+        p.vel.y = Math.max(p.vel.y, 11 + near * 9 + pumps * 3);
+        p.grounded = false;
+        game.style.add('JACKHAMMER JUMP', 40, 'shotgun');
+      } else p.vel.addScaledVector(d, -near * 9);
+    } else p.vel.addScaledVector(d, -2.5);
+    const from = this.muzzleWorld();
+    game.fx.shell(from.clone().addScaledVector(d, 1.2), 0xffc070, 1.6 + pumps * 0.4, 0.22);
+    game.fx.sparkDir(from, d, 14, 16, 0xffc060, 0.25, 0.05, 0.35);
+    game.fx.smoke(from, 4, 0xa09080, 0.6, 0.8, 0.6);
+    game.flashLight(game.camera.position, 0xffb060, 6, 12, 0.08);
+    this.pendingCasing = 0.4;
   }
 
   launchCore(charge) {
@@ -1385,6 +1497,7 @@ export class Weapons {
       m.group.rotation.set(this.recoilRot * 0.2 + sr * 0.07 + sw * 0.9 + this.swayY * 1.5 + lift * 0.35 - coinDip * 0.3 + insp * 0.25, m.ry + this.swayX * 1.5 + insp * 0.9, -p.tilt * 1.2 + this.slideK * 0.25 + insp * 0.3);
       m.gun.rotation.x = this.cur === 0 ? -spin : 0;
       m.gun.rotation.z = 0;
+      if (m.altGun) m.altGun.rotation.x = m.gun.rotation.x;
 
       if (this.cur === 0) {
         const ch = Math.max(this.pierceCharge, this.sharpCharge);
@@ -1398,6 +1511,7 @@ export class Weapons {
         const k = t > 0.45 && t < 0.95 ? Math.sin(((t - 0.45) / 0.5) * Math.PI) : 0;
         m.pump.position.z = -0.4 + k * 0.13;
         m.gun.rotation.z = k * 0.12;
+        if (m.altGun) m.altGun.rotation.z = m.gun.rotation.z;
         if (this.pendingCasing !== undefined) {
           this.pendingCasing -= dt;
           if (this.pendingCasing <= 0) { this.ejectCasing(true); this.pendingCasing = undefined; }
@@ -1472,7 +1586,7 @@ export class Weapons {
     return {
       ...common,
       cur: this.cur,
-      name: W.name,
+      name: this.altName(this.cur),
       variant: v.name,
       color: '#' + v.color.toString(16).padStart(6, '0'),
       varId: v.id,

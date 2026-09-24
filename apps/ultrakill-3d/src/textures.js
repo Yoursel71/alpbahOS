@@ -268,5 +268,38 @@ export function buildTextures() {
     return [c[0], c[1], c[2], bar ? 255 : 0];
   });
 
+  // ARAF: çimen, kireçtaşı kale tuğlası; Siber Öğütücü: neon ızgara
+  T.grass = pixTex(64, (x, y) => {
+    const n = fbm(n2, x / 64, y / 64, 4, 4);
+    let c = mix(hex(0x2e5a1c), hex(0x6aa83a), n);
+    const b = hash2(x, y, 7);
+    if (b > 0.86) c = mul(c, 1.25);
+    else if (b < 0.1) c = mul(c, 0.75);
+    if (fbm(n3, x / 64, y / 64, 6, 2) > 0.68) c = mix(c, hex(0x7a6a3a), 0.35);
+    return c;
+  });
+
+  T.limestone = pixTex(64, (x, y) => {
+    const row = Math.floor(y / 16);
+    const off = (row % 2) * 16;
+    const bx = Math.floor((x + off) / 32);
+    const shade = hash2(bx & 3, row & 3, 5);
+    const n = fbm(n1, x / 64, y / 64, 4, 4);
+    let c = mix(hex(0xb0a898), hex(0xe8e2d4), n * 0.6 + shade * 0.4);
+    if (y % 16 === 0 || (x + off) % 32 === 0) c = mul(c, 0.6);
+    else if (y % 16 === 1 || (x + off) % 32 === 1) c = mul(c, 1.08);
+    if (fbm(n2, x / 64, y / 64, 8, 2) > 0.72) c = mix(c, hex(0x6a7a4a), 0.3);
+    return c;
+  });
+
+  T.grid = pixTex(64, (x, y) => {
+    const e = x % 32 === 0 || y % 32 === 0 || x % 32 === 31 || y % 32 === 31;
+    const f = x % 32 === 1 || y % 32 === 1 || x % 32 === 30 || y % 32 === 30;
+    if (e) return hex(0x40f0ff);
+    if (f) return hex(0x1a6a90);
+    const n = fbm(n3, x / 64, y / 64, 4, 2);
+    return mix(hex(0x060a14), hex(0x0e1428), n);
+  });
+
   return T;
 }

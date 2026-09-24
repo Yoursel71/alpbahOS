@@ -202,6 +202,10 @@ export class Projectile {
         _b.set(p.pos.x, p.pos.y + Math.max(0.5, p.h - 0.3), p.pos.z);
         const rr = this.radius + p.r;
         if (segSegDist2(this.prev, this.pos, _a.clone(), _b.clone()) < rr * rr) {
+          if (this.explosive) {
+            game.explode(this.pos, 3, 0.6, { playerDmg: this.damage, knock: 10 });
+            return this.remove();
+          }
           if (game.damagePlayer(this.damage, this.pos)) {
             game.fx.sparkBurst(this.pos, 10, 6, this.color, 0.3, 0.06);
             game.audio.play('projHit', this.pos);
@@ -272,7 +276,8 @@ export class Projectile {
     e.hit({ dmg: this.damage, part: hit.part, point: hit.point, dir, weapon: this.parried ? 'parry' : 'revolver', knock: 10, parried: this.parried, headMult: 1.5 });
     game.fx.sparkBurst(this.pos, 16, 8, 0xbfe6ff, 0.35, 0.07);
     game.audio.play('projHit', this.pos);
-    if (this.parried && this.kind === 'orb') game.explode(this.pos, 2.5, 1.5, { owner: 'player', playerDmg: 0, fromParry: true, small: true });
+    if (this.parried && this.explosive) game.explode(this.pos, 4.5, 3, { owner: 'player', playerDmg: 0, knock: 16, weapon: 'parry' });
+    else if (this.parried && this.kind === 'orb') game.explode(this.pos, 2.5, 1.5, { owner: 'player', playerDmg: 0, fromParry: true, small: true });
     this.remove();
     return true;
   }
@@ -307,6 +312,13 @@ export class Projectile {
     if (k === 'nail') {
       if (Math.random() < 0.3) game.fx.bulletHole(hit.x, hit.y, hit.z, hit.nx, hit.ny, hit.nz, 0.08);
       if (Math.random() < 0.5) game.fx.sparkDir(this.pos, n, 2, 4, 0xffd080, 0.15, 0.03, 0.8);
+      this.remove();
+      return true;
+    }
+    if (this.explosive) {
+      this.pos.addScaledVector(n, 0.2);
+      if (this.parried) game.explode(this.pos, 4.5, 3, { owner: 'player', playerDmg: 0, knock: 16, weapon: 'parry' });
+      else game.explode(this.pos, 3.2, 0.6, { playerDmg: this.damage, knock: 12 });
       this.remove();
       return true;
     }

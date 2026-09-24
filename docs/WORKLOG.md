@@ -953,3 +953,22 @@ PipeWire hatası için aynı gün ek tekrar: Guest `/tmp`'te 12 saniye 48 kHz st
 - APK SHA-256: `5811e88bf41d6b9b15bd88642dc0df0c5f2c32ba2d5f9b571e3764338b1233d4`.
 - Çalıştırılmadı: gerçek cihazda insan testi, ses dinleme, Android'de kurulum.
 - Ayrıntı: [devir 017](handoffs/claude/017-ultrakill-3d-prelude.md).
+
+## 24 Eylül 2026 — Claude: ULTRAKILL 3D "en büyük güncelleme" (ARAF 1-1 → 1-4, Siber Öğütücü, V2, alternatif silahlar, kollar, yardımlar, terminal menü)
+
+- Görev/sahip: Claude Code (bulut oturumu), dal `claude/3d-ultrakill-game-dev-qzqj42`. Dosya sınırı yalnız `apps/ultrakill-3d/**`. Kernel, rootfs, paket manifesti, `alp`, build/mount işlemleri ve Hyper-V ortamına dokunulmadı.
+- Değişiklikler:
+  - Terminal/ASCII görünüm yalnız açılış, menü ve introda (kullanıcı düzeltmesi); oyun normal 3D.
+  - Parmaklı kollar ve V1 eylem animasyonları, kayma bacağı, yay tabanlı silah hareketi.
+  - Yardımlı parry (ağır çekim + işaret + güdüm) ve para (atış paraya yönelir).
+  - KATMAN 1 ARAF: 1-1 … 1-4.
+  - Farklı harita: Siber Öğütücü (sonsuz dalga, hareketli neon sütunlar).
+  - Yeni düşmanlar: Drone, Streetcleaner, Hideous Mass, boss V2.
+  - Oynanabilir V2.
+  - Alternatif silahlar: Slab Revolver, Jackhammer.
+  - Ölçeklenen masaüstü HUD.
+  - APK 1.2 (aynı imza).
+- Doğrulama (headless Chromium, yazılım GL): ARAF 22/22 (yeni), smoke 36/36, tutorial 11/11, mobil 22/22, PRELUDE 22/22, APK içerik 11/11.
+- APK SHA-256: `bbca1743ac9b7828e7a63c34b54f4f14de8291d49e3995a0affae68ebfa54e3c`.
+- Çalıştırılmadı: gerçek cihazda insan testi, ses dinleme, Android'de kurulum, denge.
+- Ayrıntı: [devir 018](handoffs/claude/018-ultrakill-3d-araf.md).

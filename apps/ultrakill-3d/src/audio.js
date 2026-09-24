@@ -575,6 +575,13 @@ const DEFS = {
       o[i] = v;
     }
   }),
+  flame: (sr) => mk(sr, 0.6, (o, n) => {
+    const lp = new BQ(sr, 'lp', 700), bp = new BQ(sr, 'bp', 2200, 0.7);
+    for (let i = 0; i < n; i++) {
+      const z = rnd();
+      o[i] = lp.run(z) * 1.6 + bp.run(z) * (Math.random() < 0.02 ? 2.2 : 0.35);
+    }
+  }),
   lava: (sr) => mk(sr, 0.5, (o, n) => {
     const hp = new BQ(sr, 'hp', 3000), lp = new BQ(sr, 'lp', 600);
     for (let i = 0; i < n; i++) {

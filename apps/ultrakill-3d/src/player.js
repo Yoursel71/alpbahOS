@@ -2,7 +2,7 @@
 // kayma, yere çakma (slam) ve çakış sıçrayışı, can/sert hasar/stamina.
 import * as THREE from 'three';
 import { clamp, damp, approach } from './util.js';
-import { settings } from './settings.js';
+import { settings, progress } from './settings.js';
 
 export const P = {
   RUN: 13.5,
@@ -42,6 +42,8 @@ export class Player {
     this.reset(new THREE.Vector3(), 0);
   }
 
+  get run() { return P.RUN * (this.speedMul || 1); }
+
   reset(pos, yaw) {
     this.pos.copy(pos);
     this.vel.set(0, 0, 0);
@@ -51,7 +53,13 @@ export class Player {
     this.grounded = false;
     this.groundTime = 0;
     this.airTime = 0;
-    this.hp = 100;
+    // karakter: V2 daha hızlı ve stamina'sı çabuk dolar ama canı az
+    const v2 = settings.character === 'v2' && progress.v2Unlocked;
+    this.character = v2 ? 'v2' : 'v1';
+    this.maxHp = v2 ? 85 : 100;
+    this.speedMul = v2 ? 1.12 : 1;
+    this.stamMul = v2 ? 1.4 : 1;
+    this.hp = this.maxHp;
     this.hard = 0;
     this.hardDelay = 0;
     this.dead = false;
@@ -133,10 +141,10 @@ export class Player {
     this.coyote = Math.max(0, this.coyote - dt);
     this.hurtCd = Math.max(0, this.hurtCd - dt);
     this.slamLandT += dt;
-    if (this.dashT <= 0) this.stamina = Math.min(3, this.stamina + P.STAMINA_REGEN * dt);
+    if (this.dashT <= 0) this.stamina = Math.min(3, this.stamina + P.STAMINA_REGEN * this.stamMul * dt);
     if (this.hardDelay > 0) this.hardDelay -= dt;
     else this.hard = Math.max(0, this.hard - 14 * dt);
-    this.hp = Math.min(this.hp, 100);
+    this.hp = Math.min(this.hp, this.maxHp);
 
     // İstek yönü
     const fwd = this.forward(tmp);
@@ -205,8 +213,8 @@ export class Player {
       this.vel.z = this.dashDir.z * P.DASH_SPEED;
       this.vel.y = this.grounded ? -2 : 0;
       if (this.dashT <= 0) {
-        this.vel.x = this.dashDir.x * P.RUN * 1.1;
-        this.vel.z = this.dashDir.z * P.RUN * 1.1;
+        this.vel.x = this.dashDir.x * this.run * 1.1;
+        this.vel.z = this.dashDir.z * this.run * 1.1;
       }
     } else if (this.slamming) {
       this.vel.set(0, -P.SLAM_SPEED, 0);
@@ -223,11 +231,11 @@ export class Player {
       this.vel.y -= P.G * dt;
       if (Math.random() < dt * 25) game.fx.sparkDir(this.pos.clone().add(new THREE.Vector3(0, 0.05, 0)), new THREE.Vector3(-this.slideDir.x, 0.4, -this.slideDir.z), 1, 5, 0xffb060, 0.25, 0.04, 0.5);
     } else if (this.grounded) {
-      const tx = wx * P.RUN, tz = wz * P.RUN;
+      const tx = wx * this.run, tz = wz * this.run;
       const sp = Math.hypot(this.vel.x, this.vel.z);
-      if (sp > P.RUN + 0.5) {
+      if (sp > this.run + 0.5) {
         // Fazla hızı yavaşça sönümle (kayma-zıplama sonrası)
-        const ns = Math.max(P.RUN, sp - P.OVERSPEED_FRIC * dt);
+        const ns = Math.max(this.run, sp - P.OVERSPEED_FRIC * dt);
         const k = ns / sp;
         this.vel.x = this.vel.x * k + (tx - this.vel.x * k) * Math.min(1, dt * 4);
         this.vel.z = this.vel.z * k + (tz - this.vel.z * k) * Math.min(1, dt * 4);
@@ -242,7 +250,7 @@ export class Player {
       // Hava kontrolü (Quake tarzı: hız sınırını yalnızca istek yönünde uygular)
       if (hasWish) {
         const cur = this.vel.x * wx + this.vel.z * wz;
-        const add = Math.min(P.AIR_ACCEL * dt, Math.max(0, P.RUN - cur));
+        const add = Math.min(P.AIR_ACCEL * dt, Math.max(0, this.run - cur));
         this.vel.x += wx * add;
         this.vel.z += wz * add;
       }
@@ -461,12 +469,12 @@ export class Player {
 
   damage(dmg) {
     this.hp -= dmg;
-    this.hard = Math.min(100, this.hard + dmg * 0.35);
+    this.hard = Math.min(this.maxHp, this.hard + dmg * 0.35);
     this.hardDelay = 1.2;
   }
 
   heal(amount) {
-    const cap = 100 - this.hard;
+    const cap = this.maxHp - this.hard;
     if (this.hp >= cap) return 0;
     const before = this.hp;
     this.hp = Math.min(cap, this.hp + amount);

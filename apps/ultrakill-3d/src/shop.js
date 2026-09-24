@@ -24,6 +24,9 @@ WEAPONS.forEach((W, w) => {
 });
 SHOP_ITEMS.push({ id: 'arm.knuckle', arm: true, group: 'arms', name: 'KNUCKLEBLASTER', sub: 'Ağır yumruk · [G] ile değiştir', color: '#ff3a2a', price: PRICES['arm.knuckle'], needs: null });
 SHOP_ITEMS.push({ id: 'arm.hook', arm: true, group: 'arms', name: 'WHIPLASH', sub: 'Kanca · [E]', color: '#3ee06a', price: PRICES['arm.hook'], needs: null });
+// Alternatif silahlar: alınca dükkândan KULLAN/ÇIKAR ile açılıp kapanır (varyantlar aynı kalır)
+SHOP_ITEMS.push({ id: 'alt.revolver', alt: 'revolver', w: 0, group: 'alts', name: 'SLAB REVOLVER', sub: 'Ağır revolver: yavaş, %70 daha güçlü', color: '#ff9a40', price: 4000, needs: null });
+SHOP_ITEMS.push({ id: 'alt.shotgun', alt: 'shotgun', w: 1, group: 'alts', name: 'JACKHAMMER', sub: 'Piston: kısa menzil dev darbe, yere ateşle → zıpla', color: '#ffc040', price: 5000, needs: 'shotgun' });
 
 export const SHOP_GROUPS = [
   { id: 'revolver', name: '1 · REVOLVER' },
@@ -32,10 +35,13 @@ export const SHOP_GROUPS = [
   { id: 'rail', name: '4 · RAILCANNON' },
   { id: 'rocket', name: '5 · ROCKET' },
   { id: 'arms', name: 'KOLLAR' },
+  { id: 'alts', name: 'ALTERNATİF SİLAHLAR' },
 ];
 
 // Satın alındığında gösterilen kısa kullanım ipucu
 export const ITEM_HINTS = {
+  'alt.revolver': 'SLAB REVOLVER takıldı: yavaş ama ağır. Dükkândan ÇIKAR ile normal revolvere dönebilirsin.',
+  'alt.shotgun': 'JACKHAMMER takıldı: yakına dev darbe. Havadayken yere ateş et → yüksek zıplama. Pompa şarjı gücü artırır.',
   'revolver.marksman': 'MARKSMAN: [SAĞ TIK] bozuk para at, paraya ateş et → RICOSHOT. Revolver tuşuna tekrar basınca varyant değişir.',
   'revolver.sharpshooter': 'SHARPSHOOTER: [SAĞ TIK] basılı tut → duvarlardan seken ışın.',
   shotgun: 'SHOTGUN: [SOL TIK] saçma · [SAĞ TIK] basılı tut → CORE EJECT bombası; bombaya ateş et → büyük patlama. Yakından vur + hemen yumrukla = SHOTGUN PARRY.',

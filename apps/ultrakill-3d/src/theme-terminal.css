@@ -91,6 +91,14 @@
 .term-screen .lv-card.sel .lv-id, .term-screen .lv-card.sel .lv-name { color: #031005; }
 .term-screen .lv-card.sel .lv-rank { text-shadow: 0 0 1px #000; }
 .term-screen .lv-card .lv-rank { font-family: var(--f-mono); font-size: 24px; }
+.term-screen .lv-layer { color: var(--t-amber); font-size: 16px; letter-spacing: 0.1em; }
+.term-screen .lv-layer::before { content: '## '; color: var(--t-dim); }
+.term-screen .lv-card.endless .lv-id { color: #40f0ff; }
+.term-screen .char-lbl { color: var(--t-dim); font-size: 16px; }
+.term-screen .char-lbl::before { content: '--'; }
+.term-screen .char-lbl::after { content: '='; color: var(--t-dim); }
+.term-screen .btn.char.on { background: var(--t-sel); color: #031005; border-color: var(--t-sel); }
+.term-screen .char-desc { color: var(--t-dim); font-size: 15px; }
 .term-screen .lv-info { font-family: var(--f-mono); font-size: 17px; color: var(--t-fg); }
 .term-screen .lv-info b { font-family: var(--f-mono); color: var(--t-green); font-size: 19px; }
 .term-screen .lv-info b::before { content: '> '; }

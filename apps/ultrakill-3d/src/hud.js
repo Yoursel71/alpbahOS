@@ -38,6 +38,7 @@ export class HUD {
         <ul class="st-list"></ul>
       </div>
       <div id="bossbar" class="hidden"><div class="bb-name"></div><div class="bb-bar"><i class="bb-lag"></i><i class="bb-fill"></i></div></div>
+      <div id="cgwave" class="hidden"></div>
       <div id="hint" class="hidden"></div>
       <div id="shopprompt" class="hidden"><b>[B]</b> DÜKKÂN</div>
       <div id="msg"></div>
@@ -63,7 +64,7 @@ export class HUD {
       boss: q('#bossbar'), bName: q('.bb-name'), bFill: q('.bb-fill'), bLag: q('.bb-lag'),
       hint: q('#hint'), msg: q('#msg'), stats: q('#stats'), flash: q('#flash'), vig: q('#dmgvig'),
       hit: q('#hitmark'), title: q('#titlecard'), death: q('#deathscreen'), fps: q('#fps'), lockhint: q('#lockhint'),
-      cue: q('#parrycue'),
+      cue: q('#parrycue'), cgwave: q('#cgwave'),
       ptsBank: q('.pts-bank'), ptsRun: q('.pts-run'), shopPrompt: q('#shopprompt'),
       chHp: q('.ch-hp i'), chSt: q('.ch-st i'), cross: q('#crosshair'), armInd: q('.arm-ind'), hookInd: q('.hook-ind'), pulse: q('#parrypulse'),
     };
@@ -256,8 +257,18 @@ export class HUD {
       <div class="row"><span>YENİDEN DOĞUŞ</span><b>${s.restarts}</b></div>`;
   }
 
+  // Siber Öğütücü dalga sayacı
+  cgWave(n) {
+    const el = this.$.cgwave;
+    el.textContent = `DALGA ${n}`;
+    el.classList.remove('hidden', 'pop');
+    void el.offsetWidth;
+    el.classList.add('pop');
+  }
+
   reset() {
     this.boss(null);
+    this.$.cgwave.classList.add('hidden');
     this.$.shopPrompt.classList.add('hidden');
     this.$.hint.classList.add('hidden');
     this.$.msg.className = '';
@@ -278,15 +289,16 @@ export class HUD {
     const $ = this.$;
     // Can
     const hp = Math.max(0, p.hp);
+    const hk = 100 / (p.maxHp || 100);
     if (hp > this.lastHp + 0.5) this.healGlow = 0.4;
     this.lastHp = hp;
     this.healGlow = Math.max(0, this.healGlow - realDt);
-    this.set('hp', $.hpFill, 'width', hp.toFixed(1) + '%');
-    this.set('hard', $.hpHard, 'width', Math.min(100, hp + p.hard).toFixed(1) + '%');
+    this.set('hp', $.hpFill, 'width', (hp * hk).toFixed(1) + '%');
+    this.set('hard', $.hpHard, 'width', Math.min(100, (hp + p.hard) * hk).toFixed(1) + '%');
     this.set('hpNum', $.hpNum, 'text', String(Math.ceil(hp)));
     $.hpHeal.style.opacity = this.healGlow > 0 ? this.healGlow * 2 : 0;
-    $.hpHeal.style.width = hp.toFixed(1) + '%';
-    this.set('chHp', $.chHp, 'width', hp.toFixed(0) + '%');
+    $.hpHeal.style.width = (hp * hk).toFixed(1) + '%';
+    this.set('chHp', $.chHp, 'width', (hp * hk).toFixed(0) + '%');
     // Stamina
     for (let i = 0; i < 3; i++) {
       const v = clamp(p.stamina - i, 0, 1);

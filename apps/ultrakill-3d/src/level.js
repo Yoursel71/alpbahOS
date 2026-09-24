@@ -5,7 +5,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { psx } from './render.js';
 import { rand } from './util.js';
 
-function boxGeo(x0, y0, z0, x1, y1, z1, texScale = 4) {
+export function boxGeo(x0, y0, z0, x1, y1, z1, texScale = 4) {
   const w = x1 - x0, h = y1 - y0, d = z1 - z0;
   const g = new THREE.BoxGeometry(w, h, d);
   g.translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
@@ -123,6 +123,12 @@ export class Level {
       marble: lam(T.stone, 0xdcdcf0),
       ash: lam(T.rock, 0xa89c98),
       gold: lam(T.metal, 0xffc860),
+      grass: lam(T.grass),
+      castle: lam(T.limestone),
+      castleDark: lam(T.limestone, 0x9a9488),
+      bluegold: lam(T.metal, 0x5a8adc),
+      neon: new THREE.MeshBasicMaterial({ map: T.grid, color: 0xffffff }),
+      neonWall: new THREE.MeshBasicMaterial({ map: T.grid, color: 0xff60d0 }),
       lava: psx(new THREE.MeshBasicMaterial({ map: T.lava, color: 0xffffff })),
       glow: new THREE.MeshBasicMaterial({ color: 0xff4020 }),
     };

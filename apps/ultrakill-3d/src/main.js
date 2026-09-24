@@ -8,7 +8,7 @@ import { buildTextures } from './textures.js';
 import { Renderer, psx } from './render.js';
 import { World } from './physics.js';
 import { Level } from './level.js';
-import { LEVELS } from './levels/index.js';
+import { LEVELS, STORY_COUNT } from './levels/index.js';
 import { SHOP_ITEMS, ITEM_HINTS } from './shop.js';
 import { Player } from './player.js';
 import { Weapons } from './weapons.js';
@@ -17,6 +17,7 @@ import { Style } from './style.js';
 import { HUD } from './hud.js';
 import { UI, rankTime, rankKills, rankStyle, finalRank, betterRank } from './ui.js';
 import { ENEMY_TYPES } from './enemies.js';
+import './enemies2.js';
 import { rand, clamp, damp, yawTo, wrapAngle } from './util.js';
 import { Projectile } from './projectiles.js';
 import { WEAPONS } from './weapons.js';
@@ -74,6 +75,12 @@ class Arenas {
       if (a.enemies.length) continue;
       a.delay -= dt;
       if (a.delay > 0) continue;
+      // sonsuz arena (Siber Öğütücü): sıradaki dalga üretilir, sütunlar oynarken kısa bekleme
+      if (a.endless && a.wave + 1 >= a.waves.length) {
+        a.waves.push(a.genWave(a.wave + 1, g));
+        a.delay = a.wave < 0 ? 0.6 : 1.8;
+        continue;
+      }
       if (a.wave + 1 < a.waves.length) {
         a.wave++;
         for (const s of a.waves[a.wave]) {
@@ -107,6 +114,7 @@ class Arenas {
       if (a.killsAtStart !== undefined) g.stats.kills = a.killsAtStart;
       a.state = 'idle';
       a.wave = -1;
+      if (a.endless) a.waves.length = 0;
       a.trig.fired = false;
       for (const id of a.lock) { const d = g.level.doors[id]; d.setInstant(d.saved ?? d.initialOpen); }
       for (const id of a.exits) g.level.doors[id].reset();
@@ -117,6 +125,7 @@ class Arenas {
     for (const a of this.list) {
       a.state = 'idle';
       a.wave = -1;
+      if (a.endless) a.waves.length = 0;
       a.enemies = [];
       a.bossList = [];
       a.pre = null;
@@ -373,7 +382,13 @@ class Game {
     progress.shop[id] = true;
     saveProgress();
     this.applyLoadout();
-    if (it.w !== undefined) {
+    if (it.alt) {
+      progress.alt = { ...(progress.alt || {}), [it.alt]: true };
+      saveProgress();
+      this.weapons.applyAlt();
+      if (this.weapons.cur !== it.w && this.weapons.owned[it.w]) this.weapons.select(it.w);
+      this.hud.weaponChanged();
+    } else if (it.w !== undefined) {
       this.weapons.variant[it.w] = it.v;
       this.weapons.updateAccents();
       if (this.weapons.cur !== it.w) this.weapons.select(it.w);
@@ -385,6 +400,20 @@ class Game {
     this.audio.play('pickup');
     this.hud.flash('rgba(90,255,140,0.35)', 0.3);
     this.pendingHint = ITEM_HINTS[id] || null;
+    return true;
+  }
+
+  // Dükkânda alınmış alternatif silahı takıp çıkar
+  toggleAlt(id) {
+    const it = SHOP_ITEMS.find((x) => x.id === id);
+    if (!it || !it.alt || (!progress.shop[id] && !settings.allWeapons)) return false;
+    const on = !(progress.alt && progress.alt[it.alt]);
+    progress.alt = { ...(progress.alt || {}), [it.alt]: on };
+    saveProgress();
+    this.weapons.applyAlt();
+    this.weapons.equipSpin = it.w === 0 ? 1 : 0;
+    this.hud.weaponChanged();
+    this.audio.play('pump');
     return true;
   }
 
@@ -884,6 +913,8 @@ class Game {
     this.player.pitch = sp.pitch ?? -0.5;
     this.checkpoint = { pos: new THREE.Vector3(...sp.checkpoint), yaw: sp.yaw };
     this.weapons.reset();
+    this.weapons.arms.setSkin(this.player.character);
+    document.getElementById('app')?.classList.toggle('char-v2', this.player.character === 'v2');
     if (settings.allWeapons) this.weapons.giveAll();
     else if (L.startArmed) this.applyLoadout();
     this.spawnTrainers();
@@ -937,6 +968,7 @@ class Game {
 
   respawn(fromPause = false) {
     if (this.state !== 'dead' && !(fromPause && this.state === 'paused')) return;
+    if (this.levelDef.endless) { this.endlessOver(); return; }
     this.arenas.resetActive();
     this.arenas.prespawn();
     for (const pr of this.projectiles) pr.remove();
@@ -1031,6 +1063,8 @@ class Game {
       restarts: s.restarts,
       damage: s.damageTaken,
       difficulty: difficulty().name,
+      droneParries: s.droneParries || 0,
+      tanks: s.tanks || 0,
     };
     const def = this.levelDef;
     r.levelId = def.id;
@@ -1050,17 +1084,58 @@ class Game {
     const rec = progress.levels[def.id];
     r.newBest = !rec || betterRank(rec.rank, r.final) || (rec.rank === r.final && (!rec.time || r.time < rec.time));
     progress.levels[def.id] = r.newBest ? { rank: r.final, time: r.time, style: Math.max(r.style, rec ? rec.style || 0 : 0) } : { ...rec, style: Math.max(rec.style || 0, r.style) };
-    progress.unlocked = Math.max(progress.unlocked || 1, Math.min(LEVELS.length, this.levelIdx + 2));
-    r.hasNext = this.levelIdx + 1 < LEVELS.length;
-    r.last = !r.hasNext;
+    progress.unlocked = Math.max(progress.unlocked || 1, Math.min(STORY_COUNT, this.levelIdx + 2));
+    r.hasNext = this.levelIdx + 1 < STORY_COUNT;
+    r.finale = def.finale || '';
     saveProgress();
     this.lastResults = r;
     this.ui.showResults(r);
   }
 
   nextLevel() {
-    if (this.levelIdx + 1 < LEVELS.length) this.startLevel(this.levelIdx + 1);
+    if (this.levelIdx + 1 < STORY_COUNT) this.startLevel(this.levelIdx + 1);
     else this.toMenu();
+  }
+
+  // Siber Öğütücü: ölüm (ya da checkpoint'e dönüş) koşuyu bitirir; ulaşılan dalga kaydedilir
+  endlessOver() {
+    if (this.levelDone) return;
+    this.levelDone = true;
+    this.state = 'results';
+    this.input.gameActive = false;
+    this.input.wantLock = false;
+    this.input.exitLock();
+    this.style.frozen = true;
+    this.hud.show(false);
+    this.hud.death(false);
+    this.audio.stopAllLoops();
+    this.audio.muffle(0);
+    this.music.setMode('calm');
+    this.renderer.postMat.uniforms.uGray.value = 0;
+    this.renderer.postMat.uniforms.uTintAmt.value = 0;
+    const def = this.levelDef;
+    const s = this.stats;
+    const wave = this.cgWave || 0;
+    const rec = progress.levels[def.id] || {};
+    const final = wave >= 20 ? 'P' : wave >= 15 ? 'S' : wave >= 10 ? 'A' : wave >= 6 ? 'B' : wave >= 3 ? 'C' : 'D';
+    const r = {
+      endless: true, wave, time: s.time, kills: s.kills, killsTotal: 0, style: Math.round(this.style.total), parries: s.parries,
+      damage: s.damageTaken, restarts: 0, secrets: 0, secretsTotal: 0, difficulty: difficulty().name,
+      levelId: def.id, levelTitle: def.name, final, bestWave: Math.max(rec.wave || 0, wave), newBest: wave > (rec.wave || 0),
+    };
+    r.challenge = def.challenge.check(r);
+    r.challengeText = def.challenge.text(r);
+    // koşuda kasaya girmemiş stil yanar ama dalga ödülü verilir
+    this.dropUnbanked();
+    this.bonusP = wave * 250 + (r.challenge ? 1000 : 0);
+    r.rankBonus = this.bonusP;
+    this.bankPoints();
+    r.pointsEarned = this.levelP;
+    r.pointsTotal = progress.points;
+    progress.levels[def.id] = { rank: r.newBest || !rec.rank ? final : rec.rank, wave: r.bestWave, style: Math.max(rec.style || 0, r.style) };
+    saveProgress();
+    this.lastResults = r;
+    this.ui.showResults(r);
   }
 
   // ---------------------------------------------------------------- döngü

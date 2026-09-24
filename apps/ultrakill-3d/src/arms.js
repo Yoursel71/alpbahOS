@@ -160,6 +160,17 @@ export class ViewArms {
 
   parryFlash() { this.glow = 1; }
 
+  // Karakter görünümü: V2 → kırmızı Feedbacker ve turuncu şeritler
+  setSkin(ch) {
+    const M = this.w.M;
+    const v2 = ch === 'v2';
+    M.blue.color.setHex(v2 ? 0xd8402a : 0x4a8cff);
+    M.blue.emissive.setHex(v2 ? 0x3a0a04 : 0x0a2250);
+    const fb = this.models.feedbacker.userData;
+    fb.glowBase = v2 ? 0xffb060 : 0x8fd0ff;
+    fb.glowMat.color.setHex(fb.glowBase);
+  }
+
   armModel() {
     const w = this.w;
     if (this.act && this.act.type === 'hook') return this.models.whiplash;

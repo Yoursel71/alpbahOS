@@ -3,7 +3,9 @@
 import { settings, saveSettings, progress, saveProgress, DIFFICULTIES } from './settings.js';
 import { fmtTime } from './util.js';
 import { Typer, drawNoise } from './typer.js';
-import { LEVELS } from './levels/index.js';
+import { LEVELS, STORY_COUNT, LAYERS } from './levels/index.js';
+
+const c0 = (list, id) => (list.find((c) => c.id === id) || list[0]).desc;
 import { SHOP_ITEMS, SHOP_GROUPS } from './shop.js';
 
 const RANK_COL = { D: '#4aa3ff', C: '#3ee06a', B: '#ffd21f', A: '#ff8a1f', S: '#ff3a24', P: '#ffd24a' };
@@ -159,32 +161,53 @@ export class UI {
   }
 
   renderPlay(p) {
-    const n = Math.min(LEVELS.length, progress.unlocked || 1);
-    if (this.selLevel === undefined || this.selLevel >= n) this.selLevel = Math.min(n - 1, Math.max(0, this.game.levelIdx));
+    const n = Math.min(STORY_COUNT, progress.unlocked || 1);
+    const cgOpen = (progress.unlocked || 1) >= 2 || settings.allWeapons;
+    const isLocked = (i) => (LEVELS[i].endless ? !cgOpen : i >= n);
+    if (this.selLevel === undefined || this.selLevel >= LEVELS.length || isLocked(this.selLevel)) {
+      this.selLevel = Math.min(n - 1, Math.max(0, this.game.levelIdx));
+      if (isLocked(this.selLevel)) this.selLevel = n - 1;
+    }
     const sel = this.selLevel;
-    const cards = LEVELS.map((L, i) => {
+    const card = (L, i) => {
       const rec = progress.levels[L.id];
-      const locked = i >= n;
+      const locked = isLocked(i);
       const rk = rec ? rec.rank : null;
-      return `<button class="lv-card ${i === sel ? 'sel' : ''} ${locked ? 'locked' : ''}" data-l="${i}" ${locked ? 'disabled' : ''}>
-        <span class="lv-id">${L.id}</span>
+      const badge = locked ? '🔒' : L.endless ? (rec && rec.wave ? `#${rec.wave}` : '—') : rk || '—';
+      return `<button class="lv-card ${i === sel ? 'sel' : ''} ${locked ? 'locked' : ''} ${L.endless ? 'endless' : ''}" data-l="${i}" ${locked ? 'disabled' : ''}>
+        <span class="lv-id">${L.endless ? '∞' : L.id}</span>
         <span class="lv-name">${locked ? '— KİLİTLİ —' : L.name}</span>
-        <span class="lv-rank" style="color:${rk ? RANK_COL[rk] : '#555'}">${locked ? '🔒' : rk || '—'}</span>
+        <span class="lv-rank" style="color:${rk && !L.endless ? RANK_COL[rk] : L.endless ? '#40f0ff' : '#555'}">${badge}</span>
       </button>`;
-    }).join('');
+    };
+    const cards = LAYERS.map((layer) => `<div class="lv-layer">${layer}</div><div class="lv-grid">${LEVELS.map((L, i) => (L.layer === layer ? card(L, i) : '')).join('')}</div>`).join('');
+    const CHARS = [
+      { id: 'v1', name: 'V1', desc: '100 can · 3 stamina · dengeli' },
+      { id: 'v2', name: 'V2', desc: '85 can · %12 daha hızlı · hızlı stamina · kırmızı kol', locked: !progress.v2Unlocked },
+    ];
+    if (CHARS.find((c) => c.id === settings.character && c.locked)) settings.character = 'v1';
+    const charRow = `<div class="char-row"><span class="char-lbl">KARAKTER</span>${CHARS.map((c) => `<button class="btn char ${settings.character === c.id ? 'on' : ''} ${c.locked ? 'locked' : ''}" data-c="${c.id}" ${c.locked ? 'disabled' : ''} title="${c.desc}">${c.locked ? '🔒 ' : ''}${c.name}</button>`).join('')}<span class="char-desc">${c0(CHARS, settings.character)}</span></div>`;
     const L = LEVELS[sel];
     const rec = progress.levels[L.id];
+    const recTxt = L.endless ? (rec && rec.wave ? ` <span class="muted">· EN İYİ DALGA ${rec.wave}</span>` : '') : rec && rec.time ? ` <span class="muted">· EN İYİ ${rec.rank} ${fmtTime(rec.time)}</span>` : '';
     p.innerHTML = `
-      <h2>PRELUDE: İLK KAN <span class="h2-pts">P ${(progress.points || 0).toLocaleString('tr-TR')}</span></h2>
-      <div class="lv-grid">${cards}</div>
-      <div class="lv-info"><b>${L.id}: ${L.name}</b> — ${L.desc}${rec && rec.time ? ` <span class="muted">· EN İYİ ${rec.rank} ${fmtTime(rec.time)}</span>` : ''}</div>
+      <h2>BÖLÜMLER <span class="h2-pts">P ${(progress.points || 0).toLocaleString('tr-TR')}</span></h2>
+      ${cards}
+      <div class="lv-info"><b>${L.endless ? '∞' : L.id}: ${L.name}</b> — ${L.desc}${recTxt}</div>
+      ${charRow}
       <div class="diffs">${DIFFICULTIES.map((d, i) => `<button class="btn diff ${i === settings.difficulty ? 'on' : ''}" data-d="${i}">${d.name}</button>`).join('')}</div>
       <div class="diff-desc">${DIFFICULTIES[settings.difficulty].desc}</div>
-      <div class="start-bar"><button class="btn big start" data-act="start">BAŞLA ▶ ${L.id}</button></div>
+      <div class="start-bar"><button class="btn big start" data-act="start">BAŞLA ▶ ${L.endless ? '∞' : L.id}</button></div>
     `;
     p.querySelectorAll('.lv-card:not(.locked)').forEach((b) => b.addEventListener('click', () => {
       this.click();
       this.selLevel = +b.dataset.l;
+      this.renderPlay(p);
+    }));
+    p.querySelectorAll('.char:not(.locked)').forEach((b) => b.addEventListener('click', () => {
+      this.click();
+      settings.character = b.dataset.c;
+      saveSettings();
       this.renderPlay(p);
     }));
     p.querySelectorAll('.diff').forEach((b) => b.addEventListener('click', () => {
@@ -325,16 +348,19 @@ export class UI {
 
   renderAbout(p) {
     p.innerHTML = `<h2>HAKKINDA</h2>
-      <p>ULTRAKILL'in PRELUDE bölümlerine (0-1 → 0-5) saygı duruşu olarak yapılmış, tarayıcıda çalışan 3D bir hayran oyunu. Tüm 3D modeller, dokular, sesler ve müzik çalışma anında kodla üretilir; orijinal oyundan hiçbir varlık kullanılmaz.</p>
+      <p>ULTRAKILL'in PRELUDE (0-1 → 0-5) ve 1. katman ARAF (1-1 → 1-4) bölümlerine saygı duruşu olarak yapılmış, tarayıcıda çalışan 3D bir hayran oyunu. Tüm 3D modeller, dokular, sesler ve müzik çalışma anında kodla üretilir; orijinal oyundan hiçbir varlık kullanılmaz.</p>
       <p>Resmî değildir; New Blood Interactive veya Arsi "Hakita" Patala ile bir bağı yoktur. Orijinal oyunu destekleyin.</p>
       <h3>İÇERİK</h3>
       <ul class="about-list">
-        <li>5 bölüm: ATEŞİN İÇİNE, KIYMA MAKİNESİ, ÇİFTE BELA, TEK MAKİNELİK ORDU, CERBERUS</li>
-        <li>Revolver ile başla; diğer silahlar, varyantlar ve kollar dükkândan P ile</li>
-        <li>V1 hareketi: dash, kayma, yere çakma, duvar sıçraması</li>
-        <li>Feedbacker yumruk ve PARRY; kan ile iyileşme, sert hasar</li>
-        <li>Filth, Stray, Schism, Malicious Face, Swordsmachine ve Cerberus</li>
-        <li>Stil ölçeri, bölüm sonu sıralaması (D–S, P), gizli küreler</li>
+        <li>PRELUDE: ATEŞİN İÇİNE, KIYMA MAKİNESİ, ÇİFTE BELA, TEK MAKİNELİK ORDU, CERBERUS</li>
+        <li>ARAF: GÜNDOĞUMUNUN KALBİ, YANAN DÜNYA, KUTSAL KALINTILAR SALONU, AY IŞIĞI (boss V2)</li>
+        <li>SİBER ÖĞÜTÜCÜ: neon ızgarada bitmeyen dalgalar, en yüksek dalga rekoru</li>
+        <li>Karakterler: V1 ve (1-4'ü bitirince) oynanabilir V2</li>
+        <li>Revolver ile başla; silahlar, varyantlar, kollar ve Slab Revolver / Jackhammer dükkândan P ile</li>
+        <li>V1 hareketi: dash, kayma, yere çakma, duvar sıçraması; parmaklı kollar ve eylem animasyonları</li>
+        <li>Feedbacker yumruk ve PARRY (isteğe bağlı parry/para yardımı); kan ile iyileşme, sert hasar</li>
+        <li>Filth, Stray, Schism, Drone, Streetcleaner, Malicious Face, Hideous Mass, Swordsmachine, Cerberus, V2</li>
+        <li>Stil ölçeri, bölüm sonu sıralaması (D–S, P), gizli küreler, meydan okumalar</li>
       </ul>
       <p class="note">Teknoloji: Three.js (MIT). Kaynak: alpbahOS/apps/ultrakill-3d</p>`;
   }
@@ -434,7 +460,8 @@ export class UI {
         const owned = test || !!progress.shop[it.id];
         const locked = !owned && it.needs && !progress.shop[it.needs];
         const cant = !owned && !locked && pts < it.price;
-        const tag = owned ? '<b class="sh-tag">SENDE</b>' : locked ? `<b class="sh-tag lock">🔒 ÖNCE ${it.needs.toUpperCase()}</b>` : `<button class="sh-buy ${cant ? 'cant' : ''}" data-buy="${it.id}">${it.price.toLocaleString('tr-TR')} P</button>`;
+        const altOn = it.alt && !!(progress.alt && progress.alt[it.alt]);
+        const tag = owned && it.alt ? `<button class="sh-buy sh-toggle ${altOn ? 'on' : ''}" data-alt="${it.id}">${altOn ? 'ÇIKAR' : 'KULLAN'}</button>` : owned ? '<b class="sh-tag">SENDE</b>' : locked ? `<b class="sh-tag lock">🔒 ÖNCE ${it.needs.toUpperCase()}</b>` : `<button class="sh-buy ${cant ? 'cant' : ''}" data-buy="${it.id}">${it.price.toLocaleString('tr-TR')} P</button>`;
         rows.push(`<div class="sh-item ${owned ? 'owned' : ''} ${locked ? 'locked' : ''}"><i style="background:${it.color}"></i><span class="sh-name">${it.name}<small>${it.sub}</small></span>${tag}</div>`);
       }
       return `<div class="sh-group"><div class="sh-gname">${G.name}</div>${rows.join('')}</div>`;
@@ -445,6 +472,10 @@ export class UI {
       <div class="sh-grid">${groups}</div>
     `;
     box.querySelector('[data-act="close"]').addEventListener('click', () => { this.click(); this.game.closeShop(); });
+    box.querySelectorAll('[data-alt]').forEach((b) => b.addEventListener('click', () => {
+      this.click();
+      if (this.game.toggleAlt(b.dataset.alt)) this.renderShop();
+    }));
     box.querySelectorAll('[data-buy]').forEach((b) => b.addEventListener('click', () => {
       if (this.game.buy(b.dataset.buy)) this.renderShop();
       else { b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); }
@@ -456,7 +487,19 @@ export class UI {
     this.show('results');
     const box = this.scr.results.querySelector('.res-box');
     const dots = Array.from({ length: r.secretsTotal }, (_, i) => (i < r.secrets ? '<i class="sec on"></i>' : '<i class="sec"></i>')).join('');
-    box.innerHTML = `
+    const rowsHtml = r.endless ? `
+        <div class="res-row" data-i="0"><span>DALGA</span><b data-count="wave">0</b><i class="rk none"></i></div>
+        <div class="res-row" data-i="1"><span>SÜRE</span><b data-count="time">00:00.000</b><i class="rk none"></i></div>
+        <div class="res-row" data-i="2"><span>ÖLDÜRME</span><b data-count="kills">0</b><i class="rk none"></i></div>
+        <div class="res-row" data-i="3"><span>STİL</span><b data-count="style">0</b><i class="rk none"></i></div>
+        <div class="res-row challenge" data-i="4"><span>MEYDAN OKUMA</span><b>${r.challengeText}</b><i class="rk ${r.challenge ? 'ok' : 'no'}">${r.challenge ? '✔' : '✘'}</i></div>` : '';
+    box.innerHTML = r.endless ? `
+      <div class="res-title">${r.levelTitle} <span>KOŞU BİTTİ</span></div>
+      <div class="res-rows">${rowsHtml}</div>
+      <div class="res-final hidden"><span>SIRA</span><div class="rank-big" style="color:${RANK_COL[r.final]}">${r.final}</div></div>
+      <div class="res-extra hidden"><span class="res-p">+${r.pointsEarned.toLocaleString('tr-TR')} P kazanıldı · Toplam P ${r.pointsTotal.toLocaleString('tr-TR')}</span><br>En iyi dalga: <b>${r.bestWave}</b> · Parry: ${r.parries} · Hasar: ${Math.round(r.damage)}${r.newBest ? ' · <b>YENİ REKOR!</b>' : ''}</div>
+      <div class="res-btns hidden"><button class="btn big next" data-act="retry">TEKRAR DENE ▶</button><button class="btn" data-act="menu">ANA MENÜ</button></div>
+    ` : `
       <div class="res-title">${r.levelTitle} <span>TAMAMLANDI</span></div>
       <div class="res-rows">
         <div class="res-row" data-i="0"><span>SÜRE</span><b data-count="time">00:00.000</b><i class="rk">${r.timeRank}</i></div>
@@ -466,7 +509,7 @@ export class UI {
         <div class="res-row challenge" data-i="4"><span>MEYDAN OKUMA</span><b>${r.challengeText}</b><i class="rk ${r.challenge ? 'ok' : 'no'}">${r.challenge ? '✔' : '✘'}</i></div>
       </div>
       <div class="res-final hidden"><span>TOPLAM SIRA</span><div class="rank-big" style="color:${RANK_COL[r.final]}">${r.final}</div>${r.final === 'P' ? '<div class="prank">MÜKEMMEL!</div>' : ''}</div>
-      <div class="res-extra hidden"><span class="res-p">+${r.pointsEarned.toLocaleString('tr-TR')} P kazanıldı (sıra ödülü ${r.rankBonus.toLocaleString('tr-TR')}) · Toplam P ${r.pointsTotal.toLocaleString('tr-TR')}</span><br>Zorluk: ${r.difficulty} · Yeniden doğuş: ${r.restarts} · Parry: ${r.parries} · Hasar: ${Math.round(r.damage)}${r.newBest ? ' · <b>YENİ REKOR!</b>' : ''}${r.last ? '<br><b>PRELUDE TAMAMLANDI — CEHENNEMİN KAPILARI AÇILDI.</b>' : ''}</div>
+      <div class="res-extra hidden"><span class="res-p">+${r.pointsEarned.toLocaleString('tr-TR')} P kazanıldı (sıra ödülü ${r.rankBonus.toLocaleString('tr-TR')}) · Toplam P ${r.pointsTotal.toLocaleString('tr-TR')}</span><br>Zorluk: ${r.difficulty} · Yeniden doğuş: ${r.restarts} · Parry: ${r.parries} · Hasar: ${Math.round(r.damage)}${r.newBest ? ' · <b>YENİ REKOR!</b>' : ''}${r.finale ? `<br><b>${r.finale}</b>` : ''}</div>
       <div class="res-btns hidden">${r.hasNext ? '<button class="btn big next" data-act="next">SONRAKİ BÖLÜM ▶</button>' : ''}<button class="btn" data-act="retry">TEKRAR</button><button class="btn" data-act="menu">ANA MENÜ</button></div>
     `;
     const nx = box.querySelector('[data-act="next"]');
@@ -478,7 +521,7 @@ export class UI {
     const rows = [...box.querySelectorAll('.res-row')];
     rows.forEach((row) => row.classList.add('pending'));
     const audio = this.game.audio;
-    const counters = { time: [r.time, (v) => fmtTime(v)], kills: [r.kills, (v) => `${Math.round(v)} / ${r.killsTotal}`], style: [r.style, (v) => String(Math.round(v))] };
+    const counters = { time: [r.time, (v) => fmtTime(v)], kills: [r.kills, (v) => (r.endless ? String(Math.round(v)) : `${Math.round(v)} / ${r.killsTotal}`)], style: [r.style, (v) => String(Math.round(v))], wave: [r.wave || 0, (v) => String(Math.round(v))] };
     // dokunmatikte daha kısa; ekrana dokunmak animasyonu anında bitirir
     const touch = this.game.touch.active;
     let fast = false;
