@@ -253,7 +253,13 @@ chroot "$LFS" /usr/bin/env -i \
       ../contrib/test_summary > gcc-test-summary.log
       cat gcc-test-summary.log
       test -s gcc-test-summary.log || { echo 'GCC test_summary is empty; tests did not produce results' >&2; exit 1; }
-      grep -Eq '# of expected passes[[:space:]]+[^0]' gcc-test-summary.log || { echo 'GCC test_summary has no expected passes; refusing an unverified test run' >&2; exit 1; }
+      grep -Eq "^# of expected passes:?[[:space:]]*[1-9][0-9]*([[:space:]]|\$)" gcc-test-summary.log || { echo 'GCC test_summary has no positive expected-pass count; refusing an unverified test run' >&2; exit 1; }
+      if grep -Eq "^# of (unexpected failures|unexpected successes|unresolved testcases)[[:space:]]*:?[[:space:]]*[1-9][0-9]*" gcc-test-summary.log; then
+        grep -E "^# of (unexpected failures|unexpected successes|unresolved testcases)[[:space:]]*:?[[:space:]]*[1-9][0-9]*" gcc-test-summary.log >&2
+        echo 'GCC test_summary contains unclassified test failures; refusing stage acceptance' >&2
+        exit 1
+      fi
+      [[ "$check_status" -eq 0 ]] || { echo "GCC make -k check returned $check_status; refusing stage acceptance" >&2; exit "$check_status"; }
       find . -type f -path '*/testsuite/*.sum' -size +0c -print -quit | grep -q . || { echo 'GCC produced no non-empty DejaGNU .sum files' >&2; exit 1; }
       find . -type f -path '*/testsuite/*.log' -size +0c -print -quit | grep -q . || { echo 'GCC produced no non-empty DejaGNU .log files' >&2; exit 1; }
       echo "GCC_MAKE_CHECK_EXIT=$check_status"
