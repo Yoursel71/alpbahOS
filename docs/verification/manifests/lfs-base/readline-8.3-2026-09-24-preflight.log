@@ -1,0 +1,16 @@
+MISMATCH /usr/lib/libhistory.so.8.3
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/libhistory.so.8.3", "sha256": "376cb0d4d73e008b02cae2bf85cb20e789ecfb77cf0f799b7ec4cfefb7d67148", "size": 167584, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/libhistory.so.8.3", "sha256": "9a4ec1af20871dece488fc5dcfa9dcc3ddfec349958ef6560b99d7dd1a9a2d5c", "size": 167576, "type": "file", "uid": 0}
+MISMATCH /usr/lib/libreadline.so.8.3
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/libreadline.so.8.3", "sha256": "f41182fb766f2113833b02aa3d20132ea5c6ae21f6d16f63d1c8f2217b3165e1", "size": 1063712, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/libreadline.so.8.3", "sha256": "a39b882172f71b347c1fec1e8e988408ffd98f8e653898a91abb3537ef1041d2", "size": 1063704, "type": "file", "uid": 0}
+MISMATCH /usr/lib/pkgconfig/readline.pc
+  expected: {"gid": 0, "mode": 420, "path": "/usr/lib/pkgconfig/readline.pc", "sha256": "fdc0bf54a22c3a86bfc62707497f7fa5f70ec075def66ac04bbfea6b3a978a02", "size": 313, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 420, "path": "/usr/lib/pkgconfig/readline.pc", "sha256": "3a6afe86e98212f2ab84b56f9ba713d0b0ca09d496c8b559d08bb81a419b2c7f", "size": 314, "type": "file", "uid": 0}
+MISMATCH /usr/share/doc
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/doc", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/doc", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/info
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/info", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/info", "type": "directory", "uid": 1001}
+package=readline version=8.3 entries=39 matched=34 mismatched=5

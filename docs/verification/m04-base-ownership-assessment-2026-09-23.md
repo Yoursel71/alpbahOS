@@ -245,6 +245,7 @@ checksums before extraction.
 | Bzip2 1.0.8 | LFS patch applied; `make -f Makefile-libbz2_so -j2`, `make clean`, `make -j2`; all six source/reference round-trip comparisons passed | 36 entries (9 directories, 19 files, 8 symlinks), SHA-256 `c38c928beacb673344a083c8895707fab00842446cae6640c5130ec7b07e36a8` | 31 matched, 5 mismatched: bzip2 and bzip2recover binaries differ; libbz2 symlink target matches but file hash differs and stage/rootfs symlink ownership differs; shared `/usr/share/doc` mode/owner differs. Not installed to rootfs. |
 | Lz4 1.10.0 | `make BUILD_STATIC=no PREFIX=/usr -j2`; `make -j1 check` passed | 23 entries (8 directories, 7 files, 8 symlinks), SHA-256 `3a7f8a461c25b970509ea6a2bf1194489454ece67eff58bfaaf0fc74d7862730` | 23 matched, 0 mismatched. This is an exact staged file-set match. No install was merged to rootfs and no DB record was added. |
 | File 5.46 | `./configure --prefix=/usr`, `make -j2`, `make check` all completed | 23 entries (12 directories, 9 files, 2 symlinks), SHA-256 `3fe983255f365d90269add1232c6fc03d83ccdd5774db51f1221acb91444fb8f` | 20 matched, 3 mismatched: `/usr/bin/file` has the same size but a different SHA-256; `libmagic.so.1.0.0` has a different SHA-256 and is 8 bytes smaller in the rootfs; `/usr/share/misc` directory owner/mode differs. Not installed to rootfs. |
+| Readline 8.3 | LFS configuration, `make -j2 SHLIB_LIBS="-lncursesw"`; LFS has no test suite. A staged API smoke read `readline-stage-smoke`; loader resolved both staged shared libraries, and no library RPATH/RUNPATH was present. | 39 entries (12 directories, 23 files, 4 symlinks), SHA-256 `89905b7dff6b4e65cba4855705db6944732583ca8a66d0a6a42e91c6cb7d49dc` | 34 matched, 5 mismatched: `libhistory.so.8.3` and `libreadline.so.8.3` differ by 8 bytes each; `readline.pc` differs by one byte; shared `/usr/share/doc` and `/usr/share/info` directory metadata differs. Not installed to rootfs. |
 
 The manifests and complete machine-readable mismatch reports are preserved as
 [`gzip manifest`](manifests/lfs-base/gzip-1.14-2026-09-24.json),
@@ -259,6 +260,8 @@ Lz4 evidence is preserved as [`Lz4 manifest`](manifests/lfs-base/lz4-1.10.0-2026
 and [`Lz4 preflight`](manifests/lfs-base/lz4-1.10.0-2026-09-24-preflight.log).
 File evidence is preserved as [`File manifest`](manifests/lfs-base/file-5.46-2026-09-24.json)
 and [`File preflight`](manifests/lfs-base/file-5.46-2026-09-24-preflight.log).
+Readline evidence is preserved as [`Readline manifest`](manifests/lfs-base/readline-8.3-2026-09-24.json)
+and [`Readline preflight`](manifests/lfs-base/readline-8.3-2026-09-24-preflight.log).
 Build logs remain on Builder under `/mnt/lfs/tmp/alp-logs/`:
 `m04-gzip-1.14-build-20260924.log` (SHA-256
 `b62a9b3b58934b1b19ce7e726762abc58680625ca04713ed16cef6c6beb76f95`),
@@ -316,6 +319,40 @@ preflight SHA-256 is
 The preflight result was `entries=23 matched=20 mismatched=3`. This stage was
 not merged into `/mnt/lfs/usr` and no ownership record was added. LFS reference:
 [File-5.46](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/file.html).
+
+Readline 8.3 was built in `/mnt/lfs/build/readline-8.3-m04-r1` from the
+verified `/mnt/lfs/sources/readline-8.3.tar.gz` archive (LFS MD5
+`25a73bfb2a3ad7146c5e9d4408d9f6cd`, SHA-256
+`fe5383204467828cd495ee8d1d3c037a7eba1389c22bc6a041f627976f9061cc`). The
+Builder `/mnt/lfs` chroot used the LFS `--disable-static --with-curses
+--docdir=/usr/share/doc/readline-8.3` configuration, `SHLIB_LIBS=-lncursesw`,
+and a root `DESTDIR=/tmp/alp-m04-readline-stage-r1` install. The staged
+interactive API smoke returned `readline-stage-smoke`; the target dynamic
+loader resolved `libreadline.so.8` and `libhistory.so.8` from the stage, and
+`readelf -d` found no library RPATH/RUNPATH. The LFS book states this package
+has no upstream test suite. The shared generated `/usr/share/info/dir` was
+excluded from this package manifest.
+
+The 39-entry manifest SHA-256 is
+`89905b7dff6b4e65cba4855705db6944732583ca8a66d0a6a42e91c6cb7d49dc`; the
+read-only preflight reported 34 matches and 5 mismatches. The two staged
+shared libraries are each 8 bytes larger than their rootfs counterparts;
+`readline.pc` differs by one byte; `/usr/share/doc` and `/usr/share/info`
+metadata differs. None of the staged files were merged into `/mnt/lfs/usr` and
+no `alp` record was added. The first smoke attempt was corrected after the
+test source omitted `<stdio.h>` before `readline.h`; a second run used the
+target `ldd` diagnostic and stopped at its `not a dynamic executable` output.
+The successful retry used the target dynamic loader's `--list` output to prove
+the staged libraries. Logs are preserved on Builder: r1 SHA-256
+`2f63e68b3199709e09a0632d4fa488ad53b20333ee22d1cfbafa33d69dfd841e`, r2
+`c3790d2bd84d0cc03e52081cc47179564a06a13492d1134fdf3d00a035de56fb`, and
+successful r3 `a7e9779dfd189f7d7601f1c971265324b5b9f610ab514741c32eb58d666d67c4`.
+All were under `/mnt/lfs/tmp/alp-logs/`. The final run unmounted `/dev`,
+`/dev/pts`, `/proc`, `/sys`, and `/run`; Builder had no active build process,
+NBD PID, or VHDX under `/tmp`, with 69 GiB free. Rootfs `alp.py` retained the
+required SHA-256 and `db.json` remained empty. LFS references:
+[Readline 8.3 build instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/readline.html),
+[official archive checksum](https://www.linuxfromscratch.org/lfs/view/stable/chapter03/packages.html).
 
 Official LFS 12.4-systemd procedures:
 [Gzip-1.14](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/gzip.html),
