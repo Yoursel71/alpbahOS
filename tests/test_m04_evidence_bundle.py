@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import re
 import tempfile
 import unittest
 from pathlib import Path
@@ -110,6 +111,30 @@ class EvidenceBundleTests(unittest.TestCase):
     def test_strict_coverage_requires_expected_list(self) -> None:
         with self.assertRaisesRegex(verify.BundleError, "requires an expected"):
             verify.verify_bundle(self.index, self.root, strict_coverage=True)
+
+    def test_project_expected_package_list_matches_coverage_matrix(self) -> None:
+        repository = Path(__file__).resolve().parents[1]
+        expected_path = repository / "docs/verification/manifests/lfs-base/m04-expected-chapter8-packages-12.4.json"
+        matrix_path = repository / "docs/verification/m04-lfs-12.4-package-coverage-2026-09-24.md"
+        expected = verify._expected_packages(expected_path)
+
+        def identity(label: str) -> tuple[str, str]:
+            if label.startswith("Libelf (Elfutils "):
+                return "libelf", label[len("Libelf (Elfutils "):-1]
+            display_name, version = label.rsplit(" ", 1)
+            key = "".join(char.casefold() for char in display_name if char.isalnum())
+            version = version.rstrip(")")
+            matches = [name for name, _ in expected if "".join(c.casefold() for c in name if c.isalnum()) == key]
+            self.assertEqual(len(matches), 1, f"matrix package identity is ambiguous or unknown: {label}")
+            return matches[0], version
+
+        rows: list[tuple[str, str]] = []
+        for line in matrix_path.read_text(encoding="utf-8").splitlines():
+            match = re.match(r"^\| (\d+) \| (.+?) \| (?:Present|Missing) \|", line)
+            if match:
+                rows.append(identity(match.group(2)))
+        self.assertEqual(len(rows), 79)
+        self.assertEqual(rows, expected)
 
 
 if __name__ == "__main__":
