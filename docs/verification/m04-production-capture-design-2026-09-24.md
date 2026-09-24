@@ -29,14 +29,27 @@ exceptions. A trace alone is not confinement.
 
 The current fixture runner now sends stdout/stderr through pipes and has the
 parent stream 64 KiB chunks to evidence files opened after the traced process
-starts; this avoids inheriting writable regular log descriptors. Its Windows
-suite passes 12 tests and skips 3, including the real descendant-pipe test
-which only runs on Linux. **The integrated Linux strace/bwrap confinement probe
-has not been run**, so this is a partial descriptor mitigation, not a production
-boundary. A future runner must still close unrelated descriptors, bound output
-size, and keep strace's output descriptor private to the tracer and verify it
-is not inherited by the installer. Any inability to preserve these conditions
-invalidates the event.
+starts; this avoids inheriting writable regular log descriptors. Its combined
+Windows-host capture/reconciler/evidence-verifier suite passes 38 tests and
+skips 4. **The integrated Linux strace/bwrap confinement probe has not been
+run**, including the real descendant-pipe test, so this remains a partial
+descriptor mitigation, not a production boundary. A future runner must still
+close unrelated descriptors, bound output size, and keep strace's output
+descriptor private to the tracer and verify it is not inherited by the
+installer. Any inability to preserve these conditions invalidates the event.
+
+### Snapshot metadata and identity
+
+The fixture runner emits the reconciler's `alpbahOS.m04-reconcile-snapshot/v2`
+envelope with a persisted fixture `root_id`. Each entry fingerprints the
+readable xattr set, `security.capability`, and non-directory hardlink count and
+group identity; xattr inspection errors fail closed. The xattr tests use mocks
+on this Windows host, so real Linux xattr, ACL, capability, and hardlink
+behavior has not been validated. `root_id` is a continuity label, not an
+authenticated rootfs identity: copying the fixture also copies that label.
+Snapshot traversal and content/metadata reads remain path-based and are not
+race-safe or mount-boundary-safe. This schema enrichment therefore does not
+make the runner production-ready or authenticate a rootfs snapshot.
 
 ### Complete write observation and escape detection
 
