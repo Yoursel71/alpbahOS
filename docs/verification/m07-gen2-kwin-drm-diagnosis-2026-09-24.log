@@ -1,0 +1,56 @@
+# M07 — Gen2 KWin/DRM tanısı (24-25 Eylül 2026, Claude)
+
+Kapsam: canlı `alpbahOS-M2-SSH-Gen2` misafirinde salt deneme. `/mnt/lfs` değiştirilmedi. Değişiklikler yalnız çalışan Gen2 misafirinin bellek/disk durumuna yazıldı (systemd birim dosyaları, `/tmp` betikleri); imaj yeniden üretilirse kaybolur, Codex'in bunları rootfs'e taşıması gerekir (aşağıda).
+
+## 1. Kök neden #1 (bulundu ve düzeltildi): kullanıcı D-Bus birimleri Gen2 imajında eksikti
+
+`/mnt/lfs/usr/lib/systemd/user/dbus.socket` ve `dbus.service` var, ama bu Gen2 test imajı bu dosyalar rootfs'e eklenmeden önceki bir anlık görüntüden üretilmiş: `/usr/lib/systemd/user/` altında `dbus.socket`/`dbus.service` **hiç yoktu** (yalnız `/usr/lib/systemd/**system**/` altında sistem düzeyinde vardı). Sonuç: `admin` ve `sa`'nın `systemd --user` oturumlarında `$XDG_RUNTIME_DIR/bus` hiç açılmıyordu; `startplasma-wayland` "Could not start D-Bus" ile düşüyordu.
+
+**Düzeltme (canlı Gen2'de, root/sudo ile):**
+1. Builder'daki `/mnt/lfs/usr/lib/systemd/user/dbus.{socket,service}` içeriği okundu (standart üst akım içerik, değişiklik yok).
+2. Aynı içerik Gen2'de `/usr/lib/systemd/user/dbus.{socket,service}` olarak oluşturuldu.
+3. `/etc/systemd/user/sockets.target.wants/dbus.{socket,service}` sembolik bağlantıları eklendi (global, tüm kullanıcıları kapsar).
+4. `systemctl restart user@1001.service` (admin) ile kullanıcı yöneticisi yeniden başlatıldı; tty1 oturumu etkilenmedi.
+
+**Doğrulama:** `ls -la /run/user/1001/bus` → `srw-rw-rw-` (soket açık). `sa` için de aynı şekilde doğrulandı.
+
+## 2. Kök neden #2 (bulundu, ÇÖZÜLMEDİ): `startplasma-wayland` yine de KWin'i `--xwayland` ile başlatıyor
+
+D-Bus düzeltildikten sonra `dbus-run-session /opt/kf6/bin/startplasma-wayland` çalıştırıldığında günlükte:
+```
+kwin: Unknown option 'xwayland'.
+```
+11 kez tekrarladı (KWin'in kendi yeniden deneme mantığı), ardından `qt.qpa.plugin: Could not load ... platform plugin "wayland"` ile düştü.
+
+Ama **systemd birimi doğrudan başlatılınca** (`su`/`machinectl shell admin@ systemctl --user start plasma-kwin_wayland.service`) **`active (running)` oldu**, merged config drop-in'i (`/etc/systemd/user/plasma-kwin_wayland.service.d/10-wayland-only.conf`, `ExecStart=/opt/kf6/bin/kwin_wayland_wrapper`, argümansız) doğru uygulanmış görünüyordu — Codex'in önceki turda doğruladığı `systemctl --user cat` çıktısıyla tutarlı.
+
+**Çelişki:** `startplasma-wayland`'ın kendi başlatma yolu (muhtemelen `plasma_session` içindeki `KUpdateLaunchEnvironmentJob`/`StartServiceJob` mekanizması, D-Bus servis aktivasyonu `BusName=org.kde.KWinWrapper` üzerinden) hâlâ eski `--xwayland` argümanını KWin'e veriyor, ama systemd biriminin kendisi (`systemctl --user start ...`) doğru argümanla başlıyor. `strings` ile `plasma_session`, `kwin_wayland_wrapper`, `kwin_wayland` ikililerinde `"xwayland"` metni **bulunamadı** — yani argüman derlenmiş ikiliye gömülü değil, çalışma anında bir yerden geliyor (systemd'nin native D-Bus aktivasyonu ile klasik `dbus-daemon` servis aktivasyon dosyası arasında bir tutarsızlık olabilir; `/usr/share/dbus-1/services/` altında `org.kde.KWinWrapper` için ayrı, eski bir `.service` dosyası aranmalı — bu turda böyle bir dosya bulunamadı, ama arama tam kapsamlı yapılmadı).
+
+**Sonraki adım (Codex ya da bir sonraki Claude turu):**
+- `/usr/share/dbus-1/services/` ve `/usr/share/dbus-1/system-services/` içinde `org.kde.KWinWrapper` adı geçen klasik bir aktivasyon dosyası var mı tam tara.
+- `plasma_session`'ın gerçekte hangi mekanizmayla KWin'i başlattığını (systemd native D-Bus aktivasyonu mu, yoksa kendi içindeki `StartServiceJob`'un doğrudan `QProcess` ile mi) kaynaktan (`startkde/plasma-session/startup.cpp`, zaten `docs/patches/plasma-workspace-6.4.4-wayland-no-xwayland.patch` ile bir kez yamalanmış dosya) doğrula; derlenmiş ikilide "xwayland" metni yoksa yama doğru uygulanmış demektir, sorun başka bir tetikleyicide.
+- Alternatif kısa yol: Plasma'yı hep `startplasma-wayland` yerine `systemctl --user start plasma-kwin_wayland.service` + `systemctl --user start plasma-workspace.target` (ya da eşdeğer hedef birimler) ile parça parça başlatmayı dene; systemd birimi doğru çalıştığı kanıtlandı.
+
+## 3. Kök neden #3 (bulundu, ÇÖZÜLMEDİ): KWin systemd birimiyle başlasa bile DRM'i ele geçirmiyor
+
+`systemctl --user start plasma-kwin_wayland.service` → `active (running)`, `ps` içinde `kwin_wayland_wrapper` süreci canlı (PID 19703). Ama `fuser /dev/dri/card0` **boş döndü** — KWin, DRM aygıtını hiç açmamış/tutmamış. Ekranda (VMConnect konsolu) hiçbir değişiklik olmadı, tty1'deki metin konsolu olduğu gibi kaldı.
+
+**Olası neden:** KWin arka planda bir systemd kullanıcı servisi olarak başlatıldığında, `logind`'den VT/seat devralma isteği, o VT'yi zaten dolduran aktif `agetty`/`bash` oturumuyla (aynı tty1, aynı seat0) çakışıyor olabilir. KWin muhtemelen sessizce DRM master alamayıp (`EBUSY` ya da benzeri) hiçbir hata basmadan (ya da hata `journalctl --user-unit` ile yakalanamadı; bkz. madde 4) arka planda asılı bekliyor.
+
+**Sonraki adım:** Bu iş normalde "temiz" bir oturumda olur: kullanıcı tty1'de login olduğunda `.bash_profile`/PAM `pam_systemd` zaten VT'yi o oturuma tahsis eder ve KWin login sonrası otomatik başlar (ör. `~/.bash_profile`'da `exec dbus-run-session startplasma-wayland` ile, agetty/bash'in kendisinin yerini KWin'in alması). Şu anki deneme KWin'i **var olan bir bash oturumunun üstüne, ayrı bir arka plan servisi olarak** başlattı; bu yanlış model olabilir. Doğru model: `admin`'in `.bash_profile`'ına konsol girişinde otomatik `startplasma-wayland` çağrısı eklenmeli (LFS/BLFS'in önerdiği "tty1'de login olunca Wayland compositor'a geç" deseni), ya da bir display manager (SDDM) kurulup VT tahsisini o yönetmeli. Bu, tasarım kararı gerektirir (M07/M08 kapsamında "otomatik grafik giriş mi, elle mi" sorusu) — kullanıcıya sorulmalı.
+
+## 4. Ortam sınırlamaları (yarın için not)
+
+- **`/etc/pam.d/su` yok.** `su` hiçbir kullanıcı için çalışmıyor, root dahil ("Authentication failure"). Bunun yerine `machinectl shell <user>@` (systemd-logind üzerinden, PAM `su` zincirini atlıyor) kullanılmalı. Bu, LFS taban kurulumunda eksik bir BLFS parçası olabilir (`/etc/pam.d/su` genelde Shadow ya da util-linux paketiyle gelir); Codex M04/taban denetiminde not etsin.
+- **`sa`'da parolasız sudo yok**, yalnız `admin`'de var ve zaman aşımlı önbellekleniyor (birkaç dakika). Çok adımlı `sudo` gerektiren işler tek bir betik dosyasında toplanıp `sudo sh /tmp/X` ile tek seferde çağrılmalı.
+- **VMConnect konsolunun sentetik klavyesi Türkçe Q host + ABD misafir karışımı üretiyor:** `/` tuşu yalnızca host'un `.` (nokta) tuşuyla, `-` tuşu ise **hiçbir eşlemeyle güvenilir yazılamadı** (`-` ve `minus` ikisi de `=` üretti). Konsolda çok parametreli komut yazmak yerine: komutu SSH'den bir `/tmp` betiğine yazıp konsolda yalnız harf+boşluk+nokta içeren `sh /tmp/AD` çağırmak güvenilir yöntemdir.
+- Bu oturumdaki SSH'den açılan onlarca kısa bağlantı `systemd-logind`'de hızlı "New/Removed session" günlük akışı üretti; bu bir hata değil, PAM oturumlarının normal açılıp kapanması.
+
+## 5. Değiştirilmeyenler
+
+`/mnt/lfs` rootfs'e hiç yazılmadı. Bu turdaki tüm değişiklikler yalnız çalışan Gen2 misafirinde (kalıcı değil, imaj yeniden üretilince kaybolur):
+- `/usr/lib/systemd/user/dbus.socket`, `dbus.service` (yeni dosyalar)
+- `/etc/systemd/user/sockets.target.wants/dbus.socket`, `dbus.service` (yeni sembolik bağlantılar)
+- `/tmp/alpplasma`, `/tmp/fixdbus`, `/tmp/mkdbususer`, `/tmp/adminreload`, `/tmp/adminrestart`, `/tmp/testkwin`, `/tmp/kwinlog` (geçici betikler, `sa`/`admin` sahipliğinde, `/tmp` temizlenince ya da reboot'ta gider)
+
+**Codex/Claude için sonraki tur:** madde 1'deki D-Bus düzeltmesini kalıcı hale getirmek için `/mnt/lfs`'ye de aynı sembolik bağlantıları eklemek gerekiyor (rootfs'te dosyalar zaten var, yalnız etkinleştirme eksik — bu M04/taban denetiminin bulguşuyla aynı desende bir "kurulu ama etkin değil" örneği). madde 2 ve 3 çözülmeden gerçek Plasma masaüstü ekranda görülemez; M07 hâlâ açık.
