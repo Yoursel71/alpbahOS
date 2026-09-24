@@ -1,0 +1,663 @@
+{
+  "schema": "alpbahOS.m04-recipe-identity-inventory/v1",
+  "scope": "dedicated per-package scripts/build-m04-<package>-stage.sh files only",
+  "repository": {
+    "ref": "main",
+    "commit": "2852c6710d0364b4fe06bf3dfc93a0bbf8d9d17c",
+    "worktree_dirty_at_scan": true,
+    "hash_basis": "current worktree file bytes"
+  },
+  "pinned_package_list": {
+    "path": "docs/verification/manifests/lfs-base/m04-expected-chapter8-packages-12.4.json",
+    "sha256": "612f7d8bdf54f228910c877b3a0c5d3565ead067c030ab55f9a0df472428fff5",
+    "schema": "alpbahOS.m04-expected-packages/v1",
+    "package_count": 79
+  },
+  "coverage": {
+    "present_dedicated_scripts": 29,
+    "missing_dedicated_scripts": 50
+  },
+  "provenance_caveat": "Repository identity inventory only: a present hash identifies the exact script bytes in the scanned worktree. It does not prove those bytes were used in any past Builder build or install, does not authenticate downloaded sources or generated patches, and does not constitute an observed final-rootfs install event or ownership evidence. Missing means no dedicated scripts/build-m04-<package>-stage.sh file was found by the exact naming rule; it does not assert that no recipe text exists elsewhere.",
+  "packages": [
+    {
+      "index": 1,
+      "name": "man-pages",
+      "version": "6.15",
+      "script_status": "present",
+      "script": {
+        "path": "scripts/build-m04-man-pages-stage.sh",
+        "sha256": "0214be4b4a40667ce9cf568a690439ca3566e4fac4cea04afd70166a42b8c2df"
+      }
+    },
+    {
+      "index": 2,
+      "name": "iana-etc",
+      "version": "20250807",
+      "script_status": "present",
+      "script": {
+        "path": "scripts/build-m04-iana-etc-stage.sh",
+        "sha256": "5268965384a3dbb297ef99b11d187b67939e556a0050c8b17b82583d802cad37"
+      }
+    },
+    {
+      "index": 3,
+      "name": "glibc",
+      "version": "2.42",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 4,
+      "name": "zlib",
+      "version": "1.3.1",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 5,
+      "name": "bzip2",
+      "version": "1.0.8",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 6,
+      "name": "xz",
+      "version": "5.8.1",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 7,
+      "name": "lz4",
+      "version": "1.10.0",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 8,
+      "name": "zstd",
+      "version": "1.5.7",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 9,
+      "name": "file",
+      "version": "5.46",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 10,
+      "name": "readline",
+      "version": "8.3",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 11,
+      "name": "m4",
+      "version": "1.4.20",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 12,
+      "name": "bc",
+      "version": "7.0.3",
+      "script_status": "present",
+      "script": {
+        "path": "scripts/build-m04-bc-stage.sh",
+        "sha256": "48cfe227c8274d9863a8d46a668dc3bc8f4bcd0c4201b008ff858ea54cb14558"
+      }
+    },
+    {
+      "index": 13,
+      "name": "flex",
+      "version": "2.6.4",
+      "script_status": "present",
+      "script": {
+        "path": "scripts/build-m04-flex-stage.sh",
+        "sha256": "9a2563f662592ff0cf0c138abb75c7333de17c1db650858ee83d60570f40808f"
+      }
+    },
+    {
+      "index": 14,
+      "name": "tcl",
+      "version": "8.6.16",
+      "script_status": "present",
+      "script": {
+        "path": "scripts/build-m04-tcl-stage.sh",
+        "sha256": "f0b805f19723c8a14279effa50f335f6070d3ea1e9aa9e1ac2f99f4f68812304"
+      }
+    },
+    {
+      "index": 15,
+      "name": "expect",
+      "version": "5.45.4",
+      "script_status": "present",
+      "script": {
+        "path": "scripts/build-m04-expect-stage.sh",
+        "sha256": "f59050d41283126730ea7347e511e563a7f8ecef71e57993bed3a196e4f791d6"
+      }
+    },
+    {
+      "index": 16,
+      "name": "dejagnu",
+      "version": "1.6.3",
+      "script_status": "present",
+      "script": {
+        "path": "scripts/build-m04-dejagnu-stage.sh",
+        "sha256": "3a0b9765e54074c6f7120859e9459a60a54d880ebf0adb370bbe0f1550da699c"
+      }
+    },
+    {
+      "index": 17,
+      "name": "pkgconf",
+      "version": "2.5.1",
+      "script_status": "present",
+      "script": {
+        "path": "scripts/build-m04-pkgconf-stage.sh",
+        "sha256": "d5119a9b3de9a1bf497f44614ad204e99b282f9b5038b1dc7a2684eff7d4a02f"
+      }
+    },
+    {
+      "index": 18,
+      "name": "binutils",
+      "version": "2.45",
+      "script_status": "present",
+      "script": {
+        "path": "scripts/build-m04-binutils-stage.sh",
+        "sha256": "aad3fcf08d7ec01059a7f11cb5ca48eb9ed09713a655a021dbeab2bfd2222dd3"
+      }
+    },
+    {
+      "index": 19,
+      "name": "gmp",
+      "version": "6.3.0",
+      "script_status": "present",
+      "script": {
+        "path": "scripts/build-m04-gmp-stage.sh",
+        "sha256": "e025b5beb818dad52bad254948661cbf9bc8abbd4ec71a113ac38655bf41e134"
+      }
+    },
+    {
+      "index": 20,
+      "name": "mpfr",
+      "version": "4.2.2",
+      "script_status": "present",
+      "script": {
+        "path": "scripts/build-m04-mpfr-stage.sh",
+        "sha256": "40eda584290afed19ff7742e84da5e3015684da2e540844837d4e8a60837c6d8"
+      }
+    },
+    {
+      "index": 21,
+      "name": "mpc",
+      "version": "1.3.1",
+      "script_status": "present",
+      "script": {
+        "path": "scripts/build-m04-mpc-stage.sh",
+        "sha256": "585f9d74842e295700bd2074d9be617588c942e0aeaac1e015c9911aed2a7902"
+      }
+    },
+    {
+      "index": 22,
+      "name": "attr",
+      "version": "2.5.2",
+      "script_status": "present",
+      "script": {
+        "path": "scripts/build-m04-attr-stage.sh",
+        "sha256": "d4b33cb21712f03c294c86df5cd320f4956a8ccae06a16e34fc895edf6ffaa4c"
+      }
+    },
+    {
+      "index": 23,
+      "name": "acl",
+      "version": "2.3.2",
+      "script_status": "present",
+      "script": {
+        "path": "scripts/build-m04-acl-stage.sh",
+        "sha256": "f086857d2651b45edc8cc95bcb41852ce8877aa531f83c84a00e80a921b64491"
+      }
+    },
+    {
+      "index": 24,
+      "name": "libcap",
+      "version": "2.76",
+      "script_status": "present",
+      "script": {
+        "path": "scripts/build-m04-libcap-stage.sh",
+        "sha256": "1df1f93bc8567b666b1a9287edd3c2b06634a8e194708116da3a2284e07e700b"
+      }
+    },
+    {
+      "index": 25,
+      "name": "libxcrypt",
+      "version": "4.4.38",
+      "script_status": "present",
+      "script": {
+        "path": "scripts/build-m04-libxcrypt-stage.sh",
+        "sha256": "93e56c5227f17173e04159de1251dd72dc2a48804172392d78ccf4a36c370cd0"
+      }
+    },
+    {
+      "index": 26,
+      "name": "shadow",
+      "version": "4.18.0",
+      "script_status": "present",
+      "script": {
+        "path": "scripts/build-m04-shadow-stage.sh",
+        "sha256": "6b416064e5940dcebba9c957fd421198b39c3176a4f4827ee891df9bbc399523"
+      }
+    },
+    {
+      "index": 27,
+      "name": "gcc",
+      "version": "15.2.0",
+      "script_status": "present",
+      "script": {
+        "path": "scripts/build-m04-gcc-stage.sh",
+        "sha256": "5e22b23d197aaec850234855e37e8535208eb3a3a121d958078a42550cc602a9"
+      }
+    },
+    {
+      "index": 28,
+      "name": "ncurses",
+      "version": "6.5-20250809",
+      "script_status": "present",
+      "script": {
+        "path": "scripts/build-m04-ncurses-stage.sh",
+        "sha256": "1e0ff9f406fec72ea50c93edceb1c9ad268897597d8d123ef2e28a14adcbeb17"
+      }
+    },
+    {
+      "index": 29,
+      "name": "sed",
+      "version": "4.9",
+      "script_status": "present",
+      "script": {
+        "path": "scripts/build-m04-sed-stage.sh",
+        "sha256": "4e4b09c4e00909392d209f161fc955ed82295fed512c8adfca4e2eb547a2f5a6"
+      }
+    },
+    {
+      "index": 30,
+      "name": "psmisc",
+      "version": "23.7",
+      "script_status": "present",
+      "script": {
+        "path": "scripts/build-m04-psmisc-stage.sh",
+        "sha256": "1f6be427661821dc16e8ca2c1be7da78cac95c7ac7baef4a4b8ffbf8d343c160"
+      }
+    },
+    {
+      "index": 31,
+      "name": "gettext",
+      "version": "0.26",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 32,
+      "name": "bison",
+      "version": "3.8.2",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 33,
+      "name": "grep",
+      "version": "3.12",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 34,
+      "name": "bash",
+      "version": "5.3",
+      "script_status": "present",
+      "script": {
+        "path": "scripts/build-m04-bash-stage.sh",
+        "sha256": "5dd8bca1b14a355c483f47f6f4e06011245cb62c8c71d8c78527b6160d17db71"
+      }
+    },
+    {
+      "index": 35,
+      "name": "libtool",
+      "version": "2.5.4",
+      "script_status": "present",
+      "script": {
+        "path": "scripts/build-m04-libtool-stage.sh",
+        "sha256": "0bbb77fd41c8ccba682f4df604685ac81ad95f79ad27debe0f7ea9576c9a8324"
+      }
+    },
+    {
+      "index": 36,
+      "name": "gdbm",
+      "version": "1.26",
+      "script_status": "present",
+      "script": {
+        "path": "scripts/build-m04-gdbm-stage.sh",
+        "sha256": "623524cf00cd863843fd809346bbafeffdd942d7ad69dedbd85154a0e0c615b3"
+      }
+    },
+    {
+      "index": 37,
+      "name": "gperf",
+      "version": "3.3",
+      "script_status": "present",
+      "script": {
+        "path": "scripts/build-m04-gperf-stage.sh",
+        "sha256": "2f6aa8d4df7a6f8b2bb270743a726b74e61ccfc55a0de857db2117965ee0d804"
+      }
+    },
+    {
+      "index": 38,
+      "name": "expat",
+      "version": "2.7.1",
+      "script_status": "present",
+      "script": {
+        "path": "scripts/build-m04-expat-stage.sh",
+        "sha256": "63e2855a2498cd22d60d483a37993f326e2f78bed33c1f7e083f6ff15b542464"
+      }
+    },
+    {
+      "index": 39,
+      "name": "inetutils",
+      "version": "2.6",
+      "script_status": "present",
+      "script": {
+        "path": "scripts/build-m04-inetutils-stage.sh",
+        "sha256": "fa17250cac1ff5286fbe80ee0c00f8a73053bb6e76a9b4bf0c17790b27f543f2"
+      }
+    },
+    {
+      "index": 40,
+      "name": "less",
+      "version": "679",
+      "script_status": "present",
+      "script": {
+        "path": "scripts/build-m04-less-stage.sh",
+        "sha256": "6961cefb276d12a09865283fed1546151cd4da616845f962883922ebb231dd2c"
+      }
+    },
+    {
+      "index": 41,
+      "name": "perl",
+      "version": "5.42.0",
+      "script_status": "present",
+      "script": {
+        "path": "scripts/build-m04-perl-stage.sh",
+        "sha256": "43713637f5882b07e9c58d63937d99cfd2aff9a73d7204bc39f685abb9cda6af"
+      }
+    },
+    {
+      "index": 42,
+      "name": "xml-parser",
+      "version": "2.47",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 43,
+      "name": "intltool",
+      "version": "0.51.0",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 44,
+      "name": "autoconf",
+      "version": "2.72",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 45,
+      "name": "automake",
+      "version": "1.18.1",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 46,
+      "name": "openssl",
+      "version": "3.5.2",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 47,
+      "name": "libelf",
+      "version": "0.193",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 48,
+      "name": "libffi",
+      "version": "3.5.2",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 49,
+      "name": "python",
+      "version": "3.13.7",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 50,
+      "name": "flit-core",
+      "version": "3.12.0",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 51,
+      "name": "packaging",
+      "version": "25.0",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 52,
+      "name": "wheel",
+      "version": "0.46.1",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 53,
+      "name": "setuptools",
+      "version": "80.9.0",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 54,
+      "name": "ninja",
+      "version": "1.13.1",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 55,
+      "name": "meson",
+      "version": "1.8.3",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 56,
+      "name": "kmod",
+      "version": "34.2",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 57,
+      "name": "coreutils",
+      "version": "9.7",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 58,
+      "name": "diffutils",
+      "version": "3.12",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 59,
+      "name": "gawk",
+      "version": "5.3.2",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 60,
+      "name": "findutils",
+      "version": "4.10.0",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 61,
+      "name": "groff",
+      "version": "1.23.0",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 62,
+      "name": "grub",
+      "version": "2.12",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 63,
+      "name": "gzip",
+      "version": "1.14",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 64,
+      "name": "iproute2",
+      "version": "6.16.0",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 65,
+      "name": "kbd",
+      "version": "2.8.0",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 66,
+      "name": "libpipeline",
+      "version": "1.5.8",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 67,
+      "name": "make",
+      "version": "4.4.1",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 68,
+      "name": "patch",
+      "version": "2.8",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 69,
+      "name": "tar",
+      "version": "1.35",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 70,
+      "name": "texinfo",
+      "version": "7.2",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 71,
+      "name": "vim",
+      "version": "9.1.1629",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 72,
+      "name": "markupsafe",
+      "version": "3.0.2",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 73,
+      "name": "jinja2",
+      "version": "3.1.6",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 74,
+      "name": "systemd",
+      "version": "257.8",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 75,
+      "name": "dbus",
+      "version": "1.16.2",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 76,
+      "name": "man-db",
+      "version": "2.13.1",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 77,
+      "name": "procps-ng",
+      "version": "4.0.5",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 78,
+      "name": "util-linux",
+      "version": "2.41.1",
+      "script_status": "missing",
+      "script": null
+    },
+    {
+      "index": 79,
+      "name": "e2fsprogs",
+      "version": "1.47.3",
+      "script_status": "missing",
+      "script": null
+    }
+  ]
+}
