@@ -1,0 +1,721 @@
+{
+  "captured_at": "2026-09-24T05:59:26+00:00",
+  "entries": [
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/include",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/mpf2mpfr.h",
+      "sha256": "3ab0b914a208a584c5309060eadf1bb0ac79bd6a0581e04142f813dbb0c752a3",
+      "size": 6547,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/mpfr.h",
+      "sha256": "588c2bd606cba060afb49cd024f9119e996089a341a99d1dc7e0367622335a13",
+      "size": 57588,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libmpfr.la",
+      "sha256": "0508f66b5c6f0615c05bbcced1448a613ef360f508a3284de3efde78b373d3c8",
+      "size": 971,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libmpfr.so",
+      "target": "libmpfr.so.6.2.2",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libmpfr.so.6",
+      "target": "libmpfr.so.6.2.2",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libmpfr.so.6.2.2",
+      "sha256": "c599dbc6b4c1f5025c8e847bfc7d4fdefaa00022fde563f4c327f2c9b11f858f",
+      "size": 1551664,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/pkgconfig",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/pkgconfig/mpfr.pc",
+      "sha256": "2732a961bfa366d7a57096f84c373fb58a430361ac0676aae98cab0fb5a4cfa7",
+      "size": 272,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/doc",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/doc/mpfr-4.2.2",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/AUTHORS",
+      "sha256": "dc8a7d86b688287ea3f6f20b3d7aa1f6f757253c1b9dc100d7e5dc5eb7b0058d",
+      "size": 1375,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/BUGS",
+      "sha256": "e33323d9a8a5dafb250c9e4d5c62004ce5f011e9d97b4398b0ea2bffd80b965f",
+      "size": 3460,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/COPYING",
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+      "size": 35149,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/COPYING.LESSER",
+      "sha256": "e3a994d82e644b03a792a930f574002658412f62407f5fee083f2555c5f23118",
+      "size": 7652,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/FAQ.html",
+      "sha256": "f0f4dff63cd0cf0db2389ad7da84e174dc3f6989ca07e5244f73d47bc93e1871",
+      "size": 18313,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/NEWS",
+      "sha256": "12b445033c3fb2206afa0a494f6d7b5229272d74065cbbaa8d49488d1dd24c2e",
+      "size": 27527,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/TODO",
+      "sha256": "7059383bfbf13a6592df464860c7cb581942de87116138204c85601d93b6a59e",
+      "size": 39267,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/doc/mpfr-4.2.2/examples",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/examples/ReadMe",
+      "sha256": "4b503f2cd881013af415ae498ab1ac88a2c4cb5ed766fa6f5e227113145c53d0",
+      "size": 41,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/examples/can_round.c",
+      "sha256": "9eea6b9a50f29b31a58b6b7e1e4418220b5a34ff47be3e19ddd1374d4b7d8625",
+      "size": 2003,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/examples/divworst.c",
+      "sha256": "84f295354ad793fe58f0eb223ec44d192f472380d4f1593a834ed7b46653c15d",
+      "size": 2946,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/examples/rndo-add.c",
+      "sha256": "b8011235a2eeaa42f98c67a4178c02306b8f5593d9aa5e6150a37ad8b11baf21",
+      "size": 2567,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/examples/sample.c",
+      "sha256": "1cd40b64881f6e5fe4cb813250bbc0611b2b5a0d821def2ed036fcc07b72d564",
+      "size": 1583,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/examples/threads.c",
+      "sha256": "70004003b0c7b928f16208608fba95858b214a79c493ed0593961dace6180d1e",
+      "size": 2332,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/examples/version.c",
+      "sha256": "f8c2cb8c08e9ec9752ed6522ea65bcaa45aaf4a36e28c783677e0ecc8a45e463",
+      "size": 7367,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/API-Compatibility.html",
+      "sha256": "851d338a733ea05c12ca479f423566931ddff9643ce6dc035a403bc4395bfeda",
+      "size": 4781,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Added-Functions.html",
+      "sha256": "55b3b37bc1c0aa87e079ef4fab5d4b577420597d229bd4263207b9e3cde2331b",
+      "size": 11379,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Arithmetic-Functions.html",
+      "sha256": "1ce8a0ee6e5807f1e082f994724c0e50c0acf410533a83f2df1e1cb94263f215",
+      "size": 42993,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Assignment-Functions.html",
+      "sha256": "003faf79eb729a87c8cc363aaea18b17ea45e69125d4c57ca3bfc65fc1f0a36f",
+      "size": 26154,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Changed-Functions.html",
+      "sha256": "7de3a4802df6de6d6c5a0f2188339651c4809ab8b2a698b13ce76df111fbbfc4",
+      "size": 11612,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Combined-Initialization-and-Assignment-Functions.html",
+      "sha256": "69756b4f10a29186160d580910c3df9f9a4c6d37544788cd095c70fccf5b92f0",
+      "size": 7871,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Comparison-Functions.html",
+      "sha256": "9e1c19837bdab97726603fdb8c8adc9f5a6fa1851f79c0cb2968ccc288ab795d",
+      "size": 19214,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Compatibility-with-MPF.html",
+      "sha256": "abcfc7b40c4d6c17410a6970ac271d4db8e130dd8bb971501c3312b479f0588e",
+      "size": 8935,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Concept-Index.html",
+      "sha256": "7d29ee31b64e45c1c68743cebacfd3c33c108be655ebf44c8a6a3880f26c7548",
+      "size": 19928,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Contributors.html",
+      "sha256": "90bea2369f78d1e8c9a4c0305c9b9ecf36db543b9decb8c2900b3ac1ccec9009",
+      "size": 6100,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Conversion-Functions.html",
+      "sha256": "7ac596a119ebfc9006d0231302a3ec3dcfacc9e10f031da639a762acdd23e826",
+      "size": 30152,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Copying.html",
+      "sha256": "419174a08a5cb9578f1749d5319598ea0398139b5665d7c7121ae30e8a9a2cde",
+      "size": 4304,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Custom-Interface.html",
+      "sha256": "152a3b7d75ff10d76f80bd0330f82dadee61946898eecb3ed77bdeab5031a7f8",
+      "size": 11938,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Exception-Related-Functions.html",
+      "sha256": "f57dfcad13c8a1997352f5ba435bf2e8832ba94417bc1a3ac7d523dbfe8e387b",
+      "size": 27838,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Exceptions.html",
+      "sha256": "ee858f742191ac9a57ed5cfa4e19f63c6ac8757826dea960487b808adefd4dba",
+      "size": 6773,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Floating_002dPoint-Values-on-Special-Numbers.html",
+      "sha256": "b16257b759ee8e260e4e91b5c55077e26e903414559ee19549fa2f12d9abb1d2",
+      "size": 6975,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Formatted-Output-Functions.html",
+      "sha256": "716688774698be96168cc5912e34656f7301639236cdf2618aec77e653b1ca7d",
+      "size": 26991,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Function-and-Type-Index.html",
+      "sha256": "23b4dc568b622706cf4c045940201a4338816c562476f8e074308e1bb44e9a4b",
+      "size": 101058,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/GNU-Free-Documentation-License.html",
+      "sha256": "bbb49a7ffc4a94e8bd583fd2e71c0064f9efa88fd937723207e4062c8c33738b",
+      "size": 27569,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Getting-the-Best-Efficiency-Out-of-MPFR.html",
+      "sha256": "3e62a174f3de458b5ce13e021f268fe6f66c5440b7afba82a3ecc2c6677510ad",
+      "size": 3268,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Headers-and-Libraries.html",
+      "sha256": "ca09e43141369461d3ee0b0e770a34a88e251c53594a524b7f24ab601a1a72f2",
+      "size": 8154,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Initialization-Functions.html",
+      "sha256": "8371bc6070bfa51aee6deaa936f2f78515fda1331a5930f27b086926e2568230",
+      "size": 16850,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Input-and-Output-Functions.html",
+      "sha256": "2a0ea2cc2641366a7abf859aa52240189fb4a578ab5680b2862f0d942b4fa782",
+      "size": 12344,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Installing-MPFR.html",
+      "sha256": "834ebdcbcade526f58971289892645aaa36b0a08110fe2295d23dcdb8a6755dc",
+      "size": 11123,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Integer-and-Remainder-Related-Functions.html",
+      "sha256": "db461bf9f4eca3d29d1b5dea6c88df519eb247fe0d8f7e7a776a46f4a2b6a775",
+      "size": 20720,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Internals.html",
+      "sha256": "dfc7f38075ac3ebfa9f7399a0214acee89851b6ba6f1fadcfbbeb52628766941",
+      "size": 3949,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Introduction-to-MPFR.html",
+      "sha256": "48b1ae59b3f91a856c26a4398bff7687accf53fc05c3ff097e7a08a72fcb30e1",
+      "size": 5287,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/MPFR-Basics.html",
+      "sha256": "e9eece8505729d7bbe5d0d7d8c4636f65840808584f5432a338823e8a76129d5",
+      "size": 2969,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/MPFR-Interface.html",
+      "sha256": "de8db95c62f9e4654c78fa189a917cc010e5db9fd1166f008c8e86419a7eb4ac",
+      "size": 6000,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/MPFR-Variable-Conventions.html",
+      "sha256": "50926af52bce45a2ed8b2216af0cd61c7f71fb97b6e4e28e267acf54275b7606",
+      "size": 3807,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/MPFR-and-the-IEEE-754-Standard.html",
+      "sha256": "79f175fcb5b2b29add983e92c3892322a95bf248bb59606815184880ec8b8e77",
+      "size": 5389,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Memory-Handling-Functions.html",
+      "sha256": "074598954c2ade78a5121dc6015577a8f5cc6cb931afb66d63e58022dff14744",
+      "size": 6577,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Memory-Handling.html",
+      "sha256": "21888bb58f21d9ddebed906013ff732939e4f340b9842a3bf54f620f98ccb0a2",
+      "size": 6582,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Miscellaneous-Functions.html",
+      "sha256": "9cf8c5be32c4c76f746a234f633ee9b7e0f51a6fcae67eca53637569cf5a88f0",
+      "size": 27765,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Nomenclature-and-Types.html",
+      "sha256": "deeb79dc18f1fc6d2f4bb889711da07b92ef5b337fd66471e904be3817547430",
+      "size": 8679,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Other-Changes.html",
+      "sha256": "ae46349b3aae4b22788d08f62a7c4195306f978e2ff8fabc4da087bb110c7a6e",
+      "size": 4243,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/References.html",
+      "sha256": "2c1209605f43b59a73694a808509ff7f076b34974a18a206bc38441155b14dde",
+      "size": 4500,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Removed-Functions.html",
+      "sha256": "3ee413c7f519c9f72b223d173b97ed107ca5bdd9ac29aa83f2cfc9c1b49f83c5",
+      "size": 3077,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Reporting-Bugs.html",
+      "sha256": "ff73bcb8b1b87c2c1ae12a05fadcdf33da62bf729c09e719f43361460497be3f",
+      "size": 4909,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Rounding.html",
+      "sha256": "85c777dc4b9c805197e3c6da92c2a8810370f9703338d17a8d63e20b7f9e65a5",
+      "size": 9462,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Rounding_002dRelated-Functions.html",
+      "sha256": "72c9002ca5a5f7871b1265ec854d99fd0de29b02cbc4d925cfb26ea6fa8f2211",
+      "size": 14757,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Transcendental-Functions.html",
+      "sha256": "415eb8707e361312217626e1cd860d32c8826b612c77d30db78fbede19c35d9e",
+      "size": 67696,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/Type-and-Macro-Changes.html",
+      "sha256": "d27a3de932c3aba734211aabf5f823455b532279144ba57937de305f06b94954",
+      "size": 6665,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/index.html",
+      "sha256": "a404223814206dc896a6033344ac5f78f8cdddd823b070f25c77946a678fe6de",
+      "size": 4155,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/mpfr_005fget_005fstr.html",
+      "sha256": "aae6d7e1838570d389e35ba85f123488f7f90e49400f9c29d8d4fee6c245ec0a",
+      "size": 1488,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/mpfr_005fget_005fstr_005fndigits.html",
+      "sha256": "abe1d87e267df758790c1a5ebd4aa905989704ddaad776a9e58918a73c34d9c5",
+      "size": 1536,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/mpfr_005fpow.html",
+      "sha256": "94d7af1a8d739a71b1ca9a97b5bd5e703be1d896605591a3b2784e47c58cac42",
+      "size": 1468,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpfr-4.2.2/mpfr.html/ternary-value.html",
+      "sha256": "e0eb075f1d1d47ce437091ad2ffeaa006b95c4160003dee5842e6a72e77fab83",
+      "size": 1453,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/info",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/info/dir",
+      "sha256": "ce770d9593f4b04b40178627f43dad6e3915d6db9494e0fc3581d38a13e1118a",
+      "size": 680,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/info/mpfr.info",
+      "sha256": "d47105f9f218cba8f643d2ba8bc5f6039c3a0a3a57b6e09d44195aa581218cf0",
+      "size": 289618,
+      "type": "file",
+      "uid": 0
+    }
+  ],
+  "package": {
+    "name": "mpfr",
+    "source": {
+      "sha256": "b67ba0383ef7e8a8563734e2e889ef5ec3c3b898a01d00fa0a6869ad81c6ce01",
+      "url": "https://ftp.gnu.org/gnu/mpfr/mpfr-4.2.2.tar.xz"
+    },
+    "version": "4.2.2"
+  },
+  "schema": "alpbahOS.package-files/v1"
+}
