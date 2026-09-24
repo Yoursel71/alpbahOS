@@ -645,6 +645,32 @@ EXIT cleanup found no mounts below `/mnt/lfs`; NBD PID remained empty, 68 GiB
 was free, the pinned rootfs `alp.py` hash was unchanged, and `db.json` stayed
 empty. LFS reference: [Inetutils 2.6 instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/inetutils.html).
 
+## Less 679 staged comparison — 24 September 2026
+
+Less 679 followed LFS 12.4-systemd instructions in the Builder `/mnt/lfs`
+chroot. Source `/mnt/lfs/sources/less-679.tar.gz` matched LFS MD5
+`0386dc14f6a081a94dfb4c2413864eed` and SHA-256
+`9b68820c34fa8a0af6b0e01b74f0298bcdd40a0489c61649b47058908a153d78`.
+Configuration was `./configure --prefix=/usr --sysconfdir=/etc`; `make -j2`
+and `make check` completed. The upstream suite ran 17 tests with 0 errors.
+Installation went only to `/mnt/lfs/tmp/alp-m04-less-stage-r1`; staged
+`less --version` reported `less 679 (POSIX regular expressions)`, and `less`,
+`lesskey`, and `lessecho` were present in the stage.
+
+The manifest has 11 entries (5 directories, 6 files), SHA-256
+`5adb1eee6e78ee164dc770f2d29f38d518575d69eb03146c2f26cda29dedaded`;
+[manifest](manifests/lfs-base/less-679-2026-09-24.json). Read-only preflight
+reported 8 exact matches and 3 mismatches, all three executable binaries;
+[full report](manifests/lfs-base/less-679-2026-09-24-preflight.log), SHA-256
+`46661c55c488dd37ceb3983ee75fa3cae3df1d4dd6d5ce156e80e5aba2a41029`.
+No staged file was merged and no ownership record was added.
+
+Builder log `/mnt/lfs/tmp/alp-logs/m04-less-679-stage-20260924-r1.log`
+SHA-256 `a36e0860dfb917e1523be3e67e7ea36778f9906fa5a6964e0db9ce9990e0bfd3`.
+EXIT cleanup found no mounts below `/mnt/lfs`; NBD PID remained empty, 68 GiB
+was free, the pinned rootfs `alp.py` hash was unchanged, and `db.json` stayed
+empty. LFS reference: [Less 679 instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/less.html).
+
 Official LFS 12.4-systemd procedures:
 [Gzip-1.14](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/gzip.html),
 [Zstd-1.5.7](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/zstd.html),

@@ -1,0 +1,10 @@
+MISMATCH /usr/bin/less
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/less", "sha256": "3be7307e8552c763d910ab2b33847a0f7182e73f4444d01331ebf93ff3c8cb3a", "size": 865784, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/bin/less", "sha256": "c3cd4c71726723940f4806a1dc2c150dd46763ae9d413476039fce159b7fe7ff", "size": 861664, "type": "file", "uid": 0}
+MISMATCH /usr/bin/lessecho
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/lessecho", "sha256": "13f917031bb911c8fe572f86820c3fed6081078b37316717ff316d4161445142", "size": 27632, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/bin/lessecho", "sha256": "fdd8640733424ba98343ff16a65cff706b19bf8281e74f95a313172f026f1bf8", "size": 27632, "type": "file", "uid": 0}
+MISMATCH /usr/bin/lesskey
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/lesskey", "sha256": "e00c9482976225223babd3697e4c276b423e3d57e2b772ffc23e5e564ad46c8a", "size": 65160, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/bin/lesskey", "sha256": "99b243d054c994e097052141acbb8d400fc8b35e92dfd8866b001e73f215c294", "size": 65160, "type": "file", "uid": 0}
+package=less version=679 entries=11 matched=8 mismatched=3

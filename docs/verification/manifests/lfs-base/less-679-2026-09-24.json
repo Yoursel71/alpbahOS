@@ -1,0 +1,103 @@
+{
+  "captured_at": "2026-09-24T03:43:31+00:00",
+  "entries": [
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/less",
+      "sha256": "3be7307e8552c763d910ab2b33847a0f7182e73f4444d01331ebf93ff3c8cb3a",
+      "size": 865784,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/lessecho",
+      "sha256": "13f917031bb911c8fe572f86820c3fed6081078b37316717ff316d4161445142",
+      "size": 27632,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/lesskey",
+      "sha256": "e00c9482976225223babd3697e4c276b423e3d57e2b772ffc23e5e564ad46c8a",
+      "size": 65160,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man/man1",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/less.1",
+      "sha256": "2d9cb9f2f06580a71ec18646178163b675c4e3217497d426fbbd94ade5b5d33a",
+      "size": 102148,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/lessecho.1",
+      "sha256": "412054af20c31ab008453b38fd4322813a42e15a3265fe7f092876f2126e0031",
+      "size": 1755,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/lesskey.1",
+      "sha256": "256b49efca3e8d29169554b46c91a5bd410e66d664c2a505b35e298924a87794",
+      "size": 12069,
+      "type": "file",
+      "uid": 0
+    }
+  ],
+  "package": {
+    "name": "less",
+    "source": {
+      "sha256": "9b68820c34fa8a0af6b0e01b74f0298bcdd40a0489c61649b47058908a153d78",
+      "url": "https://www.greenwoodsoftware.com/less/less-679.tar.gz"
+    },
+    "version": "679"
+  },
+  "schema": "alpbahOS.package-files/v1"
+}
