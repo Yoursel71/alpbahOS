@@ -512,3 +512,10 @@ PipeWire hatası için aynı gün ek tekrar: Guest `/tmp`'te 12 saniye 48 kHz st
 - `ssh alp-builder` ile Builder `yrsk` salt okunur incelendi. `findmnt -T /mnt/lfs` root `/` döndürdü; `df -h /`: 98 GiB volume içinde 81 GiB used, 13 GiB available. `/sys/block/nbd0` yok, `make`/`ninja`/`cmake` süreci yok.
 - `/mnt/lfs/usr/lib/alp/alp.py` SHA-256 `7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132`; `/mnt/lfs/var/lib/alp/db.json` packages boş. Getty/resolved/resolv.conf bağlantıları ve KWin user-unit link'i beklenen hedeflerde.
 - Kaynak ağacında görülen install manifestleri CMake/KDE/BLFS alanlarında. Önceki daha kapsamlı audit LFS base path set'i için kayıt bulamamıştı. Bu tekrarda M04 sahiplik DB'si doldurulmadı, rootfs'e yazılmadı, hiçbir image bağlanmadı. Builder alanı güncel 13 GiB; tam base reinstall için alan ve güvenli staging planı ayrıca ölçülmeli. Kanıt güncellendi: `docs/verification/m04-base-ownership-assessment-2026-09-23.md`.
+
+## 24 Eylül 2026 — Builder kök LVM alanı açıldı
+
+- Builder VHDX `F:\alpbahOS-build\vhdx\alpbah-builder.vhdx`: 210 GiB dinamik sanal boyut; guest `/dev/sda3` 206.95 GiB LVM PV, fakat root LV 100 GiB idi ve PV'de 106.95 GiB VG extents boştu. Host F: ölçümünde 136,840,237,056 byte boş alan vardı.
+- Salt test `sudo -n lvextend --test -r -L +60G /dev/ubuntu-vg/ubuntu-lv` başarılı çıktı. Gerçek komuttan hemen önce aktif `make/ninja/cmake` yok, `/sys/block/nbd0/pid` yok (nbd aygıtları `0 B`, bağlı değil) ve `sudo -n find /tmp -maxdepth 2 -type f -name '*.vhdx'` boştu.
+- Çevrimiçi büyütme `sudo -n lvextend -r -L +60G /dev/ubuntu-vg/ubuntu-lv` ve `resize2fs` başarılı oldu; Builder kapatılmadı. Sonuç LV 160 GiB, ext4 157 GiB, `/` 81 GiB used / 69 GiB available; VG’de 46.95 GiB extent kaldı. `/mnt/lfs` hâlâ `/` üzerinde. Bu işlem rootfs package DB/manifest dosyalarına dokunmadı.
+- Read-only `du`: `/mnt/lfs` 54 GiB, `sources` 19 GiB, `tmp` 430 MiB, `/usr` 4.9 GiB. LFS-base manifesti üretmedi. F: artifact dinamik alanını ve 300 GB proje bütçesini izleyerek kontrollü M04 recovery planı hazırlanmalı. Güncel ölçümler [M04 assessment](verification/m04-base-ownership-assessment-2026-09-23.md) içinde.

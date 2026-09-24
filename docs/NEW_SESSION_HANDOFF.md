@@ -62,7 +62,7 @@ ssh -i C:\Users\thewo\.ssh\claude_alpbahos_m2 sa@172.28.162.172
 
 - Anahtar parolasızdır. Özel anahtarı repoya veya mesaja koyma.
 - Ubuntu 24.04 tabanı, kernel `6.8.0-139-generic`.
-- Builder root LV: yaklaşık 98 GiB; güncel `df -h /` çıktısında 25 GiB boştu. Aynı kontrolde `make`, `ninja`, `cmake` veya `chroot` süreci yoktu; `/sys/block/nbd0` mevcut değildi. Büyük derlemeden önce tekrar kontrol et.
+- Builder kök LV: 24 Eylül 2026'da çevrimiçi büyütme sonrası 160 GiB; ext4 `df -h /`: 157 GiB toplam, 81 GiB kullanım, 69 GiB boş. VG'de 46.95 GiB boş extent var; dinamik 210 GiB Builder VHDX'i `F:\alpbahOS-build\vhdx\alpbah-builder.vhdx` üzerindedir. Son kontrolde `make`/`ninja`/`cmake` yok, `/sys/block/nbd0/pid` yok, root-readable `/tmp` taramasında VHDX yok. Yeni build öncesi tekrar kontrol et.
 - LFS hedef kökü: `/mnt/lfs`.
 - Kritik ayrıntı: `/mnt/lfs` ayrı bağlı disk/mount değildir; Builder'ın `/` dosya sistemi içindeki dizindir. `findmnt -T /mnt/lfs` `/` döndürür. Yanlışlıkla mount/format işlemi yapma.
 - Kaynak arşivleri: `/mnt/lfs/sources`
