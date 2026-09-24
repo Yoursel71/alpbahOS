@@ -1,0 +1,23 @@
+package=libxcrypt version=4.4.38
+source_url=https://github.com/besser82/libxcrypt/releases/download/v4.4.38/libxcrypt-4.4.38.tar.xz
+source_md5=1796a5d20098e9dd9e3f576803c83000 (LFS package list)
+source_sha256=80304b9c306ea799327f01d9a7549bdb28317789182631f1b54f4511b4206dd6 (upstream release sidecar)
+test_transcript_sha256=a859cf09dcd901fa6aa6fef436fa97c1fe88434e09012c2e4ee5b9030132a456
+test_suite_log_sha256=e3912e4ceed71053ef61a16dc6682886c494ba03b76001ac4659c004113598be
+test_expectation_baseline_sha256=e3912e4ceed71053ef61a16dc6682886c494ba03b76001ac4659c004113598be
+LIBXCRYPT_TESTS=43 total; 32 PASS, 11 SKIP, 0 XFAIL/FAIL/XPASS/ERROR
+stage_loader_trace_sha256=1b8f97a436cb95a9a09bb02eea1212cbac94570bb7e5b9841eb038d2d6780403
+passwd_loader_trace_sha256=1a43c6b649679c74da6115abfd6abdd51629add7bf66e8c4fe413adf1595768c
+etc_passwd_before_after_sha256=f9f24876a21ed886d611090621cc269a32638a771114df83dc6bb7163ee2108a
+etc_shadow_before_after_sha256=34e817e8d12cf7ac681bc6316eb6a024c69e374fbc6e3aad6a3064bdc70079cb
+rootfs_alp_sha256=7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132
+rootfs_alp_db_sha256=40a9bcde751533fc237fae2b7e5eaebbbfd5779f3069c09f0590c07be184f165
+install_mode=DESTDIR; rootfs_merge=forbidden
+manifest=/mnt/lfs/tmp/alp-m04-libxcrypt-4.4.38-manifest-20260924-r1.json
+entries=25 types={"directory": 8, "file": 14, "symlink": 3}
+STAGE_COMPARE_OK: entries=25 matched=25 mismatched=0
+MISMATCH /usr/lib/libcrypt.so.2.0.0
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/libcrypt.so.2.0.0", "sha256": "b1c0797ced052c007d6ac8444587bdd0c0d1487909145d6a3ae381484b0344c2", "size": 583144, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/libcrypt.so.2.0.0", "sha256": "3250f8579170594dfef081d94f573943801e1f260b45c06babe31edb85282ab3", "size": 583144, "type": "file", "uid": 0}
+package=libxcrypt version=4.4.38 entries=25 matched=24 mismatched=1
+ROOTFS_PREFLIGHT=staged paths differ; review before adoption
