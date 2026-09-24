@@ -1,0 +1,3654 @@
+{
+  "captured_at": "2026-09-24T05:35:58+00:00",
+  "entries": [
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/etc",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/etc/gprofng.rc",
+      "sha256": "00cc4a4c556f88d6ae1f620781e2e16c62f8402132267e6cd64836d557525291",
+      "size": 3986,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/addr2line",
+      "sha256": "b6a83107d1c14875c83776033496b33eed868088346e1ab31d6f2d26457a5067",
+      "size": 244384,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/ar",
+      "sha256": "8f91a83b90406f72ac6cacf4eee08cda5b9c97496d3a940b83048e76565ea75d",
+      "size": 410824,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/as",
+      "sha256": "2dece845423dc0c601b87ab092e09e770d75d82a9ad386b78174a7d54b3a6ba5",
+      "size": 3122728,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/c++filt",
+      "sha256": "ca29a1eafa01d435085c5c0ff785269bd8d0d5046e1a5e830c2ee497b54fc0bb",
+      "size": 180352,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/elfedit",
+      "sha256": "b248ece58626b7fde9fe8a5c6df124b4fc2a95da8d2df2f7b3f58f404e2ed9ee",
+      "size": 121232,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/bin/gp-archive",
+      "target": "gprofng-archive",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/bin/gp-collect-app",
+      "target": "gprofng-collect-app",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/bin/gp-display-html",
+      "target": "gprofng-display-html",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/bin/gp-display-src",
+      "target": "gprofng-display-src",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/bin/gp-display-text",
+      "target": "gprofng-display-text",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/gprof",
+      "sha256": "008fe1be1061e60e2e81a8266e788db4e8b67ca3eff3e073b34cf25802ed8b2f",
+      "size": 808896,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/gprofng",
+      "sha256": "d24caccbc180ed301a3d4565d428996bdd32b9262ba2f6b161a43e6131bb6d2d",
+      "size": 45768,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/gprofng-archive",
+      "sha256": "7c5d5c61ed3b8a91aad099c453bb7aef690eefd3193e75bff2c62b39dd26d18c",
+      "size": 276496,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/gprofng-collect-app",
+      "sha256": "407fb88fcb888e70effee7faa0e9299dafc0a01cc1774253b33ba0994991f24b",
+      "size": 315792,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/gprofng-display-html",
+      "sha256": "4654707f97636e9aaec3ab330b6324fc176564c6ae54e1f451446784bd20f253",
+      "size": 645483,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/gprofng-display-src",
+      "sha256": "5e1679265e73163999c51616e211b7705f5674a016b063b64bf0cc0386f9d2dc",
+      "size": 158784,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/gprofng-display-text",
+      "sha256": "261d310f75358d2c801bdfd245df739d1853a688adbfa08aa58909ca1c43ac41",
+      "size": 774992,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/ld",
+      "sha256": "f877a2ff43f4707a9440cf0fd18ef9ea181983150254685550d376e20b4acbd0",
+      "size": 3135296,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/ld.bfd",
+      "sha256": "f877a2ff43f4707a9440cf0fd18ef9ea181983150254685550d376e20b4acbd0",
+      "size": 3135296,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/nm",
+      "sha256": "3c42b7cf11b38979a3d0c0eca6eae6f3f1cbc658e51f340ad5111dc6e5cceea7",
+      "size": 312792,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/objcopy",
+      "sha256": "bd0edbfe72e5d4300b80cc7e41101d58c2af829e9fe4f25f9e8d4020b63cde28",
+      "size": 1011304,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/objdump",
+      "sha256": "4897c34c8fd92ef31469347ca8d98f632b7bcb982dca5339b3e76784f7f7b9a9",
+      "size": 1914272,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/ranlib",
+      "sha256": "e0cb327a4cda2133c0ebd843c7caa67e2feddc8acbaf44100b5de892c5f5b4a2",
+      "size": 383672,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/readelf",
+      "sha256": "6b110056a1cac76bb7542362d61666fe1be97bb9b2b61c2e54ccbf6b808da05b",
+      "size": 2514120,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/size",
+      "sha256": "64000461dda1caf0ff1802db19dd9c41b1fbdb2bb7673051868d9bd2f06aa21d",
+      "size": 225688,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/strings",
+      "sha256": "45b4e184c80897aa3c5dbf230620ab739be48c8df004717d52034628dfaa7e90",
+      "size": 239992,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/bin/strip",
+      "sha256": "e152edc21f087fb264b764e2e8720d7ede65070343fe73e6022bd199d318e618",
+      "size": 929240,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/include",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/ansidecl.h",
+      "sha256": "ad38622cd19e079228ce345d383cdf12cce71a869f89bb6b4bc2173829bb8ddb",
+      "size": 11777,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bfd.h",
+      "sha256": "ce9482c1af04059b26e3037c87566ac91dde967841822105fe49d552ed5bab45",
+      "size": 259320,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/bfdlink.h",
+      "sha256": "3955b4612bc381be05820d6d6c81be741d31a85464ba27fee150e3b6d4d95c61",
+      "size": 40639,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/collectorAPI.h",
+      "sha256": "e3790f711cd25c4944466c7424ad47501031b12bb6bfa6c720bb16eeeb2fa292",
+      "size": 2343,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/ctf-api.h",
+      "sha256": "635d6436f957029aeafd76321d710cb7038551f64efc89e88e675913d8621f3c",
+      "size": 46544,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/ctf.h",
+      "sha256": "2e7780f40a2755018db5937b2e9aed145bcf96ef949187846a67c14708c87b44",
+      "size": 26140,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/diagnostics.h",
+      "sha256": "160a978688dbaa46bc94107414675bfa68de122824a7e411ecb11c0f3e0ec250",
+      "size": 4978,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/dis-asm.h",
+      "sha256": "bc4483b7ab65551a540a9dd23c2f93a4545f550d9f238ed84e907923cfad21e3",
+      "size": 21041,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/libcollector.h",
+      "sha256": "e213391f299fb4a09b4979e883db138f519a4b4b9b3f6666da88285f9cc5f5ef",
+      "size": 3389,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/libfcollector.h",
+      "sha256": "4433517fa199b5cd09f162f8485a1b7f1be559fc8ad5527ef4109724777c6ae1",
+      "size": 1473,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/plugin-api.h",
+      "sha256": "858482a2b5f1556bca44058ea053c91bf6f0267bdf1259dea957bff178790ba3",
+      "size": 18865,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/sframe-api.h",
+      "sha256": "14517149c902d7cd499b53b7261cb8fe01f1618e20c0d76d263ae11d70a02f9a",
+      "size": 10989,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/sframe.h",
+      "sha256": "5795bfe8130246b62b9a4d2a3f0d86be87e6a0cc67ca6e2bba112c9d05c10d53",
+      "size": 16924,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/symcat.h",
+      "sha256": "e7225efe50901a313f05130c9055b0dd1c4d9d6c1b4e6ce0153d27f6c8233a11",
+      "size": 2191,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bfd-plugins",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/bfd-plugins/libdep.so",
+      "sha256": "4e504a2125979481c84a07d509342c37e92210867264432e1e19e1cd5b4ab415",
+      "size": 31016,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/gprofng",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/gprofng/libgp-collector.so",
+      "sha256": "b5507c9344542816f25114038fdbb17fbe2fc0ee50a988a41c1f00c595465698",
+      "size": 2249544,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/gprofng/libgp-collectorAPI.a",
+      "sha256": "8b868a1789d4b2b8149938d55adf15151d02df3a18a5afa6626fdff23430ef30",
+      "size": 13874,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/gprofng/libgp-collectorAPI.la",
+      "sha256": "494473dd5da301c12cc8411325809eb38269a7ef0451903df054d99c4e108ba7",
+      "size": 1011,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/gprofng/libgp-collectorAPI.so",
+      "sha256": "1fa08dd7b529deae64d24de3c048e051c40a8f93c064d7ed20fb691e3fbb029a",
+      "size": 22304,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/gprofng/libgp-heap.so",
+      "sha256": "d8311e38394d5fa6d686275d02bc9434024b55370bc590e5fc6558bc48038100",
+      "size": 41096,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/gprofng/libgp-iotrace.so",
+      "sha256": "54b5e1a7adf5a8dbdc785a32ca79a4a12a0fdb8916777caf4141411c1a2de123",
+      "size": 183224,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/gprofng/libgp-sync.so",
+      "sha256": "1354b723ac84f55eaf173f231b58c7cde111391ee0d00598a3d555004a6f4e0e",
+      "size": 59176,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/ldscripts",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.x",
+      "sha256": "a3aed4ec1640546bf582622b78de520db20198c562899fad26a68964213e329e",
+      "size": 10954,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.xbn",
+      "sha256": "dc989e013750738d9cbf9d4d609e1d3473d57ab6bb2fb3b12c8d4fce6303cd56",
+      "size": 10757,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.xc",
+      "sha256": "bfc8acb3bfe7d84cdb33ea5c5838600147ee3e91fb4bb2eaa09f60db7a46c2f3",
+      "size": 10600,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.xce",
+      "sha256": "2debc795f919be01cb5d73844b910255a07ff504a9934bf2f627d7dfd8d1b109",
+      "size": 10946,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.xcer",
+      "sha256": "83fa95932376cab100f399589051057fa4ba4e5d45ad61f94769285b8903a532",
+      "size": 10888,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.xd",
+      "sha256": "eb16d9276f8c0bf87d8ed6b062cdb3b95b1d92e82ba30944831a2e875f76a220",
+      "size": 10820,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.xdc",
+      "sha256": "1a225fbb4397a9fde44398b244e76a897a6af6224c6469ac87ecec3d185f5902",
+      "size": 10501,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.xdce",
+      "sha256": "d106d10c62a6a0db1ccd9cfb5f2ca722088f02d4e349664877b572c920e38b7c",
+      "size": 10847,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.xdcer",
+      "sha256": "77961c670ee86a204dd04805c8a1c1b682defa58acc579c7bfeb0d09ba99ac8d",
+      "size": 10789,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.xde",
+      "sha256": "84a1fad7ac361577a15b9ae7c672120941577d5aa9bf694d04a6a7351ec02b13",
+      "size": 11166,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.xder",
+      "sha256": "af8aa0ecbd2d6a72764211cd5a1948f499b754968e95ca3c9caaeb4eeb588bb6",
+      "size": 11108,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.xdw",
+      "sha256": "de61ff668d39bf001ffcb52a0b7e8d124dd8c93f9c3854e0711b6d617c5ea04e",
+      "size": 10462,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.xdwe",
+      "sha256": "25984c85cc11ee91f7d4aa0e567588feb852c64a3551e9ba5742aa5b1a989d5a",
+      "size": 10808,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.xdwer",
+      "sha256": "f9da4b4320dd5242fdd6c1cc77cbd040b1ee62827730476166d4e2f763f5fd1d",
+      "size": 10750,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.xe",
+      "sha256": "af5572e9abdab48a8d20ec218fc01582fdfc0d904e011a9f7aa9f3502e4b071c",
+      "size": 11265,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.xer",
+      "sha256": "27c369f4d5f426abe893a015e30c3bc6914e6b240e0d99725deade1b6e837e06",
+      "size": 11207,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.xn",
+      "sha256": "b750aa4baa12b0b2a7a9d18070475142c9e12e944eb4b5504f23f2e0c7248fe7",
+      "size": 10922,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.xr",
+      "sha256": "4fee319f3e9230601195a107a1fda55c88fa4af552198a3ad884904dde2a126a",
+      "size": 6654,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.xs",
+      "sha256": "526bf93c8041cb8443244349b76ae812e1073b8061222b8846321de06e67940e",
+      "size": 10440,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.xsc",
+      "sha256": "a5d59de3917e79eb7ebf5fc2b237792f14ad7240a916ad7bb866dd93e4e00e96",
+      "size": 10121,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.xsce",
+      "sha256": "3d5d69a0ad5a729b010b20463ba1eaad65a33436781f1e66229adc73d573d218",
+      "size": 10467,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.xscer",
+      "sha256": "aff425237f5a209a1a9c5d7b63e2d4fada8846055d2f8c4a8cbed71ba102dd36",
+      "size": 10409,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.xse",
+      "sha256": "3403f7b4510e69e4404ed6c4c4f6ba091325020457ecb99851936abe21f9ae0a",
+      "size": 10786,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.xser",
+      "sha256": "ffa9b7938090aa5aeec5516f8c20e314bb24a9e6161477006c747e31f32b2541",
+      "size": 10728,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.xsw",
+      "sha256": "df75c132c1c429c17a7791c741b26093cb205a71f51ce836161ac6b297667af2",
+      "size": 10082,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.xswe",
+      "sha256": "6cbbcf53fb2bcc60071c7e8c05d2a315e86f44c0c8af042296f6e7011710614c",
+      "size": 10428,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.xswer",
+      "sha256": "6d53a2fc641d15cb357f60d601c821035ab7ee2dc97910c97d929d772610c9e3",
+      "size": 10370,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.xu",
+      "sha256": "b84fed490f1cc0ff8fe478d245109dc183d456df3a6a83ec8c500363eeaa4954",
+      "size": 6678,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.xw",
+      "sha256": "bdc475c2e00e4d93e66fe62ec57342a2126464bf3d5dd089dfa39347b814d5d6",
+      "size": 10561,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.xwe",
+      "sha256": "b965c1c3ffb9e57f4a6d766e0515e0ec6d547ecf533784c7491afdeb483321d1",
+      "size": 10907,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf32_x86_64.xwer",
+      "sha256": "4b0c127b044560ba9c800b636e9ec7215766d23b76e515b1561beab54cf92222",
+      "size": 10849,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.x",
+      "sha256": "443c7f592b0f64eff747bf7df55c9eb3fea7f3f4c749bfc19102523cc1bc1a17",
+      "size": 10306,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.xbn",
+      "sha256": "2ea09d5cc461cd91fb867736773d0a3de3451c7a519bd2499dfb79365258b526",
+      "size": 10109,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.xc",
+      "sha256": "35fdece8c3f3bc7ad2529e7826382d614517fa767adf4ae486de1effbf018677",
+      "size": 10086,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.xce",
+      "sha256": "c14fc0d6e2b976023d83f77cdde28fa55e2590fedc4463699215d41701803e3a",
+      "size": 10432,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.xcer",
+      "sha256": "b39d22a0d353470b0e40b3a76c59edf6c2866cf58da670f591796f5a7fbea2a5",
+      "size": 10374,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.xd",
+      "sha256": "e695c15825f0f95d8b3617f9de386c0151239026d4570136bdc818f5c3950cbc",
+      "size": 10170,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.xdc",
+      "sha256": "0ec6c4d29df4f793613217fae932ddfbb4f7d1db5bd7537bf48da5e50274cb77",
+      "size": 9985,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.xdce",
+      "sha256": "c57488bf425afc37d673019d874748cd6a3a9264088e270736163babdbcc3365",
+      "size": 10331,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.xdcer",
+      "sha256": "eba2fcf7a17bdf2ad4f4759e6c7073fdd0ca1844b498ebe6c4aea25d9cc59243",
+      "size": 10273,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.xde",
+      "sha256": "d48d150699eb2476f682ab6ad137c6dab8c10791e77097ce6930d133352590c2",
+      "size": 10516,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.xder",
+      "sha256": "00a049edd793f8a6d52f1c952cf4b1c2c264c7f7c80b49eda6799df3ca38a6a3",
+      "size": 10458,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.xdw",
+      "sha256": "e1848464d9059543adefe94572edbb6209b8e33de830f721e24cc4a701b36e10",
+      "size": 9946,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.xdwe",
+      "sha256": "c92559eb61502ba78ba711e14ab252c98135e05d3a948a90e2caef42f9194b3e",
+      "size": 10292,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.xdwer",
+      "sha256": "564bca0d0d13d9ca95ed1e26f1f6198a277376b661e0dbf5064c2ba12aef70ec",
+      "size": 10234,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.xe",
+      "sha256": "2316a4a7a328336ab105f42a8d367dd054858a4293cc9401578866fba0815d44",
+      "size": 10617,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.xer",
+      "sha256": "baa3957b821b025d53e196553ddf9c9c6281b966f99e5e8f7215682a49cfe21f",
+      "size": 10559,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.xn",
+      "sha256": "491977769db90720d06269dc898347e6ed774bde282def527a35585a53d32c2f",
+      "size": 10274,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.xr",
+      "sha256": "154159d55220afccf5aafdfd0be7a016a414fcf41069f65e0e204d7a102da6dd",
+      "size": 6389,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.xs",
+      "sha256": "837b349a48dd6f22eb9c7d9d4c1f4576d33610be5bbbc418cbaacda23b851240",
+      "size": 9790,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.xsc",
+      "sha256": "342a9ae511648e2b14fa398e9f2009a28aab23074305e8f7f082b4e3428d8d71",
+      "size": 9605,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.xsce",
+      "sha256": "8c433dd121be7902a2bab444909a3bb216cb39188d7c261fd97dbe5c1f667d3a",
+      "size": 9951,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.xscer",
+      "sha256": "d8ad5bf043bb18c17a64c912b470d03da2959ea76693b425ea8250c5fcb2714c",
+      "size": 9893,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.xse",
+      "sha256": "ae08ee98af35687b43cf0fba1e2c691f0cf6dda3c4ab6db8e26122fd3ff1fac3",
+      "size": 10136,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.xser",
+      "sha256": "424aea6d93512903f013745d69f937a3f5d886992800f84523d63db23d12af66",
+      "size": 10078,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.xsw",
+      "sha256": "c999b3979f26de9e8cf41b554374f31be3522281218f765483db94f7ff3c0ea2",
+      "size": 9566,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.xswe",
+      "sha256": "e9af7c782224d4771d5d1808106bf2d637b9abba877f495bc3964881fb838fc7",
+      "size": 9912,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.xswer",
+      "sha256": "8f90e6c2ce903711e84bb22b5c791a2dfa2525a0743b75142b747c253d12f8d1",
+      "size": 9854,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.xu",
+      "sha256": "f9fe141a0664542411b0947d84d15c263f2ca6eaacc0c5995f3e7aa7705a92aa",
+      "size": 6413,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.xw",
+      "sha256": "46d4a6958ec08eb27378a0202a613178fa6e64367bef825f01a2e88c9a5eb728",
+      "size": 10047,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.xwe",
+      "sha256": "8c90917a14fbbb6e461099c8edb3053444503ee61885e102fef4c4a0da61e02e",
+      "size": 10393,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_i386.xwer",
+      "sha256": "89ee3eccd6e06480456369c4ed2ab0b63b1befcd65e7d42ca1411cdce0543e4e",
+      "size": 10335,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.x",
+      "sha256": "51f135d0d72f48e7cae558d865aa357011e74ab792c848426c4a9c1680d3b765",
+      "size": 10003,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.xbn",
+      "sha256": "62db32faa07ecaa6a1170d29576370e5f83a1453fee42bc527ed0cd2bdb740ac",
+      "size": 9806,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.xc",
+      "sha256": "6ee447bffbc714818b97bcbd0dae87c882a7e1b1327630b269010345835c85cb",
+      "size": 9783,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.xce",
+      "sha256": "e8bdb87aa92e5f0aaa165c8f5858eb1b8665aedce0bdd4ae9fe469ab10de366c",
+      "size": 10129,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.xcer",
+      "sha256": "3a87194c6e67a64c00496634888b68519226cac82be7588f4e3112bee40271c1",
+      "size": 10071,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.xd",
+      "sha256": "aefa21678de9128f31b7f6ce6d63ff7f61cb83b8f4509f1952732a29ea78f108",
+      "size": 9867,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.xdc",
+      "sha256": "ee5a54a9188bec142b01630c9cf0b5b1459fd3adf2c157c1aa78f71f23c5cf1c",
+      "size": 9682,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.xdce",
+      "sha256": "17b499f039f3df7befe9be36f5c161516b0d602947ffb37bafc5198b1d6f3a4d",
+      "size": 10028,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.xdcer",
+      "sha256": "6ab8cc30d3e52a104f02ec0d19e739d839dd9667ca51e47f70d7d17f010ce252",
+      "size": 9970,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.xde",
+      "sha256": "d4d4a3e9634542d485e92cf758c5a47eebc1ac392f41087bb2b88dcbd80b12bc",
+      "size": 10213,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.xder",
+      "sha256": "2350680159c0b5deedd4c2d6208d08ca1bc4ed8a55a650b8e45db0b79e6af506",
+      "size": 10155,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.xdw",
+      "sha256": "b4549207d204af0983ecbd42414a624e14ec47d4e252f8cc363096ae5d502c1f",
+      "size": 9643,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.xdwe",
+      "sha256": "e3b0014ab4d061a03f1b57fed05a0c33370519789adfa5113425031e55869f35",
+      "size": 9989,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.xdwer",
+      "sha256": "5a6fc04b1695402e071bf15d38cde8b8b999748791b3cfe348d98f3ff22aa14d",
+      "size": 9931,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.xe",
+      "sha256": "7c675b81ff48583ba32d05ede51fe45019b270c58576dc9709bd9e90336f343d",
+      "size": 10314,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.xer",
+      "sha256": "5cb8736f890559f5c2b277de66f5a3b61023438e397608d3cf4e283cebd1edef",
+      "size": 10256,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.xn",
+      "sha256": "8cdc6c1ef7c4a4cb17a571682874cf311f310d6550e542d6eea307dc87b0f69f",
+      "size": 9971,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.xr",
+      "sha256": "3dbac7e4028a227dfe465bce29f4418a320b1e85b6c20da10583f4e020c5d1a7",
+      "size": 6328,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.xs",
+      "sha256": "685f711c59922d49ccf8ddb0c3f50543a60ed8f63272c4d34ef94df04ebfb79e",
+      "size": 9487,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.xsc",
+      "sha256": "f8bb559ab7c8de1a74a4b511fbe4a9aaaca6ce3601b463a9cba5573fd1de4da4",
+      "size": 9302,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.xsce",
+      "sha256": "e8c6f79c81d0117ca0784483b3cc53027d55b6d422a7a3d35a404e8e95cae6b5",
+      "size": 9648,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.xscer",
+      "sha256": "06740559a0b97cfb41a1f5ac3fa71c13f050ef5ce59eb1ce9ad8c80659591a53",
+      "size": 9590,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.xse",
+      "sha256": "721add7cc9f613ccdabef365da8908282da4dc4e6ca05b9d5c8b1f4ac29789be",
+      "size": 9833,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.xser",
+      "sha256": "246394ebe086f5d12cbba2d3b3f8a91b7e321de5cccff1768e81cdf354b51f02",
+      "size": 9775,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.xsw",
+      "sha256": "0f470ef064b9c388ae1008d7feeeaffbb3bd390c74356d255669b0b4a631bb0e",
+      "size": 9263,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.xswe",
+      "sha256": "ee2c89487006d7bff6e433f35a27cda819b83f33bd5d9b8007ebed845e793243",
+      "size": 9609,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.xswer",
+      "sha256": "7de9877d93a74276572eefcea7f208181cc6370c27361a7365b5e9d6a578e7d9",
+      "size": 9551,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.xu",
+      "sha256": "135512481e013531494ae4448c75674d2d56838a5a3ff37b74383358b0552ae7",
+      "size": 6352,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.xw",
+      "sha256": "64946edd92893e4f0c2ca619f0e6ac4d2f402f891e01d4081ddf6dd5d1f16420",
+      "size": 9744,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.xwe",
+      "sha256": "e24a99ad9dad71f2b12771d2f5cd0f4d8aa04855f8011a28ad9f25dc745192eb",
+      "size": 10090,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_iamcu.xwer",
+      "sha256": "b14232eafc6d5650718364180f3173dfb58b8c25a5d682c15cbfbbcdffa8fb64",
+      "size": 10032,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.x",
+      "sha256": "843b5aa600752aed457dc4c0660626940c1f940aec2fefaaef328c8cf7edc901",
+      "size": 10950,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.xbn",
+      "sha256": "ecd05f175c0e5143bd3aa63e6af156355187c55d975e045740daf51dd0523692",
+      "size": 10753,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.xc",
+      "sha256": "a6cc572c3ab3272aff31174b84f2b5b68691383e26e500bfadfa932e12fe27de",
+      "size": 10596,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.xce",
+      "sha256": "7c882fc692925601f326be3b739afe84eaf8dc7350577207e8c1685cb5d1024b",
+      "size": 10942,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.xcer",
+      "sha256": "9dd15d1ccfe7eca98abcf65ffabc0f6f1e960d34e4216cb92f963fe631e8a425",
+      "size": 10884,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.xd",
+      "sha256": "dfd4f29b2d6b874a3746a6d491a9c09ba8927b612c52eec77d38c0ec3ae16270",
+      "size": 10816,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.xdc",
+      "sha256": "cb450015b424ea72e395d39e71a8eeb5b7c98e7acd984c4c494c202fba74693d",
+      "size": 10497,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.xdce",
+      "sha256": "fa120c8765c9b3e9dec3307ee2eedf0b585bb0cfc62b01db64cd36e8454cb967",
+      "size": 10843,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.xdcer",
+      "sha256": "b4ce8931287b7324cfc1496bdadc7b61d4c2be0d2b9c348a0095dfec7a8f556d",
+      "size": 10785,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.xde",
+      "sha256": "0f758500ba44520d9210cd68ee799f469f7eec418a883b39ed51e18fb478f891",
+      "size": 11162,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.xder",
+      "sha256": "bd874ec033b85427d5524244d160b9bded672c8d456ec1bd1f18d8cae0ea35af",
+      "size": 11104,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.xdw",
+      "sha256": "0beff4b89032db3d9aff2a159daf8f3f2f45bd60d39dd4ca8330beed1012ce9a",
+      "size": 10458,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.xdwe",
+      "sha256": "4b57f277c4469a1f30c4622fd145901598b69f4e1d97eaa256c03f7e57c657cd",
+      "size": 10804,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.xdwer",
+      "sha256": "28abe4be1722cd5af362791fe6b32251fab1aadfa445a5eb46554857aea26c04",
+      "size": 10746,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.xe",
+      "sha256": "90067493ba7523b564c59bd9d485204450f530a9bb02232123cc056c9ca71fe9",
+      "size": 11261,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.xer",
+      "sha256": "54a8011a13c7276182a2f047bcaf17b723cfe099adf18a2a1e2ff82e10028ef4",
+      "size": 11203,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.xn",
+      "sha256": "88212d7f8cdad1ecc5f7e268e513a1ee38b389ff2e79213372b73aa8b1b81636",
+      "size": 10918,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.xr",
+      "sha256": "6b710017a9966449c85fde81a6d9d8c09c4902b2c0a7ddc9e76fab75816dc115",
+      "size": 6654,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.xs",
+      "sha256": "bd7c381d45d3a89662b2d18b5498a9a2e77af4c6d13ea553b681ac321c676fb3",
+      "size": 10436,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.xsc",
+      "sha256": "643cede7b2b752b6f9bc832f5085424dcd7918a7d3d791c581b6568278b670f5",
+      "size": 10117,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.xsce",
+      "sha256": "db51e542a20c8353cbd806b47035d0940443ca7c85dcf799f1be1382866ed002",
+      "size": 10463,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.xscer",
+      "sha256": "9ee06ba81f7f407a4a61e3e75997a67d6336135ba3e1269496be507d7a8ca562",
+      "size": 10405,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.xse",
+      "sha256": "64b8b2b2f75d2994c426073da4b17e8fa37182e9d3bc6a7cf6bd67c3e6f2f709",
+      "size": 10782,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.xser",
+      "sha256": "3b3882fdfd630f12009b09811bd693974f66b7931b7aecc7e4db7fe6f6264e26",
+      "size": 10724,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.xsw",
+      "sha256": "649f7976062e4ee9eea1203e1b4eda4b699a18030e8f9d57e090f61cdf603eb3",
+      "size": 10078,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.xswe",
+      "sha256": "c15a0ddeb5dd73f54dae73c5df248b87ea5799862b25c7def63cca1d07ba7380",
+      "size": 10424,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.xswer",
+      "sha256": "58033fc44ded8598fd598246c2f4a3059d9370f0137743d025a126510a74186e",
+      "size": 10366,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.xu",
+      "sha256": "34707b4fdcc165d57224c8ad480959ffbe30200d88838a164e491c0974f4f520",
+      "size": 6678,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.xw",
+      "sha256": "e280380f8219d83327c9b91c47fc8d7fbdbc154fb172280e0e95847f0361fd63",
+      "size": 10557,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.xwe",
+      "sha256": "4c86bb9acd567c1748cce6a82bd56fc74e81221e8caa0f81146a58a4dec8e196",
+      "size": 10903,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/elf_x86_64.xwer",
+      "sha256": "4415e061294b717287ac9559ef6d8b91f8265616c8ac6d2cd375d7f6002e04b1",
+      "size": 10845,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/ldscripts/stamp",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libbfd-2.45.so",
+      "sha256": "20cd906992af0264058a0b965111bc7151e615a81e8f65b95974fbaef18dc84f",
+      "size": 6449448,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libbfd.la",
+      "sha256": "7f4ad538253f6fb924f72e3b5cde4875158f940e1ce14d7b5c6ff1b07669857e",
+      "size": 1029,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libbfd.so",
+      "target": "libbfd-2.45.so",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libctf-nobfd.la",
+      "sha256": "500f9db0a37cc11b4d567201dab81e44013319d949caf5e6d9d70320a252ab5d",
+      "size": 1038,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libctf-nobfd.so",
+      "target": "libctf-nobfd.so.0.0.0",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libctf-nobfd.so.0",
+      "target": "libctf-nobfd.so.0.0.0",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libctf-nobfd.so.0.0.0",
+      "sha256": "c0c241c2a3e077603defd84fac911b5c3760cf50a5d98c70fe7e79f87938980b",
+      "size": 1390256,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libctf.la",
+      "sha256": "aff8b4585f797c9b63b5ea5b5bf5efa6fb7f905d4ce81cac1e9be78277f32e9d",
+      "size": 1105,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libctf.so",
+      "target": "libctf.so.0.0.0",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libctf.so.0",
+      "target": "libctf.so.0.0.0",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libctf.so.0.0.0",
+      "sha256": "656b4c2af5586cc5f7308371b10e7802542ea055242486b439e5059183d55d16",
+      "size": 1423952,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libgprofng.la",
+      "sha256": "8422f683bde805833de70ca2c19602b1a7d05485626b20683825e73b163fd245",
+      "size": 1264,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libgprofng.so",
+      "target": "libgprofng.so.0.0.0",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libgprofng.so.0",
+      "target": "libgprofng.so.0.0.0",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libgprofng.so.0.0.0",
+      "sha256": "eb1f29627568ed51943dfb460a885eec85507c59297bd63aad09739b38ad7bc1",
+      "size": 10083104,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libopcodes-2.45.so",
+      "sha256": "825312606c533ead0b58378dcecd46e828ba02f2751878242345b571f451ed7e",
+      "size": 1370104,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libopcodes.la",
+      "sha256": "c595921e46e358311403824a104e5fdfba8fcd3b1db8930ce86d4e0c1b4698a8",
+      "size": 1139,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libopcodes.so",
+      "target": "libopcodes-2.45.so",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libsframe.la",
+      "sha256": "897a1855c6146e43bdda2aa44ac9336b03667c9ca6a48721cdf1791ed2fec323",
+      "size": 944,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libsframe.so",
+      "target": "libsframe.so.2.0.0",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libsframe.so.2",
+      "target": "libsframe.so.2.0.0",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libsframe.so.2.0.0",
+      "sha256": "10421d9aff8aa9b6f54fa06496813f42ce77990581483079fdda12c40662fcb8",
+      "size": 105768,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/doc",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/info",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/info/as.info",
+      "sha256": "1883d4c5500c65961b065d4c5de1b6e018d52747102cd10378202c35a692a899",
+      "size": 1303084,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/info/bfd.info",
+      "sha256": "4d2347d3576e908d828d72738a778225da46dec6a33c460e5dcf0fdf7c3d74eb",
+      "size": 705670,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/info/binutils.info",
+      "sha256": "35317cffcdff425d2ee36d9eb413420f0b2b97c5059dd25c08808ce4aee0473c",
+      "size": 272891,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/info/ctf-spec.info",
+      "sha256": "966523f7e3ec0473e8719d46d63af616d0b0b467a5f6a37263a1aa07823b4ca4",
+      "size": 93084,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/info/dir",
+      "sha256": "f8e2b705286521eb7e4c7fe7dea68155fdcd469cc435fcab129fafb4d7a13baf",
+      "size": 3125,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/info/gprof.info",
+      "sha256": "7cb7d043b9f0e92727ed29c50f80d9f284f37793c5505ebd17bcc2ce8a15c87a",
+      "size": 115623,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/info/gprofng.info",
+      "sha256": "0754c256b9a68f85c72677cf03b23cc14838da7b9a4e9a0875d028fc82cd22d8",
+      "size": 240898,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/info/ld.info",
+      "sha256": "b950a096165148d8422757b5292f7fae6d6e22e3cb072364951d90fbda5f88b0",
+      "size": 489276,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/info/ldint.info",
+      "sha256": "3c1fe5ff0fb5c77348474f028c03553992300eb7e25b5aaa22af5934b8ffc0dc",
+      "size": 57737,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/info/sframe-spec.info",
+      "sha256": "4887a1c02851c2972ca8c247d16de9f7a1bde5461dc889a811335d9153cffd41",
+      "size": 48362,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/bg",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/bg/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/bg/LC_MESSAGES/binutils.mo",
+      "sha256": "7e8afd75ccaa1219475df99b35d87566503d50b80cbce89c86a6aa903031ad40",
+      "size": 161984,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/bg/LC_MESSAGES/gprof.mo",
+      "sha256": "37ff03f0d0b5f6d05d699c658cc1258c29943fb74fd9b054fe6f0d0de76320fc",
+      "size": 13061,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/bg/LC_MESSAGES/ld.mo",
+      "sha256": "7cd01f73bf15d85e1ddcff43ccb3837eb4c9c95802b7dddbe749be9879b5d0ea",
+      "size": 108709,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ca",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ca/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ca/LC_MESSAGES/binutils.mo",
+      "sha256": "62635e3554f37727c2707c5fe80660cce0ecef6b4ad6fc8835d853edb897dea2",
+      "size": 340178,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/da",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/da/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/da/LC_MESSAGES/bfd.mo",
+      "sha256": "90e5e8a3a3fc1e186f79dbc556392a85f1c870a9b64b65ca248f587a48a8baa3",
+      "size": 153643,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/da/LC_MESSAGES/binutils.mo",
+      "sha256": "5541cd34c18dd03d1ffe4594784c886e31a0de442ade4d22ee3b1aa891ec5f23",
+      "size": 70024,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/da/LC_MESSAGES/gprof.mo",
+      "sha256": "a689d051e960c9a2740e3b624f65659608697c932158019f10b7c7fa62cbb4de",
+      "size": 10479,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/da/LC_MESSAGES/ld.mo",
+      "sha256": "9559b94badf300d3fa1738577e4a5e1f908b215acecbdfd297d54e7caf03e3b4",
+      "size": 41638,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/da/LC_MESSAGES/opcodes.mo",
+      "sha256": "fb4499c72ea505d8f1ad9cf08653ee1a43e49a013a9b38c06b79ce94447c9fbf",
+      "size": 17592,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/de",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/de/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/de/LC_MESSAGES/gprof.mo",
+      "sha256": "81b7ca91bd6867cb9be7ab3e88e5df94cf02cf8d9810ca58b1f590812ec4204b",
+      "size": 10707,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/de/LC_MESSAGES/ld.mo",
+      "sha256": "5d52567f7982198c83e05a758a5e1f63d4086cd01c0a213825f9215914335f8f",
+      "size": 51889,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/de/LC_MESSAGES/opcodes.mo",
+      "sha256": "681dc9dc63043e2c27efb8d6f19b361d188b389ce1d964992d8129b9148dfa82",
+      "size": 56065,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/eo",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/eo/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/eo/LC_MESSAGES/gprof.mo",
+      "sha256": "1fff95358f66f3442363b8e9a868ae88582d26565e30e86a4b388e02ce627b94",
+      "size": 10752,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/es",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/es/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/es/LC_MESSAGES/bfd.mo",
+      "sha256": "59851fd34f69f2e9f0a39b973596ae712660d3ba53a8c275fff81c127c637dec",
+      "size": 239889,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/es/LC_MESSAGES/binutils.mo",
+      "sha256": "73f67de402934fd5805045c3d2f1c9128cc6a9fbf369b46bb3cdfe7bea9ab4f6",
+      "size": 120987,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/es/LC_MESSAGES/gas.mo",
+      "sha256": "6381b8aac3cb239867e7023a7f514ce6190ac43272f398dedaf92fc5e626b25d",
+      "size": 489368,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/es/LC_MESSAGES/gprof.mo",
+      "sha256": "5b578e215613fb1b090216abb2641d25393ab699c7ad93c17d1365671a3eb681",
+      "size": 11145,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/es/LC_MESSAGES/ld.mo",
+      "sha256": "5335ce6705b78530079aba65904b06209e34bcc69f6fbc0ec6b1c89c0a638e12",
+      "size": 146361,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/es/LC_MESSAGES/opcodes.mo",
+      "sha256": "5b2020fde0508bd56304478ee5fac55b9f89afe019e497470af2ed2b30a06326",
+      "size": 56464,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/fi",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/fi/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/fi/LC_MESSAGES/bfd.mo",
+      "sha256": "e686c4483e1461b15d8414479fdc783f7487493f52431fba1d4baf1a8df15710",
+      "size": 162714,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/fi/LC_MESSAGES/binutils.mo",
+      "sha256": "b90db4822d65fa97b6766168b3dcf40fc0eafb2972c76f624b020a64e0b12daa",
+      "size": 211073,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/fi/LC_MESSAGES/gas.mo",
+      "sha256": "b36f8cb7a9a3782ece3c361c6a2540fe94b02e79451bac9c54c89a7aad61a941",
+      "size": 442805,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/fi/LC_MESSAGES/gprof.mo",
+      "sha256": "c8d44f8eb0d4ccf03b3ac1888b122732c4578a066f5b03eccf230ead877184dd",
+      "size": 11131,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/fi/LC_MESSAGES/ld.mo",
+      "sha256": "9a506e5da81edf8fce91f2eff27a6c4fb289eabda6565a7468542828889dd722",
+      "size": 37450,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/fi/LC_MESSAGES/opcodes.mo",
+      "sha256": "c6ce1d23f37443d61ea5ed944e5a031f671e9b58583f58dca65bae47d61c4dc4",
+      "size": 31261,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/fr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/fr/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/fr/LC_MESSAGES/bfd.mo",
+      "sha256": "aab9e384715051b8c25b20d002a97c502ab5339721f20da24868eac2601e266e",
+      "size": 253259,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/fr/LC_MESSAGES/binutils.mo",
+      "sha256": "df19006d6516158a590d73549a90b9c60b0e6b690285f6c63e4e00d883fd4ba0",
+      "size": 344508,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/fr/LC_MESSAGES/gas.mo",
+      "sha256": "3b3467a551a1cf10c3ab46a6cd9af71134642be2c17409352bd7b356ca7bd298",
+      "size": 603703,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/fr/LC_MESSAGES/gprof.mo",
+      "sha256": "50cc926e29d6b670249f3880eb4ef339566f2d69252d796cbce9d4330057745f",
+      "size": 11429,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/fr/LC_MESSAGES/ld.mo",
+      "sha256": "1782af2eed93f61281b0b8446e9d56de51e355a7d828ac797fcb8335cf363fbf",
+      "size": 190521,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/fr/LC_MESSAGES/opcodes.mo",
+      "sha256": "e8b92540e4577f1c3d9d09b1d995d177a5433de9b8e67ad57824dfb3c813f469",
+      "size": 57207,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ga",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ga/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ga/LC_MESSAGES/gprof.mo",
+      "sha256": "51218d754dcbdf617991df648ea68555dfa2a328a83eebe77bf546a06b35493d",
+      "size": 10504,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ga/LC_MESSAGES/ld.mo",
+      "sha256": "c04b16a698a1cf0c1fa40b13e655ef10795f4f8cd24eb761e83e36e9dcd06d78",
+      "size": 59643,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ga/LC_MESSAGES/opcodes.mo",
+      "sha256": "e34b93ded078726819fd4bda5061222c32ccd0c728cdbb866728e00f55065028",
+      "size": 30741,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/gas.es",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/gas.es/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/gas.es/LC_MESSAGES/gas.mo",
+      "sha256": "90d7d2bdb467c2befa2d606eb41debad0985d65d4a49033bb9f05fa997ca5472",
+      "size": 482620,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/hr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/hr/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/hr/LC_MESSAGES/bfd.mo",
+      "sha256": "8674fb1d6b0afbe15c7ce575b94319efd3c7541b5943304d9b8f4d21f88fde3e",
+      "size": 5185,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/hr/LC_MESSAGES/binutils.mo",
+      "sha256": "d670f3c24b07775678e26cb44d065ae1d8e1ecf05f8e40302364c5b3ac5620cd",
+      "size": 21613,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/hu",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/hu/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/hu/LC_MESSAGES/gprof.mo",
+      "sha256": "20c239e59ea16f01de843648564187ddcd0416e5ba1bec9840f021f4ea4bc2b7",
+      "size": 11212,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/id",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/id/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/id/LC_MESSAGES/bfd.mo",
+      "sha256": "2704d70ff6ba4b72d059931cf9e57c4044384a5d6bf8d998d0359c10938267e3",
+      "size": 144278,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/id/LC_MESSAGES/binutils.mo",
+      "sha256": "24a9d035f85feacbe85fb0824e5615394c46ae27615dbed6b4f19ddf3f3044b3",
+      "size": 153217,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/id/LC_MESSAGES/gas.mo",
+      "sha256": "3f20141c0e1c3534f275f5505bcd685298f6483eb6436b44d13e117ec0b79a80",
+      "size": 418179,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/id/LC_MESSAGES/gprof.mo",
+      "sha256": "8b8d15effcd040afd40e7743ddfa1f4707959ed3e0b3ef0d1ecccf55b66a1d46",
+      "size": 10528,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/id/LC_MESSAGES/ld.mo",
+      "sha256": "3d785aac987c5adab6619467b3a02636ce35cd88ce30007d0e3cca7cf432e26e",
+      "size": 55845,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/id/LC_MESSAGES/opcodes.mo",
+      "sha256": "a93d454110a5eb0e9d82f5c066554411022684b4b6c1a12a50f81c4425774b05",
+      "size": 30313,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/it",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/it/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/it/LC_MESSAGES/binutils.mo",
+      "sha256": "935b5eeeaac8149481f03dfbc002979af915958ae2cbeaeb4188039fe5dcda91",
+      "size": 192791,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/it/LC_MESSAGES/gprof.mo",
+      "sha256": "7efbfc329e79574e3942cdb90e04daa1337150d35453ee591649925c51d65d56",
+      "size": 10755,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/it/LC_MESSAGES/ld.mo",
+      "sha256": "1fc0b9ed6e8d41334d56fe5fab0c3af2fbf0811fbe615cad8851d5d585694ad9",
+      "size": 58051,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/it/LC_MESSAGES/opcodes.mo",
+      "sha256": "f8e1497efede32c00240600e580b836fff5acb8b584e507f244a9d5bc985e6e4",
+      "size": 26390,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ja",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ja/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ja/LC_MESSAGES/bfd.mo",
+      "sha256": "e3fbbbb77ee542b2687b4269aaa0d6ee390cece9ed3236783576770cbb7eae97",
+      "size": 134687,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ja/LC_MESSAGES/binutils.mo",
+      "sha256": "168261e85be9c83482bc55adabe2a0677e417aea8ae1191c77b3454780d0ebd4",
+      "size": 150123,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ja/LC_MESSAGES/gas.mo",
+      "sha256": "f11ef1335499c78cf72e93a30f6586bac6ceec7cf8a687b1dad07338e40d6764",
+      "size": 37205,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ja/LC_MESSAGES/gprof.mo",
+      "sha256": "fcad35ee6ed28458f5f0b140560b7072ad1447695f3e69a8dd15c93c4d453ca1",
+      "size": 3068,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ja/LC_MESSAGES/ld.mo",
+      "sha256": "0e588524a23cbce890a574365811b58c447b8602e63117b0c98a247e4da7464a",
+      "size": 64093,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ka",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ka/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ka/LC_MESSAGES/bfd.mo",
+      "sha256": "84bbe5fcabf5d7ccb2b2d4f7d54030f4fa222da631618af4818bdc4a55343e41",
+      "size": 5034,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ka/LC_MESSAGES/gprof.mo",
+      "sha256": "b080e3dd69a5f3fe9e381b3025436a1fc283797cf273658aa4dc0d06b54b0d4c",
+      "size": 15473,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ka/LC_MESSAGES/ld.mo",
+      "sha256": "2ac3c88b10bec5eefe6251a67c6403a9f8eab29b1e5dd8faf8c4a1045468cd4d",
+      "size": 32189,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ms",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ms/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ms/LC_MESSAGES/bfd.mo",
+      "sha256": "fafe7b4b28d8c0311af0367bb38ef7d8f9b360cbc02738f263a38fbb2a542ce2",
+      "size": 4187,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ms/LC_MESSAGES/gprof.mo",
+      "sha256": "29c95eef1064f16c9b207471c8c51d8a8f62b1764e3dcf93389ad39d28d5936a",
+      "size": 10733,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/nl",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/nl/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/nl/LC_MESSAGES/gprof.mo",
+      "sha256": "16a9c4c3195a0faa66e111b3a8252249f9d13b3a812602f77784cd9e07ea0c2d",
+      "size": 10776,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/nl/LC_MESSAGES/opcodes.mo",
+      "sha256": "6e172fe83f856de2a20f2322cd17af98a1f71de003418fb89fe4270483a1f89b",
+      "size": 25300,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pt",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pt/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/pt/LC_MESSAGES/bfd.mo",
+      "sha256": "c783b374e244ac57f7241cfa18e4dc18fc0263df29f81ebefd4f6291fc814e3f",
+      "size": 240967,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/pt/LC_MESSAGES/binutils.mo",
+      "sha256": "f6e24b12595fbfa794f97e962005c2f3d60b86c83c04b4970218e48c3445ae25",
+      "size": 329414,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pt_BR",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/pt_BR/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/pt_BR/LC_MESSAGES/gprof.mo",
+      "sha256": "182a5177de33a5fd4623c05d891a43c247b10c943d85077a011b49a42109649a",
+      "size": 11236,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/pt_BR/LC_MESSAGES/ld.mo",
+      "sha256": "4389cd0d45e8e5d9bb22050291b2d0619f6531dd5dae09f8d527d5603242cfdf",
+      "size": 148326,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/pt_BR/LC_MESSAGES/opcodes.mo",
+      "sha256": "03237ac47b5e0eb0c84cd58145f09896c6ffda1641c90285311a5bba2b72efa3",
+      "size": 56439,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ro",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ro/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ro/LC_MESSAGES/bfd.mo",
+      "sha256": "c66730ebbd8008872f8cccaeabb48739fb6c1b6cb28c9cdea0370332d77f24b4",
+      "size": 252317,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ro/LC_MESSAGES/binutils.mo",
+      "sha256": "c1fe36217468d56c416589b37cd7fd3b36cdc03723021f7cc3d06cfa89e6020b",
+      "size": 354395,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ro/LC_MESSAGES/gas.mo",
+      "sha256": "68bc33a487b72c1465a64ee93a0e7a84f583f05db5f7bd661ca989f4b96a5a86",
+      "size": 608660,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ro/LC_MESSAGES/gprof.mo",
+      "sha256": "336c90fd3dcaa3dbf6c543e3e70c555594ac0d5f5c70b5dd515f5c6cc2148261",
+      "size": 11351,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ro/LC_MESSAGES/ld.mo",
+      "sha256": "4d08aab8e0dfca38e24ce7b375b376d8d297541be557ab360131d54a23f4431e",
+      "size": 189608,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ro/LC_MESSAGES/opcodes.mo",
+      "sha256": "92383f6f7ffed7060bfda7d4ae12fc727e14ef10e8e0f3b9e239793c8a73ec0d",
+      "size": 57975,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ru",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/ru/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ru/LC_MESSAGES/bfd.mo",
+      "sha256": "76e3a51b1e5fe14ad4525e9d048ef3afdf551e815e95c805fdad9003d9a3d24e",
+      "size": 310011,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ru/LC_MESSAGES/binutils.mo",
+      "sha256": "7fd636881cc65a23b78d527f1728130931ba606e2c7e47fe8ae68f05ba488d1c",
+      "size": 341964,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ru/LC_MESSAGES/gas.mo",
+      "sha256": "a42d9283e5fa727696fc0561b78863451add77e36544c7a3d58e83018782e163",
+      "size": 731021,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ru/LC_MESSAGES/gprof.mo",
+      "sha256": "f6856994379dc6ed2e7987005d836ca8f88f90dc0b3e64e771e373a3d009d268",
+      "size": 12981,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/ru/LC_MESSAGES/ld.mo",
+      "sha256": "2b5fc104ffd0cbfa20d297b0c64b905803142f5c7c084e00ad2093779543bfbd",
+      "size": 160983,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/rw",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/rw/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/rw/LC_MESSAGES/bfd.mo",
+      "sha256": "45c936efdbcca38a7ca9244957c6a9a8ee1b5c52ba653e4997a6323ca3160bd9",
+      "size": 429,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/rw/LC_MESSAGES/binutils.mo",
+      "sha256": "9b1dbf09c427738c730acaa7a504ca6cea5627371e64b0b8a5d80c637f74fe11",
+      "size": 615,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/rw/LC_MESSAGES/gas.mo",
+      "sha256": "3415f9856aea0ecc470affea7edd3034683569f7c91b3ac5ee8522b721db0ec0",
+      "size": 396,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/rw/LC_MESSAGES/gprof.mo",
+      "sha256": "840e9a780356963ce63e39c3731956f48e1fa78053a451ee48bb73d9e58b94ec",
+      "size": 486,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sk",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sk/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/sk/LC_MESSAGES/binutils.mo",
+      "sha256": "9fa1c553ebccc78e63c77283bc8a0db0fe617a4da4fa43238b2f3f427e45aac6",
+      "size": 149699,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sr/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/sr/LC_MESSAGES/bfd.mo",
+      "sha256": "c3b7b3b3138879038b0839f7befac906cc24ba3f4de98d32e25dc2eafe29f0a8",
+      "size": 306171,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/sr/LC_MESSAGES/binutils.mo",
+      "sha256": "7efa1c3d669914ec6b54d9afc1e78c4008df2e8067d0d04784c3523d7c9aa5f2",
+      "size": 409309,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/sr/LC_MESSAGES/gprof.mo",
+      "sha256": "dd2eefba92b38d9efe89f914f1238707d2e9dad55059c9666ea0fdc20b4ac3a8",
+      "size": 13107,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/sr/LC_MESSAGES/ld.mo",
+      "sha256": "9182ca35cc8dc1a5d80f3768214791fa365682fa1a2e5b1f23e2c5f87851b9b3",
+      "size": 221104,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/sr/LC_MESSAGES/opcodes.mo",
+      "sha256": "c0ac4f59c58864c1152a63a45bb872b8f88ba910f41b363aa8ed20522f9b8f83",
+      "size": 69560,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sv",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/sv/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/sv/LC_MESSAGES/bfd.mo",
+      "sha256": "90312f543a40afdf21c152d3226ca2d68d3c4aefd2465fde954f351587a140aa",
+      "size": 155260,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/sv/LC_MESSAGES/binutils.mo",
+      "sha256": "d6ef470719d597ac7663e54351ab83ec329abb5ea3c8c66dda9145df6c6eb0e8",
+      "size": 325221,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/sv/LC_MESSAGES/gas.mo",
+      "sha256": "a513a345deca376356b137300bf85ad2f0d2714bc3f8accbabe4e1662990169c",
+      "size": 524742,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/sv/LC_MESSAGES/gprof.mo",
+      "sha256": "65729f64ee3e7d06b1fe129f3e40daab66c5c1eee29ebb529e7989b51b56e7a3",
+      "size": 10715,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/sv/LC_MESSAGES/ld.mo",
+      "sha256": "df0ac9aeea181e09d5128ea6df9c7e863b9b363af332268320b2117a957623ec",
+      "size": 56393,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/sv/LC_MESSAGES/opcodes.mo",
+      "sha256": "fe4fa79228c9a8d21c25110d22a6be05473ddec034c6bceb639d836b92699933",
+      "size": 54119,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/tr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/tr/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/tr/LC_MESSAGES/bfd.mo",
+      "sha256": "f927e12cfa3ce791a4f21bca278f3d780caded134353f372ab3a12eba0625ac4",
+      "size": 69593,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/tr/LC_MESSAGES/binutils.mo",
+      "sha256": "993d8c00e5c4ac396e68e6f94bc894fe20279d2f4b029d62d544a4bde47e2d19",
+      "size": 129906,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/tr/LC_MESSAGES/gas.mo",
+      "sha256": "b0fe0f90e326bc12f3842844e0cb1a8045eb2dc61bca006e2696b771b609c7f3",
+      "size": 254854,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/tr/LC_MESSAGES/gprof.mo",
+      "sha256": "ddfb8ca5a6cc6889b9d36e76166d7540be98310c28c2e23c9a96fc75859ee1df",
+      "size": 11004,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/tr/LC_MESSAGES/ld.mo",
+      "sha256": "b543705550b2ce91b629f002aa2bb236a13c0e0d2791eaa4df37308e4f2aecbb",
+      "size": 53659,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/tr/LC_MESSAGES/opcodes.mo",
+      "sha256": "f3cc505d677ce777be45996f6b31e0ba015d2564cfb71f5abe1887e7b75a6729",
+      "size": 16158,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/uk",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/uk/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/uk/LC_MESSAGES/bfd.mo",
+      "sha256": "6daf36e4108dc89d181deb4985aa537d2fa4b87db7117a521302c3db931bdd29",
+      "size": 316867,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/uk/LC_MESSAGES/binutils.mo",
+      "sha256": "ce55b5338d8d36fe1eee70cfc5ab066731efaf4e404ed88999fa0768201aa3f1",
+      "size": 417832,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/uk/LC_MESSAGES/gas.mo",
+      "sha256": "389e0716cdbcf51e743a0391b984337fceaf55ed154affcf118635f40416b004",
+      "size": 776173,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/uk/LC_MESSAGES/gprof.mo",
+      "sha256": "630dfa2f7cd54712cde1d6128df63d159513fc395441143e5f3dc4a91d54b2d0",
+      "size": 13165,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/uk/LC_MESSAGES/ld.mo",
+      "sha256": "12113826eb80e4c8a81b00e7ca778957005fbcd5f39543950627ade7dc6a9b4c",
+      "size": 229474,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/uk/LC_MESSAGES/opcodes.mo",
+      "sha256": "424557a3a0db662063a116c858d63b1ccd0f85fdc097f92f884f0980ea6be0d0",
+      "size": 73106,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/vi",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/vi/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/vi/LC_MESSAGES/bfd.mo",
+      "sha256": "bce959c0f087f09f4b4092175ba16bdf1434a9b3bbc7831af413c1856e122f2b",
+      "size": 160382,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/vi/LC_MESSAGES/binutils.mo",
+      "sha256": "6805651c086961bebb88e6cc2a825be32c6d3b2b7bfb3e808595b9c5d2069e7f",
+      "size": 210235,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/vi/LC_MESSAGES/gprof.mo",
+      "sha256": "1b2b11159382058109bdfad367bef6ce9d91b412beffc0734ad74db0f170cc1c",
+      "size": 12548,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/vi/LC_MESSAGES/ld.mo",
+      "sha256": "1d694cc412e015b9cc78e2beafc8183cd46481820334b0187f589c7d98fd33e6",
+      "size": 62357,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/vi/LC_MESSAGES/opcodes.mo",
+      "sha256": "183e01745c98c71cdb873e248b9153c983737ffa09b2888517d7fb944838a9ed",
+      "size": 33674,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/zh_CN",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/zh_CN/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/zh_CN/LC_MESSAGES/bfd.mo",
+      "sha256": "b2a1856882c0fa50f1c14584de0185f39e8a7658dc7921176c9298e7bf66b7eb",
+      "size": 17907,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/zh_CN/LC_MESSAGES/binutils.mo",
+      "sha256": "978386a342cf0fa38e66b429c7945a4b09eefc6c2f4834111f36d8600cd8de21",
+      "size": 93164,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/zh_CN/LC_MESSAGES/gas.mo",
+      "sha256": "7baea6e1ee24a14e753d7b5dbcff596e11e33b0492867c3ed73c00b6bb4d033c",
+      "size": 3843,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/zh_CN/LC_MESSAGES/ld.mo",
+      "sha256": "c47aa8db20168fb71ec7111bbe4189110fab5ed1eb2dbf1148fb16882ac70edf",
+      "size": 54366,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/zh_CN/LC_MESSAGES/opcodes.mo",
+      "sha256": "8d397e3549b61efd88920560614dfb122b29e9d8cf7d077c934055ca342eec0c",
+      "size": 20574,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/zh_TW",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/locale/zh_TW/LC_MESSAGES",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/zh_TW/LC_MESSAGES/binutils.mo",
+      "sha256": "4f580a8a818e6231f7f70f9864e28ed3253d196088658573e45b6078225db5b1",
+      "size": 87866,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/locale/zh_TW/LC_MESSAGES/ld.mo",
+      "sha256": "f4b656c9505c853567872e94a3133215b295461113797fc41132423ff3e6edc2",
+      "size": 54618,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/man/man1",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/addr2line.1",
+      "sha256": "c192d347a6ebb9c5e85dde2b75ec09b3c8cf2d0e01ff83c5dcd9dd1b80eec3bb",
+      "size": 10007,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/ar.1",
+      "sha256": "8c9388d635a8a11cbf1245e450c4c394b32e7b36fdb5003756f5440f59a2da3c",
+      "size": 20035,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/as.1",
+      "sha256": "50ac1ea764cf1f592b9bb7217451ce06d1fff8fd4bcf65b773ff5bcd7b24cc30",
+      "size": 121071,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/c++filt.1",
+      "sha256": "31a84d5729b00af6997177279d8605d6492d6fc48a2bb95c82ceabd7d7531fb3",
+      "size": 9808,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/dlltool.1",
+      "sha256": "ab8a5d99c0d9c38703a973b74285aa683f2483c2c2a2f47dee0e9f8f493d10bc",
+      "size": 18782,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/elfedit.1",
+      "sha256": "a81fc671961569ac596e69d01c63d32b7d1b448a942753add47325e8acfeda27",
+      "size": 7470,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/gprof.1",
+      "sha256": "a44d654060458db154b6e585cf473690729c1964511760a1d53b044b60f6a0c4",
+      "size": 27919,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/gprofng-archive.1",
+      "sha256": "ec9415ef5b1c808576b33b7000451902e554636ba9daa5c14616a08bdc69c996",
+      "size": 10566,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/gprofng-collect-app.1",
+      "sha256": "b456e9915b190acb106979936bbe162d5113495b7de61305a4c8f2dae8328080",
+      "size": 10269,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/gprofng-display-html.1",
+      "sha256": "80123fa995398cd237f04fdf1c336237e633e5b87727eeabc56abfc8a19c190e",
+      "size": 7541,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/gprofng-display-src.1",
+      "sha256": "3ea1f68ba8c3c5720aad11f0455b71518ef51c22ac614efdf70efcc55783a9e3",
+      "size": 5590,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/gprofng-display-text.1",
+      "sha256": "f6cb498f7f89d5d86badadb5002302f84d788f914a832f2f3ea3f4b024733a65",
+      "size": 12117,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/gprofng.1",
+      "sha256": "67ac50f8307310b44d0627b89d24792f6798700972a134dc9d559bd699017c0c",
+      "size": 8260,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/ld.1",
+      "sha256": "08ba698a8a0f103aa073bd86c1e7e9963eb66f70f3ae36962fe2b86d87eb4826",
+      "size": 172642,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/nm.1",
+      "sha256": "99975799673230834682fe6ee34716b4ecd5f64c52c3f04050dbb8e1fd4b1d27",
+      "size": 21597,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/objcopy.1",
+      "sha256": "5fcaa563eb7f83838df11c0e32d84094c038458ded3e4377bd8f69f7143f0710",
+      "size": 54960,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/objdump.1",
+      "sha256": "d893552a73872418018b21d8a085279292e4bfb4c2c3c65f351d12685254123f",
+      "size": 53309,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/ranlib.1",
+      "sha256": "674b17bf3a45d96078b8218c72937a29fa52ca1c9ee705b3ef7c927cce7f7bef",
+      "size": 4843,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/readelf.1",
+      "sha256": "11fff6bc27167a2e7ae474fe8016a87d627d24bfb6cbbc292b2606f8d00c60e9",
+      "size": 30469,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/size.1",
+      "sha256": "d514b7a2ad3d574aa4d22ea4d906b2fecdc2e7e0b6c853044ab32fb236963edd",
+      "size": 8110,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/strings.1",
+      "sha256": "dffe3776720af3a8eaaff8f3e926b38a911138ba073b383b2ff6abce95c8a3df",
+      "size": 10033,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/strip.1",
+      "sha256": "bd7a1a0a98cb761f6e3426c8d0a23faa3848935cd586f6c38ef9757c3991d089",
+      "size": 17027,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/windmc.1",
+      "sha256": "d3d313d547f877ac98c2b5273e8fb38b34cbb9e52bcc138f417f4adebdd61707",
+      "size": 8184,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/man/man1/windres.1",
+      "sha256": "81b2f310f27a429c958209d431957e1d79afc59bce8c4c83d0e4e0e36157127e",
+      "size": 11179,
+      "type": "file",
+      "uid": 0
+    }
+  ],
+  "package": {
+    "name": "binutils",
+    "source": {
+      "sha256": "c50c0e7f9cb188980e2cc97e4537626b1672441815587f1eab69d2a1bfbef5d2",
+      "url": "https://sourceware.org/pub/binutils/releases/binutils-2.45.tar.xz"
+    },
+    "version": "2.45"
+  },
+  "schema": "alpbahOS.package-files/v1"
+}
