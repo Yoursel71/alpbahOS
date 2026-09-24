@@ -1,6 +1,6 @@
 # alpbahOS — Yeni sohbet / ajan teknik devri
 
-Son canlı doğrulama: 23 Eylül 2026, Europe/Istanbul
+Son canlı doğrulama: 24 Eylül 2026, Europe/Istanbul
 
 Bu belge yeni Codex/Claude sohbetinin ortamı yeniden keşfetmeye çalışırken yanlış VM'i, diski veya rootfs'yi değiştirmesini önlemek içindir. Önce bunu, sonra `AGENTS.md`, `CURRENT.md` ve `docs/WORKLOG.md` dosyalarını oku.
 
@@ -39,14 +39,14 @@ ssh -i C:\Users\thewo\.ssh\codex_alpbahos_m1 thewo@localhost
 
 ## 4. Canlı Hyper-V envanteri
 
-23 Eylül tarihli canlı envanter; Gen1 test VM'i sonradan silinmiştir (aşağıdaki güncel not):
+23 Eylül tarihli canlı envanter; Gen1 test VM'i daha sonra silinmiştir:
 
 | VM | Durum | Nesil | Kaynak | Disk | MAC |
 |---|---|---:|---|---|---|
 | `alpbah-builder` | Running | Gen2 | 4 vCPU, dinamik RAM 3–6 GiB | `F:\alpbahOS-build\vhdx\alpbah-builder.vhdx` | `00-15-5D-00-02-04` |
 | `Yeni Sanal Makine` | Off | Gen1 | Eski/alakasız VM; kullanma | `C:\ProgramData\Microsoft\Windows\Virtual Hard Disks\Yeni Sanal Makine.vhdx` | `00-15-5D-00-02-03` |
 
-Güncel salt okunur envanter `ssh ... thewo@localhost` üzerinden alındı: Hyper-V'de `alpbah-builder` (Running, Gen2), `alpbahOS-M2-SSH-Gen2` (Running, Gen2) ve alakasız `Yeni Sanal Makine` (Off, Gen1) görünüyor. `alpbahOS-M2-SSH-Gen1` VM kaydı artık yok. Gen1 release artifact'i `F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen1.vhdx` ve eski Gen1 çalışma diski `F:\alpbahOS-build\vms\alpbahOS-M2-SSH-Gen1\alpbahOS-M2-SSH-Gen1.vhdx` hâlâ mevcut; VM silinmesi disk dosyalarının silindiği anlamına gelmiyor. `Yeni Sanal Makine` alpbahOS çalışma hedefi değildir.
+24 Eylül'de kullanıcı `alpbahOS-M2-SSH-Gen1` VM'inin silindiğini doğruladı. Son kayıtlı salt okunur Hyper-V envanterinde bu kayıt yoktu. Aynı gün yerel `Test-Path` kontrolleri Gen1 release artifact'i `F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen1.vhdx` ve eski Gen1 çalışma diski `F:\alpbahOS-build\vms\alpbahOS-M2-SSH-Gen1\alpbahOS-M2-SSH-Gen1.vhdx` için `True` döndürdü: VM silinmiş, VHDX dosyaları duruyor. Güncel test hedefi Gen2'dir. `Yeni Sanal Makine` alpbahOS çalışma hedefi değildir.
 
 ## 5. Builder Ubuntu
 

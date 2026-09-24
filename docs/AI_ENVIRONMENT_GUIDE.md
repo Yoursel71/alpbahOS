@@ -4,6 +4,8 @@
 >
 > **Neden yazıldı?** 23 Eylül 2026'da bir ajan, alpbahOS'u **test VM'inin içinde** (Gen1 guest) yeniden derlemeye kalktı. Oysa bütün derleme altyapısı Builder'da hazırdı. Test VM'i bir *ürün*dür, *atölye* değil.
 
+> **Güncel VM durumu (24 Eylül 2026):** Kullanıcı Gen1 test VM'inin silindiğini doğruladı. Gen1 test sonuçları tarihsel kanıt olarak kalır; güncel canlı test hedefi Gen2'dir. İki eski Gen1 VHDX dosyası F: üzerinde duruyor; silme veya yeni VM'ye bağlama talimatı verilmedi.
+
 ---
 
 ## 1. Harita: dört ayrı yer, dört ayrı görev

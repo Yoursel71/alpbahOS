@@ -519,3 +519,9 @@ PipeWire hatası için aynı gün ek tekrar: Guest `/tmp`'te 12 saniye 48 kHz st
 - Salt test `sudo -n lvextend --test -r -L +60G /dev/ubuntu-vg/ubuntu-lv` başarılı çıktı. Gerçek komuttan hemen önce aktif `make/ninja/cmake` yok, `/sys/block/nbd0/pid` yok (nbd aygıtları `0 B`, bağlı değil) ve `sudo -n find /tmp -maxdepth 2 -type f -name '*.vhdx'` boştu.
 - Çevrimiçi büyütme `sudo -n lvextend -r -L +60G /dev/ubuntu-vg/ubuntu-lv` ve `resize2fs` başarılı oldu; Builder kapatılmadı. Sonuç LV 160 GiB, ext4 157 GiB, `/` 81 GiB used / 69 GiB available; VG’de 46.95 GiB extent kaldı. `/mnt/lfs` hâlâ `/` üzerinde. Bu işlem rootfs package DB/manifest dosyalarına dokunmadı.
 - Read-only `du`: `/mnt/lfs` 54 GiB, `sources` 19 GiB, `tmp` 430 MiB, `/usr` 4.9 GiB. LFS-base manifesti üretmedi. F: artifact dinamik alanını ve 300 GB proje bütçesini izleyerek kontrollü M04 recovery planı hazırlanmalı. Güncel ölçümler [M04 assessment](verification/m04-base-ownership-assessment-2026-09-23.md) içinde.
+
+## 24 Eylül 2026 — Gen1 VM silinme durumu yeniden kaydedildi
+
+- Kullanıcı `alpbahOS-M2-SSH-Gen1` VM'inin silindiğini doğruladı. Son kayıtlı salt okunur Hyper-V envanterinde bu VM kaydı yoktu; aktif alpbahOS test hedefi Gen2 olarak kalıyor.
+- Yerel `Test-Path` kontrolleri Gen1 release VHDX'i (`F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen1.vhdx`) ve eski Gen1 çalışma VHDX'i (`F:\alpbahOS-build\vms\alpbahOS-M2-SSH-Gen1\alpbahOS-M2-SSH-Gen1.vhdx`) için `True` verdi. VM kaydı silinmiş; dosyalar duruyor ve bu güncellemede değiştirilmedi.
+- Eski Gen1 test ve DHCP/reboot kayıtları tarihsel kanıt olarak korunur. Gen1 VMConnect/SSH talimatları güncel adım değildir; tty/PAM/Plasma doğrulaması Gen2 DBus test VM'inde yapılır.
