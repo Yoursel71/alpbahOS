@@ -244,11 +244,18 @@ chroot "$LFS" /usr/bin/env -i \
       sed -e "/cpython/d" -i ../gcc/testsuite/gcc.dg/plugin/plugin.exp
       chown -R tester .
       set +e
-      su tester -c "PATH=$PATH make -k check"
+      chroot --userspec=101:101 --groups=101 / /usr/bin/env -i \
+        HOME=/home/tester TERM=xterm PATH=/usr/bin:/usr/sbin:/bin:/sbin LC_ALL=C.UTF-8 \
+        LD_LIBRARY_PATH="$LD_LIBRARY_PATH" \
+        /bin/bash --noprofile --norc -c "test \$(id -u) -eq 101 && test \$(id -g) -eq 101 || exit 2; echo GCC_TEST_RUNNER_STARTED_uid=101_gid=101; if make -k check; then check_status=0; else check_status=\$?; fi; echo GCC_TEST_RUNNER_FINISHED_status=\$check_status; exit \$check_status"
       check_status=$?
       set -e
       ../contrib/test_summary > gcc-test-summary.log
       cat gcc-test-summary.log
+      test -s gcc-test-summary.log || { echo 'GCC test_summary is empty; tests did not produce results' >&2; exit 1; }
+      grep -Eq '# of expected passes[[:space:]]+[^0]' gcc-test-summary.log || { echo 'GCC test_summary has no expected passes; refusing an unverified test run' >&2; exit 1; }
+      find . -type f -path '*/testsuite/*.sum' -size +0c -print -quit | grep -q . || { echo 'GCC produced no non-empty DejaGNU .sum files' >&2; exit 1; }
+      find . -type f -path '*/testsuite/*.log' -size +0c -print -quit | grep -q . || { echo 'GCC produced no non-empty DejaGNU .log files' >&2; exit 1; }
       echo "GCC_MAKE_CHECK_EXIT=$check_status"
     '
 
@@ -291,9 +298,11 @@ chroot "$LFS" /usr/bin/env -i \
       triplet=$("$gcc_bin" -dumpmachine)
       gcc_prefix="'"$STAGE_CHROOT"'/usr/lib/gcc/$triplet/15.2.0/"
       cc1=$("$gcc_bin" -B"$gcc_prefix" -print-prog-name=cc1)
-      case "$cc1" in "$gcc_prefix"*) ;; *) echo "staged GCC selected non-stage cc1: $cc1" >&2; exit 1 ;; esac
-      test -x "$cc1"
-      echo "STAGED_GCC=$gcc_bin TRIPLET=$triplet STAGED_CC1=$cc1"
+      cc1_real=$(readlink -f -- "$cc1")
+      expected_cc1="'"$STAGE_CHROOT"'/usr/libexec/gcc/$triplet/15.2.0/cc1"
+      expected_cc1_real=$(readlink -f -- "$expected_cc1")
+      [[ -x "$cc1_real" && "$cc1_real" == "$expected_cc1_real" ]] || { echo "staged GCC selected non-stage cc1: raw=$cc1 resolved=$cc1_real expected=$expected_cc1_real" >&2; exit 1; }
+      echo "STAGED_GCC=$gcc_bin TRIPLET=$triplet STAGED_CC1_RAW=$cc1 STAGED_CC1=$cc1_real"
       "$gcc_bin" -B"$gcc_prefix" -I"'"$MPC_STAGE_CHROOT"'/usr/include" -I"'"$MPFR_STAGE_CHROOT"'/usr/include" -I"'"$GMP_STAGE_CHROOT"'/usr/include" \
         gcc-dependency-smoke.c -Wl,-t -L"'"$MPC_STAGE_CHROOT"'/usr/lib" -L"'"$MPFR_STAGE_CHROOT"'/usr/lib" -L"'"$GMP_STAGE_CHROOT"'/usr/lib" \
         -lmpc -lmpfr -lgmp -o gcc-dependency-smoke 2> "'"$LINK_TRACE_CHROOT"'"
