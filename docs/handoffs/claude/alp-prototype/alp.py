@@ -26,6 +26,7 @@ Security notes (see proposal doc section 7 for the full discussion):
 from __future__ import annotations
 
 import argparse
+import contextlib
 import hashlib
 import json
 import os
@@ -69,6 +70,7 @@ class Paths:
     db_file: Path
     lock_file: Path
     cache_dir: Path
+    keep_build: bool = False  # --keep-build: leave build/destdir trees in the cache
 
     @classmethod
     def resolve(cls, root: str | None) -> "Paths":
@@ -214,7 +216,7 @@ def resolve_source_url(url: str, base_dir: Path) -> str:
     return str(p if p.is_absolute() else (base_dir / p))
 
 
-def fetch(url: str, dest: Path, expected_sha256: str) -> None:
+def _download_raw(url: str, dest: Path) -> None:
     dest.parent.mkdir(parents=True, exist_ok=True)
     if url.startswith(("http://", "https://")):
         try:
@@ -224,6 +226,10 @@ def fetch(url: str, dest: Path, expected_sha256: str) -> None:
             raise AlpError(f"İndirme başarısız ({DOWNLOAD_TIMEOUT_S}s zaman aşımı dahil): {url}\n  {exc}") from exc
     else:
         shutil.copyfile(url, dest)
+
+
+def fetch(url: str, dest: Path, expected_sha256: str) -> None:
+    _download_raw(url, dest)
 
     actual = sha256_of(dest)
     if actual.lower() != expected_sha256.lower():
@@ -301,12 +307,179 @@ def _copy_entry(src: Path, dst: Path) -> None:
             dst.unlink()
         os.symlink(os.readlink(src), dst)
         return
-    tmp = dst.with_name(f".{dst.name}.alp-tmp")
+    tmp = _tmp_name(dst)
     if os.path.lexists(tmp):
         tmp.unlink()
-    shutil.copyfile(src, tmp)
-    shutil.copymode(src, tmp)
-    os.replace(tmp, dst)
+    try:
+        shutil.copyfile(src, tmp)
+        shutil.copymode(src, tmp)
+        os.replace(tmp, dst)
+    except BaseException:
+        tmp.unlink(missing_ok=True)  # never leave a half-written sibling behind
+        raise
+
+
+def _tmp_name(dst: Path) -> Path:
+    return dst.with_name(f".{dst.name}.alp-tmp")
+
+
+# --------------------------------------------------------------------------
+# Rollback journal. Every filesystem change an install, upgrade or removal
+# makes is logged *before* it happens, together with a backup of whatever it
+# is about to replace or delete. An error halfway through -- full disk, I/O
+# error, Ctrl-C -- then puts every file back. The log is a file, so a process
+# killed mid-transaction (kill -9) can still be undone with `alp recover`.
+#
+# Backups are hard links (same inode, no data copied) with a copy fallback;
+# they live under var/lib/alp/rollback/, on the same filesystem as the state.
+# --------------------------------------------------------------------------
+
+ROLLBACK_DIR = "rollback"
+JOURNAL_NAME = "journal.jsonl"
+
+
+class FileJournal:
+    def __init__(self, backup_dir: Path):
+        self.dir = backup_dir
+        self.log_file = backup_dir / JOURNAL_NAME
+        self._seen: set[str] = set()
+        self._count = 0
+        self._fh = None
+
+    def _record(self, entry: list) -> None:
+        if self._fh is None:
+            self.dir.mkdir(parents=True, exist_ok=True)
+            self._fh = open(self.log_file, "a", encoding="utf-8")
+        self._fh.write(json.dumps(entry, ensure_ascii=False) + "\n")
+        self._fh.flush()
+
+    def close(self) -> None:
+        if self._fh is not None:
+            self._fh.close()
+            self._fh = None
+
+    def commit(self) -> None:
+        """Mark the transaction as complete (after the db was saved). A crash
+        after this point must not be rolled back by `alp recover`."""
+        self._record(["commit"])
+
+    def _backup(self, path: Path, for_write: bool) -> None:
+        key = str(path)
+        if key in self._seen:
+            return
+        self._seen.add(key)
+        if not os.path.lexists(path):
+            if for_write:
+                self._record(["created", key])
+            return
+        if path.is_symlink():
+            self._record(["symlink", key, os.readlink(path)])
+        elif path.is_dir():
+            if not for_write:  # about to rmdir an empty directory
+                self._record(["dir", key, stat.S_IMODE(path.stat().st_mode)])
+        else:
+            self._count += 1
+            slot = self.dir / "files" / str(self._count)
+            slot.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                os.link(path, slot)
+            except OSError:
+                shutil.copy2(path, slot)
+            self._record(["file", key, str(slot)])
+
+    def will_write(self, path: Path) -> None:
+        """Call before creating or overwriting a file or symlink."""
+        self._backup(path, for_write=True)
+
+    def will_remove(self, path: Path) -> None:
+        """Call before deleting a file, symlink or empty directory."""
+        self._backup(path, for_write=False)
+
+    def will_mkdir(self, path: Path) -> None:
+        self._backup(path, for_write=True)
+
+
+def undo_journal(log_file: Path) -> list[str]:
+    """Replay a journal backwards; returns the failures (empty = everything
+    was restored). A journal that reached its commit marker is left alone."""
+    entries: list[list] = []
+    try:
+        with open(log_file, "r", encoding="utf-8") as f:
+            for line in f:
+                try:
+                    entries.append(json.loads(line))
+                except ValueError:
+                    continue  # truncated last line of a killed process
+    except FileNotFoundError:
+        return []
+    if any(e and e[0] == "commit" for e in entries):
+        return []
+    failures: list[str] = []
+    for entry in reversed(entries):
+        kind, path = entry[0], Path(entry[1])
+        try:
+            if kind == "created":
+                if path.is_symlink() or path.is_file():
+                    path.unlink()
+                elif path.is_dir():
+                    with contextlib.suppress(OSError):
+                        path.rmdir()  # foreign files inside keep the directory
+            elif kind == "symlink":
+                if os.path.lexists(path):
+                    path.unlink()
+                os.symlink(entry[2], path)
+            elif kind == "file":
+                slot = Path(entry[2])
+                path.parent.mkdir(parents=True, exist_ok=True)
+                try:
+                    os.replace(slot, path)
+                except OSError:
+                    shutil.copy2(slot, path)
+                    slot.unlink(missing_ok=True)
+            elif kind == "dir":
+                path.mkdir(exist_ok=True)
+                os.chmod(path, entry[2])
+        except OSError as exc:
+            failures.append(f"{path}: {exc}")
+    return failures
+
+
+def pending_journals(paths: Paths) -> list[Path]:
+    base = paths.state_dir / ROLLBACK_DIR
+    if not base.is_dir():
+        return []
+    return sorted(p for p in base.iterdir() if (p / JOURNAL_NAME).exists())
+
+
+@contextlib.contextmanager
+def _transaction(paths: Paths, label: str):
+    """One package's filesystem changes plus its db update: all of it happens,
+    or (on any error, including Ctrl-C) none of the file changes stay."""
+    safe = re.sub(r"[^A-Za-z0-9._-]", "_", label)
+    journal = FileJournal(paths.state_dir / ROLLBACK_DIR / f"{int(time.time() * 1000)}-{os.getpid()}-{safe}")
+    try:
+        yield journal
+    except BaseException:
+        journal.close()
+        failures = undo_journal(journal.log_file)
+        if failures:
+            print(
+                f"alp: UYARI: {label} için geri alma tam yapılamadı ({len(failures)} yol); "
+                f"yedek korunuyor: {journal.dir}\n  'alp recover' ile yeniden deneyin. İlk hata: {failures[0]}",
+                file=sys.stderr,
+            )
+        else:
+            shutil.rmtree(journal.dir, ignore_errors=True)
+            print(f"alp: hata nedeniyle {label} için yapılan dosya değişiklikleri geri alındı.", file=sys.stderr)
+        raise
+    else:
+        journal.commit()
+        journal.close()
+        shutil.rmtree(journal.dir, ignore_errors=True)
+
+
+def _maybe_transaction(paths: Paths, label: str, dry_run: bool):
+    return contextlib.nullcontext(None) if dry_run else _transaction(paths, label)
 
 
 def _tool_available(binary: str, cwd: Path) -> bool:
@@ -443,6 +616,7 @@ def _merge_staged(
     config_files: set[str],
     old_record: dict | None,
     other_owners: dict[str, str],
+    journal: FileJournal | None = None,
 ) -> MergeResult:
     """The single path every recipe/core install, upgrade and reinstall uses
     to copy a staged tree (a recipe's DESTDIR or an extracted core archive)
@@ -471,14 +645,25 @@ def _merge_staged(
     symlinks: list[str] = []
     new_hashes: dict[str, str] = {}
     alpnew: list[str] = []
+
+    def write(src: Path, dst: Path) -> None:
+        if journal is not None:
+            journal.will_write(dst)
+            journal.will_write(_tmp_name(dst))  # the sibling _copy_entry writes first
+        _copy_entry(src, dst)
+
     try:
         for rel, kind in entries:
             src = staged_root / rel.lstrip("/")
             dst = root / rel.lstrip("/")
             if kind == "dir":
                 if os.path.lexists(dst) and rel in self_owned and (dst.is_symlink() or not dst.is_dir()):
+                    if journal is not None:
+                        journal.will_remove(dst)
                     dst.unlink()  # our own file/symlink becoming a real directory
                 if not dst.is_dir():
+                    if journal is not None:
+                        journal.will_mkdir(dst)
                     dst.mkdir()
                     shutil.copymode(src, dst)
                     owned.append(rel)
@@ -489,28 +674,30 @@ def _merge_staged(
             owned.append(rel)
             if kind == "symlink":
                 symlinks.append(rel)
-                _copy_entry(src, dst)
+                write(src, dst)
             elif rel in config_files:
                 current = _file_sha256_or_none(dst)
                 recorded = old_hashes.get(rel)
                 if current is None or recorded is None or current == recorded:
-                    _copy_entry(src, dst)
+                    write(src, dst)
                     new_hashes[rel] = sha256_of(src)
                 else:
-                    _copy_entry(src, dst.with_name(dst.name + ".alpnew"))
+                    write(src, dst.with_name(dst.name + ".alpnew"))
                     new_hashes[rel] = recorded  # still "user-modified" next time
                     alpnew.append(rel)
             else:
-                _copy_entry(src, dst)
+                write(src, dst)
     except OSError as exc:
         raise AlpError(
-            f"Dosya kopyalanırken hata: {exc}. İşlem yarıda kaldı; veritabanı "
-            "güncellenmedi, sistemde bu paketin dosyalarının bir kısmı yazılmış olabilir."
+            f"Dosya kopyalanırken hata: {exc}. Bu paketin o ana kadar yazılan dosyaları "
+            "geri alınıyor; veritabanı güncellenmedi."
         ) from exc
     return MergeResult(installed=sorted(owned), symlinks=sorted(symlinks), config_hashes=new_hashes, alpnew=sorted(alpnew))
 
 
-def _remove_owned_paths(root: Path, rel_paths, record: dict, dry_run: bool) -> None:
+def _remove_owned_paths(
+    root: Path, rel_paths, record: dict, dry_run: bool, journal: FileJournal | None = None,
+) -> None:
     """Delete paths a package owns, deepest-first (reverse string sort: an
     ancestor is always a string prefix of its descendants). Shared by
     remove_package() and upgrade's dropped-file cleanup.
@@ -540,12 +727,17 @@ def _remove_owned_paths(root: Path, rel_paths, record: dict, dry_run: bool) -> N
                 if dry_run:
                     print(f"[dry-run] {target} -> {save_path} (değiştirilmiş, kaydediliyor)")
                 else:
+                    if journal is not None:
+                        journal.will_write(save_path)
+                        journal.will_remove(target)
                     os.replace(target, save_path)
                     print(f"Değiştirilmiş yapılandırma korundu: {save_path}")
                 continue
         if dry_run:
             print(f"[dry-run] rm {target}")
             continue
+        if journal is not None:
+            journal.will_remove(target)
         try:
             if target.is_symlink() or target.is_file():
                 target.unlink()
@@ -609,7 +801,7 @@ def _require_recipe_dependencies(recipe: dict) -> None:
 
 def install_recipe(
     paths: Paths, entry: dict, index_dir: Path, dry_run: bool,
-    db: dict | None = None, pkg_name: str | None = None,
+    db: dict | None = None, pkg_name: str | None = None, journal: FileJournal | None = None,
 ) -> dict:
     recipe_path = index_dir / entry["recipe"]
     with open(recipe_path, "r", encoding="utf-8") as f:
@@ -683,7 +875,9 @@ def install_recipe(
         destdir, paths.root,
         config_files=config_files, old_record=None,
         other_owners=_other_owners(db, exclude=pkg_name or recipe["name"]),
+        journal=journal,
     )
+    _cleanup_build(paths, build_root, destdir)
 
     return {
         "name": recipe["name"],
@@ -709,7 +903,7 @@ def install_recipe(
 
 def upgrade_recipe(
     paths: Paths, entry: dict, index_dir: Path, old_record: dict, dry_run: bool,
-    db: dict | None = None, pkg_name: str | None = None,
+    db: dict | None = None, pkg_name: str | None = None, journal: FileJournal | None = None,
 ) -> dict:
     recipe_path = index_dir / entry["recipe"]
     with open(recipe_path, "r", encoding="utf-8") as f:
@@ -759,9 +953,10 @@ def upgrade_recipe(
     other_owners = _other_owners(db, exclude=pkg_name or recipe["name"])
     merged = _merge_staged(
         destdir, paths.root,
-        config_files=config_files, old_record=old_record, other_owners=other_owners,
+        config_files=config_files, old_record=old_record, other_owners=other_owners, journal=journal,
     )
-    _drop_stale_files(paths.root, old_record, merged.installed, other_owners)
+    _drop_stale_files(paths.root, old_record, merged.installed, other_owners, journal=journal)
+    _cleanup_build(paths, build_root, destdir)
     _warn_about_alpnew(merged.alpnew)
 
     return {
@@ -781,14 +976,27 @@ def upgrade_recipe(
     }
 
 
-def _drop_stale_files(root: Path, old_record: dict, new_files: list[str], other_owners: dict[str, str]) -> None:
+def _cleanup_build(paths: Paths, *dirs: Path) -> None:
+    """Build trees and DESTDIRs are only needed while a build runs; leaving
+    them piled up under var/lib/alp/cache eats disk. Kept after a *failed*
+    build (for debugging) and with --keep-build."""
+    if paths.keep_build:
+        return
+    for d in dirs:
+        shutil.rmtree(d, ignore_errors=True)
+
+
+def _drop_stale_files(
+    root: Path, old_record: dict, new_files: list[str], other_owners: dict[str, str],
+    journal: FileJournal | None = None,
+) -> None:
     """Remove what the old version owned that the new version no longer
     ships (a renamed binary, a dropped doc file), with the same safety rules
     as removal -- including .alpsave for a user-modified config file the new
     version dropped. Paths another package owns are left alone."""
     dropped = set(old_record.get("files", [])) - set(new_files) - set(other_owners)
     if dropped:
-        _remove_owned_paths(root, dropped, old_record, dry_run=False)
+        _remove_owned_paths(root, dropped, old_record, dry_run=False, journal=journal)
 
 
 def _warn_about_alpnew(alpnew: list[str]) -> None:
@@ -858,7 +1066,7 @@ def _stage_core_archive(paths: Paths, entry: dict, index_dir: Path, prefix: str)
 
 def install_core(
     paths: Paths, entry: dict, index_dir: Path, dry_run: bool,
-    db: dict | None = None, pkg_name: str | None = None,
+    db: dict | None = None, pkg_name: str | None = None, journal: FileJournal | None = None,
 ) -> dict:
     name, version = entry["name"], entry["version"]
     source_url = resolve_source_url(entry["url"], index_dir)
@@ -887,7 +1095,7 @@ def install_core(
         merged = _merge_staged(
             staged, paths.root,
             config_files=config_files, old_record=None,
-            other_owners=_other_owners(db, exclude=pkg_name or name),
+            other_owners=_other_owners(db, exclude=pkg_name or name), journal=journal,
         )
     finally:
         shutil.rmtree(staged, ignore_errors=True)
@@ -910,7 +1118,7 @@ def install_core(
 
 def upgrade_core(
     paths: Paths, entry: dict, index_dir: Path, old_record: dict, dry_run: bool,
-    db: dict | None = None, pkg_name: str | None = None,
+    db: dict | None = None, pkg_name: str | None = None, journal: FileJournal | None = None,
 ) -> dict:
     name, version = entry["name"], entry["version"]
     config_files = set(entry.get("config_files", []))
@@ -926,11 +1134,11 @@ def upgrade_core(
     try:
         merged = _merge_staged(
             staged, paths.root,
-            config_files=config_files, old_record=old_record, other_owners=other_owners,
+            config_files=config_files, old_record=old_record, other_owners=other_owners, journal=journal,
         )
     finally:
         shutil.rmtree(staged, ignore_errors=True)
-    _drop_stale_files(paths.root, old_record, merged.installed, other_owners)
+    _drop_stale_files(paths.root, old_record, merged.installed, other_owners, journal=journal)
     _warn_about_alpnew(merged.alpnew)
 
     return {
@@ -953,7 +1161,7 @@ def upgrade_core(
 # Removal (dispatches on the recorded method, same as install)
 # --------------------------------------------------------------------------
 
-def remove_package(paths: Paths, db: dict, name: str, dry_run: bool) -> None:
+def remove_package(paths: Paths, db: dict, name: str, dry_run: bool, journal: FileJournal | None = None) -> None:
     pkg = db["packages"].get(name)
     if pkg is None:
         raise AlpError(f"Kurulu değil: {name}")
@@ -963,7 +1171,7 @@ def remove_package(paths: Paths, db: dict, name: str, dry_run: bool) -> None:
     else:
         other_owners = _other_owners(db, exclude=name)
         ours = [rel for rel in pkg.get("files", []) if rel not in other_owners]
-        _remove_owned_paths(paths.root, ours, pkg, dry_run)
+        _remove_owned_paths(paths.root, ours, pkg, dry_run, journal=journal)
 
     if not dry_run:
         del db["packages"][name]
@@ -1008,7 +1216,9 @@ def cmd_list(db: dict, as_json: bool = False) -> int:
     if as_json:
         rows = [
             {"name": name, "version": pkg["version"], "method": pkg["method"],
-             "status": pkg.get("status", "installed"), "reason": pkg.get("reason", "explicit")}
+             "status": pkg.get("status", "installed"), "reason": pkg.get("reason", "explicit"),
+             # only present when true: keeps the JSON contract PackageKit parses unchanged
+             **({"protected": True} if pkg.get("protected") else {})}
             for name, pkg in sorted(db["packages"].items())
         ]
         print(json.dumps(rows, ensure_ascii=False))
@@ -1018,6 +1228,8 @@ def cmd_list(db: dict, as_json: bool = False) -> int:
         return 0
     for name, pkg in sorted(db["packages"].items()):
         suffix = "\t(bağımlılık)" if pkg.get("reason") == "dependency" else ""
+        if pkg.get("protected"):
+            suffix += "\t(korumalı)"
         print(f"{name}\t{pkg['version']}\t{pkg['method']}{suffix}")
     return 0
 
@@ -1285,6 +1497,13 @@ def plan_remove(index: dict, installed: dict, targets: list[str], cascade: bool)
                     f"Onlarla birlikte kaldırmak için: alp remove --cascade {target}"
                 )
 
+    guarded = sorted(n for n in removing if (installed.get(n) or {}).get("protected"))
+    if guarded:
+        raise AlpError(
+            f"{', '.join(guarded)} korumalı (taban/sistem paketi); kaldırılamaz. "
+            f"Bilerek kaldırmak için önce: alp unprotect {guarded[0]}"
+        )
+
     order: list[str] = []
     seen: set[str] = set()
 
@@ -1317,6 +1536,7 @@ def find_orphans(index: dict, installed: dict, removing: set[str] = frozenset())
         new = {
             name for name in alive - orphans
             if installed[name].get("reason") == "dependency" and name not in needed
+            and not installed[name].get("protected")
         }
         if not new:
             return sorted(orphans)
@@ -1352,23 +1572,29 @@ def _print_plan(steps: list[PlanStep], index: dict) -> None:
         print(f"  {_ACTION_LABEL[s.action]:<12}{s.name} {version} [{method}]{note}")
 
 
-def _install_one(paths: Paths, name: str, entry: dict, index_dir: Path, dry_run: bool, db: dict) -> dict:
+def _install_one(
+    paths: Paths, name: str, entry: dict, index_dir: Path, dry_run: bool, db: dict,
+    journal: FileJournal | None = None,
+) -> dict:
     method = entry["method"]
     if method == "recipe":
-        return install_recipe(paths, entry, index_dir, dry_run, db=db, pkg_name=name)
+        return install_recipe(paths, entry, index_dir, dry_run, db=db, pkg_name=name, journal=journal)
     if method == "flatpak":
         return install_flatpak(entry, dry_run)
     if method == "core":
-        return install_core(paths, entry, index_dir, dry_run, db=db, pkg_name=name)
+        return install_core(paths, entry, index_dir, dry_run, db=db, pkg_name=name, journal=journal)
     raise AlpError(f"Tanımsız kurulum yöntemi: {method!r}")
 
 
-def _upgrade_one(paths: Paths, name: str, entry: dict, index_dir: Path, old: dict, dry_run: bool, db: dict) -> dict:
+def _upgrade_one(
+    paths: Paths, name: str, entry: dict, index_dir: Path, old: dict, dry_run: bool, db: dict,
+    journal: FileJournal | None = None,
+) -> dict:
     method = entry["method"]
     if method == "recipe":
-        return upgrade_recipe(paths, entry, index_dir, old, dry_run, db=db, pkg_name=name)
+        return upgrade_recipe(paths, entry, index_dir, old, dry_run, db=db, pkg_name=name, journal=journal)
     if method == "core":
-        return upgrade_core(paths, entry, index_dir, old, dry_run, db=db, pkg_name=name)
+        return upgrade_core(paths, entry, index_dir, old, dry_run, db=db, pkg_name=name, journal=journal)
     if method == "flatpak":
         raise AlpError(_FLATPAK_UPGRADE_MSG)
     raise AlpError(f"Tanımsız yöntem: {method!r}")
@@ -1384,13 +1610,33 @@ def _run_plan(
         entry = index["entries"][step.name]
         old = db["packages"].get(step.name)
         try:
-            if old is not None and entry["method"] in ("recipe", "core"):
-                # upgrade and --reinstall share the config-aware path, so
-                # modified configs get .alpnew and dropped files are removed.
-                record = _upgrade_one(paths, step.name, entry, index_dir, old, dry_run, db)
-            else:
-                record = _install_one(paths, step.name, entry, index_dir, dry_run, db)
+            # One transaction per package: its files and its db record change
+            # together, or every file change is rolled back (see FileJournal).
+            with _maybe_transaction(paths, step.name, dry_run) as journal:
+                if old is not None and entry["method"] in ("recipe", "core"):
+                    # upgrade and --reinstall share the config-aware path, so
+                    # modified configs get .alpnew and dropped files are removed.
+                    record = _upgrade_one(paths, step.name, entry, index_dir, old, dry_run, db, journal=journal)
+                else:
+                    record = _install_one(paths, step.name, entry, index_dir, dry_run, db, journal=journal)
+                record["depends"] = list(entry.get("depends", []))
+                record["conflicts"] = list(entry.get("conflicts", []))
+                if step.name in explicit:
+                    record["reason"] = "explicit"
+                elif old is not None:
+                    record["reason"] = old.get("reason", "explicit")
+                else:
+                    record["reason"] = step.reason
+                if entry.get("protected") or (old or {}).get("protected"):
+                    record["protected"] = True
+                if not dry_run:
+                    db["packages"][step.name] = record
+                    save_db(paths, db)
         except Exception:
+            if not dry_run:
+                # the db file is the truth: drop the in-memory change a failed save left behind
+                db.clear()
+                db.update(load_db(paths))
             if done:
                 remaining = [s.name for s in steps[len(done):]]
                 print(
@@ -1399,17 +1645,6 @@ def _run_plan(
                     file=sys.stderr,
                 )
             raise
-        record["depends"] = list(entry.get("depends", []))
-        record["conflicts"] = list(entry.get("conflicts", []))
-        if step.name in explicit:
-            record["reason"] = "explicit"
-        elif old is not None:
-            record["reason"] = old.get("reason", "explicit")
-        else:
-            record["reason"] = step.reason
-        if not dry_run:
-            db["packages"][step.name] = record
-            save_db(paths, db)
         done.append(step.name)
         print(f"{tag}{step.name} ({entry['method']}) -> {record.get('version')} {_ACTION_DONE[step.action]}.")
 
@@ -1435,6 +1670,7 @@ def cmd_install(args: argparse.Namespace, paths: Paths, index: dict, index_dir: 
 
     paths.ensure()
     with DbLock(paths.lock_file):
+        _require_no_pending(paths)
         db = load_db(paths)
         installed = db["packages"]
         steps = plan_transaction(
@@ -1488,6 +1724,7 @@ def _drop_kept_back(index: dict, index_dir: Path, installed: dict, targets: list
 def cmd_upgrade(args: argparse.Namespace, paths: Paths, index: dict, index_dir: Path) -> int:
     paths.ensure()
     with DbLock(paths.lock_file):
+        _require_no_pending(paths)
         db = load_db(paths)
         installed = db["packages"]
         name = getattr(args, "name", None)
@@ -1534,9 +1771,16 @@ def cmd_upgrade(args: argparse.Namespace, paths: Paths, index: dict, index_dir: 
 def _remove_many(order: list[str], paths: Paths, db: dict, dry_run: bool) -> None:
     tag = "[dry-run] " if dry_run else ""
     for name in order:
-        remove_package(paths, db, name, dry_run)
-        if not dry_run:
-            save_db(paths, db)
+        try:
+            with _maybe_transaction(paths, f"remove-{name}", dry_run) as journal:
+                remove_package(paths, db, name, dry_run, journal=journal)
+                if not dry_run:
+                    save_db(paths, db)
+        except Exception:
+            if not dry_run:
+                db.clear()
+                db.update(load_db(paths))
+            raise
         print(f"{tag}{name} kaldırıldı.")
 
 
@@ -1544,6 +1788,7 @@ def cmd_remove(args: argparse.Namespace, paths: Paths, index: dict | None = None
     index = index or {"entries": {}}
     paths.ensure()
     with DbLock(paths.lock_file):
+        _require_no_pending(paths)
         db = load_db(paths)
         installed = db["packages"]
         if args.name not in installed:
@@ -1563,6 +1808,7 @@ def cmd_remove(args: argparse.Namespace, paths: Paths, index: dict | None = None
 def cmd_autoremove(args: argparse.Namespace, paths: Paths, index: dict) -> int:
     paths.ensure()
     with DbLock(paths.lock_file):
+        _require_no_pending(paths)
         db = load_db(paths)
         installed = db["packages"]
         orphans = find_orphans(index, installed)
@@ -1578,7 +1824,58 @@ def cmd_autoremove(args: argparse.Namespace, paths: Paths, index: dict) -> int:
     return 0
 
 
+def _require_no_pending(paths: Paths) -> None:
+    pending = pending_journals(paths)
+    if pending:
+        raise AlpError(
+            f"Yarım kalmış {len(pending)} işlem var ({pending[0].name}...). Önce 'alp recover' çalıştırın; "
+            "dosya sistemi ile veritabanı arasında tutarsızlık olabilir."
+        )
+
+
+def cmd_recover(args: argparse.Namespace, paths: Paths) -> int:
+    """Undo what a killed alp process (kill -9, power cut) left half-done.
+    The db is only saved inside a transaction after its files were written,
+    so restoring the files puts both back to the last consistent state."""
+    paths.ensure()
+    with DbLock(paths.lock_file):
+        pending = pending_journals(paths)
+        if not pending:
+            print("Geri alınacak yarım işlem yok.")
+            return 0
+        bad = 0
+        for journal_dir in reversed(pending):  # newest first
+            failures = undo_journal(journal_dir / JOURNAL_NAME)
+            if failures:
+                bad += 1
+                print(f"{journal_dir.name}: TAM geri alınamadı ({len(failures)} yol), ilk hata: {failures[0]}", file=sys.stderr)
+            else:
+                shutil.rmtree(journal_dir, ignore_errors=True)
+                print(f"{journal_dir.name}: geri alındı.")
+        return 1 if bad else 0
+
+
+def cmd_protect(args: argparse.Namespace, paths: Paths, protect: bool) -> int:
+    paths.ensure()
+    with DbLock(paths.lock_file):
+        db = load_db(paths)
+        pkg = db["packages"].get(args.name)
+        if pkg is None:
+            raise AlpError(f"Kurulu değil: {args.name}")
+        if protect:
+            pkg["protected"] = True
+        else:
+            pkg.pop("protected", None)
+        if not args.dry_run:
+            save_db(paths, db)
+    print(f"{args.name} {'korumalı olarak işaretlendi' if protect else 'artık korumalı değil'}.")
+    return 0
+
+
 def cmd_check(paths: Paths, index: dict, index_dir: Path) -> int:
+    pending = pending_journals(paths)
+    if pending:
+        print(f"SORUN: {len(pending)} yarım kalmış işlem yedeği var; 'alp recover' çalıştırın.")
     installed = load_db(paths)["packages"]
     problems = state_problems(index, installed, [], only_touched=False)
     for name in sorted(installed):
@@ -1589,12 +1886,141 @@ def cmd_check(paths: Paths, index: dict, index_dir: Path) -> int:
     orphans = find_orphans(index, installed)
     if orphans:
         print(f"sahipsiz bağımlılık: {', '.join(orphans)} (alp autoremove)")
-    if problems:
+    if problems or pending:
         for p in problems:
             print(f"SORUN: {p}")
         return 1
     print(f"Bağımlılık tutarlılığı: sorun yok ({len(installed)} kurulu paket).")
     return 0
+
+
+# --------------------------------------------------------------------------
+# update: refresh the catalog. The catalog is index.json plus the recipe files
+# and core archives it points at, so the source is either a bare index.json
+# (recipes/archives stay as they are) or a .tar.gz bundle with index.json at
+# its top (everything in it replaces the local copy, index.json last).
+#
+# Honest limit: the catalog itself is not signed. Trust comes from https (or
+# a local path) and, when given, --sha256. Every package archive it names is
+# still sha256-verified at install time.
+# --------------------------------------------------------------------------
+
+def _catalog_versions(index: dict, base_dir: Path) -> dict[str, str]:
+    out: dict[str, str] = {}
+    for name in index["entries"]:
+        try:
+            out[name] = catalog_version(index, base_dir, name)
+        except (OSError, ValueError, KeyError):
+            out[name] = "?"
+    return out
+
+
+def _validate_catalog(index: object, base_dir: Path) -> None:
+    if not isinstance(index, dict) or not isinstance(index.get("entries"), dict):
+        raise AlpError("Yeni katalog geçersiz: 'entries' tablosu yok. Yerel katalog değiştirilmedi.")
+    real_base = os.path.realpath(base_dir)
+    for name, entry in index["entries"].items():
+        if not isinstance(entry, dict) or entry.get("method") not in ("recipe", "core", "flatpak"):
+            raise AlpError(f"Yeni katalog geçersiz: {name!r} için tanımsız yöntem. Yerel katalog değiştirilmedi.")
+        if entry["method"] == "recipe":
+            recipe = os.path.realpath(os.path.join(real_base, str(entry.get("recipe", ""))))
+            if not _inside(real_base, recipe) or not os.path.isfile(recipe):
+                raise AlpError(f"Yeni katalog geçersiz: {name!r} tarif dosyası yok ya da katalog dışında. Yerel katalog değiştirilmedi.")
+            try:
+                with open(recipe, "r", encoding="utf-8") as f:
+                    r = json.load(f)
+                for key in ("name", "version", "source_url", "sha256", "build"):
+                    r[key]
+            except (ValueError, KeyError, OSError) as exc:
+                raise AlpError(f"Yeni katalog geçersiz: {name!r} tarifi okunamadı ({exc}). Yerel katalog değiştirilmedi.") from exc
+        elif entry["method"] == "core" and not (entry.get("url") and entry.get("sha256")):
+            raise AlpError(f"Yeni katalog geçersiz: {name!r} için url/sha256 yok. Yerel katalog değiştirilmedi.")
+
+
+def cmd_update(args: argparse.Namespace, paths: Paths, index_path: Path, index: dict) -> int:
+    source = getattr(args, "source", None) or index.get("source")
+    if not source:
+        raise AlpError("Katalog kaynağı yok: --source verin ya da index.json'a \"source\" alanı ekleyin.")
+    if str(source).startswith("http://"):
+        raise AlpError("http:// güvensiz (katalog imzalı değil). https:// ya da yerel yol kullanın.")
+    index_dir = index_path.parent
+    source = resolve_source_url(source, index_dir)
+
+    paths.ensure()
+    with DbLock(paths.lock_file):
+        _require_no_pending(paths)
+        work = index_dir / ".alp-update"
+        shutil.rmtree(work, ignore_errors=True)
+        work.mkdir(parents=True)
+        try:
+            blob = work / "download"
+            _download_raw(source, blob)
+            wanted = getattr(args, "sha256", None)
+            if wanted and sha256_of(blob).lower() != wanted.lower():
+                raise AlpError(
+                    f"Checksum uyuşmadı: {source}\n  beklenen : {wanted}\n  hesaplanan: {sha256_of(blob)}\n"
+                    "Katalog doğrulanamadı; yerel katalog değiştirilmedi."
+                )
+            bundle = tarfile.is_tarfile(blob)
+            if bundle:
+                new_root = work / "catalog"
+                safe_extract(blob, new_root)
+                if not (new_root / "index.json").is_file():
+                    new_root = _single_top_level_dir(new_root)
+                if not (new_root / "index.json").is_file():
+                    raise AlpError("Katalog paketinde index.json yok. Yerel katalog değiştirilmedi.")
+                new_path = new_root / "index.json"
+                versions_dir = new_root
+            else:
+                new_path = blob
+                versions_dir = index_dir
+            try:
+                new_index = load_index(new_path)
+            except ValueError as exc:
+                raise AlpError(f"Yeni katalog JSON değil: {exc}. Yerel katalog değiştirilmedi.") from exc
+            _validate_catalog(new_index, versions_dir)
+
+            old_v = _catalog_versions(index, index_dir)
+            new_v = _catalog_versions(new_index, versions_dir)
+            added = sorted(set(new_v) - set(old_v))
+            removed = sorted(set(old_v) - set(new_v))
+            changed = sorted(n for n in set(old_v) & set(new_v) if old_v[n] != new_v[n])
+            for n in added:
+                print(f"yeni      {n} {new_v[n]}")
+            for n in changed:
+                print(f"değişti   {n} {old_v[n]} -> {new_v[n]}")
+            for n in removed:
+                print(f"kalktı    {n} {old_v[n]}")
+            if not (added or changed or removed):
+                print("Katalog zaten güncel.")
+            installed = load_db(paths)["packages"]
+            for n in sorted(installed):
+                if n in new_v and installed[n].get("method") != "flatpak" and new_v[n] != "?":
+                    if vercmp(new_v[n], installed[n]["version"]) > 0:
+                        print(f"güncelleme var: {n} {installed[n]['version']} -> {new_v[n]}  (alp upgrade)")
+
+            if args.dry_run:
+                print("[dry-run] yerel katalog değiştirilmedi.")
+                return 0
+            if bundle:
+                prev = index_dir / ".alp-catalog-prev"
+                shutil.rmtree(prev, ignore_errors=True)
+                files = sorted(p for p in new_root.rglob("*") if p.is_file() and p.name != "index.json")
+                for src in files:
+                    rel = src.relative_to(new_root)
+                    dst = index_dir / rel
+                    if dst.is_file():
+                        (prev / rel).parent.mkdir(parents=True, exist_ok=True)
+                        shutil.copy2(dst, prev / rel)
+                    dst.parent.mkdir(parents=True, exist_ok=True)
+                    os.replace(src, dst)
+            if index_path.is_file():
+                shutil.copy2(index_path, index_path.with_name(index_path.name + ".prev"))
+            os.replace(new_path, index_path)  # last: the catalog only points at files that already exist
+            print("Katalog güncellendi. Önceki index.json: " + index_path.name + ".prev")
+            return 0
+        finally:
+            shutil.rmtree(work, ignore_errors=True)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -1603,6 +2029,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--index", required=True, help="Path to the local package index.json")
     p.add_argument("--dry-run", action="store_true", help="Print intended actions, touch nothing persistent")
     p.add_argument("--json", action="store_true", help="Machine-readable JSON output for search/list (info is always JSON)")
+    p.add_argument("--keep-build", action="store_true", help="Keep build trees in var/lib/alp/cache after a successful install/upgrade")
 
     sub = p.add_subparsers(dest="command", required=True)
 
@@ -1630,7 +2057,17 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("autoremove", parents=[yes], help="Remove dependencies nothing needs anymore")
     sub.add_parser("check", help="Verify installed dependency constraints and conflicts")
     sub.add_parser("list", help="List installed packages")
-    sub.add_parser("update", help="Refresh the local index (no-op in this prototype)")
+    sub.add_parser("recover", help="Undo the half-finished transaction of a killed alp process")
+
+    sp = sub.add_parser("protect", help="Mark an installed package as protected (never removed by remove/autoremove)")
+    sp.add_argument("name")
+    sp = sub.add_parser("unprotect", help="Remove the protected mark")
+    sp.add_argument("name")
+
+    sp = sub.add_parser("update", help="Refresh the catalog (index.json, or a catalog bundle) from a source")
+    sp.add_argument("--source", help="https:// URL or local path of index.json or a .tar.gz catalog bundle "
+                                     "(default: the current index's own \"source\" field)")
+    sp.add_argument("--sha256", help="Expected SHA-256 of the downloaded file (recommended)")
 
     return p
 
@@ -1652,9 +2089,15 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "list":
             paths.ensure()
             return cmd_list(load_db(paths), as_json=args.json)
+        paths.keep_build = getattr(args, "keep_build", False)
         if args.command == "update":
-            print("Bu prototipte 'update' yereldeki index.json'ı yeniden okur; gerçek sistemde repo senkronize eder.")
-            return 0
+            return cmd_update(args, paths, index_path, index)
+        if args.command == "recover":
+            return cmd_recover(args, paths)
+        if args.command == "protect":
+            return cmd_protect(args, paths, protect=True)
+        if args.command == "unprotect":
+            return cmd_protect(args, paths, protect=False)
         if args.command == "install":
             return cmd_install(args, paths, index, index_dir)
         if args.command == "upgrade":

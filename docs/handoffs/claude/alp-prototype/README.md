@@ -91,3 +91,13 @@ Ayrıntı: [../013-alp-seviye3-deps.md](../013-alp-seviye3-deps.md). Kısaca:
 - Sınır: katalogda her paketin tek bir sürümü var. Bu yüzden bu bir SAT çözücü değil, deterministik bir kısıt denetleyicisi. Katalog dışındaki sistem kütüphaneleri hâlâ Seviye 1'de (`requires_commands` / `requires_libraries`).
 
 Test: Windows'ta **126 geçti, 10 atlandı**. Builder'da (Ubuntu 24.04.5) **136 geçti, 0 atlandı**.
+
+## M02 kapanışı: geri alma, recover, korumalı paket, update (24 Eylül 2026)
+
+- **İşlemsel geri alma.** Her paket kurulumu, yükseltmesi ve kaldırması bir işlem (transaction) içinde çalışır: dosya değişiklikleri **yazılmadan önce** `var/lib/alp/rollback/` altındaki günlüğe (write-ahead) ve yedeğe (sabit bağlantı, gerekirse kopya) kaydedilir. Dosya kopyalanırken hata (disk dolu, G/Ç hatası, Ctrl-C) ya da veritabanı yazma hatası olursa her dosya eski hâline döner. Değişmez kural: alp dosyaları hiç yerinde yazmaz (geçici dosya + `os.replace`), bu yüzden yedek eski inode'u korur.
+- **`alp recover`.** `kill -9` ya da elektrik kesintisiyle yarım kalan işlemi günlükten geri alır. Yarım işlem varken `install/upgrade/remove/autoremove/update` reddedilir, `alp check` sorunu gösterir. Veritabanı kaydedildikten sonra yazılan `commit` işareti olan günlük geri alınmaz.
+- **`alp protect NAME` / `alp unprotect NAME`** ve katalog girişinde `"protected": true`. Korumalı paket `remove`, `--cascade` ve `autoremove` ile kaldırılamaz (yükseltilebilir). Amaç: M04'te taban paketleri kaydedildiğinde `alp`'in onları silememesi. `list --json` yalnız korumalıysa `"protected": true` yazar (JSON sözleşmesi değişmez).
+- **`alp update [--source URL|YOL] [--sha256 HEX]`.** Kaynak `index.json` ya da tepesinde `index.json` olan `.tar.gz` katalog paketidir; `index.json`'daki `"source"` alanı varsayılan kaynaktır. `http://` reddedilir. Yeni katalog doğrulanır (tarif dosyaları katalog içinde ve okunur mu), yerel katalog değiştirilmeden önce fark (yeni/değişti/kalktı ve `güncelleme var`) gösterilir; `--dry-run` hiçbir şeyi değiştirmez. Önceki `index.json` `index.json.prev` olarak, değişen paket dosyaları `.alp-catalog-prev/` altında kalır. **Katalog imzalı değil**: güven https + isteğe bağlı `--sha256` ile sağlanır; paket arşivleri kurulumda yine sha256 ile doğrulanır.
+- **Build temizliği.** Başarılı recipe kurulumundan sonra `build-*`/`destdir-*` (ve upgrade eşdeğerleri) silinir; başarısız build'de hata ayıklama için kalır. `--keep-build` hepsini saklar.
+
+Doğrulama: Windows 153 geçti/12 atlandı; Linux (Ubuntu 24.04, Python 3.12.3, kullanıcı `sa`, gerçek izinler) 165 geçti/0 atlandı; 12 mutasyonun 12'si testlerce yakalandı; gerçek `kill -9` denemesi (aşağıda devir belgesi 014).

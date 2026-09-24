@@ -122,3 +122,7 @@ Uygulandığında eklenecek testler (şimdiden tanımlanıyor, henüz yazılmad�
 ## 9. Kabul kriterleri
 
 Bu tasarım koda dönüştürüldüğünde "tamamlandı" sayılır ancak: §7'deki testler (bu tur 12 test olarak `pytest`'te yazılıp **geçti** ✅) VE gerçek bir Linux ortamında en az bir paketin gerçek `upgrade` döngüsü (değiştirilmiş ve değiştirilmemiş config dosyasıyla, gerçek `configure/make` ile) elle doğrulandığında (❌ hâlâ yapılmadı — bu hostta toolchain yok, Codex'in ortamını bekliyor).
+
+## 9. Geri alma ve `alp recover` (24 Eylül 2026)
+
+Yükseltme/kaldırma sırasında yarıda kalan bir işlem artık sistemi kısmen değişmiş bırakmaz. Her paket işlemi bir günlük (`var/lib/alp/rollback/`) tutar: yazmadan önce kayıt + yedek, hatada tersten oynatma, veritabanı yazıldıktan sonra `commit` işareti. `kill -9` ile ölen süreçten kalan günlük `alp recover` ile geri alınır. Ayrıntı, sınırlar (fsync yok, commit öncesi küçük pencere) ve doğrulama: `../014-alp-m02-rollback-update-protect.md`. Yukarıdaki `.alpnew`/`.alpsave` kuralları değişmedi; `.alpsave`'e taşınan dosya da günlüğe girer ve geri alınabilir.
