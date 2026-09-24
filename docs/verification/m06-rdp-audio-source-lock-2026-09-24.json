@@ -9,9 +9,15 @@
       "repository": "https://github.com/neutrinolabs/xrdp",
       "tag": "v0.10.6.1",
       "commit": "80c52879fead585d6347df5b3c587718adf8f5a5",
+      "tag_object": "1461e06fc40993fce7a5cea39f5779c10d6c150e",
       "release_url": "https://github.com/neutrinolabs/xrdp/releases/tag/v0.10.6.1",
+      "archive_name": "xrdp-0.10.6.1.tar.gz",
+      "archive_url": "https://github.com/neutrinolabs/xrdp/releases/download/v0.10.6.1/xrdp-0.10.6.1.tar.gz",
+      "archive_sha256": "2f7beb5a3b2529c8d72dc0df9b8cdca31ab0e0c14d1e3421210f5e6ec0ab3b75",
+      "archive_digest_source": "GitHub REST release asset digest; not independently recomputed from a downloaded archive",
+      "signature_asset_url": "https://github.com/neutrinolabs/xrdp/releases/download/v0.10.6.1/xrdp-0.10.6.1.tar.gz.asc",
       "tag_signature": "GitHub reports verified; signing key 03993B4065E7193B is expired; independent key trust not established",
-      "archive_sha256": null
+      "tag_identity_source": "GitHub REST git ref, peeled annotated tag object, and release page"
     },
     {
       "name": "xorgxrdp",
@@ -19,10 +25,16 @@
       "repository": "https://github.com/neutrinolabs/xorgxrdp",
       "tag": "v0.10.5",
       "commit": "c2d3cbafebe00be3221f985c06ef6b97f1c63790",
+      "tag_object": "dbe8dae59027857dacd56e47b2a31d80b3c32a53",
       "release_url": "https://github.com/neutrinolabs/xorgxrdp/releases/tag/v0.10.5",
       "tag_signature": "GitHub reports verified; signing key 03993B4065E7193B is expired; independent key trust not established",
       "compatibility": "Upstream says to use with xrdp v0.10.5 or later; selected xrdp v0.10.6.1 satisfies that stated minimum.",
-      "archive_sha256": null
+      "archive_name": "xorgxrdp-0.10.5.tar.gz",
+      "archive_url": "https://github.com/neutrinolabs/xorgxrdp/releases/download/v0.10.5/xorgxrdp-0.10.5.tar.gz",
+      "archive_sha256": "a5d03435f0ef48bf3d5010e63d9264f2334e7063cba3ecd8d4c0a15616a4f712",
+      "archive_digest_source": "GitHub REST release asset digest; not independently recomputed from a downloaded archive",
+      "signature_asset_url": "https://github.com/neutrinolabs/xorgxrdp/releases/download/v0.10.5/xorgxrdp-0.10.5.tar.gz.asc",
+      "tag_identity_source": "GitHub REST git ref, peeled annotated tag object, and release page"
     },
     {
       "name": "pipewire-module-xrdp",
@@ -30,21 +42,31 @@
       "repository": "https://github.com/neutrinolabs/pipewire-module-xrdp",
       "tag": "v0.1",
       "commit": "e9c6c05dd4327fca43d8861535c1f75c9b258aef",
+      "tag_object": "500f8c6f1eeab7c29bb2fe940b6d345af96d2449",
       "release_url": "https://github.com/neutrinolabs/pipewire-module-xrdp/releases/tag/v0.1",
       "tag_signature": "GitHub reports verified; signing key 03993B4065E7193B is expired; independent key trust not established",
-      "archive_sha256": null
+      "archive_name": null,
+      "archive_url": "https://api.github.com/repos/neutrinolabs/pipewire-module-xrdp/tarball/v0.1",
+      "archive_sha256": null,
+      "archive_digest_source": "No uploaded source archive asset or published digest in the GitHub release API; acquire the exact tag archive and calculate SHA-256 locally before use",
+      "signature_asset_url": null,
+      "tag_identity_source": "GitHub REST git ref, peeled annotated tag object, and release page"
     }
   ],
   "pre_build_gates": [
     "Acquire the exact source archives in the Builder source directory only after Builder's active GCC test is terminal.",
-    "Calculate and record SHA-256 for each acquired archive; no archive digest is asserted by this file.",
+    "For the xrdp and xorgxrdp uploaded release archives, verify the acquired bytes against the GitHub REST asset digests recorded here; record a local SHA-256 as well. For the PipeWire module tag archive, calculate and record SHA-256 locally because GitHub publishes no uploaded archive digest.",
     "Verify the release tag signatures against independently trusted maintainer keys; GitHub's expired-key verified badge alone is insufficient.",
     "Verify the configured Xorg Server 21.1.18 source and its libxcvt, Pixman, and font-util build dependencies in the actual Builder/rootfs before starting the dependency-ordered build."
   ],
   "references": {
     "xorg_server_blfs": "https://www.linuxfromscratch.org/blfs/view/12.4/x/xorg-server.html",
     "xrdp_pipewire_module": "https://github.com/neutrinolabs/pipewire-module-xrdp",
-    "xrdp_module_release": "https://github.com/neutrinolabs/pipewire-module-xrdp/releases/tag/v0.1"
+    "xrdp_module_release": "https://github.com/neutrinolabs/pipewire-module-xrdp/releases/tag/v0.1",
+    "github_release_asset_digest_documentation": "https://docs.github.com/en/rest/releases/assets",
+    "xrdp_release_api": "https://api.github.com/repos/neutrinolabs/xrdp/releases/tags/v0.10.6.1",
+    "xorgxrdp_release_api": "https://api.github.com/repos/neutrinolabs/xorgxrdp/releases/tags/v0.10.5",
+    "pipewire_module_release_api": "https://api.github.com/repos/neutrinolabs/pipewire-module-xrdp/releases/tags/v0.1"
   },
-  "evidence_limit": "Pins identify upstream release commits only. They do not establish source archive bytes, signature trust, Builder dependency availability, successful build/install, RDP audio routing, physical audio, or M06 completion."
+  "evidence_limit": "Tag target commits and upstream-published release asset digests are recorded, but no archive bytes were acquired or locally hashed in this audit. The GitHub REST digests are publisher metadata, not independent measurements. Signature/key trust, Builder dependency availability, successful build/install, RDP audio routing, physical audio, and M06 completion remain unproven."
 }
