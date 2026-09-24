@@ -184,7 +184,7 @@ Takvim tahmini yeniden hesaplanmadı. Önceki 4–7/7–10 günlük tahmin günd
 - SSH ile doğrulanan: `systemctl --failed` boş, `eth0` DHCP ile routable/online, `pam_systemd` SSH girişinde kullanıcı session'ı açıyor, `sshd_config` key-only. **Açık kalan:** `getty@tty1.service` disabled (yerel konsol girişi yok), `plasma-kwin_wayland.service` taban unit'i kurulu değil (Wayland-only drop-in etkisiz). Bu ikisi çözülmeden Plasma testi yapılmadı. Ayrıntı: `docs/verification/p0-p2-audit-2026-09-23.log`.
 - Değiştirilmeyen: `/mnt/lfs`, Gen1 VM/diski, M1 artifact'ı, `alp.py`. Commit/push yapılmadı.
 
-## 24 Eylül 2026 — M04 yeniden denetimi, M05 kapanışı ve M06 D-Bus/Gen2 ilerlemesi
+## 24 Eylül 2026 — M04 yeniden denetimi, M05 teknik kabul kanıtları ve M06 D-Bus/Gen2 ilerlemesi
 
 - M04 Builder kanıtı: `/mnt/lfs/var/lib/alp/db.json` hâlâ `packages: {}`; `/mnt/lfs/usr/lib/alp/alp.py` SHA-256 `7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132`; `/` 25 GiB boş; `/sys/block/nbd0` yok. Mevcut derin tarama manifestleri BLFS/desktop paketlerine ait, LFS base sahipliğini kanıtlamıyor. M04 açık bırakıldı; kontrollü base reinstall/staging capture veya tam tarihsel manifest gerekli. Ayrıntı `docs/verification/m04-base-ownership-assessment-2026-09-23.md`.
 - M05 Gen2 reboot sonrası: boot time `2026-09-23 23:44:51 +03`, boot ID `6df39e0d-a48d-4e8f-a138-6ec5c4e4a663`; `/proc/cmdline` PARTUUID `84b8b2c9-9a5c-46b9-b9a0-0a22834278fe` + `rootwait`, root `/dev/sda2`. MAC `00-15-5D-00-02-09` yeni DHCP `172.28.164.164/20`, gateway/DNS `172.28.160.1`; `networkctl` routable/online, host ping 4/4, public-key SSH başarılı, DNS query başarılı.
