@@ -244,6 +244,7 @@ checksums before extraction.
 | Xz 5.8.1 | `./configure --prefix=/usr --disable-static --docdir=/usr/share/doc/xz-5.8.1`, `make -j2`, `make check`: 19/19 pass | 348 entries (79 directories, 126 files, 143 symlinks), SHA-256 `d107d06674565c111d5d8873d3694a8dbcf611a7e2eb86aa9d8755358d0a1134` | 290 matched, 58 mismatched. Not installed to rootfs. |
 | Bzip2 1.0.8 | LFS patch applied; `make -f Makefile-libbz2_so -j2`, `make clean`, `make -j2`; all six source/reference round-trip comparisons passed | 36 entries (9 directories, 19 files, 8 symlinks), SHA-256 `c38c928beacb673344a083c8895707fab00842446cae6640c5130ec7b07e36a8` | 31 matched, 5 mismatched: bzip2 and bzip2recover binaries differ; libbz2 symlink target matches but file hash differs and stage/rootfs symlink ownership differs; shared `/usr/share/doc` mode/owner differs. Not installed to rootfs. |
 | Lz4 1.10.0 | `make BUILD_STATIC=no PREFIX=/usr -j2`; `make -j1 check` passed | 23 entries (8 directories, 7 files, 8 symlinks), SHA-256 `3a7f8a461c25b970509ea6a2bf1194489454ece67eff58bfaaf0fc74d7862730` | 23 matched, 0 mismatched. This is an exact staged file-set match. No install was merged to rootfs and no DB record was added. |
+| File 5.46 | `./configure --prefix=/usr`, `make -j2`, `make check` all completed | 23 entries (12 directories, 9 files, 2 symlinks), SHA-256 `3fe983255f365d90269add1232c6fc03d83ccdd5774db51f1221acb91444fb8f` | 20 matched, 3 mismatched: `/usr/bin/file` has the same size but a different SHA-256; `libmagic.so.1.0.0` has a different SHA-256 and is 8 bytes smaller in the rootfs; `/usr/share/misc` directory owner/mode differs. Not installed to rootfs. |
 
 The manifests and complete machine-readable mismatch reports are preserved as
 [`gzip manifest`](manifests/lfs-base/gzip-1.14-2026-09-24.json),
@@ -256,6 +257,8 @@ The Bzip2 evidence is preserved as [`Bzip2 manifest`](manifests/lfs-base/bzip2-1
 and [`Bzip2 preflight`](manifests/lfs-base/bzip2-1.0.8-2026-09-24-preflight.log).
 Lz4 evidence is preserved as [`Lz4 manifest`](manifests/lfs-base/lz4-1.10.0-2026-09-24.json)
 and [`Lz4 preflight`](manifests/lfs-base/lz4-1.10.0-2026-09-24-preflight.log).
+File evidence is preserved as [`File manifest`](manifests/lfs-base/file-5.46-2026-09-24.json)
+and [`File preflight`](manifests/lfs-base/file-5.46-2026-09-24-preflight.log).
 Build logs remain on Builder under `/mnt/lfs/tmp/alp-logs/`:
 `m04-gzip-1.14-build-20260924.log` (SHA-256
 `b62a9b3b58934b1b19ce7e726762abc58680625ca04713ed16cef6c6beb76f95`),
@@ -300,6 +303,19 @@ preflight output SHA-256 is
 recovers a verified current Lz4 path set, but the rootfs and `alp` DB were not
 modified. LFS reference:
 [Lz4-1.10.0](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/lz4.html).
+
+File 5.46 was built in `/mnt/lfs/build/file-5.46-m04` from source verified
+against LFS MD5 `459da2d4b534801e2e2861611d823864` and SHA-256
+`c9cc77c7c560c543135edc555af609d5619dbef011997e988ce40a3d75d86088`. The
+build used `./configure --prefix=/usr`, `make -j2`, `make check`, and root
+`make DESTDIR=/tmp/alp-m04-file-stage install`. Log SHA-256 is
+`9916bd6750991de0aca196b7b804d0af4c1e7529e94285ca8006504dbba9d00a`;
+manifest SHA-256 is `3fe983255f365d90269add1232c6fc03d83ccdd5774db51f1221acb91444fb8f`;
+preflight SHA-256 is
+`6fb2a395f794dff8b75bb180e8c5454b37afa86ca10ef83b637221c9e3709b30`.
+The preflight result was `entries=23 matched=20 mismatched=3`. This stage was
+not merged into `/mnt/lfs/usr` and no ownership record was added. LFS reference:
+[File-5.46](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/file.html).
 
 Official LFS 12.4-systemd procedures:
 [Gzip-1.14](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/gzip.html),
