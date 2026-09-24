@@ -230,7 +230,7 @@ Liquid için önce küçük bir prototip hazırlanır. Ekran örnekleme/kırılm
 
 ## 8. Derleme ortamı ve tekrar üretilebilirlik
 
-Seçilen ortam Hyper-V'dir. Bir Gen2 Linux builder, bir Gen2 UEFI test tanımı ve bir Gen1 Legacy test tanımı hazırlanacak. Builder için minimal Ubuntu 24.04 LTS amd64 host seçildi; ISO checksum ve LFS host koşulları kurulumda doğrulanır. [Hyper-V Gen1/Gen2 ayrımı](https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/plan/should-i-create-a-generation-1-or-2-virtual-machine-in-hyper-v) iki boot yolunun ayrı testini gerektirir. WSL bu planın ana ortamı değildir.
+Seçilen ortam Hyper-V'dir. Ubuntu 24.04 LTS amd64 Gen2 Builder ile Gen2/UEFI test hedefi kuruldu. Gen1/Legacy boot yolu tarihsel testlerle doğrulandı; kullanılan Gen1 alpbahOS VM kaydı silinmiştir. İleride canlı Gen1 tekrarı gerekirse yeni VM tanımı ve test diski gerekir. [Hyper-V Gen1/Gen2 ayrımı](https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/plan/should-i-create-a-generation-1-or-2-virtual-machine-in-hyper-v) iki boot yolunun ayrı testini gerektirir. WSL bu planın ana ortamı değildir.
 
 Linux build ağacı Linux dosya sisteminde tutulur. Windows'taki `C:\alpbahOS` belgeleri ve repo kopyası doğrudan Linux rootfs kurulum hedefi değildir. VM disk dosyası NTFS üzerinde bulunabilir; VM içindeki rootfs yine Linux dosya sisteminde olur.
 
