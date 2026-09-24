@@ -501,6 +501,34 @@ The EXIT trap confirmed no mounts below `/mnt/lfs`; NBD PID remained empty,
 the rootfs `alp.py` hash remained pinned, and `db.json` remained empty. LFS
 reference: [Bash 5.3 build instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/bash.html).
 
+## Libtool 2.5.4 staged comparison — 24 September 2026
+
+Libtool 2.5.4 was built in the Builder `/mnt/lfs` chroot from the LFS archive
+with MD5 `22e0a29df8af5fdde276ea3a7d351d30` and SHA-256
+`f81f5860666b0bc7d84baddefa60d1cb9fa6fceb2398cc3baca6afaa60266675`. It
+used `./configure --prefix=/usr`, `make -j2`, and `make check` as target UID
+101. The main suite reported 144 tests behaving as expected and 32 skipped;
+gnulib reported 4 PASS, 2 SKIP, 0 FAIL/ERROR. Installation was isolated to
+`/mnt/lfs/tmp/alp-m04-libtool-stage-r1`; the LFS test-only `libltdl.a` was
+removed from the stage. `libtool` and `libtoolize` both reported version
+2.5.4.
+
+The manifest has 79 entries (14 directories, 63 files, 2 symlinks), SHA-256
+`073459DB30133F880F5268AA2C244DDD1CDE7DB31009AAE98B2C57C9EC021FAB`;
+[manifest](manifests/lfs-base/libtool-2.5.4-2026-09-24.json). Read-only
+preflight reported 75 exact matches and 4 mismatches; [full report](manifests/lfs-base/libtool-2.5.4-2026-09-24-preflight.log),
+SHA-256 `F7F8EBD8FAB670D124ED802AC9F89F6352EB963DC912FF553F062853F793F066`.
+The mismatches are `/usr/bin/libtool` (generated script differs by 26 bytes),
+`/usr/lib/libltdl.so.7.3.3` (binary differs by 8 bytes), and shared
+`/usr/share/info` metadata/index differences. No staged file was merged and
+no ownership record was added.
+
+Builder log `/mnt/lfs/tmp/alp-logs/m04-libtool-2.5.4-stage-20260924-r1.log`
+SHA-256 `94c688bfbb39c52470eb30c81f6b3e5f640fcc42fc2af533cbb13bae8664ad61`.
+The EXIT trap found no mounts below `/mnt/lfs`; NBD PID remained empty, the
+pinned rootfs `alp.py` hash was unchanged, and `db.json` remained empty. LFS
+reference: [Libtool 2.5.4 instructions](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/libtool.html).
+
 Official LFS 12.4-systemd procedures:
 [Gzip-1.14](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/gzip.html),
 [Zstd-1.5.7](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/zstd.html),
