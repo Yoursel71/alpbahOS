@@ -20,6 +20,7 @@ import shutil
 import stat
 import subprocess
 import sys
+import threading
 import time
 import uuid
 from pathlib import Path
@@ -295,6 +296,51 @@ def _trace_outside_writes(trace_path: Path, root: Path, cwd: Path) -> list[str]:
     return violations
 
 
+def _run_with_parent_logs(argv: Sequence[str], cwd: Path, env: Mapping[str, str],
+                          stdout_path: Path, stderr_path: Path) -> int:
+    """Run a command with pipe stdio; only this parent opens the regular logs.
+
+    The drainers copy fixed-size chunks so command output does not accumulate in
+    memory.  Since the log files are opened after Popen has spawned the child,
+    neither it nor its descendants can inherit writable descriptors for them.
+    """
+    proc = subprocess.Popen(argv, cwd=str(cwd), env=dict(env), stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE, close_fds=True, bufsize=0)
+    failures: list[BaseException] = []
+
+    def drain(source: Any, destination: Path) -> None:
+        try:
+            with destination.open("wb") as output:
+                while True:
+                    block = source.read(64 * 1024)
+                    if not block:
+                        break
+                    output.write(block)
+        except BaseException as exc:
+            failures.append(exc)
+            try:
+                source.close()
+            except OSError:
+                pass
+
+    assert proc.stdout is not None and proc.stderr is not None
+    threads = [threading.Thread(target=drain, args=(proc.stdout, stdout_path), daemon=True),
+               threading.Thread(target=drain, args=(proc.stderr, stderr_path), daemon=True)]
+    for thread in threads:
+        thread.start()
+    while proc.poll() is None:
+        if failures:
+            proc.kill()
+            break
+        time.sleep(0.01)
+    status = proc.wait()
+    for thread in threads:
+        thread.join()
+    if failures:
+        raise CaptureError(f"could not preserve command output: {failures[0]}") from failures[0]
+    return status
+
+
 def _execute(argv: Sequence[str], cwd: Path, env: Mapping[str, str], root: Path,
              trace_path: Path, strace: str, bwrap: str,
              stdout_path: Path, stderr_path: Path) -> int:
@@ -305,10 +351,7 @@ def _execute(argv: Sequence[str], cwd: Path, env: Mapping[str, str], root: Path,
               "--", bwrap, "--die-with-parent", "--unshare-all", "--ro-bind", "/", "/",
               "--bind", str(root), str(root), "--ro-bind", str(event_store), str(event_store),
               "--chdir", str(cwd), "--", *argv]
-    with stdout_path.open("wb") as stdout, stderr_path.open("wb") as stderr:
-        proc = subprocess.run(traced, cwd=str(cwd), env=dict(env), stdout=stdout,
-                              stderr=stderr, check=False)
-    return proc.returncode
+    return _run_with_parent_logs(traced, cwd, env, stdout_path, stderr_path)
 
 
 def capture_install(root: Path, argv: Sequence[str], *, cwd: Path | None = None,

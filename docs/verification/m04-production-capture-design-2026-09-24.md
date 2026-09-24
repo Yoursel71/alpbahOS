@@ -27,15 +27,16 @@ exceptions. A trace alone is not confinement.
 
 ### Evidence-log file descriptors
 
-The current runner opens stdout and stderr evidence files before invoking
-strace/bwrap, so the installer inherits writable descriptors to host-side
-files even though the evidence directory is rebound read-only inside the
-namespace. A future runner must not give the command writable descriptors to
-host evidence files. Capture command output through pipes, have the trusted
-parent write the logs after reading them, close all unrelated descriptors, and
-bound output size. Keep strace's output descriptor private to the tracer and
-verify it is not inherited by the installer. Any inability to preserve these
-conditions invalidates the event.
+The current fixture runner now sends stdout/stderr through pipes and has the
+parent stream 64 KiB chunks to evidence files opened after the traced process
+starts; this avoids inheriting writable regular log descriptors. Its Windows
+suite passes 12 tests and skips 3, including the real descendant-pipe test
+which only runs on Linux. **The integrated Linux strace/bwrap confinement probe
+has not been run**, so this is a partial descriptor mitigation, not a production
+boundary. A future runner must still close unrelated descriptors, bound output
+size, and keep strace's output descriptor private to the tracer and verify it
+is not inherited by the installer. Any inability to preserve these conditions
+invalidates the event.
 
 ### Complete write observation and escape detection
 
