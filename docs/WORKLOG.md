@@ -937,3 +937,10 @@ PipeWire hatası için aynı gün ek tekrar: Guest `/tmp`'te 12 saniye 48 kHz st
 
 - `ssh alp-builder` confirmed the same GCC runner (bash/make/DejaGNU PIDs 1451319/1451325/2121972) is active; `make -k check` has no finish marker. `gcc.sum` remained at 17,243,590 bytes with its 12:01:40 UTC mtime. The recorded C summary remains 211,480 PASS, 4 unexpected `pr90579.c` scan failures, 1,476 expected FAIL, and 3,780 unsupported.
 - `g++.sum` grew to 19,509,898 bytes at 13:07:02 UTC. The runner log tail reached `g++.old-deja/old-deja.exp`; `gcc-test-summary.log` remains empty. `/mnt/lfs` has 60 GiB available. This is a live, progressing test, not a terminal result. No build or rootfs files were modified by the poll.
+
+
+## 24 Eylül 2026 — M04 clean-rootfs checkpoint preflight
+
+- Read-only shallow Builder check of `/mnt` found the named candidate directories `/mnt/base-ro`, `/mnt/alpbahos-clean`, `/mnt/efi-ro`, `/mnt/m2ssh`, `/mnt/m2candidate`, `/mnt/m1base`, and `/mnt/alpbahos-old` empty; `/mnt/alpbahos-root` contains only `boot/`; `/mnt/lfs` is the only full rootfs among these paths. `findmnt -R /mnt` returned no mount entries. No known pre-Chapter-8 checkpoint was located; do not treat these empty directories as a checkpoint.
+- `/sys/block/nbd0/pid` was unavailable because that sysfs device path is absent; no NBD device was used. A `du -sh` attempt returned no size data and is excluded from evidence; do not repeat size scans on the active GCC volume.
+- Current implication: the clean-rootfs route in the M04 evidence rule requires locating a separately verified pre-Chapter-8 rootfs/checkpoint or rebuilding the base system; it cannot start from an identified checkpoint under the inspected `/mnt` paths. The GCC test remained live during these shallow checks.
