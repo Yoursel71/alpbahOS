@@ -4,7 +4,7 @@
 
 Son güncelleme: 24 Eylül 2026
 
-> **Güncel VM envanteri (23 Eylül 2026):** Kullanıcı `alpbahOS-M2-SSH-Gen1` VM'ini sildiğini bildirdi. Yerel yönetici SSH üzerinden `Get-VM` envanterinde bu VM yok; `alpbahOS-M2-SSH-Gen2` ve Builder `Running`. Gen1 release VHDX'i ve Gen1 VM çalışma VHDX'i hâlâ F: üzerinde mevcut (`Test-Path=True`); VM kaydının silinmesi disklerin silindiği anlamına gelmiyor. Güncel test hedefi Gen2'dir. Eski Gen1 test sonuçları aşağıda tarihsel kanıt olarak kalır.
+> **Güncel VM envanteri (24 Eylül 2026):** Kullanıcı `alpbahOS-M2-SSH-Gen1` VM'inin silindiğini doğruladı. Son kayıtlı salt okunur Hyper-V envanterinde bu VM yok; Builder ve `alpbahOS-M2-SSH-Gen2` çalışır durumdaydı. Bugünkü yerel dosya kontrolünde Gen1 release VHDX'i ve eski VM çalışma VHDX'i hâlâ F: üzerinde (`Test-Path=True`); VM kaydı silinmiş, disk dosyaları silinmemiştir. Güncel test hedefi Gen2'dir. Gen1 sonuçları tarihsel kanıttır.
 
 ## Tamamlanan M1
 
