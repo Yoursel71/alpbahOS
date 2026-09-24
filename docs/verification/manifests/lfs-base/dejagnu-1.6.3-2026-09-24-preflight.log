@@ -1,0 +1,10 @@
+MISMATCH /usr/share/doc
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/doc", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/doc", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/info
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/info", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/info", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/info/dir
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/info/dir", "sha256": "332dcb798ae44c5c625da4f128b7fd85c827917a74fc24127e83dacc19072a5e", "size": 622, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 420, "path": "/usr/share/info/dir", "sha256": "fb80e5b75495213cb4b42a22e14aad3db7520b6443216725462f79cf12e87af7", "size": 107341, "type": "file", "uid": 0}
+package=dejagnu version=1.6.3 entries=121 matched=118 mismatched=3
