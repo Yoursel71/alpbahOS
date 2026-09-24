@@ -229,3 +229,41 @@ separate retry logs, and the successful run ended with
 
 The LFS 12.4-systemd Zlib instructions were followed:
 [Zlib-1.3.1](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/zlib.html).
+
+## Gzip, Zstd, and Xz staged comparison — 24 September 2026
+
+Three more LFS base packages were built/tested in the Builder `/mnt/lfs`
+chroot and installed into separate DESTDIR trees. Their target-rootfs files
+were not changed. All three source archives matched the LFS 12.4-systemd MD5
+checksums before extraction.
+
+| Package | Build and tests | Staged manifest | Read-only `/mnt/lfs` preflight |
+|---|---|---|---|
+| Gzip 1.14 | `./configure --prefix=/usr`, `make -j2`, `make check`: 30/30 pass | 32 entries (6 directories, 26 files), SHA-256 `f4e1d9ea6deaa3ddfa4c9a8c9e8fe634b97e13c51426611efae9155355b8c150`; shared generated `/usr/share/info/dir` was omitted | 5 matched, 27 mismatched; installed command files are UID/GID 1001 Chapter 6 outputs with different hashes; final man pages are absent. Not installed to rootfs. |
+| Zstd 1.5.7 | `make prefix=/usr -j2`, `make check`: completed successfully; `make prefix=/usr install`, then static archive removal | 26 entries (8 directories, 11 files, 7 symlinks), SHA-256 `c4365a81edc9e6cca2d053fdf653ee3b4b502b34b4c6618969c97f925285dc49` | 24 matched, 2 mismatched; `/usr/bin/zstd` hash differs (stage 10,473,928 bytes; rootfs 10,473,808), and `libzstd.so.1.5.7` differs despite equal size. Not installed to rootfs. |
+| Xz 5.8.1 | `./configure --prefix=/usr --disable-static --docdir=/usr/share/doc/xz-5.8.1`, `make -j2`, `make check`: 19/19 pass | 348 entries (79 directories, 126 files, 143 symlinks), SHA-256 `d107d06674565c111d5d8873d3694a8dbcf611a7e2eb86aa9d8755358d0a1134` | 290 matched, 58 mismatched. Not installed to rootfs. |
+
+The manifests and complete machine-readable mismatch reports are preserved as
+[`gzip manifest`](manifests/lfs-base/gzip-1.14-2026-09-24.json),
+[`gzip preflight`](manifests/lfs-base/gzip-1.14-2026-09-24-preflight.log),
+[`Zstd manifest`](manifests/lfs-base/zstd-1.5.7-2026-09-24.json),
+[`Zstd preflight`](manifests/lfs-base/zstd-1.5.7-2026-09-24-preflight.log),
+[`Xz manifest`](manifests/lfs-base/xz-5.8.1-2026-09-24.json), and
+[`Xz preflight`](manifests/lfs-base/xz-5.8.1-2026-09-24-preflight.log).
+Build logs remain on Builder under `/mnt/lfs/tmp/alp-logs/`:
+`m04-gzip-1.14-build-20260924.log` (SHA-256
+`b62a9b3b58934b1b19ce7e726762abc58680625ca04713ed16cef6c6beb76f95`),
+`m04-zstd-1.5.7-build-20260924.log` (SHA-256
+`dbf7437b9afeee07f2788d58d1985f689e341501531baeaefa539735afc7c7b7`), and
+`m04-xz-5.8.1-build-20260924.log` (SHA-256
+`e44e358e090bf1da0477753ec98ebeb65ce55f5269a91b52beb8129843df8ddc`). Each
+run used a clean UID/GID 1001 build tree, root-only stage install, ERR/EXIT
+traps, and `/dev`, `/proc`, `/sys`, `/run` bind mounts detached before exit.
+The checks show that passing upstream tests does not prove the current rootfs
+contains those final Chapter 8 install outputs. Stage-to-rootfs mismatches
+must be resolved before claiming those path sets for M04.
+
+Official LFS 12.4-systemd procedures:
+[Gzip-1.14](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/gzip.html),
+[Zstd-1.5.7](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/zstd.html),
+[Xz-5.8.1](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/xz.html).
