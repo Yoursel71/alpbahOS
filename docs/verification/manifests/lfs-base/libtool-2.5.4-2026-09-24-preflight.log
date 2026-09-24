@@ -1,0 +1,13 @@
+MISMATCH /usr/bin/libtool
+  expected: {"gid": 0, "mode": 493, "path": "/usr/bin/libtool", "sha256": "3bcaeed83b8b19efb3b347bf0688136a1d5e6aff2281ad8b1c567d745336e2b0", "size": 378814, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/bin/libtool", "sha256": "14201e457a25740e2ce9e18bab8013a0452efe271751f341d7f96b68c03d2b00", "size": 378788, "type": "file", "uid": 0}
+MISMATCH /usr/lib/libltdl.so.7.3.3
+  expected: {"gid": 0, "mode": 493, "path": "/usr/lib/libltdl.so.7.3.3", "sha256": "f9d20a9886c8395c0b7e58bca354afcc8de30693dea6ff997e61602a1455f15a", "size": 141608, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 493, "path": "/usr/lib/libltdl.so.7.3.3", "sha256": "03d61a71532a9fd75b3535ed517d04ebb132c60272972fc10efc5a9a705e8d7a", "size": 141600, "type": "file", "uid": 0}
+MISMATCH /usr/share/info
+  expected: {"gid": 0, "mode": 493, "path": "/usr/share/info", "type": "directory", "uid": 0}
+  actual:   {"gid": 1001, "mode": 509, "path": "/usr/share/info", "type": "directory", "uid": 1001}
+MISMATCH /usr/share/info/dir
+  expected: {"gid": 0, "mode": 420, "path": "/usr/share/info/dir", "sha256": "f0a689def4cf6c9601886c840b557d2279972e267b2b737745d67a05aef0b746", "size": 910, "type": "file", "uid": 0}
+  actual:   {"gid": 0, "mode": 420, "path": "/usr/share/info/dir", "sha256": "fb80e5b75495213cb4b42a22e14aad3db7520b6443216725462f79cf12e87af7", "size": 107341, "type": "file", "uid": 0}
+package=libtool version=2.5.4 entries=79 matched=75 mismatched=4
