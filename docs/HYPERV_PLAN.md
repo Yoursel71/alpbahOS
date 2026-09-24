@@ -10,7 +10,7 @@ Durum: Builder VM'i ve build diski mevcut; fiziksel disk bölümleme yapılmadı
 - Builder: Ubuntu 24.04 LTS amd64, Hyper-V Gen2. Builder SSH bağlantısı doğrulandı; Hyper-V PowerShell sorgusu mevcut token'da yönetici izni reddediyor.
 - LFS host koşulları kitap scriptiyle doğrulanacak; gerekli sh/awk/yacc bağlantıları yalnız builder içinde düzenlenecek.
 - Builder (gerçek): 4 vCPU; 3 GiB başlangıç/en az ve 6 GiB en çok dynamic RAM. Build paralelliği kullanılabilir RAM'e göre seçilir. Eski 6 vCPU / 12 GiB planı geçersizdir.
-- Hedef testleri: Gen1 Legacy ve Gen2 UEFI, 2 vCPU/4 GiB; test VMs aynı anda açılmaz.
+- Kabul kapsamı Gen1 Legacy ve Gen2 UEFI'dir; önceki Gen1 test VM kayıtları silinmiştir ve sonuçları tarihsel kanıt olarak tutulur. Şu anki canlı test hedefi Gen2 UEFI'dir. Yeni Gen1 testi gerektiğinde ayrı VM kaydı ve test diski oluşturulmalıdır. Test VM'leri 2 vCPU/4 GiB hedefler; aynı anda açılmaz.
 - Grafik: VM renderer bilgisi kaydedilir. VM performansı RTX performansı gibi raporlanmaz.
 - Hyper-V modülü mevcut; yönetim sorgusu mevcut oturumda yetki hatası verdi. Kurulum öncesi uygun yönetim erişimi gerekir.
 

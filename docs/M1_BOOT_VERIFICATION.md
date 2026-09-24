@@ -22,6 +22,7 @@ root=/dev/sda3 rootfstype=ext4 rootwait ro console=tty0
 | BIOS/QEMU, VHDX, IDE disk | Geçti: GRUB, kernel, ext4 root mount, systemd, `alpbahos login:` |
 | UEFI/OVMF, VHDX, ATA disk | Geçti: GRUB, kernel, ext4 root mount, systemd, `alpbahos login:` |
 | Hyper-V Gen2, UEFI/SCSI | Geçti: GRUB, `6.16.1-alpbahOS`, framebuffer konsolu ve `alpbahos login:` kullanıcı görüntüsüyle doğrulandı |
+| Hyper-V Gen1, BIOS | Tarihsel olarak geçti: M2 testinde login, DHCP, kontrollü reboot ve reboot sonrası ağ erişimi doğrulandı. İlgili Gen1 test VM kaydı sonradan silindi; bu sonuç yeniden çalıştırılabilir canlı hedef değildir. |
 | Hyper-V ağı | Geçti: Default Switch üzerinden DHCP; yeniden başlatma sonrası `172.28.166.77`; hosttan iki ICMP isteği başarılı |
 | Kontrollü kapatma/yeniden açma | Geçti: Hyper-V entegrasyonuyla `Running -> Off -> Running`; yeniden açılışta heartbeat `Tamam` ve ping başarılı |
 | Kök dosya sistemi | `/dev/sda3`, UUID `5ffe83c9-83e8-4955-8584-dc21a80d42ff`, ext4 mount kanıtlandı |
@@ -29,4 +30,4 @@ root=/dev/sda3 rootfstype=ext4 rootwait ro console=tty0
 
 İlk Hyper-V denemesinde ağ önyüklemesi diskin önündeydi; firmware sırası `Drive,Network` olarak düzeltildi. Yazılmakta olan raw imajdan üretilen bir ara VHDX ext4 bitmap hataları verdi. Son imaj daha önce doğrulanmış tabandan yeniden üretildi; FAT ve ext4 bölümleri çevrimdışı `fsck` ile hatasız kontrol edildi. `/etc/shadow`, root kurtarma hesabı, systemd ağ kullanıcıları ve DHCP ağ profili tamamlandı. Otomatik Hyper-V checkpoint'leri test VM'inde kapatıldı.
 
-M1 temel boot imajı tamamlandı. BOOT-01'in Hyper-V Gen1 kolu ile grafik masaüstü, canlı ISO ve kurucu sonraki aşamalardadır. Secure Boot bu geliştirme imajında kapalıdır.
+M1 temel boot imajı tamamlandı. Hyper-V Gen1 BIOS testi tarihsel kanıtla tamamlandı; ilgili Gen1 VM kaydı silinmiştir. Güncel canlı Hyper-V test hedefi Gen2/UEFI'dir. Grafik masaüstü, canlı ISO ve kurucu sonraki aşamalardadır. Secure Boot bu geliştirme imajında kapalıdır.

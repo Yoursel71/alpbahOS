@@ -51,7 +51,7 @@ Tarih: 21 Eylül 2026. Durum: Kullanıcı cevapları işlendi; uygulamaya hazır
 | P03 | Konsole + Zsh + autosuggestions + syntax-highlighting | Öneri kabulü ayrı, çalıştırma ayrı. |
 | P04 | Varsayılan alpbah-solid, seçenek Glass ve deneysel Liquid | Üst panel/dock düzeni korunur; RAM bütçesi önce gelir. |
 | P05 | **Terk edildi (21 Eylül 2026), bkz. D31/P13.** ~~pacman/libalpm + ince pkg arayüzü + Discover/PackageKit alpm~~ | ~~Tek veritabanı, kendi depo; entegrasyon testi geçmezse gerekçeli alternatif.~~ Kullanıcı M02 testini beklemeden `alp` lehine gerekçeli öncelik değiştirdi. |
-| P06 | Hyper-V Gen2 builder; Gen1 ve Gen2 test VMs | Gerçek Builder ayarı 4 vCPU, 3 GiB başlangıç/en az ve 6 GiB en çok RAM. Testler sırayla, 300 GB toplam bütçe. |
+| P06 | Hyper-V Gen2 builder; Gen1 BIOS ve Gen2 UEFI test kapsamı | Gen1 test VM kayıtları silindi; Gen1 sonuçları tarihsel kanıttır. Güncel canlı hedef Gen2'dir; ihtiyaç olursa Gen1 testi için yeni VM kaydı ayrıca oluşturulur. Gerçek Builder ayarı 4 vCPU, 3 GiB başlangıç/en az ve 6 GiB en çok RAM. Testler sırayla, 300 GB toplam bütçe. |
 | P07 | Stable paket kümesi + yerel testing; kullanıcı başlatmalı güncelleme | Yeni kullanıcı ve sınırlı günlük bakım zamanı. |
 | P08 | İlk düşük kaynak hedefi 4 GiB eski x86_64; idle bellek <=1 GiB tasarım hedefi | Ölçülmeden minimum gereksinim diye yayımlanmaz. |
 | P09 | Hazır temel KDE uygulamaları, Firefox, LibreOffice, VLC, Wine, Steam | Chrome kurulumu ayrı doğrulama; Office sürümleri ayrı test. |
