@@ -1061,3 +1061,8 @@ PipeWire hatası için aynı gün ek tekrar: Guest `/tmp`'te 12 saniye 48 kHz st
 
 - Independent read-only comparison of `MASTER_PLAN.md` §10/§10.1 with `CURRENT.md` and the recorded live evidence found no separate M05 runtime task remaining: BIOS/Gen1 boot evidence is historical, and Gen2 controlled reboot, PARTUUID/rootwait, network/DNS, ping, key-only SSH, services, and tty1 PAM/logind login are recorded. M05 formal closure remains pending the §10.1 base package ownership record from M04.
 - The 15:15 Gen2 check was a recheck, not a reboot; the earlier controlled reboot is the reboot proof. Effective `sshd -T` output was not produced in that 15:15 check; earlier config evidence and password-only rejection are recorded separately. The real Plasma session is M07, not an M05 closure condition. CURRENT's earlier section title was clarified to say technical acceptance evidence, not final milestone closure.
+
+## 24 Eylül 2026 — M04 repository recipe-script identity inventory
+
+- Added a generator and focused tests for a 79-row ordered inventory of dedicated `build-m04-<package>-stage.sh` files. The scan found 29 present scripts with exact current-worktree SHA-256 values and 50 absent dedicated scripts. Each package row maps back to the pinned Chapter 8 list.
+- The inventory records its repository ref/commit, worktree state, and package-list hash, and explicitly says these are repository-file identities only. They do not prove historical Builder use, source/patch authenticity, a final-rootfs install event, or ownership. Verification: `tests/test_m04_recipe_identity_inventory.py` — 3 passed; `py_compile` passed. See [M04 recipe identity inventory](verification/m04-recipe-identity-inventory-2026-09-24.md).
