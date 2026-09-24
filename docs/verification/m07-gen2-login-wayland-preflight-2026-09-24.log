@@ -1,0 +1,75 @@
+# M07 Gen2 tty1 login and Plasma/Wayland preflight
+
+Capture date: 2026-09-24 17:44:38 UTC (guest `date -u` output)
+Transport: existing configured SSH host `alp-m2-gen2` with `HostName=172.28.164.164`; guest user `sa`.
+Scope: read-only. No new login, configuration change, service start, or Plasma launch was performed.
+
+## tty1 PAM/logind evidence
+
+Commands:
+
+```sh
+date -u
+loginctl list-sessions --no-legend
+loginctl show-session 27 -p User -p Name -p Seat -p TTY -p Remote -p Service -p Leader -p Type -p Active -p State
+journalctl -b -o short-iso --no-pager | grep -E 'pam_unix\(login:session\): session opened for user admin|systemd-logind.*New session 27' | tail -n 5
+```
+
+Observed:
+
+```text
+Thu Sep 24 17:44:38 UTC 2026
+27 1001 admin seat0 181   user    tty1 yes 2h 7min ago
+28 1001 admin -     5789  manager -    no  -
+75 1000 sa    -     16447 user    -    no  -
+76 1000 sa    -     16452 manager -    no  -
+User=1001
+Name=admin
+Seat=seat0
+TTY=tty1
+Remote=no
+Service=login
+Leader=181
+Type=tty
+Active=yes
+State=active
+2026-09-24T06:57:27+03:00 alpbahos-m2-gen2 login[181]: pam_unix(login:session): session opened for user admin(uid=1001) by (uid=0)
+2026-09-24T06:57:27+03:00 alpbahos-m2-gen2 systemd-logind[178]: New session 27 of user admin.
+```
+
+This confirms an active local tty1 admin login and its PAM/logind session. The guest's displayed current UTC time, journal timestamp, and rounded idle time are inconsistent; this capture does not claim when the login began. It did not initiate a new login.
+
+## Plasma/Wayland readiness and runtime state
+
+Commands included:
+
+```sh
+systemctl --user cat plasma-kwin_wayland.service
+systemctl --user show plasma-kwin_wayland.service -p FragmentPath -p DropInPaths -p ExecStart -p ActiveState
+ls -l /usr/share/wayland-sessions /opt/kf6/bin/startplasma-wayland /usr/lib/systemd/user/plasma-kwin_wayland.service /etc/systemd/user/plasma-kwin_wayland.service.d/10-wayland-only.conf
+find /opt/kf6/share /usr/share -maxdepth 4 -type f -iname '*plasma*.desktop'
+pgrep -a -u admin 'kwin|plasmashell|startplasma|ksmserver'
+```
+
+Observed:
+
+```text
+# /usr/lib/systemd/user/plasma-kwin_wayland.service
+ExecStart=/opt/kf6/bin/kwin_wayland_wrapper --xwayland
+# /etc/systemd/user/plasma-kwin_wayland.service.d/10-wayland-only.conf
+ExecStart=
+ExecStart=/opt/kf6/bin/kwin_wayland_wrapper
+ExecStart={ path=/opt/kf6/bin/kwin_wayland_wrapper ; argv[]=/opt/kf6/bin/kwin_wayland_wrapper ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }
+ActiveState=inactive
+FragmentPath=/usr/lib/systemd/user/plasma-kwin_wayland.service
+DropInPaths=/etc/systemd/user/plasma-kwin_wayland.service.d/10-wayland-only.conf
+ls: cannot access '/usr/share/wayland-sessions': No such file or directory
+-rwxr-xr-x 1 root root 327272 Sep 23 08:13 /opt/kf6/bin/startplasma-wayland
+lrwxrwxrwx 1 root root 53 Sep 23 22:20 /usr/lib/systemd/user/plasma-kwin_wayland.service -> /opt/kf6/lib/systemd/user/plasma-kwin_wayland.service
+/opt/kf6/share/wayland-sessions/plasma.desktop
+/opt/kf6/share/xsessions/plasmax11.desktop
+```
+
+`plasma.desktop` has `Exec=/opt/kf6/libexec/plasma-dbus-run-session-if-needed /opt/kf6/bin/startplasma-wayland` and `DesktopNames=KDE`. `/dev/dri/card0` exists. The admin user's own systemd user manager could not be queried: `sudo -n -u admin ... systemctl --user show ...` returned `sudo: a password is required`. The successful `systemctl --user cat/show` above queried the SSH caller's (`sa`) user manager; its loaded fragment/drop-in/ExecStart are recorded, but this is not represented as an admin-manager query.
+
+No `kwin_wayland`, `plasmashell`, or `startplasma-wayland` process was listed for admin. No graphical session was started or visually observed. The CUA surface still reports `apps: []`; it cannot provide control/observation of the already-running Hyper-V VMConnect windows. Next evidence gate is a real Plasma session on the guest console, with `loginctl` reporting its Wayland session and the runtime observed on that console.
