@@ -1,0 +1,9 @@
+MPC_CONFIG_AND_LINK_EVIDENCE
+configure:13248: checking for __gmpz_init in -lgmp
+configure:13291: checking for MPFR
+configure:13325: checking for recent GMP
+configure:13351: checking for recent MPFR
+
+MPC_TEST_LINK_EVIDENCE
+libtool: link: gcc -O2 -pedantic -fomit-frame-pointer -m64 -mtune=znver3 -march=znver3 -o tradius tradius.o  -L../src/.libs -L/tmp/alp-m04-mpfr-stage-r1/usr/lib -L/tmp/alp-m04-gmp-stage-r1/usr/lib ./.libs/libmpc-tests.a ../src/.libs/libmpc.so /usr/lib/libmpfr.so /usr/lib/libgmp.so -lm -Wl,-rpath -Wl,/build/mpc-1.3.1-m04-r1/src/.libs
+libtool: link: gcc -O2 -pedantic -fomit-frame-pointer -m64 -mtune=znver3 -march=znver3 -o tballs tballs.o  -L../src/.libs -L/tmp/alp-m04-mpfr-stage-r1/usr/lib -L/tmp/alp-m04-gmp-stage-r1/usr/lib ./.libs/libmpc-tests.a ../src/.libs/libmpc.so /usr/lib/libmpfr.so /usr/lib/libgmp.so -lm -Wl,-rpath -Wl,/build/mpc-1.3.1-m04-r1/src/.libs

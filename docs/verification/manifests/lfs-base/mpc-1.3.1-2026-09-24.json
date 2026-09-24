@@ -1,0 +1,374 @@
+{
+  "captured_at": "2026-09-24T06:14:30+00:00",
+  "entries": [
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/include",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/include/mpc.h",
+      "sha256": "bca641f4c59f5303d3212650cc00fec0ee2659a220067535dee9029761e83849",
+      "size": 16949,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libmpc.la",
+      "sha256": "2a6d4cd962732d32aca4f2bb025c181193de65ecc7f1a57072bf82e6224bc0f3",
+      "size": 1030,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libmpc.so",
+      "target": "libmpc.so.3.3.1",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 511,
+      "path": "/usr/lib/libmpc.so.3",
+      "target": "libmpc.so.3.3.1",
+      "type": "symlink",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/libmpc.so.3.3.1",
+      "sha256": "dabbf0da3336d2304a96da4f1e442014ac306e1d1ce4c198d94ecf9735bdee75",
+      "size": 156472,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/doc",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/doc/mpc-1.3.1",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/doc/mpc-1.3.1/mpc.html",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpc-1.3.1/mpc.html/Advanced-Functions.html",
+      "sha256": "1c18da2aaa4fa88f32c89634102bf1e2d97d52c073ac0c909ab4c848b6e78a13",
+      "size": 4112,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpc-1.3.1/mpc.html/Assigning-Complex-Numbers.html",
+      "sha256": "76765be41948de8c4be6cac1bee23a540a97947da10ff1624d92b68f0714f403",
+      "size": 18635,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpc-1.3.1/mpc.html/Ball-Arithmetic.html",
+      "sha256": "d29574779ee078675a60dd0fbcf04892dc9ee4eb66744dfe3ac81770c7113517",
+      "size": 40657,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpc-1.3.1/mpc.html/Basic-Arithmetic.html",
+      "sha256": "03ba177dcb7daf3eed4ed27e489bffe1b43f9960fc85b0a52fb07ee4ee36a0a9",
+      "size": 23791,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpc-1.3.1/mpc.html/Complex-Comparison.html",
+      "sha256": "b6e037835fa4f548fd7cb53399b2b780a83de0b17c2b8ad928c7e18cb62d4992",
+      "size": 6316,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpc-1.3.1/mpc.html/Complex-Functions.html",
+      "sha256": "881a4b8e03b19289709c28cdda63aaece184a183dea177c293e98a6261d18509",
+      "size": 4223,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpc-1.3.1/mpc.html/Concept-Index.html",
+      "sha256": "b54288b052ac0d74c13be4274fd8f59c1e489aa04741f6db67e84dab223053d1",
+      "size": 12050,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpc-1.3.1/mpc.html/Converting-Complex-Numbers.html",
+      "sha256": "5060aa8636dab1714c42605ea175b8aeb93c8924a0187dbec944b575d2de4709",
+      "size": 3984,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpc-1.3.1/mpc.html/Copying.html",
+      "sha256": "1afc130d97dc440343afbd74e88ab573937ae0f9b209bb763ac245f9ff802646",
+      "size": 3012,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpc-1.3.1/mpc.html/Function-Index.html",
+      "sha256": "0d5246eac18ec13ff29cda6bab0bdf6420dc58506f4f8ef28ec4d664a2110bc9",
+      "size": 43102,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpc-1.3.1/mpc.html/GNU-Free-Documentation-License.html",
+      "sha256": "9c17168809ba1e55c88bb1993be80b59522e15697b41dc6c0071629bf7e094d5",
+      "size": 27239,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpc-1.3.1/mpc.html/GNU-MPC-Basics.html",
+      "sha256": "b1e128d391de0913b9fc56179a7d8d1e41c6c9ff847bc98ba6e6ebd1a7a090c7",
+      "size": 10552,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpc-1.3.1/mpc.html/Initializing-Complex-Numbers.html",
+      "sha256": "1dda383ca57345c4f8d8de960e335c1c11b7492efdbc0036c5fb9667e13986ed",
+      "size": 7967,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpc-1.3.1/mpc.html/Installing-GNU-MPC.html",
+      "sha256": "26f16f571ed71f402dd51981aa525fe2ab6af7f84cd2c26f4f0e496e0c0ea5cb",
+      "size": 10235,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpc-1.3.1/mpc.html/Internals.html",
+      "sha256": "9c26115f3c03aecf08e3f9e2d55474f7352766ccf3d4fdd7f65345a2757f9417",
+      "size": 2446,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpc-1.3.1/mpc.html/Introduction-to-GNU-MPC.html",
+      "sha256": "11047d94ccc82b76a3029a78191128f37c08ab72433c78d59b90ec66a762203e",
+      "size": 3162,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpc-1.3.1/mpc.html/Miscellaneous-Complex-Functions.html",
+      "sha256": "6bba226b38da21fd3111ccb076b70d14cd9077927f525754b9e46f410d5604a1",
+      "size": 7770,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpc-1.3.1/mpc.html/Modular-Functions.html",
+      "sha256": "ecb6bb7f00dded4c62e5bf42884e47306a7ec43c854117433e5926ec362b677e",
+      "size": 3732,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpc-1.3.1/mpc.html/Power-Functions-and-Logarithm.html",
+      "sha256": "6fa5a1d4ad23e1ff54d43cf8e3a53959a0f0faef1297955438052f5a9b3a3771",
+      "size": 12214,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpc-1.3.1/mpc.html/Projection-_0026-Decomposing.html",
+      "sha256": "e250c92b2ee7fa8b2f478936f2f0f1e4ba623041e508ace75ebcc6b6ea5d9f7a",
+      "size": 6663,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpc-1.3.1/mpc.html/References.html",
+      "sha256": "14a3494ed0c20ba90a46e6f380a2f1be0345ad588263190e230bc7b143defbe3",
+      "size": 3055,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpc-1.3.1/mpc.html/Reporting-Bugs.html",
+      "sha256": "03b2d3148a7c41b56fed6a1629b27972216c9d64bf0edacbed11068dc5a879df",
+      "size": 3624,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpc-1.3.1/mpc.html/String-and-Stream-Input-and-Output.html",
+      "sha256": "74bdbacf82adfe49abf358b6bb28cd1695b672d88acf1a590d92995a87bf0b38",
+      "size": 13951,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpc-1.3.1/mpc.html/Trigonometric-Functions.html",
+      "sha256": "a0b2bd3e7d27dd9b127bd88e05354c83ab4842dda990e23557fd7d0493639fc1",
+      "size": 10579,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpc-1.3.1/mpc.html/Type-Index.html",
+      "sha256": "d9852247f2cb96269f21fba4d461b9d98f2622a7052167fb72a4e16b02e2e891",
+      "size": 5541,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpc-1.3.1/mpc.html/index.html",
+      "sha256": "d48bb81d5e90a2b48e83f88e113a1c8f0d4f062d062c6ea900cfa8f6a75241c6",
+      "size": 3047,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/doc/mpc-1.3.1/mpc.html/return_002dvalue.html",
+      "sha256": "498cb11a69e0e860b579c40ea6fe7ea867277be3e1d5ce156227c325dcf95d27",
+      "size": 1397,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/share/info",
+      "type": "directory",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/info/dir",
+      "sha256": "916de057392f8a31f35b103e77336cecdff4f62329a06b2e4301e6b1bad82ccc",
+      "size": 603,
+      "type": "file",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/share/info/mpc.info",
+      "sha256": "319e0e3b83e1b8d10b908281d6c7cd3ed8179526472be88a34a5f1558305cc7d",
+      "size": 113709,
+      "type": "file",
+      "uid": 0
+    }
+  ],
+  "package": {
+    "name": "mpc",
+    "source": {
+      "sha256": "ab642492f5cf882b74aa0cb730cd410a81edcdbec895183ce930e706c1c759b8",
+      "url": "https://ftp.gnu.org/gnu/mpc/mpc-1.3.1.tar.gz"
+    },
+    "version": "1.3.1"
+  },
+  "schema": "alpbahOS.package-files/v1"
+}
