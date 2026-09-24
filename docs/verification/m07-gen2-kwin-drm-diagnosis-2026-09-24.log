@@ -1,5 +1,7 @@
 # M07 — Gen2 KWin/DRM tanısı (24-25 Eylül 2026, Claude)
 
+> **25 Eylül gece yarısı ek tur:** madde 3'teki "VT/seat çakışması" varsayımı **yanlış** çıktı; kesin kök neden bulundu, aşağıda madde 3'ün sonuna eklendi. Madde 2 de kaynak ağacı taramasıyla netleşti (yama doğru ve eksiksiz; asıl neden başka bir kod yolunda, henüz bulunamadı ama kapsam daraldı).
+
 Kapsam: canlı `alpbahOS-M2-SSH-Gen2` misafirinde salt deneme. `/mnt/lfs` değiştirilmedi. Değişiklikler yalnız çalışan Gen2 misafirinin bellek/disk durumuna yazıldı (systemd birim dosyaları, `/tmp` betikleri); imaj yeniden üretilirse kaybolur, Codex'in bunları rootfs'e taşıması gerekir (aşağıda).
 
 ## 1. Kök neden #1 (bulundu ve düzeltildi): kullanıcı D-Bus birimleri Gen2 imajında eksikti
@@ -26,18 +28,39 @@ Ama **systemd birimi doğrudan başlatılınca** (`su`/`machinectl shell admin@ 
 
 **Çelişki:** `startplasma-wayland`'ın kendi başlatma yolu (muhtemelen `plasma_session` içindeki `KUpdateLaunchEnvironmentJob`/`StartServiceJob` mekanizması, D-Bus servis aktivasyonu `BusName=org.kde.KWinWrapper` üzerinden) hâlâ eski `--xwayland` argümanını KWin'e veriyor, ama systemd biriminin kendisi (`systemctl --user start ...`) doğru argümanla başlıyor. `strings` ile `plasma_session`, `kwin_wayland_wrapper`, `kwin_wayland` ikililerinde `"xwayland"` metni **bulunamadı** — yani argüman derlenmiş ikiliye gömülü değil, çalışma anında bir yerden geliyor (systemd'nin native D-Bus aktivasyonu ile klasik `dbus-daemon` servis aktivasyon dosyası arasında bir tutarsızlık olabilir; `/usr/share/dbus-1/services/` altında `org.kde.KWinWrapper` için ayrı, eski bir `.service` dosyası aranmalı — bu turda böyle bir dosya bulunamadı, ama arama tam kapsamlı yapılmadı).
 
+**Ek doğrulama (25 Eylül gece yarısı, Builder üzerinden kaynak ağacı):**
+- `/mnt/lfs/sources/kde/plasma-workspace-6.4.4` (gerçek üst akım kaynak, Codex'in build ettiği ağaç) `grep -rn xwayland startkde/` ile tarandı. Tüm ağaçta `--xwayland` geçen **tek yer** `startkde/plasma-session/startup.cpp.orig` (yama aracının yedeklediği ORİJİNAL dosya). Güncel `startup.cpp`'de bu satır yok — **yama kaynakta doğru ve eksiksiz uygulanmış**, `startplasma.cpp`/`startplasma-wayland.cpp`/`systemd/` altında başka bir `--xwayland` referansı yok.
+- Hem `admin` hem `sa` için `systemctl --user show plasma-kwin_wayland.service -p ExecStart` (daemon-reload sonrası tekrar doğrulandı) **argümansız** dönüyor: `argv[]=/opt/kf6/bin/kwin_wayland_wrapper`. Yani systemd'nin bu birimi (native D-Bus aktivasyonu `BusName=org.kde.KWinWrapper` dahil) **kesinlikle doğru** çalışıyor; `/usr/share/dbus-1/services/` altında `org.kde.KWinWrapper` adında **başka bir dosya yok**.
+- Gerçek zamanlı kanıt: `/proc/<pid>/cmdline`'ı 50ms aralıkla tarayan bir arka plan izleyici (`nohup` oturum kapanınca öldüğü için doğrudan ön planda tutulan ayrı bir SSH bağlantısıyla) çalıştırılıp `startplasma-wayland` (sa olarak) tetiklendi. Yakalanan gerçek argümanlar: `kwin_wayland_wrapper --xwayland` ve ardından `kwin_wayland --wayland-fd 7 --socket wayland-0 --xwayland`. Yani `--xwayland` **gerçekten** argv'de var, ama ne kaynakta ne derlenmiş ikilide (`plasma_session`, `startplasma-wayland`, `kwin_wayland_wrapper` — üçünde de `strings` boş) bulunamadı ve systemd birimi (ki bu D-Bus adını tanımlayan tek birim) doğru olduğu için systemd üzerinden de gelmiyor.
+- **Sonuç:** `startplasma-wayland`/`plasma_session`'ın kendi içinde, systemd/D-Bus aktivasyonunu **atlayan** ayrı bir kod yolu (muhtemelen `--xwayland`'i çalışma anında iki parçadan birleştiren ya da bir çeviri/format dizesinden okuyan bir mekanizma) KWin'i doğrudan başlatıyor. Bu turda kaynağı bulunamadı; `strings` ile aranamayan bir yapı (derleme zamanı sabit birleştirme, Qt kaynak dizesi tablosu ya da benzeri) olabilir.
+
 **Sonraki adım (Codex ya da bir sonraki Claude turu):**
-- `/usr/share/dbus-1/services/` ve `/usr/share/dbus-1/system-services/` içinde `org.kde.KWinWrapper` adı geçen klasik bir aktivasyon dosyası var mı tam tara.
-- `plasma_session`'ın gerçekte hangi mekanizmayla KWin'i başlattığını (systemd native D-Bus aktivasyonu mu, yoksa kendi içindeki `StartServiceJob`'un doğrudan `QProcess` ile mi) kaynaktan (`startkde/plasma-session/startup.cpp`, zaten `docs/patches/plasma-workspace-6.4.4-wayland-no-xwayland.patch` ile bir kez yamalanmış dosya) doğrula; derlenmiş ikilide "xwayland" metni yoksa yama doğru uygulanmış demektir, sorun başka bir tetikleyicide.
-- Alternatif kısa yol: Plasma'yı hep `startplasma-wayland` yerine `systemctl --user start plasma-kwin_wayland.service` + `systemctl --user start plasma-workspace.target` (ya da eşdeğer hedef birimler) ile parça parça başlatmayı dene; systemd birimi doğru çalıştığı kanıtlandı.
+- Bu artık ikincil önemde: madde 3'teki asıl DRM engeli çözülmeden `startplasma-wayland`'ın davranışı zaten görünür bir sonuç vermiyor (KWin `--xwayland`'i reddedip düşse de düşmese de ekranda hiçbir şey render edilemiyor, aşağıya bakın). Önce madde 3'ü çöz.
+- Yine de `startplasma-wayland`'ı kalıcı çözüm için düzeltmek gerekiyorsa: `objdump -d` ile `plasma_session`'ın `StartServiceJob` çağrısı çevresindeki assembly'yi incele ya da `strace -f -e trace=execve` ile gerçek `execve()` çağrısının argv'sini doğrudan yakala (bu tur `strace` denenmedi, kurulu olup olmadığı kontrol edilmedi).
 
-## 3. Kök neden #3 (bulundu, ÇÖZÜLMEDİ): KWin systemd birimiyle başlasa bile DRM'i ele geçirmiyor
+## 3. Kök neden #3 — ÇÖZÜLDÜ (gerçek neden madde 3'ün ilk taslağındaki "VT/seat çakışması" tahmininden FARKLI)
 
-`systemctl --user start plasma-kwin_wayland.service` → `active (running)`, `ps` içinde `kwin_wayland_wrapper` süreci canlı (PID 19703). Ama `fuser /dev/dri/card0` **boş döndü** — KWin, DRM aygıtını hiç açmamış/tutmamış. Ekranda (VMConnect konsolu) hiçbir değişiklik olmadı, tty1'deki metin konsolu olduğu gibi kaldı.
+İlk bulgu: `systemctl --user start plasma-kwin_wayland.service` → `active (running)`, ama `fuser /dev/dri/card0` boş — KWin DRM'i tutmuyor gibi görünüyordu. "VT/seat çakışması" varsayımı bu turda **çürütüldü**: KWin'i konsolda **oturum lideri olarak** (`exec /opt/kf6/bin/kwin_wayland_wrapper`, systemd'siz, doğrudan tty1'in aktif oturumunun yerine) başlatınca sorun VT değil, tamamen farklı bir şey olduğu ortaya çıktı:
 
-**Olası neden:** KWin arka planda bir systemd kullanıcı servisi olarak başlatıldığında, `logind`'den VT/seat devralma isteği, o VT'yi zaten dolduran aktif `agetty`/`bash` oturumuyla (aynı tty1, aynı seat0) çakışıyor olabilir. KWin muhtemelen sessizce DRM master alamayıp (`EBUSY` ya da benzeri) hiçbir hata basmadan (ya da hata `journalctl --user-unit` ile yakalanamadı; bkz. madde 4) arka planda asılı bekliyor.
+```
+No backend specified, automatically choosing drm
+pci id for fd 17: 1414:0006, driver (null)
+pci id for fd 18: 1414:0006, driver (null)
+kmsro: driver missing
+kwin_wayland_drm: Could not find edid for connector DrmConnector(id=33, gpu="/dev/dri/card0", name="Virtual-1", connection="Connected")
+kwin_core: Failed to open drm node: ""
+kwin_scene_opengl: couldn't find dev node for drm device
+kwin_scene_opengl: drmGetDeviceFromDevId() failed: No such file or directory
+kwin_scene_opengl: No render node have been found, not initializing wl-drm
+```
 
-**Sonraki adım:** Bu iş normalde "temiz" bir oturumda olur: kullanıcı tty1'de login olduğunda `.bash_profile`/PAM `pam_systemd` zaten VT'yi o oturuma tahsis eder ve KWin login sonrası otomatik başlar (ör. `~/.bash_profile`'da `exec dbus-run-session startplasma-wayland` ile, agetty/bash'in kendisinin yerini KWin'in alması). Şu anki deneme KWin'i **var olan bir bash oturumunun üstüne, ayrı bir arka plan servisi olarak** başlattı; bu yanlış model olabilir. Doğru model: `admin`'in `.bash_profile`'ına konsol girişinde otomatik `startplasma-wayland` çağrısı eklenmeli (LFS/BLFS'in önerdiği "tty1'de login olunca Wayland compositor'a geç" deseni), ya da bir display manager (SDDM) kurulup VT tahsisini o yönetmeli. Bu, tasarım kararı gerektirir (M07/M08 kapsamında "otomatik grafik giriş mi, elle mi" sorusu) — kullanıcıya sorulmalı.
+**Kesin kök neden:** `/sys/class/drm/card0/device/uevent` → `DRIVER=hyperv_drm` (çekirdek tarafı doğru: `CONFIG_DRM_HYPERV=y` çalışıyor, `Virtual-1` bağlayıcısı görünüyor). Ama **Mesa'nın kullanıcı alanı tarafında bu aygıt için hiçbir sürücü kurulu değil**: `find / -iname "*_dri.so"` **sıfır sonuç** verdi — sistemde `/usr/lib/dri/`, `/usr/lib64/dri/` gibi bir DRI sürücü dizini **hiç yok**. `libEGL.so`/`libgbm.so` (yükleyici kütüphaneler) var ama yükleyecek arka uç sürücüsü yok.
+
+Hyper-V'nin sentetik ekran kartı yalnız mod ayarlama (KMS) yapabiliyor, kendi 3D render'ı yok (`kmsro: driver missing` bunu doğruluyor — Mesa'nın "KMS render-only" eşleştirme mekanizması, tam olarak bu tür aygıtlar için bir yazılım render sürücüsüne (`kms_swrast_dri.so`, llvmpipe tabanlı) ihtiyaç duyar, ama o dosya hiç derlenmemiş/kurulmamış). Bu, önceki WORKLOG notundaki "son dosya sistemi incelemesinde swrast_dri.so/kms_swrast_dri.so bulunmadı" bulgusunun **doğrudan sonucu**; o zamanki "surfaceless EGL smoke testi geçti" ifadesi yanıltıcı olmuş olabilir çünkü surfaceless mod DRM/KMS render node'una ihtiyaç duymaz, ama gerçek bir compositor (KWin, DRM backend) duyar.
+
+Süreç (`kwin_wayland`, PID 69399) çökmüyor, canlı kalıyor ama render edemediği için ekranda hiçbir şey görünmüyor; `PipeWire screencast` bağlantısı da aynı nedenle başarısız oluyor.
+
+**Bu M06/Mesa build kapsamına giren bir eksik, benim (Claude) düzeltebileceğim bir şey değil — Codex'in Mesa'yı `kms_swrast`/llvmpipe DRI sürücüsünü üretip doğru dizine (`/usr/lib/dri` ya da Mesa'nın `LIBGL_DRIVERS_PATH` bekliği neyse) kurması gerekiyor.** Muhtemel eksik yapılandırma bayrağı: Meson `-Dgallium-drivers=swrast` (ya da `llvmpipe`) ile birlikte `-Ddri-drivers=` / DRI loader entegrasyonunun etkin olmaması, ya da derlenen `.so` dosyasının `ninja install` adımında hedef dizine kopyalanmaması.
 
 ## 4. Ortam sınırlamaları (yarın için not)
 
@@ -53,4 +76,9 @@ Ama **systemd birimi doğrudan başlatılınca** (`su`/`machinectl shell admin@ 
 - `/etc/systemd/user/sockets.target.wants/dbus.socket`, `dbus.service` (yeni sembolik bağlantılar)
 - `/tmp/alpplasma`, `/tmp/fixdbus`, `/tmp/mkdbususer`, `/tmp/adminreload`, `/tmp/adminrestart`, `/tmp/testkwin`, `/tmp/kwinlog` (geçici betikler, `sa`/`admin` sahipliğinde, `/tmp` temizlenince ya da reboot'ta gider)
 
-**Codex/Claude için sonraki tur:** madde 1'deki D-Bus düzeltmesini kalıcı hale getirmek için `/mnt/lfs`'ye de aynı sembolik bağlantıları eklemek gerekiyor (rootfs'te dosyalar zaten var, yalnız etkinleştirme eksik — bu M04/taban denetiminin bulguşuyla aynı desende bir "kurulu ama etkin değil" örneği). madde 2 ve 3 çözülmeden gerçek Plasma masaüstü ekranda görülemez; M07 hâlâ açık.
+## 6. Sonraki turun net görev listesi
+
+1. **(Codex, en yüksek öncelik) Mesa'ya `kms_swrast`/llvmpipe DRI sürücüsünü ekle.** `/mnt/lfs`'de Mesa build'i, Hyper-V'nin `hyperv_drm` aygıtı için "kmsro" render-only eşleşmesini sağlayacak `kms_swrast_dri.so`'yu üretip `/usr/lib/dri/` (ya da denk bir yola) kurmalı. Bu olmadan hiçbir gerçek Wayland compositor (yalnız KWin değil) bu VM'de ekrana bir şey çizemez. Bu M06'nın (BLFS grafik altyapısı) kapanmamış parçası.
+2. **(Codex) madde 1'deki D-Bus düzeltmesini `/mnt/lfs`'ye kalıcı işle.** Rootfs'te `usr/lib/systemd/user/dbus.{socket,service}` zaten var, yalnız `etc/systemd/user/sockets.target.wants/` altında etkinleştirme eksik — M04/taban denetiminin bulduğu "kurulu ama etkin değil" desenine bir örnek daha.
+3. **(İkincil, madde 1-2 çözülünce test edilecek) madde 2'deki `--xwayland` gizemi.** Mesa sürücüsü eklenip gerçek render çalışmaya başlayınca, `startplasma-wayland`'ın hâlâ `--xwayland` geçip geçmediği yeniden test edilmeli; render çalışırken bu hata görünürse kaynağını bulmak için `strace -f -e trace=execve` önerilir.
+4. Gerçek Plasma masaüstü ekranda görülene kadar M07 açık kalır; şu anki en güçlü kanıt zinciri: D-Bus ✅ düzeltildi (canlı) → systemd birimi ✅ doğru → KWin süreci ✅ çöküyor değil, canlı kalıyor → render ❌ Mesa sürücüsü eksik olduğu için hiç başlamıyor.
