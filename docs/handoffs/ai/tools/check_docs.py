@@ -42,7 +42,7 @@ LIVING_DOCS = {
     "AGENTS.md", "CLAUDE.md", "CURRENT.md", "README.md",
     "docs/MASTER_PLAN.md", "docs/DECISIONS.md", "docs/BACKLOG.md",
     "docs/HYPERV_PLAN.md", "docs/CLAUDE_START.md", "docs/M2_BLFS_MANIFEST.md",
-    "docs/AI_ENVIRONMENT_GUIDE.md",
+    "docs/AI_ENVIRONMENT_GUIDE.md", "docs/AGENT_STANDING_RULES.md",
 }
 
 STALE_TERMS = [

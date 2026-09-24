@@ -6,6 +6,7 @@ Bu dosya projede çalışan tüm ajanların ortak talimatıdır. Kullanıcının
 
 ## Başlangıç
 
+0. **Her oturumun ilk işi:** `docs/AGENT_STANDING_RULES.md` dosyasını oku (SSH erişim kartı, yönetici anahtarı adımı ve kullanıcının tekrar tekrar hatırlattığı kalıcı kurallar). Kullanıcıya bu dosyada yazan bir şeyi tekrar sorma.
 1. Komut çalıştırmadan önce `docs/AI_ENVIRONMENT_GUIDE.md` §1 ve §3'ü oku.
 2. Bu dosyayı, `docs/DECISIONS.md` ve `docs/MASTER_PLAN.md` dosyalarını oku.
 3. `CURRENT.md` ile `docs/WORKLOG.md` içindeki son durum ve sahipliği kontrol et.
