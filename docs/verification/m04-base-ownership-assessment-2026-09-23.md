@@ -188,3 +188,44 @@ packages. Sources make controlled per-package staging possible, but they do
 not supply historical installed-path ownership. M04 remains open pending
 complete base-package manifests and a package-level removal guard from the
 `alp` owner.
+
+## Zlib 1.3.1 staged recovery — 24 September 2026
+
+Zlib was rebuilt in the Builder's `/mnt/lfs` chroot and installed only into a
+separate DESTDIR tree. The installed `/mnt/lfs/usr` and `alp` database were not
+written. The source archive was `/mnt/lfs/sources/zlib-1.3.1.tar.gz`; its MD5
+was `9855b6d802d7fe5b7bd5b196a2271655` and SHA-256 was
+`9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23`.
+
+The successful clean retry used build directory
+`/mnt/lfs/build/zlib-1.3.1-m04-r3`, owned by UID/GID 1001. It extracted the
+archive as `lfs`, configured `--prefix=/usr`, ran `make -j2` and `make check`,
+then installed as root with `DESTDIR=/tmp/alp-m04-zlib-stage-r3` and removed
+the static `libz.a`, matching the LFS 12.4-systemd package instructions.
+`make check` reported `zlib test OK`, `zlib shared test OK`, and
+`zlib 64-bit test OK`. The build log is
+`/mnt/lfs/tmp/alp-logs/m04-zlib-1.3.1-build-20260924-r3.log`, SHA-256
+`0ea63af226586d372e3a20f481b825a0096a376d6794c96346f70e490eaddf98`.
+
+The captured manifest contains 14 entries (7 directories, 5 regular files,
+2 symlinks), SHA-256
+`14b0eeda9829731a1e3d1a93b970dd4e8775f38696b5d7d662a1c7a5bcce3496`, and is
+preserved at
+[`zlib-1.3.1-2026-09-24.json`](manifests/lfs-base/zlib-1.3.1-2026-09-24.json).
+The new read-only `scripts/compare-package-manifest.py` compared every entry
+against `/mnt/lfs`: `entries=14 matched=14 mismatched=0`. It checks object
+type, mode, uid/gid, regular-file size and SHA-256, and symlink target. The
+stage and rootfs shared-file hashes matched, including `libz.so.1.3.1`, both
+headers, pkg-config metadata, and the man page.
+
+This recovers a verified Zlib install path set, but does not close M04. The
+comparison proves current files match the tested Zlib staged tree; it does
+not supply the missing removal protection. `/mnt/lfs/var/lib/alp/db.json`
+remains empty, the rootfs `alp.py` pin was not changed, and no package record
+was added. Standard `/dev`, `/proc`, `/sys`, and `/run` bind mounts were
+detached on exit; the ERR trap recorded two earlier pre-install failures in
+separate retry logs, and the successful run ended with
+`CLEANUP_OK no mounts remain below /mnt/lfs`.
+
+The LFS 12.4-systemd Zlib instructions were followed:
+[Zlib-1.3.1](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/zlib.html).
