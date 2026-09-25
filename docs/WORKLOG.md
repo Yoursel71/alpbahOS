@@ -1191,3 +1191,5 @@ teşhisi doğruladı: `kwin_scene_opengl` bir DRM render node bulamıyor
 düzeltmeleri doğru ve kalıcı ama yeterli değil; kalan tek blokaj kernel
 tarafında. `docs/verification/m07-gen2-kwin-drm-diagnosis-2026-09-24.log` §7'ye
 işlendi, `CURRENT.md` M07 satırı güncellendi.
+
+- 25 Sep 2026 05:53 UTC M07 kernel progress: rebuilt Linux 6.16.1 in the Builder /mnt/lfs chroot with CONFIG_DRM_VGEM=y; booted rootfs-derived final Gen2 image (SHA-256  5be2e266e35d60e99dcf35d245b883c6f409a0ecc4a9fa2eb0b4f4365eeadbc). Guest confirms enderD128 (226:128), D-Bus user socket active, Mesa DRI aliases present, KWin effective ExecStart without --xwayland, and active tty1 getty. loginctl currently shows no admin tty1/seat0 session, so KWin has not been tested seat-bound and no context/render success is claimed. Evidence: docs/verification/m07-gen2-vgem-kernel-build-test-2026-09-25.log.

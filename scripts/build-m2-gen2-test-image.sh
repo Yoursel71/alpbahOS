@@ -12,23 +12,31 @@ ADMIN_PASSWORD=${ADMIN_PASSWORD:?Set ADMIN_PASSWORD for this test image}
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 SIZE=24G
 WORK=$(mktemp -d /tmp/alpbahos-gen2-image.XXXXXX)
-NBD=/dev/nbd0
+RAW=${RAW:-${OUT}.raw}
+LOOP=
 MOUNT=$WORK/root
-ATTACHED=0
+LOOP_ATTACHED=0
+RAW_CREATED=0
 ROOT_MOUNTED=0
 EFI_MOUNTED=0
 SUCCESS=0
 CREATED=0
 
 cleanup() {
+    local cleanup_ok=1
+    trap - EXIT
     set +e
-    if (( EFI_MOUNTED )); then umount "$MOUNT/boot/efi"; fi
-    if (( ROOT_MOUNTED )); then umount "$MOUNT"; fi
-    if (( ATTACHED )); then
-        qemu-nbd --disconnect "$NBD" >/dev/null 2>&1
+    if (( EFI_MOUNTED )); then umount "$MOUNT/boot/efi" || cleanup_ok=0; fi
+    if (( ROOT_MOUNTED )); then umount "$MOUNT" || cleanup_ok=0; fi
+    if (( LOOP_ATTACHED && cleanup_ok )); then
+        losetup --detach "$LOOP" || cleanup_ok=0
+        LOOP_ATTACHED=0
     fi
-    if (( CREATED && ! SUCCESS )); then
-        rm -f -- "$OUT"
+    if (( CREATED && ! SUCCESS && cleanup_ok )); then rm -f -- "$OUT"; fi
+    if (( RAW_CREATED && ! LOOP_ATTACHED && cleanup_ok )); then rm -f -- "$RAW"; fi
+    if (( ! cleanup_ok )); then
+        echo 'CLEANUP FAILED; preserving the raw image and loop device for recovery.' >&2
+        exit 1
     fi
     rmdir "$MOUNT" 2>/dev/null
     rm -rf -- "$WORK"
@@ -39,10 +47,12 @@ trap 'printf "FAILED line %s: %s\n" "$LINENO" "$BASH_COMMAND" >&2' ERR
 [[ $EUID -eq 0 ]] || { echo 'Run as root.' >&2; exit 1; }
 [[ $ADMIN_PASSWORD == admin ]] || { echo 'The isolated test VM console account must remain admin/admin.' >&2; exit 1; }
 [[ $OUT == /* && $OUT != /tmp/* && $OUT != /mnt/lfs/* ]] || { echo 'OUT must be an absolute path outside /tmp and /mnt/lfs.' >&2; exit 1; }
+[[ $RAW == /* && $RAW != /tmp/* && $RAW != /mnt/lfs/* ]] || { echo 'RAW must be an absolute path outside /tmp and /mnt/lfs.' >&2; exit 1; }
 [[ -d $ROOTFS/etc && -x $ROOTFS/usr/bin/alp ]] || { echo "Invalid rootfs: $ROOTFS" >&2; exit 1; }
 [[ ! -e $OUT ]] || { echo "Refusing to overwrite existing image: $OUT" >&2; exit 1; }
+[[ ! -e $RAW ]] || { echo "Refusing to overwrite existing raw image: $RAW" >&2; exit 1; }
 test -f "$SCRIPT_DIR/apply-m2-rootfs-fixes.sh"
-[[ -x /usr/bin/qemu-img && -x /usr/bin/qemu-nbd && -x /usr/sbin/sgdisk ]] || { echo 'Required image tools are missing.' >&2; exit 1; }
+[[ -x /usr/bin/qemu-img && -x /usr/sbin/sgdisk && -x /usr/sbin/losetup ]] || { echo 'Required image tools are missing.' >&2; exit 1; }
 [[ -x /usr/sbin/mkfs.vfat && -x /usr/sbin/mkfs.ext4 && -x /usr/sbin/grub-install ]] || { echo 'Required filesystem/UEFI tools are missing.' >&2; exit 1; }
 test -f "$ROOTFS/etc/shadow"
 test -f "$ROOTFS/etc/pam.d/login"
@@ -50,6 +60,7 @@ grep -q 'pam_systemd.so' "$ROOTFS/etc/pam.d/system-session"
 grep -q '^sa:' "$ROOTFS/etc/passwd"
 test -s "$ROOTFS/usr/lib/modules/6.16.1-alpbahOS/kernel/sound/drivers/snd-aloop.ko"
 grep -qx 'CONFIG_SND_ALOOP=m' "$ROOTFS/boot/config-6.16.1-alpbahOS"
+grep -qx 'CONFIG_DRM_VGEM=y' "$ROOTFS/boot/config-6.16.1-alpbahOS"
 test -f "$ROOTFS/usr/lib/systemd/system/systemd-modules-load.service"
 test -s "$ROOTFS/home/sa/.ssh/authorized_keys"
 [[ $(readlink "$ROOTFS/etc/systemd/system/multi-user.target.wants/sshd.service") == /usr/lib/systemd/system/sshd.service ]]
@@ -64,33 +75,28 @@ test -f "$ROOTFS/usr/lib/systemd/user/dbus.socket"
 grep -q '^ExecStart=/usr/bin/dbus-daemon --session --address=systemd:' "$ROOTFS/usr/lib/systemd/user/dbus.service"
 grep -q '^ListenStream=%t/bus$' "$ROOTFS/usr/lib/systemd/user/dbus.socket"
 
-modprobe nbd max_part=8
-[[ -b $NBD ]] || { echo "$NBD is unavailable." >&2; exit 1; }
-PID_FILE=/sys/block/nbd0/pid
-[[ -r $PID_FILE ]] || { echo "$PID_FILE is unavailable; cannot prove $NBD is idle." >&2; exit 1; }
-if [[ -s $PID_FILE ]]; then
-    echo "$NBD is already in use; refusing to attach." >&2
-    exit 1
-fi
-
 CREATED=1
-qemu-img create -f vhdx -o subformat=dynamic "$OUT" "$SIZE"
-qemu-nbd --connect="$NBD" --format=vhdx "$OUT"
-ATTACHED=1
-sgdisk --zap-all "$NBD"
+RAW_CREATED=1
+qemu-img create -f raw "$RAW" "$SIZE"
+LOOP=$(losetup --find --show --partscan "$RAW")
+[[ -n $LOOP ]] && LOOP_ATTACHED=1
+[[ $LOOP =~ ^/dev/loop[0-9]+$ && -b $LOOP ]] || { echo "Could not acquire an unused loop device: $LOOP" >&2; exit 1; }
+PART1=${LOOP}p1
+PART2=${LOOP}p2
+sgdisk --zap-all "$LOOP"
 sgdisk --new=1:0:+1G --typecode=1:ef00 --change-name=1:ALP_EFI \
-       --new=2:0:0 --typecode=2:8300 --change-name=2:ALP_ROOT "$NBD"
-partprobe "$NBD"
+       --new=2:0:0 --typecode=2:8300 --change-name=2:ALP_ROOT "$LOOP"
+partprobe "$LOOP"
 udevadm settle
-[[ -b ${NBD}p1 && -b ${NBD}p2 ]] || { echo 'GPT partitions did not appear.' >&2; exit 1; }
+[[ -b $PART1 && -b $PART2 ]] || { echo 'GPT partitions did not appear.' >&2; exit 1; }
 
-mkfs.vfat -F 32 -n ALP_EFI "${NBD}p1"
-mkfs.ext4 -F -L ALP_ROOT "${NBD}p2"
+mkfs.vfat -F 32 -n ALP_EFI "$PART1"
+mkfs.ext4 -F -L ALP_ROOT "$PART2"
 mkdir -p "$MOUNT"
-mount "${NBD}p2" "$MOUNT"
+mount "$PART2" "$MOUNT"
 ROOT_MOUNTED=1
 mkdir -p "$MOUNT/boot/efi"
-mount "${NBD}p1" "$MOUNT/boot/efi"
+mount "$PART1" "$MOUNT/boot/efi"
 EFI_MOUNTED=1
 
 # Skip only Builder caches, transient state, and virtual filesystems. Preserve
@@ -102,6 +108,27 @@ tar --numeric-owner --xattrs --acls --one-file-system \
     --exclude='./home/lfs/*' --exclude='./var/cache/*' \
     -C "$ROOTFS" -cpf - . | tar --numeric-owner --xattrs --acls -xpf - -C "$MOUNT"
 
+# Carry forward the already-verified test-image D-Bus socket activation links.
+# The unit files are from /mnt/lfs; only these enablement links are test-image
+# provisioning, matching the current Gen2 test disk.
+mkdir -p "$MOUNT/etc/systemd/user/sockets.target.wants"
+ln -sfn /usr/lib/systemd/user/dbus.socket \
+    "$MOUNT/etc/systemd/user/sockets.target.wants/dbus.socket"
+ln -sfn /usr/lib/systemd/user/dbus.service \
+    "$MOUNT/etc/systemd/user/sockets.target.wants/dbus.service"
+[[ $(readlink "$MOUNT/etc/systemd/user/sockets.target.wants/dbus.socket") == /usr/lib/systemd/user/dbus.socket ]]
+[[ $(readlink "$MOUNT/etc/systemd/user/sockets.target.wants/dbus.service") == /usr/lib/systemd/user/dbus.service ]]
+
+# Preserve the Mesa DRI megadriver aliases already verified on the Gen2 test
+# disk. They are test-image compatibility links; the Builder rootfs has not
+# installed them yet.
+test -s "$MOUNT/usr/lib/libgallium-25.1.8.so"
+mkdir -p "$MOUNT/usr/lib/dri"
+ln -sfn ../libgallium-25.1.8.so "$MOUNT/usr/lib/dri/swrast_dri.so"
+ln -sfn ../libgallium-25.1.8.so "$MOUNT/usr/lib/dri/kms_swrast_dri.so"
+[[ $(readlink "$MOUNT/usr/lib/dri/swrast_dri.so") == ../libgallium-25.1.8.so ]]
+[[ $(readlink "$MOUNT/usr/lib/dri/kms_swrast_dri.so") == ../libgallium-25.1.8.so ]]
+
 # The ALSA loopback driver is carried in the authoritative rootfs, but loaded
 # automatically only in this throwaway test image for guest PCM validation.
 mkdir -p "$MOUNT/etc/modules-load.d"
@@ -109,9 +136,9 @@ printf 'snd-aloop\n' > "$MOUNT/etc/modules-load.d/90-alpbahos-test-audio.conf"
 test -s "$MOUNT/usr/lib/modules/6.16.1-alpbahOS/kernel/sound/drivers/snd-aloop.ko"
 grep -qx 'snd-aloop' "$MOUNT/etc/modules-load.d/90-alpbahos-test-audio.conf"
 
-ROOT_UUID=$(blkid -s UUID -o value "${NBD}p2")
-EFI_UUID=$(blkid -s UUID -o value "${NBD}p1")
-ROOT_PARTUUID=$(blkid -s PARTUUID -o value "${NBD}p2")
+ROOT_UUID=$(blkid -s UUID -o value "$PART2")
+EFI_UUID=$(blkid -s UUID -o value "$PART1")
+ROOT_PARTUUID=$(blkid -s PARTUUID -o value "$PART2")
 printf 'UUID=%s / ext4 defaults 0 1\nUUID=%s /boot/efi vfat umask=0077 0 2\n' \
     "$ROOT_UUID" "$EFI_UUID" > "$MOUNT/etc/fstab"
 printf 'alpbahos-m2-gen2\n' > "$MOUNT/etc/hostname"
@@ -187,6 +214,8 @@ test ! -e "$MOUNT/etc/ssh/ssh_host_ed25519_key"
 grep -q '^ExecStart=/opt/kf6/bin/kwin_wayland_wrapper$' "$MOUNT/etc/systemd/user/plasma-kwin_wayland.service.d/10-wayland-only.conf"
 test -f "$MOUNT/usr/lib/systemd/user/dbus.service"
 test -f "$MOUNT/usr/lib/systemd/user/dbus.socket"
+[[ $(readlink "$MOUNT/etc/systemd/user/sockets.target.wants/dbus.socket") == /usr/lib/systemd/user/dbus.socket ]]
+[[ $(readlink "$MOUNT/etc/systemd/user/sockets.target.wants/dbus.service") == /usr/lib/systemd/user/dbus.service ]]
 grep -q '^ExecStart=/usr/bin/dbus-daemon --session --address=systemd:' "$MOUNT/usr/lib/systemd/user/dbus.service"
 grep -q '^ListenStream=%t/bus$' "$MOUNT/usr/lib/systemd/user/dbus.socket"
 printf 'ROOT_UUID=%s\nEFI_UUID=%s\nROOT_PARTUUID=%s\n' "$ROOT_UUID" "$EFI_UUID" "$ROOT_PARTUUID"
@@ -196,9 +225,13 @@ umount "$MOUNT/boot/efi"
 EFI_MOUNTED=0
 umount "$MOUNT"
 ROOT_MOUNTED=0
-qemu-nbd --disconnect "$NBD"
-ATTACHED=0
+losetup --detach "$LOOP"
+LOOP_ATTACHED=0
+udevadm settle
+qemu-img convert -f raw -O vhdx -o subformat=dynamic "$RAW" "$OUT"
 qemu-img check "$OUT"
 qemu-img info "$OUT"
 sha256sum "$OUT"
+rm -f -- "$RAW"
+RAW_CREATED=0
 SUCCESS=1
