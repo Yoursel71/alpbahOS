@@ -112,3 +112,54 @@ Mesa dri-symlink deneyini konsolda uygulamaya çalışırken, VMConnect'in "Eyle
 2. **(Codex) madde 1'deki D-Bus düzeltmesini `/mnt/lfs`'ye kalıcı işle.** Rootfs'te `usr/lib/systemd/user/dbus.{socket,service}` zaten var, yalnız `etc/systemd/user/sockets.target.wants/` altında etkinleştirme eksik — M04/taban denetiminin bulduğu "kurulu ama etkin değil" desenine bir örnek daha.
 3. **(İkincil, madde 1-2 çözülünce test edilecek) madde 2'deki `--xwayland` gizemi.** Mesa sürücüsü eklenip gerçek render çalışmaya başlayınca, `startplasma-wayland`'ın hâlâ `--xwayland` geçip geçmediği yeniden test edilmeli; render çalışırken bu hata görünürse kaynağını bulmak için `strace -f -e trace=execve` önerilir.
 4. Gerçek Plasma masaüstü ekranda görülene kadar M07 açık kalır; şu anki en güçlü kanıt zinciri: D-Bus ✅ düzeltildi (canlı) → systemd birimi ✅ doğru → KWin süreci ✅ çöküyor değil, canlı kalıyor → render ❌ Mesa sürücüsü eksik olduğu için hiç başlamıyor.
+
+## 7. KESIN SONUÇ (25 Eylül, sabah, seat-bound test — DRI düzeltmesiyle)
+
+Kullanıcının kendisi VMConnect konsolunda fiziksel olarak `sh /tmp/seattest` çalıştırdı
+(computer-use bu turda VMConnect'e klavye olayı iletemedi — pencere görünürde odaktaydı
+ama tuşlar ulaşmadı; Windows admin SSH üzerinden native SendKeys denemesi de
+"Erişim engellendi" ile başarısız oldu, çünkü OpenSSH servisi Session 0'da çalışıyor ve
+kullanıcının etkileşimli masaüstüne (Session 1) erişemiyor — bu ortamın kısıtı, ajanın
+hatası değil). Kullanıcı komutu elle çalıştırdı.
+
+Ortam: `admin` kullanıcısı, tty1/seat0 üzerinde GERÇEK aktif oturum
+(`loginctl session-status`: State=active, Leader=systemd, Remote=no).
+`kwin_wayland_wrapper` doğrudan bu oturumdan exec edildi (D-Bus + Mesa DRI
+sembolik bağlantıları kalıcı düzeltmeyle yerli yerinde).
+
+Çıktı (özet, tam log `/tmp/seattest.log`, VM içinde):
+```
+Failed to gain real time thread priority ... Operation not permitted   (zararsız uyarı x3)
+pci id for fd 17/18: 1414:0006, driver (null)
+kmsro: driver missing                                                   (beklenen: softpipe kmsro listesinde değil)
+kwin_wayland_drm: Could not find edid for connector ... Virtual-1 ... Connected
+kwin_core: Failed to open drm node: ""
+kwin_scene_opengl: couldn't find dev node for drm device
+kwin_scene_opengl: drmGetDeviceFromDevId() failed: No such file or directory
+kwin_scene_opengl: No render node have been found, not initializing wl-drm
+kwin_core: Failed to load cursor theme "default"                        (küçük/ikincil)
+kwin_screencast: Failed to connect PipeWire context                     (ikincil, ekran kaydı için)
+Failed to load overview: ... module "org.kde.milou" is not installed    (küçük/ikincil, KRunner arama eklentisi)
+```
+
+**Kesin teşhis:** Mesa DRI megadriver düzeltmesi doğru ve gerekliydi, ama YETERLİ DEĞİL.
+Asıl ve TEK büyük blokaj: `kwin_scene_opengl`, GBM/EGL context'i için bir *render node*
+(`/dev/dri/renderD1XX`) arıyor ve bulamıyor — çünkü sistemde hiç yok. Bu, §3b'de
+belgelenen kernel eksikliğinin (`CONFIG_DRM_VGEM is not set`) canlı, seat-bound bir
+ortamda birebir doğrulanmış hâli. `hyperv_drm` sürücüsü sadece modesetting (KMS)
+sağlıyor, render node değil; VGEM (ya da eşdeğeri) olmadan yazılım tabanlı OpenGL/EGL
+sahne motoru asla açılamaz.
+
+Diğer tüm satırlar (RT thread priority, PipeWire, org.kde.milou) ikincil/zararsız —
+render node sorunu çözülmeden anlamları yok.
+
+**Codex için TEK öncelikli görev:** `/mnt/lfs` kernel config'ine `CONFIG_DRM_VGEM=y`
+ekleyip kerneli yeniden derlemek (veya `hyperv_drm`'in DRIVER_RENDER bayrağıyla kendi
+render node'unu sunacak şekilde yamalanması — VGEM daha basit ve genel çözüm).
+Bu tek değişiklikten sonra Gen2'de yeniden test edilmeli; D-Bus+Mesa DRI düzeltmeleri
+zaten kalıcı ve hazır, ek bir şey gerekmiyor onlardan.
+
+**Görsel doğrulama yapılmadı:** `timeout 8` komutu süre dolunca süreci kesti; KWin'in
+bu hatalarla birlikte ekrana hiçbir şey çizip çizmediği (QPainter yazılım geri dönüşü
+olası ama gözlemlenmedi) test edilmedi. Render node eklendikten sonra hem log hem
+ekran görüntüsüyle doğrulanmalı.
