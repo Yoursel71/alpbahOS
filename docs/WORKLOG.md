@@ -996,3 +996,20 @@ PipeWire hatası için aynı gün ek tekrar: Guest `/tmp`'te 12 saniye 48 kHz st
 - APK SHA-256: `77887de4fc06e89d658bf26bfaa17de22844e25d33eac9f2c493bb0a990cb84f`.
 - Çalıştırılmadı: gerçek cihazda insan testi, ses dinleme, Android'de kurulum.
 - Ayrıntı: [devir 019](handoffs/claude/019-ultrakill-3d-his.md).
+
+## 25 Eylül 2026 — Claude: ULTRAKILL Unity sürümü (backlog dışı kullanıcı talebi)
+
+- Görev/sahip: Claude Code (bulut oturumu), dal `claude/3d-ultrakill-game-dev-qzqj42`. Dosya sınırı yalnız yeni `apps/ultrakill-unity/**`. Web oyunu, kernel, rootfs, paket manifesti, `alp`, build/mount ve Hyper-V ortamına dokunulmadı.
+- Bağlam: Kullanıcının açık Unity Editör'ünü kontrol edecek araç yoktu. Bunun yerine Unity Hub ile açılıp Play'e basılarak oynanan bağımsız bir proje eklendi.
+- Değişiklikler:
+  - Sahnesiz, varlıksız proje: her şey C# ile kurulur; Play'e basınca `UKGame` kendini kurar.
+  - V1 hareketi, REVOLVER/PIERCER, SHOTGUN/CORE, NAILGUN, FEEDBACKER ve parry.
+  - FILTH, STRAY, DRONE ve boss SWORDSMACHINE.
+  - Stil ölçeri, kanla iyileşme, nişan yardımı.
+  - Bölüm 0-1: üsten iniş, 2 arena, lav koridoru, boss, kapaktan düşerken sonuç ekranı.
+  - Terminal menü ve intro, normal HUD, çığlık atan ölüm kafatası.
+  - DSP ile 41 ses.
+  - Editör menüsü `ULTRAKILL → Sahneyi Oluştur ve Oyna`.
+- Doğrulama: Unity 2021.3.33 başvuru derlemelerine karşı `dotnet build`. Çalışma zamanı 12 dosya ve editör betiği: 0 hata, 0 uyarı.
+- Çalıştırılmadı: Unity Editör'de açma/Play, oynanış, ses, performans, yeni Input System yolu, URP, oyuncu derlemesi.
+- Ayrıntı: [devir 020](handoffs/claude/020-ultrakill-unity.md).

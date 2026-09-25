@@ -1,0 +1,18 @@
+{
+    "name": "ULTRAKILL.Editor",
+    "rootNamespace": "UK.EditorTools",
+    "references": [
+        "ULTRAKILL"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
