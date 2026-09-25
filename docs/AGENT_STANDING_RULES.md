@@ -74,3 +74,10 @@ Restart-Service sshd
 | Masaüstü teması, terminal UX, uygulama profilleri, `alp` paket motoru (D31) | Claude |
 
 Sahibi olmadığın alanda değişiklik gerekirse değiştirme; devir notuna yaz. Codex'in `alp.py`'ye yaptığı gibi bir değişiklik gerekliyse (M04 için taban paket sahiplenme eklendi), Claude'un testleriyle birlikte koşturulup hash'i devir belgesinde güncellenir; sessizce bırakılmaz.
+
+## Konsolsuz erişim (25 Eylül 2026 eklemesi) — VMConnect'e/kullanıcı ekranına ihtiyaç YOK
+- PC yeniden başlayınca VM IP'leri değişir: `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\refresh-ssh-hosts.ps1`, sonra `ssh alp-m2-gen2` / `ssh alp-builder`.
+- VM'ler PC açılınca kendiliğinden başlar. Ekran görüntüsü: `scripts\vm-screenshot.ps1 -VmName <ad> -Out <png>` (Hyper-V WMI, SSH'tan çalışır).
+- Gen2 test imajında (`...autoseat-claude...vhdx` ve türevleri) `sa`/`admin` şifresiz sudo; tty1 `admin` otomatik girişi. Seat-bound test için: `sudo rm /run/alp-plasma-tried; sudo systemctl restart getty@tty1`, log `/var/tmp/alp-plasma-autostart.log`.
+- Windows SSH servisi Session 0'dadır: SendKeys/pencere etkinleştirme çalışmaz. computer-use VMConnect'e tuş iletmekte güvenilmezdir; kullanmayın.
+- `kwin_wayland` ikilisini yeniden adlandırma/sarma (QPA eklentisi ad kontrolü yapar).
