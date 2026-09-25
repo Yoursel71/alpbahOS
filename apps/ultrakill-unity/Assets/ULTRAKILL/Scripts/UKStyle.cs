@@ -38,8 +38,15 @@ namespace UK
             { "PARRY", "#3ee06a" }, { "BIG KILL", "#ff5a4a" }, { "INSTAKILL", "#ff5a4a" }, { "ARSENAL", "#4aa3ff" },
             { "ENRAGED", "#ff3a24" }, { "INTERRUPTION", "#3ee06a" }, { "PROJECTILE BOOST", "#3ee06a" },
             { "BIG HEADSHOT", "#ffffff" }, { "SPLATTERED", "#ff5a4a" }, { "PARRIED KILL", "#3ee06a" },
-            { "AIRSHOT", "#ffae2a" }, { "FRIED", "#ff8a1f" },
+            { "AIRSHOT", "#ffae2a" }, { "FRIED", "#ff8a1f" }, { "RICOSHOT", "#ffae2a" }, { "QUICKDRAW", "#4aa3ff" },
+            { "CORE SNIPE", "#ffae2a" }, { "SHOTGUN PARRY", "#3ee06a" }, { "COIN PUNCH", "#ffae2a" }, { "HOOKED", "#9adf5a" },
+            { "DRILLED", "#3ee06a" }, { "BURNED", "#ff8a1f" }, { "CHARGEBACK", "#3ee06a" }, { "SECRET", "#80c8ff" },
         };
+
+        public static readonly string[] WEAPON_KEYS = { "revolver", "shotgun", "nailgun", "rail", "rocket" };
+
+        // Tazelik izlenen silah kimliği (yumruk, patlama, lav vb. → null)
+        public static string FreshWeapon(string w) => w != null && System.Array.IndexOf(WEAPON_KEYS, w) >= 0 ? w : null;
 
         public int rank;
         public float meter, total, pulse;
@@ -59,7 +66,7 @@ namespace UK
             if (full) total = 0;
             bonuses.Clear();
             fresh.Clear();
-            fresh["revolver"] = 1; fresh["shotgun"] = 1; fresh["nailgun"] = 1;
+            foreach (var k in WEAPON_KEYS) fresh[k] = 1;
             lastKillT = -10;
             combo = 0;
             frozen = false;

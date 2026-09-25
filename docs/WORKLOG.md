@@ -1013,3 +1013,25 @@ PipeWire hatası için aynı gün ek tekrar: Guest `/tmp`'te 12 saniye 48 kHz st
 - Doğrulama: Unity 2021.3.33 başvuru derlemelerine karşı `dotnet build`. Çalışma zamanı 12 dosya ve editör betiği: 0 hata, 0 uyarı.
 - Çalıştırılmadı: Unity Editör'de açma/Play, oynanış, ses, performans, yeni Input System yolu, URP, oyuncu derlemesi.
 - Ayrıntı: [devir 020](handoffs/claude/020-ultrakill-unity.md).
+
+## 25 Eylül 2026 — Claude: ULTRAKILL Unity sürümü tam içerik (backlog dışı kullanıcı talebi)
+
+- Görev/sahip: Claude Code (bulut oturumu), dal `claude/3d-ultrakill-game-dev-qzqj42`. Dosya sınırı `apps/ultrakill-unity/**`. Web oyunu, kernel, rootfs, paket manifesti, `alp`, build/mount ve Hyper-V ortamına dokunulmadı.
+- Bağlam: Kullanıcının Unity 6.6 konsolundaki `AshenGate` derleme hatası (`CS0103 SetWeapon`) bu depodaki bir dosyada değil; klasöre `~` ekleme ya da dosyayı gönderme önerildi. Önceki commit `20309ba` Unity 6/URP uyumunu ve `.unitypackage`'ı ekledi.
+- Değişiklikler:
+  - Web sürümünün tamamı taşındı:
+    - 10 bölüm (0-1…0-5, 1-1…1-4, Siber Öğütücü) çeviriciyle birebir çevrildi;
+    - 5 silah × 3 varyant, alternatif silahlar, iki kol ve kanca;
+    - 11 düşman.
+  - Yeni sistemler:
+    - dükkân ve P kasası;
+    - ilerleme kaydı, bölüm seçimi, sonuç ekranında meydan okuma;
+    - V2 karakteri;
+    - gerçek zamanlı prosedürel müzik.
+  - Bölüm kurucusu: birleştirilmiş dünya-UV ağları, gökyüzü, ışık havuzu, tema, düşüş tüneli.
+- Doğrulama:
+  - Eski girdi, Input System saplaması ve editör olmak üzere üç `dotnet build` yapılandırması: 0 hata, 0 uyarı.
+  - Bölüm başına kutu ve düşman sayıları web ile eşit.
+  - Paket 23 varlık.
+- Çalıştırılmadı: Unity Editör'de Play, oynanış, ses/müzik, performans, URP görüntüsü, oyuncu derlemesi.
+- Ayrıntı: [devir 021](handoffs/claude/021-ultrakill-unity-tam.md).

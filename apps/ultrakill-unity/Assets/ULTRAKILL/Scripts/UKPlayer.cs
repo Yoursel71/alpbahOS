@@ -20,7 +20,7 @@ namespace UK
         public float yaw, pitch;
         public Vector3 vel;
         public float hp = 100, maxHp = 100, hard, stamina = 3, iframes;
-        public bool grounded, sliding, slamming, dead, frozen;
+        public bool grounded, sliding, slamming, dead, frozen, v2;
         public float dashT, fovKick, trauma, hurtRoll, hurtPitch, camKick;
         public int wallJumps = 3;
         public Vector3 dashDir, slideDir, lastSafe;
@@ -60,6 +60,7 @@ namespace UK
             yaw = yawDeg;
             pitch = 0;
             vel = Vector3.zero;
+            maxHp = v2 ? 85 : 100;
             hp = maxHp;
             hard = 0;
             stamina = 3;
@@ -134,7 +135,7 @@ namespace UK
             iframes = Mathf.Max(0, iframes - dt);
             hurtCd = Mathf.Max(0, hurtCd - dt);
             slamLandT += dt;
-            if (dashT <= 0) stamina = Mathf.Min(3, stamina + STAMINA_REGEN * dt);
+            if (dashT <= 0) stamina = Mathf.Min(3, stamina + STAMINA_REGEN * (v2 ? 1.4f : 1f) * dt);
             hardDelay -= dt;
             if (hardDelay <= 0) hard = Mathf.Max(0, hard - 12 * dt);
             if (hp > maxHp - hard) hp = maxHp - hard;
@@ -209,12 +210,13 @@ namespace UK
             }
             else if (grounded)
             {
-                Vector3 target = wish * RUN;
+                float run = RUN * (v2 ? 1.12f : 1f);
+                Vector3 target = wish * run;
                 Vector3 h = new Vector3(vel.x, 0, vel.z);
                 float sp = h.magnitude;
-                if (sp > RUN + 0.5f)
+                if (sp > run + 0.5f)
                 {
-                    float ns = Mathf.Max(RUN, sp - OVERSPEED_FRIC * dt);
+                    float ns = Mathf.Max(run, sp - OVERSPEED_FRIC * dt);
                     h *= ns / sp;
                     h = Vector3.Lerp(h, target, Mathf.Min(1, dt * 4));
                 }
@@ -227,7 +229,7 @@ namespace UK
                 if (hasWish)
                 {
                     float cur = vel.x * wish.x + vel.z * wish.z;
-                    float add = Mathf.Min(AIR_ACCEL * dt, Mathf.Max(0, RUN - cur));
+                    float add = Mathf.Min(AIR_ACCEL * dt, Mathf.Max(0, RUN * (v2 ? 1.12f : 1f) - cur));
                     vel.x += wish.x * add;
                     vel.z += wish.z * add;
                 }

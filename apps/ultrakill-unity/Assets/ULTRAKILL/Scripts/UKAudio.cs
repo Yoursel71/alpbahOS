@@ -91,7 +91,38 @@ namespace UK
             slideLoop = MakeSource(false);
             slideLoop.loop = true;
             Build();
+            Build2();
             slideLoop.clip = bank["slide"];
+        }
+
+        // Eski/diğer adlar → bankadaki ses
+        static readonly Dictionary<string, string> alias = new Dictionary<string, string> { { "bossShotgun", "shotgun" }, { "chargeReady", "charge" } };
+        static string Res(string name) => alias.TryGetValue(name, out var a) ? a : name;
+
+        // Adlandırılmış döngüler (şarj, alev): açıkken çalar, kapanınca durur
+        readonly Dictionary<string, AudioSource> loops = new Dictionary<string, AudioSource>();
+        public void Loop(string id, bool on, string clip = null, float volume = 1f, float pitch = 1f)
+        {
+            loops.TryGetValue(id, out var s);
+            if (!on) { if (s != null && s.isPlaying) s.Stop(); return; }
+            if (s == null)
+            {
+                s = MakeSource(false);
+                s.loop = true;
+                loops[id] = s;
+            }
+            var name = Res(clip ?? id);
+            if (!bank.TryGetValue(name, out var c)) return;
+            if (s.clip != c) s.clip = c;
+            s.volume = vol[name] * volume * master;
+            s.pitch = pitch;
+            if (!s.isPlaying) s.Play();
+        }
+
+        public void StopAllLoops()
+        {
+            foreach (var s in loops.Values) if (s.isPlaying) s.Stop();
+            Slide(false);
         }
 
         AudioSource MakeSource(bool spatial)
@@ -110,6 +141,7 @@ namespace UK
 
         public void Play(string name, float volume = 1f, float pitch = 1f, bool exactPitch = false)
         {
+            name = Res(name);
             if (!bank.TryGetValue(name, out var clip)) return;
             if (lastPlay.TryGetValue(name, out var t) && Time.unscaledTime - t < 0.03f) return;
             lastPlay[name] = Time.unscaledTime;
@@ -122,6 +154,7 @@ namespace UK
 
         public void PlayAt(string name, Vector3 pos, float volume = 1f, float pitch = 1f)
         {
+            name = Res(name);
             if (!bank.TryGetValue(name, out var clip)) return;
             var s = sources3D[next3D = (next3D + 1) % sources3D.Count];
             s.transform.position = pos;
@@ -137,7 +170,7 @@ namespace UK
             else if (!on && slideLoop.isPlaying) slideLoop.Stop();
         }
 
-        public bool Has(string name) => bank.ContainsKey(name);
+        public bool Has(string name) => bank.ContainsKey(Res(name));
 
         // ------------------------------------------------------------ ses tanımları
         void Build()
@@ -368,6 +401,139 @@ namespace UK
             Def("rankUp", 0.3f, 0.2f, (o, n) => { var a = new Osc(3); for (int i = 0; i < n; i++) { float t = (float)i / SR; o[i] = a.Run(600 + 1200 * t) * Mathf.Exp(-t / 0.1f); } });
             Def("meleeWhoosh", 0.32f, 0.35f, (o, n) => { var bp = new BQ("bp", 300, 1.8f); for (int i = 0; i < n; i++) { float t = (float)i / SR; float e = Mathf.Sin(Mathf.PI * Mathf.Min(1, t / 0.32f)); bp.Set(300 + 2400 * e); o[i] = bp.Run(Rnd()) * 1.6f * e; } });
             Def("lava", 0.5f, 0.45f, (o, n) => { var hp = new BQ("hp", 3000); var lp = new BQ("lp", 600); for (int i = 0; i < n; i++) { float t = (float)i / SR, z = Rnd(); o[i] = (hp.Run(z) * (UnityEngine.Random.value < 0.15f ? 1.5f : 0.3f) + lp.Run(z) * 1.2f) * Mathf.Exp(-t / 0.18f); } });
+        }
+    
+        // Tam cephanelik ve yeni düşmanlar için ek sesler (web sürümündeki DSP tarifleri)
+        void Build2()
+        {
+            Def("coin", 0.35f, 0.35f, (o, n) =>
+            {
+                var a = new Osc(); var b = new Osc(); var hp = new BQ("hp", 5000);
+                for (int i = 0; i < n; i++) { float t = (float)i / SR; float trem = 0.6f + 0.4f * Mathf.Sin(TAU * 38 * t); o[i] = (a.Run(2400 + 800 * t) * 0.6f + b.Run(3800) * 0.25f) * Mathf.Exp(-t / 0.12f) * trem + hp.Run(Rnd()) * Mathf.Exp(-t / 0.01f) * 0.5f; }
+            });
+            Def("ricochet", 0.9f, 0.5f, (o, n) =>
+            {
+                var a = new Osc(); var b = new Osc(); var c = new Osc(); var hp = new BQ("hp", 4000);
+                for (int i = 0; i < n; i++) { float t = (float)i / SR; float f = 3300 - 900 * (1 - Mathf.Exp(-t / 0.3f)); o[i] = (a.Run(f) * 0.55f + b.Run(f * 1.46f) * 0.3f + c.Run(f * 2.1f) * 0.12f) * Mathf.Exp(-t / 0.28f) + hp.Run(Rnd()) * Mathf.Exp(-t / 0.008f) * 0.8f; }
+            });
+            Def("shell", 0.25f, 0.12f, (o, n) => { var a = new Osc(); var b = new Osc(); for (int i = 0; i < n; i++) { float t = (float)i / SR; o[i] = (a.Run(3900) * 0.5f + b.Run(6200) * 0.3f) * Mathf.Exp(-t / 0.05f); } });
+            Def("overpump", 0.8f, 0.35f, (o, n) =>
+            {
+                var s = new Osc(1); var lp = new BQ("lp", 900, 4);
+                for (int i = 0; i < n; i++) { float t = (float)i / SR; lp.Set(300 + 3000 * (t / 0.8f)); o[i] = Sat(lp.Run(s.Run(80 + 360 * (t / 0.8f) + 20 * Mathf.Sin(TAU * 12 * t))) * 3) * Mathf.Min(1, t / 0.05f) * Mathf.Exp(-Mathf.Max(0, t - 0.6f) / 0.08f); }
+            });
+            Def("coreLaunch", 0.45f, 0.5f, (o, n) =>
+            {
+                var th = new Osc(); var lp = new BQ("lp", 1400, 0.8f);
+                for (int i = 0; i < n; i++) { float t = (float)i / SR; o[i] = Sat((th.Run(70 + 220 * Mathf.Exp(-t / 0.05f)) * Mathf.Exp(-t / 0.12f) * 1.2f + lp.Run(Rnd()) * Mathf.Exp(-t / 0.08f)) * 1.4f); }
+            });
+            Def("rail", 1.6f, 0.85f, (o, n) =>
+            {
+                var sq = new Osc(2); var th = new Osc(); var lp = new BQ("lp", 9000); var hp = new BQ("hp", 3000); var s2 = new Osc(1);
+                float gate = 1;
+                for (int i = 0; i < n; i++)
+                {
+                    float t = (float)i / SR, z = Rnd();
+                    if (i % 220 == 0) gate = Rnd() > -0.2f ? 1 : 0.2f;
+                    lp.Set(200 + 9000 * Mathf.Exp(-t / 0.25f));
+                    float v = sq.Run(1900 * Mathf.Exp(-t / 0.12f) + 55) * Mathf.Exp(-t / 0.35f) * 0.7f;
+                    v += lp.Run(z) * Mathf.Exp(-t / 0.3f) * 1.4f;
+                    v += th.Run(20 + 80 * Mathf.Exp(-t / 0.08f)) * Mathf.Exp(-t / 0.7f) * 1.8f;
+                    v += hp.Run(z) * gate * Mathf.Exp(-t / 0.6f) * 0.6f;
+                    v += s2.Run(4200 - 1500 * t) * Mathf.Exp(-t / 0.15f) * 0.12f;
+                    o[i] = Sat(v * 2.2f);
+                }
+            });
+            Def("railReady", 0.7f, 0.3f, (o, n) =>
+            {
+                var a = new Osc(); var b = new Osc(3);
+                for (int i = 0; i < n; i++) { float t = (float)i / SR; float f = t < 0.12f ? 660 : t < 0.24f ? 990 : 1320; o[i] = (a.Run(f) * 0.6f + b.Run(f * 2) * 0.2f) * Mathf.Exp(-((t % 0.12f) / 0.08f)) * (t < 0.5f ? 1 : Mathf.Exp(-(t - 0.5f) / 0.05f)); }
+            });
+            Def("chargeLoop", 0.6f, 0.25f, (o, n) =>
+            {
+                var a = new Osc(); var b = new Osc(1); var lp = new BQ("lp", 1800, 2);
+                for (int i = 0; i < n; i++) { float t = (float)i / SR; float f = 300 + (t / 0.6f) * 900; o[i] = (a.Run(f * (1 + 0.02f * Mathf.Sin(TAU * 30 * t))) * 0.6f + lp.Run(b.Run(f * 0.5f)) * 0.3f) * Mathf.Min(1, t / 0.05f) * 0.8f; }
+            });
+            Def("parryRing", 2.0f, 0.3f, (o, n) =>
+            {
+                var a = new Osc(); var b = new Osc(); var c = new Osc(3); var hp = new BQ("hp", 6000);
+                for (int i = 0; i < n; i++) { float t = (float)i / SR; float env = Mathf.Min(1, t / 0.02f) * Mathf.Exp(-t / 0.7f); float f = 1320 + 220 * (1 - Mathf.Exp(-t / 0.4f)); o[i] = (a.Run(f) * 0.4f + b.Run(f * 1.5f) * 0.25f + c.Run(f * 2.01f) * 0.15f) * env * (0.8f + 0.2f * Mathf.Sin(TAU * 11 * t)) + hp.Run(Rnd()) * Mathf.Exp(-t / 0.25f) * 0.12f; }
+            });
+            Def("slamStart", 0.4f, 0.35f, (o, n) =>
+            {
+                var bp = new BQ("bp", 3000, 1.2f);
+                for (int i = 0; i < n; i++) { float t = (float)i / SR; bp.Set(3000 - 2500 * (t / 0.4f)); o[i] = bp.Run(Rnd()) * Mathf.Min(1, t / 0.05f) * 1.3f; }
+            });
+            Def("filthGrowl", 0.7f, 0.35f, (o, n) =>
+            {
+                var s = new Osc(1); var f1 = new BQ("bp", 520, 4); var f2 = new BQ("bp", 1400, 5);
+                float f0 = 85 + (Rnd() * 0.5f + 0.5f) * 30;
+                for (int i = 0; i < n; i++) { float t = (float)i / SR; float x = s.Run(f0 * (1 + 0.06f * Mathf.Sin(TAU * 13 * t)) * (1 - 0.3f * t)) + Rnd() * 0.3f; o[i] = Sat((f1.Run(x) * 1.5f + f2.Run(x)) * 3) * Mathf.Min(1, t / 0.05f) * Mathf.Exp(-t / 0.3f); }
+            });
+            Def("screech", 0.6f, 0.35f, (o, n) =>
+            {
+                var s = new Osc(1); var f1 = new BQ("bp", 900, 5); var f2 = new BQ("bp", 2400, 6);
+                for (int i = 0; i < n; i++) { float t = (float)i / SR; float x = s.Run(260 - 120 * t + 20 * Mathf.Sin(TAU * 25 * t)) + Rnd() * 0.4f; o[i] = Sat((f1.Run(x) + f2.Run(x) * 0.8f) * 4) * Mathf.Min(1, t / 0.03f) * Mathf.Exp(-t / 0.22f); }
+            });
+            Def("schismShot", 0.25f, 0.3f, (o, n) =>
+            {
+                var s = new Osc(2); var lp = new BQ("lp", 2500); var bp = new BQ("bp", 1600, 3);
+                for (int i = 0; i < n; i++) { float t = (float)i / SR; o[i] = lp.Run(s.Run(1200 * Mathf.Exp(-t / 0.05f) + 200)) * Mathf.Exp(-t / 0.08f) * 0.6f + bp.Run(Rnd()) * Mathf.Exp(-t / 0.03f); }
+            });
+            Def("chainsaw", 0.8f, 0.4f, (o, n) =>
+            {
+                var s = new Osc(1); var s2 = new Osc(2); var bp = new BQ("bp", 1200, 1);
+                for (int i = 0; i < n; i++) { float t = (float)i / SR; float f = 55 + 40 * Mathf.Min(1, t / 0.2f); float am = 0.6f + 0.4f * Mathf.Sign(Mathf.Sin(TAU * 28 * t)); o[i] = Sat((s.Run(f) + s2.Run(f * 1.01f) * 0.5f + bp.Run(Rnd()) * 0.4f) * am * 2.5f) * Mathf.Min(1, t / 0.03f) * Mathf.Exp(-Mathf.Max(0, t - 0.5f) / 0.1f); }
+            });
+            Def("spawn", 0.9f, 0.35f, (o, n) =>
+            {
+                var a = new Osc(); var b = new Osc(); var bp = new BQ("bp", 3000, 2);
+                for (int i = 0; i < n; i++) { float t = (float)i / SR; float env = t < 0.6f ? (t / 0.6f) * (t / 0.6f) : Mathf.Exp(-(t - 0.6f) / 0.06f); o[i] = (a.Run(220 + 900 * t) * 0.3f + b.Run(1650 + 1200 * t) * 0.15f + bp.Run(Rnd()) * 0.8f) * env; }
+            });
+            Def("doorSlam", 0.9f, 0.7f, (o, n) =>
+            {
+                var lp = new BQ("lp", 900); var th = new Osc(); var a = new Osc(); var b = new Osc();
+                for (int i = 0; i < n; i++) { float t = (float)i / SR, z = Rnd(); o[i] = Sat((lp.Run(z) * Mathf.Exp(-t / 0.08f) * 1.8f + th.Run(35 + 60 * Mathf.Exp(-t / 0.05f)) * Mathf.Exp(-t / 0.2f) * 1.6f + (a.Run(420) + b.Run(1170) * 0.6f) * Mathf.Exp(-t / 0.25f) * 0.25f) * 1.6f); }
+            });
+            Def("pickup", 1.6f, 0.55f, (o, n) =>
+            {
+                float[] notes = { 262, 330, 392, 523, 659 };
+                var oscs = new Osc[notes.Length];
+                for (int k = 0; k < notes.Length; k++) oscs[k] = new Osc(1);
+                var lp = new BQ("lp", 1500, 1.5f); var bp = new BQ("bp", 2500, 4);
+                for (int i = 0; i < n; i++)
+                {
+                    float t = (float)i / SR, v = 0;
+                    for (int k = 0; k < notes.Length; k++) v += oscs[k].Run(notes[k] * (1 + 0.003f * Mathf.Sin(TAU * 5 * t + k))) * 0.2f;
+                    lp.Set(400 + 3000 * Mathf.Min(1, t / 0.4f));
+                    v = lp.Run(v) * Mathf.Min(1, t / 0.05f) * Mathf.Exp(-Mathf.Max(0, t - 0.6f) / 0.35f);
+                    if (t < 0.05f) v += bp.Run(Rnd()) * Mathf.Exp(-t / 0.008f) * 2;
+                    if (t > 0.18f && t < 0.25f) v += bp.Run(Rnd()) * Mathf.Exp(-(t - 0.18f) / 0.008f) * 2;
+                    o[i] = Sat(v * 1.5f);
+                }
+            });
+            Def("uiClick", 0.12f, 0.22f, (o, n) => { var a = new Osc(2); var lp = new BQ("lp", 3500); for (int i = 0; i < n; i++) { float t = (float)i / SR; o[i] = lp.Run(a.Run(600 + 600 * (t / 0.12f))) * Mathf.Exp(-t / 0.035f) * 0.6f; } });
+            Def("flame", 0.6f, 0.3f, (o, n) =>
+            {
+                var lp = new BQ("lp", 700); var bp = new BQ("bp", 2200, 0.7f);
+                for (int i = 0; i < n; i++) { float z = Rnd(); o[i] = lp.Run(z) * 1.6f + bp.Run(z) * (Rnd() > 0.96f ? 2.2f : 0.35f); }
+                int f = SR / 50;
+                for (int i = 0; i < f; i++) { float k = (float)i / f; o[i] *= k; o[n - 1 - i] *= k; }
+            });
+            Def("magnet", 0.3f, 0.3f, (o, n) => { var a = new Osc(3); for (int i = 0; i < n; i++) { float t = (float)i / SR; o[i] = a.Run(900 - 500 * t) * Mathf.Exp(-t / 0.08f) * (0.6f + 0.4f * Mathf.Sin(TAU * 60 * t)); } });
+            // ölüm: dijital bozulma (parçalı kare dalga + kırpılmış gürültü)
+            Def("glitch", 0.7f, 0.45f, (o, n) =>
+            {
+                var sq = new Osc(2); float f = 300, hold = 0;
+                for (int i = 0; i < n; i++)
+                {
+                    float t = (float)i / SR;
+                    if (--hold <= 0) { hold = SR * (0.015f + (float)rng.NextDouble() * 0.05f); f = 120 + (float)rng.NextDouble() * 1400; }
+                    float z = Mathf.Round(Rnd() * 4) / 4;
+                    o[i] = (sq.Run(f) * 0.6f + z * 0.5f) * Mathf.Exp(-t / 0.28f) * (Mathf.Sin(TAU * 23 * t) > -0.3f ? 1 : 0.1f);
+                }
+            });
+            Def("freeze", 0.5f, 0.3f, (o, n) => { var a = new Osc(); var b = new Osc(); for (int i = 0; i < n; i++) { float t = (float)i / SR; o[i] = (a.Run(1200 - 700 * t) * 0.5f + b.Run(1800 - 900 * t) * 0.3f) * Mathf.Exp(-t / 0.15f); } });
         }
     }
 }

@@ -8,7 +8,7 @@ using UnityEngine.InputSystem;
 
 namespace UK
 {
-    public enum UKKey { W, A, S, D, Space, Shift, C, Ctrl, F, R, Q, E, G, Esc, Tab, Enter, N1, N2, N3, N4, N5, Mouse0, Mouse1 }
+    public enum UKKey { W, A, S, D, Space, Shift, C, Ctrl, F, R, Q, E, G, Esc, Tab, Enter, B, N1, N2, N3, N4, N5, Mouse0, Mouse1 }
 
     public static class UKInput
     {
@@ -49,6 +49,7 @@ namespace UK
                 case UKKey.Esc: return KeyCode.Escape;
                 case UKKey.Tab: return KeyCode.Tab;
                 case UKKey.Enter: return KeyCode.Return;
+                case UKKey.B: return KeyCode.B;
                 case UKKey.N1: return KeyCode.Alpha1;
                 case UKKey.N2: return KeyCode.Alpha2;
                 case UKKey.N3: return KeyCode.Alpha3;
@@ -99,6 +100,7 @@ namespace UK
                 case UKKey.Esc: key = Key.Escape; break;
                 case UKKey.Tab: key = Key.Tab; break;
                 case UKKey.Enter: key = Key.Enter; break;
+                case UKKey.B: key = Key.B; break;
                 case UKKey.N1: key = Key.Digit1; break;
                 case UKKey.N2: key = Key.Digit2; break;
                 case UKKey.N3: key = Key.Digit3; break;
