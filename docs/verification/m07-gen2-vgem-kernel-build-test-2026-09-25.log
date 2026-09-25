@@ -29,3 +29,10 @@ Windows Admin SSHD / console-access follow-up (25 Sep 2026)
 - Windows `quser` reports thewo on active console session 2. The existing VMConnect process is in session 2 but its MainWindowHandle is 0 while minimized.
 - Through a transient Scheduled Task using the existing interactive token, a second VMConnect window was opened for `alpbahOS-M2-SSH-Gen2` via `localhost`. The task was unregistered immediately after launch (subsequent Get-ScheduledTask returned no entry). The new window is targetable by Computer Use but its guest display is black; focus/key input fails with `GetCursorPos failed: Access denied (0x80070005)`.
 - Guest recheck still shows only SSH `sa` and `sa` manager sessions; `getty@tty1` remains active and `/dev/dri/renderD128` remains present. No credential was entered and no KWin/Plasma process was started.
+
+Live read-only recheck — 25 Sep 2026 12:19 UTC
+- `alp-windows-admin` host inventory: VM `alpbahOS-M2-SSH-Gen2` is Running/Normal; MAC `00-15-5d-00-02-09` resolves to `172.28.160.30`.
+- Key-only guest SSH as `sa`: kernel `6.16.1-alpbahOS`, `CONFIG_DRM_VGEM=y`, `CONFIG_DRM_HYPERV=y`; `/dev/dri/renderD128` is character device 226:128, `root:render`, mode 0666. No `eglinfo`, `glxinfo`, `kmscube`, or `weston-info` probe is installed; no package or test binary was added.
+- `getty@tty1.service` is active. `loginctl list-sessions` lists only SSH user `sa` and its manager; no admin tty1/seat0 session exists.
+- `systemctl --user show plasma-kwin_wayland.service` reports loaded at `/usr/lib/systemd/user/plasma-kwin_wayland.service`, the drop-in at `/etc/systemd/user/plasma-kwin_wayland.service.d/10-wayland-only.conf`, and effective `ExecStart=/opt/kf6/bin/kwin_wayland_wrapper` without `--xwayland`; unit state is inactive. `systemctl --user cat` shows the base `--xwayland` line cleared and replaced by the drop-in.
+- This is an SSH-scoped read-only check. No KWin/Plasma process was started, and no seat-bound rendering or context-open result is claimed.

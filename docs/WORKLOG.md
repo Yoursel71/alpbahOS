@@ -1192,4 +1192,10 @@ düzeltmeleri doğru ve kalıcı ama yeterli değil; kalan tek blokaj kernel
 tarafında. `docs/verification/m07-gen2-kwin-drm-diagnosis-2026-09-24.log` §7'ye
 işlendi, `CURRENT.md` M07 satırı güncellendi.
 
-- 25 Sep 2026 05:53 UTC M07 kernel progress: rebuilt Linux 6.16.1 in the Builder /mnt/lfs chroot with CONFIG_DRM_VGEM=y; booted rootfs-derived final Gen2 image (SHA-256  5be2e266e35d60e99dcf35d245b883c6f409a0ecc4a9fa2eb0b4f4365eeadbc). Guest confirms enderD128 (226:128), D-Bus user socket active, Mesa DRI aliases present, KWin effective ExecStart without --xwayland, and active tty1 getty. loginctl currently shows no admin tty1/seat0 session, so KWin has not been tested seat-bound and no context/render success is claimed. Evidence: docs/verification/m07-gen2-vgem-kernel-build-test-2026-09-25.log.
+- 25 Sep 2026 05:53 UTC M07 kernel progress: rebuilt Linux 6.16.1 in the Builder /mnt/lfs chroot with CONFIG_DRM_VGEM=y; booted rootfs-derived final Gen2 image (SHA-256 05be2e266e35d60e99dcf35d245b883c6f409a0ecc4a9fa2eb0b4f4365eeadbc). Guest confirms /dev/dri/renderD128 (226:128), D-Bus user socket active, Mesa DRI aliases present, KWin effective ExecStart without --xwayland, and active tty1 getty. loginctl currently shows no admin tty1/seat0 session, so KWin has not been tested seat-bound and no context/render success is claimed. Evidence: docs/verification/m07-gen2-vgem-kernel-build-test-2026-09-25.log.
+
+## 25 Eylül 2026 — M07 VGEM guest read-only recheck
+
+- Windows Admin SSHD envanteri doğruladı: `alpbahOS-M2-SSH-Gen2` Running/Normal, MAC `00-15-5d-00-02-09`, IP `172.28.160.30`. Key-only guest SSH `sa` ile kernel `6.16.1-alpbahOS`, `CONFIG_DRM_VGEM=y`, `CONFIG_DRM_HYPERV=y` ve `/dev/dri/renderD128` (`226:128`, `root:render`, 0666) tekrar doğrulandı.
+- `getty@tty1` aktif; `loginctl` yalnız SSH `sa` ve user manager gösterdi. `plasma-kwin_wayland.service` loaded fakat inactive; etkin ExecStart `/opt/kf6/bin/kwin_wayland_wrapper`, `--xwayland` yok. Üçüncü taraf grafik probe aracı bulunmadı; test VM'ine paket/binary eklenmedi.
+- SSH üzerinden salt-okunur kontrol olduğu için bu sonuç admin tty1/seat0 oturumu, KWin context açılışı veya Plasma başarısı değildir. Ayrıntı: [M07 kanıtı](verification/m07-gen2-vgem-kernel-build-test-2026-09-25.log).
