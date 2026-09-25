@@ -1,0 +1,31 @@
+M07 VGEM kernel and Gen2 test image — 2026-09-25
+
+Scope: enable CONFIG_DRM_VGEM in the authoritative /mnt/lfs kernel, rebuild only in the Builder chroot, boot a rootfs-derived Gen2 test image, and verify the render node. KWin seat-bound rendering remains pending until an admin tty1 login is available.
+
+Builder evidence
+- Builder hostname: yrsk. Kernel source: /mnt/lfs/sources/linux-6.16.1; release: 6.16.1-alpbahOS.
+- Kernel build log: /mnt/lfs/tmp/alp-logs/kernel-6.16.1-drm-vgem-20260925T043841Z.log
+- Build log SHA-256: f8183162db9fefa715fad3daba918e90344b7d7d1cda59ab10a9d017d7c65b2f.
+- /mnt/lfs/boot/config-6.16.1-alpbahOS contains CONFIG_DRM_VGEM=y and CONFIG_DRM_HYPERV=y. Config SHA-256: 1a82be50c840c7a1fed8fc7a75507c89cf47f116fc48ffc9e4b558f8488fa6f6.
+- Installed kernel /mnt/lfs/boot/vmlinuz-6.16.1-alpbahOS SHA-256: e05de39028401eb853c9a86740faee6cd9043fbc4cb0ab73092dba80eeb539c7.
+- System.map contains vgem_init; build output says the bzImage is ready and includes drivers/gpu/drm/vgem objects.
+- Rootfs free space after build: 48 GiB. No NBD device was used; this Builder kernel has no /sys/block/nbd0/pid attribute. Image creation uses a temporary raw file in /home/sa and an unused loop device, then converts to VHDX. No VHDX was put in Builder /tmp.
+
+Test image evidence
+- Builder output: /home/sa/alpbahOS-m2-ssh-gen2-vgem-test-final.vhdx; qemu-img check reported “No errors were found on the image.” VHDX virtual size 24 GiB, file length 6,719,275,008 bytes.
+- Copied to F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen2-vgem-test-final-2026-09-25.vhdx. SHA-256 on Windows matched Builder: 05be2e266e35d60e99dcf35d245b883c6f409a0ecc4a9fa2eb0b4f4365eeadbc.
+- Hyper-V VM alpbahOS-M2-SSH-Gen2 was stopped before disk reassignment, then started with this final image. Current VM disk path is the final VHDX above; the prior test disks were retained.
+- VM MAC 00-15-5d-00-02-09 resolved to 172.28.160.30. Guest reports hostname alpbahos-m2-gen2, kernel 6.16.1-alpbahOS, CONFIG_DRM_VGEM=y, and command line root=PARTUUID=42625ef6-4194-4652-a029-f79004f8b0eb rootwait.
+- Guest /dev/dri includes card0 (226:0), card1 (226:1), and renderD128 (226:128, root:render, mode 0666). Thus the specific missing-render-node condition is resolved in the running guest.
+- Existing test-image D-Bus activation links resolve to /usr/lib/systemd/user/dbus.socket and dbus.service; systemctl --user is-active dbus.socket reported active for the SSH user manager. Both /usr/lib/dri/swrast_dri.so and kms_swrast_dri.so resolve to ../libgallium-25.1.8.so.
+- Effective KWin unit uses /usr/lib/systemd/user/plasma-kwin_wayland.service plus /etc/systemd/user/plasma-kwin_wayland.service.d/10-wayland-only.conf; systemctl --user show reports ExecStart=/opt/kf6/bin/kwin_wayland_wrapper without --xwayland. KWin was inactive during this read-only check.
+- getty@tty1 is active and agetty is attached to tty1. loginctl list-sessions showed only SSH user sa and its manager; there was no admin tty1/seat0 session at capture time.
+
+Not yet verified
+- No seat-bound KWin/Plasma process was started in this run. No kwin_scene_opengl context-open success or rendered Plasma session is claimed. Repeat only after admin logs into tty1 on the final image; then capture loginctl session properties and KWin/DRM logs.
+
+Windows Admin SSHD / console-access follow-up (25 Sep 2026)
+- `alp-windows-admin` SSH alias connects to 127.0.0.1 as `yrslf\thewo`; `whoami /groups` includes enabled BUILTIN\Administrators at High Mandatory Level, and `net session` returned successfully.
+- Windows `quser` reports thewo on active console session 2. The existing VMConnect process is in session 2 but its MainWindowHandle is 0 while minimized.
+- Through a transient Scheduled Task using the existing interactive token, a second VMConnect window was opened for `alpbahOS-M2-SSH-Gen2` via `localhost`. The task was unregistered immediately after launch (subsequent Get-ScheduledTask returned no entry). The new window is targetable by Computer Use but its guest display is black; focus/key input fails with `GetCursorPos failed: Access denied (0x80070005)`.
+- Guest recheck still shows only SSH `sa` and `sa` manager sessions; `getty@tty1` remains active and `/dev/dri/renderD128` remains present. No credential was entered and no KWin/Plasma process was started.
