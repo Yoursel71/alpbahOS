@@ -136,9 +136,9 @@ namespace UK
             l.type = LightType.Point;
             l.color = c;
             l.range = range;
-            l.intensity = intensity;
+            l.intensity = intensity * UKFx.LightMul;
             l.shadows = LightShadows.None;
-            if (flick) { flicker.Add(l); flickerBase.Add(intensity); }
+            if (flick) { flicker.Add(l); flickerBase.Add(intensity * UKFx.LightMul); }
             return l;
         }
 

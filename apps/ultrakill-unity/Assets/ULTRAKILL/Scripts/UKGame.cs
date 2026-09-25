@@ -1,9 +1,10 @@
 // Oyunun çekirdeği: sahneyi devralır (kamera, ışık, sis), oyuncuyu/silahları/bölümü kurar,
 // durum makinesini (menü → intro → oyun → duraklat / ölüm → sonuç) ve savaş kurallarını yürütür:
 // oyuncu hasarı, kanla iyileşme, PARRY, yumruk, patlama, nişan yardımı, vuruş donması, ağır çekim.
-// Sahneye hiçbir şey eklemeden Play'e basmak yeterlidir: sahnede UKGame yoksa kendiliğinden kurulur.
+// ULTRAKILL sahnesinde (ya da kaydedilmemiş boş sahnede) Play'e basmak yeterlidir: UKGame kendiliğinden kurulur.
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace UK
 {
@@ -83,6 +84,12 @@ namespace UK
         static void AutoBoot()
         {
             if (I != null) return;
+            // Aynı projedeki başka oyunların sahnelerini ele geçirme: yalnız "ULTRAKILL" adlı sahnede
+            // ya da kaydedilmemiş boş sahnede (yeni açılmış proje) kendiliğinden kurul.
+            var scene = SceneManager.GetActiveScene();
+            bool ours = scene.name == "ULTRAKILL";
+            bool blank = string.IsNullOrEmpty(scene.path) && scene.rootCount <= 3;
+            if (!ours && !blank) return;
             new GameObject("ULTRAKILL").AddComponent<UKGame>();
         }
 
@@ -114,13 +121,14 @@ namespace UK
 
         void SetupScene()
         {
-#if UNITY_2023_1_OR_NEWER
-            var lights = FindObjectsByType<Light>(FindObjectsSortMode.None);
-            var listeners = FindObjectsByType<AudioListener>(FindObjectsSortMode.None);
-#else
-            var lights = FindObjectsOfType<Light>();
-            var listeners = FindObjectsOfType<AudioListener>();
-#endif
+            // sahnedeki ışıkları kapat (sürümden bağımsız: kök nesnelerden tara)
+            var lights = new List<Light>();
+            var listeners = new List<AudioListener>();
+            foreach (var root in gameObject.scene.GetRootGameObjects())
+            {
+                lights.AddRange(root.GetComponentsInChildren<Light>(true));
+                listeners.AddRange(root.GetComponentsInChildren<AudioListener>(true));
+            }
             foreach (var l in lights) l.enabled = false;
             cam = Camera.main;
             if (cam == null)
@@ -133,7 +141,7 @@ namespace UK
             var fog = new Color(0.12f, 0.04f, 0.035f);
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = fog;
-            cam.nearClipPlane = 0.05f;
+            cam.nearClipPlane = UKFx.SRP ? 0.03f : 0.05f;
             cam.farClipPlane = 500f;
             cam.depth = 0;
             var sun = new GameObject("Sun").AddComponent<Light>();

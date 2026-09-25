@@ -40,6 +40,9 @@ namespace UK
         }
 
         public static Mesh Cube => cube;
+        // URP/HDRP nokta ışıkları fiziksel (1/d²) söner; yerleşik hattaki parlaklığa yaklaştırmak için çarpan
+        public static bool SRP => UnityEngine.Rendering.GraphicsSettings.currentRenderPipeline != null;
+        public static float LightMul => SRP ? 4f : 1f;
         public static Mesh Quad => quad;
 
         static void SetCol(Material m, Color c)
@@ -361,7 +364,7 @@ namespace UK
             l.range = range;
             l.enabled = true;
             lightT[best] = lightMax[best] = dur;
-            lightBase[best] = intensity;
+            lightBase[best] = intensity * LightMul;
         }
 
         public void Decal(Vector3 pos, Vector3 normal, float size)

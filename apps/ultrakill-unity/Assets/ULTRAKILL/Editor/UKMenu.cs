@@ -1,6 +1,6 @@
-// Editör menüsü: "ULTRAKILL > Sahneyi Oluştur ve Oyna" boş bir sahne kurar, içine UKGame ekler,
-// Assets/ULTRAKILL/ULTRAKILL.unity olarak kaydeder, Build Settings'e ekler ve Play'e basar.
-// (Menü kullanılmasa da olur: herhangi bir sahnede Play'e basınca oyun kendiliğinden kurulur.)
+// Editör menüsü: "ULTRAKILL > Sahneyi Oluştur ve Oyna" Assets/ULTRAKILL/ULTRAKILL.unity sahnesini açar
+// (yoksa boş bir sahneye UKGame ekleyip oluşturur), Build Settings'e ekler ve Play'e basar.
+// (Menü kullanılmasa da olur: ULTRAKILL sahnesinde ya da kaydedilmemiş boş sahnede Play'e basınca oyun kendiliğinden kurulur.)
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -17,9 +17,13 @@ namespace UK.EditorTools
         {
             if (EditorApplication.isPlaying) return;
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
-            var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
-            new GameObject("ULTRAKILL").AddComponent<UKGame>();
-            EditorSceneManager.SaveScene(scene, ScenePath);
+            if (System.IO.File.Exists(ScenePath)) EditorSceneManager.OpenScene(ScenePath);
+            else
+            {
+                var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+                new GameObject("ULTRAKILL").AddComponent<UKGame>();
+                EditorSceneManager.SaveScene(scene, ScenePath);
+            }
             var list = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
             if (!list.Exists(s => s.path == ScenePath))
             {

@@ -152,6 +152,9 @@ namespace UK
             muzzleLight.color = new Color(1f, 0.75f, 0.45f);
             muzzleLight.intensity = 0;
             if (!srp) SetLayer(vm, VM_LAYER);
+            // SRP'de ayrı kamera yok: modeli kameraya doğru orantılı küçült. Perspektifte aynı görünür,
+            // ama oyuncu kapsülünün (0,4 m) içinde kaldığı için duvara girmez.
+            else vm.localScale = Vector3.one * 0.35f;
             Select(0, true);
         }
 
@@ -458,7 +461,7 @@ namespace UK
                 flash.transform.rotation = g.muzzle.rotation * Quaternion.Euler(0, 0, Random.Range(0, 360f));
                 flash.transform.localScale = Vector3.one * (cur == 1 ? 0.5f : cur == 2 ? 0.22f : 0.34f) * Random.Range(0.7f, 1.3f);
                 muzzleLight.transform.position = g.muzzle.position;
-                muzzleLight.intensity = 4;
+                muzzleLight.intensity = 4 * UKFx.LightMul;
             }
             else muzzleLight.intensity = 0;
             // sol kol: yumruk / parry

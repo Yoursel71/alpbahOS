@@ -25,6 +25,9 @@ namespace UK
         public static bool Down(UKKey k) => !Blocked && Raw(k, true);
         public static bool DownUnblocked(UKKey k) => Raw(k, true);
 
+        // Tekerlek: platform/sürüm farkı (±1, ±120) olmadan yalnız yön
+        static float Notch(float y) => y > 0.01f ? 1f : y < -0.01f ? -1f : 0f;
+
 #if ENABLE_LEGACY_INPUT_MANAGER
         static KeyCode Map(UKKey k)
         {
@@ -64,7 +67,7 @@ namespace UK
         }
 
         public static Vector2 MouseDelta => Blocked ? Vector2.zero : new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y"));
-        public static float Scroll => Blocked ? 0f : Input.mouseScrollDelta.y;
+        public static float Scroll => Blocked ? 0f : Notch(Input.mouseScrollDelta.y);
 #elif ENABLE_INPUT_SYSTEM && UK_INPUTSYSTEM
         static bool Raw(UKKey k, bool down)
         {
@@ -106,9 +109,9 @@ namespace UK
             return down ? c.wasPressedThisFrame : c.isPressed;
         }
 
-        // Yeni sistemde fare deltası piksel cinsindendir; eski sistemin birimine yaklaştır
-        public static Vector2 MouseDelta => Blocked || Mouse.current == null ? Vector2.zero : Mouse.current.delta.ReadValue() * 0.05f;
-        public static float Scroll => Blocked || Mouse.current == null ? 0f : Mouse.current.scroll.ReadValue().y / 120f;
+        // Yeni sistemde fare deltası piksel cinsindendir; eski sistemin birimine (piksel × 0,1) çevir
+        public static Vector2 MouseDelta => Blocked || Mouse.current == null ? Vector2.zero : Mouse.current.delta.ReadValue() * 0.1f;
+        public static float Scroll => Blocked || Mouse.current == null ? 0f : Notch(Mouse.current.scroll.ReadValue().y);
 #else
         static bool Raw(UKKey k, bool down) => false;
         public static Vector2 MouseDelta => Vector2.zero;
