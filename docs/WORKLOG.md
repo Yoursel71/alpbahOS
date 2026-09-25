@@ -1179,3 +1179,15 @@ PipeWire hatası için aynı gün ek tekrar: Guest `/tmp`'te 12 saniye 48 kHz st
 - DRI düzeltmesi sonrası konsol/seat'ten testi tekrarlamak gerekiyordu, ama Windows ekranı kilitlenip `mcp__computer-use__screenshot` "empty capture (0x0)" hatası vermeye başladı (muhtemelen kullanıcı bilgisayarı bırakıp uyudu). Yeni bir GUI kazası riskini almamak için (bkz. önceki giriş, gücü yanlışlıkla kapatma olayı) konsol denemesi burada durduruldu.
 - Temizlik: Builder ve Windows host'taki tüm geçici VHDX kopyaları (`claude-gen2-v3.vhdx`, `claude-share-gen2-*.vhdx`, `claude-gen2-*-fixed.vhdx` vb.) silindi. `/mnt/lfs` bu turda da hiç yazılmadı.
 - Değiştirilmeyen: `/mnt/lfs`. Ayrıntı, tam kanıt ve öncelik sıralı görev listesi: `docs/verification/m07-gen2-kwin-drm-diagnosis-2026-09-24.log` §3, §3b, §6.
+
+## 25 Eylül 2026 (sabah, dördüncü ek tur) — Claude
+
+Kullanıcı fiziksel olarak konsola (`admin`, tty1/seat0) `sh /tmp/seattest` yazdı
+(computer-use bu turda VMConnect'e tuş iletemedi; Windows admin SSH üzerinden
+native SendKeys de Session 0 izolasyonu yüzünden "Erişim engellendi" verdi).
+Seat-bound `kwin_wayland_wrapper` çıktısı, DRI düzeltmesiyle birlikte kesin
+teşhisi doğruladı: `kwin_scene_opengl` bir DRM render node bulamıyor
+(`/dev/dri/renderD1XX` yok, `CONFIG_DRM_VGEM is not set`). D-Bus+Mesa DRI
+düzeltmeleri doğru ve kalıcı ama yeterli değil; kalan tek blokaj kernel
+tarafında. `docs/verification/m07-gen2-kwin-drm-diagnosis-2026-09-24.log` §7'ye
+işlendi, `CURRENT.md` M07 satırı güncellendi.
