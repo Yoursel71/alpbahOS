@@ -1,0 +1,34 @@
+# alp prototipinin pytest paketi. Gerçek make/git kullanan testler de çalışır.
+# Yalnız test: derleme/ISO çıktısı üretmez ve saklamaz.
+name: alp testleri
+
+on:
+  push:
+    paths: ["docs/handoffs/claude/alp-prototype/**", ".github/workflows/alp-tests.yml"]
+  pull_request:
+    paths: ["docs/handoffs/claude/alp-prototype/**", ".github/workflows/alp-tests.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.12", "3.14"]
+    name: Python ${{ matrix.python }}
+    defaults:
+      run:
+        working-directory: docs/handoffs/claude/alp-prototype
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: docs/handoffs/claude/alp-prototype
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: pip install pytest
+      - run: python -m pytest tests/ -q
