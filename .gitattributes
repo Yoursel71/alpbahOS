@@ -14,3 +14,4 @@ docs/assets/*-ansi.txt -diff
 profiles/desktop/xdg/* text eol=lf
 profiles/desktop/lookandfeel/**/defaults text eol=lf
 profiles/shortcuts/generated/* text eol=lf
+profiles/desktop/bin/* text eol=lf

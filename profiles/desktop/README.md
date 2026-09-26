@@ -13,6 +13,7 @@ Durum: **M08 ilk dilim — kurulabilir paket hazır, gerçek Plasma oturumunda t
 | `xdg/kdeglobals` | `/etc/xdg/kdeglobals` | `LookAndFeelPackage=org.alpbahos.solid.desktop` |
 | `xdg/kwinrc` | `/etc/xdg/kwinrc` | Solid: blur/kontrast efekti kapalı |
 | `../shortcuts/generated/kglobalshortcutsrc` | `/etc/xdg/kglobalshortcutsrc` | Windows'a tanıdık kısayollar ([conflicts.md](../shortcuts/conflicts.md)) |
+| `bin/alpbah-gorunum` | `/usr/bin/alpbah-gorunum` (0755) | Solid/Glass geçiş aracı (§5.1) |
 
 Kurulum: `profiles/desktop/install-desktop-profile.sh --destdir <kök> [--datadir /usr/share] [--manifest dosya]`. Betik hedef kökü zorunlu ister, `/` için ayrıca `--allow-live-root` ister, farklı içerikli dosyanın üzerine `--force` olmadan yazmaz ve kurduğu her dosyayı SHA-256 ile manifest'e yazar. Builder `/mnt/lfs` rootfs'ine kurulum entegratörün (Codex) işidir. Plasma `/opt/kf6` önekiyle kurulu olduğundan `XDG_DATA_DIRS` içinde `/usr/share` bulunmalı (ayrı `--datadir` de verilebilir).
 
@@ -80,6 +81,12 @@ Panel içeriği (mockup §4.1'den):
 - Sağ: ağ, ses, pil/güç, hızlı ayarlar.
 - Dock sırası: Terminal, Dosyalar, Tarayıcı, Ayarlar, App Center, Uygulamalar.
 
+## 5.1 Görünüm profilleri: Solid / Glass / Liquid
+
+- **Solid (varsayılan):** opak paneller, KWin blur/kontrast efekti kapalı (`xdg/kwinrc`, düzen betiğinde `opacity = "opaque"`).
+- **Glass (seçenek):** [`bin/alpbah-gorunum`](bin/alpbah-gorunum) `glass` komutu kullanıcının `kwinrc` dosyasında blur/kontrastı açar (`BlurStrength=8`, `NoiseStrength=0`), efektleri KWin D-Bus ile yükler ve panelleri `translucent` yapar; `solid` geri alır, `durum` renderer ve profil bilgisini gösterir. KWin `supportInformation` yazılım rasterleştirici (softpipe/LLVMpipe) ya da OpenGL olmayan compositing bildirirse Glass reddedilir (`--zorla` ile aşılır). Değerler `tokens.json` → `profiles.*.kde` ile testte eşlenir. Gerçek oturumda çalıştırılmadı; performans ölçülmedi. Mevcut Gen2 test imajı softpipe/VGEM kullandığı için orada Glass'ın reddedilmesi beklenir.
+- **Liquid (deneysel):** uygulanmadı; plan ve ölçüt [`liquid-prototype.md`](liquid-prototype.md).
+
 ## 6. GTK/Qt eşleme
 
 - GTK2/3/4 senkronizasyonu için **kde-gtk-config** (hazır KDE bileşeni) kullanılır.
@@ -97,6 +104,7 @@ Panel içeriği (mockup §4.1'den):
 | Panel/dock | Yerel Plasma panelleriyle düzen yazıldı; çalıştırılmadı | Latte Dock kullanılmadı |
 | Atatürk duvar kâğıdı | Paket üretildi, güvenli alan testi geçti; Plasma'da gösterilmedi | `branding/ataturk-theme/wallpaper/` |
 | Kilit ekranı | Duvar kâğıdı varsayılanı hazır; KScreenLocker derlenmediği için çalışmaz | SCREENLOCK-01 |
+| Glass profili | `alpbah-gorunum` yazıldı, birim testleri geçti; oturumda çalıştırılmadı | Liquid yalnız plan |
 | GTK eşleme | Taslak, test edilmedi | kde-gtk-config planı var, çalıştırılmadı |
 | Qt (Plasma dışı) eşleme | Taslak, test edilmedi | qt5ct/qt6ct + Kvantum planı var |
 

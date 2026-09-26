@@ -3,6 +3,7 @@ import contextlib
 import copy
 import io
 import hashlib
+import importlib.machinery
 import importlib.util
 import json
 import re
@@ -219,6 +220,98 @@ class WallpaperTests(unittest.TestCase):
             builder.check_safe_area((1920, 1080), (100, 10, 400, 300))
         with Image.open(WALLPAPER / "contents" / "screenshot.png") as preview:
             self.assertEqual(preview.size, builder.SCREENSHOT_SIZE)
+
+
+def load_script(name, path):
+    loader = importlib.machinery.SourceFileLoader(name, str(path))
+    spec = importlib.util.spec_from_loader(name, loader)
+    module = importlib.util.module_from_spec(spec)
+    loader.exec_module(module)
+    return module
+
+
+GORUNUM = load_script("m08_gorunum", REPO / "profiles" / "desktop" / "bin" / "alpbah-gorunum")
+
+SUPPORT_SOFTPIPE = """Compositing
+===========
+Compositing is active
+Compositing Type: OpenGL
+OpenGL vendor string: Mesa
+OpenGL renderer string: softpipe
+Driver: softpipe
+"""
+SUPPORT_NVIDIA = SUPPORT_SOFTPIPE.replace("softpipe", "NVIDIA GeForce RTX 5060/PCIe/SSE2").replace(
+    "Driver: NVIDIA GeForce RTX 5060/PCIe/SSE2", "Driver: NVIDIA")
+
+
+class FakeRunner(GORUNUM.Runner):
+    def __init__(self, support):
+        super().__init__(dry_run=False)
+        self.support = support
+
+    def run(self, cmd, mutating=True):
+        self.log.append(cmd)
+        if "supportInformation" in cmd:
+            return json.dumps({"type": "s", "data": [self.support]})
+        return ""
+
+
+class ProfileSwitcherTests(unittest.TestCase):
+    def setUp(self):
+        self._tool = GORUNUM.tool
+        GORUNUM.tool = lambda name: name
+
+    def tearDown(self):
+        GORUNUM.tool = self._tool
+
+    def run_main(self, args, support):
+        runner = FakeRunner(support)
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()) as err:
+            code = GORUNUM.main(args, runner=runner)
+        mutating = [c for c in runner.log if "supportInformation" not in c]
+        return code, mutating, err.getvalue()
+
+    def test_parse_and_block_software_renderer(self):
+        renderer = GORUNUM.parse_renderer(SUPPORT_SOFTPIPE)
+        self.assertEqual(renderer["type"], "OpenGL")
+        self.assertTrue(any("yazılım" in r for r in GORUNUM.glass_blockers(renderer)))
+        self.assertEqual(GORUNUM.glass_blockers(GORUNUM.parse_renderer(SUPPORT_NVIDIA)), [])
+        self.assertTrue(GORUNUM.glass_blockers(GORUNUM.parse_renderer("Compositing Type: QPainter")))
+
+    def test_glass_refused_on_softpipe_without_changes(self):
+        code, mutating, err = self.run_main(["glass"], SUPPORT_SOFTPIPE)
+        self.assertEqual(code, 3)
+        self.assertEqual(mutating, [])
+        self.assertIn("softpipe", err)
+
+    def test_glass_applies_on_hardware(self):
+        code, mutating, _ = self.run_main(["glass"], SUPPORT_NVIDIA)
+        self.assertEqual(code, 0)
+        flat = [" ".join(c) for c in mutating]
+        self.assertIn("kwriteconfig6 --file kwinrc --group Plugins --key blurEnabled true", flat)
+        self.assertIn("kwriteconfig6 --file kwinrc --group Effect-blur --key BlurStrength 8", flat)
+        self.assertTrue(any("loadEffect s blur" in c for c in flat))
+        self.assertTrue(any("evaluateScript" in c and '"translucent"' in c for c in flat))
+        self.assertIn("kwriteconfig6 --file alpbahrc --group Gorunum --key Profil glass", flat)
+
+    def test_forced_glass_and_solid(self):
+        code, mutating, _ = self.run_main(["glass", "--zorla"], SUPPORT_SOFTPIPE)
+        self.assertEqual(code, 0)
+        code, mutating, _ = self.run_main(["solid"], SUPPORT_SOFTPIPE)
+        flat = [" ".join(c) for c in mutating]
+        self.assertEqual(code, 0)
+        self.assertIn("kwriteconfig6 --file kwinrc --group Effect-blur --key BlurStrength --delete", flat)
+        self.assertTrue(any("unloadEffect s blur" in c for c in flat))
+        self.assertTrue(any('"opaque"' in c for c in flat))
+
+    def test_values_match_tokens(self):
+        tokens = json.loads((REPO / "profiles" / "desktop" / "tokens.json").read_text(encoding="utf-8"))
+        for name, spec in GORUNUM.PROFILES.items():
+            self.assertEqual(tokens["profiles"][name]["kde"], spec, name)
+        xdg = ini((REPO / "profiles" / "desktop" / "xdg" / "kwinrc").read_text(encoding="utf-8"))
+        self.assertEqual(xdg["Plugins"]["blurEnabled"], str(GORUNUM.PROFILES["solid"]["blur"]).lower())
+        layout = (LNF / "contents" / "layouts" / "org.kde.plasma.desktop-layout.js").read_text(encoding="utf-8")
+        self.assertIn(f'opacity = "{GORUNUM.PROFILES["solid"]["panel_opacity"]}"', layout)
 
 
 class InstallScriptTests(unittest.TestCase):
