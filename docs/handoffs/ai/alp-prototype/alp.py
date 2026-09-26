@@ -75,6 +75,7 @@ class Paths:
     lock_file: Path
     cache_dir: Path
     keep_build: bool = False  # --keep-build: leave build/destdir trees in the cache
+    relocate: bool = False  # --relocate: build recipes for <root>/usr instead of /usr
 
     @classmethod
     def resolve(cls, root: str | None) -> "Paths":
@@ -988,6 +989,56 @@ def _require_recipe_dependencies(recipe: dict) -> None:
 # Method 1: System Build Recipes
 # --------------------------------------------------------------------------
 
+RECIPE_PREFIX_TOKEN = "@PREFIX@"
+DEFAULT_RECIPE_PREFIX = "/usr"
+
+
+def _recipe_prefix(paths: Paths) -> str:
+    """Install prefix substituted for @PREFIX@ in recipe build steps.
+
+    Normally /usr: the package is compiled for its final location under /
+    and --root is only a staging/testing root. With --relocate the package
+    is compiled for <root>/usr instead, so a non-/ root on a host distro
+    (e.g. ~/.local/share/alp/root) gets binaries that find their own data
+    files (fonts, units database, ...) at runtime.
+    """
+    if paths.relocate and paths.root != Path("/"):
+        return str(paths.root) + DEFAULT_RECIPE_PREFIX
+    return DEFAULT_RECIPE_PREFIX
+
+
+def _recipe_steps(recipe: dict, paths: Paths, destdir: str) -> list[list[str]]:
+    build = recipe["build"]
+    prefix = _recipe_prefix(paths)
+    return [
+        [arg.replace(RECIPE_PREFIX_TOKEN, prefix) for arg in step]
+        for step in (build["configure"], build["make"], build["make_install"] + [f"DESTDIR={destdir}"])
+    ]
+
+
+def _staged_tree(paths: Paths, destdir: Path) -> Path:
+    """Directory inside `destdir` that maps onto paths.root.
+
+    Without --relocate that is destdir itself. With --relocate, `make
+    install DESTDIR=...` stages files under destdir/<root>/..., so the tree
+    to merge is that subdirectory; anything staged outside it (an absolute
+    /etc path hardcoded by the Makefile) cannot be placed under the root
+    and is refused rather than silently dropped.
+    """
+    if not (paths.relocate and paths.root != Path("/")):
+        return destdir
+    staged = destdir / paths.root.relative_to(paths.root.anchor)
+    stray = [
+        p for p in destdir.rglob("*")
+        if (p.is_symlink() or not p.is_dir()) and staged not in p.parents
+    ]
+    if stray:
+        shown = ", ".join("/" + str(p.relative_to(destdir)) for p in stray[:5])
+        raise AlpError(f"--relocate: paket kök dizini dışına dosya kurdu: {shown}")
+    staged.mkdir(parents=True, exist_ok=True)
+    return staged
+
+
 def install_recipe(
     paths: Paths, entry: dict, index_dir: Path, dry_run: bool,
     db: dict | None = None, pkg_name: str | None = None, journal: FileJournal | None = None,
@@ -1000,11 +1051,7 @@ def install_recipe(
 
     source_url = resolve_source_url(recipe["source_url"], index_dir)
     log_path = paths.log_dir / f"{recipe['name']}-{recipe['version']}.build.log"
-    steps = [
-        recipe["build"]["configure"],
-        recipe["build"]["make"],
-        recipe["build"]["make_install"] + ["DESTDIR=<destdir>"],
-    ]
+    steps = _recipe_steps(recipe, paths, "<destdir>")
 
     if dry_run:
         # No network request, no disk write below this point: --dry-run must
@@ -1042,11 +1089,7 @@ def install_recipe(
         shutil.rmtree(destdir)
     destdir.mkdir(parents=True)
 
-    real_steps = [
-        recipe["build"]["configure"],
-        recipe["build"]["make"],
-        recipe["build"]["make_install"] + [f"DESTDIR={destdir}"],
-    ]
+    real_steps = _recipe_steps(recipe, paths, str(destdir))
     for step in real_steps:
         binary = step[0]
         if not _tool_available(binary, src_dir):
@@ -1061,7 +1104,7 @@ def install_recipe(
     config_files = set(recipe.get("config_files", []))
     db = db if db is not None else load_db(paths)
     merged = _merge_staged(
-        destdir, paths.root,
+        _staged_tree(paths, destdir), paths.root,
         config_files=config_files, old_record=None,
         other_owners=_other_owners(db, exclude=pkg_name or recipe["name"]),
         journal=journal,
@@ -1122,11 +1165,7 @@ def upgrade_recipe(
     destdir.mkdir(parents=True)
 
     log_path = paths.log_dir / f"{recipe['name']}-{recipe['version']}.upgrade.log"
-    steps = [
-        recipe["build"]["configure"],
-        recipe["build"]["make"],
-        recipe["build"]["make_install"] + [f"DESTDIR={destdir}"],
-    ]
+    steps = _recipe_steps(recipe, paths, str(destdir))
     for step in steps:
         binary = step[0]
         if not _tool_available(binary, src_dir):
@@ -1141,7 +1180,7 @@ def upgrade_recipe(
     db = db if db is not None else load_db(paths)
     other_owners = _other_owners(db, exclude=pkg_name or recipe["name"])
     merged = _merge_staged(
-        destdir, paths.root,
+        _staged_tree(paths, destdir), paths.root,
         config_files=config_files, old_record=old_record, other_owners=other_owners, journal=journal,
     )
     _drop_stale_files(paths.root, old_record, merged.installed, other_owners, journal=journal)
@@ -2244,6 +2283,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--index", help="Path to the local package index.json (not needed for adopt-base)")
     p.add_argument("--dry-run", action="store_true", help="Print intended actions, touch nothing persistent")
     p.add_argument("--json", action="store_true", help="Machine-readable JSON output for search/list (info is always JSON)")
+    p.add_argument("--relocate", action="store_true",
+                   help="Build recipes for <root>/usr instead of /usr, so packages run from a non-/ --root")
     p.add_argument("--keep-build", action="store_true", help="Keep build trees in var/lib/alp/cache after a successful install/upgrade")
 
     sub = p.add_subparsers(dest="command", required=True)
@@ -2315,6 +2356,7 @@ def main(argv: list[str] | None = None) -> int:
             paths.ensure()
             return cmd_list(load_db(paths), as_json=args.json)
         paths.keep_build = getattr(args, "keep_build", False)
+        paths.relocate = getattr(args, "relocate", False)
         if args.command == "update":
             return cmd_update(args, paths, index_path, index)
         if args.command == "recover":
