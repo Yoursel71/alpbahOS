@@ -1,0 +1,14 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "alpbahOS"
+            }
+        ],
+        "Description": "Mustafa Kemal Atatürk portresi (1932, PD-Turkey) ile alpbahOS gece dağları kompozisyonu",
+        "Id": "alpbahOS-Ataturk",
+        "License": "Fotoğraf: PD-Turkey (Wikimedia Commons File:Ataturk1930s.jpg); kompozisyon lisansı proje lisansıyla belirlenecek",
+        "Name": "alpbahOS Atatürk",
+        "Name[tr]": "alpbahOS Atatürk"
+    }
+}

@@ -1,0 +1,17 @@
+{
+    "KPackageStructure": "Plasma/LookAndFeel",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "alpbahOS"
+            }
+        ],
+        "Category": "",
+        "Description": "alpbahOS varsayılan Solid görünümü: koyu lacivert renkler, Atatürk duvar kâğıdı, üst panel ve dock",
+        "Description[tr]": "alpbahOS varsayılan Solid görünümü: koyu lacivert renkler, Atatürk duvar kâğıdı, üst panel ve dock",
+        "Id": "org.alpbahos.solid.desktop",
+        "License": "Proje lisansı belirlenecek (bkz. README.md)",
+        "Name": "alpbahOS Solid",
+        "Name[tr]": "alpbahOS Solid"
+    }
+}
