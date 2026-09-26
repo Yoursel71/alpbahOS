@@ -1219,7 +1219,7 @@ Kullanıcı M08/9/10'u devretti. Bölüşüm: M08 yapılandırma/tema/kısayol/a
 
 ## 26 Eylül 2026 — Claude, M08 ilk dilim: look-and-feel, Atatürk duvar kâğıdı, Windows kısayolları
 
-- Görev/sahip/dosya sınırı: M08 yapılandırma/tema/kısayol kısmı, Claude. Dosyalar yalnız `profiles/desktop/`, `profiles/shortcuts/`, `branding/`, `tests/test_m08_desktop_profile.py`, `docs/handoffs/claude/015-...`; rootfs, kernel, build ve VM'e dokunulmadı. Dal `claude/m08-lookandfeel-shortcuts` (taban main `a9bac38`), PR ile önerilir.
+- Görev/sahip/dosya sınırı: M08 yapılandırma/tema/kısayol kısmı, Claude. Dosyalar yalnız `profiles/desktop/`, `profiles/shortcuts/`, `branding/`, `tests/test_m08_desktop_profile.py`, `docs/handoffs/claude/015-...`; rootfs, kernel, build ve VM'e dokunulmadı. Dal `claude/m08-lookandfeel-shortcuts` (taban main `3aead65`), PR ile önerilir.
 - Ortam: YRSLF dışında bir Windows makinesi; Hyper-V/Builder/Gen2 erişimi yok. Upstream davranış KDE `v6.4.4` kaynak dosyalarından okundu.
 - Üretildi: `org.alpbahos.solid.desktop` look-and-feel paketi (renk şeması, Breeze tabanı, üst panel + dock düzeni), `alpbahOS-Ataturk` duvar kâğıdı paketi (PD-Turkey kaynaktan 5 çözünürlük, büyütme yok, güvenli alan denetimli), `alpbahos` sembol ikonu, `/etc/xdg` varsayılanları, `shortcuts.json` v1'den üretilen `kglobalshortcutsrc`, salt okunur canlı kısayol doğrulayıcısı ve çakışma korumalı kurulum betiği.
 - Kaynak koddan bulunan kısayol çakışmaları: Meta+Tab (KWin pencere geçişi), Meta+Up/Down (hızlı döşeme), Meta+R (Spectacle bölge kaydı), Meta+Shift+S (Spectacle açılışı); çözümleri `profiles/shortcuts/conflicts.md` §2.
