@@ -1,0 +1,6 @@
+# alpbahOS Solid profili KWin varsayılanı -- kurulum hedefi: /etc/xdg/kwinrc
+# Solid profilinde ağır blur/kontrast efekti yok (MASTER_PLAN §7.2, tokens.json
+# window.heavy_blur=false). Glass profili bunları ayrı bir dosyayla açacak; ölçüm yok.
+[Plugins]
+blurEnabled=false
+contrastEnabled=false
