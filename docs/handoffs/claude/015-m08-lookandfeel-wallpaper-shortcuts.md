@@ -2,7 +2,7 @@
 
 ```text
 Görev ID / durum: M08 ilk dilim (UI-01/UI-02/UI-03 uygulaması). Dosyalar kurulabilir durumda ve statik testlerden geçti; Gen2 imajına KURULMADI, gerçek Plasma oturumunda doğrulanmadı.
-Çalışılan host ve branch/commit: YRSLF dışında bir Windows 11 makinesi (Hyper-V/Builder/Gen2 erişimi yok), GitHub'dan yeni clone. Dal claude/m08-lookandfeel-shortcuts, taban main a9bac38. Bu belgeyle birlikte commit; PR ile main'e önerilir.
+Çalışılan host ve branch/commit: YRSLF dışında bir Windows 11 makinesi (Hyper-V/Builder/Gen2 erişimi yok), GitHub'dan yeni clone. Dal claude/m08-lookandfeel-shortcuts, taban main 3aead65. Bu belgeyle birlikte commit; PR ile main'e önerilir.
 Değişen dosyalar: aşağıda "Değişen dosyalar".
 Gerçekleştirilen davranış: aşağıda "Ne yapıldı".
 Çalıştırılan doğrulama ve sonuç: aşağıda "Doğrulama". Gen2 kurulum, ekran görüntüsü ve canlı kısayol testi ÇALIŞTIRILMADI.
