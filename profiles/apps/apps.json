@@ -1,0 +1,194 @@
+{
+  "$schema": "alpbahOS/apps/v1",
+  "durum": "Varsayılan uygulama profili (APPS-01'in Claude tarafı). Hiçbir uygulama Gen2 test imajında kurulu değil; ilişkiler upstream masaüstü dosyalarına göre yazıldı, gerçek oturumda test edilmedi.",
+  "kaynak": "docs/MASTER_PLAN.md §11, docs/DECISIONS.md P09",
+  "kurulum_hedefi": "/etc/xdg/mimeapps.list",
+  "tek_kaynak_notu": "mimeapps.list bu dosyadan profiles/apps/generate_mimeapps.py ile üretilir; üretilmiş dosya elle düzenlenmez.",
+  "dogrulama_kodlari": {
+    "upstream": "MIME türü uygulamanın upstream masaüstü dosyasındaki MimeType listesinde bulundu.",
+    "derleme_zamani": "Upstream MimeType listesi derleme sırasında üretiliyor (ör. Qt görüntü eklentileri, Ark eklentileri); kurulu dosyada doğrulanmalı.",
+    "blfs_adi": "Masaüstü dosya adı upstream'de değil BLFS kurulum adımında oluşuyor; kurulu sistemde doğrulanmalı."
+  },
+  "apps": [
+    {
+      "id": "files",
+      "ihtiyac": "Dosyalar",
+      "uygulama": "Dolphin",
+      "desktop": "org.kde.dolphin.desktop",
+      "kaynak": "KDE Gear (dolphin v25.08.1 referans)",
+      "mime": ["inode/directory"],
+      "dogrulama": "upstream",
+      "kabul": "Kopyala, geri al, arşiv aç, USB çıkar"
+    },
+    {
+      "id": "terminal",
+      "ihtiyac": "Terminal",
+      "uygulama": "Konsole + Zsh",
+      "desktop": "org.kde.konsole.desktop",
+      "kaynak": "KDE Gear (konsole v25.08.1 referans)",
+      "mime": [],
+      "dogrulama": "upstream",
+      "kabul": "Öneri/düzeltme ve alp tamamlama (profiles/shell/)"
+    },
+    {
+      "id": "settings",
+      "ihtiyac": "Ayarlar",
+      "uygulama": "System Settings",
+      "desktop": "systemsettings.desktop",
+      "kaynak": "Plasma systemsettings v6.4.4 (app/systemsettings.desktop)",
+      "mime": [],
+      "dogrulama": "upstream",
+      "kabul": "Dock ve Win+I ile açılır; Görünüm/Kısayollar/Uygulamalar modülleri"
+    },
+    {
+      "id": "text-editor",
+      "ihtiyac": "Not Defteri",
+      "uygulama": "KWrite",
+      "desktop": "org.kde.kwrite.desktop",
+      "kaynak": "KDE Gear kate deposu (apps/kwrite/data/org.kde.kwrite.desktop, v25.08.1)",
+      "mime": ["text/plain"],
+      "dogrulama": "upstream",
+      "kabul": "Türkçe UTF-8 ve Windows satır sonlu dosya"
+    },
+    {
+      "id": "pdf",
+      "ihtiyac": "PDF",
+      "uygulama": "Okular",
+      "desktop": "okularApplication_pdf.desktop",
+      "kaynak": "KDE Gear okular (generators/poppler/okularApplication_pdf.desktop, v25.08.1)",
+      "mime": ["application/pdf"],
+      "dogrulama": "upstream",
+      "not": "org.kde.okular.desktop yalnız okular arşiv türünü bildirir; PDF, poppler üretecinin masaüstü dosyasındadır.",
+      "kabul": "PDF aç, ara, yazdır"
+    },
+    {
+      "id": "images",
+      "ihtiyac": "Görseller",
+      "uygulama": "Gwenview",
+      "desktop": "org.kde.gwenview.desktop",
+      "kaynak": "KDE Gear gwenview (app/org.kde.gwenview.desktop.cmake, v25.08.1)",
+      "mime": ["image/png", "image/jpeg", "image/gif", "image/webp", "image/bmp", "image/tiff"],
+      "dogrulama": "derleme_zamani",
+      "not": "Gwenview MimeType listesi ${IMAGE_MIME_TYPES} ile derlemede Qt görüntü eklentilerinden üretilir; webp/tiff için kimageformats/qtimageformats gerekir.",
+      "kabul": "Yaygın biçimler, döndürme"
+    },
+    {
+      "id": "archives",
+      "ihtiyac": "Arşivler",
+      "uygulama": "Ark",
+      "desktop": "org.kde.ark.desktop",
+      "kaynak": "KDE Gear ark (app/org.kde.ark.desktop.cmake, v25.08.1)",
+      "mime": ["application/zip", "application/x-tar", "application/x-compressed-tar", "application/x-xz-compressed-tar", "application/x-7z-compressed", "application/vnd.rar"],
+      "dogrulama": "derleme_zamani",
+      "not": "Ark MimeType listesi (@SUPPORTED_ARK_MIMETYPES@) derlenen eklentilere göre oluşur; 7z/rar için libarchive/7zip/unrar desteği gerekir.",
+      "kabul": "ZIP/tar açma ve oluşturma"
+    },
+    {
+      "id": "screenshot",
+      "ihtiyac": "Ekran görüntüsü",
+      "uygulama": "Spectacle",
+      "desktop": "org.kde.spectacle.desktop",
+      "kaynak": "Plasma spectacle v6.4.4",
+      "mime": [],
+      "dogrulama": "upstream",
+      "kabul": "Bölge/pencere/ekran, kısayol (profiles/shortcuts/)"
+    },
+    {
+      "id": "media",
+      "ihtiyac": "Medya",
+      "uygulama": "VLC",
+      "desktop": "vlc.desktop",
+      "kaynak": "VideoLAN vlc 3.0.21 (share/vlc.desktop.mimetypes)",
+      "mime": ["video/mp4", "video/x-matroska", "video/webm", "video/x-msvideo", "video/mpeg", "video/quicktime", "video/ogg", "video/x-ms-wmv", "audio/mpeg", "audio/ogg", "audio/x-vorbis+ogg", "audio/flac", "audio/x-flac", "audio/x-wav", "audio/wav", "audio/mp4", "audio/x-m4a", "audio/aac", "audio/x-ms-wma"],
+      "dogrulama": "upstream",
+      "kabul": "Ses/video ve ses çıkışı seçimi"
+    },
+    {
+      "id": "calculator",
+      "ihtiyac": "Hesap makinesi",
+      "uygulama": "KCalc",
+      "desktop": "org.kde.kcalc.desktop",
+      "kaynak": "KDE Gear kcalc v25.08.1",
+      "mime": [],
+      "dogrulama": "upstream",
+      "kabul": "Günlük işlemler"
+    },
+    {
+      "id": "system-monitor",
+      "ihtiyac": "Sistem ve disk",
+      "uygulama": "Plasma System Monitor + Filelight",
+      "desktop": "org.kde.plasma-systemmonitor.desktop",
+      "kaynak": "Plasma plasma-systemmonitor v6.4.4; KDE Gear filelight (misc/org.kde.filelight.desktop, v25.08.1)",
+      "mime": [],
+      "dogrulama": "upstream",
+      "kabul": "Süreç/bellek/disk bilgisi"
+    },
+    {
+      "id": "browser",
+      "ihtiyac": "Tarayıcı",
+      "uygulama": "Firefox",
+      "desktop": "firefox.desktop",
+      "kaynak": "Mozilla Firefox (BLFS kurulumu masaüstü dosyasını elle oluşturur)",
+      "mime": ["text/html", "application/xhtml+xml", "x-scheme-handler/http", "x-scheme-handler/https"],
+      "dogrulama": "blfs_adi",
+      "not": "Dock'taki preferred://browser bu ilişkiden çözülür. Chrome ayrı, doğrulanmış kurulum seçeneğidir; varsayılan değildir.",
+      "kabul": "İnternet/TLS, indirme, varsayılan ilişki"
+    },
+    {
+      "id": "office-writer",
+      "ihtiyac": "Ofis — metin",
+      "uygulama": "LibreOffice Writer",
+      "desktop": "libreoffice-writer.desktop",
+      "kaynak": "LibreOffice; MIME listesi upstream core libreoffice-25-8 sysui/desktop/menus/writer.desktop ile doğrulandı, dosya adı BLFS kurulumunun libreoffice-*.desktop bağlarından",
+      "mime": ["application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/msword", "application/vnd.oasis.opendocument.text", "application/rtf"],
+      "dogrulama": "blfs_adi",
+      "kabul": "DOCX örnekleri; birebir Word garantisi yok"
+    },
+    {
+      "id": "office-calc",
+      "ihtiyac": "Ofis — tablo",
+      "uygulama": "LibreOffice Calc",
+      "desktop": "libreoffice-calc.desktop",
+      "kaynak": "LibreOffice; MIME listesi upstream calc.desktop (libreoffice-25-8) ile doğrulandı, dosya adı BLFS",
+      "mime": ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/vnd.ms-excel", "application/vnd.oasis.opendocument.spreadsheet", "text/csv"],
+      "dogrulama": "blfs_adi",
+      "kabul": "XLSX örnekleri"
+    },
+    {
+      "id": "office-impress",
+      "ihtiyac": "Ofis — sunu",
+      "uygulama": "LibreOffice Impress",
+      "desktop": "libreoffice-impress.desktop",
+      "kaynak": "LibreOffice; MIME listesi upstream impress.desktop (libreoffice-25-8) ile doğrulandı, dosya adı BLFS",
+      "mime": ["application/vnd.openxmlformats-officedocument.presentationml.presentation", "application/vnd.ms-powerpoint", "application/vnd.oasis.opendocument.presentation"],
+      "dogrulama": "blfs_adi",
+      "kabul": "PPTX örnekleri"
+    }
+  ],
+  "karar_bekleyen": [
+    {
+      "id": "windows-apps",
+      "ihtiyac": "Windows uygulamaları",
+      "uygulama": "Wine",
+      "desktop": "wine.desktop",
+      "mime": ["application/x-ms-dos-executable", "application/x-msdownload"],
+      "neden": "D22 Steam/Wine ile D32 saf 64-bit kararı çatışıyor (COMPAT-01). Karar verilmeden .exe ilişkisi yazılmaz; mimeapps.list'e girmez."
+    },
+    {
+      "id": "games",
+      "ihtiyac": "Oyun",
+      "uygulama": "Steam + Proton",
+      "desktop": "steam.desktop",
+      "mime": [],
+      "neden": "Steam Linux istemcisi 32-bit kullanıcı alanı ister; D32 ile çelişki kullanıcı kararını bekliyor."
+    },
+    {
+      "id": "store",
+      "ihtiyac": "Mağaza",
+      "uygulama": "alp grafik arayüzü",
+      "desktop": null,
+      "mime": [],
+      "neden": "alp mağaza işlem sözleşmesi (PKG-02) ve GUI yok; dock'a eklenmedi."
+    }
+  ]
+}
