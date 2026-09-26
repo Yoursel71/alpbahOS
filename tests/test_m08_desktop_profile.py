@@ -11,6 +11,7 @@ import shutil
 import subprocess
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
@@ -435,6 +436,58 @@ class PerfToolTests(unittest.TestCase):
         self.assertEqual(data["user_pss_mib"], 502.0)
         self.assertEqual(data["profile"], "glass")
         self.assertEqual(data["kernel"], "6.16.1-alpbahOS")
+
+
+OFFICE = load("m08_office", REPO / "profiles" / "apps" / "office" / "office_fixtures.py")
+
+
+class OfficeFixtureTests(unittest.TestCase):
+    def test_generated_documents_pass_check(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            out = Path(temp_dir)
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(OFFICE.main(["make", "--out", str(out)]), 0)
+                self.assertEqual(OFFICE.main(["check", str(out / "alpbah-test.docx"), str(out / "alpbah-test.xlsx")]), 0)
+            paragraphs, table = OFFICE.docx_text(out / "alpbah-test.docx")
+            self.assertIn(OFFICE.TURKISH, paragraphs)
+            self.assertIn("\t", paragraphs[2])
+            self.assertEqual(table, OFFICE.TABLE)
+
+    def test_detects_damaged_text(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            out = Path(temp_dir)
+            OFFICE.make_docx(out / "a.docx")
+            with zipfile.ZipFile(out / "a.docx") as z:
+                parts = {n: z.read(n) for n in z.namelist()}
+            # İ -> I: tipik yanlış Türkçe büyük harf dönüşümü
+            parts["word/document.xml"] = parts["word/document.xml"].replace("ĞÜŞİÖÇ".encode(), "ĞÜŞIÖÇ".encode())
+            with zipfile.ZipFile(out / "b.docx", "w") as z:
+                for name, data in parts.items():
+                    z.writestr(name, data)
+            self.assertTrue(OFFICE.check(out / "b.docx"))
+
+    def test_shared_strings_and_recomputed_formula(self):
+        # Excel/Calc kaydettiğinde dizgiler sharedStrings.xml'e taşınır ve formül '=' içermez.
+        S = OFFICE.S
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "shared.xlsx"
+            strings = ["Ürün", "Adet", "Çay", "Şeker"]
+            sst = "".join(f"<si><t>{s}</t></si>" for s in strings)
+            sheet = (f'<worksheet xmlns="{S}"><sheetData>'
+                     '<row r="1"><c r="A1" t="s"><v>0</v></c><c r="B1" t="s"><v>1</v></c></row>'
+                     '<row r="2"><c r="A2" t="s"><v>2</v></c><c r="B2"><v>12</v></c></row>'
+                     '<row r="3"><c r="A3" t="s"><v>3</v></c><c r="B3"><v>30</v></c></row>'
+                     '<row r="4"><c r="B4"><f>SUM(B2:B3)</f><v>42</v></c></row>'
+                     '</sheetData></worksheet>')
+            with zipfile.ZipFile(path, "w") as z:
+                z.writestr("xl/sharedStrings.xml", f'<sst xmlns="{S}">{sst}</sst>')
+                z.writestr("xl/worksheets/sheet1.xml", sheet)
+            self.assertEqual(OFFICE.check(path), [])
+            broken = Path(temp_dir) / "broken.xlsx"
+            with zipfile.ZipFile(broken, "w") as z:
+                z.writestr("xl/sharedStrings.xml", f'<sst xmlns="{S}">{sst}</sst>')
+                z.writestr("xl/worksheets/sheet1.xml", sheet.replace("<v>42</v>", "<v>0</v>"))
+            self.assertTrue(any("B4" in p for p in OFFICE.check(broken)))
 
 
 class InstallScriptTests(unittest.TestCase):
