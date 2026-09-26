@@ -8,3 +8,9 @@
 *.yml text eol=lf
 *.png binary
 docs/assets/*-ansi.txt -diff
+# KDE yapılandırma/paket dosyaları Linux hedefine kurulur; Windows checkout'ta da LF kalsın.
+*.js text eol=lf
+*.colors text eol=lf
+profiles/desktop/xdg/* text eol=lf
+profiles/desktop/lookandfeel/**/defaults text eol=lf
+profiles/shortcuts/generated/* text eol=lf
