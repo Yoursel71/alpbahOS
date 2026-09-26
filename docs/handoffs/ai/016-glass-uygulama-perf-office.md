@@ -2,7 +2,7 @@
 
 ```text
 Görev ID / durum: M08 Glass (D10/P04), APPS-01 Claude tarafı, PERF-01 yöntem/araç, OFFICE-01 plan. Hepsi dosya düzeyinde hazır ve birim testli; hiçbiri alpbahOS üzerinde çalıştırılmadı.
-Çalışılan host ve branch/commit: YRSLF dışında Windows makinesi (Hyper-V/Builder/Gen2 erişimi yok); dal claude/m08-lookandfeel-shortcuts, PR Yoursel71/alpbahOS#1'e eklendi.
+Çalışılan host ve branch/commit: YRSLF dışında Windows makinesi (Hyper-V/Builder/Gen2 erişimi yok); dal claude/glass-apps-perf-office (taban main 9c26ecf; M08 ilk dilim PR #1 ile birleşti).
 Değişen dosyalar: aşağıda.
 Gerçekleştirilen davranış: aşağıda.
 Çalıştırılan doğrulama ve sonuç: tests/test_m08_desktop_profile.py 36/36 (Windows, Python 3.14.4); OFFICE fixture'ları yerel Word/Excel 16.0 ile gidiş-dönüş GEÇTİ. Linux/VM testi çalıştırılmadı.
