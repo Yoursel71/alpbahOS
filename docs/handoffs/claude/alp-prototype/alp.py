@@ -2193,8 +2193,91 @@ def _validate_catalog(index: object, base_dir: Path) -> None:
             raise AlpError(f"Yeni katalog geçersiz: {name!r} için url/sha256 yok. Yerel katalog değiştirilmedi.")
 
 
+def _print_catalog_diff(paths: Paths, old_v: dict[str, str], new_v: dict[str, str]) -> None:
+    added = sorted(set(new_v) - set(old_v))
+    removed = sorted(set(old_v) - set(new_v))
+    changed = sorted(n for n in set(old_v) & set(new_v) if old_v[n] != new_v[n])
+    for n in added:
+        print(f"yeni      {n} {new_v[n]}")
+    for n in changed:
+        print(f"değişti   {n} {old_v[n]} -> {new_v[n]}")
+    for n in removed:
+        print(f"kalktı    {n} {old_v[n]}")
+    if not (added or changed or removed):
+        print("Katalog zaten güncel.")
+    installed = load_db(paths)["packages"]
+    for n in sorted(installed):
+        if n in new_v and installed[n].get("method") != "flatpak" and new_v[n] != "?":
+            if vercmp(new_v[n], installed[n]["version"]) > 0:
+                print(f"güncelleme var: {n} {installed[n]['version']} -> {new_v[n]}  (alp upgrade)")
+
+
+def _git(index_dir: Path, *args: str) -> str:
+    try:
+        done = subprocess.run(
+            ["git", "-C", str(index_dir), *args],
+            check=True, capture_output=True, text=True,
+        )
+    except FileNotFoundError as exc:
+        raise AlpError("Katalog bir git deposu ama 'git' kurulu değil.") from exc
+    except subprocess.CalledProcessError as exc:
+        detail = (exc.stderr or exc.stdout or "").strip()
+        raise AlpError(f"git {' '.join(args)} başarısız: {detail}") from exc
+    return done.stdout.strip()
+
+
+def _update_git_catalog(args: argparse.Namespace, paths: Paths, index_path: Path, index: dict) -> int:
+    """`alp update` for a catalog that is a git checkout and has no "source".
+
+    Fetches the upstream branch and fast-forwards to it; git handles auth
+    (e.g. a private GitHub catalog through `gh auth git-credential`). Never
+    merges or overwrites local edits: a diverged or dirty checkout is
+    refused. The new catalog is validated after the fast-forward and the
+    checkout is moved back if it does not validate.
+    """
+    index_dir = index_path.parent
+    paths.ensure()
+    with DbLock(paths.lock_file):
+        _require_no_pending(paths)
+        if _git(index_dir, "status", "--porcelain", "--untracked-files=no"):
+            raise AlpError(f"Katalog deposunda kaydedilmemiş değişiklik var ({index_dir}); güncelleme yapılmadı.")
+        try:
+            upstream = _git(index_dir, "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}")
+        except AlpError as exc:
+            raise AlpError(f"Katalog dalının uzak karşılığı yok ({index_dir}); güncelleme yapılmadı.") from exc
+        print(f"Katalog kaynağı: git ({upstream})")
+        _git(index_dir, "fetch", "--quiet")
+        old = _git(index_dir, "rev-parse", "HEAD")
+        new = _git(index_dir, "rev-parse", "@{u}")
+        if old == new:
+            print("Katalog zaten güncel.")
+            return 0
+        if _git(index_dir, "merge-base", old, new) != old:
+            raise AlpError(
+                f"Yerel katalog dalı {upstream} ile ayrışmış; alp yalnız ileri sarar. "
+                "Güncelleme yapılmadı."
+            )
+        old_v = _catalog_versions(index, index_dir)
+        if args.dry_run:
+            print(_git(index_dir, "diff", "--stat", old, new))
+            print("[dry-run] yerel katalog değiştirilmedi.")
+            return 0
+        _git(index_dir, "merge", "--ff-only", "--quiet", new)
+        try:
+            new_index = load_index(index_path)
+            _validate_catalog(new_index, index_dir)
+        except (AlpError, ValueError) as exc:
+            _git(index_dir, "reset", "--keep", old)
+            raise AlpError(f"Yeni katalog geçersiz: {exc}. Katalog eski hâline döndürüldü.") from exc
+        _print_catalog_diff(paths, old_v, _catalog_versions(new_index, index_dir))
+        print(f"Katalog güncellendi ({old[:7]} -> {new[:7]}).")
+        return 0
+
+
 def cmd_update(args: argparse.Namespace, paths: Paths, index_path: Path, index: dict) -> int:
     source = getattr(args, "source", None) or index.get("source")
+    if not source and (index_path.parent / ".git").exists():
+        return _update_git_catalog(args, paths, index_path, index)
     if not source:
         raise AlpError("Katalog kaynağı yok: --source verin ya da index.json'a \"source\" alanı ekleyin.")
     if str(source).startswith("http://"):
@@ -2236,24 +2319,9 @@ def cmd_update(args: argparse.Namespace, paths: Paths, index_path: Path, index: 
                 raise AlpError(f"Yeni katalog JSON değil: {exc}. Yerel katalog değiştirilmedi.") from exc
             _validate_catalog(new_index, versions_dir)
 
-            old_v = _catalog_versions(index, index_dir)
-            new_v = _catalog_versions(new_index, versions_dir)
-            added = sorted(set(new_v) - set(old_v))
-            removed = sorted(set(old_v) - set(new_v))
-            changed = sorted(n for n in set(old_v) & set(new_v) if old_v[n] != new_v[n])
-            for n in added:
-                print(f"yeni      {n} {new_v[n]}")
-            for n in changed:
-                print(f"değişti   {n} {old_v[n]} -> {new_v[n]}")
-            for n in removed:
-                print(f"kalktı    {n} {old_v[n]}")
-            if not (added or changed or removed):
-                print("Katalog zaten güncel.")
-            installed = load_db(paths)["packages"]
-            for n in sorted(installed):
-                if n in new_v and installed[n].get("method") != "flatpak" and new_v[n] != "?":
-                    if vercmp(new_v[n], installed[n]["version"]) > 0:
-                        print(f"güncelleme var: {n} {installed[n]['version']} -> {new_v[n]}  (alp upgrade)")
+            _print_catalog_diff(
+                paths, _catalog_versions(index, index_dir), _catalog_versions(new_index, versions_dir),
+            )
 
             if args.dry_run:
                 print("[dry-run] yerel katalog değiştirilmedi.")
@@ -2500,7 +2568,8 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--manifest-sha256", help="Manifest dosyasının beklenen SHA-256'sı (isteğe bağlı)")
 
     sp = command("update", "Paket kataloğunu (index.json veya .tar.gz katalog paketi) kaynaktan yeniler. "
-                           "Değiştirmeden önce farkı gösterir.",
+                           "Değiştirmeden önce farkı gösterir. Katalog bir git deposuysa ve \"source\" "
+                           "yoksa uzak daldan ileri sarar (git pull --ff-only).",
                  epilog="Örnek:\n  alp update\n  alp update --dry-run")
     sp.add_argument("--source", help="https:// adresi veya yerel yol (varsayılan: katalogdaki \"source\" alanı)")
     sp.add_argument("--sha256", help="İndirilen dosyanın beklenen SHA-256'sı (önerilir)")
