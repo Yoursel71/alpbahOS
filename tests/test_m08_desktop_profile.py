@@ -314,6 +314,58 @@ class ProfileSwitcherTests(unittest.TestCase):
         self.assertIn(f'opacity = "{GORUNUM.PROFILES["solid"]["panel_opacity"]}"', layout)
 
 
+MIMEAPPS = load("m08_mimeapps", REPO / "profiles" / "apps" / "generate_mimeapps.py")
+
+
+class AppProfileTests(unittest.TestCase):
+    def setUp(self):
+        self.profile = MIMEAPPS.load_profile()
+
+    def test_profile_valid_and_generated_current(self):
+        self.assertEqual(MIMEAPPS.validate(self.profile), [])
+        generated = (REPO / "profiles" / "apps" / "generated" / "mimeapps.list").read_text(encoding="utf-8")
+        self.assertEqual(MIMEAPPS.render(self.profile), generated)
+        parsed = ini(generated)
+        self.assertEqual(parsed["Default Applications"]["application/pdf"], "okularApplication_pdf.desktop;")
+        self.assertEqual(parsed["Default Applications"]["inode/directory"], "org.kde.dolphin.desktop;")
+        self.assertEqual(parsed["Default Applications"]["x-scheme-handler/https"], "firefox.desktop;")
+
+    def test_pending_decisions_are_not_emitted(self):
+        generated = (REPO / "profiles" / "apps" / "generated" / "mimeapps.list").read_text(encoding="utf-8")
+        for pending in self.profile["karar_bekleyen"]:
+            for mime in pending["mime"]:
+                self.assertNotIn(mime, generated)
+            if pending["desktop"]:
+                self.assertNotIn(pending["desktop"], generated)
+
+    def test_detects_duplicate_default(self):
+        broken = copy.deepcopy(self.profile)
+        broken["apps"][0]["mime"].append("application/pdf")
+        self.assertTrue(any("application/pdf" in e for e in MIMEAPPS.validate(broken)))
+        broken = copy.deepcopy(self.profile)
+        broken["apps"][0]["mime"].append("application/x-ms-dos-executable")
+        self.assertTrue(any("karar bekleyen" in e for e in MIMEAPPS.validate(broken)))
+
+    def test_master_plan_needs_covered(self):
+        needs = {a["ihtiyac"].split(" — ")[0] for a in self.profile["apps"]}
+        needs |= {p["ihtiyac"] for p in self.profile["karar_bekleyen"]}
+        for need in ("Dosyalar", "Terminal", "Not Defteri", "PDF", "Görseller", "Arşivler", "Ekran görüntüsü",
+                     "Medya", "Hesap makinesi", "Sistem ve disk", "Tarayıcı", "Ofis", "Mağaza",
+                     "Windows uygulamaları", "Oyun"):
+            self.assertIn(need, needs)
+
+    def test_dock_launchers_resolve(self):
+        layout = (LNF / "contents" / "layouts" / "org.kde.plasma.desktop-layout.js").read_text(encoding="utf-8")
+        desktops = {a["desktop"] for a in self.profile["apps"]}
+        for launcher in re.findall(r'"applications:([^"]+)"', layout):
+            self.assertIn(launcher, desktops)
+        mimes = {m for a in self.profile["apps"] for m in a["mime"]}
+        if "preferred://browser" in layout:
+            self.assertIn("x-scheme-handler/https", mimes)
+        if "preferred://filemanager" in layout:
+            self.assertIn("inode/directory", mimes)
+
+
 class InstallScriptTests(unittest.TestCase):
     def setUp(self):
         self.bash = shutil.which("bash")
