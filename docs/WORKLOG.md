@@ -1216,3 +1216,11 @@ işlendi, `CURRENT.md` M07 satırı güncellendi.
 
 ## 25 Eylül 2026 (akşam) — Claude, M08 işe başlama kaydı
 Kullanıcı M08/9/10'u devretti. Bölüşüm: M08 yapılandırma/tema/kısayol/alp-mağaza = Claude; M08 uygulama derlemeleri (Konsole, zsh, Dolphin, systemsettings, tarayıcı) ve M09 ISO = Codex; M10 M09'a bağlı. M07 masaüstü/panel ekran görüntüsü doğrulandı (runtimefix imajı). Guest'te terminal/zsh/dosya yöneticisi/ayarlar/tarayıcı yok — kabul için derlenmeleri gerek.
+
+## 26 Eylül 2026 — Claude, M08 ilk dilim: look-and-feel, Atatürk duvar kâğıdı, Windows kısayolları
+
+- Görev/sahip/dosya sınırı: M08 yapılandırma/tema/kısayol kısmı, Claude. Dosyalar yalnız `profiles/desktop/`, `profiles/shortcuts/`, `branding/`, `tests/test_m08_desktop_profile.py`, `docs/handoffs/claude/015-...`; rootfs, kernel, build ve VM'e dokunulmadı. Dal `claude/m08-lookandfeel-shortcuts` (taban main `a9bac38`), PR ile önerilir.
+- Ortam: YRSLF dışında bir Windows makinesi; Hyper-V/Builder/Gen2 erişimi yok. Upstream davranış KDE `v6.4.4` kaynak dosyalarından okundu.
+- Üretildi: `org.alpbahos.solid.desktop` look-and-feel paketi (renk şeması, Breeze tabanı, üst panel + dock düzeni), `alpbahOS-Ataturk` duvar kâğıdı paketi (PD-Turkey kaynaktan 5 çözünürlük, büyütme yok, güvenli alan denetimli), `alpbahos` sembol ikonu, `/etc/xdg` varsayılanları, `shortcuts.json` v1'den üretilen `kglobalshortcutsrc`, salt okunur canlı kısayol doğrulayıcısı ve çakışma korumalı kurulum betiği.
+- Kaynak koddan bulunan kısayol çakışmaları: Meta+Tab (KWin pencere geçişi), Meta+Up/Down (hızlı döşeme), Meta+R (Spectacle bölge kaydı), Meta+Shift+S (Spectacle açılışı); çözümleri `profiles/shortcuts/conflicts.md` §2.
+- Test: `python -m unittest tests.test_m08_desktop_profile` 19/19 geçti (Windows, Python 3.14.4, Pillow 12.2.0). Gen2 kurulum, Plasma ekran görüntüsü ve canlı kısayol testi çalıştırılmadı; adımlar [015](handoffs/claude/015-m08-lookandfeel-wallpaper-shortcuts.md).
