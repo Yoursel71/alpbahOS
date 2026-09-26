@@ -116,3 +116,11 @@ Doğrulama (Fedora 44, Python 3.14.7, GCC 16.2.1, glibc 2.43): `python3 -m pytes
 ## Türkçe yardım ekranı (26 Eylül 2026)
 
 `alp`, `alp help` ve `alp --help` komutları gruplu, örnekli bir Türkçe ekran gösterir (terminalde renkli, `NO_COLOR` desteklenir). `alp <komut> --help` de Türkçedir. Yanlış yazılan komut için öneri verilir (`alp instal` → `alp install`). Genel seçenekler (`--dry-run`, `--json`, `--root` …) artık komuttan önce veya sonra yazılabilir. Geliştirici seçenekleri: `alp help gelistirici`. Test: `tests/test_cli_help.py`; Fedora 44'te tam paket 198 geçti.
+
+## Katalog büyütme için: açıklamalı arama, `@DESTDIR@`, Flatpak sürümü (26 Eylül 2026)
+
+- Katalog girdileri isteğe bağlı `description` alır. `alp search` artık ad ve açıklamada arar, sonucu hizalı tablo olarak açıklamasıyla gösterir. Türkçe `İ` doğru eşleşir (`DÜZENLEYİCİ` → `düzenleyici`). `--json` çıktısına varsa `description` eklenir (ek alan, sözleşme bozulmaz).
+- Tarifte `@DESTDIR@` yer tutucusu: `make_install` bunu içerirse alp sona `DESTDIR=` eklemez, yer tutucuyu hazırlık dizinine çevirir. DESTDIR'ı standart dışı kullanan Makefile'lar için (ör. tree: `DESTDIR=@DESTDIR@@PREFIX@/bin`).
+- Flatpak girdisinde `version` yoksa plan sürüm yazmaz ("unknown" gösterilmez). Kurulumdan sonra gerçek sürüm `flatpak list --columns=application,version` ile okunup kaydedilir.
+
+Doğrulama: Fedora 44, 209 test geçti. Gerçek Flatpak kurulum/kaldırma: `alp install -y flatseal` → `flatseal (flatpak) -> 2.4.1 kuruldu`, `alp remove -y flatseal` temiz.

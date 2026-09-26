@@ -57,3 +57,33 @@ def test_global_options_work_before_and_after_command():
         assert args.dry_run is True and args.root == "/r" and args.name == "x"
     plain = parser.parse_args(["install", "x"])
     assert plain.dry_run is False and plain.root is None and plain.index is None
+
+
+def test_search_matches_description(capsys):
+    index = {"entries": {
+        "nano": {"method": "recipe", "description": "Kolay terminal metin düzenleyici"},
+        "vlc": {"method": "flatpak", "description": "Video oynatıcı"},
+    }}
+    assert alp.cmd_search(index, "DÜZENLEYİCİ") == 0
+    out = capsys.readouterr().out
+    assert "nano" in out and "Kolay terminal metin düzenleyici" in out and "vlc" not in out
+    assert alp.cmd_search(index, "video", as_json=True) == 0
+    assert '"description": "Video oynatıcı"' in capsys.readouterr().out
+
+
+def test_flatpak_version_read_from_flatpak_list():
+    from unittest import mock
+    listing = "org.other.App\t1.0\ncom.github.tchx84.Flatseal\t2.4.1\n"
+    done = mock.Mock(stdout=listing)
+    with mock.patch.object(alp.subprocess, "run", return_value=done):
+        assert alp._flatpak_installed_version("com.github.tchx84.Flatseal") == "2.4.1"
+        assert alp._flatpak_installed_version("org.missing.App") is None
+    with mock.patch.object(alp.subprocess, "run", side_effect=FileNotFoundError):
+        assert alp._flatpak_installed_version("x") is None
+
+
+def test_plan_hides_unknown_flatpak_version(capsys):
+    step = alp.PlanStep(name="vlc", action="install", old_version=None, new_version="unknown", reason="explicit")
+    alp._print_plan([step], {"entries": {"vlc": {"method": "flatpak"}}})
+    out = capsys.readouterr().out
+    assert "vlc [flatpak]" in out and "unknown" not in out

@@ -992,6 +992,7 @@ def _require_recipe_dependencies(recipe: dict) -> None:
 # --------------------------------------------------------------------------
 
 RECIPE_PREFIX_TOKEN = "@PREFIX@"
+RECIPE_DESTDIR_TOKEN = "@DESTDIR@"
 DEFAULT_RECIPE_PREFIX = "/usr"
 
 
@@ -1010,11 +1011,21 @@ def _recipe_prefix(paths: Paths) -> str:
 
 
 def _recipe_steps(recipe: dict, paths: Paths, destdir: str) -> list[list[str]]:
+    """configure/make/make_install with @PREFIX@ and @DESTDIR@ filled in.
+
+    `DESTDIR=<staging dir>` is appended to make_install, unless the recipe
+    places @DESTDIR@ itself -- for Makefiles that misuse the DESTDIR name
+    (tree uses it as the bin directory) and need the staging root spliced
+    into other variables instead.
+    """
     build = recipe["build"]
     prefix = _recipe_prefix(paths)
+    make_install = list(build["make_install"])
+    if not any(RECIPE_DESTDIR_TOKEN in arg for arg in make_install):
+        make_install.append(f"DESTDIR={destdir}")
     return [
-        [arg.replace(RECIPE_PREFIX_TOKEN, prefix) for arg in step]
-        for step in (build["configure"], build["make"], build["make_install"] + [f"DESTDIR={destdir}"])
+        [arg.replace(RECIPE_PREFIX_TOKEN, prefix).replace(RECIPE_DESTDIR_TOKEN, destdir) for arg in step]
+        for step in (build["configure"], build["make"], make_install)
     ]
 
 
@@ -1241,6 +1252,27 @@ def _warn_about_alpnew(alpnew: list[str]) -> None:
 # Method 2: Universal Apps (Flatpak wrapper)
 # --------------------------------------------------------------------------
 
+def _flatpak_installed_version(ref: str) -> str | None:
+    """Version flatpak reports for an installed app, or None.
+
+    Flathub apps update themselves, so a version pinned in the catalog would
+    go stale; the installed version is recorded instead. Column output is
+    not localized, unlike `flatpak info`.
+    """
+    try:
+        out = subprocess.run(
+            ["flatpak", "list", "--app", "--columns=application,version"],
+            check=True, capture_output=True, text=True,
+        ).stdout
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    for line in out.splitlines():
+        app, _, version = line.partition("\t")
+        if app.strip() == ref and version.strip():
+            return version.strip()
+    return None
+
+
 def install_flatpak(entry: dict, dry_run: bool) -> dict:
     remote = entry.get("remote", "flathub")
     ref = entry["flatpak_ref"]
@@ -1253,9 +1285,10 @@ def install_flatpak(entry: dict, dry_run: bool) -> dict:
             raise AlpError("flatpak bulunamadı; bu adım gerçek bir Linux masaüstü ortamı gerektirir.")
         subprocess.run(cmd, check=True)
 
+    version = entry.get("version") or (None if dry_run else _flatpak_installed_version(ref))
     return {
         "name": ref,
-        "version": entry.get("version", "unknown"),
+        "version": version or "unknown",
         "method": "flatpak",
         "status": "installed",
         "installed_at": _now(),
@@ -1413,20 +1446,38 @@ def remove_package(paths: Paths, db: dict, name: str, dry_run: bool, journal: Fi
 # CLI
 # --------------------------------------------------------------------------
 
+def _fold(text: str) -> str:
+    # casefold() turns Turkish "İ" into "i" + U+0307; drop the dot so
+    # "DÜZENLEYİCİ" still matches "düzenleyici".
+    return text.casefold().replace("\u0307", "")
+
+
 def cmd_search(index: dict, term: str, as_json: bool = False) -> int:
-    hits = sorted(n for n in index["entries"] if term.lower() in n.lower())
+    needle = _fold(term)
+    hits = sorted(
+        n for n, entry in index["entries"].items()
+        if needle in _fold(n) or needle in _fold(str(entry.get("description", "")))
+    )
     if as_json:
         # Machine-readable mode for callers like a PackageKit backend (see
         # design/packagekit-integration.md §2) that must not scrape the
         # human-readable text format below.
-        print(json.dumps([{"name": n, "method": index["entries"][n]["method"]} for n in hits], ensure_ascii=False))
+        rows = []
+        for n in hits:
+            row = {"name": n, "method": index["entries"][n]["method"]}
+            if index["entries"][n].get("description"):
+                row["description"] = index["entries"][n]["description"]
+            rows.append(row)
+        print(json.dumps(rows, ensure_ascii=False))
         return 0 if hits else 1
     if not hits:
         print(f"Eşleşme yok: {term}")
         return 1
+    width = max(len(n) for n in hits)
     for n in hits:
         entry = index["entries"][n]
-        print(f"{n}\t({entry['method']})")
+        description = entry.get("description", "")
+        print(f"{n.ljust(width)}  {('(' + entry['method'] + ')').ljust(9)}  {description}".rstrip())
     return 0
 
 
@@ -1803,9 +1854,10 @@ def _print_plan(steps: list[PlanStep], index: dict) -> None:
     print("İşlem planı:")
     for s in steps:
         version = f"{s.old_version} -> {s.new_version}" if s.action == "upgrade" else s.new_version
+        version = "" if version == "unknown" else f" {version}"
         note = "  (bağımlılık)" if s.action == "install" and s.reason == "dependency" else ""
         method = index["entries"][s.name]["method"]
-        print(f"  {_ACTION_LABEL[s.action]:<12}{s.name} {version} [{method}]{note}")
+        print(f"  {_ACTION_LABEL[s.action]:<12}{s.name}{version} [{method}]{note}")
 
 
 def _install_one(
@@ -1886,7 +1938,9 @@ def _run_plan(
                 )
             raise
         done.append(step.name)
-        print(f"{tag}{step.name} ({entry['method']}) -> {record.get('version')} {_ACTION_DONE[step.action]}.")
+        shown = record.get("version")
+        shown = "" if shown in (None, "unknown") else f" -> {shown}"
+        print(f"{tag}{step.name} ({entry['method']}){shown} {_ACTION_DONE[step.action]}.")
 
 
 def _plan_or_refuse(index: dict, installed: dict, steps: list[PlanStep]) -> None:
