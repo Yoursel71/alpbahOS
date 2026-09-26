@@ -8,7 +8,7 @@ Durum (26 Eylül 2026): **plan ve test belgesi üreticisi hazır; alpbahOS üzer
 
 **Referans doğrulama (26 Eylül 2026, bu depoyu hazırlayan Windows makinesi):** Microsoft Word 16.0 ve Excel 16.0 üretilen dosyaları hatasız açtı; Excel `B4` için `=SUM(B2:B3)` = 42 hesapladı. Word/Excel ile yeniden kaydedilen dosyalar `check` ile GEÇTİ. Bu, belgelerin geçerli OOXML olduğunu gösterir; alpbahOS/LibreOffice sonucu değildir. Office çıktıları yazar bilgisi taşıdığı için repoya eklenmedi.
 
-## 2. LibreOffice (P09, D22/D32'den bağımsız — önce bu)
+## 2. LibreOffice (P09 — önce bu)
 
 | # | Senaryo | Adım | Geçti ölçütü |
 |---|---|---|---|
@@ -24,11 +24,11 @@ Durum (26 Eylül 2026): **plan ve test belgesi üreticisi hazır; alpbahOS üzer
 
 Gerekli paketler (Codex BLFS): LibreOffice, Carlito ve Caladea fontları (Calibri/Cambria metrik uyumu), Liberation fontları, hunspell + Türkçe sözlük, CUPS (yazdırma).
 
-## 3. Microsoft Office / Wine — karar bekliyor
+## 3. Microsoft Office / Wine — yalnız 64-bit (D35)
 
-Bu bölüm **D22/D32 çatışması (COMPAT-01) çözülmeden uygulanmaz ve sonuç vaat edilmez.** Wine .exe ilişkisi de bu yüzden `mimeapps.list`'e yazılmadı (`profiles/apps/apps.json` → `karar_bekleyen`).
+Kullanıcı 26 Eylül 2026'da yalnız 64-bit sistemi seçti (D35): 32-bit Unix kütüphanesi/multilib yok, Wine yalnız yeni WoW64 moduyla kurulur. Wine derlenip COMPAT-01 testi geçene kadar `.exe` ilişkisi `mimeapps.list`'e yazılmaz (`profiles/apps/apps.json` → `dahil_degil`) ve Office sonucu vaat edilmez.
 
-Karar sonrası plan (MASTER_PLAN §11): Office 2016, 2019 ve 2021 için ayrı temiz Wine prefix'i; kullanıcının lisanslı kurulum medyası (ISO'ya gömülmez); Click-to-Run/MSI ayrımı ve tam sürüm kaydı; her sürümde W1 kurulum, W2 Word'de `alpbah-test.docx` aç/kaydet (`check`), W3 Excel'de `alpbah-test.xlsx` (formül 42), W4 PDF/yazdır, W5 Türkçe Q giriş, W6 kapat/yeniden aç. D32 korunursa yalnız 64-bit Office ve Wine'ın yeni WoW64 modu denenebilir; bu yolun Office kurucusu için çalıştığı doğrulanmadı.
+Plan (MASTER_PLAN §11): Office 2016, 2019 ve 2021 için ayrı temiz Wine prefix'i; kullanıcının lisanslı kurulum medyası (ISO'ya gömülmez); Click-to-Run/MSI ayrımı ve tam sürüm kaydı; her sürümde W1 kurulum, W2 Word'de `alpbah-test.docx` aç/kaydet (`check`), W3 Excel'de `alpbah-test.xlsx` (formül 42), W4 PDF/yazdır, W5 Türkçe Q giriş, W6 kapat/yeniden aç. WoW64 modu 32-bit Windows programlarını da 32-bit Unix kütüphanesi olmadan çalıştırmayı hedefler; 32-bit ve 64-bit Office kurucularının bu yolda çalıştığı doğrulanmadı, ikisi ayrı satır olarak kaydedilir.
 
 ## 4. Kayıt
 

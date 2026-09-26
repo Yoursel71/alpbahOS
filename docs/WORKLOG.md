@@ -1231,3 +1231,8 @@ Kullanıcı M08/9/10'u devretti. Bölüşüm: M08 yapılandırma/tema/kısayol/a
 - Glass: `profiles/desktop/bin/alpbah-gorunum` (KWin blur/contrast + panel opaklığı; yazılım renderer'da reddeder). Uygulama profili: `profiles/apps/` → `/etc/xdg/mimeapps.list`. PERF-01: `profiles/perf/` (KWin perf CSV çözümleyici, bellek toplayıcı). OFFICE-01: `profiles/apps/office/` (plan + DOCX/XLSX gidiş-dönüş denetimi; yerel Word/Excel 16.0 ile geçti).
 - İkinci göz inceleme: M07/M09 için anılan dört betik/kanıt dosyası git'te yok; `apply-m2-rootfs-fixes.sh` rootfs `alp.py`yi e8b0376'ya döndürebilir; 8 betikte `set -e` altında `! komut` denetimleri etkisiz. Ayrıntı [017](handoffs/claude/017-codex-betik-incelemesi.md); betikler değiştirilmedi.
 - Test: `tests/test_m08_desktop_profile.py` 36/36 (Windows). Ayrıntı [016](handoffs/claude/016-glass-uygulama-perf-office.md).
+
+## 26 Eylül 2026 — Kullanıcı kararı D35: yalnız 64-bit
+
+- Kullanıcı D22/D32 çatışması için "sadece 64 bit" dedi. `docs/DECISIONS.md`'ye D35 eklendi; D22 daraltıldı, açık kararlar tablosundan D22/D32 satırı kaldırıldı. MASTER_PLAN §1/§3/§3.1/§3.2/§11, AGENTS.md, CLAUDE.md, README.md, BACKLOG COMPAT-01, `profiles/apps/` ve OFFICE-01 planı aynı anda güncellendi.
+- Sonuç: multilib/32-bit kullanıcı alanı eklenmez; Steam istemcisi kapsam dışı; Wine yalnız WoW64 moduyla kurulup COMPAT-01'de test edilecek. Flatpak Steam gibi kapsayıcı içi 32-bit çalışma zamanları değerlendirilmedi, kullanıcı istemeden eklenmez. `check_docs.py` 0 bulgu.

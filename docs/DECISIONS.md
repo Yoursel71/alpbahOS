@@ -29,7 +29,7 @@ Tarih: 21 Eylül 2026. Durum: Kullanıcı cevapları işlendi; uygulamaya hazır
 | D19 | Kabul | Mevcut mockup düzeni korunacak; premium minimalist solid görünüm. | Cevap 13/14 |
 | D20 | Kabul | Varsayılan Türkçe arayüz ve Türkçe Q klavye. | Cevap 15 |
 | D21 | Kabul | Tarayıcı, not defteri, PDF ve yaygın temel uygulamalar hazır gelsin; sürücü kapsamı geniş olsun. | Cevap 16 |
-| D22 | Kabul | Steam çalışsın, Wine hazır gelsin; Word uyumluluğu istendi. | Cevap 17 |
+| D22 | Kabul — D35 ile daraltıldı (26 Eylül 2026) | Steam çalışsın, Wine hazır gelsin; Word uyumluluğu istendi. D35 gereği Steam istemcisi kapsam dışı; Wine ve Word hedefi yalnız 64-bit sistemde (WoW64) sürer. | Cevap 17; D35 |
 | D23 | Kabul | Office hedef ailesi 2016/2019/2021; tam sürüm/kurulum tipi henüz belirtilmedi. | Office takip yanıtı |
 | D24 | Kabul | Kullanıcı donanım hedefi, özel uygulama sırası ve iş bölümünü teknik değerlendirmeye bıraktı. | Cevap 12/18/26 |
 | D25 | Kabul | Akıcı, hızlı, kişiselleştirilebilir animasyonlar. | Cevap 19 |
@@ -42,20 +42,21 @@ Tarih: 21 Eylül 2026. Durum: Kullanıcı cevapları işlendi; uygulamaya hazır
 | D32 | Kabul | alpbahOS ilk sürümünde 32-bit kullanıcı alanı/multilib desteği olmayacak; saf x86_64/64-bit devam edilecek. M03'ün ELF32/multilib kabul ölçütü bu ürün kararıyla kapsam dışıdır; 32-bit Steam/Wine uyumluluğu vaat edilmez. | Kullanıcı kararı, 22 Eylül 2026 |
 | D33 | Teknik seçim | Mevcut doğrulanmış taban LFS 12.4-systemd olarak korunacak ve BLFS de 12.4-systemd ile eşleştirilecek. Ana plandaki 13.1 hedefinden sapma bilinçli sürüm sabitlemesidir: M1 rootfs, kernel/boot imajı ve tekrar kullanılacak mevcut sistem 12.4 ile üretildi; BLFS 13.1 paketlerini bu tabana karıştırmak kitap uyumluluğunu ve tekrarlanabilirliği zedeler. 13.1'e geçiş bu iş kapsamında tam temel sistemi yeniden üretmeyi gerektireceğinden, M2 için çalışan tabanı yeniden kurmak yerine uyumlu 12.4 BLFS seçildi. | Codex'in M2 sürüm uyumluluğu kararı, 22 Eylül 2026; uygulama kanıtı: `docs/M2_BLFS_MANIFEST.md`, M1/M2 kayıtları `docs/WORKLOG.md` |
 | D34 | Kullanıcı kararı — M04 kısmi kabul; tam defter M09'a ertelendi | M04'ün kısmi kabul ölçütü: LFS 12.4 sürüm hedefleri doğrulanır; Gen1/BIOS ve Gen2/UEFI boot kanıtı bulunur; `alp` sahipsiz mevcut dosyanın üzerine yazmaz; bu karardan sonra `alp` ile kurulan her paket Alp sahiplik kaydına girer. M04, **“Kısmi kabul, ertelenen borç: tam sahiplik defteri, M09'da kapanacak”** olarak kalır; 79 paketlik tarihsel paket→dosya sahiplik defteri M09'un temiz, tekrarlanabilir imaj üretiminde kanıtlanıp kapatılır. Bu karar mevcut base rootfs'in tüm dosyalarını Alp DB'ye kaydettiği veya 79 geçmiş kurulumun gözlemlendiği anlamına gelmez. | Kullanıcı kararı, 24 Eylül 2026; sürüm matrisi `docs/verification/m04-lfs-12.4-package-coverage-2026-09-24.md`; boot kayıtları `docs/WORKLOG.md`; [Builder rootfs Alp SHA-256 ve test kanıtı](verification/m04-alp-rootfs-installed-code-audit-2026-09-24.log); Alp testleri `docs/handoffs/claude/alp-prototype/tests/test_alp.py` ve `test_base_adoption.py` |
+| D35 | Kullanıcı kararı — yalnız 64-bit | D22/D32 çatışması D32 lehine çözüldü: alpbahOS host sistemi yalnız x86_64/64-bit kalır; multilib, lib32, 32-bit glibc ve 32-bit grafik yığını eklenmez. Sonuçları: (1) Valve'ın Linux Steam istemcisi 32-bit kullanıcı alanı istediği için desteklenmez ve vaat edilmez; (2) Wine yalnız 32-bit Unix kütüphanesi gerektirmeyen yeni WoW64 moduyla (Wine 11) kurulur; 32-bit Windows programlarının bu modda çalışması COMPAT-01 testinden önce vaat edilmez; (3) Word/Office testleri bu Wine yolunda yapılır (OFFICE-01); (4) D22'nin Steam kısmı kapsam dışıdır, Wine ve Word kısmı sürer. Kendi 32-bit çalışma zamanını kapsayıcı içinde getiren dağıtımlar (ör. Flatpak Steam) bu kararda değerlendirilmedi; kullanıcı ayrıca istemeden eklenmez. | Kullanıcı kararı, 26 Eylül 2026 ("sadece 64 bit") |
 
 ## Teknik seçimler — uygulama/test durumu
 
 | ID | Teknik seçim | Gerekçe / doğrulanması gereken |
 |---|---|---|
 | P01 | **Kapalı — kullanıcı kararı:** 32-bit desteği ve multilib yok; saf x86_64/64-bit devam. | Kullanıcı açıkça 32-bit/multilib istemedi. D32 ürün kararını, D33 LFS 12.4 + BLFS 12.4 sürüm eşleşmesinin gerekçesini kaydeder. M03 ELF32 ölçütü uygulanmayacak; bu karar kod veya build değişikliği gerektirmiyor. |
-| P02 | KDE Plasma / KWin, Wayland öncelikli | X11/Xwayland kapalı build Steam/Wine/X11 uygulaması hedefleriyle uyuşmuyor. Karar açık; P02'nin X11 uyumluluk yolu kullanıcı yanıtı ve build maliyeti değerlendirmesi bekliyor. |
+| P02 | KDE Plasma / KWin, Wayland öncelikli | X11/Xwayland kapalı build Wine/X11 uygulaması hedefleriyle uyuşmuyor (Steam D35 ile kapsam dışı). Karar açık; P02'nin X11 uyumluluk yolu kullanıcı yanıtı ve build maliyeti değerlendirmesi bekliyor. |
 | P03 | Konsole + Zsh + autosuggestions + syntax-highlighting | Öneri kabulü ayrı, çalıştırma ayrı. |
 | P04 | Varsayılan alpbah-solid, seçenek Glass ve deneysel Liquid | Üst panel/dock düzeni korunur; RAM bütçesi önce gelir. |
 | P05 | **Terk edildi (21 Eylül 2026), bkz. D31/P13.** ~~pacman/libalpm + ince pkg arayüzü + Discover/PackageKit alpm~~ | ~~Tek veritabanı, kendi depo; entegrasyon testi geçmezse gerekçeli alternatif.~~ Kullanıcı M02 testini beklemeden `alp` lehine gerekçeli öncelik değiştirdi. |
 | P06 | Hyper-V Gen2 builder; Gen1 BIOS ve Gen2 UEFI test kapsamı | Gen1 test VM kayıtları silindi; Gen1 sonuçları tarihsel kanıttır. Güncel canlı hedef Gen2'dir; ihtiyaç olursa Gen1 testi için yeni VM kaydı ayrıca oluşturulur. Gerçek Builder ayarı 4 vCPU, 3 GiB başlangıç/en az ve 6 GiB en çok RAM. Testler sırayla, 300 GB toplam bütçe. |
 | P07 | Stable paket kümesi + yerel testing; kullanıcı başlatmalı güncelleme | Yeni kullanıcı ve sınırlı günlük bakım zamanı. |
 | P08 | İlk düşük kaynak hedefi 4 GiB eski x86_64; idle bellek <=1 GiB tasarım hedefi | Ölçülmeden minimum gereksinim diye yayımlanmaz. |
-| P09 | Hazır temel KDE uygulamaları, Firefox, LibreOffice, VLC, Wine, Steam | Chrome kurulumu ayrı doğrulama; Office sürümleri ayrı test. |
+| P09 | Hazır temel KDE uygulamaları, Firefox, LibreOffice, VLC, Wine (yalnız WoW64, D35) | Chrome kurulumu ayrı doğrulama; Office sürümleri ayrı test. Steam D35 ile kapsam dışı. |
 | P10 | Calamares kurucu; önce sanal diskler | BIOS/UEFI, offline, dual-boot testleri; gerçek disk yazımı ayrı yetki gerektirir. |
 | P11 | Codex altyapı/entegrasyon (LFS/BLFS, kernel, Hyper-V, ISO); Claude masaüstü/tema/terminal UX **+ paket motoru (`alp`, D31 ile 21 Eylül 2026'da eklendi)** | Ayrı branch ve worktree; paylaşılan rootfs tek yazıcı. `alp`'in recipes/index/core içeriği ayrı repoda ([alpbahOS-alp](https://github.com/Yoursel71/alpbahOS-alp)), bu reponun `recipes/`/`packaging/` dosya sınırıyla çakışmaz. |
 | P12 | Türkçe Q, tr_TR.UTF-8; Europe/Istanbul değiştirilebilir varsayılan | Dil/klavye kullanıcı tercihi; saat dilimi mevcut bağlamdan seçildi. |
@@ -65,12 +66,11 @@ Tarih: 21 Eylül 2026. Durum: Kullanıcı cevapları işlendi; uygulamaya hazır
 
 | Konu | Seçenekler ve maliyet | Çakışan hedef / durum |
 |---|---|---|
-| X11 uygulama uyumluluğu | QtBase XCB, Xwayland ve X11 kullanıcı alanını sonradan eklemek; ek kaynak/build alanı, bağımlılıklar, bakım ve test gerektirir. Alternatif: ilk sürümü yalnız Wayland uygulamalarıyla sınırlamak. | Mevcut QtBase XCB kapalı ve KWin X11 kapalı; P02 uyumluluk yolu ile Wine/Steam görsel gereksinimleri henüz karşılanmıyor. |
+| X11 uygulama uyumluluğu | QtBase XCB, Xwayland ve X11 kullanıcı alanını sonradan eklemek; ek kaynak/build alanı, bağımlılıklar, bakım ve test gerektirir. Alternatif: ilk sürümü yalnız Wayland uygulamalarıyla sınırlamak. | Mevcut QtBase XCB kapalı ve KWin X11 kapalı; P02 uyumluluk yolu ile Wine görsel gereksinimleri henüz karşılanmıyor. |
 | KWin kilit ekranı | KScreenLocker'ı ve gereken Qt XCB/X11 greeter bağımlılıklarını geri getirmek; ek bağımlılık, derleme ve oturum testi gerekir. Alternatif: kilit ekranı olmadan devam etmek; D09'u karşılamaz ve oturum kilitlenemez. | `KWIN_BUILD_SCREENLOCKER=OFF`; D09 Atatürk temalı kilit ekranı isteğiyle çelişiyor. Kilit ekranını geri getirme işi BACKLOG'da açık. |
 | Mesa renderer | LLVM etkinleştirip llvmpipe kurmak; LLVM toolchain'i derleme süresini, disk kullanımını ve RAM talebini artırır. Alternatif: daha hafif softpipe ile kalmak; animasyon/perf hedefi risk altında kalır. | Mevcut doğrulama softpipe. D25 akıcı animasyon hedefinin performans kanıtı yok. |
-| D22 Steam/Wine ve D32 saf 64-bit | (a) D32'yi değiştirip multilib ve 32-bit grafik/glibc yığınını desteklemek; (b) D32'yi koruyup Steam istemci hedefini/Steam oyun beklentisini kaldırmak veya daraltmak. | D22 Steam ve Wine'ı ister, D32 ilk sürümde 32-bit kullanıcı alanını reddeder. Wine 11'in yeni WoW64 modu 32-bit Windows uygulamalarını 32-bit Unix kütüphaneleri olmadan çalıştırabilir; Valve'ın Linux Steam istemcisi README'si hâlâ 32-bit glibc ve grafik sürücüsü istiyor. Bu araştırma kullanıcı kararının yerine geçmez. |
 
-Güncel kaynaklar: [Wine 11.0 WoW64 duyurusu](https://list.winehq.org/hyperkitty/list/wine-announce%40list.winehq.org/thread/MXULWEMXQ5C24UEJ2STHPIUHNOZ7AZPQ/), [Valve Steam for Linux gereksinimleri](https://github.com/ValveSoftware/steam-for-linux/blob/master/README.md).
+D35 gerekçesinin kaynakları: [Wine 11.0 WoW64 duyurusu](https://list.winehq.org/hyperkitty/list/wine-announce%40list.winehq.org/thread/MXULWEMXQ5C24UEJ2STHPIUHNOZ7AZPQ/), [Valve Steam for Linux gereksinimleri](https://github.com/ValveSoftware/steam-for-linux/blob/master/README.md).
 
 ## Yanıtlar ve kalan uygulama ayrıntıları
 
@@ -82,7 +82,7 @@ Güncel kaynaklar: [Wine 11.0 WoW64 duyurusu](https://list.winehq.org/hyperkitty
 | Q04 | Hedef tarih, günlük çalışma süresi, gece derleme imkânı? | 1–2 saat/gün; kesin tarih verilmedi, gece çalışması varsayılmaz |
 | Q05 | Alan ve derleme ortamı? | Hyper-V, 300 GB; F: SATA HDD olarak tespit edildi |
 | Q06 | Claude ortamı? | Claude Code; aynı makine için ayrı worktree hazırlanacak |
-| Q07 | Uygulama ve oyunlar? | Steam, Wine, Word, temel araçlar; belirli oyun listesi daha sonra |
+| Q07 | Uygulama ve oyunlar? | Steam, Wine, Word, temel araçlar istendi; Steam D35 (yalnız 64-bit) ile kapsam dışı |
 | Q08 | Dil/klavye? | Türkçe, Türkçe Q; saat dilimi teknik seçim P12 |
 | Q09 | Hedef cihazlar? | Seçim devredildi; eski/orta/RTX test sınıfları oluşturuldu |
 | Q10 | Güncelleme/güvenlik? | Stable seçildi; ayarlardan erişim. Secure Boot ve şifreleme sonraki araştırma |

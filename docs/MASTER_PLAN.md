@@ -21,7 +21,7 @@ Kullanıcının kabul ettiği deneyim:
 - Düşük RAM tüketimi ve eski x86_64 bilgisayarları kapsayan test matrisi.
 - Türkçe arayüz, Türkçe Q klavye; mevcut mockup yerleşimi korunur.
 - Premium, minimalist, opak temel profil; kişiselleştirilebilir akıcı animasyonlar.
-- Steam ve Wine; Office 2016/2019/2021 ailesi için sürüm bazlı uyumluluk testleri.
+- Wine (yalnız 64-bit sistemde WoW64, D35); Office 2016/2019/2021 ailesi için sürüm bazlı uyumluluk testleri. Steam istemcisi D35 ile kapsam dışı.
 - Legacy BIOS ve UEFI; daha sonraki kurucuda internetsiz kurulum ve Windows yanında kurulum.
 - Yerel Hyper-V geliştirme, 300 GB depolama bütçesi; bulut derleme/depolama kullanılmaz. C: NVMe çalışma alanı, F: SATA HDD artifact/build-VM alanıdır.
 - Günde 1–2 saat kullanıcı katkısı; Claude Code ve Codex için özel Git deposunda ayrı çalışma alanları.
@@ -38,7 +38,7 @@ Hyper-V PowerShell modülü mevcut. Normal yerel PowerShell oturumu VM envanter 
 
 Mevcut dosyalar tasarım belgeleri ve logo varlıklarıdır. Linux host, rootfs, paket deposu, boot eden imaj veya ISO henüz yoktur. Tasarım mockup'ındaki sürümler, eski paket yöneticisi örnekleri, paket sayıları ve CPU/RAM değerleri örnek metindir.
 
-Mevcut build tabanı [LFS 12.4-systemd](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/) ve eşleşen [BLFS 12.4-systemd](https://www.linuxfromscratch.org/blfs/view/12.4-systemd/) olarak D33 ile sabitlendi. Bu, önceki 13.1+multilib taslak tercihinin yerine geçti. D32 saf 64-bit kararı ile D22 Steam hedefi çelişiyor; kullanıcı kararı açık kalır.
+Mevcut build tabanı [LFS 12.4-systemd](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/) ve eşleşen [BLFS 12.4-systemd](https://www.linuxfromscratch.org/blfs/view/12.4-systemd/) olarak D33 ile sabitlendi. Bu, önceki 13.1+multilib taslak tercihinin yerine geçti. D32 saf 64-bit kararı ile D22 Steam hedefi arasındaki çelişki kullanıcı kararıyla yalnız 64-bit lehine kapandı (D35).
 
 ## 3. Seçilen başlangıç mimarisi
 
@@ -46,7 +46,7 @@ Kullanıcı teknik seçimleri devrettiği için aşağıdaki başlangıç mimari
 
 | Katman | Aday / yaklaşım | Doğrulama |
 |---|---|---|
-| Temel sistem | LFS 12.4-systemd + eşleşen BLFS 12.4-systemd (D33). D32 saf 64-bit kabulü kayıtlı; D22 Steam isteğiyle çelişki kullanıcı kararında açık. | Mevcut rootfs/build kayıtları; D22/D32 kararı netleşmeden Steam/multilib çıkış koşulu yok |
+| Temel sistem | LFS 12.4-systemd + eşleşen BLFS 12.4-systemd (D33). Yalnız 64-bit (D32, D35). | Mevcut rootfs/build kayıtları; multilib/Steam çıkış koşulu yok (D35) |
 | Ek sistem bileşenleri | BLFS 12.4-systemd; ağ, TLS sertifikaları, ses, grafik, oturum | Gerçek işlev testleri |
 | Masaüstü | KDE Plasma / KWin | İlk sanal masaüstü oturumu ve donanım testi |
 | Görüntü protokolü | Wayland öncelikli. X11/Xwayland build tercihi açık kullanıcı kararı; Qt XCB ve Xwayland şu an kapalı. | P02 uyumluluk yolu kullanıcı yanıtı ve build sonrası test bekliyor |
@@ -64,9 +64,9 @@ Grafik uygulamalarda önce mevcut dosya yöneticisi, ayarlar, terminal, ağ ve s
 
 ### 3.1 Steam/Wine ve x86_64 kapsam kararı
 
-[Standart LFS x86_64](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/prologue/architecture.html) saf 64-bit sistem üretir. D22 Steam/Wine hedefini ister; D32 ilk sürüm için 32-bit kullanıcı alanı ve multilib'i kapsam dışı bırakır. Bu iki kararın Steam istemcisiyle uyumluluğu `docs/DECISIONS.md` içinde açık kullanıcı kararıdır.
+[Standart LFS x86_64](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/prologue/architecture.html) saf 64-bit sistem üretir. Kullanıcı 26 Eylül 2026'da D22/D32 çatışmasını "sadece 64 bit" diyerek D32 lehine çözdü (D35): host sisteme multilib, lib32 veya 32-bit glibc/grafik yığını eklenmez. Valve'ın Linux Steam istemcisi 32-bit kullanıcı alanı istediği için desteklenmez ve vaat edilmez. Wine yalnız 32-bit Unix kütüphanesi gerektirmeyen yeni WoW64 moduyla (Wine 11) kurulur; 32-bit Windows programlarının bu modda çalışması COMPAT-01 testinden önce vaat edilmez.
 
-M03'teki 32-bit/multilib ve ELF32 kabul ölçütleri D32 ile kapsam dışıdır; bu kapsam için toolchain derlemesi yapılmaz. Steam/Wine uyumluluğu, D22/D32 kararı netleşmeden vaat edilmez veya tamamlandı işaretlenmez.
+M03'teki 32-bit/multilib ve ELF32 kabul ölçütleri D32 ile kapsam dışıdır; bu kapsam için toolchain derlemesi yapılmaz. Kendi 32-bit çalışma zamanını kapsayıcı içinde getiren dağıtımlar (ör. Flatpak Steam) D35'te değerlendirilmedi; kullanıcı ayrıca istemeden eklenmez.
 
 ### 3.2 Eski PC ve RAM bütçesi
 
@@ -76,12 +76,12 @@ Test hedefleri garanti edilmiş minimumlar değildir; ölçümden sonra yayımla
 |---|---|---|
 | Düşük kaynak | 2 CPU, 4 GiB RAM, eski x86_64, Solid | Oturum açılışından 2 dk sonra `MemTotal - MemAvailable` <= 1 GiB hedefi; swap thrashing yok |
 | Genel masaüstü | 4 CPU, 8 GiB RAM, iGPU | Günlük uygulamalar + Glass; düşük giriş gecikmesi |
-| Güçlü cihaz | Mevcut Ryzen/RTX masaüstü | NVIDIA, Steam/Proton ve deneysel Liquid |
+| Güçlü cihaz | Mevcut Ryzen/RTX masaüstü | NVIDIA ve deneysel Liquid |
 | 2 GiB deneysel | 2 CPU, 2 GiB RAM | Masaüstü açılışı incelenir; başlangıç destek garantisi yok |
 
-Tarayıcı, Steam, Wine, dosya indeksleme ve mağaza arka planda otomatik başlatılmaz. Çok uygulamanın kurulu olması hepsinin RAM'de çalışması anlamına gelmez. Gereksiz sürekli servisler kapalı, erişilebilirlik bileşenleri talebe göre etkin olur. Kullanılan RAM/CPU, süreçlerin PSS toplamı ve bellek baskısı aynı yöntemle raporlanır. Solid bütçesi geçmezse önce servis/tema optimizasyonu yapılır; bu yetmezse ayrı hafif masaüstü profili ölçülmüş alternatif olarak ele alınır.
+Tarayıcı, Wine, dosya indeksleme ve mağaza arka planda otomatik başlatılmaz. Çok uygulamanın kurulu olması hepsinin RAM'de çalışması anlamına gelmez. Gereksiz sürekli servisler kapalı, erişilebilirlik bileşenleri talebe göre etkin olur. Kullanılan RAM/CPU, süreçlerin PSS toplamı ve bellek baskısı aynı yöntemle raporlanır. Solid bütçesi geçmezse önce servis/tema optimizasyonu yapılır; bu yetmezse ayrı hafif masaüstü profili ölçülmüş alternatif olarak ele alınır.
 
-Genel taban için `-march=native` kullanılmaz; x86_64 uyumluluk tabanı korunur. Steam/Chrome gibi uygulamaların ek CPU talimat gereksinimleri ayrı kontrol edilir. Yalnız 32-bit çalışan CPU desteği D32/P01 kapsamında dışıdır; Mi 9 gibi ARM cihazlar ve desteği kesilmiş GPU'lar hedef dışı/ayrı test sınıfıdır; “hepsinde” isteği geniş x86_64 uyumluluk matrisi olarak uygulanır.
+Genel taban için `-march=native` kullanılmaz; x86_64 uyumluluk tabanı korunur. Chrome gibi uygulamaların ek CPU talimat gereksinimleri ayrı kontrol edilir. Yalnız 32-bit çalışan CPU desteği D32/P01 kapsamında dışıdır; Mi 9 gibi ARM cihazlar ve desteği kesilmiş GPU'lar hedef dışı/ayrı test sınıfıdır; “hepsinde” isteği geniş x86_64 uyumluluk matrisi olarak uygulanır.
 
 ## 4. Terminal deneyimi
 
@@ -355,14 +355,14 @@ Bağımlılık zinciri korunur. Tasarım, terminal yapılandırma taslağı ve k
 | Tarayıcı | Firefox hazır; Chrome için doğrulanmış kurulum seçeneği | İnternet/TLS, indirme, varsayılan ilişki |
 | Ofis | LibreOffice Writer/Calc/Impress | DOCX/XLSX/PPTX örnekleri; birebir Word garantisi yok |
 | Mağaza | `alp` ile bütünleşecek grafik arayüz | Kendi depomuzdan uygulama işlemi; GUI yolu doğrulanmalı |
-| Windows uygulamaları | Wine + ayarlardan prefix/uyumluluk erişimi | 32/64-bit test programı; seçili Office sürümü |
-| Oyun | Steam istemcisi ve Proton kullanım yolu | Giriş/indirme ve seçilmiş test oyunu |
+| Windows uygulamaları | Wine (yalnız WoW64, D35) + ayarlardan prefix/uyumluluk erişimi | 32/64-bit Windows test programı; seçili Office sürümü |
+| Oyun | Steam istemcisi D35 ile kapsam dışı | — |
 
 “Google” isteği Chrome erişimi olarak yorumlandı; Chrome açık kaynak projesi değildir ve LFS resmî destek listesinde varsayılmaz. [Chrome gereksinimleri](https://support.google.com/chrome/answer/95346?co=GENIE.Platform%3DDesktop&hl=en) ve dağıtım koşulları doğrulanarak resmî kaynaktan kurulabilir; çevrimdışı varsayılan tarayıcı Firefox olur. Chrome'un ISO'ya gömülmesi doğrulanmadan vaat edilmez.
 
 Wine kurulu gelir. Kullanıcı Office 2016/2019/2021 ailesini belirtti; tam sürüm, lisanslı kurulum medyası ve Click-to-Run/MSI ayrımı uyumluluk testi sırasında kaydedilecek. Her sürüm temiz ayrı Wine prefix'inde açma/kaydetme/yazdırma senaryolarıyla denenir. Hiçbiri çalıştırılmadan “Word çalışıyor” denmez. Microsoft Office ISO'ya gömülmez; kullanıcı lisanslı medyasıyla kurar. LibreOffice günlük belge işlerini ilk günden sağlar; Microsoft Word ile aynı uygulama diye sunulmaz.
 
-Steam'in ilk kurulum/hesap ve oyun indirmesi internet gerektirir; offline sistem kurulumu bunu değiştirmez. D22/D32 kararı çözülmeden Steam istemcisi veya 32-bit grafik yığını uyumluluğu vaat edilmez; kapalı anti-cheat kullanan her oyunun çalışacağı iddia edilmez. Özel oyun listesi sonraki test genişletmesidir.
+Steam istemcisi D35 (yalnız 64-bit) ile kapsam dışıdır: Valve'ın Linux istemcisi 32-bit glibc ve grafik sürücüsü ister ve bunlar sisteme eklenmez. Steam/Proton ya da oyun uyumluluğu vaat edilmez.
 
 ### 11.1 Sürücü matrisi
 

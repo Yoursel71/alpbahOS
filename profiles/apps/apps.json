@@ -165,14 +165,14 @@
       "kabul": "PPTX örnekleri"
     }
   ],
-  "karar_bekleyen": [
+  "dahil_degil": [
     {
       "id": "windows-apps",
       "ihtiyac": "Windows uygulamaları",
       "uygulama": "Wine",
       "desktop": "wine.desktop",
       "mime": ["application/x-ms-dos-executable", "application/x-msdownload"],
-      "neden": "D22 Steam/Wine ile D32 saf 64-bit kararı çatışıyor (COMPAT-01). Karar verilmeden .exe ilişkisi yazılmaz; mimeapps.list'e girmez."
+      "neden": "D35 (yalnız 64-bit): Wine yalnız yeni WoW64 moduyla kurulacak; derlenip 32/64-bit Windows test programıyla doğrulanana kadar (COMPAT-01) .exe ilişkisi yazılmaz."
     },
     {
       "id": "games",
@@ -180,7 +180,7 @@
       "uygulama": "Steam + Proton",
       "desktop": "steam.desktop",
       "mime": [],
-      "neden": "Steam Linux istemcisi 32-bit kullanıcı alanı ister; D32 ile çelişki kullanıcı kararını bekliyor."
+      "neden": "D35 (yalnız 64-bit): Valve'ın Linux Steam istemcisi 32-bit kullanıcı alanı ister; host'a eklenmez, kapsam dışı."
     },
     {
       "id": "store",

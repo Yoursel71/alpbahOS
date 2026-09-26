@@ -30,11 +30,11 @@ Glass'ta blur `BlurStrength=8` ve `NoiseStrength=0` (KWin varsayılanı 15). Pan
 - VLC 3.0.21 (19/19) ve LibreOffice `libreoffice-25-8` (Writer/Calc/Impress) listeleri tuttu.
 - Gwenview ve Ark listeleri derleme zamanında oluşuyor; Firefox ve LibreOffice dosya adları BLFS kurulum adımında oluşuyor. Bunlar işaretlendi.
 
-Wine (.exe), Steam ve mağaza `karar_bekleyen` listesinde; dosyaya girmez. Test, dock başlatıcılarının profilde karşılığı olduğunu da denetler. Bu denetim, System Settings'in eksik olduğunu yakaladı ve profile eklendi.
+Wine (.exe), Steam ve mağaza `dahil_degil` listesinde; dosyaya girmez (D35 sonrası nedenler güncellendi: Wine WoW64 derleme/testi, Steam kapsam dışı, mağaza PKG-02). Test, dock başlatıcılarının profilde karşılığı olduğunu da denetler. Bu denetim, System Settings'in eksik olduğunu yakaladı ve profile eklendi.
 
 **3. PERF-01 (`profiles/perf/`).** KWin 6.4.4, `KWIN_LOG_PERFORMANCE_DATA=1` ile her çıkış için `kwin perf statistics <çıkış>.csv` yazıyor (`src/core/renderloop.cpp`). `analyze_kwin_perf_csv.py` bu dosyadan kare süresi (pageflip farkı; medyan/p95/p99), render süresi, geç kare ve bütçe aşımı üretir; `--budget-ms 16.7` ile eşik denetler. `collect_session_metrics.py` salt okunurdur: `/proc` bellek, izlenen masaüstü süreçlerinin PSS/RSS değerleri, kullanıcının toplam PSS'i, KWin renderer/sürücü/etkin efektler ve görünüm profili. P08 hedefiyle (boşta ≤ 1 GiB) karşılaştırır. README'de sahneler (boşta, pencere sürükleme, Overview, Konsole çıktısı), Solid/Glass tekrarı ve kayıt yeri var.
 
-**4. OFFICE-01 (`profiles/apps/office/`).** `office_fixtures.py` yalnız projenin yazdığı içerikle DOCX/XLSX üretir: Türkçe İ/ı, sekme, ₺/€, tablo, `SUM`. `check` alt komutu kaydedilmiş dosyayı karşılaştırır (sharedStrings destekli). Bu makinedeki Word/Excel 16.0 dosyaları açtı; `=SUM(B2:B3)` = 42 hesaplandı ve yeniden kaydedilen dosyalar `check`'ten geçti. Office çıktıları yazar bilgisi taşıdığı için repoya konmadı. Plan: LibreOffice L1–L9 hemen uygulanabilir; Word/Wine bölümü D22/D32 (COMPAT-01) kararına kadar askıda.
+**4. OFFICE-01 (`profiles/apps/office/`).** `office_fixtures.py` yalnız projenin yazdığı içerikle DOCX/XLSX üretir: Türkçe İ/ı, sekme, ₺/€, tablo, `SUM`. `check` alt komutu kaydedilmiş dosyayı karşılaştırır (sharedStrings destekli). Bu makinedeki Word/Excel 16.0 dosyaları açtı; `=SUM(B2:B3)` = 42 hesaplandı ve yeniden kaydedilen dosyalar `check`'ten geçti. Office çıktıları yazar bilgisi taşıdığı için repoya konmadı. Plan: LibreOffice L1–L9 hemen uygulanabilir; Word/Wine bölümü D35 (yalnız 64-bit) ile Wine WoW64 yoluna bağlandı, Wine derlenene kadar uygulanamaz.
 
 ## Değişen dosyalar
 
@@ -50,7 +50,7 @@ Wine (.exe), Steam ve mağaza `karar_bekleyen` listesinde; dosyaya girmez. Test,
 2. `alpbah-gorunum` panel opaklığını tüm panellere uygular; panel başına ayrım yok.
 3. Uygulamaların hiçbiri imajda yok. `mimeapps.list` doğru olsa da işe yaraması derlemelere bağlı.
 4. PERF-01 CSV'sinin konumu (KWin sürecinin çalışma dizini) gerçek oturumda doğrulanmadı.
-5. D22/D32 kararı Wine/Steam/Office bölümlerini ve `.exe` ilişkisini bekletiyor.
+5. D22/D32 çatışması kullanıcı kararıyla kapandı (D35, yalnız 64-bit, 26 Eylül 2026): Steam kapsam dışı; Wine WoW64 derlemesi ve COMPAT-01 testi `.exe` ilişkisini ve Office bölümünü bekletiyor.
 
 ## Codex için
 

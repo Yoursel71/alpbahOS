@@ -331,13 +331,13 @@ class AppProfileTests(unittest.TestCase):
         self.assertEqual(parsed["Default Applications"]["inode/directory"], "org.kde.dolphin.desktop;")
         self.assertEqual(parsed["Default Applications"]["x-scheme-handler/https"], "firefox.desktop;")
 
-    def test_pending_decisions_are_not_emitted(self):
+    def test_excluded_apps_are_not_emitted(self):
         generated = (REPO / "profiles" / "apps" / "generated" / "mimeapps.list").read_text(encoding="utf-8")
-        for pending in self.profile["karar_bekleyen"]:
-            for mime in pending["mime"]:
+        for excluded in self.profile["dahil_degil"]:
+            for mime in excluded["mime"]:
                 self.assertNotIn(mime, generated)
-            if pending["desktop"]:
-                self.assertNotIn(pending["desktop"], generated)
+            if excluded["desktop"]:
+                self.assertNotIn(excluded["desktop"], generated)
 
     def test_detects_duplicate_default(self):
         broken = copy.deepcopy(self.profile)
@@ -345,11 +345,11 @@ class AppProfileTests(unittest.TestCase):
         self.assertTrue(any("application/pdf" in e for e in MIMEAPPS.validate(broken)))
         broken = copy.deepcopy(self.profile)
         broken["apps"][0]["mime"].append("application/x-ms-dos-executable")
-        self.assertTrue(any("karar bekleyen" in e for e in MIMEAPPS.validate(broken)))
+        self.assertTrue(any("dahil olmayan" in e for e in MIMEAPPS.validate(broken)))
 
     def test_master_plan_needs_covered(self):
         needs = {a["ihtiyac"].split(" — ")[0] for a in self.profile["apps"]}
-        needs |= {p["ihtiyac"] for p in self.profile["karar_bekleyen"]}
+        needs |= {p["ihtiyac"] for p in self.profile["dahil_degil"]}
         for need in ("Dosyalar", "Terminal", "Not Defteri", "PDF", "Görseller", "Arşivler", "Ekran görüntüsü",
                      "Medya", "Hesap makinesi", "Sistem ve disk", "Tarayıcı", "Ofis", "Mağaza",
                      "Windows uygulamaları", "Oyun"):
