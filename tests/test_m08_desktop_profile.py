@@ -3,6 +3,7 @@ import contextlib
 import copy
 import io
 import hashlib
+import importlib.machinery
 import importlib.util
 import json
 import re
@@ -10,6 +11,7 @@ import shutil
 import subprocess
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
@@ -219,6 +221,273 @@ class WallpaperTests(unittest.TestCase):
             builder.check_safe_area((1920, 1080), (100, 10, 400, 300))
         with Image.open(WALLPAPER / "contents" / "screenshot.png") as preview:
             self.assertEqual(preview.size, builder.SCREENSHOT_SIZE)
+
+
+def load_script(name, path):
+    loader = importlib.machinery.SourceFileLoader(name, str(path))
+    spec = importlib.util.spec_from_loader(name, loader)
+    module = importlib.util.module_from_spec(spec)
+    loader.exec_module(module)
+    return module
+
+
+GORUNUM = load_script("m08_gorunum", REPO / "profiles" / "desktop" / "bin" / "alpbah-gorunum")
+
+SUPPORT_SOFTPIPE = """Compositing
+===========
+Compositing is active
+Compositing Type: OpenGL
+OpenGL vendor string: Mesa
+OpenGL renderer string: softpipe
+Driver: softpipe
+"""
+SUPPORT_NVIDIA = SUPPORT_SOFTPIPE.replace("softpipe", "NVIDIA GeForce RTX 5060/PCIe/SSE2").replace(
+    "Driver: NVIDIA GeForce RTX 5060/PCIe/SSE2", "Driver: NVIDIA")
+
+
+class FakeRunner(GORUNUM.Runner):
+    def __init__(self, support):
+        super().__init__(dry_run=False)
+        self.support = support
+
+    def run(self, cmd, mutating=True):
+        self.log.append(cmd)
+        if "supportInformation" in cmd:
+            return json.dumps({"type": "s", "data": [self.support]})
+        return ""
+
+
+class ProfileSwitcherTests(unittest.TestCase):
+    def setUp(self):
+        self._tool = GORUNUM.tool
+        GORUNUM.tool = lambda name: name
+
+    def tearDown(self):
+        GORUNUM.tool = self._tool
+
+    def run_main(self, args, support):
+        runner = FakeRunner(support)
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()) as err:
+            code = GORUNUM.main(args, runner=runner)
+        mutating = [c for c in runner.log if "supportInformation" not in c]
+        return code, mutating, err.getvalue()
+
+    def test_parse_and_block_software_renderer(self):
+        renderer = GORUNUM.parse_renderer(SUPPORT_SOFTPIPE)
+        self.assertEqual(renderer["type"], "OpenGL")
+        self.assertTrue(any("yazılım" in r for r in GORUNUM.glass_blockers(renderer)))
+        self.assertEqual(GORUNUM.glass_blockers(GORUNUM.parse_renderer(SUPPORT_NVIDIA)), [])
+        self.assertTrue(GORUNUM.glass_blockers(GORUNUM.parse_renderer("Compositing Type: QPainter")))
+
+    def test_glass_refused_on_softpipe_without_changes(self):
+        code, mutating, err = self.run_main(["glass"], SUPPORT_SOFTPIPE)
+        self.assertEqual(code, 3)
+        self.assertEqual(mutating, [])
+        self.assertIn("softpipe", err)
+
+    def test_glass_applies_on_hardware(self):
+        code, mutating, _ = self.run_main(["glass"], SUPPORT_NVIDIA)
+        self.assertEqual(code, 0)
+        flat = [" ".join(c) for c in mutating]
+        self.assertIn("kwriteconfig6 --file kwinrc --group Plugins --key blurEnabled true", flat)
+        self.assertIn("kwriteconfig6 --file kwinrc --group Effect-blur --key BlurStrength 8", flat)
+        self.assertTrue(any("loadEffect s blur" in c for c in flat))
+        self.assertTrue(any("evaluateScript" in c and '"translucent"' in c for c in flat))
+        self.assertIn("kwriteconfig6 --file alpbahrc --group Gorunum --key Profil glass", flat)
+
+    def test_forced_glass_and_solid(self):
+        code, mutating, _ = self.run_main(["glass", "--zorla"], SUPPORT_SOFTPIPE)
+        self.assertEqual(code, 0)
+        code, mutating, _ = self.run_main(["solid"], SUPPORT_SOFTPIPE)
+        flat = [" ".join(c) for c in mutating]
+        self.assertEqual(code, 0)
+        self.assertIn("kwriteconfig6 --file kwinrc --group Effect-blur --key BlurStrength --delete", flat)
+        self.assertTrue(any("unloadEffect s blur" in c for c in flat))
+        self.assertTrue(any('"opaque"' in c for c in flat))
+
+    def test_values_match_tokens(self):
+        tokens = json.loads((REPO / "profiles" / "desktop" / "tokens.json").read_text(encoding="utf-8"))
+        for name, spec in GORUNUM.PROFILES.items():
+            self.assertEqual(tokens["profiles"][name]["kde"], spec, name)
+        xdg = ini((REPO / "profiles" / "desktop" / "xdg" / "kwinrc").read_text(encoding="utf-8"))
+        self.assertEqual(xdg["Plugins"]["blurEnabled"], str(GORUNUM.PROFILES["solid"]["blur"]).lower())
+        layout = (LNF / "contents" / "layouts" / "org.kde.plasma.desktop-layout.js").read_text(encoding="utf-8")
+        self.assertIn(f'opacity = "{GORUNUM.PROFILES["solid"]["panel_opacity"]}"', layout)
+
+
+MIMEAPPS = load("m08_mimeapps", REPO / "profiles" / "apps" / "generate_mimeapps.py")
+
+
+class AppProfileTests(unittest.TestCase):
+    def setUp(self):
+        self.profile = MIMEAPPS.load_profile()
+
+    def test_profile_valid_and_generated_current(self):
+        self.assertEqual(MIMEAPPS.validate(self.profile), [])
+        generated = (REPO / "profiles" / "apps" / "generated" / "mimeapps.list").read_text(encoding="utf-8")
+        self.assertEqual(MIMEAPPS.render(self.profile), generated)
+        parsed = ini(generated)
+        self.assertEqual(parsed["Default Applications"]["application/pdf"], "okularApplication_pdf.desktop;")
+        self.assertEqual(parsed["Default Applications"]["inode/directory"], "org.kde.dolphin.desktop;")
+        self.assertEqual(parsed["Default Applications"]["x-scheme-handler/https"], "firefox.desktop;")
+
+    def test_pending_decisions_are_not_emitted(self):
+        generated = (REPO / "profiles" / "apps" / "generated" / "mimeapps.list").read_text(encoding="utf-8")
+        for pending in self.profile["karar_bekleyen"]:
+            for mime in pending["mime"]:
+                self.assertNotIn(mime, generated)
+            if pending["desktop"]:
+                self.assertNotIn(pending["desktop"], generated)
+
+    def test_detects_duplicate_default(self):
+        broken = copy.deepcopy(self.profile)
+        broken["apps"][0]["mime"].append("application/pdf")
+        self.assertTrue(any("application/pdf" in e for e in MIMEAPPS.validate(broken)))
+        broken = copy.deepcopy(self.profile)
+        broken["apps"][0]["mime"].append("application/x-ms-dos-executable")
+        self.assertTrue(any("karar bekleyen" in e for e in MIMEAPPS.validate(broken)))
+
+    def test_master_plan_needs_covered(self):
+        needs = {a["ihtiyac"].split(" — ")[0] for a in self.profile["apps"]}
+        needs |= {p["ihtiyac"] for p in self.profile["karar_bekleyen"]}
+        for need in ("Dosyalar", "Terminal", "Not Defteri", "PDF", "Görseller", "Arşivler", "Ekran görüntüsü",
+                     "Medya", "Hesap makinesi", "Sistem ve disk", "Tarayıcı", "Ofis", "Mağaza",
+                     "Windows uygulamaları", "Oyun"):
+            self.assertIn(need, needs)
+
+    def test_dock_launchers_resolve(self):
+        layout = (LNF / "contents" / "layouts" / "org.kde.plasma.desktop-layout.js").read_text(encoding="utf-8")
+        desktops = {a["desktop"] for a in self.profile["apps"]}
+        for launcher in re.findall(r'"applications:([^"]+)"', layout):
+            self.assertIn(launcher, desktops)
+        mimes = {m for a in self.profile["apps"] for m in a["mime"]}
+        if "preferred://browser" in layout:
+            self.assertIn("x-scheme-handler/https", mimes)
+        if "preferred://filemanager" in layout:
+            self.assertIn("inode/directory", mimes)
+
+
+PERF_CSV = load("m08_perf_csv", REPO / "profiles" / "perf" / "analyze_kwin_perf_csv.py")
+PERF_COLLECT = load("m08_perf_collect", REPO / "profiles" / "perf" / "collect_session_metrics.py")
+
+
+def write_perf_csv(path, intervals_ms, refresh_ms=16.666, render_ms=4.0):
+    ns = 1_000_000
+    t = 1_000_000_000
+    lines = [",".join(PERF_CSV.COLUMNS)]
+    for interval in [refresh_ms] + list(intervals_ms):
+        target = t + int(refresh_ms * ns)
+        t += int(interval * ns)
+        start = t - int((render_ms + 2) * ns)
+        lines.append(f"{target},{t},{start},{start + int(render_ms * ns)},1500000,{int(refresh_ms * ns)},0,0,{int(render_ms * ns)}")
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+class PerfToolTests(unittest.TestCase):
+    def test_smooth_scene_within_budget(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            csv_path = Path(temp_dir) / "kwin perf statistics Virtual-1.csv"
+            write_perf_csv(csv_path, [16.666] * 120)
+            summary = PERF_CSV.summarize(PERF_CSV.load_rows(csv_path))
+            self.assertAlmostEqual(summary["frame_interval_ms"]["median"], 16.666, places=2)
+            self.assertEqual(summary["over_budget_pct"], 0.0)
+            self.assertAlmostEqual(summary["render_ms"]["median"], 4.0, places=2)
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(PERF_CSV.main([str(csv_path), "--budget-ms", "16.7"]), 0)
+
+    def test_dropped_frames_detected(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            csv_path = Path(temp_dir) / "perf.csv"
+            write_perf_csv(csv_path, [33.3] * 60 + [16.666] * 40)
+            summary = PERF_CSV.summarize(PERF_CSV.load_rows(csv_path))
+            self.assertGreater(summary["over_budget_pct"], 50)
+            self.assertGreater(summary["late_frames"], 0)
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(PERF_CSV.main([str(csv_path), "--budget-ms", "16.7"]), 1)
+
+    def test_rejects_wrong_header(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            csv_path = Path(temp_dir) / "bad.csv"
+            csv_path.write_text("a,b\n1,2\n", encoding="utf-8")
+            with self.assertRaises(PERF_CSV.PerfDataError):
+                PERF_CSV.load_rows(csv_path)
+
+    def test_collect_from_fake_proc(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            proc = Path(temp_dir) / "proc"
+            (proc / "sys" / "kernel").mkdir(parents=True)
+            (proc / "sys" / "kernel" / "osrelease").write_text("6.16.1-alpbahOS\n", encoding="utf-8")
+            (proc / "uptime").write_text("321.5 100.0\n", encoding="utf-8")
+            (proc / "meminfo").write_text("MemTotal:        4194304 kB\nMemFree:  100 kB\n"
+                                          "MemAvailable:    3145728 kB\nSwapTotal: 0 kB\nSwapFree: 0 kB\n", encoding="utf-8")
+            for pid, name, uid, pss in ((100, "kwin_wayland", 1000, 204800), (101, "plasmashell", 1000, 307200),
+                                        (102, "sshd", 0, 5120), (103, "bash", 1000, 2048)):
+                d = proc / str(pid)
+                d.mkdir()
+                (d / "status").write_text(f"Name:\t{name}\nUid:\t{uid}\t{uid}\t{uid}\t{uid}\nVmRSS:\t{pss + 1024} kB\n", encoding="utf-8")
+                (d / "smaps_rollup").write_text(f"Rss: {pss + 1024} kB\nPss: {pss} kB\n", encoding="utf-8")
+            home = Path(temp_dir) / "home"
+            (home / ".config").mkdir(parents=True)
+            (home / ".config" / "alpbahrc").write_text("[Gorunum]\nProfil=glass\n", encoding="utf-8")
+            data = PERF_COLLECT.collect(proc, 1000, home, use_dbus=False, label="test-idle")
+        self.assertEqual(data["memory"]["used_mib"], 1024.0)
+        self.assertTrue(data["memory"]["within_idle_budget"])
+        self.assertEqual([p["name"] for p in data["processes"]], ["plasmashell", "kwin_wayland"])
+        self.assertEqual(data["user_pss_mib"], 502.0)
+        self.assertEqual(data["profile"], "glass")
+        self.assertEqual(data["kernel"], "6.16.1-alpbahOS")
+
+
+OFFICE = load("m08_office", REPO / "profiles" / "apps" / "office" / "office_fixtures.py")
+
+
+class OfficeFixtureTests(unittest.TestCase):
+    def test_generated_documents_pass_check(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            out = Path(temp_dir)
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(OFFICE.main(["make", "--out", str(out)]), 0)
+                self.assertEqual(OFFICE.main(["check", str(out / "alpbah-test.docx"), str(out / "alpbah-test.xlsx")]), 0)
+            paragraphs, table = OFFICE.docx_text(out / "alpbah-test.docx")
+            self.assertIn(OFFICE.TURKISH, paragraphs)
+            self.assertIn("\t", paragraphs[2])
+            self.assertEqual(table, OFFICE.TABLE)
+
+    def test_detects_damaged_text(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            out = Path(temp_dir)
+            OFFICE.make_docx(out / "a.docx")
+            with zipfile.ZipFile(out / "a.docx") as z:
+                parts = {n: z.read(n) for n in z.namelist()}
+            # İ -> I: tipik yanlış Türkçe büyük harf dönüşümü
+            parts["word/document.xml"] = parts["word/document.xml"].replace("ĞÜŞİÖÇ".encode(), "ĞÜŞIÖÇ".encode())
+            with zipfile.ZipFile(out / "b.docx", "w") as z:
+                for name, data in parts.items():
+                    z.writestr(name, data)
+            self.assertTrue(OFFICE.check(out / "b.docx"))
+
+    def test_shared_strings_and_recomputed_formula(self):
+        # Excel/Calc kaydettiğinde dizgiler sharedStrings.xml'e taşınır ve formül '=' içermez.
+        S = OFFICE.S
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "shared.xlsx"
+            strings = ["Ürün", "Adet", "Çay", "Şeker"]
+            sst = "".join(f"<si><t>{s}</t></si>" for s in strings)
+            sheet = (f'<worksheet xmlns="{S}"><sheetData>'
+                     '<row r="1"><c r="A1" t="s"><v>0</v></c><c r="B1" t="s"><v>1</v></c></row>'
+                     '<row r="2"><c r="A2" t="s"><v>2</v></c><c r="B2"><v>12</v></c></row>'
+                     '<row r="3"><c r="A3" t="s"><v>3</v></c><c r="B3"><v>30</v></c></row>'
+                     '<row r="4"><c r="B4"><f>SUM(B2:B3)</f><v>42</v></c></row>'
+                     '</sheetData></worksheet>')
+            with zipfile.ZipFile(path, "w") as z:
+                z.writestr("xl/sharedStrings.xml", f'<sst xmlns="{S}">{sst}</sst>')
+                z.writestr("xl/worksheets/sheet1.xml", sheet)
+            self.assertEqual(OFFICE.check(path), [])
+            broken = Path(temp_dir) / "broken.xlsx"
+            with zipfile.ZipFile(broken, "w") as z:
+                z.writestr("xl/sharedStrings.xml", f'<sst xmlns="{S}">{sst}</sst>')
+                z.writestr("xl/worksheets/sheet1.xml", sheet.replace("<v>42</v>", "<v>0</v>"))
+            self.assertTrue(any("B4" in p for p in OFFICE.check(broken)))
 
 
 class InstallScriptTests(unittest.TestCase):
