@@ -41,7 +41,7 @@ Bu oturum `docs/NEW_SESSION_HANDOFF.md` içindeki host'ta (YRSLF) değil, Hyper-
 - Yeni: `profiles/desktop/lookandfeel/org.alpbahos.solid.desktop/` (metadata.json, contents/defaults, contents/layouts/org.kde.plasma.desktop-layout.js), `profiles/desktop/xdg/kdeglobals`, `profiles/desktop/xdg/kwinrc`, `profiles/desktop/install-desktop-profile.sh`
 - Yeni: `branding/ataturk-theme/tools/build_wallpaper.py`, `branding/ataturk-theme/wallpaper/alpbahOS-Ataturk/` (metadata.json, ATTRIBUTION.md, 5 JPEG, screenshot.png), `branding/icons/build_icons.py`, `branding/icons/hicolor/*/apps/alpbahos.png`
 - Yeni: `tests/test_m08_desktop_profile.py`, bu belge
-- Güncellendi: `profiles/shortcuts/shortcuts.json` (v0 → v1), `profiles/shortcuts/conflicts.md`, `profiles/shortcuts/help.md`, `profiles/desktop/README.md`, `branding/ataturk-theme/README.md`, `docs/WORKLOG.md`, `CURRENT.md` (M08 satırı), `docs/BACKLOG.md` (UI-01/02/03 durumları)
+- Güncellendi: `.gitattributes` (KDE yapılandırma dosyaları için LF), `profiles/shortcuts/shortcuts.json` (v0 → v1), `profiles/shortcuts/conflicts.md`, `profiles/shortcuts/help.md`, `profiles/desktop/README.md`, `branding/ataturk-theme/README.md`, `docs/WORKLOG.md`, `CURRENT.md` (M08 satırı), `docs/BACKLOG.md` (UI-01/02/03 durumları)
 
 ## Doğrulama
 
