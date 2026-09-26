@@ -110,3 +110,28 @@ def test_without_relocate_layout_is_unchanged(paths: alp.Paths, tmp_path: Path):
     alp.install_recipe(paths, {"recipe": "demo.recipe.json"}, tmp_path, dry_run=False)
     assert "/usr/share/demo/data.txt" in (paths.root / "usr/bin/demo").read_text()
     assert str(paths.root) not in (paths.root / "usr/bin/demo").read_text()
+
+
+def test_destdir_token_replaces_appended_destdir(paths: alp.Paths):
+    paths.relocate = True
+    recipe = {"build": {"configure": ["true"], "make": ["make"],
+                        "make_install": ["make", "install", "BINDIR=@DESTDIR@@PREFIX@/bin"]}}
+    steps = alp._recipe_steps(recipe, paths, "/d")
+    assert steps[2] == ["make", "install", f"BINDIR=/d{paths.root}/usr/bin"]
+
+
+@needs_make
+def test_destdir_token_real_install(paths: alp.Paths, tmp_path: Path):
+    """tree-style Makefile: DESTDIR is the bin dir, so the recipe splices
+    the staging root in itself; the result must land under root/usr/bin."""
+    makefile = (
+        "DESTDIR=/usr/local/bin\n"
+        "install:\n"
+        "\tmkdir -p $(DESTDIR)\n"
+        "\tprintf '#!/bin/sh\\necho ok\\n' > $(DESTDIR)/demo\n"
+        "\tchmod 755 $(DESTDIR)/demo\n"
+    )
+    paths.relocate = True
+    _recipe(tmp_path, ["make", "install", "DESTDIR=@DESTDIR@@PREFIX@/bin"], makefile)
+    alp.install_recipe(paths, {"recipe": "demo.recipe.json"}, tmp_path, dry_run=False)
+    assert (paths.root / "usr/bin/demo").is_file()
