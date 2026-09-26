@@ -1,0 +1,41 @@
+# alpbahOS kısayol profili -- ÜRETİLMİŞ DOSYA, elle düzenlemeyin.
+# Kaynak: profiles/shortcuts/shortcuts.json
+# Üretici: profiles/shortcuts/generate_kglobalshortcutsrc.py
+# Kurulum hedefi: /etc/xdg/kglobalshortcutsrc (kullanıcı ayarı ~/.config/kglobalshortcutsrc önce gelir)
+# Hedef sürüm: Plasma 6.4.4; gerçek oturumda doğrulanmadı.
+
+[ksmserver]
+Lock Session=Meta+L\tScreensaver,Meta+L\tScreensaver,Lock Session
+
+[kwin]
+Overview=Meta+Tab\tMeta+W,Meta+W,Toggle Overview
+Show Desktop=Meta+D,Meta+D,Peek at Desktop
+Walk Through Windows (Reverse)=Alt+Shift+Tab,Meta+Shift+Tab\tAlt+Shift+Tab,Walk Through Windows (Reverse)
+Walk Through Windows=Alt+Tab,Meta+Tab\tAlt+Tab,Walk Through Windows
+Window Close=Alt+F4,Alt+F4,Close Window
+Window Maximize=Meta+Up\tMeta+PgUp,Meta+PgUp,Maximize Window
+Window Minimize=Meta+Down\tMeta+PgDown,Meta+PgDown,Minimize Window
+Window Quick Tile Bottom=none,Meta+Down,Quick Tile Window to the Bottom
+Window Quick Tile Left=Meta+Left,Meta+Left,Quick Tile Window to the Left
+Window Quick Tile Right=Meta+Right,Meta+Right,Quick Tile Window to the Right
+Window Quick Tile Top=none,Meta+Up,Quick Tile Window to the Top
+
+[plasmashell]
+activate application launcher=Meta\tAlt+F1,Meta\tAlt+F1,Activate Application Launcher
+
+[services][org.kde.dolphin.desktop]
+_launch=Meta+E
+
+[services][org.kde.krunner.desktop]
+_launch=Meta+R\tAlt+Space\tAlt+F2\tSearch
+
+[services][org.kde.plasma-systemmonitor.desktop]
+_launch=Ctrl+Shift+Esc\tMeta+Esc
+
+[services][org.kde.spectacle.desktop]
+RecordRegion=Meta+Shift+R
+RectangularRegionScreenShot=Meta+Shift+S\tMeta+Shift+Print
+_launch=Print
+
+[services][systemsettings.desktop]
+_launch=Meta+I\tTools

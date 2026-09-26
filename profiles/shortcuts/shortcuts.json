@@ -1,170 +1,374 @@
 {
-  "$schema": "alpbahOS/shortcuts/v0",
-  "durum": "taslak — hiçbir kısayol gerçek KDE Plasma oturumunda test edilmedi",
+  "$schema": "alpbahOS/shortcuts/v1",
+  "durum": "M08 ilk dilim — eylem kimlikleri ve upstream varsayılanları KDE Plasma 6.4.4 kaynak kodundan doğrulandı; gerçek Plasma oturumunda hiçbir satır test edilmedi.",
   "kaynak": "docs/MASTER_PLAN.md §6",
-  "not": "Bu dosya kısayolların TEK tanım kaynağı olması planlanan yerdir (MASTER_PLAN §6). 'kwin_varsayilani' işaretli satırlar bile sürüme göre değişebileceğinden doğrulanmalıdır; upstream varsayılanı olduğu iddia edilmez.",
-  "durum_kodlari": {
-    "kwin_varsayilani": "İlgili masaüstü bileşeninin mevcut varsayılanı olduğu düşünülüyor; sürüm/dağıtım farkına karşı doğrulanmalı.",
-    "yeniden_esleme_gerekli": "Bileşende zaten bir varsayılan var ama başka tuşa bağlı; bu tuşa taşınması ve çakışma kontrolü gerekiyor.",
-    "ozel_binding_gerekli": "Bileşende varsayılan yok; System Settings > Kısayollar (custom shortcut / khotkeys) ile yeni bağlama tanımlanmalı.",
-    "dogrulanmamis": "Davranış veya varsayılan kısayol bu oturumda kesin bilinmiyor; kurulu sürümde elle kontrol edilmeli.",
-    "uygulama_varsayilani": "Sistem kısayolu değil; Qt/GTK uygulama katmanının kendi standardı, alpbahOS burada yeniden tanımlamaz."
+  "tek_kaynak_notu": "Kısayolların TEK tanım kaynağı bu dosyadır. /etc/xdg/kglobalshortcutsrc bu dosyadan profiles/shortcuts/generate_kglobalshortcutsrc.py ile üretilir; üretilmiş dosya elle düzenlenmez.",
+  "hedef_surum": {
+    "plasma": "6.4.4",
+    "kaynak_etiketi": "v6.4.4 (github.com/KDE/<repo> aynası; kwin, plasma-workspace, kscreenlocker, spectacle, systemsettings, plasma-systemmonitor)",
+    "dolphin_referansi": "KDE Gear v25.08.1 (Dolphin henüz hedef imajda derlenmedi; kurulacak sürüm farklıysa yeniden doğrula)",
+    "kglobalaccel_dbus_referansi": "kglobalaccel v6.17.0 src/org.kde.KGlobalAccel.xml ve org.kde.kglobalaccel.Component.xml"
   },
+  "kurulum_hedefi": "/etc/xdg/kglobalshortcutsrc",
+  "durum_kodlari": {
+    "upstream_varsayilani": "Plasma 6.4.4 kaynak kodunda bu tuş zaten bu eyleme bağlı; alpbahOS yalnız açıkça yazar.",
+    "ek_baglama": "Upstream eylem var; alpbahOS mevcut tuşları koruyup Windows tuşunu ekler.",
+    "yeniden_esleme": "Windows tuşu upstream'de başka bir eyleme bağlı; o eylemden alınıp bu eyleme verilir (bkz. cakisma_cozumleri).",
+    "engelli": "Eylemi kaydeden bileşen mevcut imajda derlenmemiş/devre dışı; bağlama yazılır ama çalışmaz.",
+    "uygulama_varsayilani": "Sistem kısayolu değil; uygulama katmanının standardı, alpbahOS yeniden tanımlamaz."
+  },
+  "anahtar_notu": "keys: satırın Windows kullanıcısına vaat ettiği tuşlar (canlı doğrulayıcı bunları zorunlu tutar). bindings[].set: kglobalshortcutsrc içine yazılacak TAM tuş listesi (upstream ek tuşları korunur). bindings[].upstream_default: kaynak koddaki varsayılan. 'Meta' Windows tuşudur.",
   "shortcuts": [
     {
       "id": "walk-windows",
-      "key": "Alt+Tab",
-      "key_reverse": "Alt+Shift+Tab",
+      "keys": ["Alt+Tab", "Alt+Shift+Tab"],
       "eylem_tr": "Pencereler arasında ileri/geri geçiş",
-      "bilesen": "kwin",
-      "kde_action_id": "Walk Through Windows / Walk Through Windows (Reverse)",
-      "durum": "kwin_varsayilani",
+      "durum": "yeniden_esleme",
+      "bindings": [
+        {
+          "kind": "component",
+          "component": "kwin",
+          "action": "Walk Through Windows",
+          "friendly": "Walk Through Windows",
+          "set": ["Alt+Tab"],
+          "upstream_default": ["Meta+Tab", "Alt+Tab"],
+          "upstream_kaynak": "kwin v6.4.4 src/tabbox/tabbox.cpp TabBox::initShortcuts"
+        },
+        {
+          "kind": "component",
+          "component": "kwin",
+          "action": "Walk Through Windows (Reverse)",
+          "friendly": "Walk Through Windows (Reverse)",
+          "set": ["Alt+Shift+Tab"],
+          "upstream_default": ["Meta+Shift+Tab", "Alt+Shift+Tab"],
+          "upstream_kaynak": "kwin v6.4.4 src/tabbox/tabbox.cpp TabBox::initShortcuts",
+          "birakilan": {
+            "Meta+Shift+Tab": "Win+Tab genel görünüme verildiği için ters yönlü Win+Shift+Tab pencere geçişinde tutulmadı; Windows'ta da karşılığı yok."
+          }
+        }
+      ],
+      "not": "Upstream Meta+Tab'ı da pencere geçişine bağlıyor; Win+Tab genel görünüme verildiği için Meta+Tab ve Meta+Shift+Tab buradan çıkarıldı.",
       "test_kapsami": "Çoklu pencere ve çoklu ekran"
     },
     {
       "id": "show-desktop",
-      "key": "Win+D",
+      "keys": ["Meta+D"],
       "eylem_tr": "Masaüstünü göster / geri dön",
-      "bilesen": "kwin",
-      "kde_action_id": "Show Desktop",
-      "durum": "dogrulanmamis",
-      "not": "Plasma sürümüne göre varsayılan farklı olabilir (bazı sürümlerde Ctrl+F12).",
+      "durum": "upstream_varsayilani",
+      "bindings": [
+        {
+          "kind": "component",
+          "component": "kwin",
+          "action": "Show Desktop",
+          "friendly": "Peek at Desktop",
+          "set": ["Meta+D"],
+          "upstream_default": ["Meta+D"],
+          "upstream_kaynak": "kwin v6.4.4 src/useractions.cpp Workspace::initShortcuts"
+        }
+      ],
+      "not": "KWin eylemi aç/kapa (slotToggleShowDesktop); ikinci basışta pencereler geri gelir.",
       "test_kapsami": "Minimize durumlarının korunması"
     },
     {
       "id": "file-manager",
-      "key": "Win+E",
+      "keys": ["Meta+E"],
       "eylem_tr": "Dosya yöneticisini aç (Dolphin)",
-      "bilesen": "custom-shortcut",
-      "kde_action_id": null,
-      "durum": "ozel_binding_gerekli",
+      "durum": "upstream_varsayilani",
+      "bindings": [
+        {
+          "kind": "service",
+          "component": "org.kde.dolphin.desktop",
+          "action": "_launch",
+          "friendly": "Dolphin",
+          "set": ["Meta+E"],
+          "upstream_default": ["Meta+E"],
+          "upstream_kaynak": "dolphin v25.08.1 src/org.kde.dolphin.desktop X-KDE-Shortcuts"
+        }
+      ],
+      "bagimlilik": "Dolphin Gen2 test imajında yok (M08 uygulama derlemesi, Codex).",
       "test_kapsami": "Tekrarlı çağrı davranışı (yeni pencere mi, mevcut mu?)"
     },
     {
       "id": "lock-session",
-      "key": "Win+L",
+      "keys": ["Meta+L"],
       "eylem_tr": "Oturumu kilitle",
-      "bilesen": "kscreenlocker",
-      "kde_action_id": "Lock Session",
-      "durum": "yeniden_esleme_gerekli",
-      "not": "Plasma varsayılanı genelde Ctrl+Alt+L; Win+L'e taşınmalı ve çakışma kontrol edilmeli.",
+      "durum": "engelli",
+      "bindings": [
+        {
+          "kind": "component",
+          "component": "ksmserver",
+          "action": "Lock Session",
+          "friendly": "Lock Session",
+          "set": ["Meta+L", "Screensaver"],
+          "upstream_default": ["Meta+L", "Screensaver"],
+          "upstream_kaynak": "kscreenlocker v6.4.4 ksldapp.cpp + settings/kscreensaversettings.cpp defaultShortcuts()"
+        }
+      ],
+      "not": "Upstream varsayılanı zaten Meta+L; eski Ctrl+Alt+L 6.4.4'te yok. Eylemi KScreenLocker (KSldApp) kaydeder; mevcut build KWIN_BUILD_SCREENLOCKER=OFF olduğu için Win+L şu an hiçbir şey yapmaz (SCREENLOCK-01).",
       "test_kapsami": "Kilit ekranından güvenli dönüş"
     },
     {
       "id": "run-launcher",
-      "key": "Win+R",
-      "eylem_tr": "Komut/uygulama başlatıcı",
-      "bilesen": "krunner",
-      "kde_action_id": "run command",
-      "durum": "ozel_binding_gerekli",
-      "not": "KRunner'ın mevcut Alt+F2/Alt+Space kısayolu korunur; Win+R ek bağlama olarak eklenir.",
+      "keys": ["Meta+R"],
+      "eylem_tr": "Komut/uygulama başlatıcı (KRunner)",
+      "durum": "ek_baglama",
+      "bindings": [
+        {
+          "kind": "service",
+          "component": "org.kde.krunner.desktop",
+          "action": "_launch",
+          "friendly": "KRunner",
+          "set": ["Meta+R", "Alt+Space", "Alt+F2", "Search"],
+          "upstream_default": ["Alt+Space", "Alt+F2", "Search"],
+          "upstream_kaynak": "plasma-workspace v6.4.4 krunner/org.kde.krunner.desktop.cmake X-KDE-Shortcuts"
+        }
+      ],
+      "not": "Upstream Spectacle 'Record Region' eylemi Meta+R'ı da kullanıyor; bkz. cakisma_cozumleri.",
       "test_kapsami": "Arama alanına doğru odak"
     },
     {
       "id": "app-menu",
-      "key": "Win",
-      "eylem_tr": "Uygulama menüsü",
-      "bilesen": "plasmashell",
-      "kde_action_id": "Modifier-only Shortcuts: Meta",
-      "durum": "dogrulanmamis",
-      "not": "Bazı Plasma sürümlerinde Meta tuşu zaten başlatıcıya bağlı olabilir; System Settings > Shortcuts > Modifier-only Shortcuts'ta doğrulanmalı.",
+      "keys": ["Meta"],
+      "eylem_tr": "Uygulama menüsü (tek başına Windows tuşu)",
+      "durum": "upstream_varsayilani",
+      "bindings": [
+        {
+          "kind": "component",
+          "component": "plasmashell",
+          "action": "activate application launcher",
+          "friendly": "Activate Application Launcher",
+          "set": ["Meta", "Alt+F1"],
+          "upstream_default": ["Meta", "Alt+F1"],
+          "upstream_kaynak": "plasma-workspace v6.4.4 shell/shellcorona.cpp"
+        }
+      ],
+      "not": "Plasma 6'da tek başına Meta normal global kısayoldur (kwinrc ModifierOnlyShortcuts gerekmez). plasmashell ilk 'launchermenu' applet'ini açar; bu yüzden düzende tek başlatıcı var. Kickoff şu an org.kde.kirigamiaddons.components eksik olduğu için açılmıyor (M07 bulgusu).",
       "test_kapsami": "Diğer Win kombinasyonlarıyla çakışmama"
     },
     {
       "id": "settings",
-      "key": "Win+I",
+      "keys": ["Meta+I"],
       "eylem_tr": "Ayarlar",
-      "bilesen": "systemsettings",
-      "kde_action_id": null,
-      "durum": "ozel_binding_gerekli",
+      "durum": "ek_baglama",
+      "bindings": [
+        {
+          "kind": "service",
+          "component": "systemsettings.desktop",
+          "action": "_launch",
+          "friendly": "System Settings",
+          "set": ["Meta+I", "Tools"],
+          "upstream_default": ["Tools"],
+          "upstream_kaynak": "systemsettings v6.4.4 app/systemsettings.desktop X-KDE-Shortcuts"
+        }
+      ],
+      "bagimlilik": "systemsettings Gen2 test imajında yok (M08 uygulama derlemesi, Codex).",
       "test_kapsami": "Doğru ayarlar uygulaması açılıyor mu"
     },
     {
       "id": "tile-left",
-      "key": "Win+Left",
+      "keys": ["Meta+Left"],
       "eylem_tr": "Pencereyi sol kenara yerleştir",
-      "bilesen": "kwin",
-      "kde_action_id": "Quick Tile Window to the Left",
-      "durum": "kwin_varsayilani",
+      "durum": "upstream_varsayilani",
+      "bindings": [
+        {
+          "kind": "component",
+          "component": "kwin",
+          "action": "Window Quick Tile Left",
+          "friendly": "Quick Tile Window to the Left",
+          "set": ["Meta+Left"],
+          "upstream_default": ["Meta+Left"],
+          "upstream_kaynak": "kwin v6.4.4 src/useractions.cpp Workspace::initShortcuts"
+        }
+      ],
       "test_kapsami": "Çoklu ekran ve ölçekleme"
     },
     {
       "id": "tile-right",
-      "key": "Win+Right",
+      "keys": ["Meta+Right"],
       "eylem_tr": "Pencereyi sağ kenara yerleştir",
-      "bilesen": "kwin",
-      "kde_action_id": "Quick Tile Window to the Right",
-      "durum": "kwin_varsayilani",
+      "durum": "upstream_varsayilani",
+      "bindings": [
+        {
+          "kind": "component",
+          "component": "kwin",
+          "action": "Window Quick Tile Right",
+          "friendly": "Quick Tile Window to the Right",
+          "set": ["Meta+Right"],
+          "upstream_default": ["Meta+Right"],
+          "upstream_kaynak": "kwin v6.4.4 src/useractions.cpp Workspace::initShortcuts"
+        }
+      ],
       "test_kapsami": "Çoklu ekran ve ölçekleme"
     },
     {
       "id": "maximize",
-      "key": "Win+Up",
-      "eylem_tr": "Büyüt",
-      "bilesen": "kwin",
-      "kde_action_id": "Maximize Window",
-      "durum": "kwin_varsayilani",
+      "keys": ["Meta+Up"],
+      "eylem_tr": "Büyüt / büyütülmüşse geri yükle",
+      "durum": "yeniden_esleme",
+      "bindings": [
+        {
+          "kind": "component",
+          "component": "kwin",
+          "action": "Window Maximize",
+          "friendly": "Maximize Window",
+          "set": ["Meta+Up", "Meta+PgUp"],
+          "upstream_default": ["Meta+PgUp"],
+          "upstream_kaynak": "kwin v6.4.4 src/useractions.cpp Workspace::initShortcuts"
+        }
+      ],
+      "not": "Upstream Meta+Up 'Quick Tile Top' eylemine bağlı; bkz. cakisma_cozumleri. KWin MaximizeOp aç/kapa çalışır (useractions.cpp performWindowOperation): büyütülmüş pencerede Win+Up geri yükler.",
       "test_kapsami": "Tutarlı durum sırası (büyüt/geri yükle)"
     },
     {
-      "id": "minimize-restore",
-      "key": "Win+Down",
-      "eylem_tr": "Geri yükle / küçült",
-      "bilesen": "kwin",
-      "kde_action_id": null,
-      "durum": "dogrulanmamis",
-      "not": "KWin'de büyütülmüş pencerede Win+Down genelde geri yükler; Windows'taki 'ikinci basışta küçült' sıralı davranışı yerleşik değildir, gerekiyorsa script/khotkeys ile taklit edilmeli.",
+      "id": "minimize",
+      "keys": ["Meta+Down"],
+      "eylem_tr": "Küçült",
+      "durum": "yeniden_esleme",
+      "bindings": [
+        {
+          "kind": "component",
+          "component": "kwin",
+          "action": "Window Minimize",
+          "friendly": "Minimize Window",
+          "set": ["Meta+Down", "Meta+PgDown"],
+          "upstream_default": ["Meta+PgDown"],
+          "upstream_kaynak": "kwin v6.4.4 src/useractions.cpp Workspace::initShortcuts"
+        }
+      ],
+      "not": "Windows'ta Win+Aşağı büyütülmüş pencereyi önce geri yükler, ikinci basışta küçültür. KWin'de bu sıralı davranış yerleşik değil; bu profilde Win+Aşağı doğrudan küçültür, geri yükleme Win+Yukarı ile yapılır. Açık karar: conflicts.md §4.",
       "test_kapsami": "Tutarlı durum sırası"
     },
     {
       "id": "overview",
-      "key": "Win+Tab",
+      "keys": ["Meta+Tab"],
       "eylem_tr": "Pencere/masaüstü genel görünümü",
-      "bilesen": "kwin",
-      "kde_action_id": "Overview",
-      "durum": "yeniden_esleme_gerekli",
-      "not": "Plasma 5.24+ Overview efektinin varsayılanı Meta+W'dir, Meta+Tab değil; taşınmalı ve çakışma kontrol edilmeli.",
+      "durum": "yeniden_esleme",
+      "bindings": [
+        {
+          "kind": "component",
+          "component": "kwin",
+          "action": "Overview",
+          "friendly": "Toggle Overview",
+          "set": ["Meta+Tab", "Meta+W"],
+          "upstream_default": ["Meta+W"],
+          "upstream_kaynak": "kwin v6.4.4 src/plugins/overview/overvieweffect.cpp"
+        }
+      ],
+      "not": "Overview bir KWin efektidir; OpenGL sahnesi gerekir. Mevcut softpipe/VGEM yolunda çalışıp çalışmadığı ölçülmedi.",
       "test_kapsami": "Seçilen masaüstü eylemiyle eşleşme"
     },
     {
       "id": "close-window",
-      "key": "Alt+F4",
+      "keys": ["Alt+F4"],
       "eylem_tr": "Aktif pencereyi kapat",
-      "bilesen": "kwin",
-      "kde_action_id": "Close Window",
-      "durum": "kwin_varsayilani",
+      "durum": "upstream_varsayilani",
+      "bindings": [
+        {
+          "kind": "component",
+          "component": "kwin",
+          "action": "Window Close",
+          "friendly": "Close Window",
+          "set": ["Alt+F4"],
+          "upstream_default": ["Alt+F4"],
+          "upstream_kaynak": "kwin v6.4.4 src/useractions.cpp Workspace::initShortcuts"
+        }
+      ],
       "test_kapsami": "Kaydedilmemiş belge uyarısı (uygulama sorumluluğunda)"
     },
     {
       "id": "system-monitor",
-      "key": "Ctrl+Shift+Esc",
+      "keys": ["Ctrl+Shift+Esc"],
       "eylem_tr": "Sistem izleyicisi",
-      "bilesen": "custom-shortcut",
-      "kde_action_id": null,
-      "durum": "ozel_binding_gerekli",
-      "not": "Plasma'da varsayılan yok; plasma-systemmonitor veya eşdeğerine özel kısayol tanımlanmalı.",
+      "durum": "ek_baglama",
+      "bindings": [
+        {
+          "kind": "service",
+          "component": "org.kde.plasma-systemmonitor.desktop",
+          "action": "_launch",
+          "friendly": "System Monitor",
+          "set": ["Ctrl+Shift+Esc", "Meta+Esc"],
+          "upstream_default": ["Meta+Esc"],
+          "upstream_kaynak": "plasma-systemmonitor v6.4.4 org.kde.plasma-systemmonitor.desktop X-KDE-Shortcuts"
+        }
+      ],
+      "bagimlilik": "plasma-systemmonitor Gen2 test imajında doğrulanmadı.",
       "test_kapsami": "Kısayol çakışması olmaması"
     },
     {
       "id": "region-screenshot",
-      "key": "Win+Shift+S",
+      "keys": ["Meta+Shift+S"],
       "eylem_tr": "Bölge ekran görüntüsü",
-      "bilesen": "spectacle",
-      "kde_action_id": null,
-      "durum": "dogrulanmamis",
-      "not": "Kurulu Spectacle sürümünün varsayılan kısayolu kontrol edilmeli; farklı bir tuşa zaten atanmış olabilir.",
+      "durum": "yeniden_esleme",
+      "bindings": [
+        {
+          "kind": "service",
+          "component": "org.kde.spectacle.desktop",
+          "action": "RectangularRegionScreenShot",
+          "friendly": "Capture Rectangular Region",
+          "set": ["Meta+Shift+S", "Meta+Shift+Print"],
+          "upstream_default": ["Meta+Shift+Print"],
+          "upstream_kaynak": "spectacle v6.4.4 desktop/org.kde.spectacle.desktop.cmake [Desktop Action RectangularRegionScreenShot]"
+        }
+      ],
+      "not": "Upstream Meta+Shift+S Spectacle'ın kendisini (varsayılan modda) açıyor; Windows davranışı doğrudan bölge seçimi olduğu için bölge eylemine taşındı. bkz. cakisma_cozumleri.",
+      "bagimlilik": "Spectacle Gen2 test imajında doğrulanmadı.",
       "test_kapsami": "Wayland izin ve bölge seçim akışı"
     },
     {
       "id": "clipboard-ops",
-      "key": "Ctrl+C / Ctrl+V / Ctrl+X / Ctrl+Z",
-      "eylem_tr": "Kopyala / yapıştır / kes / geri al",
-      "bilesen": "uygulama (Qt/GTK)",
-      "kde_action_id": null,
+      "keys": [],
+      "eylem_tr": "Kopyala / yapıştır / kes / geri al (Ctrl+C / V / X / Z)",
       "durum": "uygulama_varsayilani",
-      "not": "Sistem düzeyinde yeniden tanımlanmaz. Terminal istisnası: Konsole'da Ctrl+C SIGINT'tir; kopyalama/yapıştırma davranışı profiles/shell/README.md içinde ayrıca belgelenir.",
+      "bindings": [],
+      "not": "Sistem düzeyinde yeniden tanımlanmaz. Terminal istisnası: Konsole'da Ctrl+C SIGINT'tir; kopyala/yapıştır profiles/shell/README.md içinde.",
       "test_kapsami": "Uygulama bağlamı; terminal istisnası"
     }
   ],
-  "sonraki_adim": "UI-02: gerçek Plasma oturumunda System Settings > Shortcuts üzerinden her satırı tek tek uygula, çakışma listesini çıkar, 'durum' alanlarını güncelle."
+  "cakisma_cozumleri": [
+    {
+      "for": "maximize",
+      "kind": "component",
+      "component": "kwin",
+      "action": "Window Quick Tile Top",
+      "friendly": "Quick Tile Window to the Top",
+      "set": [],
+      "upstream_default": ["Meta+Up"],
+      "upstream_kaynak": "kwin v6.4.4 src/useractions.cpp Workspace::initShortcuts",
+      "neden": "Meta+Up büyütmeye verildi; üste döşeme kısayolsuz kalır (System Settings'ten yeniden atanabilir)."
+    },
+    {
+      "for": "minimize",
+      "kind": "component",
+      "component": "kwin",
+      "action": "Window Quick Tile Bottom",
+      "friendly": "Quick Tile Window to the Bottom",
+      "set": [],
+      "upstream_default": ["Meta+Down"],
+      "upstream_kaynak": "kwin v6.4.4 src/useractions.cpp Workspace::initShortcuts",
+      "neden": "Meta+Down küçültmeye verildi."
+    },
+    {
+      "for": "run-launcher",
+      "kind": "service",
+      "component": "org.kde.spectacle.desktop",
+      "action": "RecordRegion",
+      "friendly": "Record Rectangular Region",
+      "set": ["Meta+Shift+R"],
+      "upstream_default": ["Meta+Shift+R", "Meta+R"],
+      "upstream_kaynak": "spectacle v6.4.4 desktop/org.kde.spectacle.desktop.cmake [Desktop Action RecordRegion]",
+      "neden": "Meta+R KRunner'a verildi; bölge kaydı Meta+Shift+R ile kalır."
+    },
+    {
+      "for": "region-screenshot",
+      "kind": "service",
+      "component": "org.kde.spectacle.desktop",
+      "action": "_launch",
+      "friendly": "Spectacle",
+      "set": ["Print"],
+      "upstream_default": ["Print", "Meta+Shift+S"],
+      "upstream_kaynak": "spectacle v6.4.4 desktop/org.kde.spectacle.desktop.cmake [Desktop Entry]",
+      "neden": "Meta+Shift+S doğrudan bölge yakalamaya taşındı; Print Spectacle'ı açmaya devam eder."
+    }
+  ],
+  "sonraki_adim": "Gen2 Plasma oturumunda profiles/shortcuts/verify_shortcuts_live.py çalıştırılıp her satır geçti/kaldı olarak kaydedilecek; ardından her tuş elle denenecek (Hyper-V host yakalama riski: conflicts.md §3)."
 }

@@ -16,6 +16,8 @@ System Settings → Kısayollar ekranında ayrı bir "Windows kullanıcıları i
 
 Her kısayol satırı, Plasma'nın System Settings → Shortcuts ekranının **yerleşik** "Varsayılana Sıfırla" özelliğiyle geri alınabilir olmalı (MASTER_PLAN §6: *"ayarlarda düzenlenebilir ve varsayılana dönebilir"*). Yeni bir sıfırlama mekanizması icat edilmez.
 
+> M08 bulgusu (Plasma 6.4.4 kaynağı): yerleşik "Varsayılanlar" düğmesi, eylemi kaydeden uygulamanın bildirdiği **KDE** varsayılanına döner; alpbahOS profili `/etc/xdg/kglobalshortcutsrc` katmanındadır. alpbahOS profiline dönüş için kullanıcının `~/.config/kglobalshortcutsrc` içindeki ilgili girdinin silinmesi gerekir. Bu fark açık karar olarak [conflicts.md](conflicts.md) §4'te.
+
 ## 4. Kapsam dışı bırakılan fikir
 
 Meta tuşuna basılı tutunca kısayol overlay'i gösterme fikri (bazı masaüstü ortamlarında var) — yalnızca seçilen Plasma sürümünde **hazır** bir özellik olarak mevcutsa değerlendirilir; bunun için özel bir bileşen yazılmaz (AGENTS.md: hazır bileşenleri özelleştir, yeni compositor/kabuk parçası icat etme).
