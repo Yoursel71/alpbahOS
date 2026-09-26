@@ -366,6 +366,77 @@ class AppProfileTests(unittest.TestCase):
             self.assertIn("inode/directory", mimes)
 
 
+PERF_CSV = load("m08_perf_csv", REPO / "profiles" / "perf" / "analyze_kwin_perf_csv.py")
+PERF_COLLECT = load("m08_perf_collect", REPO / "profiles" / "perf" / "collect_session_metrics.py")
+
+
+def write_perf_csv(path, intervals_ms, refresh_ms=16.666, render_ms=4.0):
+    ns = 1_000_000
+    t = 1_000_000_000
+    lines = [",".join(PERF_CSV.COLUMNS)]
+    for interval in [refresh_ms] + list(intervals_ms):
+        target = t + int(refresh_ms * ns)
+        t += int(interval * ns)
+        start = t - int((render_ms + 2) * ns)
+        lines.append(f"{target},{t},{start},{start + int(render_ms * ns)},1500000,{int(refresh_ms * ns)},0,0,{int(render_ms * ns)}")
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+class PerfToolTests(unittest.TestCase):
+    def test_smooth_scene_within_budget(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            csv_path = Path(temp_dir) / "kwin perf statistics Virtual-1.csv"
+            write_perf_csv(csv_path, [16.666] * 120)
+            summary = PERF_CSV.summarize(PERF_CSV.load_rows(csv_path))
+            self.assertAlmostEqual(summary["frame_interval_ms"]["median"], 16.666, places=2)
+            self.assertEqual(summary["over_budget_pct"], 0.0)
+            self.assertAlmostEqual(summary["render_ms"]["median"], 4.0, places=2)
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(PERF_CSV.main([str(csv_path), "--budget-ms", "16.7"]), 0)
+
+    def test_dropped_frames_detected(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            csv_path = Path(temp_dir) / "perf.csv"
+            write_perf_csv(csv_path, [33.3] * 60 + [16.666] * 40)
+            summary = PERF_CSV.summarize(PERF_CSV.load_rows(csv_path))
+            self.assertGreater(summary["over_budget_pct"], 50)
+            self.assertGreater(summary["late_frames"], 0)
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(PERF_CSV.main([str(csv_path), "--budget-ms", "16.7"]), 1)
+
+    def test_rejects_wrong_header(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            csv_path = Path(temp_dir) / "bad.csv"
+            csv_path.write_text("a,b\n1,2\n", encoding="utf-8")
+            with self.assertRaises(PERF_CSV.PerfDataError):
+                PERF_CSV.load_rows(csv_path)
+
+    def test_collect_from_fake_proc(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            proc = Path(temp_dir) / "proc"
+            (proc / "sys" / "kernel").mkdir(parents=True)
+            (proc / "sys" / "kernel" / "osrelease").write_text("6.16.1-alpbahOS\n", encoding="utf-8")
+            (proc / "uptime").write_text("321.5 100.0\n", encoding="utf-8")
+            (proc / "meminfo").write_text("MemTotal:        4194304 kB\nMemFree:  100 kB\n"
+                                          "MemAvailable:    3145728 kB\nSwapTotal: 0 kB\nSwapFree: 0 kB\n", encoding="utf-8")
+            for pid, name, uid, pss in ((100, "kwin_wayland", 1000, 204800), (101, "plasmashell", 1000, 307200),
+                                        (102, "sshd", 0, 5120), (103, "bash", 1000, 2048)):
+                d = proc / str(pid)
+                d.mkdir()
+                (d / "status").write_text(f"Name:\t{name}\nUid:\t{uid}\t{uid}\t{uid}\t{uid}\nVmRSS:\t{pss + 1024} kB\n", encoding="utf-8")
+                (d / "smaps_rollup").write_text(f"Rss: {pss + 1024} kB\nPss: {pss} kB\n", encoding="utf-8")
+            home = Path(temp_dir) / "home"
+            (home / ".config").mkdir(parents=True)
+            (home / ".config" / "alpbahrc").write_text("[Gorunum]\nProfil=glass\n", encoding="utf-8")
+            data = PERF_COLLECT.collect(proc, 1000, home, use_dbus=False, label="test-idle")
+        self.assertEqual(data["memory"]["used_mib"], 1024.0)
+        self.assertTrue(data["memory"]["within_idle_budget"])
+        self.assertEqual([p["name"] for p in data["processes"]], ["plasmashell", "kwin_wayland"])
+        self.assertEqual(data["user_pss_mib"], 502.0)
+        self.assertEqual(data["profile"], "glass")
+        self.assertEqual(data["kernel"], "6.16.1-alpbahOS")
+
+
 class InstallScriptTests(unittest.TestCase):
     def setUp(self):
         self.bash = shutil.which("bash")
