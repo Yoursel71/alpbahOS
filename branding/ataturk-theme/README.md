@@ -11,7 +11,7 @@ Durum (22 Eylül 2026): **kaynak seçildi, indirildi, kullanıcı onayıyla repo
 
 **Bilinçli olarak seçilmeyen alternatif:** ATAM'ın daha yüksek çözünürlüklü (806×1024/845×1024) portreleri araştırıldı ama "Tüm Hakları Saklıdır" ibaresiyle **telif korumalı** olduğu görüldü — kamu malı değil, kullanılmadı. AI ile görsel üretimi de değerlendirilip **reddedildi**: gerçek bir tarihi/kurucu figürün uydurma tasviri olur, Türkiye'de 5816 sayılı Atatürk'ü Koruma Kanunu'na göre hassas bir alan.
 
-**Hâlâ açık:** Bu düşük-orta çözünürlüklü fotoğraf 1080p/4K duvar kâğıdı için doğrudan yetersiz (büyütmek bulanıklaşmaya yol açar). §2.1'deki "stilize/vektör işleme" önerisi hâlâ geçerli bir sonraki adım; bu turda yalnızca kaynak fotoğraf temin edildi, üretim (kırpım/vektörleştirme) yapılmadı.
+**Güncelleme (26 Eylül 2026, M08):** Varsayılan duvar kâğıdı paketi üretildi: [`wallpaper/alpbahOS-Ataturk/`](wallpaper/alpbahOS-Ataturk/ATTRIBUTION.md), üretici [`tools/build_wallpaper.py`](tools/build_wallpaper.py). Çözünürlük sorunu büyütmeden çözüldü: portre kaynak boyutunun üstüne ölçeklenmez (1080p'de ~%99, 1440p'de %100 ölçek), koyu lacivert zemin ve geometrik dağ silüeti üzerine tonlanarak yerleştirilir; boşluk büyütülmüş fotoğrafla değil zeminle dolar. Fotoğraf kırpılmaz; metin, imza veya söz eklenmez. Üretilen boyutlar: 1366x768, 1920x1080, 1920x1200, 2560x1440, 3440x1440 (+ 400x250 önizleme). Üretici, yüz kutusunun üst panel (36 px) altında, dock bölgesi (alt %15) üstünde ve sol üst simge bölgesi (genişliğin %25'i) dışında kaldığını her boyutta denetler; tutmazsa üretim durur. **Açık:** 4K (3840x2160) ve üstünde portre ekranın küçük bir kısmını kaplar; stilize/vektör sürüm (§2.1 yol 2) ya da daha yüksek çözünürlüklü, lisansı uygun bir kaynak hâlâ değerlendirilebilir. Duvar kâğıdı gerçek Plasma oturumunda gösterilmedi; farklı ölçeklerde (100/125/150/200%) görüntü alınmadı.
 
 Kapsam: yalnızca `branding/`. Kaynak: [docs/MASTER_PLAN.md](../../docs/MASTER_PLAN.md) §7.1, [docs/DECISIONS.md](../../docs/DECISIONS.md) D09, [docs/alpbahOS-design-mockups.md](../../docs/alpbahOS-design-mockups.md) §2.
 
@@ -59,6 +59,8 @@ Genel kural: yüz ve logo, tasarım dokümanındaki logo koruma alanı kuralına
 
 ## 4. Kilit ekranı okunabilirlik kuralı
 
+> M08 durumu: kilit ekranı, varsayılan duvar kâğıdını look-and-feel paketinden alır (ayrı yapılandırma gerekmez). Aşağıdaki yarı saydam okunabilirlik paneli için özel bir kilit ekranı QML'i gerekir; KScreenLocker bu build'de derlenmediğinden (SCREENLOCK-01) yazılmadı ve test edilmedi.
+
 - Şifre alanı ve kullanıcı adı metninin arkasında, `--ab-bg-950` tonunda yarı saydam bir panel (`rgba(11,16,20,0.55)` öneri, ölçülmedi) kullanılır — portre fotoğrafının kontrastından bağımsız okunabilirlik sağlamak için.
 - Metin rengi `--ab-text-strong` (`#f4f8fb`); WCAG AA kontrast hedefi (planlandı, ölçülmedi).
 - Hatalı giriş mesajı `--ab-danger` (`#ff6575`) — mockup §10 ile tutarlı.
@@ -73,7 +75,7 @@ Duvar kâğıdına `alpbahOS` logosu eklenirse (mockup §5.1: "Duvar kâğıdın
 
 ## 7. Doğrulanmamış / açık kararlar
 
-1. Nihai görsel kaynağı seçilmedi — kullanıcı onayı gerekiyor (indirme dahil).
+1. ~~Nihai görsel kaynağı seçilmedi~~ — 22 Eylül'de `Ataturk1930s.jpg` seçildi ve kullanıcı onayıyla eklendi; M08'de bu kaynaktan duvar kâğıdı üretildi.
 2. ATAM/TCCB/TTK sayfalarındaki tam kullanım şartları tek tek okunmadı.
 3. Boot ekranının Atatürk temalı olup olmayacağı MASTER_PLAN §7.1'de "henüz istenmemiş" olarak işaretli — bu belge boot ekranını kapsamıyor.
 4. Stilize/vektör alternatifi yalnızca fikir düzeyinde; üretilmedi.
