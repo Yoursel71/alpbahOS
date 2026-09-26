@@ -2,7 +2,7 @@
 
 ```text
 Görev ID / durum: AGENTS.md "Her iki ajan diğerinin kritik değişikliklerini inceleyebilir" kapsamında salt okunur inceleme. Hiçbir betik değiştirilmedi (scripts/ Codex'in alanı); düzeltmeler öneri/yama olarak aşağıda.
-Çalışılan host ve branch/commit: YRSLF dışında Windows makinesi; main 3aead65 üzerinden, dal claude/m08-lookandfeel-shortcuts.
+Çalışılan host ve branch/commit: YRSLF dışında Windows makinesi; main 9c26ecf üzerinden, dal claude/glass-apps-perf-office.
 İncelenen: scripts/build-m2-gen2-test-image.sh, scripts/apply-m2-rootfs-fixes.sh, scripts/build-m07-vgem-kernel.sh, scripts/patch-m2-gen2-autoseat.sh, scripts/refresh-ssh-hosts.ps1, scripts/vm-screenshot.ps1, scripts/build-m04-*-stage.sh içindeki mount korumaları; CURRENT.md, docs/WORKLOG.md, docs/NEW_SESSION_HANDOFF.md ve M07 kanıt belgesindeki betik/kanıt atıfları.
 Çalıştırılan doğrulama: atıf taraması (git ls-tree ile), bash errexit davranışının küçük bir yeniden üretimi (Git Bash 5.x). Builder/VM'de hiçbir şey çalıştırılmadı.
 Sonraki eylem: Codex bulgu 1-3'ü değerlendirip kendi dalında düzeltir; inceleme gerekiyorsa Claude'a geri verir.
