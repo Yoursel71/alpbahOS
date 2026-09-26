@@ -1224,3 +1224,10 @@ Kullanıcı M08/9/10'u devretti. Bölüşüm: M08 yapılandırma/tema/kısayol/a
 - Üretildi: `org.alpbahos.solid.desktop` look-and-feel paketi (renk şeması, Breeze tabanı, üst panel + dock düzeni), `alpbahOS-Ataturk` duvar kâğıdı paketi (PD-Turkey kaynaktan 5 çözünürlük, büyütme yok, güvenli alan denetimli), `alpbahos` sembol ikonu, `/etc/xdg` varsayılanları, `shortcuts.json` v1'den üretilen `kglobalshortcutsrc`, salt okunur canlı kısayol doğrulayıcısı ve çakışma korumalı kurulum betiği.
 - Kaynak koddan bulunan kısayol çakışmaları: Meta+Tab (KWin pencere geçişi), Meta+Up/Down (hızlı döşeme), Meta+R (Spectacle bölge kaydı), Meta+Shift+S (Spectacle açılışı); çözümleri `profiles/shortcuts/conflicts.md` §2.
 - Test: `python -m unittest tests.test_m08_desktop_profile` 19/19 geçti (Windows, Python 3.14.4, Pillow 12.2.0). Gen2 kurulum, Plasma ekran görüntüsü ve canlı kısayol testi çalıştırılmadı; adımlar [015](handoffs/claude/015-m08-lookandfeel-wallpaper-shortcuts.md).
+
+## 26 Eylül 2026 (akşam) — Claude, kalan Claude işleri: Glass, uygulama profili, PERF-01, OFFICE-01, Codex incelemesi
+
+- Aynı dal (`claude/m08-lookandfeel-shortcuts`), aynı ortam sınırı (VM erişimi yok). `alp` (PKG-01/02) aynı gün başka bir Claude oturumunda aktif olduğu için dokunulmadı.
+- Glass: `profiles/desktop/bin/alpbah-gorunum` (KWin blur/contrast + panel opaklığı; yazılım renderer'da reddeder). Uygulama profili: `profiles/apps/` → `/etc/xdg/mimeapps.list`. PERF-01: `profiles/perf/` (KWin perf CSV çözümleyici, bellek toplayıcı). OFFICE-01: `profiles/apps/office/` (plan + DOCX/XLSX gidiş-dönüş denetimi; yerel Word/Excel 16.0 ile geçti).
+- İkinci göz inceleme: M07/M09 için anılan dört betik/kanıt dosyası git'te yok; `apply-m2-rootfs-fixes.sh` rootfs `alp.py`yi e8b0376'ya döndürebilir; 8 betikte `set -e` altında `! komut` denetimleri etkisiz. Ayrıntı [017](handoffs/claude/017-codex-betik-incelemesi.md); betikler değiştirilmedi.
+- Test: `tests/test_m08_desktop_profile.py` 36/36 (Windows). Ayrıntı [016](handoffs/claude/016-glass-uygulama-perf-office.md).
