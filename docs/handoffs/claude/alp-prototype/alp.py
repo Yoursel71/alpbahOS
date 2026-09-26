@@ -27,7 +27,9 @@ from __future__ import annotations
 
 import argparse
 import contextlib
+import difflib
 import hashlib
+import inspect
 import json
 import os
 import posixpath
@@ -2277,66 +2279,252 @@ def cmd_update(args: argparse.Namespace, paths: Paths, index_path: Path, index: 
             shutil.rmtree(work, ignore_errors=True)
 
 
+# --------------------------------------------------------------------------
+# CLI: Turkish help screen and argparse wrapper
+# --------------------------------------------------------------------------
+
+def _use_color() -> bool:
+    return sys.stdout.isatty() and not os.environ.get("NO_COLOR") and os.environ.get("TERM") != "dumb"
+
+
+def main_help() -> str:
+    """The screen shown for plain `alp`, `alp help` and `alp --help`."""
+    color = _use_color()
+    bold = (lambda t: f"\033[1m{t}\033[0m") if color else (lambda t: t)
+    head = (lambda t: f"\033[1;36m{t}\033[0m") if color else (lambda t: t)
+    cmd = (lambda t: f"\033[32m{t}\033[0m") if color else (lambda t: t)
+    dim = (lambda t: f"\033[2m{t}\033[0m") if color else (lambda t: t)
+
+    def rows(items: list[tuple[str, str]]) -> str:
+        return "\n".join(f"  {cmd(c.ljust(width))}   {d}" for c, d in items)
+
+    sections = [
+        ("Paket bulma", [
+            ("search <kelime>", "Katalogda paket ara"),
+            ("info <paket>", "Paketin ayrıntılarını göster"),
+            ("list", "Kurulu paketleri listele"),
+        ]),
+        ("Kurma ve kaldırma", [
+            ("install <paket>", "Paketi ve gerektirdiği paketleri kur"),
+            ("remove <paket>", "Paketi kaldır"),
+            ("upgrade [paket]", "Paketi yükselt; ad verilmezse hepsini"),
+            ("autoremove", "Artık gerekmeyen bağımlılıkları kaldır"),
+        ]),
+        ("Bakım", [
+            ("update", "Paket kataloğunu yenile"),
+            ("check", "Kurulu sistemdeki sorunları denetle"),
+            ("recover", "Yarım kalan işlemi geri al"),
+            ("protect <paket>", "Paketi kaldırılmaya karşı koru"),
+            ("unprotect <paket>", "Korumayı kaldır"),
+        ]),
+        ("Seçenekler", [
+            ("-y, --yes", "Onay sormadan devam et"),
+            ("--dry-run", "Ne yapılacağını göster, hiçbir şeyi değiştirme"),
+            ("--json", "search/list çıktısını JSON olarak ver"),
+            ("--keep-build", "Derleme dosyalarını silme (hata ayıklama için)"),
+        ]),
+    ]
+    width = max(len(c) for _, items in sections for c, _ in items)
+    out = [
+        f"{bold('alp')} — alpbahOS paket yöneticisi {dim('(prototip, ' + ALP_VERSION + ')')}",
+        "",
+        f"{head('Kullanım:')} alp {cmd('<komut>')} [seçenekler]",
+    ]
+    for title, items in sections:
+        out += ["", head(title), rows(items)]
+    out += [
+        "",
+        head("Örnekler"),
+        f"  alp search tema          {dim('# adında/açıklamasında tema geçenler')}",
+        f"  alp install figlet       {dim('# kur (önce planı gösterip onay ister)')}",
+        f"  alp remove -y figlet     {dim('# sormadan kaldır')}",
+        f"  alp upgrade              {dim('# eskimiş her şeyi yükselt')}",
+        "",
+        f"Bir komutun ayrıntıları için: {cmd('alp <komut> --help')}",
+        dim("Geliştirici seçenekleri (--root, --index, --relocate, adopt-base): alp help gelistirici"),
+    ]
+    return "\n".join(out) + "\n"
+
+
+def developer_help() -> str:
+    return """alp — geliştirici seçenekleri
+
+  --root DİZİN      Paketleri / yerine bu dizine kur (test için; varsayılan: /)
+  --index DOSYA     Kullanılacak katalog index.json dosyası
+  --relocate        Tarifleri --root altında çalışacak şekilde derle
+                    (@PREFIX@ = <root>/usr); başka dağıtımda kullanıcı kökü için
+
+  adopt-base        Önceden kurulmuş LFS dosyalarını korumalı paket olarak kaydet
+                    (ayrıntı: alp adopt-base --help)
+
+Bu seçenekler komuttan önce ya da sonra yazılabilir:
+  alp --root /tmp/deneme install figlet
+  alp install figlet --root /tmp/deneme
+"""
+
+
+_ARGPARSE_TR = [
+    ("usage: ", "Kullanım: "),
+    ("\noptions:\n", "\nSeçenekler:\n"),
+    ("\npositional arguments:\n", "\nArgümanlar:\n"),
+    ("show this help message and exit", "Bu yardımı göster"),
+]
+
+
+class _AlpArgumentParser(argparse.ArgumentParser):
+    """argparse with Turkish headings and short, friendly errors."""
+
+    def __init__(self, *args, **kwargs):
+        # Python 3.14+: plain text so the Turkish replacements below match.
+        if "color" in inspect.signature(argparse.ArgumentParser.__init__).parameters:
+            kwargs.setdefault("color", False)
+        super().__init__(*args, **kwargs)
+
+    def format_help(self) -> str:
+        text = super().format_help()
+        for en, tr in _ARGPARSE_TR:
+            text = text.replace(en, tr)
+        return text
+
+    def format_usage(self) -> str:
+        return super().format_usage().replace("usage: ", "Kullanım: ")
+
+    def error(self, message: str):  # noqa: D401 - argparse API
+        msg = _translate_argparse_error(message)
+        self.exit(2, f"alp: {msg}\nYardım için: {self.prog} --help\n")
+
+
+def _translate_argparse_error(message: str) -> str:
+    m = re.match(r"argument command: invalid choice: '([^']*)'(?:, maybe you meant '([^']*)'\?)?", message)
+    if m:
+        wrong, close = m.group(1), m.group(2)
+        if close is None:
+            close = next(iter(difflib.get_close_matches(wrong, COMMANDS, 1)), None)
+        hint = f" Bunu mu demek istediniz: alp {close}" if close else ""
+        return f"'{wrong}' diye bir komut yok.{hint}"
+    m = re.match(r"the following arguments are required: (.*)", message)
+    if m:
+        return f"eksik: {m.group(1)}"
+    m = re.match(r"unrecognized arguments: (.*)", message)
+    if m:
+        return f"tanınmayan argüman: {m.group(1)}"
+    m = re.match(r"argument (\S+): expected one argument", message)
+    if m:
+        return f"{m.group(1)} bir değer bekliyor"
+    return message
+
+
+COMMANDS = [
+    "search", "info", "list", "install", "remove", "upgrade", "autoremove",
+    "update", "check", "recover", "protect", "unprotect", "adopt-base", "help",
+]
+
+
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="alp", description="alpbahOS hybrid package manager (prototype)")
-    p.add_argument("--root", default=None, help="DESTROOT override for testing (default: /)")
-    p.add_argument("--index", help="Path to the local package index.json (not needed for adopt-base)")
-    p.add_argument("--dry-run", action="store_true", help="Print intended actions, touch nothing persistent")
-    p.add_argument("--json", action="store_true", help="Machine-readable JSON output for search/list (info is always JSON)")
-    p.add_argument("--relocate", action="store_true",
-                   help="Build recipes for <root>/usr instead of /usr, so packages run from a non-/ --root")
-    p.add_argument("--keep-build", action="store_true", help="Keep build trees in var/lib/alp/cache after a successful install/upgrade")
+    p = _AlpArgumentParser(prog="alp", add_help=False)
+    p.add_argument("-h", "--help", action="store_true", help=argparse.SUPPRESS)
 
-    sub = p.add_subparsers(dest="command", required=True)
+    def global_options(parser: argparse.ArgumentParser, default) -> None:
+        # Defined on the top-level parser AND every subcommand, so
+        # `alp --dry-run install x` and `alp install x --dry-run` both work.
+        # Subcommands use default=SUPPRESS so they never overwrite a value
+        # given before the command.
+        g = parser.add_argument_group("Genel seçenekler")
+        g.add_argument("--dry-run", action="store_true", default=default,
+                       help="Ne yapılacağını göster, hiçbir şeyi değiştirme")
+        g.add_argument("--json", action="store_true", default=default,
+                       help="search/list çıktısını JSON olarak ver (info her zaman JSON)")
+        g.add_argument("--keep-build", action="store_true", default=default,
+                       help="Başarılı kurulumdan sonra derleme dosyalarını silme")
+        g.add_argument("--root", default=None if default is False else default, help=argparse.SUPPRESS)
+        g.add_argument("--index", default=None if default is False else default, help=argparse.SUPPRESS)
+        g.add_argument("--relocate", action="store_true", default=default, help=argparse.SUPPRESS)
 
-    sp = sub.add_parser("search", help="Search the index; installs nothing")
-    sp.add_argument("term")
+    global_options(p, False)
+    common = _AlpArgumentParser(add_help=False)
+    global_options(common, argparse.SUPPRESS)
 
-    sp = sub.add_parser("info", help="Show details for a package")
-    sp.add_argument("name")
+    sub = p.add_subparsers(dest="command", parser_class=_AlpArgumentParser)
 
-    yes = argparse.ArgumentParser(add_help=False)
-    yes.add_argument("-y", "--yes", action="store_true", help="Do not ask for confirmation")
+    def command(name: str, description: str, *, args: str = "", confirm: bool = False, epilog: str | None = None):
+        usage = f"alp {name} {args} [seçenekler]".replace("  ", " ")
+        sp = sub.add_parser(
+            name, parents=[common], description=description, epilog=epilog, usage=usage,
+            formatter_class=argparse.RawDescriptionHelpFormatter,
+            add_help=False,
+        )
+        sp.add_argument("-h", "--help", action="help", help="Bu yardımı göster")
+        if confirm:
+            sp.add_argument("-y", "--yes", action="store_true", help="Onay sormadan devam et")
+        return sp
 
-    sp = sub.add_parser("install", parents=[yes], help="Install a package and the catalog packages it depends on")
-    sp.add_argument("name")
-    sp.add_argument("--reinstall", action="store_true")
+    sp = command("search", args="<kelime>", description="Katalogda adı veya açıklaması kelimeyi içeren paketleri listeler. Hiçbir şey kurmaz.",
+                 epilog="Örnek:\n  alp search tema\n  alp search \"\"      # tüm katalog")
+    sp.add_argument("term", metavar="kelime", help="Aranacak kelime")
 
-    sp = sub.add_parser("upgrade", parents=[yes],
-                        help="Upgrade one installed package, or every outdated recipe/core package when no name is given")
-    sp.add_argument("name", nargs="?")
+    sp = command("info", args="<paket>", description="Paketin katalog ve kurulum bilgilerini JSON olarak gösterir.",
+                 epilog="Örnek:\n  alp info figlet")
+    sp.add_argument("name", metavar="paket", help="Paket adı")
 
-    sp = sub.add_parser("remove", parents=[yes], help="Remove an installed package (refuses if others depend on it)")
-    sp.add_argument("name")
-    sp.add_argument("--cascade", action="store_true", help="Also remove installed packages that depend on it")
+    sp = command("install", args="<paket>", description="Paketi ve katalogdan gerektirdiği paketleri kurar. Önce işlem planını gösterip onay ister.",
+                 confirm=True, epilog="Örnek:\n  alp install figlet\n  alp install -y figlet --reinstall")
+    sp.add_argument("name", metavar="paket", help="Paket adı")
+    sp.add_argument("--reinstall", action="store_true", help="Kuruluysa yeniden kur")
 
-    sub.add_parser("autoremove", parents=[yes], help="Remove dependencies nothing needs anymore")
-    sub.add_parser("check", help="Verify installed dependency constraints and conflicts")
-    sub.add_parser("list", help="List installed packages")
-    sub.add_parser("recover", help="Undo the half-finished transaction of a killed alp process")
+    sp = command("upgrade", args="[paket]", description="Kurulu paketi yeni sürüme yükseltir. Ad verilmezse eskimiş tüm paketleri yükseltir.",
+                 confirm=True, epilog="Örnek:\n  alp upgrade\n  alp upgrade figlet")
+    sp.add_argument("name", metavar="paket", nargs="?", help="Paket adı (boşsa hepsi)")
 
-    sp = sub.add_parser("protect", help="Mark an installed package as protected (never removed by remove/autoremove)")
-    sp.add_argument("name")
-    sp = sub.add_parser("unprotect", help="Remove the protected mark")
-    sp.add_argument("name")
+    sp = command("remove", args="<paket>", description="Kurulu paketi kaldırır. Başka bir paket ona bağlıysa --cascade olmadan reddeder.",
+                 confirm=True, epilog="Örnek:\n  alp remove figlet\n  alp remove --cascade libfoo")
+    sp.add_argument("name", metavar="paket", help="Paket adı")
+    sp.add_argument("--cascade", action="store_true", help="Ona bağlı kurulu paketleri de kaldır")
 
-    sp = sub.add_parser("adopt-base", help="Record already-installed LFS files as protected package ownership; caller verifies source authenticity")
-    sp.add_argument("--manifest", required=True, help="Captured alpbahOS.package-files/v1 JSON manifest")
-    sp.add_argument("--name", required=True, help="Expected package name; must match the manifest")
-    sp.add_argument("--version", required=True, help="Expected package version; must match the manifest")
-    sp.add_argument("--source-sha256", required=True, help="Independently verified source archive SHA-256")
-    sp.add_argument("--manifest-sha256", help="Optional expected SHA-256 of the exact manifest bytes")
+    command("autoremove", "Bağımlılık olarak gelip artık hiçbir paketin ihtiyaç duymadığı paketleri kaldırır.",
+            confirm=True)
+    command("check", "Kurulu sistemi denetler: bozuk bağımlılıklar, çakışmalar, güncellemeler, sahipsiz paketler.")
+    command("list", "Kurulu paketleri listeler.")
+    command("recover", "Kesintiye uğrayan (kill -9, elektrik kesintisi) yarım işlemi günlükten geri alır.")
 
-    sp = sub.add_parser("update", help="Refresh the catalog (index.json, or a catalog bundle) from a source")
-    sp.add_argument("--source", help="https:// URL or local path of index.json or a .tar.gz catalog bundle "
-                                     "(default: the current index's own \"source\" field)")
-    sp.add_argument("--sha256", help="Expected SHA-256 of the downloaded file (recommended)")
+    sp = command("protect", args="<paket>", description="Paketi korumalı işaretler; remove ve autoremove onu kaldıramaz.")
+    sp.add_argument("name", metavar="paket", help="Paket adı")
+    sp = command("unprotect", args="<paket>", description="Paketin koruma işaretini kaldırır.")
+    sp.add_argument("name", metavar="paket", help="Paket adı")
+
+    sp = command("adopt-base", "Önceden kurulmuş LFS dosyalarını canlı kökle karşılaştırıp korumalı paket olarak kaydeder. "
+                               "Kaynak arşivin doğruluğunu çağıran ayrıca doğrulamalıdır.")
+    sp.add_argument("--manifest", required=True, help="alpbahOS.package-files/v1 JSON manifesti")
+    sp.add_argument("--name", required=True, help="Beklenen paket adı; manifestle aynı olmalı")
+    sp.add_argument("--version", required=True, help="Beklenen sürüm; manifestle aynı olmalı")
+    sp.add_argument("--source-sha256", required=True, help="Bağımsız doğrulanmış kaynak arşiv SHA-256'sı")
+    sp.add_argument("--manifest-sha256", help="Manifest dosyasının beklenen SHA-256'sı (isteğe bağlı)")
+
+    sp = command("update", "Paket kataloğunu (index.json veya .tar.gz katalog paketi) kaynaktan yeniler. "
+                           "Değiştirmeden önce farkı gösterir.",
+                 epilog="Örnek:\n  alp update\n  alp update --dry-run")
+    sp.add_argument("--source", help="https:// adresi veya yerel yol (varsayılan: katalogdaki \"source\" alanı)")
+    sp.add_argument("--sha256", help="İndirilen dosyanın beklenen SHA-256'sı (önerilir)")
+
+    sp = command("help", args="[konu]", description="Yardım ekranını gösterir.")
+    sp.add_argument("topic", metavar="konu", nargs="?", help="Komut adı veya 'gelistirici'")
 
     return p
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    if args.help or args.command is None:
+        sys.stdout.write(main_help())
+        return 0
+    if args.command == "help":
+        if args.topic in ("gelistirici", "geliştirici", "dev"):
+            sys.stdout.write(developer_help())
+        elif args.topic:
+            parser.parse_args([args.topic, "--help"])
+        else:
+            sys.stdout.write(main_help())
+        return 0
     paths = Paths.resolve(args.root)
     try:
         if args.command == "adopt-base":
