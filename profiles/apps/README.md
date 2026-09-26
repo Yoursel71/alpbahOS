@@ -18,7 +18,8 @@ Durum (26 Eylül 2026): **dosya düzeyinde hazır, test edilmedi.** Listedeki uy
 
 ## Bilinçli olarak dışarıda bırakılanlar
 
-- **Wine (.exe ilişkisi), Steam:** D22/D32 çatışması (COMPAT-01) kullanıcı kararını bekliyor; `karar_bekleyen` listesinde, `mimeapps.list`'e girmez.
+- **Wine (.exe ilişkisi):** D35 (yalnız 64-bit) ile Wine yalnız WoW64 moduyla kurulacak; derlenip COMPAT-01 testi geçene kadar ilişki yazılmaz (`dahil_degil`).
+- **Steam:** D35 ile kapsam dışı; Linux istemcisi 32-bit kullanıcı alanı ister (`dahil_degil`).
 - **Mağaza:** `alp` grafik arayüzü ve işlem sözleşmesi (PKG-02) yok.
 - **Chrome:** varsayılan değil; MASTER_PLAN §11'e göre ayrı, doğrulanmış kurulum seçeneği.
 

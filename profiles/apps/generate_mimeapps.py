@@ -7,7 +7,7 @@ Tek kaynak `profiles/apps/apps.json` (MASTER_PLAN §11). Çıktı, freedesktop
 kullanıcının ~/.config/mimeapps.list seçimi her zaman önce gelir.
 
 Doğrulama: her uygulama kimliği ve masaüstü dosyası tektir; bir MIME türü yalnız bir
-uygulamaya varsayılan olur; MIME türü `tür/alt-tür` biçimindedir; `karar_bekleyen`
+uygulamaya varsayılan olur; MIME türü `tür/alt-tür` biçimindedir; `dahil_degil`
 listesindekiler (Wine, Steam, mağaza) dosyaya hiç girmez.
 
 Kullanım:
@@ -58,12 +58,12 @@ def validate(profile: dict) -> list[str]:
             if mime in owners:
                 errors.append(f"{mime}: hem {owners[mime]} hem {aid} için varsayılan")
             owners[mime] = aid
-    for pending in profile.get("karar_bekleyen", []):
-        if not pending.get("neden"):
-            errors.append(f"karar bekleyen {pending.get('id')!r}: neden eksik")
-        for mime in pending.get("mime", []):
+    for excluded in profile.get("dahil_degil", []):
+        if not excluded.get("neden"):
+            errors.append(f"dahil olmayan {excluded.get('id')!r}: neden eksik")
+        for mime in excluded.get("mime", []):
             if mime in owners:
-                errors.append(f"{mime}: karar bekleyen {pending.get('id')} türü {owners[mime]} uygulamasına atanmış")
+                errors.append(f"{mime}: dahil olmayan {excluded.get('id')} türü {owners[mime]} uygulamasına atanmış")
     return errors
 
 
