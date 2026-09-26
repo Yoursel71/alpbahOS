@@ -1,0 +1,6 @@
+# alpbahOS sistem geneli KDE varsayılanı -- kurulum hedefi: /etc/xdg/kdeglobals
+# Kullanıcının ~/.config/kdeglobals ayarı her zaman önce gelir. Diğer görünüm
+# anahtarları look-and-feel paketinin contents/defaults dosyasından gelir
+# (startplasma ilk oturumda ~/.config/kdedefaults altına yazar).
+[KDE]
+LookAndFeelPackage=org.alpbahos.solid.desktop
