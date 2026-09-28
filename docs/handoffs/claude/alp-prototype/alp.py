@@ -323,20 +323,15 @@ def cmd_adopt_base(args: argparse.Namespace, paths: Paths) -> int:
             and existing.get("version") == args.version
         ):
             raise AlpError(f"{args.name} zaten farklı bir kayıtla kurulu; taban sahipliği üzerine yazılmadı.")
-        claims: dict[str, str] = {}
-        for other_name, record in packages.items():
-            if other_name == args.name:
-                continue
-            for rel in [*record.get("files", []), *record.get("symlinks", [])]:
-                claims.setdefault(rel, other_name)
+        claims = _other_owners(db, exclude=args.name)
         files: list[str] = []
         symlinks: list[str] = []
         for rel, entry in manifest["entries"]:
             _verify_base_entry(paths.root, rel, entry)
             if entry["type"] == "directory":
                 continue  # shared parents are validated, never claimed/removable
-            if rel in claims:
-                raise AlpError(f"/{rel} zaten {claims[rel]} paketine ait; sahiplik çakışması.")
+            if _owner_key(rel) in claims:
+                raise AlpError(f"/{rel} zaten {claims[_owner_key(rel)]} paketine ait; sahiplik çakışması.")
             (symlinks if entry["type"] == "symlink" else files).append(rel)
         record = {
             "name": args.name,
@@ -734,14 +729,25 @@ def _walk_staged(staged_root: Path) -> list[tuple[str, str]]:
     return sorted(entries)
 
 
+def _owner_key(rel: str) -> str:
+    """One spelling for ownership lookups. Recipe/core records store
+    "/usr/bin/x" (from _walk_staged) while adopt-base records store
+    "usr/bin/x"; comparing them raw made a path owned by both invisible to
+    both, so adopt-base could claim an alp-installed file and removing
+    that package deleted the protected base file."""
+    return "/" + rel.lstrip("/")
+
+
 def _other_owners(db: dict, exclude: str) -> dict[str, str]:
-    """path -> owning package, for every installed package except `exclude`."""
+    """owner key (see _owner_key) -> owning package, for every installed
+    package except `exclude`. Symlinks count too: adopt-base keeps them out
+    of files[]."""
     owners: dict[str, str] = {}
     for pkg_name, record in db["packages"].items():
         if pkg_name == exclude:
             continue
-        for rel in record.get("files", []):
-            owners.setdefault(rel, pkg_name)
+        for rel in [*record.get("files", []), *record.get("symlinks", [])]:
+            owners.setdefault(_owner_key(rel), pkg_name)
     return owners
 
 
@@ -782,7 +788,7 @@ def _preflight_merge(
         if target.is_dir() and not target.is_symlink():
             problems.append(f"{rel}: pakette dosya, sistemde dizin")
             continue
-        owner = other_owners.get(rel)
+        owner = other_owners.get(_owner_key(rel))
         if owner is not None:
             problems.append(f"{rel}: '{owner}' paketine ait")
         elif rel not in self_owned:
@@ -1235,7 +1241,11 @@ def _drop_stale_files(
     ships (a renamed binary, a dropped doc file), with the same safety rules
     as removal -- including .alpsave for a user-modified config file the new
     version dropped. Paths another package owns are left alone."""
-    dropped = set(old_record.get("files", [])) - set(new_files) - set(other_owners)
+    kept = {_owner_key(rel) for rel in new_files}
+    dropped = {
+        rel for rel in old_record.get("files", [])
+        if _owner_key(rel) not in kept and _owner_key(rel) not in other_owners
+    }
     if dropped:
         _remove_owned_paths(root, dropped, old_record, dry_run=False, journal=journal)
 
@@ -1435,7 +1445,7 @@ def remove_package(paths: Paths, db: dict, name: str, dry_run: bool, journal: Fi
         remove_flatpak(pkg["flatpak_ref"], dry_run)
     else:
         other_owners = _other_owners(db, exclude=name)
-        ours = [rel for rel in pkg.get("files", []) if rel not in other_owners]
+        ours = [rel for rel in pkg.get("files", []) if _owner_key(rel) not in other_owners]
         _remove_owned_paths(paths.root, ours, pkg, dry_run, journal=journal)
 
     if not dry_run:

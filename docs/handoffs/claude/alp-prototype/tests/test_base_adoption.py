@@ -205,3 +205,47 @@ def test_parser_adopt_base_does_not_require_catalog():
     assert args.command == "adopt-base"
     assert args.index is None
     assert args.dry_run is True
+
+
+def _record_alp_package(paths: alp.Paths, name: str, files: list[str], symlinks: list[str] = ()) -> None:
+    """An alp-installed package as _merge_staged records it: paths start with '/'."""
+    paths.ensure()
+    db = alp.load_db(paths)
+    db["packages"][name] = {"name": name, "version": "1", "method": "recipe", "status": "installed",
+                            "files": list(files), "symlinks": list(symlinks), "reason": "explicit"}
+    alp.save_db(paths, db)
+
+
+def test_adopt_refuses_path_owned_by_alp_installed_package(paths, tmp_path):
+    # adopt-base stores "usr/bin/tool", recipes store "/usr/bin/tool"; the two
+    # spellings must still collide, or both packages would own the file.
+    _record_alp_package(paths, "other", ["/usr/bin/tool"])
+    db_before = paths.db_file.read_bytes()
+    with pytest.raises(alp.AlpError, match="zaten other paketine ait"):
+        alp.cmd_adopt_base(_args(_manifest(paths, tmp_path)), paths)
+    assert paths.db_file.read_bytes() == db_before
+
+
+def test_removing_alp_package_keeps_file_owned_by_base_package(paths, tmp_path, capsys):
+    alp.cmd_adopt_base(_args(_manifest(paths, tmp_path)), paths)
+    # A database that already holds the double ownership (written by the old
+    # key comparison): removing the alp package must not delete the base file.
+    _record_alp_package(paths, "other", ["/usr/bin/tool"])
+    alp.cmd_remove(argparse.Namespace(name="other", dry_run=False, cascade=False, yes=True), paths)
+    assert (paths.root / "usr/bin/tool").is_file()
+    assert "other" not in alp.load_db(paths)["packages"]
+    capsys.readouterr()
+
+
+def test_other_owners_counts_base_symlinks_under_one_spelling(paths, tmp_path):
+    link = paths.root / "usr/bin/tool-link"
+    try:
+        link.symlink_to("tool")
+    except (OSError, NotImplementedError):
+        pytest.skip("this Windows account cannot create symlinks")
+    tool_stat = (paths.root / "usr/bin/tool").lstat()
+    entries = [{"path": "/usr/bin/tool-link", "type": "symlink", "target": "tool",
+                "mode": stat.S_IMODE(link.lstat().st_mode), "uid": tool_stat.st_uid, "gid": tool_stat.st_gid}]
+    alp.cmd_adopt_base(_args(_manifest(paths, tmp_path, entries=entries)), paths)
+    owners = alp._other_owners(alp.load_db(paths), exclude="nobody")
+    assert owners == {"/usr/bin/tool-link": "tool"}
