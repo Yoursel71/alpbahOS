@@ -1011,9 +1011,15 @@ def _recipe_prefix(paths: Paths) -> str:
     (e.g. ~/.local/share/alp/root) gets binaries that find their own data
     files (fonts, units database, ...) at runtime.
     """
-    if paths.relocate and paths.root != Path("/"):
+    if paths.relocate and not _is_fs_root(paths.root):
         return str(paths.root) + DEFAULT_RECIPE_PREFIX
     return DEFAULT_RECIPE_PREFIX
+
+
+def _is_fs_root(path: Path) -> bool:
+    """True for the filesystem root itself ("/", "//", or "C:\\" on Windows).
+    Comparing against Path("/") missed the spellings Path.resolve() keeps."""
+    return path == Path(path.anchor)
 
 
 def _recipe_steps(recipe: dict, paths: Paths, destdir: str) -> list[list[str]]:
@@ -1044,7 +1050,7 @@ def _staged_tree(paths: Paths, destdir: Path) -> Path:
     /etc path hardcoded by the Makefile) cannot be placed under the root
     and is refused rather than silently dropped.
     """
-    if not (paths.relocate and paths.root != Path("/")):
+    if not paths.relocate or _is_fs_root(paths.root):
         return destdir
     staged = destdir / paths.root.relative_to(paths.root.anchor)
     stray = [
