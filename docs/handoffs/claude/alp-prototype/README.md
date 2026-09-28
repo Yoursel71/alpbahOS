@@ -81,6 +81,7 @@ Ayrıntı: [../013-alp-seviye3-deps.md](../013-alp-seviye3-deps.md). Kısaca:
 
 - `index.json` girdilerinde `depends` artık sürüm kısıtı alıyor: `"libfoo>=2.0"`, `"libfoo>=2.0,<3"` (virgül = VE). İsteğe bağlı yeni `conflicts` alanı var.
 - Kurulum, yükseltme ve kaldırma önce bir **işlem planı** gösteriyor. Etkileşimli terminalde `[E/h]` onayı soruyor; betikler ve PackageKit backend'i için `-y/--yes` var.
+- **Mağaza sözleşmesi (PKG-02, 28 Eylül 2026):** `--json --dry-run install|upgrade|remove` planı tek JSON nesnesi olarak verir (adımlar, `problems`, `download_size`; reddedilecek işlemde çıkış 1). `--progress-fd N` satır başına JSON ilerleme olayları yazar (`plan`, `step`, `phase`, `error`, `done`). Sarmalayıcılar: `alp_plan`, `alp_updates`. Testler: `tests/test_store_contract.py`. Ayrıntı: [design/packagekit-integration.md](design/packagekit-integration.md) §4.
 - Plan sonunda bir kısıt veya çakışma bozulacaksa işlem **tek bayt yazılmadan** reddediliyor.
 - Yeni komutlar ve seçenekler:
   - `alp remove --cascade <ad>`: bağımlı paketlerle birlikte kaldırır. `--cascade` olmadan, başka paketin ihtiyaç duyduğu bir paket kaldırılamaz.

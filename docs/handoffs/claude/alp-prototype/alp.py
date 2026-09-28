@@ -78,6 +78,7 @@ class Paths:
     cache_dir: Path
     keep_build: bool = False  # --keep-build: leave build/destdir trees in the cache
     relocate: bool = False  # --relocate: build recipes for <root>/usr instead of /usr
+    progress: object = None  # --progress-fd: text stream for JSON-line progress events
 
     @classmethod
     def resolve(cls, root: str | None) -> "Paths":
@@ -96,6 +97,24 @@ class Paths:
     def ensure(self) -> None:
         for d in (self.state_dir, self.log_dir, self.cache_dir):
             d.mkdir(parents=True, exist_ok=True)
+
+
+def _first_line(exc: BaseException) -> str:
+    text = str(exc)
+    return text.splitlines()[0] if text else type(exc).__name__
+
+
+def _emit(paths: Paths, event: str, **fields) -> None:
+    """One JSON line on the --progress-fd channel (design/packagekit-integration.md §4).
+    Human messages stay on stdout/stderr; a store/PackageKit backend reads
+    only this channel. A closed reader never breaks the transaction."""
+    if paths.progress is None:
+        return
+    try:
+        paths.progress.write(json.dumps({"event": event, **fields}, ensure_ascii=False) + "\n")
+        paths.progress.flush()
+    except (OSError, ValueError):
+        paths.progress = None
 
 
 # --------------------------------------------------------------------------
@@ -1101,6 +1120,7 @@ def install_recipe(
         }
 
     archive = paths.cache_dir / f"{recipe['name']}-{recipe['version']}.src"
+    _emit(paths, "phase", name=pkg_name or recipe["name"], phase="download", url=recipe["source_url"])
     fetch(source_url, archive, recipe["sha256"])
 
     build_root = paths.cache_dir / f"build-{recipe['name']}-{recipe['version']}"
@@ -1115,7 +1135,8 @@ def install_recipe(
     destdir.mkdir(parents=True)
 
     real_steps = _recipe_steps(recipe, paths, str(destdir))
-    for step in real_steps:
+    for label, step in zip(("configure", "make", "make_install"), real_steps):
+        _emit(paths, "phase", name=pkg_name or recipe["name"], phase="build", step=label)
         binary = step[0]
         if not _tool_available(binary, src_dir):
             raise AlpError(
@@ -1128,6 +1149,7 @@ def install_recipe(
 
     config_files = set(recipe.get("config_files", []))
     db = db if db is not None else load_db(paths)
+    _emit(paths, "phase", name=pkg_name or recipe["name"], phase="merge")
     merged = _merge_staged(
         _staged_tree(paths, destdir), paths.root,
         config_files=config_files, old_record=None,
@@ -1176,6 +1198,7 @@ def upgrade_recipe(
         return {**old_record, "version": recipe["version"], "status": "would-upgrade"}
 
     archive = paths.cache_dir / f"{recipe['name']}-{recipe['version']}.src"
+    _emit(paths, "phase", name=pkg_name or recipe["name"], phase="download", url=recipe["source_url"])
     fetch(source_url, archive, recipe["sha256"])
 
     build_root = paths.cache_dir / f"upgrade-build-{recipe['name']}-{recipe['version']}"
@@ -1191,7 +1214,8 @@ def upgrade_recipe(
 
     log_path = paths.log_dir / f"{recipe['name']}-{recipe['version']}.upgrade.log"
     steps = _recipe_steps(recipe, paths, str(destdir))
-    for step in steps:
+    for label, step in zip(("configure", "make", "make_install"), steps):
+        _emit(paths, "phase", name=pkg_name or recipe["name"], phase="build", step=label)
         binary = step[0]
         if not _tool_available(binary, src_dir):
             raise AlpError(
@@ -1204,6 +1228,7 @@ def upgrade_recipe(
 
     db = db if db is not None else load_db(paths)
     other_owners = _other_owners(db, exclude=pkg_name or recipe["name"])
+    _emit(paths, "phase", name=pkg_name or recipe["name"], phase="merge")
     merged = _merge_staged(
         _staged_tree(paths, destdir), paths.root,
         config_files=config_files, old_record=old_record, other_owners=other_owners, journal=journal,
@@ -1335,6 +1360,7 @@ def _stage_core_archive(paths: Paths, entry: dict, index_dir: Path, prefix: str)
     archive can't leave untracked files in the system)."""
     name, version = entry["name"], entry["version"]
     archive = paths.cache_dir / f"{name}-{version}.tar.gz"
+    _emit(paths, "phase", name=name, phase="download", url=entry["url"])
     fetch(resolve_source_url(entry["url"], index_dir), archive, entry["sha256"])
     staged = paths.cache_dir / f"{prefix}-stage-{name}-{version}"
     if staged.exists():
@@ -1370,6 +1396,7 @@ def install_core(
     config_files = set(entry.get("config_files", []))
     db = db if db is not None else load_db(paths)
     staged = _stage_core_archive(paths, entry, index_dir, "install")
+    _emit(paths, "phase", name=pkg_name or name, phase="merge")
     try:
         merged = _merge_staged(
             staged, paths.root,
@@ -1410,6 +1437,7 @@ def upgrade_core(
     db = db if db is not None else load_db(paths)
     other_owners = _other_owners(db, exclude=pkg_name or name)
     staged = _stage_core_archive(paths, entry, index_dir, "upgrade")
+    _emit(paths, "phase", name=pkg_name or name, phase="merge")
     try:
         merged = _merge_staged(
             staged, paths.root,
@@ -1912,9 +1940,13 @@ def _run_plan(
 ) -> None:
     tag = "[dry-run] " if dry_run else ""
     done: list[str] = []
-    for step in steps:
+    total = len(steps)
+    _emit(paths, "plan", steps=_plan_rows(steps, index))
+    for position, step in enumerate(steps):
         entry = index["entries"][step.name]
         old = db["packages"].get(step.name)
+        _emit(paths, "step", name=step.name, action=step.action, phase="start",
+              index=position + 1, total=total, percentage=round(100 * position / total))
         try:
             if step.action in ("upgrade", "reinstall") and old and old.get("method") == "lfs-base":
                 raise AlpError(f"{step.name} LFS taban paketi; catalog install/reinstall/upgrade ile değiştirilemez.")
@@ -1940,7 +1972,8 @@ def _run_plan(
                 if not dry_run:
                     db["packages"][step.name] = record
                     save_db(paths, db)
-        except Exception:
+        except Exception as exc:
+            _emit(paths, "error", name=step.name, message=_first_line(exc), completed=list(done))
             if not dry_run:
                 # the db file is the truth: drop the in-memory change a failed save left behind
                 db.clear()
@@ -1955,16 +1988,54 @@ def _run_plan(
             raise
         done.append(step.name)
         shown = record.get("version")
+        _emit(paths, "step", name=step.name, action=step.action, phase="done", version=shown,
+              index=position + 1, total=total, percentage=round(100 * (position + 1) / total))
         shown = "" if shown in (None, "unknown") else f" -> {shown}"
         print(f"{tag}{step.name} ({entry['method']}){shown} {_ACTION_DONE[step.action]}.")
+    _emit(paths, "done", completed=list(done))
 
 
-def _plan_or_refuse(index: dict, installed: dict, steps: list[PlanStep]) -> None:
-    guarded_upgrades = sorted(
+def _guarded_steps(installed: dict, steps: list[PlanStep]) -> list[str]:
+    return sorted(
         step.name for step in steps
         if step.action in ("upgrade", "reinstall")
         and (installed.get(step.name) or {}).get("method") == "lfs-base"
     )
+
+
+def _plan_rows(steps: list[PlanStep], index: dict) -> list[dict]:
+    """Machine-readable plan rows (store/PackageKit: show before confirming,
+    MASTER_PLAN §5.3). `download_size` is the catalog's optional `size` field
+    in bytes; null when the catalog does not say (the size is never guessed)."""
+    rows = []
+    for s in steps:
+        entry = index["entries"].get(s.name, {})
+        size = entry.get("size")
+        rows.append({
+            "action": s.action, "name": s.name, "old_version": s.old_version,
+            "new_version": s.new_version, "method": entry.get("method"), "reason": s.reason,
+            "download_size": size if isinstance(size, int) and not isinstance(size, bool) else None,
+        })
+    return rows
+
+
+def _print_plan_json(command: str, rows: list[dict], problems: list[str], **extra) -> int:
+    """--json --dry-run: the plan as one JSON object on stdout, nothing changed.
+    Exit 1 when the transaction would be refused (problems non-empty)."""
+    sizes = [r["download_size"] for r in rows if r["action"] != "remove"]
+    total = sum(sizes) if sizes and all(isinstance(x, int) for x in sizes) else None
+    print(json.dumps({"command": command, "steps": rows, "problems": problems,
+                      "download_size_total": total, **extra}, ensure_ascii=False))
+    return 1 if problems else 0
+
+
+def _plan_problems(index: dict, installed: dict, steps: list[PlanStep]) -> list[str]:
+    guarded = [f"{n}: LFS taban paketi; catalog ile değiştirilemez" for n in _guarded_steps(installed, steps)]
+    return guarded + state_problems(index, installed, steps)
+
+
+def _plan_or_refuse(index: dict, installed: dict, steps: list[PlanStep]) -> None:
+    guarded_upgrades = _guarded_steps(installed, steps)
     if guarded_upgrades:
         raise AlpError(
             "LFS taban paketleri catalog install/reinstall/upgrade ile değiştirilemez: "
@@ -1998,6 +2069,9 @@ def cmd_install(args: argparse.Namespace, paths: Paths, index: dict, index_dir: 
             mode="install", reinstall=getattr(args, "reinstall", False),
         )
 
+        if getattr(args, "json", False) and args.dry_run:
+            return _print_plan_json("install", _plan_rows(steps, index),
+                                    _plan_problems(index, installed, steps), already_installed=not steps)
         if not steps:
             record = installed[args.name]
             if record.get("reason") == "dependency" and not args.dry_run:
@@ -2076,6 +2150,9 @@ def cmd_upgrade(args: argparse.Namespace, paths: Paths, index: dict, index_dir: 
             targets, kept = _drop_kept_back(index, index_dir, installed, targets)
 
         steps = plan_transaction(index, index_dir, installed, targets, mode="upgrade")
+        if getattr(args, "json", False) and args.dry_run:
+            return _print_plan_json("upgrade", _plan_rows(steps, index),
+                                    _plan_problems(index, installed, steps), kept_back=[] if name else kept)
         if not steps:
             if name:
                 print(f"{name} zaten güncel ({installed[name]['version']}).")
@@ -2094,18 +2171,25 @@ def cmd_upgrade(args: argparse.Namespace, paths: Paths, index: dict, index_dir: 
 
 def _remove_many(order: list[str], paths: Paths, db: dict, dry_run: bool) -> None:
     tag = "[dry-run] " if dry_run else ""
-    for name in order:
+    total = len(order)
+    for position, name in enumerate(order):
+        _emit(paths, "step", name=name, action="remove", phase="start",
+              index=position + 1, total=total, percentage=round(100 * position / total))
         try:
             with _maybe_transaction(paths, f"remove-{name}", dry_run) as journal:
                 remove_package(paths, db, name, dry_run, journal=journal)
                 if not dry_run:
                     save_db(paths, db)
-        except Exception:
+        except Exception as exc:
+            _emit(paths, "error", name=name, message=_first_line(exc), completed=list(order[:position]))
             if not dry_run:
                 db.clear()
                 db.update(load_db(paths))
             raise
+        _emit(paths, "step", name=name, action="remove", phase="done",
+              index=position + 1, total=total, percentage=round(100 * (position + 1) / total))
         print(f"{tag}{name} kaldırıldı.")
+    _emit(paths, "done", completed=list(order))
 
 
 def cmd_remove(args: argparse.Namespace, paths: Paths, index: dict | None = None) -> int:
@@ -2118,6 +2202,11 @@ def cmd_remove(args: argparse.Namespace, paths: Paths, index: dict | None = None
         if args.name not in installed:
             raise AlpError(f"Kurulu değil: {args.name}")
         order = plan_remove(index, installed, [args.name], cascade=getattr(args, "cascade", False))
+        if getattr(args, "json", False) and args.dry_run:
+            rows = [{"action": "remove", "name": n, "old_version": installed[n].get("version"),
+                     "new_version": None, "method": installed[n].get("method"),
+                     "reason": installed[n].get("reason", "explicit"), "download_size": None} for n in order]
+            return _print_plan_json("remove", rows, [], orphans_after=find_orphans(index, installed, set(order)))
         if len(order) > 1:
             print("Birlikte kaldırılacak (önce bağımlı olanlar): " + ", ".join(order))
             if not args.dry_run and not _confirm("Devam edilsin mi?", getattr(args, "yes", False)):
@@ -2492,6 +2581,12 @@ def developer_help() -> str:
   --relocate        Tarifleri --root altında çalışacak şekilde derle
                     (@PREFIX@ = <root>/usr); başka dağıtımda kullanıcı kökü için
 
+  --progress-fd N   İlerlemeyi N numaralı dosya tanıtıcısına satır başına bir JSON
+                    olay olarak yaz (plan, step, phase, error, done); mağaza ve
+                    PackageKit arka ucu içindir
+  --json --dry-run  install/upgrade/remove işlem planını tek JSON nesnesi olarak
+                    ver; hiçbir şey değişmez (işlem reddedilecekse çıkış 1)
+
   adopt-base        Önceden kurulmuş LFS dosyalarını korumalı paket olarak kaydet
                     (ayrıntı: alp adopt-base --help)
 
@@ -2571,12 +2666,14 @@ def build_parser() -> argparse.ArgumentParser:
         g.add_argument("--dry-run", action="store_true", default=default,
                        help="Ne yapılacağını göster, hiçbir şeyi değiştirme")
         g.add_argument("--json", action="store_true", default=default,
-                       help="search/list çıktısını JSON olarak ver (info her zaman JSON)")
+                       help="search/list çıktısını ve --dry-run işlem planını JSON olarak ver (info her zaman JSON)")
         g.add_argument("--keep-build", action="store_true", default=default,
                        help="Başarılı kurulumdan sonra derleme dosyalarını silme")
         g.add_argument("--root", default=None if default is False else default, help=argparse.SUPPRESS)
         g.add_argument("--index", default=None if default is False else default, help=argparse.SUPPRESS)
         g.add_argument("--relocate", action="store_true", default=default, help=argparse.SUPPRESS)
+        g.add_argument("--progress-fd", type=int, default=None if default is False else default,
+                       help=argparse.SUPPRESS)
 
     global_options(p, False)
     common = _AlpArgumentParser(add_help=False)
@@ -2684,6 +2781,12 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_list(load_db(paths), as_json=args.json)
         paths.keep_build = getattr(args, "keep_build", False)
         paths.relocate = getattr(args, "relocate", False)
+        progress_fd = getattr(args, "progress_fd", None)
+        if progress_fd is not None:
+            try:
+                paths.progress = os.fdopen(progress_fd, "w", encoding="utf-8", buffering=1, closefd=False)
+            except OSError as exc:
+                raise AlpError(f"--progress-fd {progress_fd} açılamadı: {exc}") from exc
         if args.command == "update":
             return cmd_update(args, paths, index_path, index)
         if args.command == "recover":

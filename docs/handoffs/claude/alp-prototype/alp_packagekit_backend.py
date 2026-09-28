@@ -94,6 +94,26 @@ def alp_upgrade(alp_path: Path, root: Path, index: Path, name: str) -> str:
     return proc.stdout
 
 
+def alp_plan(alp_path: Path, root: Path, index: Path, command: str, name: str | None = None) -> dict:
+    """PKG-02: the transaction plan a store shows before asking for
+    confirmation (alp --json --dry-run). A plan with `problems` comes back
+    as data (alp exits 1 but prints the plan); an error without a plan
+    (unknown package, unsatisfiable dependency, lock) raises."""
+    args = ["--json", "--dry-run", command] + ([name] if name else [])
+    proc = _run_alp(alp_path, root, index, args)
+    if proc.stdout.strip():
+        return json.loads(proc.stdout)
+    raise AlpBackendError(proc.stderr.strip() or f"alp {command} planı alınamadı", is_locked=_is_lock_error(proc.stderr))
+
+
+def alp_updates(alp_path: Path, root: Path, index: Path) -> list[dict]:
+    """GetUpdates: installed packages the catalog has newer versions of,
+    dependencies included, as alp would upgrade them (kept-back packages
+    are listed separately by alp_plan(..., "upgrade")["kept_back"])."""
+    plan = alp_plan(alp_path, root, index, "upgrade")
+    return [step for step in plan["steps"] if step["action"] == "upgrade"]
+
+
 # --------------------------------------------------------------------------
 # PackageKit glue -- BU KISIM BU ORTAMDA HİÇ ÇALIŞTIRILAMADI/TEST EDİLEMEDİ.
 #
@@ -190,8 +210,15 @@ if PACKAGEKIT_AVAILABLE:
                     return
             self.finished()
 
-        # get_updates() / GetUpdates çağrısı: alp'te henüz depo-genelinde
-        # "hangi paketlerin yeni sürümü var" sorgusu yok (index.json'daki
-        # sürümle db.json'daki kurulu sürüm karşılaştırılabilir -- bu basit
-        # ama henüz yazılmadı, design §3'te "Yok" diye işaretli kalmaya
-        # devam ediyor).
+        def get_updates(self, filters):
+            # alp_updates() alp --json --dry-run upgrade planını okur (test
+            # edildi); bu sınıf gibi PackageKit'e bağlanması test edilmedi.
+            try:
+                updates = alp_updates(self.ALP_PATH, self.ROOT, self.INDEX)
+            except AlpBackendError as exc:
+                self._fail(exc)
+                return
+            for step in updates:
+                self.package(f"{step['name']};{step['new_version']};x86_64;alp", INFO_AVAILABLE,
+                             f"{step['old_version']} -> {step['new_version']}")
+            self.finished()
