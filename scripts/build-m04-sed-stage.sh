@@ -184,7 +184,10 @@ assert_alp_and_empty_db
 [[ $(md5sum "$SOURCE" | awk '{print $1}') == "$EXPECTED_MD5" ]]
 grep -q '^tester:.*:101:101:' "$LFS/etc/passwd"
 for target in "$LFS/dev" "$LFS/dev/pts" "$LFS/proc" "$LFS/sys" "$LFS/run"; do
-  ! mountpoint -q "$target"
+  if mountpoint -q "$target"; then
+      echo "önceden bağlı: $target -- başka bir chroot oturumu açık olabilir" >&2
+      exit 1
+  fi
 done
 available_kib=$(df -Pk "$LFS" | awk 'NR == 2 {print $4}')
 [[ "$available_kib" =~ ^[0-9]+$ && $available_kib -ge 131072 ]]
