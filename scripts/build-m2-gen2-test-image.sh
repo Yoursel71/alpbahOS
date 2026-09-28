@@ -7,7 +7,8 @@ set -Eeuo pipefail
 
 ROOTFS=/mnt/lfs
 OUT=${OUT:-/home/sa/alpbahOS-m2-ssh-gen2-test.vhdx}
-ALP_SOURCE=${ALP_SOURCE:?Set ALP_SOURCE to alp.py from commit e8b0376}
+ALP_SOURCE=${ALP_SOURCE:?Set ALP_SOURCE to the alp.py whose SHA-256 is EXPECTED_ALP}
+EXPECTED_ALP=${EXPECTED_ALP:-7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132}
 ADMIN_PASSWORD=${ADMIN_PASSWORD:?Set ADMIN_PASSWORD for this test image}
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 SIZE=24G
@@ -68,7 +69,7 @@ test -s "$ROOTFS/home/sa/.ssh/authorized_keys"
 test -f "$ROOTFS/opt/kf6/lib/systemd/user/plasma-kwin_wayland.service"
 test -f "$ROOTFS/etc/systemd/user/plasma-kwin_wayland.service.d/10-wayland-only.conf"
 
-bash "$SCRIPT_DIR/apply-m2-rootfs-fixes.sh" "$ALP_SOURCE"
+EXPECTED_ALP="$EXPECTED_ALP" ALP_REPLACE="${ALP_REPLACE:-0}" bash "$SCRIPT_DIR/apply-m2-rootfs-fixes.sh" "$ALP_SOURCE"
 
 test -f "$ROOTFS/usr/lib/systemd/user/dbus.service"
 test -f "$ROOTFS/usr/lib/systemd/user/dbus.socket"
@@ -203,7 +204,7 @@ sync
 grub-file --is-x86_64-efi "$MOUNT/boot/efi/EFI/BOOT/BOOTX64.EFI"
 test -f "$MOUNT/boot/vmlinuz-6.16.1-alpbahOS"
 test -f "$MOUNT/usr/lib/alp/alp.py"
-[[ $(sha256sum "$MOUNT/usr/lib/alp/alp.py" | cut -d' ' -f1) == 7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132 ]]
+[[ $(sha256sum "$MOUNT/usr/lib/alp/alp.py" | cut -d' ' -f1) == "$EXPECTED_ALP" ]]
 test -f "$MOUNT/home/sa/.ssh/authorized_keys"
 test ! -e "$MOUNT/etc/ssh/ssh_host_ed25519_key"
 [[ $(readlink "$MOUNT/etc/systemd/system/getty.target.wants/getty@tty1.service") == /usr/lib/systemd/system/getty@.service ]]
