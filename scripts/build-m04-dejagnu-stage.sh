@@ -83,7 +83,10 @@ check_alp_invariants
 grep -q '^tester:.*:101:101:' "$LFS/etc/passwd"
 
 for target in "$LFS/dev" "$LFS/dev/pts" "$LFS/proc" "$LFS/sys" "$LFS/run"; do
-    ! mountpoint -q "$target"
+    if mountpoint -q "$target"; then
+        echo "önceden bağlı: $target -- başka bir chroot oturumu açık olabilir" >&2
+        exit 1
+    fi
 done
 
 mkdir -p /mnt/lfs/build /mnt/lfs/tmp/alp-logs

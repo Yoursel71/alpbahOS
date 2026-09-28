@@ -36,7 +36,10 @@ tar -xOf "$DBUS_ARCHIVE" dbus-1.16.2/bus/systemd-user/dbus.service.in \
     | sed -e 's|@EXPANDED_BINDIR@|/usr/bin|g' -e 's|@SYSTEMCTL@|/usr/bin/systemctl|g' > "$tmp_service"
 tar -xOf "$DBUS_ARCHIVE" dbus-1.16.2/bus/systemd-user/dbus.socket.in \
     | sed -e 's|@SYSTEMCTL@|/usr/bin/systemctl|g' > "$tmp_socket"
-! grep -q '@[A-Z_]*@' "$tmp_service" "$tmp_socket"
+if grep -q '@[A-Z_]*@' "$tmp_service" "$tmp_socket"; then
+    echo 'dbus user unit şablonunda açılmamış @...@ yer tutucusu kaldı' >&2
+    exit 1
+fi
 install -o 0 -g 0 -m 0644 "$tmp_service" "$ROOTFS/usr/lib/systemd/user/dbus.service"
 install -o 0 -g 0 -m 0644 "$tmp_socket" "$ROOTFS/usr/lib/systemd/user/dbus.socket"
 rm -f -- "$tmp_service" "$tmp_socket"
