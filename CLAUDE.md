@@ -1,6 +1,6 @@
 # alpbahOS — Claude çalışma başlangıcı
 
-> İlk zorunlu belge: `docs/NEW_SESSION_HANDOFF.md`. Builder/guest SSH erişimi, Hyper-V VM adları, disk yolları, `alp` hash riski ve açık M07 kapısı burada günceldir.
+> İlk zorunlu belge: `docs/NEW_SESSION_HANDOFF.md`. Builder/guest SSH erişimi, Hyper-V VM adları ve disk yolları orada **24 Eylül 2026** durumuyla kayıtlıdır (ortam sonradan Fedora + QEMU/KVM oldu, D36; kullanmadan önce doğrula). Güncel aşama durumu için `CURRENT.md`.
 
 Önce kökteki `AGENTS.md` dosyasını oku ve uygula. Ortak ürün ve çalışma kuralları oradadır; burada ikinci, çelişen bir kural seti oluşturma.
 
@@ -16,12 +16,12 @@
 
 ## Güncel bağlam
 
-- Ana plan 1.0 ve M1 LFS temel boot imajı hazır. `alpbahOS-m1-final-v2.vhdx`, Hyper-V Gen2 üzerinde giriş istemi, DHCP/ping ve kontrollü yeniden açılışla doğrulandı. Masaüstü/BLFS ve canlı ISO henüz yok.
+- Ana plan 1.0. M1 LFS temel boot imajı ve Gen2/UEFI boot (M05) doğrulandı. M07'de Gen2 test imajında gerçek Plasma Wayland masaüstü ve paneli görsel olarak doğrulandı (25 Eylül 2026). M08 ilk dilimleri (look-and-feel, Atatürk duvar kâğıdı, Windows kısayolları, Glass, uygulama profili, PERF/OFFICE araçları) dosya düzeyinde hazır; gerçek oturum düzeltmeleri `claude/m08-live-fixes` dalında sürüyor. M09 için önyüklenebilir M-ISO test adayı üretildi (QEMU BIOS/UEFI'de login istemine kadar; kabul açık). M10 başladı; "M08 kurulum/kaldırma" `@PREFIX@` hatasıyla BLOCKED idi, alp tarafı düzeltildi ama rootfs'e kurulmadı (019/020). Kurucu (Calamares) yok. Ayrıntı ve kanıt sınırları: `CURRENT.md`.
 - LFS tabanı hazır; BLFS ile hazır açık kaynak masaüstü/uygulamalar özelleştirilecek.
 - Kullanıcı Windows'tan geçenler için kolay masaüstü, terminal önerileri, basit paket işlemleri, Windows kısayolları, Atatürk görselleri ve güçlü cihazlarda cam görünümü istiyor.
 - Başlangıç stack'i KDE/KWin, Konsole/Zsh ve D31 ile seçilen `alp` paket motorudur. Grafik mağaza entegrasyonunu test geçmeden çalışıyor kabul etme.
-- Claude Code kullanılacak; ayrı çalışma ağacı `C:\alpbahOS-claude`, dal `claude/desktop-bootstrap`. Başka hostta clone ve aynı görev sözleşmeleri kullanılır.
-- Hyper-V, 300 GB yerel alan, Türkçe Q, düşük RAM ve BIOS+UEFI hedefleri sabittir. Kullanıcı günde 1–2 saat ayırır. Sistem yalnız 64-bit'tir (D32, D35): multilib yok, Steam istemcisi kapsam dışı, Wine yalnız WoW64; Steam uyumluluğu vaat etme.
+- Claude Code kullanılır. Windows hostunda çalışma ağacı `C:\alpbahOS-claude` idi (24–26 Eylül); 28 Eylül 2026'dan itibaren Fedora hostunda `~/alpbahOS-claude` klonu kullanılır (D36). Dal göreve göre değişir (`git branch --show-current`). Ortak dizini başka oturumlar da kullanır: `checkout`/`stash`/`reset` yapma, çok commit'li işi ayrı `git worktree`'de yap (`AGENTS.md`).
+- Hyper-V, 300 GB yerel alan, Türkçe Q, düşük RAM ve BIOS+UEFI hedefleri sabittir (Hyper-V'nin hedef olarak sürüp sürmediği D36 sonrası açık karardır, `docs/DECISIONS.md`). Kullanıcı günde 1–2 saat ayırır. Sistem yalnız 64-bit'tir (D32, D35): multilib yok, Steam istemcisi kapsam dışı, Wine yalnız WoW64; Steam uyumluluğu vaat etme.
 
 ## Rol ve ilk görev
 
