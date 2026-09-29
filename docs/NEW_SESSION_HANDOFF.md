@@ -4,6 +4,8 @@ Son canlı doğrulama: 24 Eylül 2026, Europe/Istanbul
 
 Bu belge yeni Codex/Claude sohbetinin ortamı yeniden keşfetmeye çalışırken yanlış VM'i, diski veya rootfs'yi değiştirmesini önlemek içindir. Önce bunu, sonra `AGENTS.md`, `CURRENT.md` ve `docs/WORKLOG.md` dosyalarını oku.
 
+> **29 Eylül 2026 güncellemesi (tutarlılık geçişi):** Ortam değişti (D36): ana geliştirme/test ortamı Fedora + QEMU/KVM'dir. Bu belgedeki Windows/Hyper-V/Builder bilgileri (§3–§7, §13–§15) **24 Eylül'de son kez canlı doğrulandı**, Fedora hostundan doğrulanamaz ve tarihsel kanıt olarak okunmalıdır; kullanmadan önce yeniden doğrula. §2, §8, §9, §10 ve §11 bu güncellemeyle düzeltildi/işaretlendi. Güncel aşama durumu için `CURRENT.md`'nin 29 Eylül özetine bak.
+
 ## 1. Değiştirilemez güvenlik kuralları
 
 - Windows hostu kapatma, yeniden başlatma veya oturumdan çıkarma. Kullanıcı uzakta olabilir.
@@ -23,8 +25,11 @@ Bu belge yeni Codex/Claude sohbetinin ortamı yeniden keşfetmeye çalışırken
 - Bu nedenle yeni ajan önce `git status --short --branch` ve `git log --oneline --decorate -20` çalıştırmalı; mevcut değişiklikleri silmemeli, yeniden biçimlendirmemeli veya `git add -A` ile topluca sahiplenmemeli.
 - Builder içindeki `/home/sa/alpbahOS` deposu `master` dalında eski/yardımcı kopyadır; Windows reposunun yerine geçmez. Builder'daki `artifacts/` untracked olabilir.
 - Büyük VHDX, RAW, ISO ve rootfs dosyaları Git'e eklenmez.
+- **29 Eylül 2026 güncellemesi:** Fedora hostunda klon `~/alpbahOS-claude`'dur (28 Eylül'de `origin` = `alperenyardim30-hash/alpbahOS`'tan klonlandı; ikinci uzak `yoursel` = `Yoursel71/alpbahOS`). Bu klonda birden fazla oturum çalışabilir: ortak ağaçta `checkout`/`stash`/`reset` yapma, çok commit'li işi `git worktree` ile ayrı ağaçta yap (`AGENTS.md`). Yerel uzak izleme dallarında `yoursel/main` PR #4'ün birleşmesiyle `dda62fb` (29 Eylül), `origin/main` `3aead65` (26 Eylül) idi; başlamadan `git fetch` ve `git log --oneline --decorate -20` ile yeniden bak. Yukarıdaki "16 commit ileride" ve Windows yolları 23 Eylül durumudur.
 
 ## 3. Windows host ve yönetim erişimi
+
+> **Tarihsel (24 Eylül 2026):** Windows/Hyper-V/Builder ortamına aittir; D36 sonrası Fedora hostundan doğrulanamaz. Silinmedi; kullanmadan önce yeniden doğrula.
 
 - Hyper-V host: Windows 11, bilgisayar adı `YRSLF`.
 - Yönetici PowerShell gerektiğinde Windows'un kendi OpenSSH hizmeti üzerinden kullanılabilir:
@@ -39,6 +44,8 @@ ssh -i C:\Users\thewo\.ssh\codex_alpbahos_m1 thewo@localhost
 
 ## 4. Canlı Hyper-V envanteri
 
+> **Tarihsel (24 Eylül 2026):** Windows/Hyper-V/Builder ortamına aittir; D36 sonrası Fedora hostundan doğrulanamaz. Silinmedi; kullanmadan önce yeniden doğrula.
+
 24 Eylül 2026 tarihli son kayıtlı salt okunur envanter özeti. `alpbahOS-M2-SSH-Gen1` VM kaydı silinmiştir; Gen1 VHDX dosyalarının bugünkü varlığı bilinmiyor. Gen2 ve Builder hedefleri için adresleri kullanmadan önce güncel canlı erişimi doğrula:
 
 | VM | Durum | Nesil | Kaynak | Disk | MAC |
@@ -52,6 +59,8 @@ ssh -i C:\Users\thewo\.ssh\codex_alpbahos_m1 thewo@localhost
 24 Eylül'de kullanıcı `alpbahOS-M2-SSH-Gen1` VM kaydının silindiğini doğruladı. Son kayıtlı salt okunur Hyper-V envanterinde bu kayıt yoktu. Aynı gün yerel `Test-Path` kontrolleri Gen1 release artifact'i `F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen1.vhdx` ve eski Gen1 çalışma diski `F:\alpbahOS-build\vms\alpbahOS-M2-SSH-Gen1\alpbahOS-M2-SSH-Gen1.vhdx` için `True` döndürdü. Bu dosyaların güncel durumu yeniden kontrol edilmedi; VM kaydının silinmesi VHDX'lerin de silindiğini kanıtlamaz. Güncel test hedefi Gen2'dir. `Yeni Sanal Makine` alpbahOS çalışma hedefi değildir.
 
 ## 5. Builder Ubuntu
+
+> **Tarihsel (24 Eylül 2026):** Windows/Hyper-V/Builder ortamına aittir; D36 sonrası Fedora hostundan doğrulanamaz. Silinmedi; kullanmadan önce yeniden doğrula.
 
 - VM: `alpbah-builder`
 - Hostname: `yrsk`
@@ -74,6 +83,8 @@ ssh -i C:\Users\thewo\.ssh\claude_alpbahos_m2 sa@172.28.162.172
 - `sudo` gerekebilir; parolayı belgeye yazma. Yetki yoksa sistemi yarım değiştirmek yerine blokajı raporla.
 
 ## 6. Korunacak artifact'ler
+
+> **Tarihsel (24 Eylül 2026):** Windows/Hyper-V/Builder ortamına aittir; D36 sonrası Fedora hostundan doğrulanamaz. Silinmedi; kullanmadan önce yeniden doğrula.
 
 ### M1
 
@@ -108,9 +119,23 @@ ssh -i C:\Users\thewo\.ssh\claude_alpbahos_m2 sa@172.28.162.172
 - `alp` ile gerçek LFS chroot'ta htop kur/list/çalıştır/kaldır döngüsü geçti.
 - M2 çalışma imajına OpenSSH ve kullanıcı D-Bus desteği eklendi.
 
-Bu maddeler gerçek grafik masaüstünün açıldığını göstermez.
+Bu maddeler gerçek grafik masaüstünün açıldığını göstermez (24 Eylül durumu; M07 Plasma masaüstü ve paneli 25 Eylül'de görsel doğrulandı, bkz. §9).
 
-## 9. Şu anki asıl açık kapı
+## 9. Açık kapılar (29 Eylül 2026 güncellemesi)
+
+**M07 kapandı (25 Eylül 2026):** Gen2 `runtimefix` test imajında admin seat0/tty1 oturumu aktif, KWin/plasmashell/kactivitymanagerd çalışıyor; duvar kâğıdı ve alt panel ekran görüntüsüyle doğrulandı ([kanıt](verification/m07-gen2-plasma-session-bringup-2026-09-25.md), `docs/WORKLOG.md` 25 Eylül). Kalan uyarılar: KWin render-node (wl-drm), Kickoff için Kirigami Addons, klavye düzeni ve ses applet'lerinin özel modülleri, UDisks2 yok.
+
+**Şu an açık olanlar** (ayrıntı `CURRENT.md` 29 Eylül özeti ve tablo):
+
+1. M08: dosya düzeyinde hazır profillerin gerçek oturumda doğrulanması (gerçek oturum düzeltmeleri `claude/m08-live-fixes` dalında sürüyor).
+2. M09 kabulü: unprivileged live kullanıcı/oturum politikası, M08 ve D34/79 paket sahiplik defteri kapıları.
+3. M10 (başladı): düzeltilmiş `alp`'in rootfs'e kurulup matrisin yeniden koşulması ("M08 kurulum/kaldırma" `@PREFIX@` hatasıyla BLOCKED idi, 019).
+4. M04 tam sahiplik defteri (D34, M09'a ertelendi).
+5. Ortam: Hyper-V'nin ürün test hedefi olarak sürüp sürmediği (`docs/DECISIONS.md`, D36 sonrası açık karar).
+
+Her işte önce hedef VM/imajı ve durumunu yeniden doğrula; SSH oturumu DRM master/aktif seat sağlamaz, `sa` SSH'den `startplasma-wayland` denemesi geçerli değildir.
+
+### Eski metin (24 Eylül 2026; M07 kapısı 25 Eylül'de kapandı)
 
 M07 hâlâ açık: çalışan Gen2 test VM'inde VMConnect `tty1` üzerinden `admin/admin` ile gerçek konsol girişi yapılmalı; SSH'den `loginctl` ile `seat0`, `Type=tty`, aktif PAM/systemd oturumu doğrulanmalı; bundan sonra gerçek KWin/Plasma Wayland başlatılıp görüntü alınmalıdır. `sa` SSH oturumu DRM master/aktif seat sağlamaz; SSH üzerinden `startplasma-wayland` denemesi geçerli değildir. Kullanıcıdan yalnız konsolda giriş yapması istendi, komut çalıştırması istenmedi. Bu giriş henüz doğrulanmadı.
 
@@ -127,10 +152,12 @@ M07 hâlâ açık: çalışan Gen2 test VM'inde VMConnect `tty1` üzerinden `adm
 - Kanonik motor `alp`; aynı rootfs'ye apt/pacman gibi ikinci native paket veritabanı ekleme.
 - Builder `/mnt/lfs/usr/lib/alp/alp.py` son kontrolde `e8b0376` kaynağının beklenen SHA-256 `7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132` değeriyle eşleşti. Paket işlemlerinden önce hash'i tekrar doğrula.
 - Bu hash eşleşmeden gerçek rootfs'de `alp remove` veya `alp upgrade` çalıştırma.
-- Htop dışındaki katalog, `alp update`, bağımlılık çözümü, transaction lock, rollback/config protection ve PackageKit yolu ayrı ayrı test edilmeden hazır sayılmaz.
+- Htop dışındaki katalog, `alp update`, bağımlılık çözümü, transaction lock, rollback/config protection ve PackageKit yolu ayrı ayrı test edilmeden hazır sayılmaz. **29 Eylül:** repo prototipinde bunların çoğunun testi var (013/014/018–020; Linux'ta 268 test geçti, güncel `alp.py` SHA-256 `72bae94c2e344fed7071aec2560d8b947c5dcf440af414157e78a50175fba443`); rootfs'te, Gen2/QEMU imajında ve gerçek PackageKit/Discover'da çalıştırılmadı. Rootfs motorunun hash'i 24 Eylül kayıtlarında `7b2998a5…`, 019'da `0475ea32…`: paket işlemlerinden önce kurulu dosyanın hash'ini doğrula; yeni motor rootfs'e entegratörce kurulur.
 - Claude değişikliği ayrı dosya/branch sınırında teslim etmeli; rootfs'ye kurulum tek entegratör tarafından yapılmalı.
 
 ## 11. Mevcut commitlenmemiş çalışma
+
+> **Tarihsel (23 Eylül 2026, Windows ağacı):** Aşağıdaki listeler Windows çalışma ağacına aitti. Fedora klonu temiz bir klondur ve bu dosyaların hepsi burada commit'li (`git ls-files`) durur. Bu bölümü kullanma; bunun yerine `git status --short --branch` çalıştır.
 
 23 Eylül kontrolünde `AGENTS.md`, `CLAUDE.md`, `CURRENT.md`, `docs/BACKLOG.md`, `docs/DECISIONS.md`, `docs/HYPERV_PLAN.md`, `docs/MASTER_PLAN.md`, `docs/WORKLOG.md` ve bazı patch'lerde önceden var olan değişiklikler bulunuyordu. Ayrıca `configs/`, `scripts/`, `docs/IMAGE_PROVISIONING.md` ve `docs/verification/` untracked idi.
 
@@ -157,6 +184,8 @@ Uzun yeniden keşif, tekrar tekrar aynı hash kontrolü veya kanıtsız “M2 ta
 
 ## 13. Güncel Gen2 rootfs ve test durumu — 23 Eylül 2026
 
+> **Tarihsel (24 Eylül 2026):** Windows/Hyper-V/Builder ortamına aittir; D36 sonrası Fedora hostundan doğrulanamaz. Silinmedi; kullanmadan önce yeniden doğrula.
+
 - Builder `/mnt/lfs` rootfs'ine getty@tty1, systemd-resolved ve `/etc/resolv.conf` bağları uygulandı; `/usr/lib/alp/alp.py` e8b0376 blob'u, SHA-256 `7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132` ile kuruldu. `/mnt/lfs` gerçek Builder rootfs'sidir, ayrı mount değildir.
 - KWin unit kaynağı KWin 6.4.4 paketidir: `/opt/kf6/lib/systemd/user/plasma-kwin_wayland.service`. Rootfs `/usr/lib/systemd/user/` altına symlink ile görünür yapıldı; live guest `systemctl --user cat/show` etkin drop-in'in `--xwayland` argümanını kaldırdığını doğruladı.
 - Yeni Gen2 test artifact'i `F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen2-rootfs-kwin-test.vhdx`, SHA-256 `14f22e9074eb3a01267df284317e3191e5f75af4ac56699d005d33f11e78dcd4`. Hyper-V test VM `alpbahOS-M2-SSH-Gen2` şu anda v3 çalışma diskini kullanıyor (`F:\alpbahOS-build\vms\alpbahOS-M2-SSH-Gen2\alpbahOS-M2-SSH-Gen2-v3-rootfs-kwin.vhdx`); önceki v2 diski korunuyor. Test imajındaki konsol hesabı `admin/admin`; parola release imajına yazılmamalı.
@@ -169,6 +198,8 @@ Uzun yeniden keşif, tekrar tekrar aynı hash kontrolü veya kanıtsız “M2 ta
 
 ## 14. M06 D-Bus user bus ve ayrı Gen2 test VM — 24 Eylül 2026
 
+> **Tarihsel (24 Eylül 2026):** Windows/Hyper-V/Builder ortamına aittir; D36 sonrası Fedora hostundan doğrulanamaz. Silinmedi; kullanmadan önce yeniden doğrula.
+
 - Eski Gen2 v3 guest'te PipeWire başlatması `Unit dbus.service not found` dedi; Builder `/mnt/lfs/usr/lib/systemd/user` da dbus user unit içermiyordu. `scripts/apply-m2-rootfs-fixes.sh` artık checksum'ı sabitlenmiş D-Bus 1.16.2 arşivinden `dbus.service`/`dbus.socket` upstream template'lerini kuruyor; image script bu dosyaları ve içeriklerini zorunlu doğruluyor.
 - Yeni test artifact: `F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen2-dbus-test.vhdx`, SHA-256 `c877ff26fc488b1e917c77d14e1f519d279b5440a5f236eb626fa260733c070b`; ayrı working copy SHA eşleşiyor. Eski `alpbahOS-M2-SSH-Gen2` diski/VM'i değiştirilmedi.
 - Yeni VM `alpbahOS-M2-SSH-Gen2-DBus`, IP en son `172.28.171.33`, MAC `00-15-5D-00-02-0A`, kernel `6.16.1-alpbahOS`, boot ID `67e367ff-b6a0-4f6f-9e55-0e2202675d84`. DNS, HTTPS/TLS, SSH, host ping, getty/resolved/sshd ve KWin Wayland-only kontrolü geçti.
@@ -176,6 +207,8 @@ Uzun yeniden keşif, tekrar tekrar aynı hash kontrolü veya kanıtsız “M2 ta
 - `loginctl seat-status seat0` DRM `card0`/`Virtual-1` ve keyboard gösteriyor; `loginctl list-sessions` yalnız SSH session ve manager içeriyor. VMConnect'te yeni `alpbahOS-M2-SSH-Gen2-DBus` VM'inin tty1'inde admin/admin login hâlâ gerekli. Sonra `loginctl` ile `seat0`, `Type=tty`, PAM/systemd oturumu ve gerçek Plasma testi değerlendirilecek; komut çalıştırma kullanıcıdan istenmeyecek.
 
 ## 15. M06 ayrı Gen2 ALSA/PipeWire test VM — 24 Eylül 2026
+
+> **Tarihsel (24 Eylül 2026):** Windows/Hyper-V/Builder ortamına aittir; D36 sonrası Fedora hostundan doğrulanamaz. Silinmedi; kullanmadan önce yeniden doğrula.
 
 - VM `alpbahOS-M2-SSH-Gen2-Audio`, Generation 2, MAC `00-15-5D-00-02-0B`, en son DHCP `172.28.174.20` (DHCP değişebilir). Çalışma diski `F:\alpbahOS-build\vms\alpbahOS-M2-SSH-Gen2-Audio-v2\alpbahOS-M2-SSH-Gen2-Audio-v2.vhdx`.
 - Artifact `F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen2-audio-test-v2.vhdx`, SHA-256 `2491bbecbd6f6605df2d595a6aa8b0c0417b222ece6a3ebd2e7d81757e678898`; artifact ve working copy hash'i eşleşti. Root PARTUUID `1238a374-f5e6-4277-b1b4-18682e5474cc`.
