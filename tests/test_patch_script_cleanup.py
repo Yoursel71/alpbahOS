@@ -33,13 +33,22 @@ def _cleanup_source(script: Path) -> str:
     return "\n".join(lines[start:end + 1])
 
 
-def _run_cleanup(script: Path, root: Path, *, umount_ok: bool) -> tuple[subprocess.CompletedProcess, Path, Path, Path]:
+def _err_trap(script: Path) -> str:
+    return next((line for line in script.read_text(encoding="utf-8").splitlines()
+                 if line.startswith("trap ") and line.rstrip().endswith(" ERR")), "")
+
+
+def _run_cleanup(script: Path, root: Path, *, umount_ok: bool,
+                 early_exit: bool = False) -> tuple[subprocess.CompletedProcess, Path, Path, Path]:
     work = root / "work"
     mount = work / "root"
-    (mount / "boot" / "efi").mkdir(parents=True)
     sentinel = mount / "etc" / "shadow"
-    sentinel.parent.mkdir()
-    sentinel.write_text("guest data", encoding="utf-8")
+    if early_exit:
+        work.mkdir()  # the script died before it ever created or mounted "$WORK/root"
+    else:
+        (mount / "boot" / "efi").mkdir(parents=True)
+        sentinel.parent.mkdir()
+        sentinel.write_text("guest data", encoding="utf-8")
     bin_dir = root / "bin"
     bin_dir.mkdir()
     calls = root / "calls.log"
@@ -53,12 +62,14 @@ def _run_cleanup(script: Path, root: Path, *, umount_ok: bool) -> tuple[subproce
     qemu_nbd.write_text(f'#!/bin/sh\necho "qemu-nbd $*" >> {shlex.quote(str(calls))}\nexit 0\n', encoding="utf-8")
     for stub in (umount, qemu_nbd):
         stub.chmod(0o755)
+    flags = "0" if early_exit else "1"
     program = "\n".join([
         "set -Eeuo pipefail",
+        _err_trap(script),
         f"WORK={shlex.quote(str(work))}",
         'MOUNT="$WORK/root"',
         "NBD=/dev/nbd0",
-        "ATTACHED=1; ROOT_MOUNTED=1; MOUNTED=1; EFI_MOUNTED=1",
+        f"ATTACHED={flags}; ROOT_MOUNTED={flags}; MOUNTED={flags}; EFI_MOUNTED={flags}",
         _cleanup_source(script),
         "cleanup",
     ])
@@ -100,6 +111,18 @@ class PatchScriptCleanupTests(unittest.TestCase):
                 self.assertEqual(proc.returncode, 0, proc.stderr)
                 self.assertFalse(work.exists())
                 self.assertIn("--disconnect", calls.read_text(encoding="utf-8"))
+
+    def test_early_exit_before_mounting_is_quiet(self):
+        """`Run as root.` and other early exits happen before "$WORK/root" exists; the
+        cleanup must not trip the script's own ERR trap with a misleading "FAILED at line"."""
+        import tempfile
+
+        for script in SCRIPTS:
+            with self.subTest(script=script.name), tempfile.TemporaryDirectory() as tmp:
+                proc, work, _sentinel, _calls = _run_cleanup(script, Path(tmp), umount_ok=True, early_exit=True)
+                self.assertEqual(proc.returncode, 0, proc.stderr)
+                self.assertEqual(proc.stderr, "", proc.stderr)
+                self.assertFalse(work.exists())
 
     def test_rm_never_crosses_filesystems(self):
         for script in SCRIPTS:

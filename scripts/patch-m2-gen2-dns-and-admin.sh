@@ -30,7 +30,7 @@ cleanup() {
         echo "CLEANUP FAILED: keeping $WORK; if $NBD is still attached, umount the image and run qemu-nbd --disconnect $NBD." >&2
         exit 1
     fi
-    rmdir "$MOUNT" 2>/dev/null
+    rmdir "$MOUNT" 2>/dev/null || true   # absent when the script died before mounting; must not trip the ERR trap
     rm -rf --one-file-system -- "$WORK"
 }
 trap cleanup EXIT
