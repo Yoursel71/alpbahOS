@@ -1,0 +1,194 @@
+#!/usr/bin/env python3
+"""alpbah-gorunum -- alpbahOS görünüm profilini (Solid / Glass) değiştirir.
+
+Kullanım:
+    alpbah-gorunum durum            etkin profil, renderer ve efekt durumu
+    alpbah-gorunum solid            opak yüzeyler, blur/kontrast efekti kapalı (varsayılan)
+    alpbah-gorunum glass [--zorla]  yarı saydam panel + KWin blur/kontrast
+    ...  --deneme                   komutları yalnız yazdır, hiçbir şeyi değiştirme
+
+Yalnız hazır KDE araçlarını kullanır: kwriteconfig6/kreadconfig6 (kullanıcı
+kwinrc ve alpbahrc), KWin D-Bus (/KWin reconfigure, /Effects load/unloadEffect,
+supportInformation) ve plasmashell D-Bus evaluateScript (panel opaklığı; aynı
+scripting API look-and-feel düzeninde kullanılıyor). Yeni compositor/efekt yazmaz.
+
+Glass, KWin yazılım rasterleştirici kullanıyorsa (softpipe, LLVMpipe, Software
+rasterizer) ya da OpenGL compositing etkin değilse reddedilir (MASTER_PLAN §7.3:
+yazılım rendering'de sade görünüm). --zorla bu denetimi atlar. Hiçbir şey otomatik
+çalışmaz; komut yalnız kullanıcı çağırınca uygulanır.
+
+Liquid profili yoktur: gerçek kırılma efekti prototip ve ölçüm ister
+(profiles/desktop/liquid-prototype.md); yalnız blur Glass sayılır.
+
+Değerler profiles/desktop/tokens.json -> profiles.{solid,glass}.kde ile aynı
+tutulmalı (tests/test_m08_desktop_profile.py denetler). Gerçek Plasma oturumunda
+test edilmedi.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import shutil
+import subprocess
+import sys
+
+PROFILES = {
+    "solid": {
+        "blur": False,
+        "contrast": False,
+        "panel_opacity": "opaque",
+        "blur_strength": None,
+        "noise_strength": None,
+    },
+    "glass": {
+        "blur": True,
+        "contrast": True,
+        "panel_opacity": "translucent",
+        "blur_strength": 8,
+        "noise_strength": 0,
+    },
+}
+SOFTWARE_DRIVERS = ("softpipe", "llvmpipe", "software rasterizer")
+STATE_FILE = "alpbahrc"
+STATE_GROUP = "Gorunum"
+
+
+class Runner:
+    """Komut çalıştırıcı; --deneme ve testler için komutları kaydeder."""
+
+    def __init__(self, dry_run: bool = False):
+        self.dry_run = dry_run
+        self.log: list[list[str]] = []
+
+    def run(self, cmd: list[str], mutating: bool = True) -> str:
+        self.log.append(cmd)
+        if self.dry_run and mutating:
+            print("  $ " + " ".join(_quote(c) for c in cmd))
+            return ""
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        if proc.returncode != 0:
+            raise RuntimeError(f"{cmd[0]} başarısız ({proc.returncode}): {proc.stderr.strip()}")
+        return proc.stdout
+
+
+def _quote(text: str) -> str:
+    return text if text and all(c.isalnum() or c in "-_./=:" for c in text) else "'" + text.replace("'", "'\\''") + "'"
+
+
+def tool(name: str) -> str:
+    found = shutil.which(name)
+    if not found:
+        raise RuntimeError(f"{name} bulunamadı")
+    return found
+
+
+def kwin_support_info(runner: Runner) -> str:
+    out = runner.run([tool("busctl"), "--user", "--json=short", "call", "org.kde.KWin", "/KWin", "org.kde.KWin", "supportInformation"], mutating=False)
+    try:
+        return json.loads(out)["data"][0]
+    except (ValueError, KeyError, IndexError) as exc:
+        raise RuntimeError(f"KWin supportInformation çözülemedi: {exc}") from exc
+
+
+def parse_renderer(info: str) -> dict:
+    result = {"compositing": False, "type": None, "renderer": None, "driver": None}
+    for line in info.splitlines():
+        line = line.strip()
+        if line == "Compositing is active":
+            result["compositing"] = True
+        elif line.startswith("Compositing Type:"):
+            result["type"] = line.split(":", 1)[1].strip()
+        elif line.startswith("OpenGL renderer string:"):
+            result["renderer"] = line.split(":", 1)[1].strip()
+        elif line.startswith("Driver:"):
+            result["driver"] = line.split(":", 1)[1].strip()
+    return result
+
+
+def glass_blockers(renderer: dict) -> list[str]:
+    reasons = []
+    if not renderer["compositing"]:
+        reasons.append("KWin compositing etkin değil")
+    if not renderer["type"] or not renderer["type"].startswith("OpenGL"):
+        reasons.append(f"compositing türü OpenGL değil ({renderer['type'] or 'bilinmiyor'})")
+    driver = (renderer["driver"] or "").lower()
+    render = (renderer["renderer"] or "").lower()
+    if any(sw in driver or sw in render for sw in SOFTWARE_DRIVERS):
+        reasons.append(f"yazılım rasterleştirici ({renderer['driver'] or renderer['renderer']})")
+    return reasons
+
+
+def apply(profile: str, runner: Runner) -> None:
+    spec = PROFILES[profile]
+    kwrite = tool("kwriteconfig6")
+    busctl = tool("busctl")
+
+    def write(file: str, group: str, key: str, value) -> None:
+        cmd = [kwrite, "--file", file, "--group", group, "--key", key]
+        if value is None:
+            cmd.append("--delete")
+        else:
+            cmd.append(str(value).lower() if isinstance(value, bool) else str(value))
+        runner.run(cmd)
+
+    write("kwinrc", "Plugins", "blurEnabled", spec["blur"])
+    write("kwinrc", "Plugins", "contrastEnabled", spec["contrast"])
+    write("kwinrc", "Effect-blur", "BlurStrength", spec["blur_strength"])
+    write("kwinrc", "Effect-blur", "NoiseStrength", spec["noise_strength"])
+    for effect, enabled in (("blur", spec["blur"]), ("contrast", spec["contrast"])):
+        method = "loadEffect" if enabled else "unloadEffect"
+        runner.run([busctl, "--user", "call", "org.kde.KWin", "/Effects", "org.kde.kwin.Effects", method, "s", effect])
+    runner.run([busctl, "--user", "call", "org.kde.KWin", "/KWin", "org.kde.KWin", "reconfigure"])
+    script = f'panels().forEach(function (p) {{ p.opacity = "{spec["panel_opacity"]}"; }});'
+    runner.run([busctl, "--user", "call", "org.kde.plasmashell", "/PlasmaShell", "org.kde.PlasmaShell", "evaluateScript", "s", script])
+    write(STATE_FILE, STATE_GROUP, "Profil", profile)
+
+
+def current_profile(runner: Runner) -> str:
+    try:
+        out = runner.run([tool("kreadconfig6"), "--file", STATE_FILE, "--group", STATE_GROUP, "--key", "Profil", "--default", "solid"], mutating=False)
+    except RuntimeError:
+        return "bilinmiyor"
+    return out.strip() or "solid"
+
+
+def main(argv: list[str] | None = None, runner: Runner | None = None) -> int:
+    parser = argparse.ArgumentParser(prog="alpbah-gorunum", description="alpbahOS görünüm profili (Solid/Glass)")
+    parser.add_argument("komut", choices=["durum", "solid", "glass"])
+    parser.add_argument("--zorla", action="store_true", help="Glass için renderer denetimini atla")
+    parser.add_argument("--deneme", action="store_true", help="değiştirmeden komutları yazdır")
+    args = parser.parse_args(argv)
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8")
+    runner = runner or Runner(dry_run=args.deneme)
+
+    try:
+        if args.komut == "durum":
+            renderer = parse_renderer(kwin_support_info(runner))
+            print(f"profil: {current_profile(runner)}")
+            print(f"compositing: {'etkin' if renderer['compositing'] else 'kapalı'} ({renderer['type'] or '?'})")
+            print(f"renderer: {renderer['renderer'] or '?'} / sürücü: {renderer['driver'] or '?'}")
+            blockers = glass_blockers(renderer)
+            print("glass: uygun" if not blockers else "glass: önerilmez -- " + "; ".join(blockers))
+            return 0
+        if args.komut == "glass" and not args.zorla:
+            blockers = glass_blockers(parse_renderer(kwin_support_info(runner)))
+            if blockers:
+                print("Glass uygulanmadı: " + "; ".join(blockers), file=sys.stderr)
+                print("Solid profili bu donanımda önerilir. Yine de denemek için: alpbah-gorunum glass --zorla", file=sys.stderr)
+                return 3
+        if args.deneme:
+            print(f"[deneme] {args.komut} profili için çalıştırılacak komutlar:")
+        apply(args.komut, runner)
+        if not args.deneme:
+            print(f"{args.komut} profili uygulandı.")
+        return 0
+    except (RuntimeError, OSError, subprocess.SubprocessError) as exc:
+        print(f"HATA: {exc}", file=sys.stderr)
+        return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main())
