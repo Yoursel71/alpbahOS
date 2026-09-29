@@ -2927,12 +2927,12 @@ def main(argv: list[str] | None = None) -> int:
         index = load_index(index_path)
         if args.command == "search":
             return cmd_search(index, args.term, as_json=args.json, index_dir=index_dir)
+        # info/list/check only read: load_db() and pending_journals() cope with a
+        # missing state directory, so they must not create it (or fail on a read-only root).
         if args.command == "info":
-            paths.ensure()
             db = load_db(paths)
             return cmd_info(index, db, args.name, index_dir=index_dir)
         if args.command == "list":
-            paths.ensure()
             return cmd_list(load_db(paths), as_json=args.json)
         paths.keep_build = getattr(args, "keep_build", False)
         paths.relocate = getattr(args, "relocate", False)
@@ -2959,7 +2959,6 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "autoremove":
             return cmd_autoremove(args, paths, index)
         if args.command == "check":
-            paths.ensure()
             return cmd_check(paths, index, index_dir)
         raise AlpError(f"Bilinmeyen komut: {args.command}")
     except AlpError as exc:
@@ -2967,6 +2966,10 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     except subprocess.CalledProcessError as exc:
         print(f"alp: alt işlem başarısız (çıkış {exc.returncode}): {' '.join(exc.cmd)}", file=sys.stderr)
+        return 1
+    except (OSError, json.JSONDecodeError) as exc:
+        # missing/unreadable/corrupt index, unwritable root or state dir, full disk, ...
+        print(f"alp: hata: {exc}", file=sys.stderr)
         return 1
 
 
