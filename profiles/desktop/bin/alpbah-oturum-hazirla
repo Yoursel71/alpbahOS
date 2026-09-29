@@ -32,7 +32,7 @@ Kullanıcı ayarı korunur:
 - Aracın daha önce kendisinin yazdığı değer kullanıcı değişikliği sayılmaz; profil değişince
   güncellenir. Kullanıcı o satırı sonradan değiştirdiyse (KDE varsayılanına dönmek dahil)
   dokunulmaz. Aynı profil bir kez uygulandıktan sonra araç o dosyaya bir daha dokunmaz.
-  Durum: $XDG_STATE_HOME/alpbahos/oturum.json.
+  Durum ve son çalışmanın günlüğü: $XDG_CONFIG_HOME/alpbahos/{oturum.json,oturum-hazirla.log}.
 
 KWin çalışırken kglobalacceld kendi bellek durumunu dosyaya geri yazabilir; bu yüzden araç
 KWin açıksa kısayol adımını atlar (--zorla ile uygulanır, etkisi sonraki girişte görülür).
@@ -305,17 +305,23 @@ def main(argv: list[str] | None = None, env: dict | None = None) -> int:
             stream.reconfigure(encoding="utf-8")
     env = dict(os.environ) if env is None else env
     config_home = xdg_dir(env, "XDG_CONFIG_HOME", ".config")
-    state_path = xdg_dir(env, "XDG_STATE_HOME", ".local/state") / "alpbahos" / "oturum.json"
+    # ~/.local/state değil: Gen2 imajında ~/.local root'a aitti ve yazılamadı (29 Eylül).
+    # ~/.config oturumun çalışması için zaten yazılabilir olmak zorunda.
+    state_path = config_home / "alpbahos" / "oturum.json"
     try:
         state = json.loads(state_path.read_text(encoding="utf-8"))
-    except (FileNotFoundError, ValueError):
+    except (OSError, ValueError):
         state = {}
     write = not args.durum
-    report = step_color_scheme(config_home, write)
-    report += step_shortcuts(env, config_home, state, write, args.zorla)
-    if write:
-        atomic_write(state_path, json.dumps(state, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
-        atomic_write(state_path.with_name("oturum-hazirla.log"), "\n".join(report) + "\n")
+    try:
+        report = step_color_scheme(config_home, write)
+        report += step_shortcuts(env, config_home, state, write, args.zorla)
+        if write:
+            atomic_write(state_path, json.dumps(state, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+            atomic_write(state_path.with_name("oturum-hazirla.log"), "\n".join(report) + "\n")
+    except OSError as exc:
+        print(f"HATA: {exc}", file=sys.stderr)
+        return 1
     print("\n".join(report))
     return 0
 

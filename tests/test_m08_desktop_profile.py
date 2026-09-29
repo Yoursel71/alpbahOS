@@ -580,7 +580,7 @@ class SessionPrepTests(unittest.TestCase):
         self.profile = self.data / "alpbahos" / "kglobalshortcutsrc"
         self.profile.write_text(PROFILE_TEXT, encoding="utf-8")
         self.env = {"HOME": str(root), "XDG_CONFIG_HOME": str(self.config), "XDG_DATA_HOME": str(self.data),
-                    "XDG_DATA_DIRS": "", "XDG_STATE_HOME": str(root / "state")}
+                    "XDG_DATA_DIRS": ""}
         self.user = self.config / "kglobalshortcutsrc"
         self._kwin = OTURUM.kwin_running
         OTURUM.kwin_running = lambda *a: False
@@ -605,6 +605,9 @@ class SessionPrepTests(unittest.TestCase):
             for key, value in profile[section].items():
                 self.assertEqual(user[section][key], value, (section, key))
         self.assertNotIn("ÜRETİLMİŞ", self.user.read_text(encoding="utf-8"))
+        # Durum ~/.config altında: Gen2'de ~/.local root'a aitti ve yazılamadı.
+        self.assertTrue((self.config / "alpbahos" / "oturum.json").exists())
+        self.assertIn("eklendi: [kwin] Window Maximize", (self.config / "alpbahos" / "oturum-hazirla.log").read_text(encoding="utf-8"))
 
     def test_upstream_entries_replaced_other_lines_kept(self):
         self.config.mkdir(parents=True)
