@@ -2422,6 +2422,9 @@ def cmd_protect(args: argparse.Namespace, paths: Paths, protect: bool) -> int:
             pkg.pop("protected", None)
         if not args.dry_run:
             save_db(paths, db)
+    if args.dry_run:
+        print(f"[dry-run] {args.name} {'korumalı olarak işaretlenecekti' if protect else 'korumasız yapılacaktı'}; veritabanı değiştirilmedi.")
+        return 0
     print(f"{args.name} {'korumalı olarak işaretlendi' if protect else 'artık korumalı değil'}.")
     return 0
 
