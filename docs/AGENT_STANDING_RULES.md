@@ -6,6 +6,8 @@ Ortamın haritası ve "hangi iş nerede yapılır" tablosu için: `docs/AI_ENVIR
 
 ## 1. Erişim kartı (SSH ve Hyper-V)
 
+> **Tarihsel (24–26 Eylül 2026, D36):** bu kart Windows/Hyper-V/Builder ortamına aittir. Ana geliştirme/test ortamı Fedora + QEMU/KVM oldu; alias, anahtar ve IP bilgileri Fedora hostundan doğrulanamaz, silinmedi. Kullanmadan önce yeniden doğrula; QEMU/KVM erişim ayrıntıları henüz kayıtta yok.
+
 Anahtarların **içeriğini** hiçbir yere yazma, yazdırma ve loglama. Aşağıda yalnız dosya adları ve komutlar var.
 
 | Amaç | Komut / alias | Kullanıcı | Anahtar dosyası (`C:\Users\thewo\.ssh\`) |
@@ -47,7 +49,7 @@ Restart-Service sshd
 
 **Nerede çalışılır**
 1. Derleme ve rootfs değişikliği yalnız Builder'daki `/mnt/lfs` chroot'unda yapılır. **Test VM'inde derleme yok.** Her düzeltme önce rootfs'e girer, imaj rootfs'ten üretilir (aksi hâlde yeniden üretimde kaybolur).
-2. Her ajan **yalnız kendi çalışma dizininde** yazar. Codex ve alt ajanları `C:\alpbahOS`, Claude `C:\alpbahOS-claude` kullanır. Başka ajanın dizinine dosya bırakma (`C:\alpbahOS-claude\scripts\` altına alt ajan taslağı düşmüştü).
+2. Her ajan **yalnız kendi çalışma dizininde** yazar. Windows hostunda Codex ve alt ajanları `C:\alpbahOS`, Claude `C:\alpbahOS-claude` kullanırdı; Fedora hostunda klon `~/alpbahOS-claude`'dur ve **birden fazla oturum aynı dizini kullanabilir** (29 Eylül 2026'da bir oturum dalı değiştirdi): ortak ağaçta `checkout`/`stash`/`reset` yapma, çok commit'li işi `git worktree add <dizin> -b <dal>` ile ayrı ağaçta yap, bitince `git worktree remove` et. Başka ajanın dizinine dosya bırakma (`C:\alpbahOS-claude\scripts\` altına alt ajan taslağı düşmüştü).
 3. Builder `/tmp` altına büyük dosya (VHDX, tarball) bırakma; iş bitince sil. Builder diski paylaşımlıdır ve bir kez %100 dolmuştur. Bir görev kendi bıraktığı geçici dosyaları temizlemeden bitmez.
 4. Aynı anda tek yazıcı: `nbd0` ya da bir `/tmp/*.vhdx` üzerinde iş yapmadan önce `/sys/block/nbd0/pid` boş mu bak. Başarısız bir betik bile imajı yazılabilir bağlayıp hash'ini değiştirir; betiklere `trap ... ERR` koy ki sessizce düşmesin.
 
