@@ -21,7 +21,7 @@
 - Kullanıcı Windows'tan geçenler için kolay masaüstü, terminal önerileri, basit paket işlemleri, Windows kısayolları, Atatürk görselleri ve güçlü cihazlarda cam görünümü istiyor.
 - Başlangıç stack'i KDE/KWin, Konsole/Zsh ve D31 ile seçilen `alp` paket motorudur. Grafik mağaza entegrasyonunu test geçmeden çalışıyor kabul etme.
 - Claude Code kullanılır. Windows hostunda çalışma ağacı `C:\alpbahOS-claude` idi (24–26 Eylül); 28 Eylül 2026'dan itibaren Fedora hostunda `~/alpbahOS-claude` klonu kullanılır (D36). Dal göreve göre değişir (`git branch --show-current`). Ortak dizini başka oturumlar da kullanır: `checkout`/`stash`/`reset` yapma, çok commit'li işi ayrı `git worktree`'de yap (`AGENTS.md`).
-- Hyper-V, 300 GB yerel alan, Türkçe Q, düşük RAM ve BIOS+UEFI hedefleri sabittir (Hyper-V'nin hedef olarak sürüp sürmediği D36 sonrası açık karardır, `docs/DECISIONS.md`). Kullanıcı günde 1–2 saat ayırır. Sistem yalnız 64-bit'tir (D32, D35): multilib yok, Steam istemcisi kapsam dışı, Wine yalnız WoW64; Steam uyumluluğu vaat etme.
+- 300 GB yerel alan, Türkçe Q, düşük RAM ve BIOS+UEFI hedefleri sabittir; test ortamı Fedora + QEMU/KVM'dir, Hyper-V ayrıca geçerli hedef değildir (D36). Kullanıcı günde 1–2 saat ayırır. Sistem yalnız 64-bit'tir (D32, D35): multilib yok, Steam istemcisi kapsam dışı, Wine yalnız WoW64; Steam uyumluluğu vaat etme.
 
 ## Rol ve ilk görev
 
