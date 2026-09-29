@@ -39,7 +39,7 @@ SOURCE = THEME / "source" / "Ataturk1930s.jpg"
 SOURCE_SHA256 = "f1dad1a903de0d8930b44020fc77e4aea647ddd3cb21d110d447f1fe63694bbf"
 PACKAGE = THEME / "wallpaper" / "alpbahOS-Ataturk"
 
-SIZES = [(1366, 768), (1920, 1080), (1920, 1200), (2560, 1440), (3440, 1440)]
+SIZES = [(1366, 768), (1920, 1080), (1920, 1200), (2560, 1440), (3440, 1440), (5120, 1440)]
 SCREENSHOT_SIZE = (400, 250)
 
 # profiles/desktop/tokens.json
@@ -202,13 +202,14 @@ def compose(size: tuple[int, int], photo: Image.Image) -> tuple[Image.Image, tup
     return canvas.convert("RGB"), face
 
 
-def check_safe_area(size: tuple[int, int], face: tuple[int, int, int, int]) -> None:
+def check_safe_area(size: tuple[int, int], face: tuple[int, int, int, int], panel_height: float = PANEL_HEIGHT) -> None:
+    """panel_height fiziksel pikseldir; ölçekli ekranda PANEL_HEIGHT * ölçek faktörü (scale_samples.py)."""
     width, height = size
     x0, y0, x1, y1 = face
     problems = []
     if x0 < 0 or x1 > width or y0 < 0 or y1 > height:
         problems.append("yüz kadraj dışına taşıyor")
-    if y0 < PANEL_HEIGHT:
+    if y0 < panel_height:
         problems.append("yüz üst panelin altında kalıyor")
     if y1 > height * (1 - DOCK_ZONE):
         problems.append("yüz dock bölgesine giriyor")

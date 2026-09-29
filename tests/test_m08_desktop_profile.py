@@ -273,6 +273,41 @@ class WallpaperTests(unittest.TestCase):
             self.assertEqual(preview.size, builder.SCREENSHOT_SIZE)
 
 
+class WallpaperScaleTests(unittest.TestCase):
+    """UI-03 ölçek örnekleri: Plasma 6.4.4 görüntü seçimi + PreserveAspectCrop (scale_samples.py)."""
+
+    @classmethod
+    def setUpClass(cls):
+        try:
+            import PIL  # noqa: F401
+        except ImportError:
+            raise unittest.SkipTest("Pillow yok")
+        cls.samples = load("m08_scale", REPO / "branding" / "ataturk-theme" / "tools" / "scale_samples.py")
+        photo = cls.samples.BUILDER.load_source()
+        cls.faces = {size: cls.samples.BUILDER.compose(size, photo)[1] for size in cls.samples.BUILDER.SIZES}
+
+    def test_plasma_distance_and_pick(self):
+        sizes = list(self.faces)
+        pick = self.samples.pick_image
+        self.assertEqual(self.samples.plasma_distance((1920, 1080), (1920, 1080)), 0)
+        # Aday dar: genişlik farkı iki kat (büyütme cezası).
+        self.assertAlmostEqual(self.samples.plasma_distance((1366, 768), (1920, 1080)), abs(1366 / 768 - 16 / 9) * 25000 + 2 * 554)
+        self.assertEqual(pick(sizes, (1920, 1080)), (1920, 1080))  # Gen2 VM'deki ekran
+        self.assertEqual(pick(sizes, (3840, 2160)), (2560, 1440))
+        self.assertEqual(pick(sizes, (5120, 1440)), (5120, 1440))
+
+    def test_common_screens_and_scale_factors_are_safe(self):
+        rows = self.samples.analyse(self.faces)
+        self.assertEqual({r["ekran"]: r["sorun"] for r in rows if r["sorun"]}, {})
+        self.assertIn(2.0, next(r for r in rows if r["ekran"] == (3840, 2160))["faktorler"])
+
+    def test_superwide_needs_its_own_image(self):
+        without = {k: v for k, v in self.faces.items() if k != (5120, 1440)}
+        row = next(r for r in self.samples.analyse(without, [(5120, 1440)]))
+        self.assertEqual(row["goruntu"], (3440, 1440))
+        self.assertIn("%150: yüz üst panelin altında kalıyor", row["sorun"])
+
+
 def load_script(name, path):
     loader = importlib.machinery.SourceFileLoader(name, str(path))
     spec = importlib.util.spec_from_loader(name, loader)
