@@ -119,3 +119,15 @@ Komut 019 §4 madde 3'teki ile aynı: `profiles/desktop/install-desktop-profile.
 - **Çalıştırılmadı:**
   - Sistem geneli Konsole kurulumu VM'de denenmedi (ana makineye bu turda bağlanılamadı).
   - Zsh ve eklentileri imajda yok; §4.3 maddeleri terminalde hâlâ test edilmedi.
+
+## Dördüncü tur: PR #5 öz incelemesi (ana makineye erişim yok)
+
+Bu makinede Tailscale kapalıydı, ana makineye bağlanılamadı. PR'daki kod baştan okundu, iki hata bulunup düzeltildi:
+
+1. **Fontconfig dosyası yanlış dizine gidebiliyordu.** 019 §4 madde 3'teki alternatif `--sysconfdir /opt/kf6/etc` ile kurulum yapılırsa `59-alpbahos-fonts.conf` `/opt/kf6/etc/fonts/conf.d`'ye düşüyordu. XDG dosyaları oradan okunur, ama fontconfig yalnız kendi dizinini okur ve dosyayı sessizce yok sayardı. Yeni `--fontconfdir` seçeneği eklendi (varsayılan `/etc/fonts/conf.d`); regresyon testi var.
+2. **`alpbah-oturum-hazirla` bir adım düşünce hepsini bırakıyordu.** Renk adımında UTF-8 olmayan bir `kdeglobals` `UnicodeDecodeError` fırlatıyor, araç çöküyor ve kısayol adımı hiç çalışmıyordu. Adımlar artık ayrı yakalanıyor; hata günlüğe yazılıyor, çıkış kodu 1. Test eski kodda bu hatayla kalıyor, yenisinde geçiyor.
+
+İncelenen ama sorun çıkmayan: ilk girişte araç dosyayı `_k_friendly_name` olmadan yazıyor. Uygulama kaydolurken kglobalacceld bileşen adını güncelliyor (`kglobalacceld.cpp:354-356`).
+
+Test: 55 geçti, 1 atlandı (`zsh -n`, yerelde zsh yok).
+
