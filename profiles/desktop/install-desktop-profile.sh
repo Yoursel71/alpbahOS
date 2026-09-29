@@ -14,6 +14,8 @@
 #   BINDIR/alpbah-gorunum                                     Solid/Glass geçiş aracı (0755)
 #   SYSCONFDIR/xdg/mimeapps.list                              varsayılan uygulamalar (profiles/apps/)
 #   SYSCONFDIR/fonts/conf.d/59-alpbahos-fonts.conf            fontconfig: sans-serif/monospace -> Inter/JetBrains Mono
+#   DATADIR/konsole/alpbahOS.profile, alpbah-dark.colorscheme Konsole profili ve renk şeması (profiles/shell/)
+#   SYSCONFDIR/xdg/konsolerc                                  Konsole varsayılan profili: alpbahOS.profile
 #
 # kglobalacceld kglobalshortcutsrc'yi KConfig::SimpleConfig ile açar ve /etc/xdg'yi okumaz; bu yüzden
 # kısayollar sistem geneli dosya olarak değil, oturum başında kullanıcı dosyasına işlenerek uygulanır
@@ -111,6 +113,10 @@ PAIRS+=("$REPO/profiles/desktop/bin/alpbah-oturum-hazirla|$BINDIR/alpbah-oturum-
 PAIRS+=("$REPO/profiles/desktop/bin/alpbah-gorunum|$BINDIR/alpbah-gorunum")
 PAIRS+=("$REPO/profiles/apps/generated/mimeapps.list|$SYSCONFDIR/xdg/mimeapps.list")
 PAIRS+=("$REPO/profiles/desktop/fontconfig/59-alpbahos-fonts.conf|$SYSCONFDIR/fonts/conf.d/59-alpbahos-fonts.conf")
+# Konsole profili sistem genelinde: ev dizinine root olarak kopyalamak ~/.local sahipliğini bozuyordu (020).
+PAIRS+=("$REPO/profiles/shell/konsole/alpbahOS.profile|$DATADIR/konsole/alpbahOS.profile")
+PAIRS+=("$REPO/profiles/shell/konsole/alpbah-dark.colorscheme|$DATADIR/konsole/alpbah-dark.colorscheme")
+PAIRS+=("$REPO/profiles/shell/konsole/konsolerc|$SYSCONFDIR/xdg/konsolerc")
 
 # Önce tüm çakışmaları denetle; yarım kurulum bırakma.
 conflicts=0

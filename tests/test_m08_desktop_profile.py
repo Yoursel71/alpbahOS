@@ -308,6 +308,53 @@ class WallpaperScaleTests(unittest.TestCase):
         self.assertIn("%150: yüz üst panelin altında kalıyor", row["sorun"])
 
 
+SHELL = REPO / "profiles" / "shell"
+
+
+class ShellProfileTests(unittest.TestCase):
+    """SHELL-01: Konsole profili ve zshrc kabul kriterlerinin statik karşılığı (MASTER_PLAN §4.3)."""
+
+    def test_konsole_default_profile_chain(self):
+        konsolerc = ini((SHELL / "konsole" / "konsolerc").read_text(encoding="utf-8"))
+        profile_name = konsolerc["Desktop Entry"]["DefaultProfile"]
+        profile = ini((SHELL / "konsole" / profile_name).read_text(encoding="utf-8"))
+        scheme = profile["Appearance"]["ColorScheme"]
+        self.assertTrue((SHELL / "konsole" / f"{scheme}.colorscheme").exists(), scheme)
+        tokens = json.loads((REPO / "profiles" / "desktop" / "tokens.json").read_text(encoding="utf-8"))
+        self.assertEqual(profile["Appearance"]["Font"].split(",")[0], tokens["typography"]["font_terminal"])
+
+    def test_konsole_scheme_matches_tokens(self):
+        scheme = ini((SHELL / "konsole" / "alpbah-dark.colorscheme").read_text(encoding="utf-8"))
+        colors = json.loads((REPO / "profiles" / "desktop" / "tokens.json").read_text(encoding="utf-8"))["color"]
+
+        def rgb(hex_color):
+            return ",".join(str(int(hex_color[i:i + 2], 16)) for i in (1, 3, 5))
+
+        self.assertEqual(scheme["Background"]["Color"], rgb(colors["bg-950"]))  # Gen2'de ölçülen zemin
+        self.assertEqual(scheme["Foreground"]["Color"], rgb(colors["text"]))
+        for n in range(8):
+            self.assertIn(f"Color{n}", scheme)
+            self.assertIn(f"Color{n}Intense", scheme)
+
+    def test_zshrc_acceptance_rules(self):
+        lines = [l.split("#", 1)[0].strip() for l in (SHELL / "zshrc.alpbah").read_text(encoding="utf-8").splitlines()]
+        code = [l for l in lines if l]
+        self.assertIn("setopt CORRECT", code)          # §4.3-3: komut adı düzeltmesi, reddedilebilir
+        self.assertIn("unsetopt CORRECT_ALL", code)    # argümanlar sessizce değişmez
+        self.assertFalse(any(l.startswith("bindkey") and "'^C'" in l for l in code))  # §4.3-5: Ctrl+C korunur
+        self.assertFalse(any("autosuggest-execute" in l for l in code))  # §4.3-2: kabul çalıştırmaz
+        highlight = next(i for i, l in enumerate(code) if "zsh-syntax-highlighting.zsh" in l and l.startswith("source"))
+        self.assertTrue(all(i < highlight for i, l in enumerate(code) if l.startswith("bindkey")),
+                        "syntax-highlighting bütün bindkey satırlarından sonra yüklenmeli (upstream)")
+
+    def test_zshrc_syntax(self):
+        zsh = shutil.which("zsh")
+        if not zsh:
+            self.skipTest("zsh yok; sözdizimi denetlenmedi")
+        proc = subprocess.run([zsh, "-n", str(SHELL / "zshrc.alpbah")], capture_output=True, text=True)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+
+
 def load_script(name, path):
     loader = importlib.machinery.SourceFileLoader(name, str(path))
     spec = importlib.util.spec_from_loader(name, loader)
@@ -594,7 +641,8 @@ class InstallScriptTests(unittest.TestCase):
             joined = "\n".join(manifest)
             for target in ("/usr/share/alpbahos/kglobalshortcutsrc", "/usr/bin/alpbah-oturum-hazirla",
                            "/etc/xdg/plasma-workspace/env/alpbahos-oturum.sh", "/usr/share/color-schemes/AlpbahDark.colors",
-                           "/etc/fonts/conf.d/59-alpbahos-fonts.conf"):
+                           "/etc/fonts/conf.d/59-alpbahos-fonts.conf", "/usr/share/konsole/alpbahOS.profile",
+                           "/usr/share/konsole/alpbah-dark.colorscheme", "/etc/xdg/konsolerc"):
                 self.assertIn(target, joined)
             # kglobalacceld /etc/xdg'yi okumaz (SimpleConfig); yanıltıcı sistem dosyası kurulmaz.
             self.assertNotIn("/etc/xdg/kglobalshortcutsrc", joined)

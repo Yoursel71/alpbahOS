@@ -1,0 +1,6 @@
+# alpbahOS sistem geneli Konsole varsayılanı. Kurulum hedefi: /etc/xdg/konsolerc
+# Kullanıcının ~/.config/konsolerc ayarı önce gelir. Konsole bu dosyayı KSharedConfig
+# katmanıyla okur ve profili GenericDataLocation/konsole/ altında arar (konsole v25.08.1
+# src/profile/ProfileManager.cpp). Dolphin'in gömülü terminali de bu varsayılana düşer.
+[Desktop Entry]
+DefaultProfile=alpbahOS.profile

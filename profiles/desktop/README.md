@@ -12,6 +12,8 @@ Durum: **M08 — 29 Eylül'de Gen2 Plasma 6.4.4 oturumunda (QPainter) çalışt�
 | `../../branding/icons/hicolor/` | `/usr/share/icons/hicolor/` | `alpbahos` sembol ikonu (32–256 px, geçici raster) |
 | `xdg/kdeglobals` | `/etc/xdg/kdeglobals` | `LookAndFeelPackage=org.alpbahos.solid.desktop`; yazı tipleri Inter / JetBrains Mono (`tokens.json`) |
 | `fontconfig/59-alpbahos-fonts.conf` | `/etc/fonts/conf.d/59-alpbahos-fonts.conf` | `sans-serif`/`system-ui` → Inter, `monospace` → JetBrains Mono (Qt varsayılanı, GTK, tarayıcı) |
+| `../shell/konsole/{alpbahOS.profile,alpbah-dark.colorscheme}` | `/usr/share/konsole/` | Konsole profili ve renk şeması (SHELL-01) |
+| `../shell/konsole/konsolerc` | `/etc/xdg/konsolerc` | Konsole varsayılan profili: `alpbahOS.profile` |
 | `xdg/kwinrc` | `/etc/xdg/kwinrc` | Solid: blur/kontrast efekti kapalı |
 | `../shortcuts/generated/kglobalshortcutsrc` | `/usr/share/alpbahos/kglobalshortcutsrc` | Windows'a tanıdık kısayol profili, veri ([conflicts.md](../shortcuts/conflicts.md)) |
 | `xdg/plasma-workspace/env/alpbahos-oturum.sh` | `/etc/xdg/plasma-workspace/env/alpbahos-oturum.sh` | startplasma KWin'den önce kaynaklar; `alpbah-oturum-hazirla`'yı çağırır |
