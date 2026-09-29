@@ -1,0 +1,320 @@
+#!/usr/bin/env python3
+"""alpbah-oturum-hazirla -- Plasma oturumu başlamadan alpbahOS kullanıcı varsayılanlarını hazırlar.
+
+Kullanım:
+    alpbah-oturum-hazirla            kısayol profilini ve renk şeması göçünü uygula
+    alpbah-oturum-hazirla --durum    ne yapılacağını göster, hiçbir şeyi değiştirme
+    ...  --zorla                     KWin çalışırken de uygula (bkz. aşağıdaki not)
+
+Neden gerekli (Plasma 6.4.4 kaynağıyla doğrulandı, 29 Eylül 2026 Gen2 oturumunda görüldü):
+
+1. kglobalacceld `kglobalshortcutsrc` dosyasını KConfig::SimpleConfig ile açar
+   (kglobalacceld v6.4.4 src/globalshortcutsregistry.cpp). Bu kip /etc/xdg katmanını okumaz;
+   sistem geneli bir kglobalshortcutsrc hiçbir etki yapmaz. Kısayol profili bu yüzden
+   kullanıcının ~/.config/kglobalshortcutsrc dosyasına, kglobalacceld (KWin içinde)
+   başlamadan önce işlenir. startplasma `plasma-workspace/env/*.sh` betiklerini KWin'den
+   önce kaynaklar (plasma-workspace v6.4.4 startkde/startplasma-wayland.cpp); alpbahOS
+   betiği bu aracı oradan çağırır.
+2. İlk M08 profili renk şemasını `alpbah-dark` adıyla kurmuştu. Plasma şema adını
+   `AlpbahDark` biçimine çevirip `...AlpbahDark.colors` dosyasını arar
+   (kcms/lookandfeel/lookandfeelmanager.cpp colorSchemeFile); dosya bulunamadığı için
+   renkler hiç uygulanmadı. Şema `AlpbahDark` olarak yeniden adlandırıldı; eski
+   varsayılanlarla açılmış kullanıcılar için `~/.config/kdedefaults/package` silinir,
+   startplasma look-and-feel varsayılanlarını bir sonraki adımda yeniden yazar.
+   Varsayılan kipi yalnız kdedefaults'a yazar; panel düzenine ve kullanıcı ayarına dokunmaz.
+
+Kullanıcı ayarı korunur:
+- Bileşen kısayolu (ör. [kwin]) "etkin,varsayılan,ad" üçlüsüdür. Etkin == varsayılan ise
+  kullanıcı değiştirmemiştir ve profil değeri yazılır; farklıysa dokunulmaz.
+- Servis kısayolu ([services][x.desktop]) yalnız varsayılandan farklıysa dosyada bulunur
+  (kserviceactioncomponent.cpp writeSettings). Satır yoksa profil değeri yazılır, varsa korunur.
+- Aracın daha önce kendisinin yazdığı değer kullanıcı değişikliği sayılmaz; profil değişince
+  güncellenir. Kullanıcı o satırı sonradan değiştirdiyse (KDE varsayılanına dönmek dahil)
+  dokunulmaz. Aynı profil bir kez uygulandıktan sonra araç o dosyaya bir daha dokunmaz.
+  Durum: $XDG_STATE_HOME/alpbahos/oturum.json.
+
+KWin çalışırken kglobalacceld kendi bellek durumunu dosyaya geri yazabilir; bu yüzden araç
+KWin açıksa kısayol adımını atlar (--zorla ile uygulanır, etkisi sonraki girişte görülür).
+Profil verisi: $XDG_DATA_DIRS/alpbahos/kglobalshortcutsrc (profiles/shortcuts/generated).
+"""
+
+from __future__ import annotations
+
+import argparse
+import contextlib
+import hashlib
+import json
+import os
+import sys
+import tempfile
+from pathlib import Path
+
+LNF_ID = "org.alpbahos.solid.desktop"
+OLD_SCHEME = "alpbah-dark"
+NEW_SCHEME = "AlpbahDark"
+PROFILE_REL = Path("alpbahos") / "kglobalshortcutsrc"
+
+
+# --- KConfig metni ---------------------------------------------------------------
+
+def split_list(value: str) -> list[str]:
+    """KConfig liste değerini kaçışlı virgülleri bozmadan böler (öğeler ham kalır)."""
+    items, cur, i = [], [], 0
+    while i < len(value):
+        ch = value[i]
+        if ch == "\\" and i + 1 < len(value):
+            cur.append(value[i:i + 2])
+            i += 2
+            continue
+        if ch == ",":
+            items.append("".join(cur))
+            cur = []
+        else:
+            cur.append(ch)
+        i += 1
+    items.append("".join(cur))
+    return items
+
+
+def key_set(field: str) -> frozenset[str]:
+    """'Meta+Up\\tMeta+PgUp' -> {'Meta+Up', 'Meta+PgUp'}; 'none' ve boş -> boş küme."""
+    keys = [k.strip() for k in field.replace("\\t", "\t").split("\t")]
+    return frozenset(k for k in keys if k and k.lower() != "none")
+
+
+class KConfigText:
+    """Satır düzenini koruyarak grup/anahtar okur ve yazar (yorumlar, bilinmeyen satırlar kalır)."""
+
+    def __init__(self, text: str = ""):
+        self.sections: list[tuple[str | None, list[str]]] = [(None, [])]
+        for line in text.splitlines():
+            stripped = line.strip()
+            if stripped.startswith("[") and stripped.endswith("]"):
+                self.sections.append((stripped, []))
+            else:
+                self.sections[-1][1].append(line)
+
+    def _section(self, group: str) -> list[str] | None:
+        for header, lines in self.sections:
+            if header == group:
+                return lines
+        return None
+
+    def get(self, group: str, key: str) -> str | None:
+        lines = self._section(group)
+        for line in lines or []:
+            if not line.lstrip().startswith("#") and "=" in line and line.split("=", 1)[0].strip() == key:
+                return line.split("=", 1)[1]
+        return None
+
+    def set(self, group: str, key: str, value: str) -> None:
+        lines = self._section(group)
+        if lines is None:
+            if self.sections[-1][1] and self.sections[-1][1][-1].strip():
+                self.sections[-1][1].append("")
+            self.sections.append((group, [f"{key}={value}"]))
+            return
+        for idx, line in enumerate(lines):
+            if not line.lstrip().startswith("#") and "=" in line and line.split("=", 1)[0].strip() == key:
+                lines[idx] = f"{key}={value}"
+                return
+        insert_at = len(lines)
+        while insert_at > 0 and not lines[insert_at - 1].strip():
+            insert_at -= 1
+        lines.insert(insert_at, f"{key}={value}")
+
+    def entries(self):
+        for header, lines in self.sections:
+            if header is None:
+                continue
+            for line in lines:
+                if line.strip() and not line.lstrip().startswith("#") and "=" in line:
+                    key, value = line.split("=", 1)
+                    yield header, key.strip(), value
+
+    def text(self) -> str:
+        out: list[str] = []
+        for header, lines in self.sections:
+            if header is not None:
+                out.append(header)
+            out.extend(lines)
+        return "\n".join(out).strip("\n") + "\n"
+
+
+def read_value(path: Path, group: str, key: str) -> str | None:
+    try:
+        return KConfigText(path.read_text(encoding="utf-8")).get(group, key)
+    except FileNotFoundError:
+        return None
+
+
+def atomic_write(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as handle:
+            handle.write(text)
+        if path.exists():
+            os.chmod(tmp, path.stat().st_mode & 0o7777)
+        os.replace(tmp, path)
+    except BaseException:
+        with contextlib.suppress(OSError):
+            os.unlink(tmp)
+        raise
+
+
+# --- ortam ---------------------------------------------------------------------------
+
+def xdg_dir(env: dict, name: str, fallback: str) -> Path:
+    value = env.get(name, "")
+    if value and Path(value).is_absolute():
+        return Path(value)
+    return Path(env.get("HOME") or Path.home()) / fallback
+
+
+def locate_profile(env: dict) -> Path | None:
+    dirs = [xdg_dir(env, "XDG_DATA_HOME", ".local/share")]
+    dirs += [Path(d) for d in (env.get("XDG_DATA_DIRS") or "/usr/local/share:/usr/share").split(":") if d]
+    for base in dirs:
+        candidate = base / PROFILE_REL
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+def kwin_running(proc: Path = Path("/proc")) -> bool:
+    if not hasattr(os, "getuid"):
+        return False
+    uid = os.getuid()
+    try:
+        pids = [p for p in proc.iterdir() if p.name.isdigit()]
+    except OSError:
+        return False
+    for pid in pids:
+        try:
+            if (pid / "comm").read_text().strip() in ("kwin_wayland", "kwin_x11") and pid.stat().st_uid == uid:
+                return True
+        except OSError:
+            continue
+    return False
+
+
+# --- adımlar -------------------------------------------------------------------------
+
+def plan_shortcuts(profile_text: str, user_text: str, applied: dict) -> tuple[KConfigText, list[str], dict]:
+    """Profil satırlarını kullanıcı dosyasına işler. Dönüş: (yeni metin, rapor, uygulanan etkin değerler)."""
+    profile = KConfigText(profile_text)
+    user = KConfigText(user_text)
+    report: list[str] = []
+    new_applied: dict = {}
+    for group, key, value in profile.entries():
+        is_service = group.startswith("[services]")
+        ours = key_set(value if is_service else split_list(value)[0])
+        current = user.get(group, key)
+        prev = applied.get(group, {}).get(key)
+        label = f"{group} {key}"
+        if current is None:
+            user.set(group, key, value)
+            report.append(f"eklendi: {label}")
+            new_applied.setdefault(group, {})[key] = value
+            continue
+        fields = [current] if is_service else split_list(current)
+        active = key_set(fields[0])
+        if active == ours:
+            report.append(f"zaten profilde: {label}")
+            new_applied.setdefault(group, {})[key] = value
+            continue
+        if prev is None:
+            # Araç bu satıra hiç yazmadı: etkin == varsayılan ise kullanıcı değiştirmemiştir.
+            ours_to_change = not is_service and len(fields) == 3 and active == key_set(fields[1])
+        else:
+            # Araç daha önce yazdı: yalnız hâlâ o değerse güncellenir (varsayılana dönüş de kullanıcı kararıdır).
+            ours_to_change = active == key_set(prev if is_service else split_list(prev)[0])
+        if ours_to_change:
+            if not is_service and len(fields) == 3:
+                # kglobalacceld'in yazdığı güncel varsayılan ve ad korunur; yalnız etkin tuşlar değişir.
+                user.set(group, key, ",".join([split_list(value)[0]] + fields[1:]))
+            else:
+                user.set(group, key, value)
+            report.append(f"güncellendi: {label}")
+            new_applied.setdefault(group, {})[key] = value
+        else:
+            report.append(f"kullanıcı ayarı korundu: {label} = {fields[0]}")
+    return user, report, new_applied
+
+
+def step_shortcuts(env: dict, config_home: Path, state: dict, write: bool, force: bool) -> list[str]:
+    profile_path = locate_profile(env)
+    if profile_path is None:
+        return [f"kısayol: profil yok ({PROFILE_REL}); adım atlandı"]
+    profile_bytes = profile_path.read_bytes()
+    digest = hashlib.sha256(profile_bytes).hexdigest()
+    section = state.setdefault("kisayollar", {})
+    if section.get("profil_ozeti") == digest:
+        return ["kısayol: bu profil zaten uygulanmış; kullanıcı dosyasına dokunulmadı"]
+    if kwin_running() and not force:
+        return ["kısayol: KWin çalışıyor, atlandı (oturum başında uygulanır; hemen yazmak için --zorla)"]
+    user_path = config_home / "kglobalshortcutsrc"
+    try:
+        user_text = user_path.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        user_text = ""
+    new_user, report, applied = plan_shortcuts(profile_bytes.decode("utf-8"), user_text, section.get("uygulanan", {}))
+    if write:
+        if new_user.text() != user_text:
+            atomic_write(user_path, new_user.text())
+        section["profil_ozeti"] = digest
+        section["profil"] = str(profile_path)
+        section["uygulanan"] = applied
+    return [f"kısayol: {line}" for line in report]
+
+
+def step_color_scheme(config_home: Path, write: bool) -> list[str]:
+    report = []
+    defaults = config_home / "kdedefaults"
+    package = defaults / "package"
+    try:
+        active_lnf = package.read_text(encoding="utf-8").splitlines()[0].strip() if package.exists() else ""
+    except (OSError, IndexError):
+        active_lnf = ""
+    if active_lnf == LNF_ID and read_value(defaults / "kdeglobals", "[General]", "ColorScheme") == OLD_SCHEME:
+        if write:
+            package.unlink()
+        report.append(f"renk: eski '{OLD_SCHEME}' varsayılanı bulundu; kdedefaults/package silindi, startplasma yeniden yazacak")
+    user_globals = config_home / "kdeglobals"
+    if read_value(user_globals, "[General]", "ColorScheme") == OLD_SCHEME:
+        if write:
+            text = KConfigText(user_globals.read_text(encoding="utf-8"))
+            text.set("[General]", "ColorScheme", NEW_SCHEME)
+            atomic_write(user_globals, text.text())
+        report.append(f"renk: kullanıcı kdeglobals ColorScheme {OLD_SCHEME} -> {NEW_SCHEME}")
+    return report or ["renk: göç gerekmiyor"]
+
+
+def main(argv: list[str] | None = None, env: dict | None = None) -> int:
+    parser = argparse.ArgumentParser(prog="alpbah-oturum-hazirla", description="alpbahOS oturum öncesi kullanıcı varsayılanları")
+    parser.add_argument("--durum", action="store_true", help="yalnız göster, değiştirme")
+    parser.add_argument("--zorla", action="store_true", help="KWin çalışırken de kısayol adımını uygula")
+    args = parser.parse_args(argv)
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8")
+    env = dict(os.environ) if env is None else env
+    config_home = xdg_dir(env, "XDG_CONFIG_HOME", ".config")
+    state_path = xdg_dir(env, "XDG_STATE_HOME", ".local/state") / "alpbahos" / "oturum.json"
+    try:
+        state = json.loads(state_path.read_text(encoding="utf-8"))
+    except (FileNotFoundError, ValueError):
+        state = {}
+    write = not args.durum
+    report = step_color_scheme(config_home, write)
+    report += step_shortcuts(env, config_home, state, write, args.zorla)
+    if write:
+        atomic_write(state_path, json.dumps(state, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+        atomic_write(state_path.with_name("oturum-hazirla.log"), "\n".join(report) + "\n")
+    print("\n".join(report))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -87,7 +87,7 @@ ForegroundPositive=53,208,127
 ForegroundVisited=255,196,93
 
 [General]
-ColorScheme=alpbah-dark
+ColorScheme=AlpbahDark
 Name=alpbahOS Dark (Solid)
 comment=Taslak — System Settings > Renkler içine içe aktarma testi çalıştırılmadı. Kaynak: docs/alpbahOS-design-mockups.md §3.1.
 shadeSortColumn=true

@@ -1,7 +1,7 @@
 # alpbahOS kısayol profili -- ÜRETİLMİŞ DOSYA, elle düzenlemeyin.
 # Kaynak: profiles/shortcuts/shortcuts.json
 # Üretici: profiles/shortcuts/generate_kglobalshortcutsrc.py
-# Kurulum hedefi: /etc/xdg/kglobalshortcutsrc (kullanıcı ayarı ~/.config/kglobalshortcutsrc önce gelir)
+# Kurulum: /usr/share/alpbahos/kglobalshortcutsrc; oturum başında alpbah-oturum-hazirla kullanıcı dosyasına işler.
 # Hedef sürüm: Plasma 6.4.4; gerçek oturumda doğrulanmadı.
 
 [ksmserver]

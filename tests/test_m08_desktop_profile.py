@@ -158,7 +158,21 @@ class LiveVerifierTests(unittest.TestCase):
                 self.assertEqual(LIVE.main(["--from-dump", str(dump)]), 1)
 
 
+def plasma_color_scheme_name(scheme):
+    """plasma-workspace v6.4.4 kcms/lookandfeel/lookandfeelmanager.cpp colorSchemeFile() normalleştirmesi."""
+    name = scheme.replace("'", "")
+    fixer = re.compile(r"[\W,.-]+(.?)")
+    while (match := fixer.search(name)):
+        name = name[:match.start()] + match.group(1).upper() + name[match.end():]
+    return name[:1].upper() + name[1:]
+
+
 class LookAndFeelPackageTests(unittest.TestCase):
+    def test_color_scheme_name_normalization(self):
+        self.assertEqual(plasma_color_scheme_name("alpbah-dark"), "AlpbahDark")
+        self.assertFalse("alpbah-dark.colors".endswith(plasma_color_scheme_name("alpbah-dark") + ".colors"))
+        self.assertEqual(plasma_color_scheme_name("BreezeDark"), "BreezeDark")
+
     def test_metadata(self):
         meta = json.loads((LNF / "metadata.json").read_text(encoding="utf-8"))
         self.assertEqual(meta["KPackageStructure"], "Plasma/LookAndFeel")
@@ -172,6 +186,9 @@ class LookAndFeelPackageTests(unittest.TestCase):
         colors = REPO / "profiles" / "desktop" / "colorscheme" / f"{scheme}.colors"
         self.assertTrue(colors.exists(), colors)
         self.assertEqual(ini(colors.read_text(encoding="utf-8"))["General"]["ColorScheme"], scheme)
+        # startplasma renkleri LookAndFeelManager::colorSchemeFile ile bulur: ad normalleştirilir,
+        # dosya adı bununla bitmelidir. 'alpbah-dark' -> 'AlpbahDark' bulunamamıştı (29 Eylül Gen2).
+        self.assertTrue(colors.name.endswith(plasma_color_scheme_name(scheme) + ".colors"), colors.name)
         image = re.search(r"^\[Wallpaper\]\nImage=(\S+)$", defaults, re.M).group(1)
         wall_meta = json.loads((WALLPAPER / "metadata.json").read_text(encoding="utf-8"))
         self.assertEqual(image, wall_meta["KPlugin"]["Id"])
@@ -506,7 +523,12 @@ class InstallScriptTests(unittest.TestCase):
             first = self.run_install("--destdir", root.as_posix(), "--manifest", (root / "m.txt").as_posix())
             self.assertEqual(first.returncode, 0, first.stderr)
             manifest = (root / "m.txt").read_text(encoding="utf-8").splitlines()
-            self.assertIn("/etc/xdg/kglobalshortcutsrc", "\n".join(manifest))
+            joined = "\n".join(manifest)
+            for target in ("/usr/share/alpbahos/kglobalshortcutsrc", "/usr/bin/alpbah-oturum-hazirla",
+                           "/etc/xdg/plasma-workspace/env/alpbahos-oturum.sh", "/usr/share/color-schemes/AlpbahDark.colors"):
+                self.assertIn(target, joined)
+            # kglobalacceld /etc/xdg'yi okumaz (SimpleConfig); yanıltıcı sistem dosyası kurulmaz.
+            self.assertNotIn("/etc/xdg/kglobalshortcutsrc", joined)
             self.assertTrue((root / "usr/share/plasma/look-and-feel/org.alpbahos.solid.desktop/metadata.json").exists())
             self.assertTrue((root / "usr/share/wallpapers/alpbahOS-Ataturk/contents/images/1920x1080.jpg").exists())
             second = self.run_install("--destdir", root.as_posix())
@@ -520,6 +542,134 @@ class InstallScriptTests(unittest.TestCase):
     def test_refuses_missing_or_live_root(self):
         self.assertEqual(self.run_install().returncode, 2)
         self.assertEqual(self.run_install("--destdir", "/").returncode, 2)
+
+
+OTURUM = load_script("m08_oturum", REPO / "profiles" / "desktop" / "bin" / "alpbah-oturum-hazirla")
+PROFILE_TEXT = (SHORTCUTS / "generated" / "kglobalshortcutsrc").read_text(encoding="utf-8")
+
+# kglobalacceld'in ilk oturumda yazdığı upstream durum (etkin == varsayılan) ve ilgisiz satırlar.
+KDE_WRITTEN = """[kwin]
+_k_friendly_name=KWin
+Expose=Ctrl+F9,Ctrl+F9,Toggle Present Windows (Current desktop)
+Overview=Meta+W,Meta+W,Toggle Overview
+Walk Through Windows=Meta+Tab\\tAlt+Tab,Meta+Tab\\tAlt+Tab,Walk Through Windows
+Window Maximize=Meta+PgUp,Meta+PgUp,Maximize Window
+Window Quick Tile Top=Meta+Up,Meta+Up,Quick Tile Window to the Top
+
+[plasmashell]
+_k_friendly_name=plasmashell
+activate application launcher=Meta\\tAlt+F1,Meta\\tAlt+F1,Activate Application Launcher
+"""
+
+
+class SessionPrepTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        root = Path(self.temp.name)
+        self.config = root / "config"
+        self.data = root / "data"
+        (self.data / "alpbahos").mkdir(parents=True)
+        self.profile = self.data / "alpbahos" / "kglobalshortcutsrc"
+        self.profile.write_text(PROFILE_TEXT, encoding="utf-8")
+        self.env = {"HOME": str(root), "XDG_CONFIG_HOME": str(self.config), "XDG_DATA_HOME": str(self.data),
+                    "XDG_DATA_DIRS": "", "XDG_STATE_HOME": str(root / "state")}
+        self.user = self.config / "kglobalshortcutsrc"
+        self._kwin = OTURUM.kwin_running
+        OTURUM.kwin_running = lambda *a: False
+
+    def tearDown(self):
+        OTURUM.kwin_running = self._kwin
+        self.temp.cleanup()
+
+    def run_tool(self, *args):
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            self.assertEqual(OTURUM.main(list(args), env=self.env), 0)
+        return out.getvalue()
+
+    def entry(self, group, key):
+        return OTURUM.KConfigText(self.user.read_text(encoding="utf-8")).get(group, key)
+
+    def test_first_login_gets_whole_profile(self):
+        self.run_tool()
+        user = ini(self.user.read_text(encoding="utf-8"))
+        profile = ini(PROFILE_TEXT)
+        for section in profile.sections():
+            for key, value in profile[section].items():
+                self.assertEqual(user[section][key], value, (section, key))
+        self.assertNotIn("ÜRETİLMİŞ", self.user.read_text(encoding="utf-8"))
+
+    def test_upstream_entries_replaced_other_lines_kept(self):
+        self.config.mkdir(parents=True)
+        self.user.write_text(KDE_WRITTEN, encoding="utf-8")
+        self.run_tool()
+        self.assertEqual(self.entry("[kwin]", "Window Maximize"), "Meta+Up\\tMeta+PgUp,Meta+PgUp,Maximize Window")
+        self.assertEqual(self.entry("[kwin]", "Window Quick Tile Top"), "none,Meta+Up,Quick Tile Window to the Top")
+        self.assertEqual(self.entry("[kwin]", "Walk Through Windows"), "Alt+Tab,Meta+Tab\\tAlt+Tab,Walk Through Windows")
+        self.assertEqual(self.entry("[kwin]", "Expose"), "Ctrl+F9,Ctrl+F9,Toggle Present Windows (Current desktop)")
+        self.assertEqual(self.entry("[kwin]", "_k_friendly_name"), "KWin")
+        self.assertEqual(self.entry("[services][org.kde.krunner.desktop]", "_launch"), "Meta+R\\tAlt+Space\\tAlt+F2\\tSearch")
+
+    def test_user_customisation_is_kept(self):
+        self.config.mkdir(parents=True)
+        custom = KDE_WRITTEN.replace("Window Maximize=Meta+PgUp,", "Window Maximize=Meta+M,")
+        custom += "\n[services][org.kde.dolphin.desktop]\n_launch=Meta+F\n"
+        self.user.write_text(custom, encoding="utf-8")
+        out = self.run_tool("--durum")
+        self.assertIn("kullanıcı ayarı korundu: [kwin] Window Maximize = Meta+M", out)
+        self.assertEqual(self.user.read_text(encoding="utf-8"), custom)  # --durum yazmaz
+        self.run_tool()
+        self.assertEqual(self.entry("[kwin]", "Window Maximize"), "Meta+M,Meta+PgUp,Maximize Window")
+        self.assertEqual(self.entry("[services][org.kde.dolphin.desktop]", "_launch"), "Meta+F")
+
+    def test_applied_once_then_profile_update_moves_own_values(self):
+        self.run_tool()
+        # Kullanıcı sonradan KDE varsayılanına dönerse aynı profil yeniden dayatılmaz.
+        text = self.user.read_text(encoding="utf-8").replace("Window Maximize=Meta+Up\\tMeta+PgUp,", "Window Maximize=Meta+PgUp,")
+        self.user.write_text(text, encoding="utf-8")
+        self.assertIn("zaten uygulanmış", self.run_tool())
+        self.assertEqual(self.entry("[kwin]", "Window Maximize"), "Meta+PgUp,Meta+PgUp,Maximize Window")
+        # Yeni profil: aracın kendi yazdığı değer (Minimize) kullanıcı değişikliği sayılmaz ve güncellenir.
+        self.profile.write_text(PROFILE_TEXT.replace("Window Minimize=Meta+Down\\tMeta+PgDown,", "Window Minimize=Meta+Down,"),
+                                encoding="utf-8")
+        self.run_tool()
+        self.assertEqual(self.entry("[kwin]", "Window Minimize"), "Meta+Down,Meta+PgDown,Minimize Window")
+        # Varsayılana dönüş kullanıcı kararıdır; profil güncellemesi onu geri almaz.
+        self.assertEqual(self.entry("[kwin]", "Window Maximize"), "Meta+PgUp,Meta+PgUp,Maximize Window")
+
+    def test_skips_while_kwin_runs_unless_forced(self):
+        OTURUM.kwin_running = lambda *a: True
+        self.assertIn("KWin çalışıyor", self.run_tool())
+        self.assertFalse(self.user.exists())
+        self.run_tool("--zorla")
+        self.assertTrue(self.user.exists())
+
+    def test_old_color_scheme_default_is_migrated(self):
+        defaults = self.config / "kdedefaults"
+        defaults.mkdir(parents=True)
+        (defaults / "package").write_text("org.alpbahos.solid.desktop", encoding="utf-8")
+        (defaults / "kdeglobals").write_text("[General]\nColorScheme=alpbah-dark\n", encoding="utf-8")
+        (self.config / "kdeglobals").write_text("[General]\nColorScheme=alpbah-dark\nfont=X\n", encoding="utf-8")
+        self.run_tool()
+        self.assertFalse((defaults / "package").exists())
+        self.assertEqual((self.config / "kdeglobals").read_text(encoding="utf-8"), "[General]\nColorScheme=AlpbahDark\nfont=X\n")
+        (defaults / "package").write_text("org.alpbahos.solid.desktop", encoding="utf-8")
+        (defaults / "kdeglobals").write_text("[General]\nColorScheme=AlpbahDark\n", encoding="utf-8")
+        self.run_tool()
+        self.assertTrue((defaults / "package").exists())
+
+    def test_env_script_is_silent(self):
+        sh = shutil.which("sh")
+        if not sh:
+            self.skipTest("sh yok")
+        with tempfile.TemporaryDirectory() as temp_dir:
+            fake = Path(temp_dir) / "alpbah-oturum-hazirla"
+            fake.write_text("#!/bin/sh\necho GURULTU\necho HATA >&2\nexit 7\n", encoding="utf-8", newline="\n")
+            fake.chmod(0o755)
+            script = (REPO / "profiles" / "desktop" / "xdg" / "plasma-workspace" / "env" / "alpbahos-oturum.sh").as_posix()
+            proc = subprocess.run([sh, "-c", f'PATH="{Path(temp_dir).as_posix()}:$PATH"; . "{script}"; echo SON'],
+                                  capture_output=True, text=True, encoding="utf-8", errors="replace")
+            self.assertEqual(proc.stdout, "SON\n")
+            self.assertEqual(proc.returncode, 0)
 
 
 if __name__ == "__main__":

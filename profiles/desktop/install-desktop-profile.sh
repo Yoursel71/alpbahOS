@@ -3,14 +3,20 @@
 #
 # Kurulanlar (DATADIR varsayılanı /usr/share, SYSCONFDIR varsayılanı /etc):
 #   DATADIR/plasma/look-and-feel/org.alpbahos.solid.desktop/   look-and-feel paketi
-#   DATADIR/color-schemes/alpbah-dark.colors                  renk şeması
+#   DATADIR/color-schemes/AlpbahDark.colors                   renk şeması (dosya adı = şema kimliği)
 #   DATADIR/wallpapers/alpbahOS-Ataturk/                      Atatürk duvar kâğıdı paketi
 #   DATADIR/icons/hicolor/<N>x<N>/apps/alpbahos.png           alpbahOS sembol ikonu
 #   SYSCONFDIR/xdg/kdeglobals                                 LookAndFeelPackage varsayılanı
 #   SYSCONFDIR/xdg/kwinrc                                     Solid: blur/kontrast kapalı
-#   SYSCONFDIR/xdg/kglobalshortcutsrc                         Windows'a tanıdık kısayollar
+#   DATADIR/alpbahos/kglobalshortcutsrc                       Windows'a tanıdık kısayol profili (veri)
+#   SYSCONFDIR/xdg/plasma-workspace/env/alpbahos-oturum.sh    oturum başında alpbah-oturum-hazirla çağrısı
+#   BINDIR/alpbah-oturum-hazirla                              kısayol profilini kullanıcıya işler (0755)
 #   BINDIR/alpbah-gorunum                                     Solid/Glass geçiş aracı (0755)
 #   SYSCONFDIR/xdg/mimeapps.list                              varsayılan uygulamalar (profiles/apps/)
+#
+# kglobalacceld kglobalshortcutsrc'yi KConfig::SimpleConfig ile açar ve /etc/xdg'yi okumaz; bu yüzden
+# kısayollar sistem geneli dosya olarak değil, oturum başında kullanıcı dosyasına işlenerek uygulanır
+# (ayrıntı: profiles/desktop/bin/alpbah-oturum-hazirla).
 #
 # Kurallar (AGENTS.md, docs/AGENT_STANDING_RULES.md):
 # - Hedef kök açıkça verilir (--destdir). Canlı "/" yalnız --allow-live-root ile kabul edilir;
@@ -95,10 +101,12 @@ add_tree "$LNF_SRC" "$DATADIR/plasma/look-and-feel/org.alpbahos.solid.desktop"
 add_tree "$WALL_SRC" "$DATADIR/wallpapers/alpbahOS-Ataturk"
 PAIRS+=("$WALL_SRC/ATTRIBUTION.md|$DATADIR/wallpapers/alpbahOS-Ataturk/ATTRIBUTION.md")
 add_tree "$REPO/branding/icons/hicolor" "$DATADIR/icons/hicolor"
-PAIRS+=("$REPO/profiles/desktop/colorscheme/alpbah-dark.colors|$DATADIR/color-schemes/alpbah-dark.colors")
+PAIRS+=("$REPO/profiles/desktop/colorscheme/AlpbahDark.colors|$DATADIR/color-schemes/AlpbahDark.colors")
 PAIRS+=("$REPO/profiles/desktop/xdg/kdeglobals|$SYSCONFDIR/xdg/kdeglobals")
 PAIRS+=("$REPO/profiles/desktop/xdg/kwinrc|$SYSCONFDIR/xdg/kwinrc")
-PAIRS+=("$REPO/profiles/shortcuts/generated/kglobalshortcutsrc|$SYSCONFDIR/xdg/kglobalshortcutsrc")
+PAIRS+=("$REPO/profiles/shortcuts/generated/kglobalshortcutsrc|$DATADIR/alpbahos/kglobalshortcutsrc")
+PAIRS+=("$REPO/profiles/desktop/xdg/plasma-workspace/env/alpbahos-oturum.sh|$SYSCONFDIR/xdg/plasma-workspace/env/alpbahos-oturum.sh")
+PAIRS+=("$REPO/profiles/desktop/bin/alpbah-oturum-hazirla|$BINDIR/alpbah-oturum-hazirla")
 PAIRS+=("$REPO/profiles/desktop/bin/alpbah-gorunum|$BINDIR/alpbah-gorunum")
 PAIRS+=("$REPO/profiles/apps/generated/mimeapps.list|$SYSCONFDIR/xdg/mimeapps.list")
 
