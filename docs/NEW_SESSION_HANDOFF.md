@@ -132,9 +132,8 @@ Bu maddeler gerçek grafik masaüstünün açıldığını göstermez (24 Eylül
 3. M09 kabulü: unprivileged live kullanıcı/oturum politikası, M08 ve D34/79 paket sahiplik defteri kapıları.
 4. M10 (başladı): düzeltilmiş `alp`'in rootfs'e kurulup matrisin yeniden koşulması ("M08 kurulum/kaldırma" `@PREFIX@` hatasıyla BLOCKED idi, 019).
 5. M04 tam sahiplik defteri (D34, M09'a ertelendi).
-6. Ortam: Hyper-V'nin ürün test hedefi olarak sürüp sürmediği (`docs/DECISIONS.md`, D36 sonrası açık karar).
 
-Her işte önce hedef VM/imajı ve durumunu yeniden doğrula; SSH oturumu DRM master/aktif seat sağlamaz, `sa` SSH'den `startplasma-wayland` denemesi geçerli değildir.
+Test hedefi QEMU/KVM'dir (D36; ortamın kısa özeti `AI_ENVIRONMENT_GUIDE.md` §0), Hyper-V ayrıca geçerli hedef değildir. Her işte önce hedef VM/imajı ve durumunu yeniden doğrula; SSH oturumu DRM master/aktif seat sağlamaz, `sa` SSH'den `startplasma-wayland` denemesi geçerli değildir.
 
 ### Eski metin (24 Eylül 2026; tty1/seat0 kapısı 25 Eylül'de geçti)
 
