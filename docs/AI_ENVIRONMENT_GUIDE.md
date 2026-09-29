@@ -1,6 +1,13 @@
 # alpbahOS — Yapay zekâ ajanları için ortam rehberi
 
-> **Ortam notu (29 Eylül 2026, D36):** ana geliştirme/test ortamı Fedora + QEMU/KVM oldu. Bu belgedeki Windows hostu, Hyper-V, Builder VM ve `C:\` yolları 24 Eylül durumudur; silinmedi, Fedora hostundan doğrulanamaz. Hyper-V'nin ürün test hedefi olarak sürüp sürmediği `docs/DECISIONS.md`'de açık karardır. Yeni ortamın haritası (imaj yolları, VM adları, ağ) henüz kayda geçmedi; §1 haritası ve §3 tablosu Windows/Hyper-V/Builder düzenini anlatır. Gözlenen tek iz (29 Eylül, yalnız dizin listesi; içerik doğrulanmadı): `~/claude-vm-runs/m08-boot-20260929/` altında qcow2 imajlar (`profile`, `run`, `fix`), `OVMF_VARS.fd` (UEFI), `qmp.py`, seri loglar ve ekran görüntüleri; `~/alpbahOS-nvme/builds` (root sahipli) ve `~/alpbahOS-vm-tests` boş/keşfedilmedi.
+> **Ortam notu (29 Eylül 2026, D36):** ana geliştirme/test ortamı Fedora + QEMU/KVM oldu. Bu belgedeki Windows hostu, Hyper-V, Builder VM ve `C:\` yolları 24 Eylül durumudur; silinmedi, Fedora hostundan doğrulanamaz. Kullanıcı Hyper-V'yi ayrıca geçerli test hedefi saymadı (D36). §1 haritası ve §3 tablosu Windows/Hyper-V/Builder düzenini anlatır (tarihsel); Fedora + QEMU/KVM ortamının kısa özeti aşağıdaki §0'dadır.
+
+## 0. Fedora + QEMU/KVM ortamı (29 Eylül 2026, D36)
+
+- Çalışma alanı: `~/claude-vm-runs/` (kullanıcı: kalıcı çalışma alanı). Gözlenen örnek: `~/claude-vm-runs/m08-boot-20260929/` altında qcow2 imajlar (`profile.qcow2`, `run.qcow2`, `fix.qcow2`), UEFI değişken dosyası `OVMF_VARS.fd`, `qmp.py`, seri loglar ve `shots/` ekran görüntüleri. İçerik ve kullanım doğrulanmadı (yalnız dizin listesi).
+- Gözlenen QEMU komut satırı (29 Eylül, `ps`; kısmi): `qemu-system-x86_64 -name claude-m08-fix -enable-kvm -machine q35,accel=kvm -cpu host -smp 3 -m 4G`, UEFI için salt okunur OVMF `pflash` sürücüsü.
+- Bu makinede ayrıca `~/alpbahOS-nvme/builds` (root sahipli) ve `~/alpbahOS-vm-tests` (boş) dizinleri var; kullanımları keşfedilmedi.
+- Henüz kayıtta yok: imaj üretim akışı, VM adlandırması, ağ (port yönlendirme/SSH), kanonik imaj yolları. Bir ajan bunları tahmin etmemeli; kullanıcıya sormalı ya da kayda geçirmeli.
 
 > **Bu belge ne için?** "Bu komutu nerede çalıştırmalıyım?" sorusunun tek cevabı burada. Kurallar `AGENTS.md`'de, güncel durum `CURRENT.md`'de. Bu belge makineleri, dizinleri ve iş akışlarını anlatır. Bir işe başlamadan önce **§1 haritasına** ve **§3 tablosuna** bak.
 >
