@@ -717,13 +717,19 @@ def pending_journals(paths: Paths) -> list[Path]:
 @contextlib.contextmanager
 def _transaction(paths: Paths, label: str):
     """One package's filesystem changes plus its db update: all of it happens,
-    or (on any error, including Ctrl-C) none of the file changes stay."""
+    or (on any error, including Ctrl-C) none of the file changes stay -- unless the
+    error came after db.json was saved, when the finished transaction is kept."""
     safe = re.sub(r"[^A-Za-z0-9._-]", "_", label)
     journal = FileJournal(paths.state_dir / ROLLBACK_DIR / f"{int(time.time() * 1000)}-{os.getpid()}-{safe}")
     try:
         yield journal
     except BaseException:
         journal.close()
+        if journal_committed(journal.log_file, _current_db_state(paths)):
+            # Ctrl-C (or an error) after save_db returned: db.json already holds this
+            # transaction's record, so the files must stay -- same rule `alp recover` applies.
+            shutil.rmtree(journal.dir, ignore_errors=True)
+            raise
         failures = undo_journal(journal.log_file)
         if failures:
             print(
@@ -2364,6 +2370,15 @@ def _require_no_pending(paths: Paths) -> None:
         )
 
 
+def _current_db_state(paths: Paths):
+    """db_state callback built from db.json as it is now, or None when it cannot
+    be read (then only an explicit commit marker protects a journal)."""
+    try:
+        return _db_reflects(load_db(paths))
+    except (AlpError, OSError, ValueError):
+        return None
+
+
 def _db_reflects(db: dict):
     """db_state callback for journal_committed(): does db.json already hold
     the change a journal announced?"""
@@ -2387,10 +2402,7 @@ def cmd_recover(args: argparse.Namespace, paths: Paths) -> int:
         if not pending:
             print("Geri alınacak yarım işlem yok.")
             return 0
-        try:
-            db_state = _db_reflects(load_db(paths))
-        except (AlpError, OSError, ValueError):
-            db_state = None  # unreadable db: only an explicit commit marker protects a journal
+        db_state = _current_db_state(paths)
         bad = 0
         for journal_dir in reversed(pending):  # newest first
             if journal_committed(journal_dir / JOURNAL_NAME, db_state):

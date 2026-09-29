@@ -180,3 +180,57 @@ def test_check_counts_a_dangling_symlink_as_present(tmp_path):
     db_path.write_text(json.dumps(db), encoding="utf-8")
 
     assert _alp(tmp_path, index, "check") == 0
+
+
+def _interrupt_after_db_save(monkeypatch) -> None:
+    real_save = alp.save_db
+
+    def save_then_interrupt(paths, db):
+        real_save(paths, db)
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(alp, "save_db", save_then_interrupt)
+
+
+def test_ctrl_c_right_after_db_save_keeps_the_install(tmp_path, monkeypatch):
+    """Same window as a killed process, hit in-process: _transaction's own handler
+    used to undo the files although db.json already listed the package."""
+    index = _catalog(tmp_path)
+    with monkeypatch.context() as m:
+        _interrupt_after_db_save(m)
+        with pytest.raises(KeyboardInterrupt):
+            _alp(tmp_path, index, "install", "--yes", "demo")
+
+    assert _installed(tmp_path), "db.json lists the package"
+    assert _file(tmp_path).exists(), "so its files must still be there"
+    assert alp.pending_journals(alp.Paths.resolve(str(tmp_path / "root"))) == []
+    assert _alp(tmp_path, index, "check") == 0
+
+
+def test_ctrl_c_right_after_db_save_keeps_the_removal(tmp_path, monkeypatch):
+    index = _catalog(tmp_path)
+    assert _alp(tmp_path, index, "install", "--yes", "demo") == 0
+    with monkeypatch.context() as m:
+        _interrupt_after_db_save(m)
+        with pytest.raises(KeyboardInterrupt):
+            _alp(tmp_path, index, "remove", "--yes", "demo")
+
+    assert not _installed(tmp_path)
+    assert not _file(tmp_path).exists(), "the db no longer lists the package, so its files must stay removed"
+    assert alp.pending_journals(alp.Paths.resolve(str(tmp_path / "root"))) == []
+
+
+def test_ctrl_c_before_db_save_still_rolls_back(tmp_path, monkeypatch):
+    index = _catalog(tmp_path)
+
+    def interrupt(paths, db):
+        raise KeyboardInterrupt
+
+    with monkeypatch.context() as m:
+        m.setattr(alp, "save_db", interrupt)
+        with pytest.raises(KeyboardInterrupt):
+            _alp(tmp_path, index, "install", "--yes", "demo")
+
+    assert not _file(tmp_path).exists()
+    db = tmp_path / "root" / "var" / "lib" / "alp" / "db.json"
+    assert not db.exists() or "demo" not in json.loads(db.read_text(encoding="utf-8"))["packages"]
