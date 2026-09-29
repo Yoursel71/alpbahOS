@@ -1,5 +1,7 @@
 # alpbahOS — Yapay zekâ ajanları için ortam rehberi
 
+> **Ortam notu (29 Eylül 2026, D36):** ana geliştirme/test ortamı Fedora + QEMU/KVM oldu. Bu belgedeki Windows hostu, Hyper-V, Builder VM ve `C:\` yolları 24 Eylül durumudur; silinmedi, Fedora hostundan doğrulanamaz. Hyper-V'nin ürün test hedefi olarak sürüp sürmediği `docs/DECISIONS.md`'de açık karardır. Yeni ortamın haritası (imaj yolları, VM adları, ağ) henüz kayda geçmedi; §1 haritası ve §3 tablosu Windows/Hyper-V/Builder düzenini anlatır.
+
 > **Bu belge ne için?** "Bu komutu nerede çalıştırmalıyım?" sorusunun tek cevabı burada. Kurallar `AGENTS.md`'de, güncel durum `CURRENT.md`'de. Bu belge makineleri, dizinleri ve iş akışlarını anlatır. Bir işe başlamadan önce **§1 haritasına** ve **§3 tablosuna** bak.
 >
 > **Neden yazıldı?** 23 Eylül 2026'da bir ajan, alpbahOS'u **test VM'inin içinde** (Gen1 guest) yeniden derlemeye kalktı. Oysa bütün derleme altyapısı Builder'da hazırdı. Test VM'i bir *ürün*dür, *atölye* değil.
