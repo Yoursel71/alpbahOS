@@ -11,7 +11,7 @@ Son güncelleme: 29 Eylül 2026 (tutarlılık geçişi). Aşağıdaki ayrıntıl
 ## 29 Eylül 2026 — Güncel özet (WORKLOG 25–29 Eylül ve devir belgeleri 015–020'ye dayanır)
 
 - **Ortam (D36):** ana geliştirme/test ortamı Fedora + QEMU/KVM'dir; repo Fedora hostunda `~/alpbahOS-claude` olarak klonlu. Windows/Hyper-V hostu, VM adları/IP'leri, VHDX yolları ve Builder erişim kartı 24–26 Eylül tarihsel kanıtıdır, silinmedi ve bu ortamdan doğrulanmadı. Hyper-V'nin ürün test hedefi olarak sürmesi açık karardır (`docs/DECISIONS.md`).
-- **M07:** Gen2 test imajında gerçek Plasma Wayland masaüstü ve panel görsel olarak doğrulandı (25 Eylül); kalan uyarılar aşağıdaki tabloda.
+- **M07:** Gen2 test imajında gerçek Plasma Wayland masaüstü ve panel görsel olarak doğrulandı (25 Eylül); resmî M07 kapanışı açık (temel uygulamalar imajda yok, kalan uyarılar aşağıdaki tabloda).
 - **M08:** look-and-feel, Atatürk duvar kâğıdı, Windows kısayolları (015) ile Glass geçiş aracı, uygulama profili, PERF-01 ve OFFICE-01 araçları (016) dosya düzeyinde hazır; gerçek oturum düzeltmeleri `claude/m08-live-fixes` dalında sürüyor (başka oturum, bu belgeye işlenmedi).
 - **`alp` (018–020):** 018 PKG-02 plan/ilerleme sözleşmesi ve 5 mantık hatası; 019 `@PREFIX@` kök nedeni (katalog `@PREFIX@`/`@DESTDIR@` kullanıyor, rootfs'teki motor genişletmiyor) ve metadata; 020 rollback, `recover` ve sürüm/arama hataları düzeltmeleri, Linux'ta 268 test geçti. Hiçbiri rootfs'e kurulmadı; rootfs motorunun hash'i 24 Eylül kayıtlarında `7b2998a5…`, 019'a göre `0475ea32…` (rootfs'ten doğrulanmadı).
 - **M09/M10:** önyüklenebilir M-ISO test adayı var, kabulü açık; M10 başladı (kullanıcı bildirimi, 29 Eylül): matris repo dışında, 019'a göre "M08 kurulum/kaldırma" `@PREFIX@` hatasıyla BLOCKED idi.
