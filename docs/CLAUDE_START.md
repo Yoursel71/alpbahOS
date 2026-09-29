@@ -1,6 +1,6 @@
 # Claude Code — ilk görev paketi
 
-Çalışma klasörü: `C:\alpbahOS-claude`. Bu klasör ayrı Git worktree'dir; yoksa yanlış klasörde başlamadan repo durumunu kontrol et. Dal: `claude/desktop-bootstrap`.
+Çalışma klasörü: `C:\alpbahOS-claude` (Windows hostu, 24–26 Eylül). Bu klasör ayrı Git worktree'dir; yoksa yanlış klasörde başlamadan repo durumunu kontrol et. Dal: `claude/desktop-bootstrap` (ilk görev dalı; sonraki dallar göreve göre değişti). **29 Eylül 2026 (D36):** Fedora hostunda klon `~/alpbahOS-claude`'dur, ortak dizindir; çok commit'li işi ayrı `git worktree`'de yap (`AGENTS.md`). İlk görev paketi tarihsel kayıttır; güncel durum `CURRENT.md`.
 
 ## Önce oku
 
