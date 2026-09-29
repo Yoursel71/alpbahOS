@@ -10,7 +10,23 @@ trap 'echo "FAILED at line $LINENO: $BASH_COMMAND" >&2' ERR
 IMG=${IMG:?set IMG}
 NBD=/dev/nbd0
 WORK=$(mktemp -d /tmp/claude-autoseat.XXXXXX); MOUNT=$WORK/root; ATTACHED=0; MOUNTED=0
-cleanup() { set +e; ((MOUNTED)) && umount "$MOUNT"; ((ATTACHED)) && qemu-nbd --disconnect "$NBD" >/dev/null 2>&1; rm -rf -- "$WORK"; }
+cleanup() {
+    local cleanup_ok=1
+    trap - EXIT
+    set +e
+    if (( MOUNTED )); then umount "$MOUNT" || cleanup_ok=0; fi
+    if (( ATTACHED && cleanup_ok )); then
+        qemu-nbd --disconnect "$NBD" >/dev/null 2>&1 || cleanup_ok=0
+    fi
+    if (( ! cleanup_ok )); then
+        # A failed umount leaves the guest filesystem visible under $WORK/root; never
+        # detach the device or rm -rf through it. Keep everything for manual recovery.
+        echo "CLEANUP FAILED: keeping $WORK; if $NBD is still attached, umount the image and run qemu-nbd --disconnect $NBD." >&2
+        exit 1
+    fi
+    rmdir "$MOUNT" 2>/dev/null
+    rm -rf --one-file-system -- "$WORK"
+}
 trap cleanup EXIT
 [[ $EUID -eq 0 ]] || { echo 'Run as root.' >&2; exit 1; }
 case "$IMG" in

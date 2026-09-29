@@ -17,10 +17,21 @@ ATTACHED=0
 ROOT_MOUNTED=0
 
 cleanup() {
+    local cleanup_ok=1
+    trap - EXIT
     set +e
-    if (( ROOT_MOUNTED )); then umount "$MOUNT"; fi
-    if (( ATTACHED )); then qemu-nbd --disconnect "$NBD" >/dev/null 2>&1; fi
-    rm -rf -- "$WORK"
+    if (( ROOT_MOUNTED )); then umount "$MOUNT" || cleanup_ok=0; fi
+    if (( ATTACHED && cleanup_ok )); then
+        qemu-nbd --disconnect "$NBD" >/dev/null 2>&1 || cleanup_ok=0
+    fi
+    if (( ! cleanup_ok )); then
+        # A failed umount leaves the guest filesystem visible under $WORK/root; never
+        # detach the device or rm -rf through it. Keep everything for manual recovery.
+        echo "CLEANUP FAILED: keeping $WORK; if $NBD is still attached, umount the image and run qemu-nbd --disconnect $NBD." >&2
+        exit 1
+    fi
+    rmdir "$MOUNT" 2>/dev/null
+    rm -rf --one-file-system -- "$WORK"
 }
 trap cleanup EXIT
 
