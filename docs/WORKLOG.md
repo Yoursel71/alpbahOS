@@ -1246,3 +1246,8 @@ Kullanıcı M08/9/10'u devretti. Bölüşüm: M08 yapılandırma/tema/kısayol/a
 
 - Kök neden: katalog `@PREFIX@`/`@DESTDIR@` kullanıyor, rootfs'teki `alp.py` (`0475ea32…`) ikisini de genişletmiyor. Motor bilinmeyen yer tutucuyu artık indirmeden önce reddediyor; `alp info`/`search --json` sürüm, lisans, ana sayfa, boyut veriyor. Linux'ta alp testleri 238 geçti; gerçek htop geçici kökte kur/çalıştır/kaldır geçti.
 - Rootfs, VM, Discover, `pkcon` ve grafik Polkit çalıştırılmadı. PackageKit yardımcısı için yama önerisi ve wallpaper/look-and-feel kurulum komutu devir belgesinde; `scripts/` ve `/mnt/lfs` değiştirilmedi. Ayrıntı [019](handoffs/claude/019-alp-prefix-ve-metadata.md).
+
+## 29 Eylül 2026 — Claude, mantık ve performans denetimi (020) — BAŞLANGIÇ KAYDI
+
+- Kullanıcı isteğiyle denetim yapıldı, önce rapor verildi; kullanıcı A) `scripts/patch-m2-gen2-*.sh` cleanup, B) `alp` rollback + commit penceresi, C) `alp` mantık (kept-back, Türkçe I/ı, hata yakalama) ve doğrulanmış küçük maddeler için düzeltme onayı verdi. Performans (O(N²) ledger/reconcile) ve M04 SELinux testleri kapsam dışı bırakıldı.
+- Dal `claude/logic-audit-020` (taban `claude/alp-prefix-metadata` `0d4cb66`). Dosya sınırı: `docs/handoffs/claude/alp-prototype/**`, `scripts/patch-m2-gen2-*.sh` (Codex alanı; kullanıcı 29 Eylül'de açıkça istedi), `profiles/perf/analyze_kwin_perf_csv.py`, yeni testler. Her düzeltme kendi regresyon testiyle ayrı commit. Push yok. Builder/Gen2/PackageKit çalıştırılmadı.
