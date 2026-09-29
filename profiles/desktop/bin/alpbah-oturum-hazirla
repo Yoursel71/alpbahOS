@@ -18,9 +18,10 @@ Neden gerekli (Plasma 6.4.4 kaynağıyla doğrulandı, 29 Eylül 2026 Gen2 oturu
 2. İlk M08 profili renk şemasını `alpbah-dark` adıyla kurmuştu. Plasma şema adını
    `AlpbahDark` biçimine çevirip `...AlpbahDark.colors` dosyasını arar
    (kcms/lookandfeel/lookandfeelmanager.cpp colorSchemeFile); dosya bulunamadığı için
-   renkler hiç uygulanmadı. Şema `AlpbahDark` olarak yeniden adlandırıldı; eski
-   varsayılanlarla açılmış kullanıcılar için `~/.config/kdedefaults/package` silinir,
-   startplasma look-and-feel varsayılanlarını bir sonraki adımda yeniden yazar.
+   renkler hiç uygulanmadı ve kdedefaults'a ColorScheme satırı da yazılmadı. Şema `AlpbahDark`
+   olarak yeniden adlandırıldı; alpbahOS paketi etkin ama kdedefaults'ta AlpbahDark yoksa
+   `~/.config/kdedefaults/package` silinir, startplasma look-and-feel varsayılanlarını bir
+   sonraki adımda yeniden yazar.
    Varsayılan kipi yalnız kdedefaults'a yazar; panel düzenine ve kullanıcı ayarına dokunmaz.
 
 Kullanıcı ayarı korunur:
@@ -277,10 +278,13 @@ def step_color_scheme(config_home: Path, write: bool) -> list[str]:
         active_lnf = package.read_text(encoding="utf-8").splitlines()[0].strip() if package.exists() else ""
     except (OSError, IndexError):
         active_lnf = ""
-    if active_lnf == LNF_ID and read_value(defaults / "kdeglobals", "[General]", "ColorScheme") == OLD_SCHEME:
+    # Eski paket şema dosyasını bulamadığı için kdedefaults'a ColorScheme hiç yazılmadı (Gen2'de görüldü);
+    # alpbahOS paketi etkinken varsayılanda AlpbahDark yoksa varsayılanlar yeniden üretilir.
+    default_scheme = read_value(defaults / "kdeglobals", "[General]", "ColorScheme")
+    if active_lnf == LNF_ID and default_scheme != NEW_SCHEME:
         if write:
             package.unlink()
-        report.append(f"renk: eski '{OLD_SCHEME}' varsayılanı bulundu; kdedefaults/package silindi, startplasma yeniden yazacak")
+        report.append(f"renk: kdedefaults ColorScheme={default_scheme or '(yok)'}; kdedefaults/package silindi, startplasma yeniden yazacak")
     user_globals = config_home / "kdeglobals"
     if read_value(user_globals, "[General]", "ColorScheme") == OLD_SCHEME:
         if write:

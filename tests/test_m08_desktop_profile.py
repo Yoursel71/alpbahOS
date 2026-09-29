@@ -168,6 +168,14 @@ def plasma_color_scheme_name(scheme):
 
 
 class LookAndFeelPackageTests(unittest.TestCase):
+    def test_system_fonts_match_tokens(self):
+        tokens = json.loads((REPO / "profiles" / "desktop" / "tokens.json").read_text(encoding="utf-8"))["typography"]
+        xdg = ini((REPO / "profiles" / "desktop" / "xdg" / "kdeglobals").read_text(encoding="utf-8"))
+        for key in ("font", "menuFont", "smallestReadableFont", "toolBarFont"):
+            self.assertEqual(xdg["General"][key].split(",")[0], tokens["font_primary"], key)
+        self.assertEqual(xdg["WM"]["activeFont"].split(",")[0], tokens["font_primary"])
+        self.assertEqual(xdg["General"]["fixed"].split(",")[0], tokens["font_terminal"])
+
     def test_color_scheme_name_normalization(self):
         self.assertEqual(plasma_color_scheme_name("alpbah-dark"), "AlpbahDark")
         self.assertFalse("alpbah-dark.colors".endswith(plasma_color_scheme_name("alpbah-dark") + ".colors"))
@@ -647,6 +655,11 @@ class SessionPrepTests(unittest.TestCase):
         defaults = self.config / "kdedefaults"
         defaults.mkdir(parents=True)
         (defaults / "package").write_text("org.alpbahos.solid.desktop", encoding="utf-8")
+        # Gen2'de görülen durum: şema bulunamadığı için ColorScheme hiç yazılmamış.
+        (defaults / "kdeglobals").write_text("[Icons]\nTheme=breeze-dark\n\n[KDE]\nwidgetStyle=Breeze\n", encoding="utf-8")
+        self.run_tool()
+        self.assertFalse((defaults / "package").exists())
+        (defaults / "package").write_text("org.alpbahos.solid.desktop", encoding="utf-8")
         (defaults / "kdeglobals").write_text("[General]\nColorScheme=alpbah-dark\n", encoding="utf-8")
         (self.config / "kdeglobals").write_text("[General]\nColorScheme=alpbah-dark\nfont=X\n", encoding="utf-8")
         self.run_tool()
@@ -654,6 +667,11 @@ class SessionPrepTests(unittest.TestCase):
         self.assertEqual((self.config / "kdeglobals").read_text(encoding="utf-8"), "[General]\nColorScheme=AlpbahDark\nfont=X\n")
         (defaults / "package").write_text("org.alpbahos.solid.desktop", encoding="utf-8")
         (defaults / "kdeglobals").write_text("[General]\nColorScheme=AlpbahDark\n", encoding="utf-8")
+        self.run_tool()
+        self.assertTrue((defaults / "package").exists())
+        # Kullanıcı başka bir global tema seçtiyse dokunulmaz.
+        (defaults / "package").write_text("org.kde.breeze.desktop", encoding="utf-8")
+        (defaults / "kdeglobals").write_text("[KDE]\nwidgetStyle=Breeze\n", encoding="utf-8")
         self.run_tool()
         self.assertTrue((defaults / "package").exists())
 
