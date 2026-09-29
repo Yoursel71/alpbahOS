@@ -1,5 +1,7 @@
 # Hyper-V ve yerel kaynak planı
 
+> **Ortam notu (29 Eylül 2026, D36):** ana geliştirme/test ortamı Fedora + QEMU/KVM oldu. Bu belgedeki Windows hostu, Hyper-V, Builder VM ve `C:\` yolları 24 Eylül durumudur; silinmedi, Fedora hostundan doğrulanamaz. Hyper-V'nin ürün test hedefi olarak sürüp sürmediği `docs/DECISIONS.md`'de açık karardır.
+
 > Durum notu (24 Eylül 2026): BIOS/Gen1 kabul testleri tarihsel olarak tamamlandı; `alpbahOS-M2-SSH-Gen1` test VM kaydı sonradan silindi. Güncel canlı VM test hedefi Gen2/UEFI'dir. Gen1 VHDX dosyalarının son bilinen durumu için `docs/NEW_SESSION_HANDOFF.md`'ye bakın.
 
 Durum: Builder VM'i ve build diski mevcut; fiziksel disk bölümleme yapılmadı. 23 Eylül 2026'da SSH salt okunur incelemesi yapıldı.
