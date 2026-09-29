@@ -125,7 +125,6 @@ def render_sheet(rows: list[dict], images: dict, out: Path, cell_w: int = 480) -
         draw.text((6, cell.height - 15), label, fill=(244, 248, 251))
         cells.append(cell)
     cols = 3
-    col_h = [0] * cols
     heights = [c.height for c in cells]
     rows_n = (len(cells) + cols - 1) // cols
     row_h = [max(heights[r * cols:(r + 1) * cols]) for r in range(rows_n)]
@@ -136,7 +135,6 @@ def render_sheet(rows: list[dict], images: dict, out: Path, cell_w: int = 480) -
             i = r * cols + c
             if i < len(cells):
                 sheet.paste(cells[i], (8 + c * (cell_w + 8), y))
-                col_h[c] += cells[i].height
         y += row_h[r] + 8
     sheet.save(out, quality=85, optimize=True)
 
