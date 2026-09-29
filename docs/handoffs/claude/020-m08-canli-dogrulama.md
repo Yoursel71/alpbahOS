@@ -102,3 +102,20 @@ Komut 019 §4 madde 3'teki ile aynı: `profiles/desktop/install-desktop-profile.
 - **Açık karar (kullanıcı):** 1536x864, 2560x1600, 2880x1800 ve 3840x2160'ta en yakın görüntü ×1,1–1,5 büyütülüyor. Seçenekler:
   - Olduğu gibi bırakmak.
   - 2560x1600/3840x2160 eklemek: net olur, ama 732x987 kaynak büyütülmediği için portre 4K'da küçük kalır.
+
+## Üçüncü tur: SHELL-01 Konsole profili
+
+- Gen2 ekran görüntüsünden ölçüm: Konsole terminal zemini `alpbah-dark` şemasının `Background` rengi (11,16,20), font eş aralıklı, kabuk `bash-5.3`. Bu kopya Codex'in `/home/admin/.local/share/konsole/` altına koyduğu dosyalardı. `~/.local`'ın root'a kalması (imaj bulgusu 1) büyük olasılıkla bu kopyalama adımından geliyor.
+- Profil artık `install-desktop-profile.sh` ile sistem geneline kuruluyor: `/usr/share/konsole/alpbahOS.profile`, `/usr/share/konsole/alpbah-dark.colorscheme` ve `/etc/xdg/konsolerc` (`DefaultProfile=alpbahOS.profile`).
+  - Kaynak: konsole v25.08.1 `ProfileManager.cpp` konsolerc'yi katmanlı okur, profil ve şemayı `GenericDataLocation/konsole/` altında arar.
+  - **Codex için öneri:** ev dizinine kopyalama adımı kaldırılabilir.
+- `ShellProfileTests` eklendi:
+  - konsolerc → profil → şema zinciri,
+  - şema ve font ↔ `tokens.json` eşleşmesi,
+  - zshrc'de `CORRECT` açık, `CORRECT_ALL` kapalı,
+  - `^C` bağlanmamış, öneri kabulü çalıştırmaya bağlanmamış,
+  - syntax-highlighting bütün `bindkey`'lerden sonra yükleniyor,
+  - zsh varsa `zsh -n` (yerelde zsh yok, atlandı).
+- **Çalıştırılmadı:**
+  - Sistem geneli Konsole kurulumu VM'de denenmedi (ana makineye bu turda bağlanılamadı).
+  - Zsh ve eklentileri imajda yok; §4.3 maddeleri terminalde hâlâ test edilmedi.
