@@ -176,6 +176,23 @@ class LookAndFeelPackageTests(unittest.TestCase):
         self.assertEqual(xdg["WM"]["activeFont"].split(",")[0], tokens["font_primary"])
         self.assertEqual(xdg["General"]["fixed"].split(",")[0], tokens["font_terminal"])
 
+    def test_color_scheme_sets_and_contrast(self):
+        colors = ini((REPO / "profiles" / "desktop" / "colorscheme" / "AlpbahDark.colors").read_text(encoding="utf-8"))
+
+        def luminance(rgb):
+            channels = []
+            for c in (int(v) / 255 for v in rgb.split(",")):
+                channels.append(c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4)
+            return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2]
+
+        # Plasma 6 şemalarının taşıdığı setler; eksik Header, Breeze başlık/Kirigami başlıklarını varsayılana düşürür.
+        for group in ("Window", "View", "Button", "Selection", "Tooltip", "Complementary", "Header", "Header][Inactive"):
+            section = colors[f"Colors:{group}"]
+            hi, lo = sorted((luminance(section["ForegroundNormal"]), luminance(section["BackgroundNormal"])), reverse=True)
+            self.assertGreaterEqual((hi + 0.05) / (lo + 0.05), 4.5, group)  # WCAG AA gövde metni
+        # Tasarım: başlık çubuğu koyu lacivert (mockups §3); WM etkin başlığıyla aynı.
+        self.assertEqual(colors["Colors:Header"]["BackgroundNormal"], colors["WM"]["activeBackground"])
+
     def test_color_scheme_name_normalization(self):
         self.assertEqual(plasma_color_scheme_name("alpbah-dark"), "AlpbahDark")
         self.assertFalse("alpbah-dark.colors".endswith(plasma_color_scheme_name("alpbah-dark") + ".colors"))
