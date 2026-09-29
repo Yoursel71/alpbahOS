@@ -22,7 +22,7 @@ Bu dosya projede çalışan tüm ajanların ortak talimatıdır. Kullanıcının
 - Sıfırdan kernel, compositor, tarayıcı veya bağımlılık çözücü geliştirmeyi bu hedefin kendiliğinden parçası sayma.
 - Soluk terminal önerileri, kolay paket işlemleri, Windows'a tanıdık kısayollar, Atatürk görselleri ve donanıma uygun cam efektlerini gereksinim olarak koru.
 - Kullanıcı teknik seçimleri devretti: planın teknik seçimleriyle ilerle; başarısız deneyde gerekçeli revizyon yap. Test edilmemiş seçimi çalışan özellik gibi sunma.
-- Hyper-V, 300 GB yerel bütçe, Türkçe/Türkçe Q, Legacy+UEFI ve mevcut mockup düzeni sabittir. Bulut build/ISO depolaması kullanma; özel kaynak Git deposu istisnadır.
+- Hyper-V, 300 GB yerel bütçe, Türkçe/Türkçe Q, Legacy+UEFI ve mevcut mockup düzeni sabittir. **Not (29 Eylül 2026, D36):** ana geliştirme/test ortamı Fedora + QEMU/KVM oldu; Hyper-V'nin ürün test hedefi olarak sürüp sürmediği `docs/DECISIONS.md`'de açık karardır; Hyper-V'ye ait VM/IP/VHDX bilgilerini tarihsel kanıt olarak oku ve kullanmadan önce yeniden doğrula. Bulut build/ISO depolaması kullanma; özel kaynak Git deposu istisnadır.
 - Eski x86_64 donanım ve düşük RAM önceliklidir. Solid varsayılan, Glass/Liquid seçenektir; hedefleri MASTER_PLAN.md'den al.
 - Kullanıcı 26 Eylül 2026'da D22/D32 çatışmasını yalnız 64-bit lehine çözdü (D35): multilib/32-bit kullanıcı alanı eklenmez, Steam istemcisi kapsam dışıdır, Wine yalnız WoW64 moduyla değerlendirilir. X11 uyumluluk kapsamı ayrı açık karardır (`docs/DECISIONS.md`). Word ve tüm sürücü desteğini test olmadan garanti etme.
 
@@ -72,7 +72,7 @@ Bu dosya projede çalışan tüm ajanların ortak talimatıdır. Kullanıcının
 
 - Aynı dosya grubunu ve aynı rootfs'yi eşzamanlı değiştirme. Dosya işi için görev sahipliği; build/mount/paket işlemleri için ortam kilidi kullan.
 - Rol planı: Codex altyapı/entegrasyon, Claude Code masaüstü/tema/terminal UX. Göreve gerçek başlama durumu BACKLOG.md ve devir kayıtlarıyla izlenir; Claude başlatılmış varsayılmaz.
-- Ana çalışma ağacı `C:\alpbahOS`; Claude çalışma ağacı `C:\alpbahOS-claude`. Her ajan kendi dalında çalışır; main'e entegrasyon sahibi birleştirir. Paralellik yeni bir AI sürecini kendiliğinden başlatma yetkisi değildir.
+- Ana çalışma ağacı `C:\alpbahOS`; Claude çalışma ağacı `C:\alpbahOS-claude` (Windows hostu, 24–26 Eylül). Fedora hostunda klon `~/alpbahOS-claude`'dur (D36) ve **birden fazla oturum aynı dizini kullanabilir**: ortak ağaçta `checkout`, `stash`, `reset` yapma; çok commit'li işi `git worktree add <dizin> -b <dal>` ile ayrı ağaçta yap, bitince `git worktree remove` et (worktree, dalın ortak ağaçta `checkout` edilmesini engeller). Her ajan kendi dalında çalışır; main'e entegrasyon sahibi birleştirir. Paralellik yeni bir AI sürecini kendiliğinden başlatma yetkisi değildir.
 - Ayrı Git dalları/worktree'ler uygunsa kullan; test edilen commit ve birleştirme sorumlusu kaydedilsin.
 - İşe başlamadan `docs/WORKLOG.md` içinde görev, sahip, dosya sınırı ve bağımlılığı kaydet; başka ajanla ortak kaydı eşzamanlı değiştirmek yerine entegratör üzerinden güncelle.
 - Görev devrinde değişiklik, dosyalar, ortam, testler, hatalar ve sıradaki tek eylemi yaz.
