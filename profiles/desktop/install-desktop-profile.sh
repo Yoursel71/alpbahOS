@@ -9,6 +9,8 @@
 #   SYSCONFDIR/xdg/kdeglobals                                 LookAndFeelPackage varsayılanı
 #   SYSCONFDIR/xdg/kwinrc                                     Solid: blur/kontrast kapalı
 #   SYSCONFDIR/xdg/kglobalshortcutsrc                         Windows'a tanıdık kısayollar
+#   BINDIR/alpbah-gorunum                                     Solid/Glass geçiş aracı (0755)
+#   SYSCONFDIR/xdg/mimeapps.list                              varsayılan uygulamalar (profiles/apps/)
 #
 # Kurallar (AGENTS.md, docs/AGENT_STANDING_RULES.md):
 # - Hedef kök açıkça verilir (--destdir). Canlı "/" yalnız --allow-live-root ile kabul edilir;
@@ -26,6 +28,7 @@ REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 DESTDIR=""
 DATADIR="/usr/share"
 SYSCONFDIR="/etc"
+BINDIR="/usr/bin"
 MANIFEST=""
 FORCE=0
 ALLOW_LIVE_ROOT=0
@@ -40,6 +43,7 @@ while [ $# -gt 0 ]; do
         --destdir) DESTDIR="${2:?--destdir değer ister}"; shift 2 ;;
         --datadir) DATADIR="${2:?--datadir değer ister}"; shift 2 ;;
         --sysconfdir) SYSCONFDIR="${2:?--sysconfdir değer ister}"; shift 2 ;;
+        --bindir) BINDIR="${2:?--bindir değer ister}"; shift 2 ;;
         --manifest) MANIFEST="${2:?--manifest değer ister}"; shift 2 ;;
         --force) FORCE=1; shift ;;
         --allow-live-root) ALLOW_LIVE_ROOT=1; shift ;;
@@ -62,9 +66,10 @@ if [ "$DESTDIR" = "/" ] && [ "$ALLOW_LIVE_ROOT" -ne 1 ]; then
     echo "HATA: hedef kök '/' -- canlı sisteme kurulum için --allow-live-root gerekir" >&2
     exit 2
 fi
-case "$DATADIR$SYSCONFDIR" in
-    *..*) echo "HATA: --datadir/--sysconfdir '..' içeremez" >&2; exit 2 ;;
+case "$DATADIR$SYSCONFDIR$BINDIR" in
+    *..*) echo "HATA: --datadir/--sysconfdir/--bindir '..' içeremez" >&2; exit 2 ;;
 esac
+case "$BINDIR" in /*) ;; *) echo "HATA: --bindir mutlak yol olmalı" >&2; exit 2 ;; esac
 case "$DATADIR" in /*) ;; *) echo "HATA: --datadir mutlak yol olmalı" >&2; exit 2 ;; esac
 case "$SYSCONFDIR" in /*) ;; *) echo "HATA: --sysconfdir mutlak yol olmalı" >&2; exit 2 ;; esac
 
@@ -72,6 +77,7 @@ case "$SYSCONFDIR" in /*) ;; *) echo "HATA: --sysconfdir mutlak yol olmalı" >&2
 PYTHON="${PYTHON:-python3}"
 command -v "$PYTHON" >/dev/null 2>&1 || PYTHON=python
 (cd "$REPO" && "$PYTHON" profiles/shortcuts/generate_kglobalshortcutsrc.py --check >/dev/null)
+(cd "$REPO" && "$PYTHON" profiles/apps/generate_mimeapps.py --check >/dev/null)
 
 # "kaynak|hedef" çiftleri (hedef, DESTDIR'e göre mutlak yol).
 PAIRS=()
@@ -93,6 +99,8 @@ PAIRS+=("$REPO/profiles/desktop/colorscheme/alpbah-dark.colors|$DATADIR/color-sc
 PAIRS+=("$REPO/profiles/desktop/xdg/kdeglobals|$SYSCONFDIR/xdg/kdeglobals")
 PAIRS+=("$REPO/profiles/desktop/xdg/kwinrc|$SYSCONFDIR/xdg/kwinrc")
 PAIRS+=("$REPO/profiles/shortcuts/generated/kglobalshortcutsrc|$SYSCONFDIR/xdg/kglobalshortcutsrc")
+PAIRS+=("$REPO/profiles/desktop/bin/alpbah-gorunum|$BINDIR/alpbah-gorunum")
+PAIRS+=("$REPO/profiles/apps/generated/mimeapps.list|$SYSCONFDIR/xdg/mimeapps.list")
 
 # Önce tüm çakışmaları denetle; yarım kurulum bırakma.
 conflicts=0
@@ -119,10 +127,12 @@ for pair in "${PAIRS[@]}"; do
         echo "kurulacak: $rel"
         continue
     fi
-    install -D -m 0644 "$src" "$dst"
+    mode=0644
+    case "$rel" in "$BINDIR"/*) mode=0755 ;; esac
+    install -D -m "$mode" "$src" "$dst"
 done
 
 if [ -n "$MANIFEST" ]; then
     printf '%s\n' "${manifest_lines[@]}" > "$MANIFEST"
 fi
-echo "tamam: ${#PAIRS[@]} dosya -> $DESTDIR (DATADIR=$DATADIR, SYSCONFDIR=$SYSCONFDIR)$([ "$DRY_RUN" -eq 1 ] && echo ' [dry-run]')"
+echo "tamam: ${#PAIRS[@]} dosya -> $DESTDIR (DATADIR=$DATADIR, SYSCONFDIR=$SYSCONFDIR, BINDIR=$BINDIR)$([ "$DRY_RUN" -eq 1 ] && echo ' [dry-run]')"

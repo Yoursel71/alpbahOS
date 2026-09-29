@@ -21,11 +21,11 @@
 - Kullanıcı Windows'tan geçenler için kolay masaüstü, terminal önerileri, basit paket işlemleri, Windows kısayolları, Atatürk görselleri ve güçlü cihazlarda cam görünümü istiyor.
 - Başlangıç stack'i KDE/KWin, Konsole/Zsh ve D31 ile seçilen `alp` paket motorudur. Grafik mağaza entegrasyonunu test geçmeden çalışıyor kabul etme.
 - Claude Code kullanılacak; ayrı çalışma ağacı `C:\alpbahOS-claude`, dal `claude/desktop-bootstrap`. Başka hostta clone ve aynı görev sözleşmeleri kullanılır.
-- Hyper-V, 300 GB yerel alan, Türkçe Q, düşük RAM ve BIOS+UEFI hedefleri sabittir. Kullanıcı günde 1–2 saat ayırır. D22 Steam/Wine isteği ile D32 multilib'siz 64-bit kararı çatışır; bunu kullanıcı çözmeden Steam uyumluluğu vaat etme.
+- Hyper-V, 300 GB yerel alan, Türkçe Q, düşük RAM ve BIOS+UEFI hedefleri sabittir. Kullanıcı günde 1–2 saat ayırır. Sistem yalnız 64-bit'tir (D32, D35): multilib yok, Steam istemcisi kapsam dışı, Wine yalnız WoW64; Steam uyumluluğu vaat etme.
 
 ## Rol ve ilk görev
 
-İş bölümü: Codex LFS/build, ISO ve entegrasyon; Claude masaüstü teması, terminal UX, uygulama profilleri, Windows geçiş deneyimi ve D31'de seçilen `alp` paket motoru. D32 saf 64-bit kararı geçerlidir; D22/D32 uyumsuzluğunu tek başına çözme. Her iki ajan diğerinin kritik değişikliklerini inceleyebilir. İlk görevin ayrıntıları `docs/CLAUDE_START.md`, görev sırası `docs/BACKLOG.md` içindedir. İşe başlama kaydı olmadan görev yürütülüyor sayılmaz.
+İş bölümü: Codex LFS/build, ISO ve entegrasyon; Claude masaüstü teması, terminal UX, uygulama profilleri, Windows geçiş deneyimi ve D31'de seçilen `alp` paket motoru. D32 saf 64-bit kararı geçerlidir; D22/D32 uyumsuzluğu kullanıcı kararıyla (D35) bu yönde kapandı. Her iki ajan diğerinin kritik değişikliklerini inceleyebilir. İlk görevin ayrıntıları `docs/CLAUDE_START.md`, görev sırası `docs/BACKLOG.md` içindedir. İşe başlama kaydı olmadan görev yürütülüyor sayılmaz.
 
 Bir görev üstlenildiğinde yalnız o görevin dosya sınırında çalış. Ortak kernel, paket manifesti, build sürümleri, rootfs veya mount işlemlerini koordinasyonsuz değiştirme.
 

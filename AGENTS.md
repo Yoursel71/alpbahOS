@@ -24,7 +24,7 @@ Bu dosya projede çalışan tüm ajanların ortak talimatıdır. Kullanıcının
 - Kullanıcı teknik seçimleri devretti: planın teknik seçimleriyle ilerle; başarısız deneyde gerekçeli revizyon yap. Test edilmemiş seçimi çalışan özellik gibi sunma.
 - Hyper-V, 300 GB yerel bütçe, Türkçe/Türkçe Q, Legacy+UEFI ve mevcut mockup düzeni sabittir. Bulut build/ISO depolaması kullanma; özel kaynak Git deposu istisnadır.
 - Eski x86_64 donanım ve düşük RAM önceliklidir. Solid varsayılan, Glass/Liquid seçenektir; hedefleri MASTER_PLAN.md'den al.
-- Wine/Steam hedefi D22 ile kabul edildi, ancak D32 saf 64-bit kararıyla çelişiyor. Multilib/X11 uyumluluk kapsamını kullanıcı kararı olmadan varsayma; `docs/DECISIONS.md` ve COMPAT-01 açık kalmalı. Word/oyun ve tüm sürücü desteğini test olmadan garanti etme.
+- Kullanıcı 26 Eylül 2026'da D22/D32 çatışmasını yalnız 64-bit lehine çözdü (D35): multilib/32-bit kullanıcı alanı eklenmez, Steam istemcisi kapsam dışıdır, Wine yalnız WoW64 moduyla değerlendirilir. X11 uyumluluk kapsamı ayrı açık karardır (`docs/DECISIONS.md`). Word ve tüm sürücü desteğini test olmadan garanti etme.
 
 ## Doğruluk ve kayıt
 
