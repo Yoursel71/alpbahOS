@@ -16,3 +16,6 @@ profiles/desktop/lookandfeel/**/defaults text eol=lf
 profiles/shortcuts/generated/* text eol=lf
 profiles/apps/generated/* text eol=lf
 profiles/desktop/bin/* text eol=lf
+profiles/desktop/fontconfig/* text eol=lf
+profiles/shell/konsole/* text eol=lf
+profiles/shell/zshrc.alpbah text eol=lf

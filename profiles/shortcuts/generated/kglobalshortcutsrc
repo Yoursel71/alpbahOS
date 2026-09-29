@@ -1,8 +1,8 @@
 # alpbahOS kısayol profili -- ÜRETİLMİŞ DOSYA, elle düzenlemeyin.
 # Kaynak: profiles/shortcuts/shortcuts.json
 # Üretici: profiles/shortcuts/generate_kglobalshortcutsrc.py
-# Kurulum hedefi: /etc/xdg/kglobalshortcutsrc (kullanıcı ayarı ~/.config/kglobalshortcutsrc önce gelir)
-# Hedef sürüm: Plasma 6.4.4; gerçek oturumda doğrulanmadı.
+# Kurulum: /usr/share/alpbahos/kglobalshortcutsrc; oturum başında alpbah-oturum-hazirla kullanıcı dosyasına işler.
+# Hedef sürüm: Plasma 6.4.4; canlı sonuç: docs/handoffs/claude/020-m08-canli-dogrulama.md
 
 [ksmserver]
 Lock Session=Meta+L\tScreensaver,Meta+L\tScreensaver,Lock Session

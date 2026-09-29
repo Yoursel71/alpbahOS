@@ -158,7 +158,54 @@ class LiveVerifierTests(unittest.TestCase):
                 self.assertEqual(LIVE.main(["--from-dump", str(dump)]), 1)
 
 
+def plasma_color_scheme_name(scheme):
+    """plasma-workspace v6.4.4 kcms/lookandfeel/lookandfeelmanager.cpp colorSchemeFile() normalleştirmesi."""
+    name = scheme.replace("'", "")
+    fixer = re.compile(r"[\W,.-]+(.?)")
+    while (match := fixer.search(name)):
+        name = name[:match.start()] + match.group(1).upper() + name[match.end():]
+    return name[:1].upper() + name[1:]
+
+
 class LookAndFeelPackageTests(unittest.TestCase):
+    def test_system_fonts_match_tokens(self):
+        tokens = json.loads((REPO / "profiles" / "desktop" / "tokens.json").read_text(encoding="utf-8"))["typography"]
+        xdg = ini((REPO / "profiles" / "desktop" / "xdg" / "kdeglobals").read_text(encoding="utf-8"))
+        for key in ("font", "menuFont", "smallestReadableFont", "toolBarFont"):
+            self.assertEqual(xdg["General"][key].split(",")[0], tokens["font_primary"], key)
+        self.assertEqual(xdg["WM"]["activeFont"].split(",")[0], tokens["font_primary"])
+        self.assertEqual(xdg["General"]["fixed"].split(",")[0], tokens["font_terminal"])
+        # fontconfig tercihi: Qt varsayılanı (platform teması yokken), GTK ve tarayıcı aynı aileleri alır.
+        import xml.etree.ElementTree as ET
+        conf = REPO / "profiles" / "desktop" / "fontconfig" / "59-alpbahos-fonts.conf"
+        prefer = {a.findtext("family"): a.find("prefer").findtext("family") for a in ET.parse(conf).getroot().iter("alias")}
+        self.assertEqual(prefer, {"sans-serif": tokens["font_primary"], "system-ui": tokens["font_primary"],
+                                  "monospace": tokens["font_terminal"]})
+        # 49-sansserif (sans-serif ekler) sonrası, 60-latin (Noto Sans'ı öne koyar) öncesi okunmalı.
+        self.assertTrue("49-sansserif.conf" < conf.name < "60-latin.conf")
+
+    def test_color_scheme_sets_and_contrast(self):
+        colors = ini((REPO / "profiles" / "desktop" / "colorscheme" / "AlpbahDark.colors").read_text(encoding="utf-8"))
+
+        def luminance(rgb):
+            channels = []
+            for c in (int(v) / 255 for v in rgb.split(",")):
+                channels.append(c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4)
+            return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2]
+
+        # Plasma 6 şemalarının taşıdığı setler; eksik Header, Breeze başlık/Kirigami başlıklarını varsayılana düşürür.
+        for group in ("Window", "View", "Button", "Selection", "Tooltip", "Complementary", "Header", "Header][Inactive"):
+            section = colors[f"Colors:{group}"]
+            hi, lo = sorted((luminance(section["ForegroundNormal"]), luminance(section["BackgroundNormal"])), reverse=True)
+            self.assertGreaterEqual((hi + 0.05) / (lo + 0.05), 4.5, group)  # WCAG AA gövde metni
+        # Tasarım: başlık çubuğu koyu lacivert (mockups §3); WM etkin başlığıyla aynı.
+        self.assertEqual(colors["Colors:Header"]["BackgroundNormal"], colors["WM"]["activeBackground"])
+
+    def test_color_scheme_name_normalization(self):
+        self.assertEqual(plasma_color_scheme_name("alpbah-dark"), "AlpbahDark")
+        self.assertFalse("alpbah-dark.colors".endswith(plasma_color_scheme_name("alpbah-dark") + ".colors"))
+        self.assertEqual(plasma_color_scheme_name("BreezeDark"), "BreezeDark")
+
     def test_metadata(self):
         meta = json.loads((LNF / "metadata.json").read_text(encoding="utf-8"))
         self.assertEqual(meta["KPackageStructure"], "Plasma/LookAndFeel")
@@ -172,6 +219,9 @@ class LookAndFeelPackageTests(unittest.TestCase):
         colors = REPO / "profiles" / "desktop" / "colorscheme" / f"{scheme}.colors"
         self.assertTrue(colors.exists(), colors)
         self.assertEqual(ini(colors.read_text(encoding="utf-8"))["General"]["ColorScheme"], scheme)
+        # startplasma renkleri LookAndFeelManager::colorSchemeFile ile bulur: ad normalleştirilir,
+        # dosya adı bununla bitmelidir. 'alpbah-dark' -> 'AlpbahDark' bulunamamıştı (29 Eylül Gen2).
+        self.assertTrue(colors.name.endswith(plasma_color_scheme_name(scheme) + ".colors"), colors.name)
         image = re.search(r"^\[Wallpaper\]\nImage=(\S+)$", defaults, re.M).group(1)
         wall_meta = json.loads((WALLPAPER / "metadata.json").read_text(encoding="utf-8"))
         self.assertEqual(image, wall_meta["KPlugin"]["Id"])
@@ -221,6 +271,88 @@ class WallpaperTests(unittest.TestCase):
             builder.check_safe_area((1920, 1080), (100, 10, 400, 300))
         with Image.open(WALLPAPER / "contents" / "screenshot.png") as preview:
             self.assertEqual(preview.size, builder.SCREENSHOT_SIZE)
+
+
+class WallpaperScaleTests(unittest.TestCase):
+    """UI-03 ölçek örnekleri: Plasma 6.4.4 görüntü seçimi + PreserveAspectCrop (scale_samples.py)."""
+
+    @classmethod
+    def setUpClass(cls):
+        try:
+            import PIL  # noqa: F401
+        except ImportError:
+            raise unittest.SkipTest("Pillow yok")
+        cls.samples = load("m08_scale", REPO / "branding" / "ataturk-theme" / "tools" / "scale_samples.py")
+        photo = cls.samples.BUILDER.load_source()
+        cls.faces = {size: cls.samples.BUILDER.compose(size, photo)[1] for size in cls.samples.BUILDER.SIZES}
+
+    def test_plasma_distance_and_pick(self):
+        sizes = list(self.faces)
+        pick = self.samples.pick_image
+        self.assertEqual(self.samples.plasma_distance((1920, 1080), (1920, 1080)), 0)
+        # Aday dar: genişlik farkı iki kat (büyütme cezası).
+        self.assertAlmostEqual(self.samples.plasma_distance((1366, 768), (1920, 1080)), abs(1366 / 768 - 16 / 9) * 25000 + 2 * 554)
+        self.assertEqual(pick(sizes, (1920, 1080)), (1920, 1080))  # Gen2 VM'deki ekran
+        self.assertEqual(pick(sizes, (3840, 2160)), (2560, 1440))
+        self.assertEqual(pick(sizes, (5120, 1440)), (5120, 1440))
+
+    def test_common_screens_and_scale_factors_are_safe(self):
+        rows = self.samples.analyse(self.faces)
+        self.assertEqual({r["ekran"]: r["sorun"] for r in rows if r["sorun"]}, {})
+        self.assertIn(2.0, next(r for r in rows if r["ekran"] == (3840, 2160))["faktorler"])
+
+    def test_superwide_needs_its_own_image(self):
+        without = {k: v for k, v in self.faces.items() if k != (5120, 1440)}
+        row = next(r for r in self.samples.analyse(without, [(5120, 1440)]))
+        self.assertEqual(row["goruntu"], (3440, 1440))
+        self.assertIn("%150: yüz üst panelin altında kalıyor", row["sorun"])
+
+
+SHELL = REPO / "profiles" / "shell"
+
+
+class ShellProfileTests(unittest.TestCase):
+    """SHELL-01: Konsole profili ve zshrc kabul kriterlerinin statik karşılığı (MASTER_PLAN §4.3)."""
+
+    def test_konsole_default_profile_chain(self):
+        konsolerc = ini((SHELL / "konsole" / "konsolerc").read_text(encoding="utf-8"))
+        profile_name = konsolerc["Desktop Entry"]["DefaultProfile"]
+        profile = ini((SHELL / "konsole" / profile_name).read_text(encoding="utf-8"))
+        scheme = profile["Appearance"]["ColorScheme"]
+        self.assertTrue((SHELL / "konsole" / f"{scheme}.colorscheme").exists(), scheme)
+        tokens = json.loads((REPO / "profiles" / "desktop" / "tokens.json").read_text(encoding="utf-8"))
+        self.assertEqual(profile["Appearance"]["Font"].split(",")[0], tokens["typography"]["font_terminal"])
+
+    def test_konsole_scheme_matches_tokens(self):
+        scheme = ini((SHELL / "konsole" / "alpbah-dark.colorscheme").read_text(encoding="utf-8"))
+        colors = json.loads((REPO / "profiles" / "desktop" / "tokens.json").read_text(encoding="utf-8"))["color"]
+
+        def rgb(hex_color):
+            return ",".join(str(int(hex_color[i:i + 2], 16)) for i in (1, 3, 5))
+
+        self.assertEqual(scheme["Background"]["Color"], rgb(colors["bg-950"]))  # Gen2'de ölçülen zemin
+        self.assertEqual(scheme["Foreground"]["Color"], rgb(colors["text"]))
+        for n in range(8):
+            self.assertIn(f"Color{n}", scheme)
+            self.assertIn(f"Color{n}Intense", scheme)
+
+    def test_zshrc_acceptance_rules(self):
+        lines = [l.split("#", 1)[0].strip() for l in (SHELL / "zshrc.alpbah").read_text(encoding="utf-8").splitlines()]
+        code = [l for l in lines if l]
+        self.assertIn("setopt CORRECT", code)          # §4.3-3: komut adı düzeltmesi, reddedilebilir
+        self.assertIn("unsetopt CORRECT_ALL", code)    # argümanlar sessizce değişmez
+        self.assertFalse(any(l.startswith("bindkey") and "'^C'" in l for l in code))  # §4.3-5: Ctrl+C korunur
+        self.assertFalse(any("autosuggest-execute" in l for l in code))  # §4.3-2: kabul çalıştırmaz
+        highlight = next(i for i, l in enumerate(code) if "zsh-syntax-highlighting.zsh" in l and l.startswith("source"))
+        self.assertTrue(all(i < highlight for i, l in enumerate(code) if l.startswith("bindkey")),
+                        "syntax-highlighting bütün bindkey satırlarından sonra yüklenmeli (upstream)")
+
+    def test_zshrc_syntax(self):
+        zsh = shutil.which("zsh")
+        if not zsh:
+            self.skipTest("zsh yok; sözdizimi denetlenmedi")
+        proc = subprocess.run([zsh, "-n", str(SHELL / "zshrc.alpbah")], capture_output=True, text=True)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
 
 
 def load_script(name, path):
@@ -506,7 +638,14 @@ class InstallScriptTests(unittest.TestCase):
             first = self.run_install("--destdir", root.as_posix(), "--manifest", (root / "m.txt").as_posix())
             self.assertEqual(first.returncode, 0, first.stderr)
             manifest = (root / "m.txt").read_text(encoding="utf-8").splitlines()
-            self.assertIn("/etc/xdg/kglobalshortcutsrc", "\n".join(manifest))
+            joined = "\n".join(manifest)
+            for target in ("/usr/share/alpbahos/kglobalshortcutsrc", "/usr/bin/alpbah-oturum-hazirla",
+                           "/etc/xdg/plasma-workspace/env/alpbahos-oturum.sh", "/usr/share/color-schemes/AlpbahDark.colors",
+                           "/etc/fonts/conf.d/59-alpbahos-fonts.conf", "/usr/share/konsole/alpbahOS.profile",
+                           "/usr/share/konsole/alpbah-dark.colorscheme", "/etc/xdg/konsolerc"):
+                self.assertIn(target, joined)
+            # kglobalacceld /etc/xdg'yi okumaz (SimpleConfig); yanıltıcı sistem dosyası kurulmaz.
+            self.assertNotIn("/etc/xdg/kglobalshortcutsrc", joined)
             self.assertTrue((root / "usr/share/plasma/look-and-feel/org.alpbahos.solid.desktop/metadata.json").exists())
             self.assertTrue((root / "usr/share/wallpapers/alpbahOS-Ataturk/contents/images/1920x1080.jpg").exists())
             second = self.run_install("--destdir", root.as_posix())
@@ -517,9 +656,172 @@ class InstallScriptTests(unittest.TestCase):
             self.assertIn("ÇAKIŞMA", third.stderr)
             self.assertEqual((root / "etc/xdg/kdeglobals").read_text(encoding="utf-8"), "[KDE]\n")
 
+    def test_fontconfig_ignores_opt_sysconfdir(self):
+        # 019 §4'teki alternatif --sysconfdir /opt/kf6/etc: XDG dosyaları oraya gider (XDG_CONFIG_DIRS'te),
+        # fontconfig dosyası /etc/fonts/conf.d'de kalmalı (fontconfig /opt/kf6/etc'yi okumaz).
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            proc = self.run_install("--destdir", root.as_posix(), "--datadir", "/opt/kf6/share",
+                                    "--sysconfdir", "/opt/kf6/etc", "--manifest", (root / "m.txt").as_posix())
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            joined = (root / "m.txt").read_text(encoding="utf-8")
+            self.assertIn("  /etc/fonts/conf.d/59-alpbahos-fonts.conf", joined)
+            self.assertIn("  /opt/kf6/etc/xdg/konsolerc", joined)
+            self.assertNotIn("/opt/kf6/etc/fonts", joined)
+
     def test_refuses_missing_or_live_root(self):
         self.assertEqual(self.run_install().returncode, 2)
         self.assertEqual(self.run_install("--destdir", "/").returncode, 2)
+
+
+OTURUM = load_script("m08_oturum", REPO / "profiles" / "desktop" / "bin" / "alpbah-oturum-hazirla")
+PROFILE_TEXT = (SHORTCUTS / "generated" / "kglobalshortcutsrc").read_text(encoding="utf-8")
+
+# kglobalacceld'in ilk oturumda yazdığı upstream durum (etkin == varsayılan) ve ilgisiz satırlar.
+KDE_WRITTEN = """[kwin]
+_k_friendly_name=KWin
+Expose=Ctrl+F9,Ctrl+F9,Toggle Present Windows (Current desktop)
+Overview=Meta+W,Meta+W,Toggle Overview
+Walk Through Windows=Meta+Tab\\tAlt+Tab,Meta+Tab\\tAlt+Tab,Walk Through Windows
+Window Maximize=Meta+PgUp,Meta+PgUp,Maximize Window
+Window Quick Tile Top=Meta+Up,Meta+Up,Quick Tile Window to the Top
+
+[plasmashell]
+_k_friendly_name=plasmashell
+activate application launcher=Meta\\tAlt+F1,Meta\\tAlt+F1,Activate Application Launcher
+"""
+
+
+class SessionPrepTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        root = Path(self.temp.name)
+        self.config = root / "config"
+        self.data = root / "data"
+        (self.data / "alpbahos").mkdir(parents=True)
+        self.profile = self.data / "alpbahos" / "kglobalshortcutsrc"
+        self.profile.write_text(PROFILE_TEXT, encoding="utf-8")
+        self.env = {"HOME": str(root), "XDG_CONFIG_HOME": str(self.config), "XDG_DATA_HOME": str(self.data),
+                    "XDG_DATA_DIRS": ""}
+        self.user = self.config / "kglobalshortcutsrc"
+        self._kwin = OTURUM.kwin_running
+        OTURUM.kwin_running = lambda *a: False
+
+    def tearDown(self):
+        OTURUM.kwin_running = self._kwin
+        self.temp.cleanup()
+
+    def run_tool(self, *args):
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            self.assertEqual(OTURUM.main(list(args), env=self.env), 0)
+        return out.getvalue()
+
+    def entry(self, group, key):
+        return OTURUM.KConfigText(self.user.read_text(encoding="utf-8")).get(group, key)
+
+    def test_first_login_gets_whole_profile(self):
+        self.run_tool()
+        user = ini(self.user.read_text(encoding="utf-8"))
+        profile = ini(PROFILE_TEXT)
+        for section in profile.sections():
+            for key, value in profile[section].items():
+                self.assertEqual(user[section][key], value, (section, key))
+        self.assertNotIn("ÜRETİLMİŞ", self.user.read_text(encoding="utf-8"))
+        # Durum ~/.config altında: Gen2'de ~/.local root'a aitti ve yazılamadı.
+        self.assertTrue((self.config / "alpbahos" / "oturum.json").exists())
+        self.assertIn("eklendi: [kwin] Window Maximize", (self.config / "alpbahos" / "oturum-hazirla.log").read_text(encoding="utf-8"))
+
+    def test_upstream_entries_replaced_other_lines_kept(self):
+        self.config.mkdir(parents=True)
+        self.user.write_text(KDE_WRITTEN, encoding="utf-8")
+        self.run_tool()
+        self.assertEqual(self.entry("[kwin]", "Window Maximize"), "Meta+Up\\tMeta+PgUp,Meta+PgUp,Maximize Window")
+        self.assertEqual(self.entry("[kwin]", "Window Quick Tile Top"), "none,Meta+Up,Quick Tile Window to the Top")
+        self.assertEqual(self.entry("[kwin]", "Walk Through Windows"), "Alt+Tab,Meta+Tab\\tAlt+Tab,Walk Through Windows")
+        self.assertEqual(self.entry("[kwin]", "Expose"), "Ctrl+F9,Ctrl+F9,Toggle Present Windows (Current desktop)")
+        self.assertEqual(self.entry("[kwin]", "_k_friendly_name"), "KWin")
+        self.assertEqual(self.entry("[services][org.kde.krunner.desktop]", "_launch"), "Meta+R\\tAlt+Space\\tAlt+F2\\tSearch")
+
+    def test_user_customisation_is_kept(self):
+        self.config.mkdir(parents=True)
+        custom = KDE_WRITTEN.replace("Window Maximize=Meta+PgUp,", "Window Maximize=Meta+M,")
+        custom += "\n[services][org.kde.dolphin.desktop]\n_launch=Meta+F\n"
+        self.user.write_text(custom, encoding="utf-8")
+        out = self.run_tool("--durum")
+        self.assertIn("kullanıcı ayarı korundu: [kwin] Window Maximize = Meta+M", out)
+        self.assertEqual(self.user.read_text(encoding="utf-8"), custom)  # --durum yazmaz
+        self.run_tool()
+        self.assertEqual(self.entry("[kwin]", "Window Maximize"), "Meta+M,Meta+PgUp,Maximize Window")
+        self.assertEqual(self.entry("[services][org.kde.dolphin.desktop]", "_launch"), "Meta+F")
+
+    def test_applied_once_then_profile_update_moves_own_values(self):
+        self.run_tool()
+        # Kullanıcı sonradan KDE varsayılanına dönerse aynı profil yeniden dayatılmaz.
+        text = self.user.read_text(encoding="utf-8").replace("Window Maximize=Meta+Up\\tMeta+PgUp,", "Window Maximize=Meta+PgUp,")
+        self.user.write_text(text, encoding="utf-8")
+        self.assertIn("zaten uygulanmış", self.run_tool())
+        self.assertEqual(self.entry("[kwin]", "Window Maximize"), "Meta+PgUp,Meta+PgUp,Maximize Window")
+        # Yeni profil: aracın kendi yazdığı değer (Minimize) kullanıcı değişikliği sayılmaz ve güncellenir.
+        self.profile.write_text(PROFILE_TEXT.replace("Window Minimize=Meta+Down\\tMeta+PgDown,", "Window Minimize=Meta+Down,"),
+                                encoding="utf-8")
+        self.run_tool()
+        self.assertEqual(self.entry("[kwin]", "Window Minimize"), "Meta+Down,Meta+PgDown,Minimize Window")
+        # Varsayılana dönüş kullanıcı kararıdır; profil güncellemesi onu geri almaz.
+        self.assertEqual(self.entry("[kwin]", "Window Maximize"), "Meta+PgUp,Meta+PgUp,Maximize Window")
+
+    def test_skips_while_kwin_runs_unless_forced(self):
+        OTURUM.kwin_running = lambda *a: True
+        self.assertIn("KWin çalışıyor", self.run_tool())
+        self.assertFalse(self.user.exists())
+        self.run_tool("--zorla")
+        self.assertTrue(self.user.exists())
+
+    def test_old_color_scheme_default_is_migrated(self):
+        defaults = self.config / "kdedefaults"
+        defaults.mkdir(parents=True)
+        (defaults / "package").write_text("org.alpbahos.solid.desktop", encoding="utf-8")
+        # Gen2'de görülen durum: şema bulunamadığı için ColorScheme hiç yazılmamış.
+        (defaults / "kdeglobals").write_text("[Icons]\nTheme=breeze-dark\n\n[KDE]\nwidgetStyle=Breeze\n", encoding="utf-8")
+        self.run_tool()
+        self.assertFalse((defaults / "package").exists())
+        (defaults / "package").write_text("org.alpbahos.solid.desktop", encoding="utf-8")
+        (defaults / "kdeglobals").write_text("[General]\nColorScheme=alpbah-dark\n", encoding="utf-8")
+        (self.config / "kdeglobals").write_text("[General]\nColorScheme=alpbah-dark\nfont=X\n", encoding="utf-8")
+        self.run_tool()
+        self.assertFalse((defaults / "package").exists())
+        self.assertEqual((self.config / "kdeglobals").read_text(encoding="utf-8"), "[General]\nColorScheme=AlpbahDark\nfont=X\n")
+        (defaults / "package").write_text("org.alpbahos.solid.desktop", encoding="utf-8")
+        (defaults / "kdeglobals").write_text("[General]\nColorScheme=AlpbahDark\n", encoding="utf-8")
+        self.run_tool()
+        self.assertTrue((defaults / "package").exists())
+        # Kullanıcı başka bir global tema seçtiyse dokunulmaz.
+        (defaults / "package").write_text("org.kde.breeze.desktop", encoding="utf-8")
+        (defaults / "kdeglobals").write_text("[KDE]\nwidgetStyle=Breeze\n", encoding="utf-8")
+        self.run_tool()
+        self.assertTrue((defaults / "package").exists())
+
+    def test_one_failing_step_does_not_block_the_other(self):
+        self.config.mkdir(parents=True)
+        (self.config / "kdeglobals").write_bytes(b"[General]\nColorScheme=\xff\xfe\n")  # UTF-8 değil
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            self.assertEqual(OTURUM.main([], env=self.env), 1)
+        self.assertIn("renk: HATA", out.getvalue())
+        self.assertEqual(self.entry("[kwin]", "Window Maximize"), "Meta+Up\\tMeta+PgUp,Meta+PgUp,Maximize Window")
+        self.assertIn("renk: HATA", (self.config / "alpbahos" / "oturum-hazirla.log").read_text(encoding="utf-8"))
+
+    def test_env_script_is_silent(self):
+        sh = shutil.which("sh")
+        if not sh:
+            self.skipTest("sh yok")
+        with tempfile.TemporaryDirectory() as temp_dir:
+            fake = Path(temp_dir) / "alpbah-oturum-hazirla"
+            fake.write_text("#!/bin/sh\necho GURULTU\necho HATA >&2\nexit 7\n", encoding="utf-8", newline="\n")
+            fake.chmod(0o755)
+            script = (REPO / "profiles" / "desktop" / "xdg" / "plasma-workspace" / "env" / "alpbahos-oturum.sh").as_posix()
+            proc = subprocess.run([sh, "-c", f'PATH="{Path(temp_dir).as_posix()}:$PATH"; . "{script}"; echo SON'],
+                                  capture_output=True, text=True, encoding="utf-8", errors="replace")
+            self.assertEqual(proc.stdout, "SON\n")
+            self.assertEqual(proc.returncode, 0)
 
 
 if __name__ == "__main__":

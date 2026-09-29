@@ -1,15 +1,15 @@
 {
   "$schema": "alpbahOS/shortcuts/v1",
-  "durum": "M08 ilk dilim — eylem kimlikleri ve upstream varsayılanları KDE Plasma 6.4.4 kaynak kodundan doğrulandı; gerçek Plasma oturumunda hiçbir satır test edilmedi.",
+  "durum": "Eylem kimlikleri ve upstream varsayılanları KDE Plasma 6.4.4 kaynak kodundan doğrulandı. 29 Eylül Gen2 oturumunda (QPainter) Meta, Meta+E, Meta+Up, Meta+Down, Meta+I, Alt+Tab çalıştı; Meta+R kısayolu KRunner'ı başlattı (KRunner imajda çöküyor); Meta+Tab (GL ister), Meta+Shift+S, Ctrl+Shift+Esc, Meta+L sınanamadı. Ayrıntı: docs/handoffs/claude/020-m08-canli-dogrulama.md.",
   "kaynak": "docs/MASTER_PLAN.md §6",
-  "tek_kaynak_notu": "Kısayolların TEK tanım kaynağı bu dosyadır. /etc/xdg/kglobalshortcutsrc bu dosyadan profiles/shortcuts/generate_kglobalshortcutsrc.py ile üretilir; üretilmiş dosya elle düzenlenmez.",
+  "tek_kaynak_notu": "Kısayolların TEK tanım kaynağı bu dosyadır. profiles/shortcuts/generated/kglobalshortcutsrc bu dosyadan profiles/shortcuts/generate_kglobalshortcutsrc.py ile üretilir; üretilmiş dosya elle düzenlenmez.",
   "hedef_surum": {
     "plasma": "6.4.4",
     "kaynak_etiketi": "v6.4.4 (github.com/KDE/<repo> aynası; kwin, plasma-workspace, kscreenlocker, spectacle, systemsettings, plasma-systemmonitor)",
     "dolphin_referansi": "KDE Gear v25.08.1 (Dolphin henüz hedef imajda derlenmedi; kurulacak sürüm farklıysa yeniden doğrula)",
     "kglobalaccel_dbus_referansi": "kglobalaccel v6.17.0 src/org.kde.KGlobalAccel.xml ve org.kde.kglobalaccel.Component.xml"
   },
-  "kurulum_hedefi": "/etc/xdg/kglobalshortcutsrc",
+  "kurulum_hedefi": "/usr/share/alpbahos/kglobalshortcutsrc (veri); oturum başında alpbah-oturum-hazirla ~/.config/kglobalshortcutsrc dosyasına işler. /etc/xdg/kglobalshortcutsrc kglobalacceld tarafından okunmaz (KConfig::SimpleConfig).",
   "durum_kodlari": {
     "upstream_varsayilani": "Plasma 6.4.4 kaynak kodunda bu tuş zaten bu eyleme bağlı; alpbahOS yalnız açıkça yazar.",
     "ek_baglama": "Upstream eylem var; alpbahOS mevcut tuşları koruyup Windows tuşunu ekler.",

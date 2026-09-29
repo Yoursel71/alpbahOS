@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """generate_kglobalshortcutsrc.py -- alpbahOS kısayol profilini KDE biçimine çevirir (stdlib-only).
 
-Tek kaynak `profiles/shortcuts/shortcuts.json` (MASTER_PLAN §6). Çıktı, sistem
-genelinde varsayılan olarak `/etc/xdg/kglobalshortcutsrc` konumuna kurulacak bir
-KConfig dosyasıdır. KConfig bu dosyayı XDG_CONFIG_DIRS üzerinden katmanlı okur;
-kullanıcının `~/.config/kglobalshortcutsrc` içindeki değişikliği her zaman önce gelir.
+Tek kaynak `profiles/shortcuts/shortcuts.json` (MASTER_PLAN §6). Çıktı KConfig
+biçiminde bir profil verisidir ve `/usr/share/alpbahos/kglobalshortcutsrc` olarak kurulur.
+kglobalacceld kullanıcı dosyasını KConfig::SimpleConfig ile açar, /etc/xdg katmanını
+okumaz (kglobalacceld v6.4.4 src/globalshortcutsregistry.cpp); bu yüzden profil oturum
+başında `alpbah-oturum-hazirla` ile `~/.config/kglobalshortcutsrc` dosyasına işlenir.
+Kullanıcının kendi değiştirdiği kısayola dokunulmaz.
 
 Biçim (kglobalacceld, Plasma 6):
   [kwin]
@@ -244,8 +246,8 @@ def render(profile: dict, profile_name: str = "profiles/shortcuts/shortcuts.json
         "# alpbahOS kısayol profili -- ÜRETİLMİŞ DOSYA, elle düzenlemeyin.",
         f"# Kaynak: {profile_name}",
         "# Üretici: profiles/shortcuts/generate_kglobalshortcutsrc.py",
-        "# Kurulum hedefi: /etc/xdg/kglobalshortcutsrc (kullanıcı ayarı ~/.config/kglobalshortcutsrc önce gelir)",
-        f"# Hedef sürüm: Plasma {profile.get('hedef_surum', {}).get('plasma', '?')}; gerçek oturumda doğrulanmadı.",
+        "# Kurulum: /usr/share/alpbahos/kglobalshortcutsrc; oturum başında alpbah-oturum-hazirla kullanıcı dosyasına işler.",
+        f"# Hedef sürüm: Plasma {profile.get('hedef_surum', {}).get('plasma', '?')}; canlı sonuç: docs/handoffs/claude/020-m08-canli-dogrulama.md",
     ]
     for name in sorted(components):
         out.append("")

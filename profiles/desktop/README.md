@@ -1,21 +1,28 @@
 # alpbahOS Masaüstü Profili — UI-01
 
-Durum: **M08 ilk dilim — kurulabilir paket hazır, gerçek Plasma oturumunda test edilmedi.** Look-and-feel paketi, Atatürk duvar kâğıdı, sembol ikonu, sistem varsayılanları ve kurulum betiği repoda; biçimleri Plasma 6.4.4 kaynak koduna göre yazıldı ve statik testlerden geçti (`tests/test_m08_desktop_profile.py`). Gen2 imajına kurulup ekran görüntüsüyle doğrulanmadıkça "uygulandı" sayılmaz. Ayrıntı: [015 devir belgesi](../../docs/handoffs/claude/015-m08-lookandfeel-wallpaper-shortcuts.md).
+Durum: **M08 — 29 Eylül'de Gen2 Plasma 6.4.4 oturumunda (QPainter) çalıştırıldı.** Duvar kâğıdı, üst panel + dock düzeni, AlpbahDark renkleri (panel/Kickoff), Inter yazı tipi ve alpbahOS kısayolları ekran görüntüsüyle doğrulandı. İlk dilimdeki iki hata (kısayol dosyası okunmuyordu, renk şeması adı bulunamıyordu) düzeltildi. Qt Widgets uygulamaları ve pencere başlıkları imajdaki eksik eklentiler yüzünden hâlâ açık renkte. Ayrıntı: [020](../../docs/handoffs/claude/020-m08-canli-dogrulama.md), ilk dilim: [015](../../docs/handoffs/claude/015-m08-lookandfeel-wallpaper-shortcuts.md).
 
 ## 0. M08 dosya düzeni ve kurulum
 
 | Repo yolu | Kurulum hedefi | İçerik |
 |---|---|---|
 | `lookandfeel/org.alpbahos.solid.desktop/` | `/usr/share/plasma/look-and-feel/org.alpbahos.solid.desktop/` | `metadata.json`, `contents/defaults` (renk şeması, ikon, dekorasyon, duvar kâğıdı adı), `contents/layouts/org.kde.plasma.desktop-layout.js` (üst panel + dock) |
-| `colorscheme/alpbah-dark.colors` | `/usr/share/color-schemes/alpbah-dark.colors` | Renk şeması |
+| `colorscheme/AlpbahDark.colors` | `/usr/share/color-schemes/AlpbahDark.colors` | Renk şeması. Dosya adı şema kimliğidir: Plasma `ColorScheme` değerini `AlpbahDark` biçimine çevirip dosya adıyla karşılaştırır |
 | `../../branding/ataturk-theme/wallpaper/alpbahOS-Ataturk/` | `/usr/share/wallpapers/alpbahOS-Ataturk/` | `Wallpaper/Images` paketi (5 çözünürlük) |
 | `../../branding/icons/hicolor/` | `/usr/share/icons/hicolor/` | `alpbahos` sembol ikonu (32–256 px, geçici raster) |
-| `xdg/kdeglobals` | `/etc/xdg/kdeglobals` | `LookAndFeelPackage=org.alpbahos.solid.desktop` |
+| `xdg/kdeglobals` | `/etc/xdg/kdeglobals` | `LookAndFeelPackage=org.alpbahos.solid.desktop`; yazı tipleri Inter / JetBrains Mono (`tokens.json`) |
+| `fontconfig/59-alpbahos-fonts.conf` | `/etc/fonts/conf.d/59-alpbahos-fonts.conf` | `sans-serif`/`system-ui` → Inter, `monospace` → JetBrains Mono (Qt varsayılanı, GTK, tarayıcı) |
+| `../shell/konsole/{alpbahOS.profile,alpbah-dark.colorscheme}` | `/usr/share/konsole/` | Konsole profili ve renk şeması (SHELL-01) |
+| `../shell/konsole/konsolerc` | `/etc/xdg/konsolerc` | Konsole varsayılan profili: `alpbahOS.profile` |
 | `xdg/kwinrc` | `/etc/xdg/kwinrc` | Solid: blur/kontrast efekti kapalı |
-| `../shortcuts/generated/kglobalshortcutsrc` | `/etc/xdg/kglobalshortcutsrc` | Windows'a tanıdık kısayollar ([conflicts.md](../shortcuts/conflicts.md)) |
+| `../shortcuts/generated/kglobalshortcutsrc` | `/usr/share/alpbahos/kglobalshortcutsrc` | Windows'a tanıdık kısayol profili, veri ([conflicts.md](../shortcuts/conflicts.md)) |
+| `xdg/plasma-workspace/env/alpbahos-oturum.sh` | `/etc/xdg/plasma-workspace/env/alpbahos-oturum.sh` | startplasma KWin'den önce kaynaklar; `alpbah-oturum-hazirla`'yı çağırır |
+| `bin/alpbah-oturum-hazirla` | `/usr/bin/alpbah-oturum-hazirla` (0755) | Kısayol profilini `~/.config/kglobalshortcutsrc`'ye işler (kullanıcı ayarını korur); eski renk şeması varsayılanını göç ettirir |
 | `bin/alpbah-gorunum` | `/usr/bin/alpbah-gorunum` (0755) | Solid/Glass geçiş aracı (§5.1) |
 
-Kurulum: `profiles/desktop/install-desktop-profile.sh --destdir <kök> [--datadir /usr/share] [--manifest dosya]`. Betik hedef kökü zorunlu ister, `/` için ayrıca `--allow-live-root` ister, farklı içerikli dosyanın üzerine `--force` olmadan yazmaz ve kurduğu her dosyayı SHA-256 ile manifest'e yazar. Builder `/mnt/lfs` rootfs'ine kurulum entegratörün (Codex) işidir. Plasma `/opt/kf6` önekiyle kurulu olduğundan `XDG_DATA_DIRS` içinde `/usr/share` bulunmalı (ayrı `--datadir` de verilebilir).
+Kurulum: `profiles/desktop/install-desktop-profile.sh --destdir <kök> [--datadir /usr/share] [--sysconfdir /etc] [--bindir /usr/bin] [--fontconfdir /etc/fonts/conf.d] [--manifest dosya]`. Fontconfig dosyası `--sysconfdir`'den bağımsızdır: `--sysconfdir /opt/kf6/etc` verilse de `/etc/fonts/conf.d`'ye gider, çünkü fontconfig yalnız kendi dizinini okur. Betik hedef kökü zorunlu ister, `/` için ayrıca `--allow-live-root` ister, farklı içerikli dosyanın üzerine `--force` olmadan yazmaz ve kurduğu her dosyayı SHA-256 ile manifest'e yazar. Builder `/mnt/lfs` rootfs'ine kurulum entegratörün (Codex) işidir. Plasma `/opt/kf6` önekiyle kurulu olduğundan `XDG_DATA_DIRS` içinde `/usr/share` bulunmalı (ayrı `--datadir` de verilebilir).
+
+Kısayollar neden sistem dosyası değil: kglobalacceld `kglobalshortcutsrc`'yi `KConfig::SimpleConfig` ile açar ve `/etc/xdg`'yi okumaz (Gen2'de görüldü, kaynakla doğrulandı). Bu yüzden profil oturum başında kullanıcı dosyasına işlenir.
 
 Mekanizma (Plasma 6.4.4 kaynağından): `startplasma` ilk oturumda `kdeglobals [KDE] LookAndFeelPackage` paketinin `contents/defaults` dosyasını `~/.config/kdedefaults/` altına uygular; varsayılan duvar kâğıdı `libkworkspace` `DefaultWallpaper` ile aynı dosyanın `[Wallpaper] Image` anahtarından bulunur (kilit ekranı da aynı varsayılanı kullanır); `contents/layouts/...-layout.js` yalnız düzeni olmayan yeni kullanıcıda ya da `plasma-apply-lookandfeel -a org.alpbahos.solid.desktop --resetLayout` ile çalışır.
 
@@ -32,7 +39,7 @@ Kaynaklar: [docs/MASTER_PLAN.md](../../docs/MASTER_PLAN.md) §6–7, [docs/alpba
 
 ## 2. Renk şeması
 
-Taslak KDE renk şeması dosyası: [`colorscheme/alpbah-dark.colors`](colorscheme/alpbah-dark.colors). Değerler `docs/alpbahOS-design-mockups.md` §3.1 renk token'larından hex→RGB dönüştürülerek üretildi (dönüşüm elle yapıldı, System Settings → Renkler içinde içe aktarma testi **çalıştırılmadı**).
+Taslak KDE renk şeması dosyası: [`colorscheme/AlpbahDark.colors`](colorscheme/AlpbahDark.colors). Değerler `docs/alpbahOS-design-mockups.md` §3.1 renk token'larından hex→RGB dönüştürülerek üretildi (dönüşüm elle yapıldı, System Settings → Renkler içinde içe aktarma testi **çalıştırılmadı**).
 
 | Rol | Token | Hex | Kullanım |
 |---|---|---|---|
@@ -97,12 +104,12 @@ Panel içeriği (mockup §4.1'den):
 
 | Bileşen | Durum | Not |
 |---|---|---|
-| Plasma global tema paketi | Paket yazıldı, statik test geçti; Plasma'da yüklenmedi | `lookandfeel/org.alpbahos.solid.desktop/` |
-| Renk şeması (.colors) | Paket varsayılanına bağlandı; içe aktarma test edilmedi | `colorscheme/alpbah-dark.colors` |
+| Plasma global tema paketi | Gen2'de yüklendi (29 Eylül): düzen, duvar kâğıdı, renk, ikon adı | `lookandfeel/org.alpbahos.solid.desktop/` |
+| Renk şeması (.colors) | Panel, dock, Kickoff ve Kirigami uygulamalarında uygulandı. Qt Widgets uygulamaları KDE platform teması eklentisi imajda olmadığı için açık kalıyor. `[Colors:Header]` (lacivert başlık), `[Colors:Header][Inactive]` ve `[Colors:Complementary]` 29 Eylül'de eklendi; kullanıcı kdeglobals'ına yazıldığı doğrulandı, Header'ı kullanan bir yüzey henüz görülmedi | `colorscheme/AlpbahDark.colors` |
 | İkon teması | `breeze-dark` seçildi (bağımlılık eklemez); Breeze ikonları Gen2 imajında eksik (M07 bulgusu) | Papirus ölçüm sonrasına bırakıldı |
-| Pencere dekorasyonu | `org.kde.breeze` seçildi; imajda Breeze dekorasyonunun kurulu olduğu doğrulanmadı | Özel renk ayarı yok, renk şemasından gelir |
-| Panel/dock | Yerel Plasma panelleriyle düzen yazıldı; çalıştırılmadı | Latte Dock kullanılmadı |
-| Atatürk duvar kâğıdı | Paket üretildi, güvenli alan testi geçti; Plasma'da gösterilmedi | `branding/ataturk-theme/wallpaper/` |
+| Pencere dekorasyonu | `org.kde.breeze` seçildi; Gen2 imajında eklenti yok (KWin günlüğü), başlıklar uygulamanın kendi çizimi | Özel renk ayarı yok, renk şemasından gelir |
+| Panel/dock | Gen2'de doğrulandı: üst panel (alpbahos ikonlu Kickoff, pencere listesi, saat, tepsi), alt dock (Konsole, Dolphin, Firefox, Ayarlar) | Latte Dock kullanılmadı |
+| Atatürk duvar kâğıdı | Gen2'de 1920×1080 gösterildi (29 Eylül) | `branding/ataturk-theme/wallpaper/` |
 | Kilit ekranı | Duvar kâğıdı varsayılanı hazır; KScreenLocker derlenmediği için çalışmaz | SCREENLOCK-01 |
 | Glass profili | `alpbah-gorunum` yazıldı, birim testleri geçti; oturumda çalıştırılmadı | Liquid yalnız plan |
 | GTK eşleme | Taslak, test edilmedi | kde-gtk-config planı var, çalıştırılmadı |

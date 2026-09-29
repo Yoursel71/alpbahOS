@@ -1,6 +1,6 @@
 # alpbahOS Terminal/Shell Profili — SHELL-01
 
-Durum: **taslak**. Bu oturumda Linux/Zsh çalışma ortamı yok; aşağıdaki dosyalar statik olarak hazırlandı, gerçek bir terminalde **çalıştırılmadı**. Kabul kriterleri MASTER_PLAN.md §4.3'teki altı maddeye göre yazıldı; bunların hepsi "test edilmedi" durumundadır.
+Durum (29 Eylül 2026): **Konsole profili Gen2 Plasma oturumunda uygulandı** (terminal zemini `alpbah-dark` rengi 11,16,20, eş aralıklı font). O kopya Codex'in ev dizinine elle koyduğu dosyalardı. Artık profil `install-desktop-profile.sh` ile sistem geneline kuruluyor, ama bu kurulum VM'de denenmedi. Gen2 imajında kabuk bash; **zsh ve eklentileri imajda yok**, `zshrc.alpbah` hiç çalıştırılmadı. Kabul kriterlerinin statik karşılığı `tests/test_m08_desktop_profile.py` `ShellProfileTests` içinde denetlenir.
 
 Kapsam: yalnızca `profiles/shell/`. Kullanıcı shell tercihi için `/bin/sh` hedefi değiştirilmez; build scriptlerinin yorumlayıcısı bu profilden etkilenmez (AGENTS.md).
 
@@ -22,6 +22,9 @@ Kaynak paketlerin sürüm/checksum doğrulaması ve LFS/BLFS zincirine eklenmesi
 - [`zshrc.alpbah`](zshrc.alpbah) — interaktif Zsh yapılandırma taslağı, hedef sistemde `/etc/alpbahos/zshrc.alpbah` olarak konumlanıp kullanıcı `.zshrc`'sinden `source` edilmesi planlanır.
 - [`konsole/alpbah-dark.colorscheme`](konsole/alpbah-dark.colorscheme) — `profiles/desktop/tokens.json` ile aynı renk kaynağından üretildi.
 - [`konsole/alpbahOS.profile`](konsole/alpbahOS.profile) — font (JetBrains Mono) ve imleç ayarını renk şemasına bağlar.
+- [`konsole/konsolerc`](konsole/konsolerc) — `/etc/xdg/konsolerc`: `DefaultProfile=alpbahOS.profile`. Konsole bu dosyayı katmanlı okur, profil ve şema `/usr/share/konsole/` altında aranır (konsole v25.08.1 `ProfileManager.cpp`, `ColorSchemeManager.cpp`). Dolphin'in gömülü terminali de bu varsayılana düşer.
+
+Kurulum: `profiles/desktop/install-desktop-profile.sh` üç Konsole dosyasını da kurar. Ev dizinine root olarak kopyalamaya gerek yoktur. Gen2'de bu yüzden `/home/admin/.local` root'a kalmıştı ([020](../../docs/handoffs/claude/020-m08-canli-dogrulama.md)).
 
 ## Öneri kabul/çalıştırma ayrımı (MASTER_PLAN §4.1 gereksinimi)
 
@@ -46,9 +49,9 @@ Kaynak paketlerin sürüm/checksum doğrulaması ve LFS/BLFS zincirine eklenmesi
 |---|---|
 | 1. Temiz kullanıcıda öneri görünür, ağ gerekmez | Tasarlandı, **test edilmedi** |
 | 2. Öneri kabulü komutu çalıştırmaz, Enter gerekir | Eklenti varsayılanına dayanıyor, **test edilmedi** |
-| 3. Hatalı komut düzeltmesi açıklanır ve reddedilebilir | `CORRECT` açık, **test edilmedi** |
+| 3. Hatalı komut düzeltmesi açıklanır ve reddedilebilir | `CORRECT` açık, `CORRECT_ALL` kapalı (statik test); **terminalde test edilmedi** |
 | 4. Paket adı tamamlama, yazarken gereksiz root/ağ işlemi yok | PKG-01/02 bekliyor, **uygulanmadı** |
-| 5. Ctrl+C kesme davranışı korunur | Değiştirilmedi (varsayılan korunuyor), **test edilmedi** |
+| 5. Ctrl+C kesme davranışı korunur | Değiştirilmedi (varsayılan korunuyor); statik test `^C` bağlanmadığını denetler; **terminalde test edilmedi** |
 | 6. Logo çıktısı gerçek terminalde doğru renklerle çizilir | `docs/assets/alpbahOS-neofetch-ansi.txt` referansı var, **gerçek terminal doğrulaması yapılmadı** |
 
 ## Entegrasyon notu

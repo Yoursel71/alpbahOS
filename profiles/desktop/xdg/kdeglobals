@@ -4,3 +4,17 @@
 # (startplasma ilk oturumda ~/.config/kdedefaults altına yazar).
 [KDE]
 LookAndFeelPackage=org.alpbahos.solid.desktop
+
+# Yazı tipleri (profiles/desktop/tokens.json typography). KDE varsayılanı "Noto Sans"
+# imajda yok; fontconfig yedeği Gen2'de tırnaklı bir yazı tipine düştü (29 Eylül).
+# Look-and-feel defaults yerine burada: Plasma 6.4.4 LookAndFeelManager font bayrağını
+# yanlış grupta arıyor (lookandfeelmanager.cpp:141, kdeglobals/WM font), paket fontları uygulanmaz.
+[General]
+fixed=JetBrains Mono,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
+font=Inter,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
+menuFont=Inter,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
+smallestReadableFont=Inter,8,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
+toolBarFont=Inter,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
+
+[WM]
+activeFont=Inter,10,-1,5,600,0,0,0,0,0,0,0,0,0,0,1

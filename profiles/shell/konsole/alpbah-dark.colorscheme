@@ -60,5 +60,5 @@ Color=244,248,251
 Description=alpbahOS Dark
 Opacity=1
 Wallpaper=
-# Taslak — Konsole içine içe aktarma testi çalıştırılmadı.
+# Gen2 Konsole'da uygulandığı görüldü (29 Eylül 2026: terminal zemini 11,16,20).
 # Kaynak: docs/alpbahOS-design-mockups.md §3.1 / profiles/desktop/tokens.json
