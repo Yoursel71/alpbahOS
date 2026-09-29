@@ -1,0 +1,70 @@
+--- a/scripts/packagekit/alpBackend.py
++++ b/scripts/packagekit/alpBackend.py
+@@ -45,10 +45,12 @@
+     def _name(self, package_id: str) -> str:
+         return split_package_id(package_id)[0] if ";" in package_id else package_id
+ 
+-    def _id(self, name: str) -> str:
+-        # Catalog entries do not promise a binary version or architecture.
+-        # Keep the PackageKit ID stable until the catalog schema supplies both.
+-        return get_package_id(name, "0", "all", "alp")
++    def _id(self, name: str, version: str | None = None) -> str:
++        # The PackageKit ID carries the version. `alp info` and `alp --json
++        # search` report it (recipe version, or the installed one); "0" only
++        # when the catalog cannot say. Architecture stays "all": entries do
++        # not promise one.
++        return get_package_id(name, version or "0", "all", "alp")
+ 
+     def _info(self, name: str) -> dict | None:
+         proc = self._run("--json", "info", name)
+@@ -61,11 +63,12 @@
+         if proc.returncode not in (0, 1):
+             self.error(ERROR_INTERNAL_ERROR, proc.stderr.strip() or "alp search failed")
+             return
+-        installed = {item.get("name") for item in self._installed()}
++        installed = {item.get("name"): item.get("version") for item in self._installed()}
+         for item in json.loads(proc.stdout or "[]"):
+             name = item["name"]
+             info = INFO_INSTALLED if name in installed else INFO_AVAILABLE
+-            self.package(self._id(name), info, item.get("description", ""))
++            version = installed.get(name) or item.get("version")
++            self.package(self._id(name, version), info, item.get("description", ""))
+ 
+     def resolve(self, filters, values):
+         for value in values:
+@@ -75,7 +78,7 @@
+                 self.error(ERROR_PACKAGE_NOT_FOUND, name, exit=False)
+                 continue
+             status = INFO_INSTALLED if info.get("status") == "installed" else INFO_AVAILABLE
+-            self.package(self._id(name), status, info.get("description", ""))
++            self.package(self._id(name, info.get("version")), status, info.get("description", ""))
+ 
+     def get_details(self, package_ids):
+         for package_id in package_ids:
+@@ -84,13 +87,23 @@
+             if info is None:
+                 self.error(ERROR_PACKAGE_NOT_FOUND, name, exit=False)
+                 continue
++            size = info.get("size")
++            download_size = size if isinstance(size, int) and not isinstance(size, bool) else None
+             self.details(
+-                self._id(name),
++                self._id(name, info.get("version")),
+                 info.get("description", name),
+-                "unknown",
++                info.get("license", "unknown"),
+                 GROUP_OTHER,
+                 info.get("description", ""),
+-                "",
++                info.get("homepage", ""),
++                # Installed size: a recipe is built from source, so it cannot
++                # be known before the build. None leaves PackageKit's
++                # "unknown" (MAXUINT64), which Discover renders as
++                # "16.0 EiB"; how to show unknown is an open UI decision.
++                None,
++                # The catalog's `size` is the download size (alp --json
++                # --dry-run reports it as download_size); only when stated.
++                download_size,
+             )
+ 
+     def refresh_cache(self, force):

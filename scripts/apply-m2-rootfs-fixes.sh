@@ -4,8 +4,12 @@ trap 'printf "FAILED line %s: %s\n" "$LINENO" "$BASH_COMMAND" >&2' ERR
 
 # Run on Builder as root. The only target is the authoritative LFS rootfs.
 ROOTFS=/mnt/lfs
-ALP_SOURCE=${1:?Pass the alp.py extracted from commit e8b0376}
-EXPECTED_ALP=7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132
+ALP_SOURCE=${1:?Pass the alp.py whose SHA-256 is EXPECTED_ALP (default: commit e8b0376)}
+# Pinned alp.py for this rootfs. Override when the integrator has installed a
+# newer, tested alp.py; never let this script silently swap it back.
+EXPECTED_ALP=${EXPECTED_ALP:-7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132}
+# ALP_REPLACE=1 explicitly allows replacing a rootfs alp.py whose hash differs.
+ALP_REPLACE=${ALP_REPLACE:-0}
 DBUS_ARCHIVE=$ROOTFS/sources/dbus-1.16.2.tar.xz
 EXPECTED_DBUS_ARCHIVE=0ba2a1a4b16afe7bceb2c07e9ce99a8c2c3508e5dec290dbb643384bd6beb7e2
 
@@ -36,14 +40,24 @@ tar -xOf "$DBUS_ARCHIVE" dbus-1.16.2/bus/systemd-user/dbus.service.in \
     | sed -e 's|@EXPANDED_BINDIR@|/usr/bin|g' -e 's|@SYSTEMCTL@|/usr/bin/systemctl|g' > "$tmp_service"
 tar -xOf "$DBUS_ARCHIVE" dbus-1.16.2/bus/systemd-user/dbus.socket.in \
     | sed -e 's|@SYSTEMCTL@|/usr/bin/systemctl|g' > "$tmp_socket"
-! grep -q '@[A-Z_]*@' "$tmp_service" "$tmp_socket"
+if grep -q '@[A-Z_]*@' "$tmp_service" "$tmp_socket"; then
+    echo 'dbus user unit şablonunda açılmamış @...@ yer tutucusu kaldı' >&2
+    exit 1
+fi
 install -o 0 -g 0 -m 0644 "$tmp_service" "$ROOTFS/usr/lib/systemd/user/dbus.service"
 install -o 0 -g 0 -m 0644 "$tmp_socket" "$ROOTFS/usr/lib/systemd/user/dbus.socket"
 rm -f -- "$tmp_service" "$tmp_socket"
 
 target="$ROOTFS/usr/lib/alp/alp.py"
-if [[ $(sha256sum "$target" | cut -d' ' -f1) != "$EXPECTED_ALP" ]]; then
-    cp -a "$target" "$ROOTFS/tmp/alp-logs/alp.py.before-e8b0376"
+current_alp=$(sha256sum "$target" | cut -d' ' -f1)
+if [[ $current_alp != "$EXPECTED_ALP" ]]; then
+    if [[ $ALP_REPLACE != 1 ]]; then
+        echo "rootfs alp.py SHA-256 $current_alp, beklenen $EXPECTED_ALP. Yetkili rootfs'teki alp sessizce değiştirilmez." >&2
+        echo "Rootfs'e daha yeni bir alp kurulduysa EXPECTED_ALP=<onun SHA-256'sı> ve ALP_SOURCE=<o dosya> verin;" >&2
+        echo "bilinçli olarak $EXPECTED_ALP sürümüne geçmek için ALP_REPLACE=1 verin." >&2
+        exit 1
+    fi
+    cp -a "$target" "$ROOTFS/tmp/alp-logs/alp.py.before-$EXPECTED_ALP"
     install -o 0 -g 0 -m 0755 "$ALP_SOURCE" "$target"
 fi
 

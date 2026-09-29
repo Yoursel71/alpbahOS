@@ -68,7 +68,10 @@ trap 'status=$?; echo "FAILED line $LINENO status $status: $BASH_COMMAND" >&2; e
 check_alp_invariants
 [[ -z $(pgrep -x make || true) && -z $(pgrep -x ninja || true) && -z $(pgrep -x cmake || true) ]]
 for target in "$LFS/dev" "$LFS/dev/pts" "$LFS/proc" "$LFS/sys" "$LFS/run"; do
-    ! mountpoint -q "$target"
+    if mountpoint -q "$target"; then
+        echo "önceden bağlı: $target -- başka bir chroot oturumu açık olabilir" >&2
+        exit 1
+    fi
 done
 
 mkdir -p /mnt/lfs/build /mnt/lfs/tmp/alp-logs

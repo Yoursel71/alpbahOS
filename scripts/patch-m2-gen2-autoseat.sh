@@ -3,6 +3,7 @@
 #  - passwordless sudo for sa/admin (test accounts)
 #  - tty1 autologin as admin (real seat0 session)
 #  - admin login shell starts Plasma Wayland once per boot when /etc/alp-autostart-plasma exists
+#    (marker in $XDG_RUNTIME_DIR: /run itself is root-only, admin cannot create files there)
 # Never touches /mnt/lfs. VM must be stopped.
 set -Eeuo pipefail
 trap 'echo "FAILED at line $LINENO: $BASH_COMMAND" >&2' ERR
@@ -12,6 +13,9 @@ WORK=$(mktemp -d /tmp/claude-autoseat.XXXXXX); MOUNT=$WORK/root; ATTACHED=0; MOU
 cleanup() { set +e; ((MOUNTED)) && umount "$MOUNT"; ((ATTACHED)) && qemu-nbd --disconnect "$NBD" >/dev/null 2>&1; rm -rf -- "$WORK"; }
 trap cleanup EXIT
 [[ $EUID -eq 0 ]] || { echo 'Run as root.' >&2; exit 1; }
+case "$IMG" in
+    */artifacts/*) echo "Refusing to patch an artifact in place: $IMG (patch a copy)." >&2; exit 1 ;;
+esac
 [[ ! -s /sys/block/nbd0/pid ]] || { echo "$NBD busy" >&2; exit 1; }
 modprobe nbd max_part=8
 qemu-nbd --connect="$NBD" --format=vhdx "$IMG"; ATTACHED=1
@@ -31,8 +35,8 @@ INNER
 
 cat > "$MOUNT/home/admin/.bash_profile" <<'INNER'
 export PATH=/opt/kf6/bin:$PATH
-if [ "$(tty)" = /dev/tty1 ] && [ -e /etc/alp-autostart-plasma ] && [ ! -e /run/alp-plasma-tried ]; then
-    : > /run/alp-plasma-tried
+marker="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/alp-plasma-tried"
+if [ "$(tty)" = /dev/tty1 ] && [ -e /etc/alp-autostart-plasma ] && [ ! -e "$marker" ] && : > "$marker"; then
     exec /opt/kf6/bin/startplasma-wayland > /var/tmp/alp-plasma-autostart.log 2>&1
 fi
 INNER

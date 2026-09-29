@@ -78,6 +78,7 @@ class Paths:
     cache_dir: Path
     keep_build: bool = False  # --keep-build: leave build/destdir trees in the cache
     relocate: bool = False  # --relocate: build recipes for <root>/usr instead of /usr
+    progress: object = None  # --progress-fd: text stream for JSON-line progress events
 
     @classmethod
     def resolve(cls, root: str | None) -> "Paths":
@@ -96,6 +97,24 @@ class Paths:
     def ensure(self) -> None:
         for d in (self.state_dir, self.log_dir, self.cache_dir):
             d.mkdir(parents=True, exist_ok=True)
+
+
+def _first_line(exc: BaseException) -> str:
+    text = str(exc)
+    return text.splitlines()[0] if text else type(exc).__name__
+
+
+def _emit(paths: Paths, event: str, **fields) -> None:
+    """One JSON line on the --progress-fd channel (design/packagekit-integration.md §4).
+    Human messages stay on stdout/stderr; a store/PackageKit backend reads
+    only this channel. A closed reader never breaks the transaction."""
+    if paths.progress is None:
+        return
+    try:
+        paths.progress.write(json.dumps({"event": event, **fields}, ensure_ascii=False) + "\n")
+        paths.progress.flush()
+    except (OSError, ValueError):
+        paths.progress = None
 
 
 # --------------------------------------------------------------------------
@@ -323,20 +342,15 @@ def cmd_adopt_base(args: argparse.Namespace, paths: Paths) -> int:
             and existing.get("version") == args.version
         ):
             raise AlpError(f"{args.name} zaten farklı bir kayıtla kurulu; taban sahipliği üzerine yazılmadı.")
-        claims: dict[str, str] = {}
-        for other_name, record in packages.items():
-            if other_name == args.name:
-                continue
-            for rel in [*record.get("files", []), *record.get("symlinks", [])]:
-                claims.setdefault(rel, other_name)
+        claims = _other_owners(db, exclude=args.name)
         files: list[str] = []
         symlinks: list[str] = []
         for rel, entry in manifest["entries"]:
             _verify_base_entry(paths.root, rel, entry)
             if entry["type"] == "directory":
                 continue  # shared parents are validated, never claimed/removable
-            if rel in claims:
-                raise AlpError(f"/{rel} zaten {claims[rel]} paketine ait; sahiplik çakışması.")
+            if _owner_key(rel) in claims:
+                raise AlpError(f"/{rel} zaten {claims[_owner_key(rel)]} paketine ait; sahiplik çakışması.")
             (symlinks if entry["type"] == "symlink" else files).append(rel)
         record = {
             "name": args.name,
@@ -734,14 +748,25 @@ def _walk_staged(staged_root: Path) -> list[tuple[str, str]]:
     return sorted(entries)
 
 
+def _owner_key(rel: str) -> str:
+    """One spelling for ownership lookups. Recipe/core records store
+    "/usr/bin/x" (from _walk_staged) while adopt-base records store
+    "usr/bin/x"; comparing them raw made a path owned by both invisible to
+    both, so adopt-base could claim an alp-installed file and removing
+    that package deleted the protected base file."""
+    return "/" + rel.lstrip("/")
+
+
 def _other_owners(db: dict, exclude: str) -> dict[str, str]:
-    """path -> owning package, for every installed package except `exclude`."""
+    """owner key (see _owner_key) -> owning package, for every installed
+    package except `exclude`. Symlinks count too: adopt-base keeps them out
+    of files[]."""
     owners: dict[str, str] = {}
     for pkg_name, record in db["packages"].items():
         if pkg_name == exclude:
             continue
-        for rel in record.get("files", []):
-            owners.setdefault(rel, pkg_name)
+        for rel in [*record.get("files", []), *record.get("symlinks", [])]:
+            owners.setdefault(_owner_key(rel), pkg_name)
     return owners
 
 
@@ -782,7 +807,7 @@ def _preflight_merge(
         if target.is_dir() and not target.is_symlink():
             problems.append(f"{rel}: pakette dosya, sistemde dizin")
             continue
-        owner = other_owners.get(rel)
+        owner = other_owners.get(_owner_key(rel))
         if owner is not None:
             problems.append(f"{rel}: '{owner}' paketine ait")
         elif rel not in self_owned:
@@ -994,6 +1019,7 @@ def _require_recipe_dependencies(recipe: dict) -> None:
 RECIPE_PREFIX_TOKEN = "@PREFIX@"
 RECIPE_DESTDIR_TOKEN = "@DESTDIR@"
 DEFAULT_RECIPE_PREFIX = "/usr"
+_UNRESOLVED_TOKEN_RE = re.compile(r"@[A-Z][A-Z0-9_]*@")
 
 
 def _recipe_prefix(paths: Paths) -> str:
@@ -1005,9 +1031,15 @@ def _recipe_prefix(paths: Paths) -> str:
     (e.g. ~/.local/share/alp/root) gets binaries that find their own data
     files (fonts, units database, ...) at runtime.
     """
-    if paths.relocate and paths.root != Path("/"):
+    if paths.relocate and not _is_fs_root(paths.root):
         return str(paths.root) + DEFAULT_RECIPE_PREFIX
     return DEFAULT_RECIPE_PREFIX
+
+
+def _is_fs_root(path: Path) -> bool:
+    """True for the filesystem root itself ("/", "//", or "C:\\" on Windows).
+    Comparing against Path("/") missed the spellings Path.resolve() keeps."""
+    return path == Path(path.anchor)
 
 
 def _recipe_steps(recipe: dict, paths: Paths, destdir: str) -> list[list[str]]:
@@ -1023,10 +1055,25 @@ def _recipe_steps(recipe: dict, paths: Paths, destdir: str) -> list[list[str]]:
     make_install = list(build["make_install"])
     if not any(RECIPE_DESTDIR_TOKEN in arg for arg in make_install):
         make_install.append(f"DESTDIR={destdir}")
-    return [
+    steps = [
         [arg.replace(RECIPE_PREFIX_TOKEN, prefix).replace(RECIPE_DESTDIR_TOKEN, destdir) for arg in step]
         for step in (build["configure"], build["make"], make_install)
     ]
+    # The catalog is fetched separately from this engine (`alp update`), so it
+    # can name a placeholder this alp does not know. Left alone, the literal
+    # reaches ./configure ("expected an absolute directory name for --prefix:
+    # @PREFIX@" on an alp that predates @PREFIX@) and fails only after the
+    # download, with a build log to dig through. Refuse before anything runs.
+    for step in steps:
+        for arg in step:
+            unknown = _UNRESOLVED_TOKEN_RE.search(arg)
+            if unknown:
+                raise AlpError(
+                    f"Tarif {recipe.get('name', '?')!r} bu alp sürümünün tanımadığı yer tutucuyu içeriyor: "
+                    f"{unknown.group(0)} (adım: {' '.join(step)}). Katalog bu alp'ten yeni olabilir; "
+                    "alp'i güncelleyin. Hiçbir şey indirilmedi veya derlenmedi."
+                )
+    return steps
 
 
 def _staged_tree(paths: Paths, destdir: Path) -> Path:
@@ -1038,7 +1085,7 @@ def _staged_tree(paths: Paths, destdir: Path) -> Path:
     /etc path hardcoded by the Makefile) cannot be placed under the root
     and is refused rather than silently dropped.
     """
-    if not (paths.relocate and paths.root != Path("/")):
+    if not paths.relocate or _is_fs_root(paths.root):
         return destdir
     staged = destdir / paths.root.relative_to(paths.root.anchor)
     stray = [
@@ -1089,6 +1136,7 @@ def install_recipe(
         }
 
     archive = paths.cache_dir / f"{recipe['name']}-{recipe['version']}.src"
+    _emit(paths, "phase", name=pkg_name or recipe["name"], phase="download", url=recipe["source_url"])
     fetch(source_url, archive, recipe["sha256"])
 
     build_root = paths.cache_dir / f"build-{recipe['name']}-{recipe['version']}"
@@ -1103,7 +1151,8 @@ def install_recipe(
     destdir.mkdir(parents=True)
 
     real_steps = _recipe_steps(recipe, paths, str(destdir))
-    for step in real_steps:
+    for label, step in zip(("configure", "make", "make_install"), real_steps):
+        _emit(paths, "phase", name=pkg_name or recipe["name"], phase="build", step=label)
         binary = step[0]
         if not _tool_available(binary, src_dir):
             raise AlpError(
@@ -1116,6 +1165,7 @@ def install_recipe(
 
     config_files = set(recipe.get("config_files", []))
     db = db if db is not None else load_db(paths)
+    _emit(paths, "phase", name=pkg_name or recipe["name"], phase="merge")
     merged = _merge_staged(
         _staged_tree(paths, destdir), paths.root,
         config_files=config_files, old_record=None,
@@ -1164,6 +1214,7 @@ def upgrade_recipe(
         return {**old_record, "version": recipe["version"], "status": "would-upgrade"}
 
     archive = paths.cache_dir / f"{recipe['name']}-{recipe['version']}.src"
+    _emit(paths, "phase", name=pkg_name or recipe["name"], phase="download", url=recipe["source_url"])
     fetch(source_url, archive, recipe["sha256"])
 
     build_root = paths.cache_dir / f"upgrade-build-{recipe['name']}-{recipe['version']}"
@@ -1179,7 +1230,8 @@ def upgrade_recipe(
 
     log_path = paths.log_dir / f"{recipe['name']}-{recipe['version']}.upgrade.log"
     steps = _recipe_steps(recipe, paths, str(destdir))
-    for step in steps:
+    for label, step in zip(("configure", "make", "make_install"), steps):
+        _emit(paths, "phase", name=pkg_name or recipe["name"], phase="build", step=label)
         binary = step[0]
         if not _tool_available(binary, src_dir):
             raise AlpError(
@@ -1192,6 +1244,7 @@ def upgrade_recipe(
 
     db = db if db is not None else load_db(paths)
     other_owners = _other_owners(db, exclude=pkg_name or recipe["name"])
+    _emit(paths, "phase", name=pkg_name or recipe["name"], phase="merge")
     merged = _merge_staged(
         _staged_tree(paths, destdir), paths.root,
         config_files=config_files, old_record=old_record, other_owners=other_owners, journal=journal,
@@ -1235,7 +1288,11 @@ def _drop_stale_files(
     ships (a renamed binary, a dropped doc file), with the same safety rules
     as removal -- including .alpsave for a user-modified config file the new
     version dropped. Paths another package owns are left alone."""
-    dropped = set(old_record.get("files", [])) - set(new_files) - set(other_owners)
+    kept = {_owner_key(rel) for rel in new_files}
+    dropped = {
+        rel for rel in old_record.get("files", [])
+        if _owner_key(rel) not in kept and _owner_key(rel) not in other_owners
+    }
     if dropped:
         _remove_owned_paths(root, dropped, old_record, dry_run=False, journal=journal)
 
@@ -1319,6 +1376,7 @@ def _stage_core_archive(paths: Paths, entry: dict, index_dir: Path, prefix: str)
     archive can't leave untracked files in the system)."""
     name, version = entry["name"], entry["version"]
     archive = paths.cache_dir / f"{name}-{version}.tar.gz"
+    _emit(paths, "phase", name=name, phase="download", url=entry["url"])
     fetch(resolve_source_url(entry["url"], index_dir), archive, entry["sha256"])
     staged = paths.cache_dir / f"{prefix}-stage-{name}-{version}"
     if staged.exists():
@@ -1354,6 +1412,7 @@ def install_core(
     config_files = set(entry.get("config_files", []))
     db = db if db is not None else load_db(paths)
     staged = _stage_core_archive(paths, entry, index_dir, "install")
+    _emit(paths, "phase", name=pkg_name or name, phase="merge")
     try:
         merged = _merge_staged(
             staged, paths.root,
@@ -1394,6 +1453,7 @@ def upgrade_core(
     db = db if db is not None else load_db(paths)
     other_owners = _other_owners(db, exclude=pkg_name or name)
     staged = _stage_core_archive(paths, entry, index_dir, "upgrade")
+    _emit(paths, "phase", name=pkg_name or name, phase="merge")
     try:
         merged = _merge_staged(
             staged, paths.root,
@@ -1435,7 +1495,7 @@ def remove_package(paths: Paths, db: dict, name: str, dry_run: bool, journal: Fi
         remove_flatpak(pkg["flatpak_ref"], dry_run)
     else:
         other_owners = _other_owners(db, exclude=name)
-        ours = [rel for rel in pkg.get("files", []) if rel not in other_owners]
+        ours = [rel for rel in pkg.get("files", []) if _owner_key(rel) not in other_owners]
         _remove_owned_paths(paths.root, ours, pkg, dry_run, journal=journal)
 
     if not dry_run:
@@ -1452,7 +1512,38 @@ def _fold(text: str) -> str:
     return text.casefold().replace("\u0307", "")
 
 
-def cmd_search(index: dict, term: str, as_json: bool = False) -> int:
+def _entry_metadata(entry: dict, index_dir: Path | None) -> dict:
+    """version/license/homepage/size a store can show for a catalog entry.
+
+    A recipe entry keeps its version (and, optionally, license/homepage) in
+    its recipe file; the entry itself may carry any of them too and wins.
+    `size` is the entry's optional download size in bytes. Every field is
+    optional and never guessed: PackageKit reports "unknown" as MAXUINT64,
+    which Discover prints as "16.0 EiB", so a caller must be able to tell
+    "absent" from a real value. A missing or unreadable recipe file only
+    drops its fields -- it must not break search.
+    """
+    recipe: dict = {}
+    if index_dir is not None and entry.get("method") == "recipe" and isinstance(entry.get("recipe"), str):
+        try:
+            with open(index_dir / entry["recipe"], "r", encoding="utf-8") as f:
+                loaded = json.load(f)
+            if isinstance(loaded, dict):
+                recipe = loaded
+        except (OSError, ValueError):
+            pass
+    meta: dict = {}
+    for key in ("version", "license", "homepage"):
+        value = entry.get(key, recipe.get(key))
+        if isinstance(value, str) and value:
+            meta[key] = value
+    size = entry.get("size")
+    if isinstance(size, int) and not isinstance(size, bool) and size >= 0:
+        meta["size"] = size
+    return meta
+
+
+def cmd_search(index: dict, term: str, as_json: bool = False, index_dir: Path | None = None) -> int:
     needle = _fold(term)
     hits = sorted(
         n for n, entry in index["entries"].items()
@@ -1467,6 +1558,7 @@ def cmd_search(index: dict, term: str, as_json: bool = False) -> int:
             row = {"name": n, "method": index["entries"][n]["method"]}
             if index["entries"][n].get("description"):
                 row["description"] = index["entries"][n]["description"]
+            row.update(_entry_metadata(index["entries"][n], index_dir))
             rows.append(row)
         print(json.dumps(rows, ensure_ascii=False))
         return 0 if hits else 1
@@ -1481,7 +1573,7 @@ def cmd_search(index: dict, term: str, as_json: bool = False) -> int:
     return 0
 
 
-def cmd_info(index: dict, db: dict, name: str) -> int:
+def cmd_info(index: dict, db: dict, name: str, index_dir: Path | None = None) -> int:
     if name in db["packages"]:
         pkg = dict(db["packages"][name])
         pkg["required_by"] = reverse_dependents(index, db["packages"], name)
@@ -1491,7 +1583,8 @@ def cmd_info(index: dict, db: dict, name: str) -> int:
     if entry is None:
         print(f"Bilinmeyen paket: {name}", file=sys.stderr)
         return 1
-    print(json.dumps({"name": name, **entry, "status": "not-installed"}, indent=2, ensure_ascii=False))
+    print(json.dumps({"name": name, **entry, **_entry_metadata(entry, index_dir), "status": "not-installed"},
+                     indent=2, ensure_ascii=False))
     return 0
 
 
@@ -1896,9 +1989,13 @@ def _run_plan(
 ) -> None:
     tag = "[dry-run] " if dry_run else ""
     done: list[str] = []
-    for step in steps:
+    total = len(steps)
+    _emit(paths, "plan", steps=_plan_rows(steps, index))
+    for position, step in enumerate(steps):
         entry = index["entries"][step.name]
         old = db["packages"].get(step.name)
+        _emit(paths, "step", name=step.name, action=step.action, phase="start",
+              index=position + 1, total=total, percentage=round(100 * position / total))
         try:
             if step.action in ("upgrade", "reinstall") and old and old.get("method") == "lfs-base":
                 raise AlpError(f"{step.name} LFS taban paketi; catalog install/reinstall/upgrade ile değiştirilemez.")
@@ -1924,7 +2021,8 @@ def _run_plan(
                 if not dry_run:
                     db["packages"][step.name] = record
                     save_db(paths, db)
-        except Exception:
+        except Exception as exc:
+            _emit(paths, "error", name=step.name, message=_first_line(exc), completed=list(done))
             if not dry_run:
                 # the db file is the truth: drop the in-memory change a failed save left behind
                 db.clear()
@@ -1939,16 +2037,54 @@ def _run_plan(
             raise
         done.append(step.name)
         shown = record.get("version")
+        _emit(paths, "step", name=step.name, action=step.action, phase="done", version=shown,
+              index=position + 1, total=total, percentage=round(100 * (position + 1) / total))
         shown = "" if shown in (None, "unknown") else f" -> {shown}"
         print(f"{tag}{step.name} ({entry['method']}){shown} {_ACTION_DONE[step.action]}.")
+    _emit(paths, "done", completed=list(done))
 
 
-def _plan_or_refuse(index: dict, installed: dict, steps: list[PlanStep]) -> None:
-    guarded_upgrades = sorted(
+def _guarded_steps(installed: dict, steps: list[PlanStep]) -> list[str]:
+    return sorted(
         step.name for step in steps
         if step.action in ("upgrade", "reinstall")
         and (installed.get(step.name) or {}).get("method") == "lfs-base"
     )
+
+
+def _plan_rows(steps: list[PlanStep], index: dict) -> list[dict]:
+    """Machine-readable plan rows (store/PackageKit: show before confirming,
+    MASTER_PLAN §5.3). `download_size` is the catalog's optional `size` field
+    in bytes; null when the catalog does not say (the size is never guessed)."""
+    rows = []
+    for s in steps:
+        entry = index["entries"].get(s.name, {})
+        size = entry.get("size")
+        rows.append({
+            "action": s.action, "name": s.name, "old_version": s.old_version,
+            "new_version": s.new_version, "method": entry.get("method"), "reason": s.reason,
+            "download_size": size if isinstance(size, int) and not isinstance(size, bool) else None,
+        })
+    return rows
+
+
+def _print_plan_json(command: str, rows: list[dict], problems: list[str], **extra) -> int:
+    """--json --dry-run: the plan as one JSON object on stdout, nothing changed.
+    Exit 1 when the transaction would be refused (problems non-empty)."""
+    sizes = [r["download_size"] for r in rows if r["action"] != "remove"]
+    total = sum(sizes) if sizes and all(isinstance(x, int) for x in sizes) else None
+    print(json.dumps({"command": command, "steps": rows, "problems": problems,
+                      "download_size_total": total, **extra}, ensure_ascii=False))
+    return 1 if problems else 0
+
+
+def _plan_problems(index: dict, installed: dict, steps: list[PlanStep]) -> list[str]:
+    guarded = [f"{n}: LFS taban paketi; catalog ile değiştirilemez" for n in _guarded_steps(installed, steps)]
+    return guarded + state_problems(index, installed, steps)
+
+
+def _plan_or_refuse(index: dict, installed: dict, steps: list[PlanStep]) -> None:
+    guarded_upgrades = _guarded_steps(installed, steps)
     if guarded_upgrades:
         raise AlpError(
             "LFS taban paketleri catalog install/reinstall/upgrade ile değiştirilemez: "
@@ -1982,6 +2118,9 @@ def cmd_install(args: argparse.Namespace, paths: Paths, index: dict, index_dir: 
             mode="install", reinstall=getattr(args, "reinstall", False),
         )
 
+        if getattr(args, "json", False) and args.dry_run:
+            return _print_plan_json("install", _plan_rows(steps, index),
+                                    _plan_problems(index, installed, steps), already_installed=not steps)
         if not steps:
             record = installed[args.name]
             if record.get("reason") == "dependency" and not args.dry_run:
@@ -2060,6 +2199,9 @@ def cmd_upgrade(args: argparse.Namespace, paths: Paths, index: dict, index_dir: 
             targets, kept = _drop_kept_back(index, index_dir, installed, targets)
 
         steps = plan_transaction(index, index_dir, installed, targets, mode="upgrade")
+        if getattr(args, "json", False) and args.dry_run:
+            return _print_plan_json("upgrade", _plan_rows(steps, index),
+                                    _plan_problems(index, installed, steps), kept_back=[] if name else kept)
         if not steps:
             if name:
                 print(f"{name} zaten güncel ({installed[name]['version']}).")
@@ -2078,18 +2220,25 @@ def cmd_upgrade(args: argparse.Namespace, paths: Paths, index: dict, index_dir: 
 
 def _remove_many(order: list[str], paths: Paths, db: dict, dry_run: bool) -> None:
     tag = "[dry-run] " if dry_run else ""
-    for name in order:
+    total = len(order)
+    for position, name in enumerate(order):
+        _emit(paths, "step", name=name, action="remove", phase="start",
+              index=position + 1, total=total, percentage=round(100 * position / total))
         try:
             with _maybe_transaction(paths, f"remove-{name}", dry_run) as journal:
                 remove_package(paths, db, name, dry_run, journal=journal)
                 if not dry_run:
                     save_db(paths, db)
-        except Exception:
+        except Exception as exc:
+            _emit(paths, "error", name=name, message=_first_line(exc), completed=list(order[:position]))
             if not dry_run:
                 db.clear()
                 db.update(load_db(paths))
             raise
+        _emit(paths, "step", name=name, action="remove", phase="done",
+              index=position + 1, total=total, percentage=round(100 * (position + 1) / total))
         print(f"{tag}{name} kaldırıldı.")
+    _emit(paths, "done", completed=list(order))
 
 
 def cmd_remove(args: argparse.Namespace, paths: Paths, index: dict | None = None) -> int:
@@ -2102,6 +2251,11 @@ def cmd_remove(args: argparse.Namespace, paths: Paths, index: dict | None = None
         if args.name not in installed:
             raise AlpError(f"Kurulu değil: {args.name}")
         order = plan_remove(index, installed, [args.name], cascade=getattr(args, "cascade", False))
+        if getattr(args, "json", False) and args.dry_run:
+            rows = [{"action": "remove", "name": n, "old_version": installed[n].get("version"),
+                     "new_version": None, "method": installed[n].get("method"),
+                     "reason": installed[n].get("reason", "explicit"), "download_size": None} for n in order]
+            return _print_plan_json("remove", rows, [], orphans_after=find_orphans(index, installed, set(order)))
         if len(order) > 1:
             print("Birlikte kaldırılacak (önce bağımlı olanlar): " + ", ".join(order))
             if not args.dry_run and not _confirm("Devam edilsin mi?", getattr(args, "yes", False)):
@@ -2476,6 +2630,12 @@ def developer_help() -> str:
   --relocate        Tarifleri --root altında çalışacak şekilde derle
                     (@PREFIX@ = <root>/usr); başka dağıtımda kullanıcı kökü için
 
+  --progress-fd N   İlerlemeyi N numaralı dosya tanıtıcısına satır başına bir JSON
+                    olay olarak yaz (plan, step, phase, error, done); mağaza ve
+                    PackageKit arka ucu içindir
+  --json --dry-run  install/upgrade/remove işlem planını tek JSON nesnesi olarak
+                    ver; hiçbir şey değişmez (işlem reddedilecekse çıkış 1)
+
   adopt-base        Önceden kurulmuş LFS dosyalarını korumalı paket olarak kaydet
                     (ayrıntı: alp adopt-base --help)
 
@@ -2555,12 +2715,14 @@ def build_parser() -> argparse.ArgumentParser:
         g.add_argument("--dry-run", action="store_true", default=default,
                        help="Ne yapılacağını göster, hiçbir şeyi değiştirme")
         g.add_argument("--json", action="store_true", default=default,
-                       help="search/list çıktısını JSON olarak ver (info her zaman JSON)")
+                       help="search/list çıktısını ve --dry-run işlem planını JSON olarak ver (info her zaman JSON)")
         g.add_argument("--keep-build", action="store_true", default=default,
                        help="Başarılı kurulumdan sonra derleme dosyalarını silme")
         g.add_argument("--root", default=None if default is False else default, help=argparse.SUPPRESS)
         g.add_argument("--index", default=None if default is False else default, help=argparse.SUPPRESS)
         g.add_argument("--relocate", action="store_true", default=default, help=argparse.SUPPRESS)
+        g.add_argument("--progress-fd", type=int, default=None if default is False else default,
+                       help=argparse.SUPPRESS)
 
     global_options(p, False)
     common = _AlpArgumentParser(add_help=False)
@@ -2658,16 +2820,22 @@ def main(argv: list[str] | None = None) -> int:
         index_dir = index_path.parent
         index = load_index(index_path)
         if args.command == "search":
-            return cmd_search(index, args.term, as_json=args.json)
+            return cmd_search(index, args.term, as_json=args.json, index_dir=index_dir)
         if args.command == "info":
             paths.ensure()
             db = load_db(paths)
-            return cmd_info(index, db, args.name)
+            return cmd_info(index, db, args.name, index_dir=index_dir)
         if args.command == "list":
             paths.ensure()
             return cmd_list(load_db(paths), as_json=args.json)
         paths.keep_build = getattr(args, "keep_build", False)
         paths.relocate = getattr(args, "relocate", False)
+        progress_fd = getattr(args, "progress_fd", None)
+        if progress_fd is not None:
+            try:
+                paths.progress = os.fdopen(progress_fd, "w", encoding="utf-8", buffering=1, closefd=False)
+            except OSError as exc:
+                raise AlpError(f"--progress-fd {progress_fd} açılamadı: {exc}") from exc
         if args.command == "update":
             return cmd_update(args, paths, index_path, index)
         if args.command == "recover":
