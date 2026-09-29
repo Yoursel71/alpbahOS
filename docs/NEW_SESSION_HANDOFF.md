@@ -123,19 +123,20 @@ Bu maddeler gerçek grafik masaüstünün açıldığını göstermez (24 Eylül
 
 ## 9. Açık kapılar (29 Eylül 2026 güncellemesi)
 
-**M07 kapandı (25 Eylül 2026):** Gen2 `runtimefix` test imajında admin seat0/tty1 oturumu aktif, KWin/plasmashell/kactivitymanagerd çalışıyor; duvar kâğıdı ve alt panel ekran görüntüsüyle doğrulandı ([kanıt](verification/m07-gen2-plasma-session-bringup-2026-09-25.md), `docs/WORKLOG.md` 25 Eylül). Kalan uyarılar: KWin render-node (wl-drm), Kickoff için Kirigami Addons, klavye düzeni ve ses applet'lerinin özel modülleri, UDisks2 yok.
+**M07'nin görsel masaüstü/panel kapısı geçti (25 Eylül 2026); resmî M07 kapanışı açık:** Gen2 `runtimefix` test imajında admin seat0/tty1 oturumu aktif, KWin/plasmashell/kactivitymanagerd çalışıyor; duvar kâğıdı ve alt panel ekran görüntüsüyle doğrulandı ([kanıt](verification/m07-gen2-plasma-session-bringup-2026-09-25.md), `docs/WORKLOG.md` 25 Eylül). Kalan uyarılar: KWin render-node (wl-drm), Kickoff için Kirigami Addons, klavye düzeni ve ses applet'lerinin özel modülleri, UDisks2 yok.
 
 **Şu an açık olanlar** (ayrıntı `CURRENT.md` 29 Eylül özeti ve tablo):
 
-1. M08: dosya düzeyinde hazır profillerin gerçek oturumda doğrulanması (gerçek oturum düzeltmeleri `claude/m08-live-fixes` dalında sürüyor).
-2. M09 kabulü: unprivileged live kullanıcı/oturum politikası, M08 ve D34/79 paket sahiplik defteri kapıları.
-3. M10 (başladı): düzeltilmiş `alp`'in rootfs'e kurulup matrisin yeniden koşulması ("M08 kurulum/kaldırma" `@PREFIX@` hatasıyla BLOCKED idi, 019).
-4. M04 tam sahiplik defteri (D34, M09'a ertelendi).
-5. Ortam: Hyper-V'nin ürün test hedefi olarak sürüp sürmediği (`docs/DECISIONS.md`, D36 sonrası açık karar).
+1. M07 resmî kapanışı: temel uygulamalar (Konsole, Dolphin, systemsettings, tarayıcı) Gen2 imajında yok; Kickoff/klavye düzeni/ses applet modülleri ve KWin render-node uyarısı açık.
+2. M08: dosya düzeyinde hazır profillerin gerçek oturumda doğrulanması (gerçek oturum düzeltmeleri `claude/m08-live-fixes` dalında sürüyor).
+3. M09 kabulü: unprivileged live kullanıcı/oturum politikası, M08 ve D34/79 paket sahiplik defteri kapıları.
+4. M10 (başladı): düzeltilmiş `alp`'in rootfs'e kurulup matrisin yeniden koşulması ("M08 kurulum/kaldırma" `@PREFIX@` hatasıyla BLOCKED idi, 019).
+5. M04 tam sahiplik defteri (D34, M09'a ertelendi).
+6. Ortam: Hyper-V'nin ürün test hedefi olarak sürüp sürmediği (`docs/DECISIONS.md`, D36 sonrası açık karar).
 
 Her işte önce hedef VM/imajı ve durumunu yeniden doğrula; SSH oturumu DRM master/aktif seat sağlamaz, `sa` SSH'den `startplasma-wayland` denemesi geçerli değildir.
 
-### Eski metin (24 Eylül 2026; M07 kapısı 25 Eylül'de kapandı)
+### Eski metin (24 Eylül 2026; tty1/seat0 kapısı 25 Eylül'de geçti)
 
 M07 hâlâ açık: çalışan Gen2 test VM'inde VMConnect `tty1` üzerinden `admin/admin` ile gerçek konsol girişi yapılmalı; SSH'den `loginctl` ile `seat0`, `Type=tty`, aktif PAM/systemd oturumu doğrulanmalı; bundan sonra gerçek KWin/Plasma Wayland başlatılıp görüntü alınmalıdır. `sa` SSH oturumu DRM master/aktif seat sağlamaz; SSH üzerinden `startplasma-wayland` denemesi geçerli değildir. Kullanıcıdan yalnız konsolda giriş yapması istendi, komut çalıştırması istenmedi. Bu giriş henüz doğrulanmadı.
 
