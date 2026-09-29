@@ -71,7 +71,9 @@ def env(tmp_path: Path):
 
 def test_alp_search_finds_real_entry(env):
     hits = pkb.alp_search(ALP_PY, env["root"], env["index"], "the")
-    assert hits == [{"name": "theme", "method": "core"}]
+    # `version` is additive: a store needs it for the PackageKit package id
+    # (Discover showed "Version: 0" while the catalog knew the real one).
+    assert hits == [{"name": "theme", "method": "core", "version": "1.0.0"}]
 
 
 def test_alp_search_no_hits_returns_empty_list_not_error(env):

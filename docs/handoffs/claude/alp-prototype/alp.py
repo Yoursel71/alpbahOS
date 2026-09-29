@@ -1019,6 +1019,7 @@ def _require_recipe_dependencies(recipe: dict) -> None:
 RECIPE_PREFIX_TOKEN = "@PREFIX@"
 RECIPE_DESTDIR_TOKEN = "@DESTDIR@"
 DEFAULT_RECIPE_PREFIX = "/usr"
+_UNRESOLVED_TOKEN_RE = re.compile(r"@[A-Z][A-Z0-9_]*@")
 
 
 def _recipe_prefix(paths: Paths) -> str:
@@ -1054,10 +1055,25 @@ def _recipe_steps(recipe: dict, paths: Paths, destdir: str) -> list[list[str]]:
     make_install = list(build["make_install"])
     if not any(RECIPE_DESTDIR_TOKEN in arg for arg in make_install):
         make_install.append(f"DESTDIR={destdir}")
-    return [
+    steps = [
         [arg.replace(RECIPE_PREFIX_TOKEN, prefix).replace(RECIPE_DESTDIR_TOKEN, destdir) for arg in step]
         for step in (build["configure"], build["make"], make_install)
     ]
+    # The catalog is fetched separately from this engine (`alp update`), so it
+    # can name a placeholder this alp does not know. Left alone, the literal
+    # reaches ./configure ("expected an absolute directory name for --prefix:
+    # @PREFIX@" on an alp that predates @PREFIX@) and fails only after the
+    # download, with a build log to dig through. Refuse before anything runs.
+    for step in steps:
+        for arg in step:
+            unknown = _UNRESOLVED_TOKEN_RE.search(arg)
+            if unknown:
+                raise AlpError(
+                    f"Tarif {recipe.get('name', '?')!r} bu alp sürümünün tanımadığı yer tutucuyu içeriyor: "
+                    f"{unknown.group(0)} (adım: {' '.join(step)}). Katalog bu alp'ten yeni olabilir; "
+                    "alp'i güncelleyin. Hiçbir şey indirilmedi veya derlenmedi."
+                )
+    return steps
 
 
 def _staged_tree(paths: Paths, destdir: Path) -> Path:
@@ -1496,7 +1512,38 @@ def _fold(text: str) -> str:
     return text.casefold().replace("\u0307", "")
 
 
-def cmd_search(index: dict, term: str, as_json: bool = False) -> int:
+def _entry_metadata(entry: dict, index_dir: Path | None) -> dict:
+    """version/license/homepage/size a store can show for a catalog entry.
+
+    A recipe entry keeps its version (and, optionally, license/homepage) in
+    its recipe file; the entry itself may carry any of them too and wins.
+    `size` is the entry's optional download size in bytes. Every field is
+    optional and never guessed: PackageKit reports "unknown" as MAXUINT64,
+    which Discover prints as "16.0 EiB", so a caller must be able to tell
+    "absent" from a real value. A missing or unreadable recipe file only
+    drops its fields -- it must not break search.
+    """
+    recipe: dict = {}
+    if index_dir is not None and entry.get("method") == "recipe" and isinstance(entry.get("recipe"), str):
+        try:
+            with open(index_dir / entry["recipe"], "r", encoding="utf-8") as f:
+                loaded = json.load(f)
+            if isinstance(loaded, dict):
+                recipe = loaded
+        except (OSError, ValueError):
+            pass
+    meta: dict = {}
+    for key in ("version", "license", "homepage"):
+        value = entry.get(key, recipe.get(key))
+        if isinstance(value, str) and value:
+            meta[key] = value
+    size = entry.get("size")
+    if isinstance(size, int) and not isinstance(size, bool) and size >= 0:
+        meta["size"] = size
+    return meta
+
+
+def cmd_search(index: dict, term: str, as_json: bool = False, index_dir: Path | None = None) -> int:
     needle = _fold(term)
     hits = sorted(
         n for n, entry in index["entries"].items()
@@ -1511,6 +1558,7 @@ def cmd_search(index: dict, term: str, as_json: bool = False) -> int:
             row = {"name": n, "method": index["entries"][n]["method"]}
             if index["entries"][n].get("description"):
                 row["description"] = index["entries"][n]["description"]
+            row.update(_entry_metadata(index["entries"][n], index_dir))
             rows.append(row)
         print(json.dumps(rows, ensure_ascii=False))
         return 0 if hits else 1
@@ -1525,7 +1573,7 @@ def cmd_search(index: dict, term: str, as_json: bool = False) -> int:
     return 0
 
 
-def cmd_info(index: dict, db: dict, name: str) -> int:
+def cmd_info(index: dict, db: dict, name: str, index_dir: Path | None = None) -> int:
     if name in db["packages"]:
         pkg = dict(db["packages"][name])
         pkg["required_by"] = reverse_dependents(index, db["packages"], name)
@@ -1535,7 +1583,8 @@ def cmd_info(index: dict, db: dict, name: str) -> int:
     if entry is None:
         print(f"Bilinmeyen paket: {name}", file=sys.stderr)
         return 1
-    print(json.dumps({"name": name, **entry, "status": "not-installed"}, indent=2, ensure_ascii=False))
+    print(json.dumps({"name": name, **entry, **_entry_metadata(entry, index_dir), "status": "not-installed"},
+                     indent=2, ensure_ascii=False))
     return 0
 
 
@@ -2771,11 +2820,11 @@ def main(argv: list[str] | None = None) -> int:
         index_dir = index_path.parent
         index = load_index(index_path)
         if args.command == "search":
-            return cmd_search(index, args.term, as_json=args.json)
+            return cmd_search(index, args.term, as_json=args.json, index_dir=index_dir)
         if args.command == "info":
             paths.ensure()
             db = load_db(paths)
-            return cmd_info(index, db, args.name)
+            return cmd_info(index, db, args.name, index_dir=index_dir)
         if args.command == "list":
             paths.ensure()
             return cmd_list(load_db(paths), as_json=args.json)
