@@ -1,7 +1,7 @@
 #!/bin/bash
 # install-desktop-profile.sh -- alpbahOS M08 masaüstü profilini bir kök dizine kurar.
 #
-# Kurulanlar (DATADIR varsayılanı /usr/share, SYSCONFDIR varsayılanı /etc):
+# Kurulanlar (DATADIR varsayılanı /usr/share, SYSCONFDIR varsayılanı /etc, FONTCONFDIR varsayılanı /etc/fonts/conf.d):
 #   DATADIR/plasma/look-and-feel/org.alpbahos.solid.desktop/   look-and-feel paketi
 #   DATADIR/color-schemes/AlpbahDark.colors                   renk şeması (dosya adı = şema kimliği)
 #   DATADIR/wallpapers/alpbahOS-Ataturk/                      Atatürk duvar kâğıdı paketi
@@ -13,7 +13,8 @@
 #   BINDIR/alpbah-oturum-hazirla                              kısayol profilini kullanıcıya işler (0755)
 #   BINDIR/alpbah-gorunum                                     Solid/Glass geçiş aracı (0755)
 #   SYSCONFDIR/xdg/mimeapps.list                              varsayılan uygulamalar (profiles/apps/)
-#   SYSCONFDIR/fonts/conf.d/59-alpbahos-fonts.conf            fontconfig: sans-serif/monospace -> Inter/JetBrains Mono
+#   FONTCONFDIR/59-alpbahos-fonts.conf                        fontconfig: sans-serif/monospace -> Inter/JetBrains Mono
+#     (fontconfig yalnız kendi dizinini okur; --sysconfdir /opt/kf6/etc verilse de /etc/fonts/conf.d kalır)
 #   DATADIR/konsole/alpbahOS.profile, alpbah-dark.colorscheme Konsole profili ve renk şeması (profiles/shell/)
 #   SYSCONFDIR/xdg/konsolerc                                  Konsole varsayılan profili: alpbahOS.profile
 #
@@ -38,6 +39,7 @@ DESTDIR=""
 DATADIR="/usr/share"
 SYSCONFDIR="/etc"
 BINDIR="/usr/bin"
+FONTCONFDIR="/etc/fonts/conf.d"
 MANIFEST=""
 FORCE=0
 ALLOW_LIVE_ROOT=0
@@ -53,6 +55,7 @@ while [ $# -gt 0 ]; do
         --datadir) DATADIR="${2:?--datadir değer ister}"; shift 2 ;;
         --sysconfdir) SYSCONFDIR="${2:?--sysconfdir değer ister}"; shift 2 ;;
         --bindir) BINDIR="${2:?--bindir değer ister}"; shift 2 ;;
+        --fontconfdir) FONTCONFDIR="${2:?--fontconfdir değer ister}"; shift 2 ;;
         --manifest) MANIFEST="${2:?--manifest değer ister}"; shift 2 ;;
         --force) FORCE=1; shift ;;
         --allow-live-root) ALLOW_LIVE_ROOT=1; shift ;;
@@ -75,12 +78,13 @@ if [ "$DESTDIR" = "/" ] && [ "$ALLOW_LIVE_ROOT" -ne 1 ]; then
     echo "HATA: hedef kök '/' -- canlı sisteme kurulum için --allow-live-root gerekir" >&2
     exit 2
 fi
-case "$DATADIR$SYSCONFDIR$BINDIR" in
-    *..*) echo "HATA: --datadir/--sysconfdir/--bindir '..' içeremez" >&2; exit 2 ;;
+case "$DATADIR$SYSCONFDIR$BINDIR$FONTCONFDIR" in
+    *..*) echo "HATA: --datadir/--sysconfdir/--bindir/--fontconfdir '..' içeremez" >&2; exit 2 ;;
 esac
 case "$BINDIR" in /*) ;; *) echo "HATA: --bindir mutlak yol olmalı" >&2; exit 2 ;; esac
 case "$DATADIR" in /*) ;; *) echo "HATA: --datadir mutlak yol olmalı" >&2; exit 2 ;; esac
 case "$SYSCONFDIR" in /*) ;; *) echo "HATA: --sysconfdir mutlak yol olmalı" >&2; exit 2 ;; esac
+case "$FONTCONFDIR" in /*) ;; *) echo "HATA: --fontconfdir mutlak yol olmalı" >&2; exit 2 ;; esac
 
 # Kaynaklar güncel mi? Üretilmiş kısayol dosyası tek kaynakla eşleşmeli.
 PYTHON="${PYTHON:-python3}"
@@ -112,7 +116,7 @@ PAIRS+=("$REPO/profiles/desktop/xdg/plasma-workspace/env/alpbahos-oturum.sh|$SYS
 PAIRS+=("$REPO/profiles/desktop/bin/alpbah-oturum-hazirla|$BINDIR/alpbah-oturum-hazirla")
 PAIRS+=("$REPO/profiles/desktop/bin/alpbah-gorunum|$BINDIR/alpbah-gorunum")
 PAIRS+=("$REPO/profiles/apps/generated/mimeapps.list|$SYSCONFDIR/xdg/mimeapps.list")
-PAIRS+=("$REPO/profiles/desktop/fontconfig/59-alpbahos-fonts.conf|$SYSCONFDIR/fonts/conf.d/59-alpbahos-fonts.conf")
+PAIRS+=("$REPO/profiles/desktop/fontconfig/59-alpbahos-fonts.conf|$FONTCONFDIR/59-alpbahos-fonts.conf")
 # Konsole profili sistem genelinde: ev dizinine root olarak kopyalamak ~/.local sahipliğini bozuyordu (020).
 PAIRS+=("$REPO/profiles/shell/konsole/alpbahOS.profile|$DATADIR/konsole/alpbahOS.profile")
 PAIRS+=("$REPO/profiles/shell/konsole/alpbah-dark.colorscheme|$DATADIR/konsole/alpbah-dark.colorscheme")
@@ -151,4 +155,4 @@ done
 if [ -n "$MANIFEST" ]; then
     printf '%s\n' "${manifest_lines[@]}" > "$MANIFEST"
 fi
-echo "tamam: ${#PAIRS[@]} dosya -> $DESTDIR (DATADIR=$DATADIR, SYSCONFDIR=$SYSCONFDIR, BINDIR=$BINDIR)$([ "$DRY_RUN" -eq 1 ] && echo ' [dry-run]')"
+echo "tamam: ${#PAIRS[@]} dosya -> $DESTDIR (DATADIR=$DATADIR, SYSCONFDIR=$SYSCONFDIR, BINDIR=$BINDIR, FONTCONFDIR=$FONTCONFDIR)$([ "$DRY_RUN" -eq 1 ] && echo ' [dry-run]')"

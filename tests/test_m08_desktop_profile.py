@@ -656,6 +656,19 @@ class InstallScriptTests(unittest.TestCase):
             self.assertIn("ÇAKIŞMA", third.stderr)
             self.assertEqual((root / "etc/xdg/kdeglobals").read_text(encoding="utf-8"), "[KDE]\n")
 
+    def test_fontconfig_ignores_opt_sysconfdir(self):
+        # 019 §4'teki alternatif --sysconfdir /opt/kf6/etc: XDG dosyaları oraya gider (XDG_CONFIG_DIRS'te),
+        # fontconfig dosyası /etc/fonts/conf.d'de kalmalı (fontconfig /opt/kf6/etc'yi okumaz).
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            proc = self.run_install("--destdir", root.as_posix(), "--datadir", "/opt/kf6/share",
+                                    "--sysconfdir", "/opt/kf6/etc", "--manifest", (root / "m.txt").as_posix())
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            joined = (root / "m.txt").read_text(encoding="utf-8")
+            self.assertIn("  /etc/fonts/conf.d/59-alpbahos-fonts.conf", joined)
+            self.assertIn("  /opt/kf6/etc/xdg/konsolerc", joined)
+            self.assertNotIn("/opt/kf6/etc/fonts", joined)
+
     def test_refuses_missing_or_live_root(self):
         self.assertEqual(self.run_install().returncode, 2)
         self.assertEqual(self.run_install("--destdir", "/").returncode, 2)
@@ -786,6 +799,15 @@ class SessionPrepTests(unittest.TestCase):
         (defaults / "kdeglobals").write_text("[KDE]\nwidgetStyle=Breeze\n", encoding="utf-8")
         self.run_tool()
         self.assertTrue((defaults / "package").exists())
+
+    def test_one_failing_step_does_not_block_the_other(self):
+        self.config.mkdir(parents=True)
+        (self.config / "kdeglobals").write_bytes(b"[General]\nColorScheme=\xff\xfe\n")  # UTF-8 değil
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            self.assertEqual(OTURUM.main([], env=self.env), 1)
+        self.assertIn("renk: HATA", out.getvalue())
+        self.assertEqual(self.entry("[kwin]", "Window Maximize"), "Meta+Up\\tMeta+PgUp,Meta+PgUp,Maximize Window")
+        self.assertIn("renk: HATA", (self.config / "alpbahos" / "oturum-hazirla.log").read_text(encoding="utf-8"))
 
     def test_env_script_is_silent(self):
         sh = shutil.which("sh")
