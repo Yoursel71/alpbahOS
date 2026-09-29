@@ -1569,8 +1569,9 @@ def remove_package(paths: Paths, db: dict, name: str, dry_run: bool, journal: Fi
 
 def _fold(text: str) -> str:
     # casefold() turns Turkish "İ" into "i" + U+0307; drop the dot so
-    # "DÜZENLEYİCİ" still matches "düzenleyici".
-    return text.casefold().replace("\u0307", "")
+    # "DÜZENLEYİCİ" still matches "düzenleyici". It turns "I" into "i" but leaves
+    # "ı" alone, so "IŞIK" would not match "ışık"; fold the dotless ı to i as well.
+    return text.casefold().replace("\u0307", "").replace("\u0131", "i")
 
 
 def _entry_metadata(entry: dict, index_dir: Path | None) -> dict:
