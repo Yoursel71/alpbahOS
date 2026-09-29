@@ -2216,7 +2216,10 @@ def _drop_kept_back(index: dict, index_dir: Path, installed: dict, targets: list
     for target in targets:
         try:
             steps = plan_transaction(index, index_dir, installed, accepted + [target], mode="upgrade")
-            problems = state_problems(index, installed, steps)
+            # _plan_problems also covers protected lfs-base packages: a dependency
+            # that would need one of them upgraded must hold this package back
+            # instead of making _plan_or_refuse() refuse the whole upgrade.
+            problems = _plan_problems(index, installed, steps)
         except AlpError as exc:
             problems = [str(exc)]
         if problems:
