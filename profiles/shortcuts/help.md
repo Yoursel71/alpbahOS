@@ -16,7 +16,7 @@ System Settings → Kısayollar ekranında ayrı bir "Windows kullanıcıları i
 
 Her kısayol satırı, Plasma'nın System Settings → Shortcuts ekranının **yerleşik** "Varsayılana Sıfırla" özelliğiyle geri alınabilir olmalı (MASTER_PLAN §6: *"ayarlarda düzenlenebilir ve varsayılana dönebilir"*). Yeni bir sıfırlama mekanizması icat edilmez.
 
-> M08 bulgusu (Plasma 6.4.4 kaynağı): yerleşik "Varsayılanlar" düğmesi, eylemi kaydeden uygulamanın bildirdiği **KDE** varsayılanına döner; alpbahOS profili `/etc/xdg/kglobalshortcutsrc` katmanındadır. alpbahOS profiline dönüş için kullanıcının `~/.config/kglobalshortcutsrc` içindeki ilgili girdinin silinmesi gerekir. Bu fark açık karar olarak [conflicts.md](conflicts.md) §4'te.
+> M08 bulgusu (Plasma 6.4.4 kaynağı): yerleşik "Varsayılanlar" düğmesi, eylemi kaydeden uygulamanın bildirdiği **KDE** varsayılanına döner; alpbahOS profili oturum başında `alpbah-oturum-hazirla` ile kullanıcının `~/.config/kglobalshortcutsrc` dosyasına işlenir (kglobalacceld `/etc/xdg`'yi okumaz). alpbahOS profiline dönüş: kısayolu Ayarlar'da varsayılana döndürüp `~/.config/alpbahos/oturum.json` dosyasını silmek ve yeniden giriş yapmak. Bu fark açık karar olarak [conflicts.md](conflicts.md) §4'te.
 
 ## 4. Kapsam dışı bırakılan fikir
 

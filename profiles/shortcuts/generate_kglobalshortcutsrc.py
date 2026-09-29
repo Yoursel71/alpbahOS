@@ -247,7 +247,7 @@ def render(profile: dict, profile_name: str = "profiles/shortcuts/shortcuts.json
         f"# Kaynak: {profile_name}",
         "# Üretici: profiles/shortcuts/generate_kglobalshortcutsrc.py",
         "# Kurulum: /usr/share/alpbahos/kglobalshortcutsrc; oturum başında alpbah-oturum-hazirla kullanıcı dosyasına işler.",
-        f"# Hedef sürüm: Plasma {profile.get('hedef_surum', {}).get('plasma', '?')}; gerçek oturumda doğrulanmadı.",
+        f"# Hedef sürüm: Plasma {profile.get('hedef_surum', {}).get('plasma', '?')}; canlı sonuç: docs/handoffs/claude/020-m08-canli-dogrulama.md",
     ]
     for name in sorted(components):
         out.append("")

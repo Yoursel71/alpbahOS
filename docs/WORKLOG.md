@@ -1246,3 +1246,13 @@ Kullanıcı M08/9/10'u devretti. Bölüşüm: M08 yapılandırma/tema/kısayol/a
 
 - Kök neden: katalog `@PREFIX@`/`@DESTDIR@` kullanıyor, rootfs'teki `alp.py` (`0475ea32…`) ikisini de genişletmiyor. Motor bilinmeyen yer tutucuyu artık indirmeden önce reddediyor; `alp info`/`search --json` sürüm, lisans, ana sayfa, boyut veriyor. Linux'ta alp testleri 238 geçti; gerçek htop geçici kökte kur/çalıştır/kaldır geçti.
 - Rootfs, VM, Discover, `pkcon` ve grafik Polkit çalıştırılmadı. PackageKit yardımcısı için yama önerisi ve wallpaper/look-and-feel kurulum komutu devir belgesinde; `scripts/` ve `/mnt/lfs` değiştirilmedi. Ayrıntı [019](handoffs/claude/019-alp-prefix-ve-metadata.md).
+
+## 29 Eylül 2026 — Claude, M08 gerçek Plasma oturumunda: kısayol ve renk hataları düzeltildi
+
+- Ortam: ana makine thewo, QEMU/KVM. Codex'in 28 Eylül M08 test imajının kurtarılan kopyası üstünde yalnız Claude overlay'leri kullanıldı. Kara kutu test yapıldı (QMP ekran görüntüsü ve tuş), ardından overlay'ler salt okunur incelendi; konuk içinde komut çalıştırılmadı. Codex ağacına ve `/mnt/lfs`'e dokunulmadı.
+- Hatalar:
+  - PR #1'deki `/etc/xdg/kglobalshortcutsrc` hiç okunmuyordu (kglobalacceld `KConfig::SimpleConfig`); alpbahOS'un değiştirdiği bütün kısayollar çalışmıyordu.
+  - `alpbah-dark` şema adı Plasma'nın `AlpbahDark` normalleştirmesiyle bulunamıyordu; panel açık Breeze'de kalıyordu.
+  - Font tanımlı değildi, yazılar tırnaklı bir yedek fonta düşüyordu.
+- Düzeltme: `alpbah-oturum-hazirla` + `plasma-workspace/env` betiği, `AlpbahDark.colors`, `/etc/xdg/kdeglobals` fontları. Aynı admin durumunda doğrulandı: koyu panel/Kickoff, Inter, Meta+Up/Down/I, Alt+Tab. İkinci ve üçüncü açılışta araç dosyaya dokunmadı. Test: `tests/test_m08_desktop_profile.py` 45/45 (Windows).
+- İmaj bulguları Codex'e (dokunulmadı): `/home/admin/.local` root'a ait; `KDEPlasmaPlatformTheme6` ve Breeze dekorasyonu yok; KRunner `RunCommand.qml` ile çöküyor; Spectacle/sistem izleyicisi yok; GL yok. Ayrıntı [020](handoffs/claude/020-m08-canli-dogrulama.md), kanıt `docs/verification/m08-gen2-2026-09-29/`.

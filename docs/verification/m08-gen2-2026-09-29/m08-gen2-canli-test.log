@@ -1,0 +1,124 @@
+M08 canlı Plasma testi -- 29 Eylül 2026, Claude
+================================================
+
+Ortam
+-----
+Host: thewo (Fedora 44, QEMU/KVM, OVMF). VM: -smp 3 -m 4G, virtio-vga (GL'siz), -display none, ağ yok.
+Görüntü/klavye: yalnız QMP screendump ve send-key (kara kutu). Konuk içinde komut çalıştırılmadı.
+Disk zinciri (hepsi Claude'un kendi dizininde, ~/claude-vm-runs/m08-boot-20260929):
+  alpbahOS-m08-font-test.vhdx (28 Eylül Codex test imajının 19:10'da kurtarılan kopyası)
+    <- profile.qcow2 (28 Eylül ilk M08 profili kurulu, admin ilk oturumunu açmış overlay'in kopyası)
+       <- run.qcow2  (ÖNCE testi, PR #1 profili)
+       <- fix.qcow2  (SONRA testi, bu daldaki profil install-desktop-profile.sh --force ile kuruldu)
+Oturum: tty1 autologin admin -> startplasma-wayland. KWin: QPainter (OpenGL yok, aşağıda).
+Kanıt incelemesi: VM kapatıldıktan sonra overlay qemu-nbd --read-only + mount -o ro,noload;
+konuk systemd günlüğü host'ta journalctl -D ile okundu.
+
+ÖNCE (PR #1 profili, run.qcow2)
+-------------------------------
+Görünüm: duvar kâğıdı, üst panel (alpbahos ikonlu Kickoff, pencere listesi, saat, tepsi) ve alt dock
+(Konsole, Dolphin, Firefox, Ayarlar) look-and-feel düzeninden geldi. Panel AÇIK Breeze renginde,
+yazılar tırnaklı bir yedek fontla (ekran görüntüsü oncesi.jpg).
+
+Kısayol     Beklenen (profil)          Görülen                                  Sonuç
+Meta        Kickoff                    Kickoff açıldı                           GEÇTİ (upstream varsayılanı)
+Meta+E      Dolphin                    Dolphin açıldı                           GEÇTİ (upstream)
+Meta+Left   sola döşe                  sola döşendi                             GEÇTİ (upstream)
+Meta+Up     büyüt                      sol üst çeyreğe döşendi (Quick Tile Top) KALDI
+Meta+Down   küçült                     sol yarıya döşendi (Quick Tile Bottom)   KALDI
+Meta+Tab    Overview                   görünür değişiklik yok                   KALDI (upstream: pencere geçişi)
+Meta+R      KRunner                    görünür değişiklik yok                   KALDI
+Meta+Shift+S bölge görüntüsü           "s" Dolphin'e yazıldı (tuş yakalanmadı)  KALDI
+Meta+D      masaüstünü göster/geri al  çalıştı                                  GEÇTİ (upstream)
+Alt+F4      pencereyi kapat            çalıştı                                  GEÇTİ (upstream)
+Meta+I      Ayarlar                    pencere yok (profil bağlaması okunmadı)  KALDI
+Ctrl+Shift+Esc sistem izleyicisi       pencere yok                              uygulama yok (aşağıda)
+
+Salt okunur disk (admin):
+  ~/.config/kdedefaults/package = org.alpbahos.solid.desktop
+  ~/.config/kdedefaults/kdeglobals: [Icons] Theme=breeze-dark, [KDE] widgetStyle=Breeze -- [General] ColorScheme YOK
+  /usr/share/color-schemes: alpbah-dark.colors
+  ~/.config/kglobalshortcutsrc: Window Maximize=Meta+PgUp,...  Window Quick Tile Top=Meta+Up,...
+                                Walk Through Windows=Meta+Tab\tAlt+Tab,...  Overview=Meta+W,...
+  /etc/xdg/kglobalshortcutsrc mevcut (PR #1 profili) ama etkisiz.
+
+Kök nedenler (kaynak: KDE etiketleri v6.4.4)
+--------------------------------------------
+1. kglobalacceld src/globalshortcutsregistry.cpp:275  _config(getConfigFile(), KConfig::SimpleConfig)
+   SimpleConfig katman (XDG_CONFIG_DIRS) okumaz -> /etc/xdg/kglobalshortcutsrc hiç okunmaz.
+2. plasma-workspace kcms/lookandfeel/lookandfeelmanager.cpp:430 colorSchemeFile():
+   "alpbah-dark" -> "AlpbahDark"; dosya adı "...AlpbahDark.colors" ile bitmeli. Bulunamayınca
+   Defaults kipi ColorScheme yazmıyor, startplasma renkleri uygulamıyor (BreezeLight yerleşik).
+3. Font: kdeglobals'ta font yok, KDE varsayılanı "Noto Sans" imajda yok. İmajın fontconfig'i
+   (host fc-match, FONTCONFIG_SYSROOT) Noto Sans -> DejaVu Sans diyor; ekranda yine de tırnaklı
+   görüldü (tam neden çözülmedi). Inter ve JetBrains Mono /usr/share/fonts/alpbahos altında kurulu.
+
+SONRA (bu dal, fix.qcow2; aynı admin durumunun üstüne kuruldu = mevcut kullanıcı göçü)
+------------------------------------------------------------------------------------------
+1. açılış, ~/.config/alpbahos/oturum-hazirla.log (sahip uid 1001, startplasma env betiğinden):
+  renk: kdedefaults ColorScheme=(yok); kdedefaults/package silindi, startplasma yeniden yazacak
+  kısayol: eklendi: [ksmserver] Lock Session
+  kısayol: güncellendi: [kwin] Overview
+  kısayol: zaten profilde: [kwin] Show Desktop
+  kısayol: güncellendi: [kwin] Walk Through Windows (Reverse)
+  kısayol: güncellendi: [kwin] Walk Through Windows
+  kısayol: zaten profilde: [kwin] Window Close
+  kısayol: güncellendi: [kwin] Window Maximize
+  kısayol: güncellendi: [kwin] Window Minimize
+  kısayol: güncellendi: [kwin] Window Quick Tile Bottom
+  kısayol: zaten profilde: [kwin] Window Quick Tile Left
+  kısayol: zaten profilde: [kwin] Window Quick Tile Right
+  kısayol: güncellendi: [kwin] Window Quick Tile Top
+  kısayol: zaten profilde: [plasmashell] activate application launcher
+  kısayol: eklendi: [services][org.kde.dolphin.desktop] _launch
+  kısayol: eklendi: [services][org.kde.krunner.desktop] _launch
+  kısayol: eklendi: [services][org.kde.plasma-systemmonitor.desktop] _launch
+  kısayol: eklendi: [services][org.kde.spectacle.desktop] RecordRegion
+  kısayol: eklendi: [services][org.kde.spectacle.desktop] RectangularRegionScreenShot
+  kısayol: eklendi: [services][org.kde.spectacle.desktop] _launch
+  kısayol: eklendi: [services][systemsettings.desktop] _launch
+2. ve 3. açılış (aynı disk, yeniden başlatma), iki seferde de:
+  renk: göç gerekmiyor
+  kısayol: bu profil zaten uygulanmış; kullanıcı dosyasına dokunulmadı
+
+Salt okunur disk (admin, 1. açılış sonrası):
+  ~/.config/kdedefaults/kdeglobals: [General] ColorScheme=AlpbahDark
+  ~/.config/kdeglobals: [Colors:Button/Selection/Tooltip/View/Window] + ColorSchemeHash (startplasma uyguladı)
+  ~/.config/kglobalshortcutsrc: Overview=Meta+Tab\tMeta+W,Meta+W,...  Window Maximize=Meta+Up\tMeta+PgUp,...
+                                Window Quick Tile Top=none,Meta+Up,...  [services][org.kde.krunner.desktop] _launch=Meta+R\t...
+
+Görünüm: panel, dock ve Kickoff AlpbahDark renklerinde, yazılar Inter (sonrasi.jpg).
+Kısayol     Görülen                                                     Sonuç
+Meta        Kickoff (koyu)                                              GEÇTİ
+Meta+E      Dolphin                                                     GEÇTİ
+Meta+Up     büyüttü; ikinci basış geri yükledi (1. ve 2. açılışta)      GEÇTİ
+Meta+Down   küçülttü                                                    GEÇTİ
+Meta+I      Sistem Ayarları açıldı (3. açılış; Kirigami arayüzü koyu)   GEÇTİ
+Alt+Tab     Konsole <-> Dolphin iki yönde geçti (3. açılış)             GEÇTİ
+Meta+R      kglobalacceld KRunner'ı başlattı, KRunner çöktü (günlük)    Kısayol GEÇTİ, KRunner imajda bozuk
+            (upstream Alt+F2 de KRunner'ı açamadı -> bağlamadan bağımsız)
+Meta+Tab    görünür değişiklik yok; Overview efekti OpenGL ister        SINANAMADI (QPainter)
+Meta+Shift+S, Ctrl+Shift+Esc  Spectacle / plasma-systemmonitor kurulu değil  SINANAMADI (uygulama yok)
+Meta+L      kscreenlocker yok (profilde "engelli")                      DENENMEDİ
+Ctrl+Alt+T  Konsole açıldı (upstream, profil dışı)                      bilgi
+
+Konuk günlüğü (journalctl -D, fix.qcow2, -o cat, ilgili satırlar)
+-----------------------------------------------------------------
+kwin_scene_opengl: couldn't find dev node for drm device
+kwin_decorations: Could not locate decoration plugin "org.kde.breeze"
+kwin_decorations: Could not locate decoration plugin "org.kde.kwin.aurorae"
+libEGL warning: egl: failed to create dri2 screen
+[session uid=1001 ...] Activating via systemd: service name='org.kde.krunner' unit='plasma-krunner.service' requested by ':1.8' (uid=1001 pid=281 comm="/opt/kf6/bin/kwin_wayland ...")
+kf.plasma.quick: "qrc:/krunner/RunCommand.qml"
+plasma-krunner.service: Main process exited, code=exited, status=255/EXCEPTION
+
+İmaj bulguları (Codex alanı; dokunulmadı)
+------------------------------------------
+- /home/admin/.local ve /home/admin/.local/share root:root 0755 (28 Eyl 07:59). İçinde yalnız
+  konsole/ (admin'e ait). Kullanıcı ~/.local/share'e yazamaz: Çöp (Trash), kactivitymanagerd
+  veritabanı (Kickoff Favoriler boş göründü), son kullanılanlar, alpbah-oturum-hazirla'nın ilk sürümü.
+- KDEPlasmaPlatformTheme6 eklentisi yok (/opt/qt6/plugins/platformthemes: yalnız libqgtk3,
+  libqxdgdesktopportal). Qt uygulamaları kdeglobals renklerini almıyor; Dolphin açık renkte.
+- Breeze pencere dekorasyonu eklentisi yok; uygulamalar kendi (açık) başlığını çiziyor.
+- KRunner RunCommand.qml hatasıyla çıkıyor (255).
+- Spectacle, plasma-systemmonitor kurulu değil. OpenGL yok (virtio-vga GL'siz; imajda kms_swrast yok).

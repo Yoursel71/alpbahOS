@@ -1,6 +1,6 @@
 # Kısayol çakışma listesi — UI-02 / M08
 
-Durum (26 Eylül 2026): **eylem kimlikleri ve upstream varsayılanları KDE Plasma 6.4.4 kaynak kodundan doğrulandı; gerçek Plasma oturumunda hiçbir kısayol test edilmedi.** Tek kaynak [`shortcuts.json`](shortcuts.json); sistem dosyası [`generated/kglobalshortcutsrc`](generated/kglobalshortcutsrc) ondan [`generate_kglobalshortcutsrc.py`](generate_kglobalshortcutsrc.py) ile üretilir. Kaynak plan: [docs/MASTER_PLAN.md](../../docs/MASTER_PLAN.md) §6, [docs/HYPERV_PLAN.md](../../docs/HYPERV_PLAN.md).
+Durum (29 Eylül 2026): **eylem kimlikleri ve upstream varsayılanları KDE Plasma 6.4.4 kaynak kodundan doğrulandı; Gen2 oturumunda Meta, Meta+E, Meta+Up, Meta+Down, Meta+I ve Alt+Tab çalıştı** (ayrıntı ve sınanamayanlar: [020](../../docs/handoffs/claude/020-m08-canli-dogrulama.md)). Tek kaynak [`shortcuts.json`](shortcuts.json); profil verisi [`generated/kglobalshortcutsrc`](generated/kglobalshortcutsrc) ondan [`generate_kglobalshortcutsrc.py`](generate_kglobalshortcutsrc.py) ile üretilir ve oturum başında `alpbah-oturum-hazirla` ile kullanıcı dosyasına işlenir. Kaynak plan: [docs/MASTER_PLAN.md](../../docs/MASTER_PLAN.md) §6, [docs/HYPERV_PLAN.md](../../docs/HYPERV_PLAN.md).
 
 ## 1. Profil içi tutarlılık (otomatik)
 
@@ -47,7 +47,7 @@ Proje Hyper-V üzerinde geliştiriliyor; test VM'leri Windows hostta çalışıy
 ## 4. Açık kararlar
 
 1. Win+Aşağı: Windows'taki "önce geri yükle, sonra küçült" sırası gerekli mi? Gerekirse küçük bir KWin betiği gerekir (hazır bileşen değil; ayrı onay).
-2. Ayarlar'daki "Varsayılanlar" düğmesi upstream KDE varsayılanına döner, alpbahOS profiline değil (varsayılanı eylemi kaydeden uygulama bildirir). alpbahOS profiline dönüş şimdilik kullanıcının `~/.config/kglobalshortcutsrc` içindeki ilgili girdiyi silmesidir; kullanıcıya dönük bir "alpbahOS kısayollarına dön" eylemi gerekip gerekmediği açık (MASTER_PLAN §6 "varsayılana dönebilir").
+2. Ayarlar'daki "Varsayılanlar" düğmesi upstream KDE varsayılanına döner, alpbahOS profiline değil (varsayılanı eylemi kaydeden uygulama bildirir). alpbahOS profiline dönüş şimdilik kısayolu varsayılana döndürüp `~/.config/alpbahos/oturum.json` dosyasını silmek ve yeniden giriş yapmaktır; kullanıcıya dönük bir "alpbahOS kısayollarına dön" eylemi gerekip gerekmediği açık (MASTER_PLAN §6 "varsayılana dönebilir").
 3. Win+L, SCREENLOCK-01 (KScreenLocker'ın Wayland oturumuna geri getirilmesi) kararına bağlı.
 
 ## Sonraki adım
