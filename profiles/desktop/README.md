@@ -11,6 +11,7 @@ Durum: **M08 — 29 Eylül'de Gen2 Plasma 6.4.4 oturumunda (QPainter) çalışt�
 | `../../branding/ataturk-theme/wallpaper/alpbahOS-Ataturk/` | `/usr/share/wallpapers/alpbahOS-Ataturk/` | `Wallpaper/Images` paketi (5 çözünürlük) |
 | `../../branding/icons/hicolor/` | `/usr/share/icons/hicolor/` | `alpbahos` sembol ikonu (32–256 px, geçici raster) |
 | `xdg/kdeglobals` | `/etc/xdg/kdeglobals` | `LookAndFeelPackage=org.alpbahos.solid.desktop`; yazı tipleri Inter / JetBrains Mono (`tokens.json`) |
+| `fontconfig/59-alpbahos-fonts.conf` | `/etc/fonts/conf.d/59-alpbahos-fonts.conf` | `sans-serif`/`system-ui` → Inter, `monospace` → JetBrains Mono (Qt varsayılanı, GTK, tarayıcı) |
 | `xdg/kwinrc` | `/etc/xdg/kwinrc` | Solid: blur/kontrast efekti kapalı |
 | `../shortcuts/generated/kglobalshortcutsrc` | `/usr/share/alpbahos/kglobalshortcutsrc` | Windows'a tanıdık kısayol profili, veri ([conflicts.md](../shortcuts/conflicts.md)) |
 | `xdg/plasma-workspace/env/alpbahos-oturum.sh` | `/etc/xdg/plasma-workspace/env/alpbahos-oturum.sh` | startplasma KWin'den önce kaynaklar; `alpbah-oturum-hazirla`'yı çağırır |
@@ -102,7 +103,7 @@ Panel içeriği (mockup §4.1'den):
 | Bileşen | Durum | Not |
 |---|---|---|
 | Plasma global tema paketi | Gen2'de yüklendi (29 Eylül): düzen, duvar kâğıdı, renk, ikon adı | `lookandfeel/org.alpbahos.solid.desktop/` |
-| Renk şeması (.colors) | Panel, dock, Kickoff ve Kirigami uygulamalarında uygulandı. Qt Widgets uygulamaları KDE platform teması eklentisi imajda olmadığı için açık kalıyor. `[Colors:Header]`/`[Colors:Complementary]` eksik | `colorscheme/AlpbahDark.colors` |
+| Renk şeması (.colors) | Panel, dock, Kickoff ve Kirigami uygulamalarında uygulandı. Qt Widgets uygulamaları KDE platform teması eklentisi imajda olmadığı için açık kalıyor. `[Colors:Header]` (lacivert başlık), `[Colors:Header][Inactive]` ve `[Colors:Complementary]` 29 Eylül'de eklendi; kullanıcı kdeglobals'ına yazıldığı doğrulandı, Header'ı kullanan bir yüzey henüz görülmedi | `colorscheme/AlpbahDark.colors` |
 | İkon teması | `breeze-dark` seçildi (bağımlılık eklemez); Breeze ikonları Gen2 imajında eksik (M07 bulgusu) | Papirus ölçüm sonrasına bırakıldı |
 | Pencere dekorasyonu | `org.kde.breeze` seçildi; Gen2 imajında eklenti yok (KWin günlüğü), başlıklar uygulamanın kendi çizimi | Özel renk ayarı yok, renk şemasından gelir |
 | Panel/dock | Gen2'de doğrulandı: üst panel (alpbahos ikonlu Kickoff, pencere listesi, saat, tepsi), alt dock (Konsole, Dolphin, Firefox, Ayarlar) | Latte Dock kullanılmadı |

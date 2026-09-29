@@ -1256,3 +1256,7 @@ Kullanıcı M08/9/10'u devretti. Bölüşüm: M08 yapılandırma/tema/kısayol/a
   - Font tanımlı değildi, yazılar tırnaklı bir yedek fonta düşüyordu.
 - Düzeltme: `alpbah-oturum-hazirla` + `plasma-workspace/env` betiği, `AlpbahDark.colors`, `/etc/xdg/kdeglobals` fontları. Aynı admin durumunda doğrulandı: koyu panel/Kickoff, Inter, Meta+Up/Down/I, Alt+Tab. İkinci ve üçüncü açılışta araç dosyaya dokunmadı. Test: `tests/test_m08_desktop_profile.py` 45/45 (Windows).
 - İmaj bulguları Codex'e (dokunulmadı): `/home/admin/.local` root'a ait; `KDEPlasmaPlatformTheme6` ve Breeze dekorasyonu yok; KRunner `RunCommand.qml` ile çöküyor; Spectacle/sistem izleyicisi yok; GL yok. Ayrıntı [020](handoffs/claude/020-m08-canli-dogrulama.md), kanıt `docs/verification/m08-gen2-2026-09-29/`.
+- İkinci tur:
+  - AlpbahDark'a Header/Complementary setleri eklendi (WCAG AA testi).
+  - `59-alpbahos-fonts.conf` ile fontconfig tercihi eklendi; imajın yapılandırmasında Inter'in öne geçtiği doğrulandı. Kirigami küçük yazılarındaki tırnaklı font çözülmedi.
+  - UI-03 ölçek örnekleri `scale_samples.py` ile hesaplandı: 18 çözünürlük × %100–200. 32:9 hatası bulundu, 5120x1440 eklendi. Test: 49/49.

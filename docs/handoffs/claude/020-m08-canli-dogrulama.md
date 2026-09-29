@@ -77,6 +77,28 @@ Komut 019 §4 madde 3'teki ile aynı: `profiles/desktop/install-desktop-profile.
 
 ## Açık
 
-- `.colors` dosyasında `[Colors:Header]` ve `[Colors:Complementary]` yok. Plasma 6 şemaları bu grupları taşır; eklenmesi ölçüm ve göz kontrolü ister, bu turda yapılmadı.
+- ~~`.colors` dosyasında `[Colors:Header]` ve `[Colors:Complementary]` yok.~~ İkinci turda eklendi (aşağıda).
 - Meta+Tab/Overview, Meta+Shift+S, Ctrl+Shift+Esc ve Meta+L imaj bulguları kapanınca, GL'li bir oturumda.
 - "alpbahOS kısayollarına dön": Ayarlar'daki "Varsayılanlar" KDE varsayılanına döner. Profili yeniden uygulatmak için `~/.config/alpbahos/oturum.json` silinip yeniden giriş yapılır (varsayılandaki satırlara profil yeniden yazılır). Kullanıcıya dönük bir düğme gerekip gerekmediği açık (conflicts.md §4.2).
+
+## İkinci tur (aynı gün)
+
+- **Renk şeması:**
+  - `[Colors:Header]` eklendi. Değeri lacivert (tasarım belgesi "başlık çubuğu koyu lacivert"), `[WM] activeBackground` ile aynı.
+  - `[Colors:Header][Inactive]` ve `[Colors:Complementary]` eklendi.
+  - Her set için WCAG AA (4,5:1) testi yazıldı.
+  - Kullanıcı `kdeglobals`'ına yazıldıkları salt okunur doğrulandı (startplasma şema karmasının değiştiğini görüp yeniden uyguladı). Sistem Ayarları'nda görünür fark yok; Header'ı kullanan bir yüzey bu imajda görülmedi.
+- **Yazı tipi:**
+  - `59-alpbahos-fonts.conf` eklendi: `sans-serif` ve `system-ui` → Inter, `monospace` → JetBrains Mono.
+  - İmajın fontconfig'iyle (host `fc-pattern`, `FONTCONFIG_SYSROOT`) doğrulandı: Qt'nin varsayılan aldığı boş desen listesi artık "Inter" ile başlıyor, "Noto Sans" isteği Inter'e çözülüyor.
+  - Test XML yorumundaki `--`'yi yakaladı; fontconfig dosyayı yok sayardı.
+  - **Çözülmedi:** Sistem Ayarları'ndaki küçük açıklama yazıları hâlâ tırnaklı. Qt fontconfig'e bağlı (`libQt6Gui` 40 Fc simgesi), yani kaynak Kirigami'nin KDE platform teması eksikken kullandığı başka bir yol. Kök neden çözülmedi; platform teması eklentisi kurulunca (imaj bulgusu 2) yeniden bakılmalı.
+- **Ölçek örnekleri (UI-03):**
+  - `branding/ataturk-theme/tools/scale_samples.py` yazıldı. Plasma 6.4.4'ün görüntü seçimi (`packagefinder.cpp` `distance()`), varsayılan "Ölçekle ve kırp" doldurması (`main.xml` FillMode 2) ve fiziksel piksel hedefi (`main.qml` `sourceSize`) koddan birebir alındı.
+  - 18 çözünürlük (1024x768–5120x1440) × mantıksal yüksekliği ≥720 kalan %100–200 ölçek faktörleri denetlendi.
+  - Bulgu: 32:9 ekranda Plasma 3440x1440'ı seçip kırpıyor; yüz %150 ve üstünde panelin altına giriyor. Pakete 5120x1440 eklendi (136 KB; diğer görüntüler baytça aynı). Şimdi hepsi güvenli alanda.
+  - Örnek sayfası: `docs/verification/m08-gen2-2026-09-29/duvar-kagidi-olcek.{jpg,txt}`.
+  - QEMU'da farklı çözünürlükte açılış denendi: KWin `virtio-vga xres/yres`'e rağmen 1920x1080 seçti, kayıtlı ekran ayarı kaldırılınca da. Canlı ölçek örneği alınamadı.
+- **Açık karar (kullanıcı):** 1536x864, 2560x1600, 2880x1800 ve 3840x2160'ta en yakın görüntü ×1,1–1,5 büyütülüyor. Seçenekler:
+  - Olduğu gibi bırakmak.
+  - 2560x1600/3840x2160 eklemek: net olur, ama 732x987 kaynak büyütülmediği için portre 4K'da küçük kalır.
