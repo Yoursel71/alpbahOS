@@ -71,7 +71,9 @@ def env(tmp_path: Path):
 
 def test_alp_search_finds_real_entry(env):
     hits = pkb.alp_search(ALP_PY, env["root"], env["index"], "the")
-    assert hits == [{"name": "theme", "method": "core"}]
+    # `version` is additive: a store needs it for the PackageKit package id
+    # (Discover showed "Version: 0" while the catalog knew the real one).
+    assert hits == [{"name": "theme", "method": "core", "version": "1.0.0"}]
 
 
 def test_alp_search_no_hits_returns_empty_list_not_error(env):
@@ -125,3 +127,27 @@ def test_packagekit_glue_class_not_importable_here():
     directly -- see alp_packagekit_backend.py's module docstring."""
     assert pkb.PACKAGEKIT_AVAILABLE is False
     assert not hasattr(pkb, "AlpPackageKitBackend")
+
+
+def test_alp_plan_install_returns_steps_without_changing_anything(env):
+    plan = pkb.alp_plan(ALP_PY, env["root"], env["index"], "install", "theme")
+    assert plan["command"] == "install"
+    assert [(s["action"], s["name"]) for s in plan["steps"]] == [("install", "theme")]
+    assert plan["problems"] == []
+    assert pkb.alp_list(ALP_PY, env["root"], env["index"]) == []
+
+
+def test_alp_plan_unknown_package_raises_backend_error(env):
+    with pytest.raises(pkb.AlpBackendError, match="Bilinmeyen paket"):
+        pkb.alp_plan(ALP_PY, env["root"], env["index"], "install", "yok-boyle-paket")
+
+
+def test_alp_updates_lists_newer_catalog_versions(env, tmp_path):
+    pkb.alp_install(ALP_PY, env["root"], env["index"], "theme")
+    assert pkb.alp_updates(ALP_PY, env["root"], env["index"]) == []
+    archive = _make_tar(tmp_path, "theme-2.tar.gz", {"usr/share/x": b"content v2"})
+    catalog = json.loads(env["index"].read_text(encoding="utf-8"))
+    catalog["entries"]["theme"].update({"version": "2.0.0", "url": archive.name, "sha256": alp.sha256_of(archive)})
+    env["index"].write_text(json.dumps(catalog), encoding="utf-8")
+    updates = pkb.alp_updates(ALP_PY, env["root"], env["index"])
+    assert [(u["name"], u["old_version"], u["new_version"]) for u in updates] == [("theme", "1.0.0", "2.0.0")]

@@ -1236,3 +1236,13 @@ Kullanıcı M08/9/10'u devretti. Bölüşüm: M08 yapılandırma/tema/kısayol/a
 
 - Kullanıcı D22/D32 çatışması için "sadece 64 bit" dedi. `docs/DECISIONS.md`'ye D35 eklendi; D22 daraltıldı, açık kararlar tablosundan D22/D32 satırı kaldırıldı. MASTER_PLAN §1/§3/§3.1/§3.2/§11, AGENTS.md, CLAUDE.md, README.md, BACKLOG COMPAT-01, `profiles/apps/` ve OFFICE-01 planı aynı anda güncellendi.
 - Sonuç: multilib/32-bit kullanıcı alanı eklenmez; Steam istemcisi kapsam dışı; Wine yalnız WoW64 moduyla kurulup COMPAT-01'de test edilecek. Flatpak Steam gibi kapsayıcı içi 32-bit çalışma zamanları değerlendirilmedi, kullanıcı istemeden eklenmez. `check_docs.py` 0 bulgu.
+
+## 28 Eylül 2026 — Claude, mantık hataları taraması ve PKG-02 mağaza sözleşmesi
+
+- Kullanıcı isteğiyle repo tarandı; 5 mantık hatası bulunup düzeltildi. En ciddisi: `alp adopt-base` ile alp paketleri aynı dosyaya sahip olabiliyordu ve alp paketinin kaldırılması korumalı taban dosyasını siliyordu. Diğerleri: `apply-m2-rootfs-fixes.sh` rootfs `alp.py`'yi sessizce geri döndürüyordu; 8 betikte `set -e` altında etkisiz `! komut` denetimleri vardı; autoseat işaret dosyası admin'in yazamadığı yerdeydi; `--relocate` kök denetimi yanlıştı. PKG-02'nin alp tarafı eklendi: `--json --dry-run` plan ve `--progress-fd` olayları.
+- Dal `claude/logic-fixes` (taban main `9c26ecf`). alp test paketi 205 geçti, 18 atlandı (Windows). Ana makineye SSH anahtarı eklenmediği için Builder/Gen2 işleri yapılamadı. Ayrıntı [018](handoffs/claude/018-mantik-hatalari-ve-pkg02.md).
+
+## 29 Eylül 2026 — Claude, M10 engeli: `@PREFIX@` kurulum hatası ve Discover metadata'sı
+
+- Kök neden: katalog `@PREFIX@`/`@DESTDIR@` kullanıyor, rootfs'teki `alp.py` (`0475ea32…`) ikisini de genişletmiyor. Motor bilinmeyen yer tutucuyu artık indirmeden önce reddediyor; `alp info`/`search --json` sürüm, lisans, ana sayfa, boyut veriyor. Linux'ta alp testleri 238 geçti; gerçek htop geçici kökte kur/çalıştır/kaldır geçti.
+- Rootfs, VM, Discover, `pkcon` ve grafik Polkit çalıştırılmadı. PackageKit yardımcısı için yama önerisi ve wallpaper/look-and-feel kurulum komutu devir belgesinde; `scripts/` ve `/mnt/lfs` değiştirilmedi. Ayrıntı [019](handoffs/claude/019-alp-prefix-ve-metadata.md).

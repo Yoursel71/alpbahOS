@@ -37,9 +37,9 @@ Bu, `alp.py`'ye eklenmesi gereken küçük, izole bir değişikliktir (mevcut `c
 | `Resolve` | `alp --json info <ad>` | Kurulu/kurulu değil ayrımı zaten `cmd_info`'da var |
 | `GetDetails` | `alp --json info <ad>` | `source`, `version` alanları zaten var |
 | `GetFiles` | `db.json`'daki `files[]` | `alp --json info` çıktısına zaten dahil |
-| `InstallPackages` | `alp install <ad>` | İlerleme raporlama eksik, bkz. §4 |
+| `InstallPackages` | `alp install --yes <ad>`; onaydan önce `alp --json --dry-run install <ad>` | İlerleme: `--progress-fd`, bkz. §4 |
 | `RemovePackages` | `alp remove <ad>` | Aynı |
-| `GetUpdates` / `UpdatePackages` | **Yok — `alp`'te `update`/`upgrade` komutu henüz gerçek değil** (`cmd` şu an no-op, bkz. `alp.py` `update` alt komutu) | Bu backend özelliği, `alp upgrade`'in gerçek bir uygulaması olmadan yazılamaz. Bkz. [config-protection.md](config-protection.md) — upgrade tasarımı orada. |
+| `GetUpdates` / `UpdatePackages` | `alp --json --dry-run upgrade` (`alp_updates`) / `alp upgrade --yes <ad>` | 28 Eylül 2026: `alp upgrade` gerçek; `alp_updates` bağımlılık yükseltmeleri dahil planı okur, geri tutulanlar `kept_back` alanında. |
 | `GetRepoList` | `demo/index.json`'un (gerçek sistemde `alpbahOS-alp` reposunun) tek girişi | `alp`'te çoklu depo kavramı yok; MASTER_PLAN §5.3 "birden fazla kaynak varsa görünür olsun" ilkesi tek depoyla otomatik sağlanıyor |
 
 ## 4. İlerleme raporlama (eksik, tasarım gerekli)
@@ -48,7 +48,7 @@ PackageKit, `InstallPackages` sırasında `Percentage`/`Status` sinyalleri bekle
 
 Önerilen protokol: `alp install <ad> --progress-fd <N>`, ilerlemeyi `N` numaralı dosya tanıtıcısına tek satırlık JSON olarak yazar (`{"phase":"download","pct":42}`, `{"phase":"build"}`, `{"phase":"done"}`). Backend bu FD'yi okuyup PackageKit sinyallerine çevirir. Bu, `alp`'in stdout'unu (insan tarafından okunan mesajlar) FD ayrımıyla kirletmez — Unix araçlarının standart "makine-okunur ek kanal" deseni.
 
-**Bu protokol henüz uygulanmadı; yalnızca tasarım.**
+**28 Eylül 2026: uygulandı ve test edildi** (`tests/test_store_contract.py`). Olaylar satır başına bir JSON nesnesidir: `plan` (adımlar), her paket için `step` `start`/`done` (`index`, `total`, `percentage`), aşama olarak `phase` (`download`, `build` + `step`=configure/make/make_install, `merge`), hata durumunda `error` (`message`, `completed`) ve sonda `done`. Kaldırma da aynı `step`/`done` olaylarını verir. Okuyucu kapanırsa işlem bozulmaz, olaylar kesilir. PackageKit sınıfının bu kanalı `Percentage`/`Status` sinyallerine çevirmesi yazılmadı; gerçek daemon'da test gerektirir.
 
 ## 5. Yetkilendirme (polkit)
 
@@ -82,5 +82,7 @@ Bu tasarım "kabul edilmiş" sayılmadan önce (proposal §6'daki PKG-02 kabul �
 3. §4'teki ilerleme protokolü uygulanmalı.
 4. §5'teki polkit action dosyası gerçek bir polkit kurulumunda test edilmeli.
 5. `GetUpdates`/`UpdatePackages` ancak [config-protection.md](config-protection.md)'deki `alp upgrade` tasarımı koda dönüştükten sonra eklenebilir.
+
+**28 Eylül 2026 (PKG-02 sözleşmesi):** Madde 3'ün `alp` tarafı tamam: `--progress-fd` olay kanalı ve onay öncesi makine-okunur plan (`--json --dry-run install|upgrade|remove`: adımlar, `problems`, catalog `size` alanından `download_size`; boyut bilinmiyorsa `null`, tahmin edilmez). Backend sarmalayıcıları `alp_plan` ve `alp_updates` eklendi ve test edildi; `AlpPackageKitBackend.get_updates` yazıldı ama gerçek PackageKit'te denenmedi. Madde 2 ve 4 (daemon ve polkit testi) hâlâ açık.
 
 **21 Eylül 2026 durumu:** Madde 1 (`--json`) ve madde 2'nin ilk yarısı (`alp_*` sarmalayıcılar) tamamlandı+test edildi. 2, 3, 4 tam olarak gerçekleşmedi — `AlpPackageKitBackend` yazıldı ama gerçek bir PackageKit daemon'una hiç yüklenmedi. MASTER_PLAN §5.3 M02 kriterinin "entegrasyon testi" kısmını **hâlâ karşılamıyor**; bunun için Codex'in gerçek BLFS/PackageKit ortamı gerekiyor.
