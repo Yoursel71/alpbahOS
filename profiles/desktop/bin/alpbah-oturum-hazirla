@@ -313,17 +313,26 @@ def main(argv: list[str] | None = None, env: dict | None = None) -> int:
     except (OSError, ValueError):
         state = {}
     write = not args.durum
-    try:
-        report = step_color_scheme(config_home, write)
-        report += step_shortcuts(env, config_home, state, write, args.zorla)
-        if write:
+    # Adımlar birbirinden bağımsız: biri (ör. bozuk kodlanmış kdeglobals) düşerse öteki yine çalışır.
+    report: list[str] = []
+    failed = False
+    steps = (("renk", lambda: step_color_scheme(config_home, write)),
+             ("kısayol", lambda: step_shortcuts(env, config_home, state, write, args.zorla)))
+    for name, step in steps:
+        try:
+            report += step()
+        except (OSError, ValueError) as exc:
+            report.append(f"{name}: HATA: {exc}")
+            failed = True
+    if write:
+        try:
             atomic_write(state_path, json.dumps(state, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
             atomic_write(state_path.with_name("oturum-hazirla.log"), "\n".join(report) + "\n")
-    except OSError as exc:
-        print(f"HATA: {exc}", file=sys.stderr)
-        return 1
+        except OSError as exc:
+            print(f"HATA: {exc}", file=sys.stderr)
+            return 1
     print("\n".join(report))
-    return 0
+    return 1 if failed else 0
 
 
 if __name__ == "__main__":
