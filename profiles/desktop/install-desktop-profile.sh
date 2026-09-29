@@ -13,6 +13,7 @@
 #   BINDIR/alpbah-oturum-hazirla                              kısayol profilini kullanıcıya işler (0755)
 #   BINDIR/alpbah-gorunum                                     Solid/Glass geçiş aracı (0755)
 #   SYSCONFDIR/xdg/mimeapps.list                              varsayılan uygulamalar (profiles/apps/)
+#   SYSCONFDIR/fonts/conf.d/59-alpbahos-fonts.conf            fontconfig: sans-serif/monospace -> Inter/JetBrains Mono
 #
 # kglobalacceld kglobalshortcutsrc'yi KConfig::SimpleConfig ile açar ve /etc/xdg'yi okumaz; bu yüzden
 # kısayollar sistem geneli dosya olarak değil, oturum başında kullanıcı dosyasına işlenerek uygulanır
@@ -109,6 +110,7 @@ PAIRS+=("$REPO/profiles/desktop/xdg/plasma-workspace/env/alpbahos-oturum.sh|$SYS
 PAIRS+=("$REPO/profiles/desktop/bin/alpbah-oturum-hazirla|$BINDIR/alpbah-oturum-hazirla")
 PAIRS+=("$REPO/profiles/desktop/bin/alpbah-gorunum|$BINDIR/alpbah-gorunum")
 PAIRS+=("$REPO/profiles/apps/generated/mimeapps.list|$SYSCONFDIR/xdg/mimeapps.list")
+PAIRS+=("$REPO/profiles/desktop/fontconfig/59-alpbahos-fonts.conf|$SYSCONFDIR/fonts/conf.d/59-alpbahos-fonts.conf")
 
 # Önce tüm çakışmaları denetle; yarım kurulum bırakma.
 conflicts=0

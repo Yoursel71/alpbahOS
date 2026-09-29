@@ -175,6 +175,14 @@ class LookAndFeelPackageTests(unittest.TestCase):
             self.assertEqual(xdg["General"][key].split(",")[0], tokens["font_primary"], key)
         self.assertEqual(xdg["WM"]["activeFont"].split(",")[0], tokens["font_primary"])
         self.assertEqual(xdg["General"]["fixed"].split(",")[0], tokens["font_terminal"])
+        # fontconfig tercihi: Qt varsayılanı (platform teması yokken), GTK ve tarayıcı aynı aileleri alır.
+        import xml.etree.ElementTree as ET
+        conf = REPO / "profiles" / "desktop" / "fontconfig" / "59-alpbahos-fonts.conf"
+        prefer = {a.findtext("family"): a.find("prefer").findtext("family") for a in ET.parse(conf).getroot().iter("alias")}
+        self.assertEqual(prefer, {"sans-serif": tokens["font_primary"], "system-ui": tokens["font_primary"],
+                                  "monospace": tokens["font_terminal"]})
+        # 49-sansserif (sans-serif ekler) sonrası, 60-latin (Noto Sans'ı öne koyar) öncesi okunmalı.
+        self.assertTrue("49-sansserif.conf" < conf.name < "60-latin.conf")
 
     def test_color_scheme_sets_and_contrast(self):
         colors = ini((REPO / "profiles" / "desktop" / "colorscheme" / "AlpbahDark.colors").read_text(encoding="utf-8"))
@@ -550,7 +558,8 @@ class InstallScriptTests(unittest.TestCase):
             manifest = (root / "m.txt").read_text(encoding="utf-8").splitlines()
             joined = "\n".join(manifest)
             for target in ("/usr/share/alpbahos/kglobalshortcutsrc", "/usr/bin/alpbah-oturum-hazirla",
-                           "/etc/xdg/plasma-workspace/env/alpbahos-oturum.sh", "/usr/share/color-schemes/AlpbahDark.colors"):
+                           "/etc/xdg/plasma-workspace/env/alpbahos-oturum.sh", "/usr/share/color-schemes/AlpbahDark.colors",
+                           "/etc/fonts/conf.d/59-alpbahos-fonts.conf"):
                 self.assertIn(target, joined)
             # kglobalacceld /etc/xdg'yi okumaz (SimpleConfig); yanıltıcı sistem dosyası kurulmaz.
             self.assertNotIn("/etc/xdg/kglobalshortcutsrc", joined)
