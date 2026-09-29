@@ -22,7 +22,7 @@ python3 alp.py --root /tmp/alp-test --index demo/index.json remove alpbah-theme-
 
 `--root` gerçek `/` yerine bir DESTROOT verir; alpbahOS'ta bu bayrak olmadan çalıştırılır.
 
-## Bu ortamda gerçekten test edilenler (win32, Python 3.14.7)
+## Bu ortamda gerçekten test edilenler (win32, Python 3.14.7) — 22 Eylül anlık görüntüsü, güncel sayılar en altta
 
 - `search` / `list` / `info` — çalıştı.
 - `core` yöntemi tam döngü: indirme (yerel dosya, `file://` çözümlemesiyle), sha256 doğrulama, güvenli arşiv açma, `--root` altına kopyalama, `db.json`'a kayıt, `list`/`info` ile doğrulama, `remove` ile temiz geri alma. Tüm adımlar gerçekten çalıştı, çıktılar `001-alp-hybrid-pkg-proposal.md` bölüm 8'de.
@@ -125,3 +125,9 @@ Doğrulama (Fedora 44, Python 3.14.7, GCC 16.2.1, glibc 2.43): `python3 -m pytes
 - Flatpak girdisinde `version` yoksa plan sürüm yazmaz ("unknown" gösterilmez). Kurulumdan sonra gerçek sürüm `flatpak list --columns=application,version` ile okunup kaydedilir.
 
 Doğrulama: Fedora 44, 209 test geçti. Gerçek Flatpak kurulum/kaldırma: `alp install -y flatseal` → `flatseal (flatpak) -> 2.4.1 kuruldu`, `alp remove -y flatseal` temiz.
+
+## Yer tutucu erken hatası, katalog metadata'sı ve mantık düzeltmeleri (29 Eylül 2026, 019/020)
+
+- **019:** katalog motorun tanımadığı bir yer tutucu (`@ADI@`) kullanırsa alp indirmeden ve derlemeden önce reddeder (eski motor `./configure --prefix=@PREFIX@` satırında düşüyordu). `alp info` (katalogdaki kurulu olmayan paket için) ve `alp search --json` varsa `version`, `license`, `homepage` ve `size` verir (yoksa alan hiç yazılmaz, tahmin edilmez).
+- **020:** dosyanın/symlink'in dizine dönüştüğü yükseltmelerde rollback orijinali doğru geri koyar; `alp recover` ve süreç içi Ctrl-C, veritabanı kaydı yazıldıktan sonra gelen kesintide işlemi geri almaz (`FileJournal.expect_db`); `alp check` kayıtlı ama diskte olmayan dosyaları bildirir; adsız `alp upgrade` korumalı taban paketine bağımlı bir paketi tüm işlemi reddetmek yerine "geri tutuldu" yapar; arama Türkçe `I`/`ı` yazımlarını eşleştirir; eksik/bozuk index ve yazılamayan kök `alp: hata:` olur, `list`/`info`/`check` durum dizini yaratmaz; PackageKit yardımcısı bozuk index'i "eşleşme yok" saymaz; `protect --dry-run` yapılmamış değişikliği yapılmış gibi yazmaz.
+- Doğrulama: Fedora 44, Python 3.14.7: `python3 -m pytest tests/ -q` → **268 geçti**, 0 atlandı. `alp.py` SHA-256 `72bae94c2e344fed7071aec2560d8b947c5dcf440af414157e78a50175fba443`. Rootfs'e kurulmadı; gerçek PackageKit daemon'unda çalıştırılmadı. Python 3.10/3.12 (CI matrisi) yerelde çalıştırılmadı. Ayrıntı: [019](../019-alp-prefix-ve-metadata.md), [020](../020-mantik-performans-denetimi.md).
