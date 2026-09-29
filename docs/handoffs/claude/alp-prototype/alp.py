@@ -602,6 +602,13 @@ class FileJournal:
         self._backup(path, for_write=False)
 
     def will_mkdir(self, path: Path) -> None:
+        if str(path) in self._seen and not os.path.lexists(path):
+            # A file or symlink at this path was backed up and removed earlier
+            # in the transaction (it becomes a directory). _backup() would skip
+            # the path as already seen, so undo would never remove the new
+            # directory and could not put the original back.
+            self._record(["created", str(path)])
+            return
         self._backup(path, for_write=True)
 
 
@@ -632,11 +639,18 @@ def undo_journal(log_file: Path) -> list[str]:
                         path.rmdir()  # foreign files inside keep the directory
             elif kind == "symlink":
                 if os.path.lexists(path):
-                    path.unlink()
+                    if path.is_dir() and not path.is_symlink():
+                        path.rmdir()  # foreign files keep it: reported below, backup stays
+                    else:
+                        path.unlink()
                 os.symlink(entry[2], path)
             elif kind == "file":
                 slot = Path(entry[2])
                 path.parent.mkdir(parents=True, exist_ok=True)
+                if path.is_dir() and not path.is_symlink():
+                    # shutil.copy2(slot, <directory>) would nest the backup inside it and
+                    # report success; only an empty directory may make way for the file.
+                    path.rmdir()
                 try:
                     os.replace(slot, path)
                 except OSError:
