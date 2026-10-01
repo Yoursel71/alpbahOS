@@ -585,6 +585,14 @@ def _tmp_name(dst: Path) -> Path:
 
 ROLLBACK_DIR = "rollback"
 JOURNAL_NAME = "journal.jsonl"
+_FINGERPRINT_FIELDS = ("name", "version", "method", "installed_at", "files", "symlinks")
+
+
+def _record_fingerprint(record: dict) -> str:
+    """Identity of a db record for `alp recover`: what the transaction wrote,
+    not later edits such as `alp protect` adding a flag."""
+    subset = {key: record.get(key) for key in _FINGERPRINT_FIELDS}
+    return hashlib.sha256(json.dumps(subset, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()
 
 
 class FileJournal:
@@ -611,6 +619,16 @@ class FileJournal:
         """Mark the transaction as complete (after the db was saved). A crash
         after this point must not be rolled back by `alp recover`."""
         self._record(["commit"])
+
+    def expect_db(self, name: str, record: dict | None) -> None:
+        """Announce the db.json change about to be saved (`record` for a
+        package written, None for one removed). Call right before save_db.
+
+        The db is saved before the commit marker, so a process that dies in
+        between leaves a journal without a marker although db.json already
+        agrees with the files. `alp recover` uses this entry to tell that case
+        (keep the files) from a death before the save (undo the files)."""
+        self._record(["db", name, None if record is None else _record_fingerprint(record)])
 
     def _backup(self, path: Path, for_write: bool) -> None:
         key = str(path)
@@ -645,12 +663,17 @@ class FileJournal:
         self._backup(path, for_write=False)
 
     def will_mkdir(self, path: Path) -> None:
+        if str(path) in self._seen and not os.path.lexists(path):
+            # A file or symlink at this path was backed up and removed earlier
+            # in the transaction (it becomes a directory). _backup() would skip
+            # the path as already seen, so undo would never remove the new
+            # directory and could not put the original back.
+            self._record(["created", str(path)])
+            return
         self._backup(path, for_write=True)
 
 
-def undo_journal(log_file: Path) -> list[str]:
-    """Replay a journal backwards; returns the failures (empty = everything
-    was restored). A journal that reached its commit marker is left alone."""
+def _read_journal(log_file: Path) -> list[list]:
     entries: list[list] = []
     try:
         with open(log_file, "r", encoding="utf-8") as f:
@@ -661,10 +684,37 @@ def undo_journal(log_file: Path) -> list[str]:
                     continue  # truncated last line of a killed process
     except FileNotFoundError:
         return []
+    return entries
+
+
+def _entries_committed(entries: list[list], db_state=None) -> bool:
     if any(e and e[0] == "commit" for e in entries):
+        return True
+    announced = [e for e in entries if e and e[0] == "db"]
+    if announced and db_state is not None:
+        _, name, digest = announced[-1]
+        return bool(db_state(name, digest))
+    return False
+
+
+def journal_committed(log_file: Path, db_state=None) -> bool:
+    """True when the transaction must not be rolled back: it reached its commit
+    marker, or `db_state(name, fingerprint)` says db.json already holds the
+    record it announced with FileJournal.expect_db (death between the db save
+    and the commit marker)."""
+    return _entries_committed(_read_journal(log_file), db_state)
+
+
+def undo_journal(log_file: Path, db_state=None) -> list[str]:
+    """Replay a journal backwards; returns the failures (empty = everything
+    was restored). A committed journal (see journal_committed) is left alone."""
+    entries = _read_journal(log_file)
+    if _entries_committed(entries, db_state):
         return []
     failures: list[str] = []
     for entry in reversed(entries):
+        if not entry or entry[0] in ("commit", "db"):
+            continue
         kind, path = entry[0], Path(entry[1])
         try:
             if kind == "created":
@@ -675,11 +725,18 @@ def undo_journal(log_file: Path) -> list[str]:
                         path.rmdir()  # foreign files inside keep the directory
             elif kind == "symlink":
                 if os.path.lexists(path):
-                    path.unlink()
+                    if path.is_dir() and not path.is_symlink():
+                        path.rmdir()  # foreign files keep it: reported below, backup stays
+                    else:
+                        path.unlink()
                 os.symlink(entry[2], path)
             elif kind == "file":
                 slot = Path(entry[2])
                 path.parent.mkdir(parents=True, exist_ok=True)
+                if path.is_dir() and not path.is_symlink():
+                    # shutil.copy2(slot, <directory>) would nest the backup inside it and
+                    # report success; only an empty directory may make way for the file.
+                    path.rmdir()
                 try:
                     os.replace(slot, path)
                 except OSError:
@@ -703,13 +760,19 @@ def pending_journals(paths: Paths) -> list[Path]:
 @contextlib.contextmanager
 def _transaction(paths: Paths, label: str):
     """One package's filesystem changes plus its db update: all of it happens,
-    or (on any error, including Ctrl-C) none of the file changes stay."""
+    or (on any error, including Ctrl-C) none of the file changes stay -- unless the
+    error came after db.json was saved, when the finished transaction is kept."""
     safe = re.sub(r"[^A-Za-z0-9._-]", "_", label)
     journal = FileJournal(paths.state_dir / ROLLBACK_DIR / f"{int(time.time() * 1000)}-{os.getpid()}-{safe}")
     try:
         yield journal
     except BaseException:
         journal.close()
+        if journal_committed(journal.log_file, _current_db_state(paths)):
+            # Ctrl-C (or an error) after save_db returned: db.json already holds this
+            # transaction's record, so the files must stay -- same rule `alp recover` applies.
+            shutil.rmtree(journal.dir, ignore_errors=True)
+            raise
         failures = undo_journal(journal.log_file)
         if failures:
             print(
@@ -722,8 +785,12 @@ def _transaction(paths: Paths, label: str):
             print(f"alp: hata nedeniyle {label} için yapılan dosya değişiklikleri geri alındı.", file=sys.stderr)
         raise
     else:
-        journal.commit()
-        journal.close()
+        # The db is already saved. A failing commit write (full disk) must not
+        # undo the transaction; recover() would judge it from db.json (expect_db).
+        with contextlib.suppress(OSError):
+            journal.commit()
+        with contextlib.suppress(OSError):
+            journal.close()
         shutil.rmtree(journal.dir, ignore_errors=True)
 
 
@@ -1551,8 +1618,9 @@ def remove_package(paths: Paths, db: dict, name: str, dry_run: bool, journal: Fi
 
 def _fold(text: str) -> str:
     # casefold() turns Turkish "İ" into "i" + U+0307; drop the dot so
-    # "DÜZENLEYİCİ" still matches "düzenleyici".
-    return text.casefold().replace("\u0307", "")
+    # "DÜZENLEYİCİ" still matches "düzenleyici". It turns "I" into "i" but leaves
+    # "ı" alone, so "IŞIK" would not match "ışık"; fold the dotless ı to i as well.
+    return text.casefold().replace("\u0307", "").replace("\u0131", "i")
 
 
 def _entry_metadata(entry: dict, index_dir: Path | None) -> dict:
@@ -2063,6 +2131,8 @@ def _run_plan(
                     record["protected"] = True
                 if not dry_run:
                     db["packages"][step.name] = record
+                    if journal is not None:
+                        journal.expect_db(step.name, record)
                     save_db(paths, db)
         except Exception as exc:
             _emit(paths, "error", name=step.name, message=_first_line(exc), completed=list(done))
@@ -2196,7 +2266,10 @@ def _drop_kept_back(index: dict, index_dir: Path, installed: dict, targets: list
     for target in targets:
         try:
             steps = plan_transaction(index, index_dir, installed, accepted + [target], mode="upgrade")
-            problems = state_problems(index, installed, steps)
+            # _plan_problems also covers protected lfs-base packages: a dependency
+            # that would need one of them upgraded must hold this package back
+            # instead of making _plan_or_refuse() refuse the whole upgrade.
+            problems = _plan_problems(index, installed, steps)
         except AlpError as exc:
             problems = [str(exc)]
         if problems:
@@ -2271,6 +2344,8 @@ def _remove_many(order: list[str], paths: Paths, db: dict, dry_run: bool) -> Non
             with _maybe_transaction(paths, f"remove-{name}", dry_run) as journal:
                 remove_package(paths, db, name, dry_run, journal=journal)
                 if not dry_run:
+                    if journal is not None:
+                        journal.expect_db(name, None)
                     save_db(paths, db)
         except Exception as exc:
             _emit(paths, "error", name=name, message=_first_line(exc), completed=list(order[:position]))
@@ -2338,18 +2413,45 @@ def _require_no_pending(paths: Paths) -> None:
         )
 
 
+def _current_db_state(paths: Paths):
+    """db_state callback built from db.json as it is now, or None when it cannot
+    be read (then only an explicit commit marker protects a journal)."""
+    try:
+        return _db_reflects(load_db(paths))
+    except (AlpError, OSError, ValueError):
+        return None
+
+
+def _db_reflects(db: dict):
+    """db_state callback for journal_committed(): does db.json already hold
+    the change a journal announced?"""
+    def state(name: str, fingerprint: str | None) -> bool:
+        record = db["packages"].get(name)
+        if fingerprint is None:
+            return record is None
+        return record is not None and _record_fingerprint(record) == fingerprint
+    return state
+
+
 def cmd_recover(args: argparse.Namespace, paths: Paths) -> int:
     """Undo what a killed alp process (kill -9, power cut) left half-done.
     The db is only saved inside a transaction after its files were written,
-    so restoring the files puts both back to the last consistent state."""
+    so restoring the files puts both back to the last consistent state -- unless
+    the process died after the db save (before the commit marker): then db.json
+    already matches the files and the transaction is kept (see expect_db)."""
     paths.ensure()
     with DbLock(paths.lock_file):
         pending = pending_journals(paths)
         if not pending:
             print("Geri alınacak yarım işlem yok.")
             return 0
+        db_state = _current_db_state(paths)
         bad = 0
         for journal_dir in reversed(pending):  # newest first
+            if journal_committed(journal_dir / JOURNAL_NAME, db_state):
+                shutil.rmtree(journal_dir, ignore_errors=True)
+                print(f"{journal_dir.name}: işlem tamamlanmıştı (veritabanı kaydı yazılmış); geri alınmadı, günlük temizlendi.")
+                continue
             failures = undo_journal(journal_dir / JOURNAL_NAME)
             if failures:
                 bad += 1
@@ -2375,8 +2477,25 @@ def cmd_protect(args: argparse.Namespace, paths: Paths, protect: bool) -> int:
             pkg.pop("protected", None)
         if not args.dry_run:
             save_db(paths, db)
+    if args.dry_run:
+        print(f"[dry-run] {args.name} {'korumalı olarak işaretlenecekti' if protect else 'korumasız yapılacaktı'}; veritabanı değiştirilmedi.")
+        return 0
     print(f"{args.name} {'korumalı olarak işaretlendi' if protect else 'artık korumalı değil'}.")
     return 0
+
+
+def _missing_owned_files(root: Path, installed: dict) -> dict[str, list[str]]:
+    """Recorded files/symlinks that no longer exist under root, per package.
+    A dangling symlink still counts as present (lexists)."""
+    missing: dict[str, list[str]] = {}
+    for name, record in sorted(installed.items()):
+        if record.get("method") == "flatpak":
+            continue
+        rels = {"/" + rel.lstrip("/") for rel in [*record.get("files", []), *record.get("symlinks", [])]}
+        gone = sorted(rel for rel in rels if not os.path.lexists(root / rel.lstrip("/")))
+        if gone:
+            missing[name] = gone
+    return missing
 
 
 def cmd_check(paths: Paths, index: dict, index_dir: Path) -> int:
@@ -2393,6 +2512,8 @@ def cmd_check(paths: Paths, index: dict, index_dir: Path) -> int:
     orphans = find_orphans(index, installed)
     if orphans:
         print(f"sahipsiz bağımlılık: {', '.join(orphans)} (alp autoremove)")
+    for name, gone in _missing_owned_files(paths.root, installed).items():
+        problems.append(f"{name}: {len(gone)} kayıtlı dosya/symlink diskte yok (ör. {gone[0]})")
     if problems or pending:
         for p in problems:
             print(f"SORUN: {p}")
@@ -2873,12 +2994,12 @@ def main(argv: list[str] | None = None) -> int:
         index = load_index(index_path)
         if args.command == "search":
             return cmd_search(index, args.term, as_json=args.json, index_dir=index_dir)
+        # info/list/check only read: load_db() and pending_journals() cope with a
+        # missing state directory, so they must not create it (or fail on a read-only root).
         if args.command == "info":
-            paths.ensure()
             db = load_db(paths)
             return cmd_info(index, db, args.name, index_dir=index_dir)
         if args.command == "list":
-            paths.ensure()
             return cmd_list(load_db(paths), as_json=args.json)
         paths.keep_build = getattr(args, "keep_build", False)
         paths.relocate = getattr(args, "relocate", False)
@@ -2905,7 +3026,6 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "autoremove":
             return cmd_autoremove(args, paths, index)
         if args.command == "check":
-            paths.ensure()
             return cmd_check(paths, index, index_dir)
         raise AlpError(f"Bilinmeyen komut: {args.command}")
     except AlpError as exc:
@@ -2913,6 +3033,10 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     except subprocess.CalledProcessError as exc:
         print(f"alp: alt işlem başarısız (çıkış {exc.returncode}): {' '.join(exc.cmd)}", file=sys.stderr)
+        return 1
+    except (OSError, json.JSONDecodeError) as exc:
+        # missing/unreadable/corrupt index, unwritable root or state dir, full disk, ...
+        print(f"alp: hata: {exc}", file=sys.stderr)
         return 1
 
 

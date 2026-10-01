@@ -55,6 +55,10 @@ def alp_search(alp_path: Path, root: Path, index: Path, term: str) -> list[dict]
     proc = _run_alp(alp_path, root, index, ["--json", "search", term])
     if proc.returncode not in (0, 1):  # 1 == "eşleşme yok", hata değil
         raise AlpBackendError(proc.stderr.strip() or "alp search başarısız", is_locked=_is_lock_error(proc.stderr))
+    if proc.returncode == 1 and not proc.stdout.strip():
+        # "eşleşme yok" always prints a JSON list ("[]"); exit 1 with nothing on stdout
+        # is a failure (missing/corrupt index, ...) and must not look like an empty result.
+        raise AlpBackendError(proc.stderr.strip() or "alp search başarısız", is_locked=_is_lock_error(proc.stderr))
     return json.loads(proc.stdout or "[]")
 
 
