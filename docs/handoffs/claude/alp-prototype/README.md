@@ -63,6 +63,21 @@ cd docs/handoffs/claude/alp-prototype
 python3 -m pytest tests/ -v
 ```
 
+## Tekrarlanabilir imaj üretimi: `SOURCE_DATE_EPOCH` (1 Ekim 2026)
+
+İmaj üretirken aynı paketlerin iki temiz kurulumu bayt bayt aynı `var/lib/alp/db.json` vermelidir. `alp`, [reproducible-builds](https://reproducible-builds.org/specs/source-date-epoch/) kuralına uyar: `SOURCE_DATE_EPOCH` tanımlıysa veritabanına yazılan her zaman damgası (`installed_at`, `updated_at`) o Unix saniyesidir; tanımlı değilse gerçek saat kullanılır.
+
+```bash
+SOURCE_DATE_EPOCH=1756684800 alp --root /mnt/lfs --index index.json install zlib
+```
+
+- Değer yalnız ASCII rakamlardan oluşan saniye sayısıdır (`date +%s` biçimi), 0 ile 253402300799 (9999-12-31T23:59:59Z) arasında. Boş, eksi, ondalık, harf, boşluklu veya aralık dışı değer **reddedilir** (çıkış 1) ve hiçbir şey yazılmaz; gerçek saate sessizce düşmek tekrarlanabilirliği bozardı. Doğrulama `help` dışındaki her komutun başında yapılır.
+- Değişken **yalnız imaj üretimi içindir**; kullanıcı oturumunda tanımlı bırakılırsa kayıt zamanları dondurulur.
+- Kapsam: db'ye yazılan tüm zaman alanları (core, recipe, flatpak, adopt-base, upgrade, protect). Kasıtlı olarak gerçek saatte kalanlar: kilit dosyasındaki `ts=` (kaldırılırken silinen tanı satırı) ve geri alma günlüğü dizin adındaki milisaniye (benzersizlik anahtarı).
+- `build.log_path` artık kök-bağıl (`/var/log/alp/<ad>-<sürüm>.build.log`) yazılır: `--root /` ile aynı değer, ama farklı yoldaki iki kök artık farklı db üretmez.
+- Kapsam dışı: kurulan dosya/dizinlerin mtime'ı (`alp` arşivdeki mtime'ı korumaz; kurulum anıdır) ve recipe derleme günlüğünün içeriği (alt işlem çıktısı).
+- Testler: `tests/test_source_date_epoch.py`.
+
 ## Gerçek Linux'ta ilk uçtan uca test (22 Eylül 2026)
 
 `alp` ilk kez **gerçek bir Linux ortamında** (Codex'in `alpbah-builder` Ubuntu 24.04.5 VM'i, SSH ile, `sa@172.28.174.11`) test edildi — bkz. [006-alp-real-linux-test.md](../006-alp-real-linux-test.md) tam ayrıntı için. Özet:

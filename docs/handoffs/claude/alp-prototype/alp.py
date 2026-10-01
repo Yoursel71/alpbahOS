@@ -54,14 +54,48 @@ DOWNLOAD_TIMEOUT_S = 30
 BASE_MANIFEST_SCHEMA = "alpbahOS.package-files/v1"
 _SHA256_RE = re.compile(r"[0-9a-f]{64}\Z")
 _PACKAGE_NAME_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._+-]*\Z")
+SOURCE_DATE_EPOCH_ENV = "SOURCE_DATE_EPOCH"
+_SOURCE_DATE_EPOCH_RE = re.compile(r"[0-9]{1,12}\Z")  # ASCII digits only: no sign, space, fraction or Unicode digits
+_MAX_SOURCE_DATE_EPOCH = 253402300799  # 9999-12-31T23:59:59Z, the last second with a four-digit year
+_TIMESTAMP_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 
 class AlpError(RuntimeError):
     """User-facing error. main() prints this without a Python traceback."""
 
 
+def source_date_epoch() -> int | None:
+    """The fixed build time requested through SOURCE_DATE_EPOCH (reproducible-builds
+    convention: whole seconds since the Unix epoch), or None when the real clock
+    applies. A set but malformed value is an error and never falls back to the
+    real clock: that would silently produce a non-reproducible image. main()
+    calls this before any command runs, so a bad value stops alp before the
+    lock, the db or any file is touched."""
+    raw = os.environ.get(SOURCE_DATE_EPOCH_ENV)
+    if raw is None:
+        return None
+    if not _SOURCE_DATE_EPOCH_RE.match(raw) or int(raw) > _MAX_SOURCE_DATE_EPOCH:
+        raise AlpError(
+            f"{SOURCE_DATE_EPOCH_ENV} geçersiz: {raw!r}. 0 ile {_MAX_SOURCE_DATE_EPOCH} arasında, yalnız "
+            "ASCII rakamlardan oluşan bir saniye sayısı olmalı (örn. `date +%s` çıktısı). "
+            "Gerçek saati kullanmak için değişkeni boş bırakmayın, kaldırın (unset)."
+        )
+    return int(raw)
+
+
+def _wall_now() -> str:
+    """The real UTC time, for diagnostics that must stay truthful (see DbLock)."""
+    return time.strftime(_TIMESTAMP_FORMAT, time.gmtime())
+
+
 def _now() -> str:
-    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    """Timestamp for every record alp persists in its db (installed_at, updated_at):
+    the SOURCE_DATE_EPOCH second when set, so two clean installs of the same
+    packages give byte-identical db.json files; the real clock otherwise."""
+    epoch = source_date_epoch()
+    if epoch is None:
+        return _wall_now()
+    return time.strftime(_TIMESTAMP_FORMAT, time.gmtime(epoch))
 
 
 # --------------------------------------------------------------------------
@@ -97,6 +131,13 @@ class Paths:
     def ensure(self) -> None:
         for d in (self.state_dir, self.log_dir, self.cache_dir):
             d.mkdir(parents=True, exist_ok=True)
+
+
+def _target_path(paths: Paths, path: Path) -> str:
+    """`path` as seen from inside the target system ("/var/log/alp/x.build.log"
+    for --root / and for --root /tmp/deneme alike), so db.json records carry no
+    host-specific prefix and two roots at different paths stay byte-identical."""
+    return "/" + path.relative_to(paths.root).as_posix()
 
 
 def _first_line(exc: BaseException) -> str:
@@ -171,7 +212,9 @@ class DbLock:
                     f"Kilit dosyası: {self.lock_file}"
                 ) from exc
         with os.fdopen(fd, "w") as f:
-            f.write(f"pid={os.getpid()} host={socket.gethostname()} ts={_now()}\n")
+            # Real clock on purpose: the holder line is only a diagnostic ("who locked it,
+            # since when"), is deleted on release, and a frozen build time would mislead.
+            f.write(f"pid={os.getpid()} host={socket.gethostname()} ts={_wall_now()}\n")
         self._held = True
         return self
 
@@ -1182,7 +1225,7 @@ def install_recipe(
         "installed_at": _now(),
         "installed_by": f"alp/{ALP_VERSION}",
         "source": {"url": recipe["source_url"], "sha256": recipe["sha256"], "recipe": entry["recipe"]},
-        "build": {"log_path": str(log_path)},
+        "build": {"log_path": _target_path(paths, log_path)},
         "files": merged.installed,
         "symlinks": merged.symlinks,
         "config_files": sorted(config_files),
@@ -1261,7 +1304,7 @@ def upgrade_recipe(
         "installed_at": _now(),
         "installed_by": f"alp/{ALP_VERSION}",
         "source": {"url": recipe["source_url"], "sha256": recipe["sha256"], "recipe": entry["recipe"]},
-        "build": {"log_path": str(log_path)},
+        "build": {"log_path": _target_path(paths, log_path)},
         "files": merged.installed,
         "symlinks": merged.symlinks,
         "config_files": sorted(config_files),
@@ -2639,6 +2682,14 @@ def developer_help() -> str:
   adopt-base        Önceden kurulmuş LFS dosyalarını korumalı paket olarak kaydet
                     (ayrıntı: alp adopt-base --help)
 
+Ortam değişkeni:
+  SOURCE_DATE_EPOCH=SANİYE
+                    Veritabanına yazılan zaman damgalarını (installed_at,
+                    updated_at) bu Unix saniyesine sabitler; aynı paketlerin
+                    iki temiz kurulumu bayt bayt aynı db.json verir. Yalnız imaj
+                    üretimi içindir: kullanıcı oturumunda tanımlı bırakmayın.
+                    Geçersiz değer (boş, eksi, ondalık, harf) komutu reddeder.
+
 Bu seçenekler komuttan önce ya da sonra yazılabilir:
   alp --root /tmp/deneme install figlet
   alp install figlet --root /tmp/deneme
@@ -2812,6 +2863,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     paths = Paths.resolve(args.root)
     try:
+        source_date_epoch()  # reject a malformed SOURCE_DATE_EPOCH before anything is written
         if args.command == "adopt-base":
             return cmd_adopt_base(args, paths)
         if not args.index:
