@@ -1,5 +1,74 @@
 # alpbahOS — İş kaydı
 
+## 2 Ekim 2026 — NVMe/HDD temizliği ve Faz 2 kapısı
+
+- Kullanıcının açık isteğiyle donmuş temizleme planı `67c3b0c8cbd5b660199f60ce30cb7b633d7eae7584782fcad08057c7f55dd675` uygulanıp NVMe’deki 1.222 eski hedef ve HDD’deki 93 eski yedek/build dizini kaldırıldı. Korunan milestone listesi hash/inode ile doğrulandı; M09 VirGL imajı, üç GCC arşivi ve QtBase replay arşivi HDD’de kaldı. GCC/QtBase kaynakları yalnız destination hash eşleşmesinden sonra kaldırıldı. Snapshot’ları zaten silinmiş glibc/OpenSSL/binutils/Python akışları hash/inode ve snapshot makbuzuyla silindi. Ayrıntı: `docs/verification/infra-cleanup-2026-10-02.md`.
+- Ek envanterdeki 273 replay akışından, snapshot kanıtıyla yetim olduğu doğrulanan 272 dosya (7,488,096,644 mantıksal byte) kaldırıldı; tek canlı libwacom `after-ro` akışı bırakıldı. Makbuz SHA `8d924d1e37f26b0bf0bf025ad38d88eb55537d8b07ea353f1ed4b9429ddfa065`; kaldırılan kaynak hash toplamı `7279c23a39e42af5bb208376a66d5d59ebf705f67169ec73e63f81a207045fba`.
+- Makbuzlar: NVMe removed-targets SHA `5e6e788a8a19b9fe2257a71e80c52fa74f65a6f366967eadba029192816accd0`; HDD result SHA `7586048d4434125caa8294c931b74ec5fde1f3c10355ac1dbe385968af9c4b63`; root summary SHA `d79981fda244ea78f5732b52ad642528432d7ac22511322d4ecd7a8befe9de85`; orphan stream result SHA `b126acaa2d5ba5421c3be3eb3401b5d9a84e0c9452be0d2e1331cf60d6a8b9bb`.
+- Aynı boot root audit before/after mevcut. `rpm -Va` her karşılaştırmada exit 1; baseline config/time/mode/ownership/repository-file farklılıkları aynı hash ile sürüyor. Bu temiz host sonucu değildir; cleanup kaynaklı yeni RPM farkı görülmedi. Kernel journal exit 0 ve hata araması temiz. Son audit makbuzu: `/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/orphan-stream-host-audit-after.json`, SHA `e007477e5ff8bfcf19997b392c07c3abfba5eb36ae1004d3d587a20497406160`.
+- Son örnek disk boşluğu: NVMe 79,517,171,712 / 509,332,160,512 byte = 15.61%; SSD 59.18%; HDD 70.95%. NVMe eşik üstünde ancak marj küçük; her build öncesi yeniden ölçülmeli. Plasma/KWin açık kaldı; QEMU/build süreci yok.
+- Faz 2 compiler/VM başlatılmadı. `phase2` ve `toolchain-run` guard’ı için gerçek zlib raw Alp DB hash eşitliği ile `phase1-acceptance.json` hâlâ yok; `_now()` kaynaklı `installed_at`/`updated_at` farkı Claude sahipliğindeki açık devir notunda. OC ve m64+m32 kullanıcı seçimi hazır; bu, Faz 1 acceptance kapısını geçmiyor.
+
+## 2 Ekim 2026 — Chapter 8 guest sequence runner ve v42 regression
+
+- `scripts/infra/guest_base.py` eklendi: kabul edilmiş Chapter 4/5 package önekini kontrol eder; canonical 79’luk Chapter 8 planını bağlar; güncel input/source/toolchain/base authorization ve gerçek guest boot ID’si olmadan ilerlemez. Paketleri sıralı DESTDIR→manifest→Alp install akışında işler, interrupted build/install marker’larını otomatik tekrarlamaz, exact final package set’ini kontrol eder, gözlenen guest payload ve ham Alp DB kanıtı üretir.
+- `tests/test_base_plan.py` üç runner testiyle sıralama/eksik tarif ve binding drift davranışını kapsıyor. Odaklı testler 3/3 geçti; `verify-base-inventory` 79/79 tarif için `INVENTORY_AND_RECIPE_COVERAGE_VERIFIED` döndürdü.
+- Tam host/synthetic suite v42: 280 test, 2 skip, 93.527 s PASS. Log `/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/infra-full-test-suite-v42-20261002.log`, SHA-256 `923742014c235f46acbe4d6b8a35605028ea9f366bd1ba98907cdbc9c8f5447d`; receipt `/mnt/alpbahOS-data/alpbahos-infra-rebuild/state/infra-full-test-suite-v42-20261002.json`, SHA-256 `a652feeac9d3553baddb774a76360569cb25bd633bd7aeb10731b9ad018258e4`, mode 0600; build input SHA-256 `5d7243bccf669353972422246a59a507d49d964042a7c48fb7d1ab41ffadaac9`.
+- Bu guest-side kod henüz host `base-run`, stage-run/audit/acceptance/checkpoint entegrasyonu değildir ve gerçek VM’de çalıştırılmadı: Chapter 8 guest install 0/79. Hiçbir ağır paket derlemesi başlatılmadı; Plasma/KWin açık. Faz 1 hâlâ Alp raw DB timestamp tekrarlanabilirliği, root cleanup/post-audit kanıtı ve acceptance makbuzu bekliyor.
+
+## 2 Ekim 2026 — GCC Chapter 8 tarifi v41
+
+- GCC 15.2, MLFS `ml-12.4` commit `d7bc803361f445a649d0ca0832219f75b6e68683` Chapter 8 XML SHA `473f1b6097fe51655d02ac9660d0e9b67d620e35d628e50f3c0925df8becfeff` ile envantere bağlandı. Tarif yalnız `m64,m32` etkinleştirir; kitap düzen/stack-realignment düzeltmeleri, tester kapsamlı GCC test politikası, DESTDIR cpp/man/LTO bağlantıları ve stage içi GDB helper taşıması tanımlıdır. Kaynak cache SHA `438fd996826b0c82485a29da03a72d71d6e3541a83ec702df4271f6fe025d24e`; guest build/test çalıştırılmadı.
+- `test_base_plan`: 12/12 geçti. Ön düzenleme fikstürleri, Bash wrapper sözdizimi, GCC staged link hedefleri ve GDB helper taşıması geçti. `verify-base-inventory`: 79 paket, 79 tarif, `INVENTORY_AND_RECIPE_COVERAGE_VERIFIED` (recipe binding only).
+- Tam host/synthetic suite v41: 275 test, 2 skip, 100.333 s PASS. Log `/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/infra-full-test-suite-v41-20261002.log`, SHA-256 `6774fad5e37681886bca86144cee5478265caa71c2f13fe494a63495b766428c`; receipt `/mnt/alpbahOS-data/alpbahos-infra-rebuild/state/infra-full-test-suite-v41-20261002.json`, SHA-256 `89019e28471d49107ec79700584a8f473eebf85e4aaaadee9a1c4f8d949df043`, mode 0600; input SHA-256 `ce1076c0b3738131acce235de27717f912eeed0424eca37ca51b39a497653e8b`.
+- Bu host/synthetic ve recipe metadata kanıtıdır. Chapter 8 guest runner/base install 0/79, gerçek derleme/sahiplik kabulü yok. Alp DB ham tekrarı, kullanıcı root cleanup/host audit’i ve Faz 1 acceptance makbuzu açık. Masaüstü açık kaldı.
+
+## 2 Ekim 2026 — Glibc Chapter 8 multilib tarifi v40
+
+- Glibc 2.42, MLFS `ml-12.4` commit `d7bc803361f445a649d0ca0832219f75b6e68683` Chapter 8 XML SHA `2e0963fd6ac1a86b623037f1fb778989ba8ec5eba281bf88074a8740e63c9830` ile envantere bağlandı. FHS patch’i, m64 kritik test özeti/politikası, m64/m32 DESTDIR kurulumları ve sınırlı m32 library/header birleştirmesi tanımlandı. Kaynak cache SHA `d1775e32e4628e64ef930f435b67bb63af7599acb6be2b335b9f19f16509f17f`; `config.guess` `x86_64-pc-linux-gnu` döndürdü. Guest build/test çalıştırılmadı.
+- Glibc FHS sed dönüşüm fikstürü ve `bash -n` geçti; `test_base_plan` 12/12 geçti. Envanter doğrulayıcı: 79 paket, 78 tarif, GCC pending; `INVENTORY_VERIFIED_RECIPE_COVERAGE_INCOMPLETE`.
+- Tam host/synthetic suite v40: 275 test, 2 skip, 93.448 s PASS. Log `/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/infra-full-test-suite-v40-20261002.log`, SHA-256 `b8f535dda9461fcf43b7d0f008ad80d8b683d0cc392a47b3428435f1c7c1dfcd`; receipt `/mnt/alpbahOS-data/alpbahos-infra-rebuild/state/infra-full-test-suite-v40-20261002.json`, SHA-256 `70146ef8930259e24d9fd3fbadf1dbdad0ef7738c51403edbab9980e02eabc22`, mode 0600; input SHA-256 `053aee5bac3244ce44accc5672df71fe1cb82c389addf47a369372600a421644`.
+- Bu host/synthetic kanıttır; Chapter 8 guest runner/base install 0/79 ve Alp sahiplik kabulü yoktur. Ham Alp DB tekrarlanabilirliği, kullanıcı root cleanup/host audit’i ve Faz 1 acceptance makbuzu açık. Masaüstü açık kaldı.
+
+## 2 Ekim 2026 — Binutils Chapter 8 tarifi v39
+
+- Binutils 2.45, MLFS `ml-12.4` commit `d7bc803361f445a649d0ca0832219f75b6e68683` Chapter 8 XML SHA `ff9e545c5c54617e3433dfd8f5392ffcecfdafc15b1ae1ca8725a48212a4168d` ile envantere bağlandı. Ayrı `build/` dizini, kontrollü `make -k check` özeti/politika denetimi ve yalnız DESTDIR altındaki kitap kapsamlı temizleme tanımlandı. Guest build/test çalıştırılmadı.
+- `PYTHONPATH=tests:scripts/infra python3 -m unittest test_base_plan -v`: 12/12 geçti; test wrapper `bash -n` geçti. `verify-base-inventory`: 79 paket, 77 tarif, 2 bekleyen (`glibc`, `gcc`), `INVENTORY_VERIFIED_RECIPE_COVERAGE_INCOMPLETE`; source manifest SHA-256 `0df6f8614ba0b4c335561f69c9458e972be5a738bd3ffa3c6f955ca12b6c8027`.
+- Tam host/synthetic suite v39: 275 test, 2 skip, 92.667 s PASS. Log `/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/infra-full-test-suite-v39-20261002.log`, SHA-256 `c12acf54911696cd4aeaa8d43b1a22f791f821798b92b96f3e4357ae96c9b0d0`; receipt `/mnt/alpbahOS-data/alpbahos-infra-rebuild/state/infra-full-test-suite-v39-20261002.json`, SHA-256 `abfd2b543476e42ce4c3c97e2667c91a3248bb30bbf70479f204fd50a442c8b9`, mode 0600; input SHA-256 `eaff8fc7cee7256a999b10d9d30c8640d2c83ee2249cf15f31f2aaaf4692027a`.
+- Bu host/synthetic kanıttır; Chapter 8 guest runner/base install 0/79, guest derleme ve Alp sahiplik kabulü yoktur. Ham Alp DB tekrarlanabilirliği, kullanıcı tarafından çalıştırılacak root cleanup/host audit ve Faz 1 acceptance makbuzu açık. Masaüstü açık kaldı.
+
+## 2 Ekim 2026 — Coreutils ve Util-linux recipe bağları v38
+
+- MLFS `ml-12.4` pinned commit `d7bc803361f445a649d0ca0832219f75b6e68683` içindeki Coreutils XML SHA `b2ecac2f8dfc1ebc716ff6f91f01f6e78521c6d2243cb9b1df02bdd1786ed541` ve Util-linux XML SHA `d0a6aad684bf6ea1dd2fcc6fe4a611ec923db8b643c5d7098858e9bed9547008` bağlandı. Coreutils pinned patch’ler, root check, tester check ve çıkışta geçici grubun silinmesini içeriyor. Util-linux m64/m32 build-stage, yalnız `/usr/lib32` payload kopyası ve Builder VM içinde geçici `/etc/fstab` fixture geri yüklemesini içeriyor. Guest build/test koşulmadı.
+- Üç root-scope test sarmalayıcısı için `bash -n` geçti; 12 focused base-plan testi geçti. `verify-base-inventory`: 79 paket, 76 tarif, 3 pending, `INVENTORY_VERIFIED_RECIPE_COVERAGE_INCOMPLETE`; source manifest SHA-256 `0df6f8614ba0b4c335561f69c9458e972be5a738bd3ffa3c6f955ca12b6c8027`.
+- Tam host/synthetic suite v38: 275 test, 2 skip, 94.031 s PASS. Log `/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/infra-full-test-suite-v38-20261002.log`, SHA-256 `7fd59767c83dfcd82da9c40330683c4197e1abc618f6cd88d058300f05f155a4`; receipt `/mnt/alpbahOS-data/alpbahos-infra-rebuild/state/infra-full-test-suite-v38-20261002.json`, SHA-256 `9c8ac9872050761487ea62aeb73bf2f3b399756f1594e994d40f7b095ba5c7fa`; input SHA-256 `0f3a8886bdba6ee2014f974adffe38adc9b2b1d1b5423b7672fe49bf5af05d47`.
+- Üç pending glibc/binutils/gcc; Alp DB zaman damgası tekrarlanabilirliği ile ayrıcalıklı host cleanup/post-audit açık. Faz 1 kabul makbuzu yoktur; guest build, root acceptance veya Alp sahiplik kabulü iddiası yapılmıyor. Desktop açık.
+
+## 2 Ekim 2026 — root-scoped recipe test desteği v37
+
+- `package_stage.py` artık `root` test kimliğini kabul ediyor; yalnız euid 0 olan Builder VM root koordinatörü, gerçekten test komutu tanımlı reçeteleri root/tester kimliğiyle çalıştırabiliyor. Testler bitince build ağacı `lfs:lfs` sahipliğine döndürülüyor.
+- Systemd reçetesi kitap testini geçici `/etc/os-release` fixture ile tanımlıyor. Wrapper mevcut dosya veya symlink'i saklıyor, test sonunda önceki halini (ya da yokluğunu) geri yüklüyor; `bash -n` ve 12 base-plan testi geçti. Bu host kontrolüdür; Systemd paket testi henüz çalıştırılmadı.
+- Envanter doğrulayıcısı `INVENTORY_VERIFIED_RECIPE_COVERAGE_INCOMPLETE`: 79 paket, 74 bağlı tarif, 5 pending; kaynak manifest SHA-256 `0df6f8614ba0b4c335561f69c9458e972be5a738bd3ffa3c6f955ca12b6c8027`. Tam host/synthetic suite v37: 275 test, 2 skip, 89.676 s PASS. Log `/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/infra-full-test-suite-v37-20261002.log`, SHA-256 `87ed6f9794f46ab801d28fdaf7c72f46e52e0386590c1bae92b2f7281886fc21`; receipt `/mnt/alpbahOS-data/alpbahos-infra-rebuild/state/infra-full-test-suite-v37-20261002.json`, SHA-256 `2124bf85b5445f1760962d303e653e4ad25df06890812c78b475ed5d6200c902`; input SHA-256 `726982594c80b5ff708696e836c6891993afb1dbc056dc89d36072069f213d73`.
+- Bu doğrulama guest derlemesi, root acceptance, Alp sahiplik kabulü, SBU veya Phase 1 makbuzu değildir. Ham Alp DB zaman damgası uyuşmazlığı ve root cleanup/post-audit kapıları açık. Plasma/KWin oturumu açık tutuldu.
+
+## 2 Ekim 2026 — Systemd multilib tarifi v36
+
+- Pinned MLFS `ml-12.4` Systemd 257.8 recipe added with m64 and i686 m32 Meson/Ninja passes, staged systemd man pages, and only the documented m32 `libsystemd`, `libudev`, and pkg-config payload copied into the final stage. Target machine-id/preset operations are deferred. The book's tests require a guest-root `/etc/os-release` fixture, so they remain unrun and no test pass is claimed in recipe metadata. Coverage is 74/79; five packages remain pending.
+- Inventory verifier returned `INVENTORY_VERIFIED_RECIPE_COVERAGE_INCOMPLETE`. Focused base-plan tests passed 11/11, including formatting every recipe argv placeholder. Full host/synthetic suite v36 passed 274 tests, 2 skipped, in 89.631 seconds. Log SHA-256 `e95968db664447a1dd6f74cabf1704c001405821028f6bf24cfad76f3b6360ce`; state SHA-256 `3328c28462c68a0649715ccba3fe97fb2ec4c050aac698420f8523d9a1b31e2e`; inputs SHA-256 `057a96ffbc64e21d77c03424b9d493bec554eb64f18d5c5c2fbb1c59e273e4f0`.
+- Host/synthetic metadata evidence only. No guest build, Alp ownership acceptance, or Phase 1 receipt. Alp database timestamp reproducibility and privileged host cleanup/post-audit remain unresolved. Plasma and KWin remain running.
+
+## 1 Ekim 2026 — Ncurses multilib tarifi v35
+
+- Pinned MLFS `ml-12.4` Ncurses 6.5-20250809 recipe added with staged m64 and i686 m32 passes, wide-character header adjustment, `/usr/lib32` linker scripts and pkg-config aliases. The book describes tests as post-install-only, so no test pass is claimed. Inventory coverage is 73/79; six recipes remain pending.
+- Inventory verifier returned `INVENTORY_VERIFIED_RECIPE_COVERAGE_INCOMPLETE`; focused tests passed 11/11. Full host/synthetic suite v35 passed 274 tests, 2 skipped, in 87.224 seconds. Log SHA-256 `57c227c11292b31b438d32655be171f9fd21df5175073e0422373e93ac29df8c`; state SHA-256 `03ca26df15504eb492bcef02f5547b882b64c4e9c73231e68f67b6d6a04ebefa`; inputs SHA-256 `a0d628b779220b3c9681ede84a3863c738b9168febceffb70f8c3f86a6ff2d5b`.
+- Host/synthetic evidence only; no guest build or package ownership acceptance. Alp DB timestamp reproducibility and privileged root cleanup/post-audit remain open, so Phase 1 is not accepted. Plasma and KWin remain running.
+
+## 1 Ekim 2026 — infra envanter ilerlemesi v34
+
+- Pinned MLFS `ml-12.4` recipes added for Shadow 4.18.0, Perl 5.42.0, and Python 3.13.7, raising inventory coverage to 72/79; 7 recipes remain pending. The Python HTML docs archive is declared as an auxiliary source. Shadow account initialization is deferred to full target-root integration; no guest package was built.
+- `verify-base-inventory` returned `INVENTORY_VERIFIED_RECIPE_COVERAGE_INCOMPLETE` for 79 packages, 72 recipes, 7 pending. Focused tests: 11/11 passed. Full suite: 274 passed, 2 skipped, 88.852 seconds. Log SHA-256 `f429b1aab45838035001830c8d4108d79296f1ec02c69a69d507b47d08467103`; state SHA-256 `4c7565e92b7f7e063c30c561b222c62647544d7ad672024d44619ec3f6a64dec`; inputs SHA-256 `075fa9b781f825f9b995b8e622fb62b5feca333c889d160dcc03e6babf66c7c6`.
+- This is host/synthetic regression and recipe metadata evidence only. Raw Alp DB timestamps still make the repeatability gate fail; the privileged root cleanup result and post-cleanup audit are absent. Phase 1 acceptance remains blocked. The Builder VM remains off. The desktop stays open; `plasmashell` PID 41836 and `kwin_wayland` PID 2537 were verified live.
+
 ## Durum: 22 Eylül 2026
 
 ## M2 başlangıç — 22 Eylül 2026
@@ -1216,3 +1285,424 @@ işlendi, `CURRENT.md` M07 satırı güncellendi.
 
 ## 25 Eylül 2026 (akşam) — Claude, M08 işe başlama kaydı
 Kullanıcı M08/9/10'u devretti. Bölüşüm: M08 yapılandırma/tema/kısayol/alp-mağaza = Claude; M08 uygulama derlemeleri (Konsole, zsh, Dolphin, systemsettings, tarayıcı) ve M09 ISO = Codex; M10 M09'a bağlı. M07 masaüstü/panel ekran görüntüsü doğrulandı (runtimefix imajı). Guest'te terminal/zsh/dosya yöneticisi/ayarlar/tarayıcı yok — kabul için derlenmeleri gerek.
+# 30 Eylül 2026 — INFRA-REBUILD Faz 1 başlangıcı (Codex)
+
+- Kullanıcı görev kapısı: önce salt okunur inceleme, sonra QEMU/KVM Builder altyapısı; ağır derleme ve toolchain için “OC tamam, başla” **ve** 32-bit kararı beklenir.
+- Çalışma: `codex/infra-rebuild`, `/home/yrslf/alpbahOS-infra-rebuild`, taban `a9bac38544955c30c146c175760195ff193a0b76`. Ana ağacın 342 kirli kaydı ve aktif Claude nedeniyle kirli snapshot alınmadı. Ana HEAD/dal ve Claude ağacı korunur; push yok.
+- Sahip: Codex; dosya sınırı `scripts/infra/`, `manifests/`, `recipes/`, `docs/verification/`, CURRENT/BACKLOG/WORKLOG. `alp.py`, `profiles/`, `branding/`, D32/D35 karar metinlerine müdahale yok.
+- Host root build, loop-mount, chroot ve paket değişikliği yasak. Eski host runner’ları yeni akışta kullanılmaz.
+- Faz 0 kanıtı: `docs/verification/infra-survey-2026-09-30.md`. Yetkisiz RPM taraması temiz kabul değildir; privileged host baseline ve kernel/MCE görünürlüğü açık.
+
+## 1 Ekim 2026 — INFRA-REBUILD kabul engeli ve duruş
+
+- Yeni izole QEMU/KVM Builder kuruldu; root yalnız guest'te, SSD qcow2 / HDD cache-log-artifact düzeni, sabit LFS/BLFS 12.4-systemd kaynakları ve 4/4 imza doğrulaması. Guest version-check geçti. Ana ağacın HEAD/dalı ve 342 kirli kaydı, Claude'un HEAD/dalı ve temizliği son kontrolde aynı.
+- İlk smoke Python 3.11 `tarfile.data_filter` eksikliği nedeniyle kaldı. Prepared checkpoint'e dönüşte başarısız overlay korunarak, Alp değiştirilmeden Builder-only sabit Python 3.13.7 kullanıldı. Son çevrimdışı zlib iki build/test/stage geçti; ortak arşiv SHA `fd0e3858018f8b66a8a38e936982da7e85969f3f6efa6257007c248c19a2eebd`, manifest SHA `e76130a8486c7aed8ca1f8a9c28cfbee37d2dacbf42aaeffacb8b87ebf5830b2`. Kur/kaldır/yeniden kur, 8 sahip olunan dosya/symlink ve 15/15 manifest eşleşmesi geçti.
+- Ek kabul kontrolü: aynı arşiv/index ve `SOURCE_DATE_EPOCH=1756684800` ile iki yeni guest köküne kurulumun ham Alp DB hash'leri farklı. JSON farkı yalnız `installed_at` / `updated_at`; `_now()` gerçek saat kullanıyor. Kullanıcının farklı hash'te durma kuralı uygulandı; Alp değiştirilmedi, zaman/DB normalizasyonuyla örtülmedi. Claude istek notu dosyaya yazıldı; oturumlara mesaj gönderilmedi.
+- Builder `systemctl poweroff` ile temiz kapandı; controller PID yok, iki aktif disk `qemu-img check` exit 0. Prepared checkpoint, başarısız overlay ve DB kanıtları korundu; başarısız kabulden smoke/stability checkpoint'i ilan edilmedi.
+- Son yetkisiz host karşılaştırması yeni okunabilir missing/sistem bozulması bulmadı. Root audit dosyaları yok; tam temiz RPM kabulü verilmedi. Okunabilir kernel/MCE journal alındı. Son örnek Tctl 32,5°C, MemAvailable 17,76 GiB; SSD 65,91 GiB / HDD 126,17 GiB boş.
+- 8 sınır testi geçti, fakat ortak `package_stage.py` refaktörü ve yeni stability taslağı bundan sonra geldi ve guest'te çalıştırılmadı. Üretim 79 paket/BLFS/ISO tarifleri tamamlanmadı; imza ve source manifest kapsamı tam BLFS zinciri değildir. SBU ve tüm toolchain/ağır build yetkilendirme/ABI kapısı arkasında bırakıldı. OC öncesi SBU olmadığından OC kazancı hesaplanamaz.
+- Faz 1 kısmi; **HAZIR DEĞİL / DUR**. Rapor: `docs/verification/infra-readiness-2026-10-01.md`. Düzeltme isteği: `docs/handoffs/claude/infra-source-date-epoch-request-2026-10-01.md`. CURRENT/BACKLOG güncellendi. Host root/paket/CPU ayarı, eski imaj/dizin silme/taşıma, main commit ve push yok.
+
+## 1 Ekim 2026 — Kullanıcı ABI seçimi
+
+- Kullanıcının `b` yanıtı: multilib-hazır m64+m32 toolchain seçildi; x32 yok. CURRENT/BACKLOG ve kapı/araştırma raporları yalnız Codex worktree’sinde güncellendi.
+- “OC tamam, başla” verilmedi. Alp DB tekrarlanabilirlik ve altyapı kabul engelleri sürüyor; hedef duraklatılmış durumda. VM açılmadı, SBU/toolchain/ağır derleme çalıştırılmadı. D32/D35 ve DECISIONS değiştirilmedi.
+
+## 1 Ekim 2026 — Goal yeniden doğrulama / boş alan engeli
+
+- Önceki tur ilerleme: kullanıcı m64+m32 seçimi yetkili belgelere kaydedildi. Bu tur salt okunur yeniden doğrulamada Claude Alp kaynağı aynı SHA ile kaldı, root audit dosyaları bulunmadı; Builder PID yok.
+- Yeni somut durma koşulu: `/` 22,33 GiB / %4,71 boş; controller `STOP: Free space below 15%: /` döndü. SSD/HDD 65,91 / 126,17 GiB boş. Alan artırımı veya mevcut kullanıcı dosyası/imajlarını silme/taşıma yapılmadı; VM, derleme veya host root işlemi başlatılmadı.
+- Kanıt: `/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/blocked-revalidation-1790828244572690064.json`, SHA-256 `9422bf992161b9b1d5dd3a6efb58633c1a88f941c950333e8c10176b18fe627c`. CURRENT/BACKLOG/kapı raporuna yeni güvenlik engeli işlendi; hiçbir kabul kapanmadı.
+
+## 1 Ekim 2026 — Kullanıcı yetkisiyle üç disk temizliği ve altyapı kontrolleri
+
+- Yeni yetki: eski ISO/AlpbahOS artıkları silinsin, büyük milestone çıktıları kalsın; ardından altyapıya devam. Eski imajları koruma şartı bu kapsam için değişti. Git/Claude kaynakları ve mevcut Builder korundu.
+- Eski imaj listesi 136 dosya: 134 doğrudan, kalan 2 dizin temizliğinde silindi. 3 eski harici installer ISO’su ayrıca kaldırıldı. 980 build/backup hedefi ve 708 doğrulanmış duplicate-cache/başarısız overlay dosyası temizlendi. Son boş alan NVMe 163,96 GiB / %34,57; SSD 67,24 GiB / %60,15; HDD 261,80 GiB / %57,24. Net yaklaşık 279 GiB kazanım.
+- Son D34 `libwacom.../after-ro` subvol 1447 / UUID c57a57dc-9b42-084a-8304-9151bfa384f9 ve COMPLETE 79+196 /156.181-owner ledger korundu; 6 büyük image/archive çıktısı SHA/inode/device envanterinde. 1.117 eski subvolume +199 dizin root yetkisi nedeniyle kaldı; sudo yalnız kullanıcıya ait olduğundan frozen plan ve tek komut sunuldu. Root çalıştırma/audit dosyaları henüz yok; tamamlandı sayılmadı.
+- Mevcut kaynak90+Builder SHA doğrulaması, 2 aktif qcow2 check ve syntax kontrolleri geçti. 15 sınır/regression testi geçti: fatal test sonuçları/eksik bileşen/yarım test reddi; yanlış gcc.dg istisna yolu kitap ve kaynakla gcc.target/i386’ye düzeltildi. Ham Alp DB hash’i +güncel girdi/epoch/Alp pinine bağlı acceptance makbuzu yokken Phase 2 VM açamaz. Boş user-owned dosya root audit olarak kabul edilmez.
+- Yeni smoke kontrolü ve ortak yordam guest’te çalıştırılmadı; Alp kod pini değişmedi ve DB deterministik-zaman engeli sürüyor. OC/başla verilmedi; SBU/toolchain/ağır derleme yok. Üretim toolchain/79 paket/BLFS/ISO tarifleri açık. Kanıt/komut/retention: docs/verification/infra-cleanup-2026-10-01.md.
+- Son salt okunur host karşılaştırması exit 0: yeni okunabilir missing/system RPM farkı yok; ayrıcalıklı temizlik hâlâ doğrulanmadı. Kanıt `logs/host-compare-1790831327824561757.json`, SHA-256 `68b68be57843a4347dc7f4d4b363f30421b9666a749834f71be38316da24cafa`. Son kontrolde root sonuç/audit dosyaları ve canlı temizlik işlemi yok; 1.316 kalan root hedefi tamamlandı sayılmadı.
+
+## 1 Ekim 2026 — Host izleme ve başarısızlıkta guest kapanışı
+
+- Önceki goal turu somut ilerleme: kullanıcı yetkisiyle üç disk temizliği, 279 GiB boş alan ve 15 test. Bu tur root sonuç/audit dosyaları ve canlı root temizliği/Builder hâlâ yok; doğrulanmış canlı bekleme sayılmadı. Alp kaynak pini değişmedi.
+- Sürekli host CPU sıcaklığı/frekans/bellek/throttle/kernel-cursor izlemesi ve %15/300 GB disk kontrolü kararlılık komutuna bağlandı. İzleme kapsamı bozuksa başlamaz. Hata durumunda yerel komut kapanır, guest kanıtı toplanmaya çalışılır, ardından poweroff/PID kontrolü; hatalar kayda girer ve checkpoint'i engeller. Gerçek guest hata koşusu henüz yapılmadı.
+- Ortak manifest capture'ın caller epoch'una bağlı olması düzeltildi; sabit manifest epoch/locale/UTC açıkça aktarılıyor. Smoke/stability yaşam döngüsü ortamı da sabitlendi; Alp değiştirilmedi. 22 host testi geçti, SHA-256 1cdf3992ac52d93ebc75bf677268455f085dbc1da723d91f31c77e2f3b0c6493. Fixture manifest/archive gerçek araçlarla aynı hash verdi; derleme/root işleri taklit edildi.
+- Salt okunur monitor kernel journal corruption uyarısı nedeniyle exit 1. Root-owned 16 MiB kullanıcı journal'ı verify ile açılamıyor: exit 1, Bad message. Dosyaya dokunulmadı; nedeni ve başlangıç zamanı bilinmiyor, OC/donanım/temizlik kaynaklı bozulma iddiası yok. Throttle sayaçları görünmüyor. Kanıtlar: docs/verification/infra-monitoring-2026-10-01.md.
+- Root temizlik planı/kodu değişmedi. SBU/VM/ağır derleme başlatılmadı; “OC tamam, başla” verilmedi. Faz 1 ve üretim tarifleri açık; HAZIR/complete ilan edilmedi.
+
+## 1 Ekim 2026 — m64+m32 cross tarif hazırlığı
+
+- Önceki goal turu somut ilerleme: sürekli host izleme, hata kapanış ve epoch aktarımı. Bu tur root sonuç/audit yok ve canlı Builder/temizlik doğrulanmadı; Alp sahibi HEAD aynı kaldı. Ağır çalışma veya host root adımı yapılmadı.
+- Seçili m64+m32 Chapter 5 için altı JSON cross tarifi: Binutils/GCC pass 1, Linux headers, Glibc64/32, Libstdc++. Sabit MLFS commit/XML SHA ve mevcut source pinleriyle; x32/13.x geçişi yok. Ortak staging verified prerequisite/patch, config.guess/configparms, pre/post ve limits.h birleştirmesini destekler. Ayrı DESTDIR ve hash kontrolleri; OC/ABI+güncel stability receipt olmadan toolchain reddedilir.
+- Gerçek sabit GCC source dosyalarında m64/lib, m32/lib32 ve stack alignment sed düzenlemeleri geçti; kaynak/compiler çalıştırma ve derleme yok. 26 host testi geçti; bir REPO fixture yönlendirme hatası düzeltildi ve önceki hata logu korundu. Mevcut 90 source+Builder cache SHA geçti. Bunlar gerçek guest/ABI/ownership kabulü değildir.
+- ISL upstream 522, denenen mirror 404; üçüncü deneme yok, source/partial/SHA eklenmedi. Tek canonical source manifesti seçili ABI/sabit MLFS inputlarını ve pending ISL'i kaydeder; eski 90 source pini korunur. Var olan source manifestinin ilk freezer ile ezilmesi engellendi.
+- Owned layout, Alp installation runner, mkheaders sahiplik-safe değişikliği, ABI sanity/stability receipt üretimi ve sonraki üretim tarifleri hâlâ açık. Root cleanup/journal/Alp engelleri ve “OC tamam, başla” kapısı sürüyor; HAZIR/complete ilan edilmedi. Kanıt: docs/verification/infra-toolchain-preparation-2026-10-01.md.
+
+## 1 Ekim 2026 — Ortak Alp kurulum entegrasyonu (başlangıç)
+
+- Sahip Codex; yalnız scripts/infra, kendi testleri ve doğrulama belgeleri. Hedef: doğrulanmış staged core arşivi -> pinned Alp -> payload/tek sahip doğrulaması -> input bağlı makbuz; recipe/core build motoru değiştirilmez.
+- Ağır derleme/VM çalıştırma yok; mevcut Alp hash ve root audit/temizlik engelleri yerinde. Önceki goal turu altı cross tarif ve 26 testle somut ilerlemeydi. Bu tur root sonuç/audit ve canlı guest/temizlik bulunmadı; verified wait sayılmadı.
+
+## 1 Ekim 2026 — Ortak Alp kurulum entegrasyonu sonucu
+
+- package_install.py: staged bundle/path/type/mode/uid/gid/hash doğrulaması, guest/disk/FD writer lock guard, canonical core archive URI, alias sahiplik çakışması, pinned Alp CLI kurulum/check, payload/tek sahip kabul makbuzu ve byte/record bağlı resume eklendi. DB veya Alp motoru değiştirilmedi; smoke ilk install bu yordamı kullanır. Diğer üretim fazları henüz entegre değil.
+- 31 host testi geçti; Alp CLI fixture'da taklit edilir, gerçek capture/archive/installed payload compare araçları yetkisiz private test alanında çalışır. Sonradan payload bozulduğunda resume reddedildi. Gerçek önceki guest zlib core/manifest arşiv kontrolü 15/15 geçti: bu yeni guest run değildir.
+- Root cleanup/audit sonuçları yok, motor hash aynı, host journal/ISL ve OC kapıları açık. Frozen root cleanup kodu değişmedi. VM/derleme/host root adımı ve HAZIR/complete ilanı yok; main/Claude korunur. Tam üretim runner/layout/mkheaders/ABI/stability/79 paket/BLFS/ISO kabulü açık. Ayrıntı: docs/verification/infra-package-install-2026-10-01.md.
+
+## Kararlılık DB/paket kabulü hazırlığı — 1 Ekim 2026 (başlangıç)
+
+- Önceki goal turu ortak kurulum kodu ve gerçek eski bundle kanıtıyla ilerlemeydi; canlı bekleme yok. Root cleanup/audit sonucu hâlâ yok, QEMU/cleanup işlemi görülmedi. Ana ve Claude HEAD aynı.
+- Codex yalnız kendi worktree scripts/infra, tests ve durum/verification belgelerinde çalışır. Kararlılık çift build ardından ortak Alp kurulumu/iki yeni ham DB ve host artifact kabulü hazırlanacak. OC/başla yok; gerçek VM, SBU, toolchain/host root/CPU değişikliği çalıştırılmayacak.
+
+## Kararlılık DB/paket kabulü hazırlığı — 1 Ekim 2026 (sonuç)
+
+- Stability tarifleri mevcut OC/ABI+input manifest bağlarını build öncesinde denetler; toolchain stability receipt kapısı ayrıca korunur. SBU j1/j16 ve iki fresh zlib kökü ortak staged Alp install/payload/ownership yoluna bağlandı. Arada gerçek 1,2s tick; ham DB farklıysa normalize etmeden iki kanıt ve FAIL summary korunur.
+- Yeni read-only stability_evidence host tarafında toplanan arşiv/manifest/makbuz/index/DB byte ve sahiplik/input/recipe pinlerini doğrular. Hata/eksiklikte kanıt toplama+kapatma sürer; checkpoint yok. Toolchain stability receipt üretilmedi; tam host/üretim kabulü ayrı ve açık.
+- 38 test geçti (gerçek tar/manifest, simulated Alp/DB fixture); timestamp-only DB farkı equal=true iddiasıyla bile reddedildi. Python AST/Bash syntax/tracked diff-check geçti. Log SHA 2462e9f8ab58109fbff2c76ae19b295e9389d68f906423dcb6e4f4d86b87628d; metadata SHA 5e5b7bdcd39668ab4abadc90222701992854db7a4c5c74d1e583c4413731a78b.
+- Main/Claude HEAD ve Alp pini aynı. Root cleanup/audit/Phase1 acceptance yok, canlı QEMU yok. VM/SBU/OC/derleme, host sudo/paket/CPU değişikliği, commit/push ve HAZIR/complete ilanı yapılmadı. Alp zaman/root audit/journal ve OC başla kapıları; production runner/layout/mkheaders/ABI/79 paket/BLFS/ISO açık. Report: docs/verification/infra-stability-evidence-2026-10-01.md.
+
+## Sahiplikli minimal dosya sistemi hazırlığı — 1 Ekim 2026 (başlangıç)
+
+- Önceki goal turu 38 testli gerçek kod/kanıt ilerlemesiydi; canlı bekleme yok. Root cleanup/audit sonuç dosyaları hâlâ yok. Codex yalnız kendi scripts/infra, recipes/toolchain, manifests ve durum/test/verification dosyalarını değiştirir.
+- Sabit ml-12.4 Chapter 4 düzenini yerel pinli staged Alp paketi olarak hazırlama; sonraki toolchain tarifleri yanlış usr-merge düzeninde başlamaz. Yeni VM/root/OC/SBU/derleme çalıştırılmayacak; Alp semantiği/diğer ağaçlar değişmeyecek.
+
+## Sahiplikli minimal dosya sistemi hazırlığı — 1 Ekim 2026 (sonuç)
+
+- Sabit ml-12.4 Chapter 4 ml_32 düzeni, canonical local source pinli filesystem-layout 12.4-ml32.1 tarifine dönüştürüldü. Dokuz dir/dört usr alias; x32/usr-lib64 yasak. Yeni staging generator; ortak capture/tar paketlemesi; cross build/install/resume öncesi actual shape/protected Alp alias sahipliği kontrolü eklendi. Binutils pass1 filesystem-layout paketine bağımlı.
+- 44 test geçti. Gerçek pinned Alp uid1000 host-private fixture install/check + gerçek compare 13/13 geçti; protected=true ve dört alias tek sahibinde. İki staging archive/manifest hash eşit. KVM/uid0/root kurulum, iki gerçek Alp DB eşitliği veya release kabulü değildir.
+- Source manifest yeni local pin/book Chapter4 hash dışında önceki 2924dfe... byte hash'ine yeniden oluşturuldu; 90 external source/Builder/signature/key pini değişmedi, cache bu tur tam yeniden hash'lenmedi. Frozen root cleanup script hash aynı.
+- AST/bash syntax/tracked diff-check geçti; code/state verification SHA 0ff05857be8b14ff798090117561881e01ca22421cc3f56694ae4b918d9f8b2a. Test log SHA 3b03d562488f2ddd1804924ff96bfc55d636683fd547b5d33d65b10186066e08. Gerçek Alp fixture summary SHA 3fc1cca137c705565940e89f4ba7da691e8a4ab29aaaa22c4c5882a1d7720324.
+- Main/Claude HEAD-dal ve Alp pini aynı; canlı QEMU yok, root cleanup/audit/Phase1 acceptance yok. VM/SBU/OC/derleme veya host root/paket/CPU ayarı, commit/push yapılmadı. Full runner/mkheaders/ABI/stability host receipt/Chapter6/79 paket/BLFS/Plasma/ISO açık; HAZIR/complete yok. Rapor: docs/verification/infra-filesystem-layout-2026-10-01.md.
+
+## Toolchain sırası/devam ve ABI hazırlığı — 1 Ekim 2026 (başlangıç)
+
+- Önceki goal turu protected layout, 44 test ve gerçek yetkisiz Alp fixture ile ilerlemeydi. Bu tur root cleanup/audit ve canlı QEMU yok, main/Claude HEAD aynı. Codex kendi scripts/infra, recipes/toolchain, tests ve durum/verification belgelerinde çalışır.
+- Önceki mkheaders borcu hatalı: sabit ml-12.4 Glibc XML'inde mkheaders yalnız yorumdadır. Etkin GCC pass1 limits concat mevcut staging tarifindedir. İlk ElementTree dış entity nedeniyle parse edemedi; kaynak değişmeden literal entity koruyan userinput/comment lexer ile doğrulandı. Tarif notu düzeltildi; kod/derleme hata bastırması yok.
+- OC/stability kapıları korunarak paket sırası/resume ve C/C++ m64/m32 sanity kodu hazırlanacak. Guest/derleme/host root/CPU değişikliği veya Alp semantiği müdahalesi yapılmayacak.
+
+## Toolchain sırası/devam ve ABI hazırlığı — 1 Ekim 2026 (sonuç)
+
+- Canonical yedi paket Chapter4/5 sırası, input/source/plan hash bağlı built kaydı, tüm önceden kurulu paketleri yeniden doğrulama ve kesilmiş build/Alp girişiminde otomatik retry yerine checkpoint kuralı eklendi. Guest wrapper bypass argümanı kabul etmez; kütüphane planını smoke fazına çevirmek de reddedilir.
+- Glibc64 sonrası C64, Glibc32 sonrası C64/32 ve libstdc++ sonrası C++64/32 için actual ELF/PT_INTERP, sysroot, CRT/libc/libstdc++ ownership, temiz child env ve verbose header/linker/RPATH kontrol kodu hazırlandı. Hiç compiler/guest/probe çalıştırılmadı; sequence hooks/guardlar unit fixture'da simulated. Host stage action/stability sonrası receipt/monitor/checkpoint entegrasyonu açık.
+- Önceki mkheaders ayrı replacement gerekliliği yanlış: pinned XML'de komut comment, active limits concat GCC staging tarifinde. Literal entity koruyan lexer kanıtı f70ede73...; ilk ElementTree dış entity parse hatası kayıtta. Kendi current/backlog/tarif ve önceki borç metinleri düzeltildi.
+- İlk 51 test runtime symlink guard'ında eski host fixture ağaçlarından ötürü 1 failure verdi; log korundu. Yalnız own stage-a/b ve alp-root ağaçları raw DB +snapshot/archive kanıtları doğrulanıp silindi, guard değiştirilmedi. Raw DB SHA d5f72bd1... aynı; compaction SHA 48d95935... . Ardından 51 test geçti; canonical-phase testi sonrası 52 test geçti. Son log SHA 955bb7063d111f5368ff46bdce1c08cc90582d9464dc44f254568d5dc4337c9a.
+- AST/bash syntax/tracked diff-check/actual runtime space-symlink guard geçti. Code/state evidence SHA 6f30c1ec19a830e39783539bbea04d7f4f353d1698b44fcd8563a9f2e204e17e. Source manifest/Alp/frozen root cleanup kodu aynı; main/Claude HEAD-dal korunur. QEMU/root cleanup-audit/Phase1 acceptance yok; OC/başla verilmedi. Host root/build/CPU değişikliği, push/commit/HAZIR/complete yok. Tam Chapter6/79 paket/kernel/BLFS/Plasma/ISO scope açık. Rapor: docs/verification/infra-toolchain-sequence-2026-10-01.md.
+
+## Guest süreç içi alan koruması — 1 Ekim 2026 (başlangıç)
+
+- Önceki goal turu canonical sıra/ABI kodu ve 52 testle somut ilerlemeydi. Bu tur root cleanup/audit dosyası ve canlı QEMU yok. Codex kendi scripts/infra, tests ve durum/verification belgelerinde çalışır.
+- Uzun guest komutları sırasında Builder root ve LFS disk %15/dev identity koruması; yalnız kendi child process group'unu durdurma; tar/gzip pipeline ve ABI/smoke ortak komut yolu hazırlanacak. VM/compile/OC/host root veya CPU/paket ayarı yapılmayacak. Long final suite native/chroot/background entegrasyonu hâlâ ayrı açık kapsamdır.
+
+## Guest süreç içi alan koruması — 1 Ekim 2026 (sonuç)
+
+- Yeni guest_process izleyicisi: `/`+`/srv/lfs` için before/running/after örnek, max5s aralık, <%15/identity/invalid telemetry veto; sample önce flush, kendi new session PG'sinde TERM/grace5s/KILL, lider bitse de descendants temizlenir. Küçük stdin<=4096B; derleme süresi sınırı yok. Root log/child öncesi mevcut guest/disk/lock/result guard korunur.
+- package_stage root run ve ortak Alp adapter/smoke lifecycle bu yola bağlandı; ABI çıktıları space sidecar hash'i taşır. Tar/gzip quoted positional argv+sabit pipefail shell ile tek süreç grubuna alındı; archive/DB metadata normalize edilmedi. Long-suite dispatch'e OC/ABI/stability gate eklendi, worker direct make hâlâ izleyici dışı ve native/chroot entegrasyonu açık.
+- 11 kritik test eklendi: 60, 62 ve son 63 test koşuları geçti; failure yok. Son 63 test 2,167s, log SHA cbb5f2d2c5573467f4defe229348be9c4a53ce6f04ff1d3a1c135a3290f71a2f. Gerçek uyuyan parent+child terminal; disk değerleri simulated. Gerçek kısa stdin, tar/gzip+capture ve eşit archive/manifest testleri çalıştı; compiler/guest/Alp install yok.
+- AST17/bash9/diff-check/whitespace ve actual runtime space-symlink guard geçti. State/code evidence SHA fb915e2cc224afd15ee9fbc74aac826654ec212c03d9d448e4189c4606ee55e9; inputs 993f48ab549d40a75bc943079cf35e36bc1f6181dd4ebe2aa0dc4aea33246d46. Source/Alp/root cleanup pini ile main/Claude HEAD-dal aynı. NVMe/SSD/HDD %34,57/%60,15/%57,24 boş; root cleanup/audit/Phase1 acceptance yok, QEMU yok.
+- HAZIR/complete yok; OC/başla verilmedi. Host root/build/mount/chroot/paket/CPU değişikliği, başka ağaçlara yazma, commit/push yok. Sonraki bağımsız iş suite monitor ve host stage/acceptance/checkpoint bağlantısı; gerçek SBU/7 cross/Chapter6/79 paket/kernel/BLFS/Plasma/ISO kabulü açık. Rapor: docs/verification/infra-guest-space-2026-10-01.md.
+
+## Uzun guest test worker koruması — 1 Ekim 2026 (başlangıç)
+
+- Önceki goal turu gerçek kod/kanıt ilerlemesiydi: sürekli guest disk koruması, shared komut bağlantısı ve 63 başarılı yetkisiz test. Bu tur mevcut worker doğrudan make çağırıyor; koruma oraya bağlanacak. Root cleanup/audit sonuçları ve canlı QEMU yok.
+- Codex yalnız kendi scripts/infra, tests ve durum/verification belgelerinde çalışır. OC/ABI/stability kilitleri, mevcut logların korunması ve expected FAIL policy korunacak. Compiler/VM/host root/CPU/paket değişikliği yapılmaz. Native/chroot build akışı ve host aşama kabulü açık kapsam olarak korunur; fixture sonucu gerçek suite kabulü sayılamaz.
+
+## Uzun guest test worker koruması — 1 Ekim 2026 (sonuç)
+
+- guest_tests root orchestrator mevcut VM/disk/fd9/OC/ABI/stability denetimini yazmadan tekrarlar; monitored make child lfs/env-i/-j2/-k. Fresh build/Makefile whitelist ve eski/aliased summaries reddi; benzersiz sonuçlar, input/source/policy/epoch/Makefile bağlama ve işlem sonrası yeniden guard. Raw summaries kopya/hash, gerçek exit ve log/sidecar/policy artifact hash'leri korunur. Faultta complete summary PASS'a çevrilmez; mevcut policy değişmedi.
+- systemd background unit benzersiz, Type=exec/root orchestration/control-group/8G/OOMstop; 12h sınırı kaldırıldı, runtime infinity. Worker kilidi yeniden alır. Root yalnız guest, make yetkisiz; host gerçek systemd/guest/make/compile/root/CPU işi yapılmadı. Native/chroot/Chapter8 tester-prep ve host collector/monitor/checkpoint bağlantısı açık.
+- Yedi yeni kritik test; 69, 69 ve son70 koşuları geçti, failure yok. Son70 test 2,453s, log SHA 1abefc5127f7508a322e00ea6762ba751db8b9048cbc6bd247dfc7b6fe3ef232. Bir gerçek kısa Python child synthetic GCC .sum yazıp exit2 üretir; monitor/evaluate/copy/hash gerçek, guest/root/heavy guard pozitif fixture'da mocked. Gerçek compiler/native suite kabulü değildir.
+- AST18/bash9/diff/whitespace/runtime space-symlink guard geçti. State/code SHA 4e876d222d43668080cde3bcbd0675441fc9151d87a2a9ea7968092e2c627d8e; inputs c4d8881d3923c8e01f10318725d8a48a9893f035dbf646f6eb73fe9fd7a76940. Policy/source/Alp/frozen cleanup pinleri aynı. Main/Claude HEAD-dal aynı, QEMU yok, root cleanup/audit/Phase1 acceptance yok. NVMe/SSD/HDD %34,57/%60,15/%57,24.
+- OC/başla yok, ağır derleme yok; HAZIR/goal complete yok. Full native/79 paket/kernel/BLFS/Plasma/profiles/iki ISO scope açık. Sonraki bağımsız iş host aşama/acceptance/checkpoint ve native suite bağlamını tamamlamak. Rapor docs/verification/infra-background-suite-2026-10-01.md. Başka ağaçlara/Alp/DECISIONS'a yazma, push/commit veya ek eski imaj silme yok.
+
+## Host aşama/checkpoint kabulü — 1 Ekim 2026 (başlangıç)
+
+- Önceki goal turu monitored worker, raw evidence ve 70 başarılı host testiyle ilerlemeydi. Bu tur root cleanup/audit ve canlı QEMU yok. Codex yalnız kendi scripts/infra, tests ve durum/verification belgelerinde çalışır; phase2/OC/guest/root/CPU değişikliği yapılmaz.
+- Mevcut checkpoint CLI ürün aşamalarını input/artifact/privileged sonrası kabulü olmadan isimle oluşturabiliyor; phase2 stability sonrası yalnız yetkisiz compare ile checkpoint veriyor. Bu bypass kapatılacak; iki qcow2'nin biri doğrulanmadan diğerini taşıma riski de giderilecek. Gerçek full host sonrası kabul ve stage producer entegrasyonu açık; failclosed kodunu gerçek üretim kabulü saymayacağız.
+
+## Host aşama/checkpoint kabulü — 1 Ekim 2026 (sonuç)
+
+- Product stage checkpoint isim-only bypass kapandı; mevcut producer/privileged sonrası audit entegre değilse disk öncesi reddedilir. Smoke current Phase1 DB/artifact guard ister. Prepared/builder-ready altyapı kapsamındadır; gerçek host stage kabulü veya yeni production checkpoint verilmedi.
+- Yeni checkpoint_store iki disk/chain/path/hash/check preflight, temporary hardlink +iki overlay hazırlama, fsync journal ve atomik path replace kullanır. Normal failure'da unchanged original hash'lerle byte rollback; sadece yeni aliases/empty children temizlenir, failure journal korunur. Hash/identity fault veya incomplete commit dosyaları korunur; launch/restore durur. Ani kill/reset durability recovery kullanıcı incelemesi gerektirir. Budget hardlink inode dedup eklendi, %15/300GB ve symlink sınırları aynı.
+- 76/77/son78 test koşuları geçti; failure yok. Son78 8,471s, log SHA 73234cdbe727cb9fd1e69ec75639897403020dc782a7f46e10aca84855f66404. Sekiz yeni kritik test gerçek küçük nonzero qcow2/convert/raw readback ve injected failure/rollback/hash drift kapsamındadır; gerçek VM/stage/build/root işi yok. Kalıcı SSD uid1000 host fixture controller lock ile doğrulandı; evidence SHA 5e41204b0b63d54d0cb93ccf1ca7d1cb36683247fce8ab645b6afa3ee1e5791e.
+- AST19/bash9/diff/whitespace/runtime alan-symlink ve gerçek prepared journal R/O guard geçti. State/code SHA 8c07ae75c99957a870b60a4327a572d631e3066f36fe1f0c1872e10cc3a24a09; inputs e15c80591320b8f2979aefde52301e5158cb141a9376c40fce8569aaa52c7149. Source/Alp/frozen cleanup aynı; main/Claude HEAD-dal aynı. QEMU/root cleanup-audit/Phase1 acceptance yok; NVMe/SSD/HDD %34,54/%60,15/%57,24.
+- HAZIR/complete yok, OC/başla yok. Ana aktif/prepared/old milestone diskleri değiştirilmedi; host root/mount/chroot/paket/CPU veya commit/push yapılmadı. Full native/79 paket/kernel/BLFS/Plasma/profiles/iki ISO scope açık. Sonraki bağımsız iş current-stage privileged host sonrası audit/acceptance producer ve gerçek stability/toolchain runner bağlantısı. Rapor docs/verification/infra-checkpoint-2026-10-01.md.
+
+## Aşama bağlı privileged host audit — 1 Ekim 2026 (başlangıç)
+
+- Önceki goal turu stage checkpoint bypass kapısı, gerçek küçük qcow2 ve 78 başarılı testle ilerlemeydi. Bu tur root cleanup/audit ve canlı QEMU yok. Codex kendi scripts/infra, tests ve durum/verification belgelerinde çalışır.
+- Kullanıcı-run root salt okunur RPM/kernel üreticisi ve unprivileged verifier hazırlanacak: fixed commands/output store, exact request/source/boot/run/phase hash ve zaman sınırı, root provenance/raw byte hash, pristine RPM ve complete kernel coverage. Frozen cleanup script/plan değişmeyecek. Root script yalnız hazırlanır; sudo/root/systemd/VM/CPU/build işi veya tam stage kabulü bu tur yapılmaz.
+
+## Aşama bağlı privileged host audit — 1 Ekim 2026 (sonuç)
+
+- Yeni stdlib-only host_stage_audit producer/verifier: private single-use request; benzersiz audit_id ile eski failure korunur; exact source/request/run/stage/input/source/boot/hash; fixed root store/commands ve NOFOLLOW root-owned ancestor/file provenance. İstek sudo argv verisi üretir; agent root çağırmaz. Pristine RPM, complete kernel cursor/raw hash ve before-end<=stage-start/after-start>=stage-end bağlama; farklı çift reddedilir.
+- RPM verify script çalıştırabildiği resmi doküman/local help ile doğrulandı. Yeni capture --noscript kullanır ve iki endpoint'te verifier-script envanteri boş olmadıkça kabul etmez. Actual unpriv envanter exit0/boş, rpm paketi-only -V --noscript exit0/boş; bu full root Va değildir. Frozen cleanup script/plan değiştirilmedi.
+- Dokuz yeni kritik test; ilk86/87 ve son87 koşuları geçti, failure yok. Son87 8,570s, log SHA c1f13ec4015e5db697c0b6f1a9b54e663bb372dfdcdb6c47dcda5822bf91ff1e. Root olumlu fixture ownership transport mock; actual unpriv root refusal ve user fake root certificate rejection gerçek. Gerçek privileged capture/guest/VM/compile yok; stage kabulü henüz helper'a bağlanmadı ve kapısı kapalı.
+- AST21/bash9/diff/runtime alan-symlink ve isolated CLI help geçti. State/code SHA 9735afabb2c93b398decb1e735ea249bdf9840cb6cf82116c2d7d99bb0c922cf; inputs 39737ad101f7f191d629a2a295a4039dd87a02cc6980195fb037114fcc8ac1d3; producer ac6b0febb03f8ca3b98694570d3f1a1fc238929b511fc44625f69d11b0fbe46f. Source/Alp/frozen cleanup/plan ve main/Claude HEAD-dal aynı. NVMe/SSD/HDD %34,51/%60,15/%57,24. QEMU/root cleanup-audit/root stage store/Phase1 acceptance yok.
+- Host root/build/mount/chroot/paket/CPU veya main/Claude/Alp/DECISIONS müdahalesi, yeni eski imaj silme, commit/push yok. OC/başla yok; HAZIR/complete yok. Tam native/79 paket/kernel/BLFS/Plasma/profiles/iki ISO kapsamı sürüyor. Sonraki bağımsız iş gerçek stage run/monitor/guest/disk acceptance bağlama; root helper PASS tam stage kabulü değildir. Rapor docs/verification/infra-stage-audit-2026-10-01.md.
+
+## Stability koşusu ve host audit bağlama — 1 Ekim 2026 (başlangıç)
+
+- Önceki goal turu yeni root audit producer/verifier ve 87 başarılı testle somut ilerlemeydi. Root cleanup/audit sonuçları ve canlı QEMU bu tur da yok.
+- Codex yalnız own scripts/infra, tests ve durum/verification belgelerinde çalışır. Stability için fresh run/input/boot/phase1 ve kullanıcı root before audit bağlama; guest authorization/summary run identity; yeni artifact dizini ve terminal outcome/after request hazırlanacak. Gerçek root/VM/OC/compile işlemi yapılmayacak. Product checkpoint, tam telemetry/guest/disk/after acceptance producer tamamlanana dek kapalı kalır.
+
+## Stability koşusu ve host audit bağlama — 1 Ekim 2026 (sonuç)
+
+- Stage preparer yalnız seçili m64+m32 stability/current Phase1 için private single-use run/request/output dizinleri; input/source/Phase1/boot/producer/raw request hash bağlar. Phase2 current run-id ister; root before verified olmadan started veya VM launch yok. Komut öncesi before evidence yeniden okunur. Started/outcome run retry edilmez; eski generic root cleanup metadata stage-before yerine kullanılmaz.
+- Guest auth/summary ve fresh run-specific rsync collection aynı run-id. Yanlış run artifact validation öncesi reddedilir. Host baseline/log/telemetry/raw guest/repo status-head-branch kayıtları aynı artifact tree'de; symlink/hardlink/foreign/special ve hash sırasında byte drift reddi, streaming hash. Git GIT_OPTIONAL_LOCKS=0 readonly; main/Claude'a yazmaz.
+- Closed writer sonrası EXCL/fsync outcome FAIL veya PENDING_PRIVILEGED_POST; genel PASS/stability receipt/checkpoint yok. Setup failure stop+terminal evidence; guest failure collection+shutdown korunur. After request current run/started/outcome/pin/bytes ister; tekrar yeni audit-id ile eski kaydı korur. Full root-after/monitor/current guest/disk acceptance producer hâlâ açık. Product checkpoint kapalı; toolchain sahte makbuzla açılmadı.
+- On yeni kritik test, iki eski failure testinin run contract'a taşınması; 95/97/son97 koşuları geçti, test failure yok. Son97 13,221s, log SHA d9b5c399a0142479c6e487d9cc64d1d3e1699eb95e52bbc8122b02993e5da29a. Privileged transport/SSH/compiler/full guest kabulü olumlu fixture'da mocked; private state/hash/request, real missing-root path ve git readonly gerçek. Actual VM/root/build yok.
+- AST22/bash9/diff/runtime alan-symlink/CLI help geçti. State/code SHA 58f0268b3227d27a886be4e8005cc7b4d3c60974386677221450e6ce5a22ba4c; inputs 0f42bdc6b020d250f28f307d8817b6ff92a712114f5b191abf55dafe01a41cdd. Source/frozen cleanup/plan/root producer ve main/Claude HEAD-dal aynı. NVMe/SSD/HDD %34,53/%60,15/%57,24. Root cleanup-audit/Phase1/root stage/prod stage-run store yok; own Builder PID=null.
+- ps snapshot'ta unrelated Claude scratchpad alpbahos-capture-gl PID1096886/M10 readonly ISO görüldü; hiç VM/ISO/signal işlemi yapılmadı. Sonraki own observation'da bu PID /proc girdisi yoktu; observation SHA 2b29044c4bbd45d8f60914eb8f7024d7fc0eb82ec0af6e80936fe69fec34f7ef. Head/dal veya imaj buna dayanarak değiştirilmedi.
+- Readiness CLI required run-id ve partial scope'a güncellendi. Host root/mount/chroot/paket/CPU, heavy compiler/systemd/VM, Alp/DECISIONS/başka ağaç yazısı, ek eski imaj silme veya commit/push yok. OC/başla yok; HAZIR/complete yok. Tam native/79 paket/kernel/BLFS/Plasma/profiles/iki ISO kapsamı sürüyor. Sonraki bağımsız iş post audit+continuous monitor/current disk/guest full receipt producer. Rapor docs/verification/infra-stage-run-2026-10-01.md.
+
+## Stability son denetim ve kabul kanıtı — 1 Ekim 2026 (başlangıç)
+
+- Önceki goal turu single-use run/root-before/fresh guest-output bağlantısı ve 97 testle somut ilerlemeydi. Root cleanup/audit/Phase1 acceptance yok; unrelated Claude grafik VM'i görülüyor, ona dokunulmaz.
+- Codex own scripts/infra/tests/durum belgelerinde çalışır. Raw host telemetry kapsamını yeniden doğrulama, stopped disk/chain hash evidence ve root audit pair/current guest bytes bağlama hazırlanacak. Gerçek VM/root/OC/compiler/CPU müdahalesi yapılmaz. Product checkpoint yalnız complete acceptance producer entegre edilirse desteklenen stability için açılabilir; genel PASS JSON kabul edilmeyecek.
+
+## Stability son denetim ve kabul kanıtı — 1 Ekim 2026 (sonuç)
+
+- Host raw sample wall/monotonic completion/free-device-inode ve run/input/boot binding; production bound child öncesi/during/after yeniden coverage/fault denetimi. Sabit raw sensors/kernel argv/exit/stderr/cursor/fault, CPU frequency/RAM/throttle coverage ve üç diskte%15; sample capture20s/gap20s/clock drift2s sınırı. errors=[] tek başına kabul olmaz; unavailable throttle sayacı no-throttle kanıtı değildir.
+- Root request v2 after terminal outcome raw SHA; user-run root capture fixed outcome path'in hash'ini önce/sonra denetler. Unpriv outcome/reference hash restamp root request/certificate bağını değiştiremez. Producer kaynak SHA değişti; actual prod requests/store yok. Frozen cleanup script/plan aynı.
+- Salt okunur stage_acceptance actual run/started/outcome+rootpair+raw host+authorization+canonical command+repo state+actual guest package/manifest/DB/receipt/index+closed/current qcow2 chain bytes bağlar. Stability accept CLI private receipt yazar; checkpoint full proof'u yeniden hesaplar ve iki disk preflight hashes accepted closed chains'e eşit olmalıdır. Generic PASS/wrong audit/hash drift/live writer öncesi no-mutation. Yalnız stability producer bağlı; guest receipt handoff/host toolchain ve other stages açık. Actual production receipt/stage checkpoint oluşturulmadı.
+- İlk104 koşusu eksik fixture time importundan6 error verdi; log SHA0ab1d80de0815f6878fec87a50c82c7c9f0bba2ae543500dc4947709f14e2c60 korundu. Import düzeltildi;7 focused test geçti. Ek drift testi sonrası105 full24,164s OK, log SHAc38b3251daa5a9c721e25ea3ffa4deddf827a052e6bed8da317d4b0c107cbc7c. Sekiz yeni kritik test; root/sampling/stress simule, real tar/manifest/raw synthetic Alp records ve actual2MiB qemu-img/qemu-io checkpoint. Compiler/OC/Builder/root capture yok.
+- AST23/bash9/diff/runtime space-symlink/CLI help geçti. State/code SHA1cbb241ad069536c7b62a705e697a75476b25f1c2be331d4ee52696793482ceb; inputs1cdeb02b3a16cee67dc6994f459dbaee2c28a0b846e4b7d3f5f970bdc02cc4df; root v2 source2628fca87dc97653678d8a33a15807df9575ee679f9012f789f2859e3cdcb17d. Source/frozen cleanup/plan ve main/Claude HEAD-dal aynı. Own Builder null, unrelated Claude capture VM PID1126606/M10 readonly ISO görüldü; dokunulmadı. NVMe/SSD/HDD%34,34/%60,15/%57,24.
+- Root cleanup/audit/Phase1/stage prod store/stability checkpoint yok. Host root/mount/chroot/paket/CPU/production compiler/systemd/VM, başka ağaç/Alp/DECISIONS yazısı, ek eski imaj silme veya commit/push yok. OC/başla yok; HAZIR/complete yok. Native/79 paket/kernel/BLFS/Plasma/profiles/iki ISO scope açık. Sonraki bağımsız iş accepted checkpoint→current root/input/stability receipt handoff ve host toolchain action. Rapor docs/verification/infra-stage-acceptance-2026-10-01.md.
+
+## Kabul edilmiş checkpoint ve toolchain handoff — 1 Ekim 2026 (başlangıç)
+
+- Önceki goal turu root v2 outcome/raw host/guest/disk kabul producer ve105 testle somut ilerlemeydi. Root cleanup/audit ve Phase1 kabulü yok; own Builder kapalı, unrelated Claude grafik VM'ine dokunulmaz.
+- Codex own scripts/infra/tests/durum belgelerinde çalışır. Kabul snapshot'ı relocation sonrası gerçek saved/backing byte'larıyla yeniden doğrulama, fresh active overlay bağlama ve host/guest boot/input/nonce/SHA bağlı handoff capsule/guest guard hazırlanacak. Gerçek OC/root/VM/compiler/paket/CPU işlemi yapılmaz. Host full toolchain stage action/after acceptance ve sonraki native pipeline açık tutulur.
+
+## Kabul edilmiş checkpoint ve toolchain handoff — 1 Ekim 2026 (sonuç)
+
+- Checkpoint fresh active overlay byte pins; strict COMPLETE/private/0400+nlink1 saved snapshot ve actual qemu chain/hash/check revalidation eklendi. Yalnız eski ilk active filename taşınır; hash/ancestor/DB normalizasyonu yok. Legacy missing fresh/transaction product kabulü olmaz. Full root v2/raw monitor/guest/current run/boot/input proof saved acceptance ile tekrar karşılaştırılır.
+- Current Phase1 kapılı buildctl.toolchain_parent ve readonly pre-launch library; new job/raw parent SHA/private receipt/proof/metadata/transaction/overlay pins. bind_guest exact parent SHA/new job/current host boot/guest boot ile transport capsule üretir; OC yetkisi veya bağımsız root certificate değildir. Guest strict schema/VERIFIED_PARENT/new nonce/auth currentinput/source/actual guestboot/raw SHA ister; generic PASS reddedilir. Future runner persistence/root-before/launch/boot query/transfer/collector/after acceptance açık. Production parent/capsule/VM oluşturulmadı.
+- İlk18 focused bir missing package_stage.REPO patch FileNotFoundError; log e3a02a95163548bfc705741c7e14db0fc2e557a704a9b3ef4e838c37412cbc57 korundu. Fixture düzeltildi,2 guard0,013s OK; raw/new job pin bağlantısı sonrası114 full84,749s OK. Log9aba4c0b04d6ecdda40de9ad67c1a2dac56820f4335399a7ea7e2a55047eae7a. Dokuz yeni kritik test; root/raw time/sensors/stress/guestboot simulated, actual tiny qemu-img/qemu-io+layered chains ve real synthetic tar/manifest/Alp DB bytes. No production compiler/root/OC/Builder.
+- AST24/bash9/diff/DECISIONS empty/help/runtime path-space-budget guard PASS. State/code47dacda005cb67d46b4748228af297b3b94c723d820e85d68b837f4ccbfa91f2; inputs51c75f201211f0ce74afb8707927850751b9191d9a0b8753882dd360f4fad3e2. Source/frozen cleanup script/plan/root v2 producer/main-Claude HEAD-dal aynı. Own Builder null; unrelatedClaude capture PID1126606/readonlyM10 görüldü, dokunulmadı. NVMe/SSD/HDD%34,16/%60,15/%57,24, runtime4382380032byte.
+- Root cleanup-result/audit/Phase1/prod stage-run/root store/stability checkpoint yok. Host sudo/root/mount/chroot/paket/CPU/production VM/compiler/systemd, başka ağaç/Alp/DECISIONS, ek eski imaj silme veya commit/push yok. OC/başla yok; HAZIR/complete yok. Full native/79 paket/kernel/BLFS/Plasma GL/Claude profiles/iki ISO scope açık. Sonraki bağımsız iş new toolchain job/root-before lifecycle→preflight/pinned capsule→host runner. Rapor docs/verification/infra-toolchain-handoff-2026-10-01.md.
+
+## Toolchain job/root-before ve guest handoff lifecycle — 1 Ekim 2026 (başlangıç)
+
+- Önceki goal turu accepted checkpoint preflight/capsule/guest guard ve114 testle gerçek kod/kanıt ilerlemesiydi. Root cleanup/audit/Phase1 acceptance/prod run yok; OC/başla verilmedi. Heavy execution kapıları kapalı.
+- Codex own scripts/infra/tests/durum kayıtlarında yeni single-use toolchain job, pre-launch raw parent pin/root-before kapısı ve root-guest VM/disk/writer guard altında bounded ve her dosya için atomik capsule+authorization transferi hazırlayacak. Session kendi VM'ini failure/exit'te kapatacak, kabul/collector olmadan PASS üretemeyecek. Gerçek guest/VM/root/compiler işlemi yok; canonical7 artifact collector/toolchain after acceptance ve sonraki tüm ürün pipeline scope açık tutulur.
+
+## Toolchain job/root-before ve guest handoff lifecycle — 1 Ekim 2026 (sonuç)
+
+- Fully revalidated stability parent→new random toolchain job; EXCL/fsync exact raw parent pin, phase/input/source/boot/Phase1 binding ve separate root before request. Load/execution_guard aynı raw/new nonce'ı denetler. Controller request CLI parent IDs alır; no launch/started. Root argv yalnız user-run veridir.
+- Session library currentOC/ABI/Phase1/current pins/stopped writer/full parent recomputation/cache/signature/baseline→real root-before→repo/launch/sync/current input→SSH actual guestboot→exact capsule/auth/response binding→own close/FAIL. Positive VM/root/transport simulated; production hiçbirini çalıştırmadı. Compiler CLI/collector/verifier slot'u yok; normal exit bile FAIL/Guest artifact validation absent, after request/checkpoint yasak. Fullscope açık.
+- Guest bounded64KiB schema/current source/ABI/input/boot/protected record + VM/disk/writer guest guards; private EXCL attempt/completed600. Capsule/auth ayrı dosyalarda fsync/rename; birlikte atomik değil, auth last ve raw SHA/nonce ile incomplete fail-closed. Replay/partial/aliases preserves files. Stability/toolchain stage+source auth ayrımı common guard/producer/verifier'a bağlandı. Alp/frozen cleanup/root producer değişmedi.
+- İlk11 focused undefined verify_signatures nedeniyle8 error (43582484a6161bc5a4511f6c976dfc55a588597f0d391e0d08be95738b32f68b); shared existing verifier wrapper eklendi. İkinci11 fixture canonical-command patch eksik1failure+3error (4bd5cb493715fcea467faa480d66db6362a809ecfcf847252f2dd03416e8db3e). Fixture düzeltilip negative actual causes tighten;11 focused27,288s OK (031ea62e9ea86fece795d34e0062853c50b29bcc8ca6c6f9cd74b8606dcae5fd).125 full80,796s OK logc6a62bd7ebe066eb77abc930a4aaf972635c2e6590f05f8b37b0f97270d73473. No3 compiler/build attempts/no gate relaxation; root/VM/sampling/SSH positive mocked, real missingroot-before no-launch and tiny private qemu/files/rename/byte evidence.
+- AST25/bash10/diff/DECISIONS empty/help/runtime path-space-budget PASS. State/code6a19ef1ffe9288ad5c1998faff24427c178c8970cd04ae86bd3a9b8e02c942ac; inputsa03dbd03f18ab932d8348f28964ccd7f1d390e822c91c8df826b77c547ad3281. Source/frozen cleanup/plan/root producer/main-Claude HEAD-dal aynı. OwnBuildernull, accessibleQEMU inventoryempty; priorClaudePID no signal/VM/ISO action or inferred closure acceptance. NVMe/SSD/HDD%34,18/%60,15/%57,24.
+- Root cleanup/audit/Phase1/root/prod stage stores/stability checkpoint absent. Host sudo/root/mount/chroot/paket/CPU/production VM/compiler/systemd, başka ağaç/Alp/DECISIONS, ek eski imaj silme veya commit/push yok. OC/başla yok; HAZIR/complete yok. Canonical7 collector/byteABI verifier/monitored command/after acceptance/restore transaction/native79/kernel/BLFS/Plasma GL/profiles/iki ISO scope açık. Sonraki iş actual package/DB/index/payload+ABI raw collector/verifier; report docs/verification/infra-toolchain-session-2026-10-01.md.
+
+## Canonical toolchain artifact collector ve byte/ABI verifier — 1 Ekim 2026 (başlangıç)
+
+- Previous component125 full test ile new job/root-before/guest transport lifecycle evidence ve docs güncellendi; production root/VM/OC/compiler yok. Kaynak manifesto/Alp/frozen cleanup değişmez; guest helper run identity/installation DB snapshots/actual observed payload+ABI raw artifacts ve salt okunur host verifier hazırlanacak.
+- Own scripts/infra/tests/durum kapsamı; gerçek compiler/VM/root yok. Full canonical7+ABI proof tamamlanmadan session verified slot'u veya after acceptance/checkpoint açılmayacak. Ham Alp DB hash normalizasyonu/exclude yok. Full native79/kernel/BLFS/Plasma GL/profiles/iki ISO/restore scope sürer.
+
+## Canonical toolchain artifact collector ve byte/ABI verifier — 1 Ekim 2026 (sonuç)
+
+- Install-time raw DB EXCL/fsync snapshot+resume hash; guest current run/boot/handoff evidence ve shared canonical7 plan; installed entry_record observation/final raw DB export. Export partial kanıtı korur, pair atomic değildir. Alp/frozen source/cleanup/DECISIONS değişmedi.
+- Readonly host verifier actual tar/manifest/source/receipt/index/raw prefix/final DB/package records/observed payload; lexical LFS alias+single-owner layout. Üç ABI probe actual saved ELF class/machine/PT_INTERP, raw compiler/linker/CRT/libc/loader/C++ selected files/command argv-input-order/exit/boot/space/time coverage revalidation. Package-only evidence full guest proof olamaz; VERIFIED_GUEST_BYTES stage PASS değildir. Controller session slot hâlâ kapalı/FAIL; monitored compiler/host collector/root-after/stage acceptance entegrasyonu açık.
+- 16 yeni semantic fault test; fixture hash alanları rebound edilse de raw semantics reject. İlk8/son17 focused PASS (17'nin2'si imported eskiABI; finalimport düzeltildi). Ara141/82,497s eski entry snapshot; final142/84,096s OK log aa8e932222d4c9d24bab3adc0edc3e28d73b47ebf0b7e0c70a24405c2bed6da9. Hiç actual root/VM/compiler/OC yok; real tar/manifest/JSON bytes ama simulated DB/streams/telemetry ve minimal ELF test verisi. Existing tiny unpriv qcow fixture ayrı; production imaj değişmedi.
+- AST29/bash10/diff/DECISIONS empty/help/runtime path-space-budget PASS. State1e7b3ad8fe90d7a54db2acedc32163d5624b678785faa3050a2cc11ae17f33be; inputs02e473fbe2f2fb47d290160dd145a50342a6c92f4d5636bd7b4dccb3a3f50c53. Finalstate actual root producer STORE yolunu kontrol eder; önceki observation runtime candidate path alanı superseded. Main/Claude/own HEAD/dal/source/frozen SHA aynı. Own PID null/QEMU inventory empty, other VM shutdown kabulü çıkarılmadı. BoşNVMe/SSD/HDD%34,15/%60,15/%57,24.
+- Rootcleanup/audit/Phase1/root/prod stage stores/stability checkpoint absent; ham Alp DB timestamp engeli ve OC/başla kapısı sürer. Host sudo/root/mount/chroot/paket/CPU/production VM/compiler/systemd, başka ağaç/Alp/DECISIONS, ek eski imaj silme/commit/push yok. HAZIR/complete yok. Native79/kernel/BLFS/Plasma GL/profiles/iki ISO/restore scope açık; next collector/monitored action/after acceptance. Rapor docs/verification/infra-toolchain-byte-abi-2026-10-01.md.
+
+## OC sonrası tek kullanımlık toolchain guest runner bağlantısı — 1 Ekim 2026
+
+- Kullanıcı “OC tamam, başla” iznini verdi; seçim m64+m32 (x32 yok). Güncel Faz 1 raw Alp DB/acceptance guard eksik olduğundan `phase2 --mode multilib-m32 --oc-confirmed` ve bu turdaki `toolchain-run` gerçek VM/guest başlatmadı. Bir önceki DB hash sapması ve eksik acceptance dosyası engel olarak korunuyor.
+- Controller `toolchain-run` artık sabit `guest-toolchain.sh` komutunu ayrı monitored host stdout/telemetry kaydıyla çağırır; tek kullanımlık run ve input/root-before/parent pinlerini yeniden kontrol eder; tüm guest result ağacını filtresiz rsync ile toplar; exact handoff/auth ile canonical7 tar/manifest/raw DB/ownership/payload+ABI doğrulayıcıya verir. Guest kanıtı run/boot/handoff değerlerine karşı eşleşir; normal kapanış sonrası yalnız `PENDING_PRIVILEGED_POST` + yeni root-after request üretilir. Acceptance/checkpoint hâlâ sonraki bağımsız kapıdır.
+- Session testleri ilk çalıştırmada bir eski hata metni assertion'ı yüzünden 7/8 geçti; assertion yeni fail-closed mesajına düzeltildi. Yeni pozitif fixture, verifier sonucunu enjekte edip lifecycle/post-request kaydını doğrular; **verifier/guest gerçek çalışması değildir**. Tam `test_infra_rebuild + test_toolchain_evidence`: 144 test/86,639s OK. Syntax/AST (3 Python), guest wrapper `bash -n`, `git diff --check` geçti. Build inputs SHA `86848345dcf50317a7e43bb9c394219f91460c3cd762b936812058e01c822586`; pinned source SHA `0df6f8614ba0b4c335561f69c9458e972be5a738bd3ffa3c6f955ca12b6c8027`. Runtime alanı NVMe/SSD/HDD %34,15/%60,15/%57,24, `pgrep -a qemu-system` boş. Gerçek `toolchain-run` CLI exit1: `Phase 1 acceptance absent`; log SHA `917a2b5e18489a713b60ccedd7478b5d83cb2f0812e7af2d7bf8998c3c232a60`. Structured state SHA `fa2d4b59d5602a37f0973247a56b1e70e0521e8bdef41c6816516e3e38e3bb1b`. Tam ayrıntı `docs/verification/infra-toolchain-runner-2026-10-01.md`.
+- Root cleanup/audit sonucu ve `artifacts/phase1-acceptance.json` hâlâ yoktur. Host root/CPU/package/mount/chroot veya gerçek Builder açılışı bu turda yok. Tam 79 paket/kernel/BLFS/Plasma Wayland GL/profiles/iki eş ISO kapsamı açık tutulur.
+
+## Native LFS base inventory ve build input kapsamı — 1 Ekim 2026
+
+- Mevcut source manifest ve Codex main içindeki Chapter 8 identity inventory salt okunur incelendi; 79 package order/version manifesti worktree'ye kopyalandı ve 79 primary archive + 9 auxiliary patch/docs kaynağı pinlendi. Yalnız iki ağacı read-only kullandım; Alp/Claude kodu değişmedi.
+- `scripts/infra/base_plan.py` yanlış sırayı, eksik/dupe paketi veya kaynağı, version/prefix sapmasını, raw source manifest drift'ini, auxiliary source eksikliğini, earlier-package dependency sırasını, kitaptaki commit/XML SHA'sını ve recipe-source/ABI/authorization drift'ini reddeder. CLI `verify-base-inventory`: `INVENTORY_VERIFIED_RECIPE_COVERAGE_INCOMPLETE`, 79 identity/source pin, 34 recipe binding, 45 recipe pending; hiçbir build/ownership kabulü yok.
+- Stage tariflerine bu tur gawk, findutils ve libtool eklendi. m32 kapsamı zlib, bzip2, xz, zstd, file, lz4, gdbm, expat, kmod, attr, acl, readline, libcap ve libtool için sabit MLFS XML pinleriyle uygulanır; 20 tarif m64-only kalır. Gawk/findutils testlerini `tester` hesabıyla çalıştırır, libtool m32 kütüphanesini ayrı ara stage'den `/usr/lib32` altına alır. Focused 9 tests OK; `py_compile`, inventory verifier ve `git diff --check` OK. Inventory SHA `3d6b1813a7eecca73da11d5dfab19003ed24a7f549b363d18ad3427401f23ce6`; input SHA `566dbdafbfd8539eb8a91c78fd54b9e534d874f0f93594303ac590f6934c492e`. State `/mnt/alpbahOS-data/alpbahos-infra-rebuild/state/infra-base-recipes-v13-verification-20261001.json`, SHA `c044b1788b9a8717f02d0b65d0cffe203b3a610aca32f11eb5702e4b30004f76`; ayrıntı `docs/verification/infra-base-inventory-2026-10-01.md`.
+- Phase1 raw DB timestamp/determinism gate, root-owned cleanup result ve host RPM after audit hâlâ yok; VM/build çağrılmadı. Full scope açık.
+- Kullanıcının önceki RAM/CPU süreci talebini uyguladım: `plasmashell` (PID 2697, yaklaşık 1.30 GiB RSS ve 13.1% ps CPU) `systemctl --user stop plasma-plasmashell.service` ile durdu, unit `inactive/dead`, process kalmadı. KWin ve açık Codex/Claude oturumları korunup çalışır durumda. Son available RAM 17,108,340,736 byte. State SHA `abb81aad081568d0207dbd67edb0ae8abadac1b2b100748f5e9d5fa20095f278`.
+
+## Kullanıcı OC tamam/başla bildirimi ve Faz 1 kapısı — 1 Ekim 2026
+
+- Kullanıcı açıkça “OC tamam, başla” dedi. ABI tercihi önceki `b`: m64+m32, x32 yok. Faz2 runner komutu çağrıldı; `phase1_acceptance_guard()` başında exit 1 ile durdu ve VM/derleme başlatmadı. Log: `/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/phase2-start-gate-20261001.log`. Guard yalnız güncel input/hash'e bağlı Phase1 makbuzu ve eşit ham DB evidence ile geçer; `/mnt/alpbahOS-data/alpbahos-infra-rebuild/artifacts/phase1-acceptance.json` yok. İki ham Alp DB hash farkı `_now()` semantiğinden kaynaklı ve çözülmedi.
+- Root cleanup sonucu ve root host-audit sonrası çıktısı yok; root'a bağlı temizlik/audit insan tarafından yürütülmek üzere daha önce raporlandı. Kayıt yokken audit veya Phase1 acceptance üretilmedi, guard atlanmadı. VM/SBU/compiler/OC-stability workload başlamadı. Bu turdaki engel OC izni değil, eksik Phase1 kapısı.
+- Preflight özgün/önceki toolchain byte/ABI kanıtı ve disk alanı: `/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/infra-toolchain-byte-abi-verification-20261001.json`. Kullanıcı onayı sadece Phase2'yi başlatma yetkisini sağlar; kayıp Phase1 kanıtlarının yerine geçmez.
+
+## Tam host regression ve geçici SELinux etiketleri — 1 Ekim 2026
+
+- Önceki goal turunda yalnız durum tekrarlandığı için ilerleme yoktu; bu tur güncel durum yeniden denetlendi. NVMe root 132 GiB, SSD 68 GiB, HDD/data 262 GiB boş; `%15` diskte boş alan kapısı açık. Phase1 makbuzu ve root cleanup/host-after kayıtları hâlâ yok.
+- Tam host suite ilk koşusunda 271 testten 16 error/3 failure verdi: SELinux enforcing host her tmpdir/tmpfile'a `security.selinux` ekliyor; transaction testleri paket payload'ında hiçbir xattr'a izin vermemek üzere yazılmıştır. Production xattr guard'ı değiştirilmedi. `tests/test_m04_package_install_transaction.py` fikstürü hostun otomatik SELinux etiketini filtreler; tüm diğer xattr'lar, özellikle `user.m04-test`, production guard'a görünür kalır.
+- Transaction modülü focused 18/18 geçti. Tam komut `PYTHONPATH=tests:scripts/infra python3 -m unittest discover -s tests -v`: **271 test, 169.140s, OK (2 skipped)**. Log `/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/infra-full-test-suite-20261001.log`, SHA-256 `a6e00efff20d139e51904a63714a816b8e1e2390977d4fcae7be664ea9c8aab4`; yapılandırılmış state `/mnt/alpbahOS-data/alpbahos-infra-rebuild/state/infra-full-test-suite-20261001.json`, SHA-256 `17c3f29a86f12dce1e25ac1a40eb36e05957f0e9b16542574c1086828fa8c990`.
+- Build input `566dbdafbfd8539eb8a91c78fd54b9e534d874f0f93594303ac590f6934c492e`; LFS coverage değişmedi (34/79 recipe, 45 pending). Bu testler host/synthetic kapsamdır; VM, build, root acceptance veya Phase1 receipt kanıtı değildir. Root timestamp determinism ve root audit eksik; Faz 1 kapanmadı, Phase2 ağır çalıştırma başlamadı.
+
+## XML::Parser Chapter 8 recipe — 1 Ekim 2026
+
+- Görev metni yeniden okundu; worktree ve alan kontrol edildi. `verify-base-inventory` hâlâ 79 kimlik/34 reçete/45 pending gösteriyordu.
+- Pinned MLFS 12.4-systemd `chapter08/xml-parser.xml` commit `d7bc803361f445a649d0ca0832219f75b6e68683` ve XML SHA `5cf31be76d0d56071f58807c8c64bf3d39b50628e48034e5a0bf8a73f9666b9f` doğrulandı. `recipes/base/xml-parser.json`, önceki `expat` ve `perl` bağımlılıkları, `perl Makefile.PL`/`make test` akışı ve `DESTDIR` stage install ile eklendi; inventory'ye bağlandı.
+- `PYTHONPATH=tests:scripts/infra python3 -m unittest test_base_plan -v`: 8/8 geçti. `python3 scripts/infra/buildctl.py verify-base-inventory`: 79 kimlik, 35 recipe, 44 pending; sonuç hâlâ `INVENTORY_VERIFIED_RECIPE_COVERAGE_INCOMPLETE`. `git diff --check` geçti.
+- Inventory SHA `51854728489835da2dd29de9c8630600e3643e8bc7ef413bfa14f63b2b2d4386`; source manifest SHA `0df6f8614ba0b4c335561f69c9458e972be5a738bd3ffa3c6f955ca12b6c8027`; build input SHA `88f3426afdb5401245ce5a57faed6759bd8b082fc536fe462476ef58b7b0541d`. Focused verification state `/mnt/alpbahOS-data/alpbahos-infra-rebuild/state/infra-base-recipes-v14-verification-20261001.json`, SHA `316a5f1e2cb248262d1161ffd207d050e349e70bcd3ba6610994ba6d02e81ca9`. Recipe yalnız metadata; guest build/test/ownership kabulü yok. Phase1 timestamp determinism, root cleanup/audit kapıları hâlâ açık; ağır build başlamadı.
+
+## Tcl/Expect/DejaGNU build-directory recipes — 1 Ekim 2026
+
+- `package_stage.py` artık `working_directories` ile compile/test/stage/post-stage komutlarını yalnız build tree içindeki gerçek dizinlerde çalıştırıyor; mutlak yol, `..`, symlink finali veya symlink parent reddediliyor. `base_plan.py` recipe'nin auxiliary `prerequisites` kaynağının inventory'de bu pakete bağlı olduğunu da şart koşuyor.
+- Tcl, Expect ve DejaGNU tarifleri pinned MLFS Chapter 8 XML hash'leriyle eklendi. Tcl source+HTML inputlarını ve config path temizliğini, Expect GCC15 patch/PTY check/Tcl linkage'ını, DejaGNU separate build/test/generated docs/stage adımlarını bildirir. Inventory verifier bağlı üç tarifi kabul etti.
+- `test_base_plan`: 9/9 geçti; doğrulayıcı: 79 kimlik, 38 bağlı recipe, 41 pending; `py_compile`, `git diff --check` geçti. State `/mnt/alpbahOS-data/alpbahos-infra-rebuild/state/infra-base-recipes-v15-verification-20261001.json`, SHA `0101106e3c0d68fa6980de25a5f5c686838ebe56fdc41720ca4bed9cc2f300c0`; test log `/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/infra-base-recipes-v15-tests-20261001.log`, SHA `90f44e36f8f0614b1a453a7532518bfc8f0f2be066023f15c2f66bbdd9898c26`.
+- Inventory SHA `1f8d3e686dc44e3b42aca71b073c69803a160a3e4604e55a2f44c12d30bf0023`; source manifest SHA `0df6f8614ba0b4c335561f69c9458e972be5a738bd3ffa3c6f955ca12b6c8027`; build input SHA `b2b649083835e2e3b8a1a58b2cd92fffceb036159ae685f55197eac63cdb2f4c`. Recipe metadata is not a guest build or Alp ownership acceptance. Phase1 gates remain open; Phase2 build was not started.
+
+## Güncel tam regression sonucu ve Faz 1 kapısı — 1 Ekim 2026
+
+- Görev metni yeniden okundu. Güncel inventory/runner input'ta tam suite terminal PASS: 272 test / 2 skip / 150.633s. Log `/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/infra-full-test-suite-v15-20261001.log`, SHA `22efbf5088b0ce36bb4bf9771a7cc51ba6002f5c900865348d86e452b80214b9`; state `/mnt/alpbahOS-data/alpbahos-infra-rebuild/state/infra-full-test-suite-v15-20261001.json`, SHA `269bc3e0a34db41b998e253230d44960fb34eb50839401594fc929428b3b97e2`. State input SHA `b2b649083835e2e3b8a1a58b2cd92fffceb036159ae685f55197eac63cdb2f4c` yeniden eşleşti.
+- Güncel inventory doğrulaması: 79 paket, 38/79 recipe, 41 pending; son build input tam suite'te kapsandı. No Builder VM/native build. Root `/` 102 GiB (%21), SSD 68 GiB, HDD/data 262 GiB boş; alan eşiği geçiliyor ama 15% marjına dikkat.
+- Phase1 receipt, root cleanup sonucu ve root sonrası audit hâlâ yok; read-only sabit Alp kaynağı aynı SHA `92d519...` ve `_now()` gerçek UTC'yi yazıyor. Kullanıcı-sudo/root adımı ve Claude sahipliğindeki Alp semantik değişikliği bu çalışma ağacından yapılamaz. Faz 1 açık; Faz 2 ağır derleme başlamadı.
+
+## Tam host suite v16 ve güncel LFS kapsamı — 1 Ekim 2026
+
+- `intltool`, `autoconf`, `automake`, `bash` ve `libxcrypt` tarifleri sabit MLFS 12.4-systemd kaynak XML hash'leriyle inventory'ye bağlandı. Inventory doğrulaması 79 paket, 43 bağlı recipe ve 36 pending verdi; inventory SHA `cc57db86977fcd7f00affdafb8bac3171173d8567f3754c676de2925542d3060`, kaynak manifest SHA `0df6f8614ba0b4c335561f69c9458e972be5a738bd3ffa3c6f955ca12b6c8027`, build input SHA `1d754f8c0259682ba03873338dcd52b7a233b06b41381df7421d853dfabdeada`.
+- Tam host regression: 273 test, 2 skip, 88.461 s, PASS. Log `/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/infra-full-test-suite-v16-20261001.log`, SHA `4d6872f73899dc89d4dcac5c0908fa061f0d13ad28d1c821a9e2ec2906389315`; state `/mnt/alpbahOS-data/alpbahos-infra-rebuild/state/infra-full-test-suite-v16-20261001.json`, SHA `13c08d20abbc160118631a98144526c50fdd13ec722ebe0b2abbc72af89b7cce`, mode 0600. `verify-base-inventory` and `git diff --check` pass.
+- Tarifler metadata, testler host/synthetic kapsamındadır. Phase 1 is not complete: root cleanup/audit outputs and raw Alp DB determinism evidence/acceptance receipt are absent. No Phase 2 VM or build was launched. `/` has 102 GiB free (21%), `/mnt/alpbahOS-data` has 262 GiB free (57%).
+
+## Güncel Alp kaynağı ile ham DB tekrar deneyi — 1 Ekim 2026
+
+- Dış `~/Projects/alpbahOS` checkout salt okunur doğrulandı: temiz `main`, HEAD `3f6f0f1a3392a5d177ef93fa58c9217e8d70c65f`; Alp dosya SHA `5acfe856f9a188ea37376e778dad6463bd6bf9c25af0dc959334f2a08cf379b4`. `_now()` hâlâ sistem UTC saatini kullanıyor.
+- Sabit epoch `1756684800`, aynı zlib arşivi ve iki ayrı geçici kökle Alp CLI gerçek çalıştırıldı; her iki install exit 0. Ham DB'ler eşit değil: `7f77d9a720c9cfcac38e5fe0144ca3954e7adee13d7c2918f8416e6ba08d9149` ve `c97fbd0b6de63bbd11499d924d78f03f4b722c6a7c2e84c613ec32462bfd8cf8`. JSON diff yalnız `packages.zlib.installed_at`/`updated_at` farkı gösterdi.
+- Özel kanıt `/mnt/alpbahOS-data/alpbahos-infra-rebuild/research/alp-current-source-date-epoch-20261001T173611Z/evidence.json`, SHA `88efd2650b498f440140f9d83f0afe38b52317cbc33e23f14d6965644f50a3ff`, mode 0600. Mevcut Alp değişikliği bu determinism engelini çözmemiş; Claude'a ait kaynak değiştirilmedi. Fixture host-side'dır, guest/Phase1 kabulü değildir.
+
+## Güncel host yük denetimi — 1 Ekim 2026
+
+- Kullanıcının en yüksek RAM/CPU uygulamalarını durdurma isteği doğrultusunda yeniden ölçümde `plasmashell` 392 MiB RSS ve 23.6% CPU ile üst sıralardaydı. `systemctl --user stop plasma-plasmashell.service` sonrası servis inactive; KWin, Codex/ChatGPT ve Claude oturumları korunup açık kaldı. Faz 2/QEMU build süreci çalışmıyordu.
+
+
+## Kbd tarifi ve güncel tam suite v17 — 1 Ekim 2026
+
+- Kbd 2.8.0 tarifi, MLFS 12.4-systemd sabit Chapter 8 XML SHA-256 c2e999d52dd892ab94009ff16460ed9e3e360fc6066481a2b25e15f41443c2f3 ve LFS backspace patch piniyle eklendi. Recipe configure/build/stage, resizecons kaldırmaları ve doküman stage'ini kaydeder. Kitap make check'i bilinen valgrind/chroot/grafik ortamı hataları için yorum satırına aldığı için test başarı iddiası yoktur.
+- Envanter 44/79 recipe, 35 pending; inventory SHA 2732733e56c6421d4eb1ab4219d6fe064b6bf083e13d3bce92024778e7e7d530; build input SHA 998e7012ef742bfc3d9503d120e0281c01697da6eaad41179aef94ef86001ccd. Focused inventory suite 10/10 ve verifier geçti.
+- Güncel tam host suite v17 273 test, 2 skip, 86.478s PASS. Log /mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/infra-full-test-suite-v17-20261001.log, SHA 18bb750e33bbaaec1e0356ff476a6767fe67e17273373a99b19a0e7d1a4e6f2e; state /mnt/alpbahOS-data/alpbahos-infra-rebuild/state/infra-full-test-suite-v17-20261001.json, SHA 368a85278fa47cef4bf888da2e513aa885c6a69f24c8f7a8dd20d329e5814524. Host/synthetic suite; guest build/root ownership acceptance yok.
+- Kullanıcının masaüstünü kapatmama düzeltmesi üzerine plasmashell servisini yeniden başlattım; plasma-plasmashell.service active, plasmashell ve kwin_wayland PID'leri mevcut. Masaüstü oturumu açık.
+
+
+## Texinfo tarifi ve tam suite v18 — 1 Ekim 2026
+
+- Texinfo 7.2 tarifi, Chapter 8 XML SHA-256 2cc17df2007db70ea92c5bc1ec41926e283a308ea32e49b4346c6a248a54f402 ile eklendi. Perl-5.42 uyarı düzeltmesi yalnız upstream Convert modüllerine uygulanır; configure/make/check ve install-tex DESTDIR stage'e bağlıdır. Tarif guest-built değildir.
+- Envanter 45/79 recipe, 34 pending; inventory SHA 623da946d1952978e96902dcf8f81a8513faf3bddc07131b2fa13189f7324256; input SHA f85d81182259648ac293432d133d278c53e8bdd44b1b2c6f08c818dca93d33aa. Focused inventory suite 10/10, inventory verifier ve diff-check geçti.
+- Tam host suite v18 273 test / 2 skip / 85.906s PASS. Log /mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/infra-full-test-suite-v18-20261001.log, SHA 1869ce86c31bb28c9b0f857b1d5e51a9e5d1357188cc0dafe592859ec4fb77e2; state /mnt/alpbahOS-data/alpbahos-infra-rebuild/state/infra-full-test-suite-v18-20261001.json, SHA 900a52ffba73d83c07ac8ad296f5252fa0f49946e349ee6e0ce31b2226826695. Host/synthetic only.
+- Root cleanup/audit artifacts and Phase 1 acceptance receipt remain absent. User said keep the desktop open; plasmashell/kwin_wayland were rechecked active and left running.
+
+## Texinfo dependency audit and full suite v19 — 1 Ekim 2026
+
+- Texinfo/Kbd helper dependencies were audited against base package order. Kbd's backspace patch uses the bootstrap patch tool (the final-system patch package is installed later), so the recipe depends on glibc and sed; Texinfo depends on findutils, glibc, perl and sed. The inventory graph rejects later-package dependencies.
+- Current full host suite v19: 273 tests, 2 skipped, 85.775 s, PASS. Log /mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/infra-full-test-suite-v19-20261001.log, SHA da85a11f1996694f945ce6b5d06b27c944cd37a420638889513215b2df7a53b1; state /mnt/alpbahOS-data/alpbahos-infra-rebuild/state/infra-full-test-suite-v19-20261001.json, SHA 4adadb5f26580ff19fd84977a2182a313f06a5fb9cc85b3482dc5113c6dec18b. Input SHA 1f0bd923a0a26690ccc9f50eeaa174a3fc22e9d3a340de161b0b666239d17b70, inventory 45/79 recipes, 34 pending. Host/synthetic only.
+- Focused base-plan tests 10/10, inventory verifier, and diff check passed. Root cleanup/audit and Phase 1 receipt remain absent; desktop services remain active.
+
+
+## Inetutils recipe and full suite v20 — 1 October 2026
+
+- Inetutils 2.6 binds MLFS ml-12.4 `chapter08/inetutils.xml`, pinned at SHA-256 `3a87a7886dcc4e77f0fd98eb62538c8262145193c77767f17da43f5ed209d557`. Recipe includes pinned GCC configure fix, disabled legacy services, make/check/DESTDIR, and staged `ifconfig` relocation. The book's intermittent `libls.sh` failure is disclosed; recipe has not been guest-built.
+- Inventory verifier: 79 packages, 46 bound recipes, 33 pending; inventory SHA-256 `d79706c7993a76bfd1703484dfd879db006806f5373d8fd2c8c70cf76f3bacd4`. Focused test 10/10, recipe argv validation and `git diff --check` passed.
+- Full host/synthetic suite v20: 273 tests, 2 skipped, 84.381 s, PASS. Log `/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/infra-full-test-suite-v20-20261001.log`, SHA-256 `dab9335b386b18794c74b38275f92250822b8b77ed37e350e93c153fc0dade66`; state `/mnt/alpbahOS-data/alpbahos-infra-rebuild/state/infra-full-test-suite-v20-20261001.json`, SHA-256 `b4ee1aa0949432e4867ec138014d6df185bcc693c5923cf1c4f8de501f72689a`, mode 0600. Current build-input SHA `bf88910ab9cdc7086776400e0533fd2e7502ce159a1c75495c0864b1e3cf4626`.
+- No guest build started. Phase 1 still lacks root cleanup/audit result and equal raw Alp DB proof; desktop shell and KWin remained active.
+
+
+## Procps-ng binding and full suite v21 — 1 October 2026
+
+- Procps-ng 4.0.5 is bound to MLFS m32-systemd `chapter08/procps.xml`, SHA-256 `bdc79f62082ae28313c36984b94e7df876eee9b9e5f115db01cd3c68598718be`. The inventory validator now maps the package identity `procps-ng` to the actual book filename `procps.xml`; recipe follows systemd configure, tester-owned make check, and DESTDIR install. Known test caveats are recorded, no guest build claimed.
+- Inventory verification: 79 packages, 47 recipes, 32 pending; inventory SHA-256 `391cc4b5dfec5309551a4eea82cd5fbdc0c3b1e76660a9f7a7678b2f01458aad`. Focused test 10/10 and diff check passed.
+- Full host/synthetic suite v21: 273 tests, 2 skipped, 85.090 s, PASS. Log `/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/infra-full-test-suite-v21-20261001.log`, SHA-256 `cf7bcc39176aaf3ddc5553160015536a99a30ca39f0db8a4690a97ccc57bdaf8`; state `/mnt/alpbahOS-data/alpbahos-infra-rebuild/state/infra-full-test-suite-v21-20261001.json`, SHA-256 `7fb7177b6a1b4cc0c92640d17fac6b471f24af12db2f576a10292b7f4f1cc028`, mode 0600. Build-input SHA `ea2e8236589ac9bf4b73ec2b5f146cf5a2276e0bacf61fd4b0dd28027b7541fb`.
+- No VM or native build started. The desktop shell and KWin stayed active. Phase 1 lacks root cleanup/audit and equal raw Alp DB proof.
+
+
+## Man-db recipe and full suite v22 — 1 October 2026
+
+- Man-db 2.13.1 is bound to MLFS m32-systemd `chapter08/man-db.xml`, SHA-256 `e26ffab920031a9c60903a24e7eb909097cb0668295513ae0ea36b45da0a2082`. Recipe uses systemd configure options, disables setuid, sets cache owner, and stages `make install`; dependencies point only to earlier inventory packages. Recipe validation passed; no guest build claimed.
+- Inventory verifier: 79 packages, 48 recipes, 31 pending; inventory SHA-256 `b4aeab311cfb3be469810e9e97befc9f89737f8d7cb49aaa45613ac0f26b2021`. Focused test 10/10 and `git diff --check` passed.
+- Full host/synthetic suite v22: 273 tests, 2 skipped, 85.255 s, PASS. Log `/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/infra-full-test-suite-v22-20261001.log`, SHA-256 `bf81597b998046ada06701e6e829ad181900312d0b75007c308f44f567090165`; state `/mnt/alpbahOS-data/alpbahos-infra-rebuild/state/infra-full-test-suite-v22-20261001.json`, SHA-256 `9e47b521f0859c1485ac47faa670511e016ceac49627a2282cc822566f1539ba`, mode 0600. Current input SHA `00c59694a4fd385e1e0ec09efe423d60136c1a1f1f6fbe5dafec26d75f3ebe77`.
+- Phase 1 remains incomplete: no root cleanup/audit output or equal raw Alp DB proof. Plasma shell and KWin remain active.
+
+
+## Vim recipe and full suite v23 — 1 October 2026
+
+- Vim 9.1.1629 is bound to MLFS m32-systemd `chapter08/vim.xml`, SHA-256 `cfd7f15689d106815f1de0f3dbb9e9ce2f7920261758ac9fc69916790dee355a`. Source archive SHA-256 `d92c6550e8eca741085fce94e5b0d3d13d2c62fcb5b69bf5a6010d3114de4828` was checked in the local verified cache before recording the recipe. Pre-test edit excludes the book's curl/wget dependent test; the documented single-job test is bounded to tester; vi, man, and doc links are staged only. No guest build claimed.
+- Inventory verification: 79 packages, 49 recipes, 30 pending; inventory SHA-256 `0a0a25cb3953018a0707ef71603132085bb34eb31ccefc2afac4be16005f7642`. Focused test 10/10, recipe validation, verifier, and `git diff --check` passed.
+- Full host/synthetic suite v23: 273 tests, 2 skipped, 84.075 s, PASS. Log `/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/infra-full-test-suite-v23-20261001.log`, SHA-256 `8b23140ad16f0af03c49f32c98c4c7beb2cc9c00ca74063da493a63bf5c7c603`; state `/mnt/alpbahOS-data/alpbahos-infra-rebuild/state/infra-full-test-suite-v23-20261001.json`, SHA-256 `350ad77fa8da97a9635b88c991447caf8bda2c8bc37f0188b5792017f0d47d09`, mode 0600. Current input SHA `4de5931edd02996605157bf3f97b82d61e3d25c9d407b60645221252e232854a`.
+- Phase 1 remains incomplete: root cleanup/audit result and equal raw Alp DB proof are absent. Plasma shell and KWin stayed active.
+
+
+## GMP/MPFR/MPC recipes and full suite v24 — 1 October 2026
+
+- GMP 6.3.0, MPFR 4.2.2 and MPC 1.3.1 now bind their pinned MLFS m32-systemd Chapter 8 XML files. GMP applies the book's GCC-15 configure adjustment, generates/stages HTML docs, and fails below the required 199 passing tests. MPFR configures thread-safe and records the book's 198-test requirement; MPC binds to prior GMP/MPFR. These are native m64 compiler/library recipes; no guest build is claimed.
+- Inventory verification: 79 packages, 52 recipes, 27 pending; inventory SHA-256 `be367b29b25545f40d0f68fc5d8db5ee66953a7a9154a5d2fa0c3f433f557423`. Focused 10/10, recipe validation and diff check passed.
+- Full host/synthetic suite v24: 273 tests, 2 skipped, 83.159 s, PASS. Log `/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/infra-full-test-suite-v24-20261001.log`, SHA-256 `ce8e4e904ae464b3e9a1031396171a6ca1978c3f3993f8aec3ff3426bc0cf0d7`; state `/mnt/alpbahOS-data/alpbahos-infra-rebuild/state/infra-full-test-suite-v24-20261001.json`, SHA-256 `3125cd0e601fff05a88929aa8790f17937cd9e290e65bf289ada4b9327eb73d5`, mode 0600. Current input SHA `693e76e54965146e9aee82cdf439aca1840b43a739ed10416d36f6135a28aca9`.
+- Root cleanup receipt, post-cleanup audit and equal raw Alp DB hash acceptance remain absent. Desktop remains active.
+
+
+## Python build modules and full suite v25 — 1 October 2026
+
+- Flit-core, Packaging, Wheel, Setuptools, Ninja, Meson, MarkupSafe and Jinja2 are bound to the MLFS m32-systemd Chapter 8 XML hashes. Python wheel builds use no build isolation, no dependency resolution, local-only sources and staged `--root`. Ninja's bootstrap build sets the book's `NINJAJOBS=4` cap; the environment allowlist validates positive bounded decimal values. One focused regression rejects command injection in that variable.
+- Inventory verifier: 79 packages, 60 recipes, 19 pending; inventory SHA-256 `618075a4a420d91a4866d0c4f29ebb7ed207025aad0b2664aa83b2b86deff54f`. Focused inventory tests 11/11, recipe validations and `git diff --check` passed.
+- Full host/synthetic suite v25: 274 tests, 2 skipped, 83.188 s, PASS. Log `/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/infra-full-test-suite-v25-20261001.log`, SHA-256 `fa4012c83618fd8dcf2cfbbcdb79b852b257bf89ed15a6dc042dfaa9a47229e`; state `/mnt/alpbahOS-data/alpbahos-infra-rebuild/state/infra-full-test-suite-v25-20261001.json`, SHA-256 `a909aa4052b6e48662d1573cc123a33d7d133fbde395b7e77907e3fdaf4f610a`, mode 0600. Current input SHA `5734b744868393ca9df9caba967e1b0f0ffa4c4bd62bfb1b3f09caee568a1d3b`.
+- Root cleanup/audit and Alp DB reproducibility remain incomplete. Plasma and KWin remained active.
+
+
+## OpenSSL multilib recipe and full suite v26 — 1 October 2026
+
+- OpenSSL 3.5.2 binds MLFS m32-systemd `chapter08/openssl.xml`, SHA-256 `c32bd9094750ae4d4e4d66c50392f337510a6b337f0e7bca011328af86ed617f`. Recipe configures/builds/tests m64, removes static archive installs, versions/stages docs, then performs the book's second `linux-x86` configure/build/install. Only `/usr/lib32` from that pass is copied into DESTDIR. The book's conditional `30-test_afalg.t` failure is explicitly recorded; the strict test does not suppress it. No guest build is claimed.
+- Inventory verifier: 79 packages, 61 recipes, 18 pending; inventory SHA-256 `9b434a4530a78c6f81d943a7e542592acd57b58655e524dd101eea693e18cc71`. Focused test 11/11, recipe validation and diff check passed.
+- Full host/synthetic suite v26: 274 tests, 2 skipped, 83.505 s, PASS. Log `/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/infra-full-test-suite-v26-20261001.log`, SHA-256 `b9f48657574b0a467845af6765df0568e581e6151eb1183fac7d021ae7879160`; state `/mnt/alpbahOS-data/alpbahos-infra-rebuild/state/infra-full-test-suite-v26-20261001.json`, SHA-256 `f5a35ad241f2c68be9c15ca4b37b9b746698e9a2b741faede378f8c142bdb2c3`, mode 0600. Current inputs SHA `788f55d48fd703f2c53e4bd704d9e0124cd31f4b2a076ab3d8b7731dcc1db08a`.
+- Root cleanup/audit and equal raw Alp DB proof are still absent. Desktop shell and KWin active.
+
+
+## libffi base recipe and full suite v27 — 1 October 2026
+
+- Added libffi 3.5.2 against pinned MLFS m32-systemd `chapter08/libffi.xml` (SHA-256 `78028564e6ea66f37394b43d9d9d3a86616c92999ad9194e2f2637b533b85def`). The m64 recipe uses generic code generation with `--without-gcc-arch`; the m32 pass uses the book's i686 setting, runs `make check`, and confines staged library output to `/usr/lib32`. No x32 or native CPU tuning.
+- `verify-base-inventory`: 79 packages, 62 bound recipes, 17 pending. Canonical JSON identity/source/recipe row fingerprint SHA-256 `b65d34e322df7bd6119b42e5b783f35fda1c367ae4aee8eb291f1470e5ad87a0`. Focused inventory tests 11/11 and `git diff --check` passed. No guest package was built.
+- Full host/synthetic suite v27: 274 tests, 2 skipped, 83.294 s, PASS. Log `/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/infra-full-test-suite-v27-20261001.log`, SHA-256 `531f76c67e7bbd0e46401f8325db1174d38b1795af22ee27de72b203a63b9cec`; state `/mnt/alpbahOS-data/alpbahos-infra-rebuild/state/infra-full-test-suite-v27-20261001.json`, SHA-256 `39213f237a9b3b5d0781b8e8e5b86a660cf2a1a6bca8cd31cedb07f5ef1ed423`, mode 0600. Build input SHA `7e1838dccf7df1b15528c828e7bc21a828d59880982452bcca30efd607f5da32`.
+- Phase 1 remains unaccepted: root cleanup receipt, post-cleanup host audit, and equal raw Alp DB proof are missing. `plasmashell` PID 41836 and `kwin_wayland` PID 2537 remained active through the test.
+
+
+## Groff base recipe and full suite v28 — 1 October 2026
+
+- Added Groff 1.23.0 pinned to MLFS m32-systemd `chapter08/groff.xml` (SHA-256 `3faac14b11858336ade409419f8d89ff3abf6483eee8f30881c0b27a57fb81bb`) and its source archive SHA-256 `6b9757f592b7518b4902eb6af7e54570bdccba37a871fddb2d30ae3863511c13`. Recipe uses `PAGE=A4`, book `make check`, and `DESTDIR` install; no out-of-inventory optional programs are built.
+- `verify-base-inventory`: 79 packages, 63 bound recipes, 16 pending. Focused inventory tests 11/11 and diff check passed. Full host/synthetic suite v28: 274 tests, 2 skipped, 84.515 s, PASS; log `/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/infra-full-test-suite-v28-20261001.log`, SHA-256 `251de21bb2280040633e77e339bc9f24ab99c2b441f383398cb17c2c9a0208f0`; state `/mnt/alpbahOS-data/alpbahos-infra-rebuild/state/infra-full-test-suite-v28-20261001.json`, SHA-256 `bed1a82f2a7272f6218be26e88644ded7cc48fdf1b090e243d10cc1489abced1`, mode 0600; input SHA `c48db9faaf7ada7708fa0a9f021cc5d3bf4c790b1239d9cc68b294553a39b0a0`. No guest build.
+- Phase 1 acceptance remains blocked by absent user-run root cleanup/audit evidence and unequal raw Alp DB hashes caused by real-time install timestamps. `plasmashell` and `kwin_wayland` stayed active.
+
+
+## IPRoute2 base recipe and full suite v29 — 1 October 2026
+
+- Added IPRoute2 6.16.0 bound to MLFS m32-systemd `chapter08/iproute2.xml` SHA-256 `3011c983412f13c79fdd0290496c3fc8208a423e7051b105829b0320187d1b7b`; source archive SHA-256 `5900ccc15f9ac3bf7b7eae81deb5937123df35e99347a7f11a22818482f0a8d0`. Recipe disables arpd as directed, sets `NETNS_RUN_DIR=/run/netns`, stages binaries in `/usr/sbin`, and records that the book has no working tests. No guest build.
+- Inventory: 79 packages, 64 bound recipes, 15 pending. Canonical row fingerprint SHA-256 `5207da850c81a0a8514b53264430794c4eb41add6d5765e69f331a31515743d3`. Focused tests 11/11; full host/synthetic suite v29 274 tests, 2 skipped, 117.509 s, PASS; log SHA-256 `b166214162e9eda0c3d5b5bb0b96a26909efd17f68fa2b40e4d3fab33c819800`, state SHA-256 `047914abb273b89f41833cd13ba948d2a441392a6e986ef91d6aa74ee694e0b1`, input SHA-256 `d77dcf5be4b8d23d6f7099f6f2f1770bd330057c256da96970f4f979d88afc35`. `git diff --check` passed.
+- Phase 1 receipt, root cleanup/post-audit evidence, and equal raw Alp DB evidence remain absent. `plasmashell` and KWin remained active.
+
+
+## Offline zlib smoke tekrar denemesi — 1 Ekim 2026
+
+- Önceki smoke'taki artık build/stage klasörleri güvenli biçimde temizlensin diye Builder kapatıldı ve SHA doğrulamalı `checkpoint-prepared` overlay olarak geri yüklendi; önceki overlay'ler korundu. Bu checkpoint'te Builder Python yoktu; sabit hash'li Python 3.13.7 izole guest'e kuruldu. Eski klasör hatası tekrar etmedi.
+- zlib 1.3.1 iki gerçek guest build/test/stage koşusu geçti (2.562 / 2.642 s); iki arşiv SHA-256 `fd0e3858018f8b66a8a38e936982da7e85969f3f6efa6257007c248c19a2eebd`, manifest SHA-256 `e76130a8486c7aed8ca1f8a9c28cfbee37d2dacbf42aaeffacb8b87ebf5830b2`. Alp install/remove/reinstall ve 8 non-directory path ownership kontrolleri geçti. Ancak ham Alp DB tekrarlanabilir değil: `e7d765abc1d25ef390de260de287079bf1deaf1fdbb9c09b735762b425068122` vs `74f154119b0e934395bfff23b1b59d21eedf3ff217b52d43fe61227ef5c4eb78`; sonuç `FAIL_DB_REPRODUCIBILITY`, smoke log SHA-256 `abfef16ab354cb8da7e1f56c8bd72339ace6cd59ca4f8d22e7740a63e4a8fb0f`. Faz 1 kabulü veya Faz 2 onayı verilmedi.
+- Builder sonrasında temiz kapatıldı. Plasma shell PID 41836 ve KWin PID 2537 çalışır kaldı.
+
+
+## Base recipe coverage 69/79 ve tam suite v31 — 1 Ekim 2026
+
+- Sabit MLFS `ml-12.4` commit `d7bc803361f445a649d0ca0832219f75b6e68683` içindeki Chapter 8 XML hash’lerine bağlanarak Gettext, libelf, GRUB, D-Bus ve e2fsprogs tarifleri eklendi. D-Bus/libelf için MLFS m32 varyantları yalnız `/usr/lib32` altında staged; x32 yok. GRUB/Gettext/e2fsprogs kitapta native kurulum olarak tanımlı. `verify-base-inventory`: 79 paket, 69 tarif bağlı, 10 beklemede; doğrulama yalnız sıralama/pin/metadata kapsamındadır.
+- Placeholder-format test coverage tüm bağlı recipe command argümanlarını gerçek runner substitution sözlüğüyle biçimlendirir. Bu, dört mevcut tarifte çalıştırma anında bozulacak literal brace alanını yakaladı: readline `OLDSUFF`, GMP test awk programı, Intltool Perl regex’i ve Texinfo find `{}`. İçerik format sonrasında upstream literal çıktıyı koruyacak şekilde kaçışlandı; Intltool regression testi de runner’ın format adımını kullanıyor.
+- Odaklı `test_base_plan.py`: 11/11 geçti. Tam suite ilk denemede yanlış import yolu nedeniyle başarısız oldu; ikinci deneme `PYTHONPATH=scripts/infra python3 -m unittest discover -s tests -v` ile 274 test, 2 skip, 84.793 s, PASS. Log `/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/infra-full-test-suite-v31-20261001.log`, SHA-256 `013890d42ff6989e74acaf549a1549933506569fe3dbc3656281728ef4708585`; state `/mnt/alpbahOS-data/alpbahos-infra-rebuild/state/infra-full-test-suite-v31-20261001.json`, SHA-256 `3e867841480222bc168117e16d689adc0c10109b0344251147d091fa9cc67ecc`, mode 0600. Input SHA `b9524fed44f2f435206b1e2237b1bd9331a1c7405804e42f523caeb2b4857055`.
+- Bunlar guest build/stage/Alp ownership kanıtı değildir. Smoke `FAIL_DB_REPRODUCIBILITY`; root cleanup/post-audit çıktıları ve Faz 1 acceptance receipt hâlâ yok. Builder kapalı, Plasma/KWin açık.
+
+
+## Recipe düzeltme ve final tam suite v32 — 1 Ekim 2026
+
+D-Bus m32 recipe'si MLFS `cp libdbus-1.so*` davranışını tam karşılayacak biçimde gerçek .so dosyaları ile symlink'leri birlikte alacak şekilde düzeltildi; odaklı base-plan 11/11 geçti. Son `PYTHONPATH=scripts/infra python3 -m unittest discover -s tests -v` tam suite: 274 test, 2 skip, 84.397 s, PASS. Log `/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/infra-full-test-suite-v32-20261001.log`, SHA-256 `e53afff1c4485bb7289b2d232a708304f50d3ffc1e1a198c54553be5c8eaeb4a`; state `/mnt/alpbahOS-data/alpbahos-infra-rebuild/state/infra-full-test-suite-v32-20261001.json`, SHA-256 `bbc23f796dc905df3e9af2ea2cdca2b0c6aed14a82d589b6d1fd6f4d4a0f537e`, mode 0600; input SHA `d5b237032fa407d31b626a870bad15e2c1e68d8239d7b294874370e4cbb19b96`. Coverage 69/79, 10 pending. No guest build or Phase 1 acceptance.
+
+
+## E2fsprogs çalışma dizini ve tam suite v33 — 1 Ekim 2026
+
+Pinned XML'deki e2fsprogs info üretim komutu `build/` cwd'sine göre işlendi; recipe `post_stage` çalışma dizinini de `build` olarak sabitliyor. 11 odaklı inventory testi ve son tam `PYTHONPATH=scripts/infra python3 -m unittest discover -s tests -v` suite geçti: 274 test, 2 skip, 87.310 s. Log SHA-256 `5625775a5e24c7b05d8957db76f0eef9dea17945baa32c6c3be2bd2025a0fe4f`; state SHA-256 `1d4a51aed31f613df0a1bdd3d224a102e259b946aa083a9be7900b90c4068c61` (0600); input SHA `d756b79bf4cf661c97df8962844ce6c955a966c7ea4be4dabdce01afc83a022a`. Recipe coverage 69/79, 10 pending. No package guest build or ownership proof; Faz 1 acceptance still missing.
+
+## Faz 2 kararlılık kapısı kabulü — 2 Ekim 2026
+
+OC sonrası izole Builder'da 20 dakikalık workload, Binutils 2.45 SBU (`-j1`: 117.441 s; `-j16`: 38.827 s), iki eşit zlib arşiv/manifest ve iki gerçek kurulumda byte-identical Alp DB hash'i geçti. Root-before/after stage audit aynı boot ID ve aynı pinned RPM drift hash'ini gösterdi; `rpm -Va` exit 1 olduğundan RPM temizliği kabul edilmedi. Run `30b1c6350f7499349ef1241145039cdc` için acceptance SHA-256 `eec4813108c7c95b0d6a53407fc01d3add1036270a12e30f0564e4cd4080764e`; `checkpoint-stability` üretildi. Ayrıntı: [kararlılık kabulü](verification/infra-stability-acceptance-2026-10-02.md). KDE açık kaldı.
+
+## Canonical inventory provenance fix and stability rerun — 2 October 2026
+
+The full suite exposed a real stale `source_manifest_sha256` in the LFS inventory after the Alp pin update. Updated it to the current manifest digest; 15 base-plan tests pass. Because this file is a canonical build input, reran Phase 1 zlib smoke and the full 20-minute stability gate on input `b99ec8efbf2eeaf315657bbb71dcfeb156b15f7b6e113ab0a87227b82ce15e17`. Both raw DB hashes match; SBU `120.438s` (`-j1`) / `57.752s` (`-j16`). Root before/after audits retained the same RPM baseline; RPM verification exits 1 and is not reported clean. New accepted checkpoint replaces the active name while the prior checkpoint is preserved with an input-specific suffix. Full suite v43: 286 tests, 2 skipped, 87.013 s PASS; log SHA `269058030ac869e8a10027a0da5482a8d2d55df0a155dcf20704615c24176587`. [Evidence](verification/infra-stability-acceptance-2026-10-02.md).

@@ -1,0 +1,102 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/python.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "1c9628e3c18861adbb53717c56a7eb81b50e6cf6684082f9490a65a598700dbe",
+    "tag": "ml-12.4"
+  },
+  "build_files": {
+    "infra-pip.conf": "[global]\nroot-user-action = ignore\ndisable-pip-version-check = true\n"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--prefix=/usr",
+      "--enable-shared",
+      "--with-system-expat",
+      "--enable-optimizations",
+      "--without-static-libpython"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "python",
+  "phase": "base",
+  "post_stage": [
+    [
+      "install",
+      "-D",
+      "-m644",
+      "infra-pip.conf",
+      "{stage}/etc/pip.conf"
+    ],
+    [
+      "install",
+      "-d",
+      "-m755",
+      "{stage}/usr/share/doc/python-3.13.7/html"
+    ],
+    [
+      "cp",
+      "-a",
+      "{source}/python-docs/.",
+      "{stage}/usr/share/doc/python-3.13.7/html/"
+    ]
+  ],
+  "prerequisites": [
+    {
+      "directory": "python-docs",
+      "source": "python-3.13.7-docs-html.tar.bz2"
+    }
+  ],
+  "requires": [
+    "glibc",
+    "expat",
+    "zlib",
+    "bzip2",
+    "xz",
+    "openssl",
+    "ncurses",
+    "readline",
+    "gdbm",
+    "libffi",
+    "perl"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "Python-3.13.7.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "make",
+      "-j{jobs}",
+      "test",
+      "TESTOPTS=--timeout 120"
+    ]
+  ],
+  "validation": "Pinned MLFS m32-systemd CPython 3.13.7 native configure/build/test/install, local pip defaults, and source-pinned HTML documentation staged under DESTDIR. The book provides no separate m32 build. No guest build or Alp ownership acceptance yet.",
+  "version": "3.13.7"
+}

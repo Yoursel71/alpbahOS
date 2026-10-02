@@ -1,0 +1,69 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "LFS-12.4-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/automake.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "d8586f82dd44aaf0047337358d96670e8f83130564163fed939f2c554f27ae49",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--prefix=/usr",
+      "--docdir=/usr/share/doc/automake-1.18.1"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "automake",
+  "phase": "base",
+  "post_stage": [],
+  "pre": [
+    [
+      "sed",
+      "-i",
+      "s/''/etags/",
+      "t/tags-lisp-space.sh"
+    ]
+  ],
+  "requires": [
+    "glibc",
+    "m4",
+    "perl",
+    "autoconf"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "automake-1.18.1.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "make",
+      "-j4",
+      "check"
+    ]
+  ],
+  "validation": "Pinned Automake test script edit, parallel check capped at four jobs, staged install; not guest-built or Alp ownership-accepted.",
+  "version": "1.18.1"
+}

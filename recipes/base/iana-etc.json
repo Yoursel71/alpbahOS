@@ -1,0 +1,49 @@
+{
+  "abi": "multilib-m32",
+  "adaptations": [
+    "Translate the LFS cp services protocols /etc step into explicit file staging.",
+    "Capture /etc/services and /etc/protocols; /etc remains a shared root directory."
+  ],
+  "allowed_jobs": [
+    1
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "LFS-12.4-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/iana-etc.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "ad05cf83853b61fb6ee8cef86e435a02f261e8cdaf976cbeb1519871cdc2a39f",
+    "tag": "ml-12.4"
+  },
+  "compile": [],
+  "environment": {},
+  "jobs": 1,
+  "name": "iana-etc",
+  "phase": "base",
+  "post_stage": [],
+  "pre": [],
+  "requires": [],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "iana-etc-20250807.tar.gz",
+  "stage": [
+    [
+      "install",
+      "-Dm644",
+      "{source}/services",
+      "{stage}/etc/services"
+    ],
+    [
+      "install",
+      "-Dm644",
+      "{source}/protocols",
+      "{stage}/etc/protocols"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [],
+  "validation": "Recipe only; not guest-run or Alp ownership accepted",
+  "version": "20250807"
+}

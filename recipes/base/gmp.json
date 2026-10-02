@@ -1,0 +1,82 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/gmp.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "e4fc414286796dad7305a71e4f132581c7ebf7f752a521501e6f5685e592a99f",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--prefix=/usr",
+      "--enable-cxx",
+      "--disable-static",
+      "--docdir=/usr/share/doc/gmp-6.3.0"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ],
+    [
+      "make",
+      "html"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "gmp",
+  "phase": "base",
+  "pre": [
+    [
+      "sed",
+      "-i",
+      "/long long t1;/,+1s/()/(...)/",
+      "configure"
+    ]
+  ],
+  "requires": [
+    "glibc"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "gmp-6.3.0.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ],
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install-html"
+    ]
+  ],
+  "test": [
+    [
+      "bash",
+      "-c",
+      "set -o pipefail; make check 2>&1 | tee gmp-check-log"
+    ],
+    [
+      "awk",
+      "/# PASS:/{{total+=$3}} END{{if(total < 199) exit 1; print total}}",
+      "gmp-check-log"
+    ]
+  ],
+  "validation": "Pinned MLFS m32-systemd Chapter 8 recipe with GCC-15 configure adjustment, C++ support, HTML docs, critical test suite and explicit minimum of 199 passing tests. DESTDIR is used for both install targets. This is the native m64 library in the multilib toolchain; no m32 companion is declared. Guest test/build and owner acceptance remain pending.",
+  "version": "6.3.0"
+}

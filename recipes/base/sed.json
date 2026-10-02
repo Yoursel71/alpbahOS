@@ -1,0 +1,71 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "LFS-12.4-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/sed.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "247084eca3813fbd5bbea83ee5c428095492454db6da729fdd51fd76fdf6db0d",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--prefix=/usr"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 8,
+  "name": "sed",
+  "phase": "base",
+  "post_stage": [],
+  "pre": [],
+  "requires": [
+    "glibc"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "sed-4.9.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ],
+    [
+      "install",
+      "-d",
+      "-m755",
+      "{stage}/usr/share/doc/sed-4.9"
+    ],
+    [
+      "install",
+      "-m644",
+      "doc/sed.html",
+      "{stage}/usr/share/doc/sed-4.9/sed.html"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "make",
+      "-j{jobs}",
+      "check"
+    ]
+  ],
+  "validation": "LFS configure, check, install and HTML documentation staged below DESTDIR; no guest build or Alp ownership acceptance yet",
+  "version": "4.9"
+}

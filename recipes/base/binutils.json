@@ -1,0 +1,97 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/binutils.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "ff9e545c5c54617e3433dfd8f5392ffcecfdafc15b1ae1ca8725a48212a4168d",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "../configure",
+      "--prefix=/usr",
+      "--sysconfdir=/etc",
+      "--enable-ld=default",
+      "--enable-plugins",
+      "--enable-shared",
+      "--disable-werror",
+      "--enable-64-bit-bfd",
+      "--enable-new-dtags",
+      "--with-system-zlib",
+      "--enable-default-hash-style=gnu"
+    ],
+    [
+      "make",
+      "-j{jobs}",
+      "tooldir=/usr"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "binutils",
+  "phase": "base",
+  "post_stage": [
+    [
+      "rm",
+      "-f",
+      "{stage}/usr/lib/libbfd.a",
+      "{stage}/usr/lib/libctf.a",
+      "{stage}/usr/lib/libctf-nobfd.a",
+      "{stage}/usr/lib/libgprofng.a",
+      "{stage}/usr/lib/libopcodes.a",
+      "{stage}/usr/lib/libsframe.a"
+    ],
+    [
+      "rm",
+      "-rf",
+      "{stage}/usr/share/doc/gprofng"
+    ]
+  ],
+  "pre": [],
+  "requires": [
+    "glibc",
+    "zlib"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "separate_build": true,
+  "source": "binutils-2.45.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "tooldir=/usr",
+      "DESTDIR={stage}",
+      "install"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "bash",
+      "-euc",
+      "set +e\nmake -j{jobs} -k check\nmake_exit=$?\nset -e\npython3 /opt/alp-infra/scripts/infra/test-policy.py binutils --build . --make-exit \"$make_exit\" --output binutils-test-policy.json"
+    ]
+  ],
+  "test_locale": "C",
+  "test_policy": "binutils",
+  "test_user": "lfs",
+  "validation": "Pinned MLFS ml-12.4 Binutils 2.45 native build. Mandatory binutils/gas/ld summaries are evaluated by the strict pinned test policy; make failures are accepted only if the exact policy accepts completed raw summaries. DESTDIR install removes only book-listed static archives and gprofng documentation from the stage. No guest build or Alp ownership acceptance yet.",
+  "version": "2.45",
+  "working_directories": {
+    "compile": "build",
+    "post_stage": "build",
+    "stage": "build",
+    "test": "build"
+  }
+}

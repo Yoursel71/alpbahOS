@@ -1,0 +1,69 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/mpc.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "834f91363019500cd17c90ce96775e306c776b4b8b244e080f548859f10badc9",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--prefix=/usr",
+      "--disable-static",
+      "--docdir=/usr/share/doc/mpc-1.3.1"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ],
+    [
+      "make",
+      "html"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "mpc",
+  "phase": "base",
+  "requires": [
+    "glibc",
+    "gmp",
+    "mpfr"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "mpc-1.3.1.tar.gz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ],
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install-html"
+    ]
+  ],
+  "test": [
+    [
+      "make",
+      "check"
+    ]
+  ],
+  "validation": "Pinned MLFS m32-systemd Chapter 8 recipe with generated HTML docs, make check and DESTDIR installation. This is the native library bound to earlier GMP and MPFR packages; no guest build/owner acceptance claimed.",
+  "version": "1.3.1"
+}

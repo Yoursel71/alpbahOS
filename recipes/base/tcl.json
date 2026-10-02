@@ -1,0 +1,144 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "LFS-12.4-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/tcl.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "c812fbf3967181391de1972f8a2fa60180506446d34e2f4080df0448356f0261",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--prefix=/usr",
+      "--mandir=/usr/share/man",
+      "--disable-rpath"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "tcl",
+  "phase": "base",
+  "post_stage": [
+    [
+      "install",
+      "-dm755",
+      "{stage}/usr/share/doc/tcl-8.6.16"
+    ],
+    [
+      "cp",
+      "-v",
+      "-R",
+      "{source}/tcl-html/html/.",
+      "{stage}/usr/share/doc/tcl-8.6.16/"
+    ]
+  ],
+  "pre": [],
+  "prerequisites": [
+    {
+      "directory": "tcl-html",
+      "source": "tcl8.6.16-html.tar.gz"
+    }
+  ],
+  "requires": [
+    "glibc"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "tcl8.6.16-src.tar.gz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ],
+    [
+      "chmod",
+      "644",
+      "{stage}/usr/lib/libtcl8.6.a"
+    ],
+    [
+      "chmod",
+      "u+w",
+      "{stage}/usr/lib/libtcl8.6.so"
+    ],
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install-private-headers"
+    ],
+    [
+      "ln",
+      "-sfv",
+      "tclsh8.6",
+      "{stage}/usr/bin/tclsh"
+    ],
+    [
+      "mv",
+      "{stage}/usr/share/man/man3/Thread.3",
+      "{stage}/usr/share/man/man3/Tcl_Thread.3"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "sed",
+      "-e",
+      "s|{source}/unix|/usr/lib|",
+      "-e",
+      "s|{source}|/usr/include|",
+      "-i",
+      "tclConfig.sh"
+    ],
+    [
+      "sed",
+      "-e",
+      "s|{source}/unix/pkgs/tdbc1.1.10|/usr/lib/tdbc1.1.10|",
+      "-e",
+      "s|{source}/pkgs/tdbc1.1.10/generic|/usr/include|",
+      "-e",
+      "s|{source}/pkgs/tdbc1.1.10/library|/usr/lib/tcl8.6|",
+      "-e",
+      "s|{source}/pkgs/tdbc1.1.10|/usr/include|",
+      "-i",
+      "pkgs/tdbc1.1.10/tdbcConfig.sh"
+    ],
+    [
+      "sed",
+      "-e",
+      "s|{source}/unix/pkgs/itcl4.3.2|/usr/lib/itcl4.3.2|",
+      "-e",
+      "s|{source}/pkgs/itcl4.3.2/generic|/usr/include|",
+      "-e",
+      "s|{source}/pkgs/itcl4.3.2|/usr/include|",
+      "-i",
+      "pkgs/itcl4.3.2/itclConfig.sh"
+    ],
+    [
+      "make",
+      "test"
+    ]
+  ],
+  "validation": "Pinned Tcl configure, config-path cleanup, test, private headers, aliases, manpage rename and staged docs; no guest build or Alp ownership acceptance yet.",
+  "version": "8.6.16",
+  "working_directories": {
+    "compile": "unix",
+    "stage": "unix",
+    "test": "unix"
+  }
+}

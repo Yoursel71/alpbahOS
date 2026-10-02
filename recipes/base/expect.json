@@ -1,0 +1,81 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "LFS-12.4-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/expect.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "1349dc6f453ef7bab820baf3d76008191706b820af4ecac3121406165ee8c92a",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--prefix=/usr",
+      "--with-tcl=/usr/lib",
+      "--enable-shared",
+      "--disable-rpath",
+      "--mandir=/usr/share/man",
+      "--with-tclinclude=/usr/include"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "expect",
+  "patches": [
+    {
+      "source": "expect-5.45.4-gcc15-1.patch",
+      "strip": 1
+    }
+  ],
+  "phase": "base",
+  "post_stage": [],
+  "pre": [],
+  "requires": [
+    "glibc",
+    "tcl"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "expect5.45.4.tar.gz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ],
+    [
+      "ln",
+      "-svf",
+      "expect5.45.4/libexpect5.45.4.so",
+      "{stage}/usr/lib"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "python3",
+      "-c",
+      "from pty import spawn; spawn([\"echo\", \"ok\"])"
+    ],
+    [
+      "make",
+      "test"
+    ]
+  ],
+  "validation": "Pinned GCC 15 compatibility patch, Tcl-linked configure/test and staged Expect library alias; no guest build or Alp ownership acceptance yet.",
+  "version": "5.45.4"
+}

@@ -1,0 +1,86 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/inetutils.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "3a87a7886dcc4e77f0fd98eb62538c8262145193c77767f17da43f5ed209d557",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--prefix=/usr",
+      "--bindir=/usr/bin",
+      "--localstatedir=/var",
+      "--disable-logger",
+      "--disable-whois",
+      "--disable-rcp",
+      "--disable-rexec",
+      "--disable-rlogin",
+      "--disable-rsh",
+      "--disable-servers"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "inetutils",
+  "phase": "base",
+  "post_stage": [
+    [
+      "mkdir",
+      "-p",
+      "{stage}/usr/sbin"
+    ],
+    [
+      "mv",
+      "-v",
+      "{stage}/usr/bin/ifconfig",
+      "{stage}/usr/sbin/ifconfig"
+    ]
+  ],
+  "pre": [
+    [
+      "sed",
+      "-i",
+      "s/def HAVE_TERMCAP_TGETENT/ 1/",
+      "telnet/telnet.c"
+    ]
+  ],
+  "requires": [
+    "glibc",
+    "sed"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "inetutils-2.6.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ]
+  ],
+  "test": [
+    [
+      "make",
+      "check"
+    ]
+  ],
+  "validation": "Pinned MLFS m32-systemd Chapter 8 configure/build/check/DESTDIR install. The recipe relocates staged ifconfig from /usr/bin to /usr/sbin as the book directs, without expanding braces or moving files on the host. The book notes libls.sh can fail intermittently. Guest build and Alp ownership acceptance remain pending.",
+  "version": "2.6"
+}

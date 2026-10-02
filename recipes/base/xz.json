@@ -1,0 +1,101 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/xz.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "31fa6c64386f262461a42060d36f95e0d790d4cb381790b6c729f60f2860be8e",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--prefix=/usr",
+      "--disable-static",
+      "--docdir=/usr/share/doc/xz-5.8.1"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 8,
+  "name": "xz",
+  "phase": "base",
+  "post_stage": [
+    [
+      "make",
+      "distclean"
+    ],
+    [
+      "env",
+      "CC=gcc -m32",
+      "./configure",
+      "--host=i686-pc-linux-gnu",
+      "--prefix=/usr",
+      "--libdir=/usr/lib32",
+      "--disable-static"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ],
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}/.m32",
+      "install"
+    ],
+    [
+      "mkdir",
+      "-p",
+      "{stage}/usr/lib32"
+    ],
+    [
+      "cp",
+      "-a",
+      "{stage}/.m32/usr/lib32/.",
+      "{stage}/usr/lib32/"
+    ],
+    [
+      "rm",
+      "-rf",
+      "{stage}/.m32"
+    ]
+  ],
+  "requires": [
+    "zlib",
+    "glibc"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "xz-5.8.1.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "make",
+      "-j{jobs}",
+      "check"
+    ]
+  ],
+  "validation": "Recipe only; m64/m32 build, tests and Alp ownership remain unverified",
+  "version": "5.8.1"
+}

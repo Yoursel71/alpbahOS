@@ -1,0 +1,108 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/coreutils.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "b2ecac2f8dfc1ebc716ff6f91f01f6e78521c6d2243cb9b1df02bdd1786ed541",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "env",
+      "FORCE_UNSAFE_CONFIGURE=1",
+      "./configure",
+      "--prefix=/usr",
+      "--enable-no-install-program=kill,uptime"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "coreutils",
+  "patches": [
+    {
+      "source": "coreutils-9.7-upstream_fix-1.patch",
+      "strip": 1
+    },
+    {
+      "source": "coreutils-9.7-i18n-1.patch",
+      "strip": 1
+    }
+  ],
+  "phase": "base",
+  "post_stage": [],
+  "pre": [
+    [
+      "autoreconf",
+      "-fv"
+    ],
+    [
+      "automake",
+      "-af"
+    ]
+  ],
+  "requires": [
+    "glibc",
+    "attr",
+    "acl",
+    "gettext"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "coreutils-9.7.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ],
+    [
+      "mkdir",
+      "-p",
+      "{stage}/usr/sbin",
+      "{stage}/usr/share/man/man8"
+    ],
+    [
+      "mv",
+      "{stage}/usr/bin/chroot",
+      "{stage}/usr/sbin/chroot"
+    ],
+    [
+      "mv",
+      "{stage}/usr/share/man/man1/chroot.1",
+      "{stage}/usr/share/man/man8/chroot.8"
+    ],
+    [
+      "sed",
+      "-i",
+      "s/\"1\"/\"8\"/",
+      "{stage}/usr/share/man/man8/chroot.8"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "bash",
+      "-euc",
+      "make NON_ROOT_USERNAME=tester check-root\ngroupadd -g 102 dummy -U tester\ncleanup_group() {{\n  status=$?\n  trap - EXIT\n  groupdel dummy || status=1\n  exit \"$status\"\n}}\ntrap cleanup_group EXIT\ntest_path=$PATH\nchown -hR tester:tester .\nrunuser -u tester -- env \"PATH=$test_path\" LC_ALL=C.UTF-8 LANG=C.UTF-8 TZ=UTC make -k RUN_EXPENSIVE_TESTS=yes check </dev/null"
+    ]
+  ],
+  "test_locale": "C.UTF-8",
+  "test_user": "root",
+  "validation": "Pinned MLFS ml-12.4 Coreutils 9.7 patches/configure and DESTDIR/FHS staging. The book root checks and tester suite run only inside the Builder VM root coordinator; a temporary supplementary group is removed by an exit trap, and the source tree returns to lfs ownership. No guest build or Alp ownership acceptance yet.",
+  "version": "9.7"
+}

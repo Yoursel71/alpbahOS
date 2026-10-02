@@ -1,0 +1,71 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/m4.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "32d33704233478a59122bf3ef4e26df52719628e0be85111734be4e7562e6980",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--prefix=/usr"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 8,
+  "name": "m4",
+  "phase": "base",
+  "pre": [
+    [
+      "sed",
+      "s/\\[\\[__nodiscard__]]//",
+      "-i",
+      "lib/config.hin"
+    ],
+    [
+      "sed",
+      "s/test-stdalign$(EXEEXT) //",
+      "-i",
+      "tests/Makefile.in"
+    ]
+  ],
+  "requires": [
+    "glibc"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "m4-1.4.20.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "make",
+      "-j{jobs}",
+      "check"
+    ]
+  ],
+  "validation": "64-bit utility recipe only; build, tests and Alp ownership remain unverified",
+  "version": "1.4.20"
+}

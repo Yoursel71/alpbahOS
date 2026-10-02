@@ -1,0 +1,124 @@
+{
+  "abi": "multilib-m32",
+  "adaptations": [
+    "Pinned m64,m32 replaces book mlist variable; no x32.",
+    "GMP/MPFR/MPC extracted from individually hash-pinned archives.",
+    "make install uses separate DESTDIR; limits.h assembled in stage before Alp package capture."
+  ],
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter05/gcc-pass1.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "f96eb75966f0a2abc6aeabfc52410b0cffaa166d9f7791b0b19043d3e95e1f88",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "{source}/configure",
+      "--target=x86_64-lfs-linux-gnu",
+      "--prefix={lfs}/tools",
+      "--with-glibc-version=2.42",
+      "--with-sysroot={lfs}",
+      "--with-newlib",
+      "--without-headers",
+      "--enable-default-pie",
+      "--enable-default-ssp",
+      "--enable-initfini-array",
+      "--disable-nls",
+      "--disable-shared",
+      "--enable-multilib",
+      "--with-multilib-list=m64,m32",
+      "--disable-decimal-float",
+      "--disable-threads",
+      "--disable-libatomic",
+      "--disable-libgomp",
+      "--disable-libquadmath",
+      "--disable-libssp",
+      "--disable-libvtv",
+      "--disable-libstdcxx",
+      "--enable-languages=c,c++"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {
+    "LFS": "{lfs}",
+    "LFS_TGT": "x86_64-lfs-linux-gnu",
+    "LFS_TGT32": "i686-lfs-linux-gnu",
+    "PATH": "{lfs}/tools/bin:/usr/bin:/bin"
+  },
+  "jobs": 8,
+  "name": "gcc-pass1",
+  "phase": "toolchain",
+  "post_stage_concat": [
+    {
+      "destination": "srv/lfs/tools/lib/gcc/x86_64-lfs-linux-gnu/15.2.0/include/limits.h",
+      "sources": [
+        "gcc/limitx.h",
+        "gcc/glimits.h",
+        "gcc/limity.h"
+      ]
+    }
+  ],
+  "pre": [
+    [
+      "sed",
+      "-e",
+      "/m64=/s/lib64/lib/",
+      "-e",
+      "/m32=/s/m32=.*/m32=..\\/lib32$(call if_multiarch,:i386-linux-gnu)/",
+      "-i.orig",
+      "gcc/config/i386/t-linux64"
+    ],
+    [
+      "sed",
+      "/STACK_REALIGN_DEFAULT/s/0/(!TARGET_64BIT \\&\\& TARGET_SSE)/",
+      "-i",
+      "gcc/config/i386/i386.h"
+    ]
+  ],
+  "prerequisites": [
+    {
+      "directory": "mpfr",
+      "source": "mpfr-4.2.2.tar.xz"
+    },
+    {
+      "directory": "gmp",
+      "source": "gmp-6.3.0.tar.xz"
+    },
+    {
+      "directory": "mpc",
+      "source": "mpc-1.3.1.tar.gz"
+    }
+  ],
+  "requires": [
+    "binutils-pass1"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "separate_build": true,
+  "source": "gcc-15.2.0.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "install",
+      "DESTDIR={stage}"
+    ]
+  ],
+  "strip_stage_prefix": "srv/lfs",
+  "test": [],
+  "test_policy": "Cross pass 1 has no executable target test suite; ABI sanity is required after Glibc. This recipe alone cannot accept the toolchain.",
+  "validation": "Not compiled; guest and ownership acceptance pending",
+  "version": "15.2.0"
+}

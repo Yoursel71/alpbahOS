@@ -1,0 +1,245 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/systemd.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "7f09c46a8200e71261f74cb64ffbfa2ab5c2c164c3153dec72492afaa037354a",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "meson",
+      "setup",
+      "..",
+      "--prefix=/usr",
+      "--buildtype=release",
+      "-D",
+      "default-dnssec=no",
+      "-D",
+      "firstboot=false",
+      "-D",
+      "install-tests=false",
+      "-D",
+      "ldconfig=false",
+      "-D",
+      "sysusers=false",
+      "-D",
+      "rpmmacrosdir=no",
+      "-D",
+      "homed=disabled",
+      "-D",
+      "userdb=false",
+      "-D",
+      "man=disabled",
+      "-D",
+      "mode=release",
+      "-D",
+      "pamconfdir=no",
+      "-D",
+      "dev-kvm-mode=0660",
+      "-D",
+      "nobody-group=nogroup",
+      "-D",
+      "sysupdate=disabled",
+      "-D",
+      "ukify=disabled",
+      "-D",
+      "docdir=/usr/share/doc/systemd-257.8"
+    ],
+    [
+      "ninja",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "systemd",
+  "phase": "base",
+  "pre": [
+    [
+      "sed",
+      "-e",
+      "s/GROUP=\"render\"/GROUP=\"video\"/",
+      "-e",
+      "s/GROUP=\"sgx\", //",
+      "-i",
+      "rules.d/50-udev-default.rules.in"
+    ],
+    [
+      "mkdir",
+      "-p",
+      "build"
+    ]
+  ],
+  "prerequisites": [
+    {
+      "directory": "systemd-man-pages",
+      "source": "systemd-man-pages-257.8.tar.xz"
+    }
+  ],
+  "requires": [
+    "glibc",
+    "acl",
+    "gperf",
+    "libcap",
+    "xz",
+    "zlib",
+    "kmod",
+    "python",
+    "meson",
+    "ninja",
+    "pkgconf"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "systemd-257.8.tar.gz",
+  "stage": [
+    [
+      "env",
+      "DESTDIR={stage}",
+      "ninja",
+      "install"
+    ],
+    [
+      "mkdir",
+      "-p",
+      "{stage}/usr/share/man"
+    ],
+    [
+      "cp",
+      "-a",
+      "{source}/systemd-man-pages/.",
+      "{stage}/usr/share/man/"
+    ],
+    [
+      "rm",
+      "-rf",
+      "*"
+    ],
+    [
+      "env",
+      "PKG_CONFIG_PATH=/usr/lib32/pkgconfig",
+      "CC=gcc -m32",
+      "CXX=g++ -m32",
+      "LANG=en_US.UTF-8",
+      "meson",
+      "setup",
+      "..",
+      "--prefix=/usr",
+      "--libdir=/usr/lib32",
+      "--buildtype=release",
+      "-D",
+      "default-dnssec=no",
+      "-D",
+      "firstboot=false",
+      "-D",
+      "install-tests=false",
+      "-D",
+      "ldconfig=false",
+      "-D",
+      "sysusers=false",
+      "-D",
+      "rpmmacrosdir=no",
+      "-D",
+      "homed=disabled",
+      "-D",
+      "userdb=false",
+      "-D",
+      "man=disabled",
+      "-D",
+      "mode=release"
+    ],
+    [
+      "env",
+      "LANG=en_US.UTF-8",
+      "ninja",
+      "-j{jobs}"
+    ],
+    [
+      "mkdir",
+      "-p",
+      "{stage}/usr/lib32",
+      "{stage}/usr/lib32/pkgconfig",
+      "{stage}/systemd-m32"
+    ],
+    [
+      "env",
+      "LANG=en_US.UTF-8",
+      "DESTDIR={stage}/systemd-m32",
+      "ninja",
+      "install"
+    ],
+    [
+      "find",
+      "{stage}/systemd-m32/usr/lib32",
+      "-maxdepth",
+      "1",
+      "-name",
+      "libsystemd.so*",
+      "-exec",
+      "cp",
+      "-a",
+      "{{}}",
+      "{stage}/usr/lib32/",
+      ";"
+    ],
+    [
+      "find",
+      "{stage}/systemd-m32/usr/lib32",
+      "-maxdepth",
+      "1",
+      "-name",
+      "libudev.so*",
+      "-exec",
+      "cp",
+      "-a",
+      "{{}}",
+      "{stage}/usr/lib32/",
+      ";"
+    ],
+    [
+      "find",
+      "{stage}/systemd-m32/usr/lib32/pkgconfig",
+      "-maxdepth",
+      "1",
+      "-type",
+      "f",
+      "-exec",
+      "cp",
+      "-a",
+      "{{}}",
+      "{stage}/usr/lib32/pkgconfig/",
+      ";"
+    ],
+    [
+      "rm",
+      "-rf",
+      "{stage}/systemd-m32"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "bash",
+      "-euc",
+      "backup=\"$(mktemp -d /tmp/alp-systemd-os-release.XXXXXX)\"\nhad=0\nchanged=0\nrestore() {{\n  status=$?\n  trap - EXIT\n  if (( changed )); then\n    if (( had )); then\n      rm -f -- /etc/os-release\n      cp -a -- \"$backup/original\" /etc/os-release || status=1\n    else\n      rm -f -- /etc/os-release || status=1\n    fi\n  fi\n  rm -rf -- \"$backup\" || status=1\n  exit \"$status\"\n}}\ntrap restore EXIT\nif [[ -e /etc/os-release || -L /etc/os-release ]]; then\n  [[ ! -d /etc/os-release || -L /etc/os-release ]] || exit 1\n  cp -a -- /etc/os-release \"$backup/original\"\n  had=1\nfi\nchanged=1\nprintf 'NAME=\"Linux From Scratch\"\\n' > /etc/os-release\nninja test"
+    ]
+  ],
+  "test_user": "root",
+  "validation": "Pinned MLFS m32-systemd systemd 257.8 m64 and i686 m32 Meson/Ninja build; stages the auxiliary man-page archive and only libsystemd, libudev and pkg-config files from the m32 DESTDIR. The book test runs as root only through the Builder VM root coordinator, temporarily installs the required /etc/os-release fixture and restores the original file (or absence) on exit. Machine-id initialization and systemctl preset-all are target-root integration actions and are not run in package staging. No guest build or Alp ownership acceptance yet.",
+  "version": "257.8",
+  "working_directories": {
+    "compile": "build",
+    "stage": "build"
+  }
+}

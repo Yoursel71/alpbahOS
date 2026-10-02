@@ -1,0 +1,35 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [1, 2, 4, 8],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/flex.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "74902ad3f6ede79e9c922c62279606809defff4ba9dcbb36ab59338d4a170d1f",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    ["./configure", "--prefix=/usr", "--docdir=/usr/share/doc/flex-2.6.4", "--disable-static"],
+    ["make", "-j{jobs}"]
+  ],
+  "environment": {},
+  "jobs": 8,
+  "name": "flex",
+  "phase": "base",
+  "post_stage": [
+    ["ln", "-s", "flex", "{stage}/usr/bin/lex"],
+    ["ln", "-s", "flex.1", "{stage}/usr/share/man/man1/lex.1"]
+  ],
+  "requires": ["glibc", "m4"],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "flex-2.6.4.tar.gz",
+  "stage": [["make", "-j1", "DESTDIR={stage}", "install"]],
+  "strip_stage_prefix": "",
+  "test": [["make", "-j{jobs}", "check"]],
+  "validation": "64-bit utility recipe; build, tests and Alp ownership remain unverified",
+  "version": "2.6.4"
+}

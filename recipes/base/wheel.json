@@ -1,0 +1,56 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/wheel.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "141f894c1da159876c3a29edd0f62bf1ad2933e080caca09a79466628f60c703",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "pip3",
+      "wheel",
+      "-w",
+      "dist",
+      "--no-cache-dir",
+      "--no-build-isolation",
+      "--no-deps",
+      "{source}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "wheel",
+  "phase": "base",
+  "requires": [
+    "python",
+    "flit-core"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "wheel-0.46.1.tar.gz",
+  "stage": [
+    [
+      "pip3",
+      "install",
+      "--root={stage}",
+      "--no-index",
+      "--find-links=dist",
+      "--no-deps",
+      "wheel"
+    ]
+  ],
+  "test": [],
+  "validation": "Pinned MLFS offline wheel build and local-only pip install beneath DESTDIR with dependency resolution disabled. The book provides no package test step. Guest build, installed payload and Alp ownership remain unverified.",
+  "version": "0.46.1"
+}

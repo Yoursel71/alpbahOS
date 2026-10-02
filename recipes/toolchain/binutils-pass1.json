@@ -1,0 +1,64 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter05/binutils-pass1.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "08f4d3c482641def855bd388e9475ea336563ecd39e5da9012617b45e6ffdf4e",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "{source}/configure",
+      "--prefix={lfs}/tools",
+      "--with-sysroot={lfs}",
+      "--target=x86_64-lfs-linux-gnu",
+      "--disable-nls",
+      "--enable-gprofng=no",
+      "--disable-werror",
+      "--enable-new-dtags",
+      "--enable-default-hash-style=gnu"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {
+    "LFS": "{lfs}",
+    "LFS_TGT": "x86_64-lfs-linux-gnu",
+    "LFS_TGT32": "i686-lfs-linux-gnu",
+    "PATH": "{lfs}/tools/bin:/usr/bin:/bin"
+  },
+  "jobs": 8,
+  "name": "binutils-pass1",
+  "phase": "toolchain",
+  "requires": [
+    "filesystem-layout"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "separate_build": true,
+  "source": "binutils-2.45.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "install",
+      "DESTDIR={stage}"
+    ]
+  ],
+  "strip_stage_prefix": "srv/lfs",
+  "test": [],
+  "test_policy": "Cross pass 1 has no executable target test suite; ABI sanity is required after Glibc. This recipe alone cannot accept the toolchain.",
+  "validation": "Not compiled; guest and ownership acceptance pending",
+  "version": "2.45"
+}

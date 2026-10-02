@@ -1,0 +1,86 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "LFS-12.4-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/dejagnu.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "1e55fa29f3e82b4284fd031ac603e3d1ccfef7e51529ff80947efcc1e058afd9",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "../configure",
+      "--prefix=/usr"
+    ],
+    [
+      "makeinfo",
+      "--html",
+      "--no-split",
+      "-o",
+      "doc/dejagnu.html",
+      "../doc/dejagnu.texi"
+    ],
+    [
+      "makeinfo",
+      "--plaintext",
+      "-o",
+      "doc/dejagnu.txt",
+      "../doc/dejagnu.texi"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "dejagnu",
+  "phase": "base",
+  "post_stage": [],
+  "pre": [],
+  "requires": [
+    "glibc",
+    "tcl",
+    "expect"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "separate_build": true,
+  "source": "dejagnu-1.6.3.tar.gz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ],
+    [
+      "install",
+      "-v",
+      "-dm755",
+      "{stage}/usr/share/doc/dejagnu-1.6.3"
+    ],
+    [
+      "install",
+      "-v",
+      "-m644",
+      "doc/dejagnu.html",
+      "doc/dejagnu.txt",
+      "{stage}/usr/share/doc/dejagnu-1.6.3/"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "make",
+      "check"
+    ]
+  ],
+  "validation": "Pinned out-of-tree DejaGNU configure/check/install with staged generated HTML and text documentation; no guest build or Alp ownership acceptance yet.",
+  "version": "1.6.3"
+}

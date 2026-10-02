@@ -1,0 +1,70 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/ninja.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "814de6fa2add46faa020bab47bcc252c6dc4a68215dcbe88a69bff91fae60ff1",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "python3",
+      "configure.py",
+      "--bootstrap",
+      "--verbose"
+    ]
+  ],
+  "environment": {
+    "NINJAJOBS": "4"
+  },
+  "jobs": 4,
+  "name": "ninja",
+  "phase": "base",
+  "pre": [
+    [
+      "sed",
+      "-i",
+      "/int Guess/a \\\n  int   j = 0;\\\n  char* jobs = getenv( \"NINJAJOBS\" );\\\n  if ( jobs != NULL ) j = atoi( jobs );\\\n  if ( j > 0 ) return j;\\\n",
+      "src/ninja.cc"
+    ]
+  ],
+  "requires": [
+    "python"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "ninja-1.13.1.tar.gz",
+  "stage": [
+    [
+      "install",
+      "-vDm755",
+      "ninja",
+      "{stage}/usr/bin/ninja"
+    ],
+    [
+      "install",
+      "-vDm644",
+      "misc/bash-completion",
+      "{stage}/usr/share/bash-completion/completions/ninja"
+    ],
+    [
+      "install",
+      "-vDm644",
+      "misc/zsh-completion",
+      "{stage}/usr/share/zsh/site-functions/_ninja"
+    ]
+  ],
+  "test": [],
+  "validation": "Pinned MLFS bootstrap build, book NINJAJOBS concurrency cap of four and DESTDIR-only binary/bash/zsh completion install. The book explicitly omits its tests because CMake is outside LFS and bootstrap rebuild exercises the program. No guest build or ownership acceptance claimed.",
+  "version": "1.13.1"
+}

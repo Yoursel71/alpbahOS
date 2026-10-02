@@ -1,0 +1,60 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "LFS-12.4-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/gperf.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "3f94e42a739349238a3122816c633e1bb0393b364900becbd560132e02b6a2dd",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--prefix=/usr",
+      "--docdir=/usr/share/doc/gperf-3.3"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 8,
+  "name": "gperf",
+  "phase": "base",
+  "post_stage": [],
+  "pre": [],
+  "requires": [
+    "glibc"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "gperf-3.3.tar.gz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "make",
+      "-j{jobs}",
+      "check"
+    ]
+  ],
+  "validation": "LFS configure/check/install staged through DESTDIR; no guest build or Alp ownership acceptance yet",
+  "version": "3.3"
+}

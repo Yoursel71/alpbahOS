@@ -1,0 +1,161 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/dbus.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "8524e683bacad2927ae84529fdf4d3b2954756b1109329b9fc352a1075d29794",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "meson",
+      "setup",
+      "build",
+      "--prefix=/usr",
+      "--buildtype=release",
+      "--wrap-mode=nofallback",
+      "."
+    ],
+    [
+      "ninja",
+      "-C",
+      "build",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "dbus",
+  "phase": "base",
+  "post_stage": [
+    [
+      "env",
+      "PKG_CONFIG_PATH=/usr/lib32/pkgconfig",
+      "CC=gcc -m32 -march=i686",
+      "CXX=g++ -m32 -march=i686",
+      "meson",
+      "setup",
+      "build32",
+      "--prefix=/usr",
+      "--libdir=/usr/lib32",
+      "--buildtype=release",
+      "--wrap-mode=nofallback",
+      "."
+    ],
+    [
+      "ninja",
+      "-C",
+      "build32",
+      "-j{jobs}"
+    ],
+    [
+      "mkdir",
+      "-p",
+      "{stage}/.m32"
+    ],
+    [
+      "env",
+      "DESTDIR={stage}/.m32",
+      "ninja",
+      "-C",
+      "build32",
+      "install"
+    ],
+    [
+      "mkdir",
+      "-p",
+      "{stage}/usr/lib32/dbus-1.0",
+      "{stage}/usr/lib32/pkgconfig"
+    ],
+    [
+      "find",
+      "{stage}/.m32/usr/lib32",
+      "-maxdepth",
+      "1",
+      "-name",
+      "libdbus-1.so*",
+      "(",
+      "-type",
+      "f",
+      "-o",
+      "-type",
+      "l",
+      ")",
+      "-exec",
+      "cp",
+      "-a",
+      "--",
+      "{{}}",
+      "{stage}/usr/lib32/",
+      ";"
+    ],
+    [
+      "cp",
+      "-a",
+      "{stage}/.m32/usr/lib32/dbus-1.0/.",
+      "{stage}/usr/lib32/dbus-1.0/"
+    ],
+    [
+      "install",
+      "-m644",
+      "{stage}/.m32/usr/lib32/pkgconfig/dbus-1.pc",
+      "{stage}/usr/lib32/pkgconfig/dbus-1.pc"
+    ],
+    [
+      "rm",
+      "-rf",
+      "{stage}/.m32"
+    ]
+  ],
+  "requires": [
+    "glibc",
+    "expat",
+    "libcap",
+    "systemd"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "dbus-1.16.2.tar.xz",
+  "stage": [
+    [
+      "env",
+      "DESTDIR={stage}",
+      "ninja",
+      "-C",
+      "build",
+      "install"
+    ],
+    [
+      "mkdir",
+      "-p",
+      "{stage}/var/lib"
+    ],
+    [
+      "ln",
+      "-sf",
+      "/etc/machine-id",
+      "{stage}/var/lib/dbus"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "ninja",
+      "-C",
+      "build",
+      "test"
+    ]
+  ],
+  "validation": "Pinned MLFS m32-systemd D-Bus 1.16.2 native build/test/install plus i686 m32 libraries, modules and pkg-config staged under /usr/lib32. No x32 build. No guest build or Alp ownership acceptance yet.",
+  "version": "1.16.2"
+}

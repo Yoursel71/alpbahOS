@@ -1,0 +1,67 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/man-db.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "e26ffab920031a9c60903a24e7eb909097cb0668295513ae0ea36b45da0a2082",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--prefix=/usr",
+      "--docdir=/usr/share/doc/man-db-2.13.1",
+      "--sysconfdir=/etc",
+      "--disable-setuid",
+      "--enable-cache-owner=bin",
+      "--with-browser=/usr/bin/lynx",
+      "--with-vgrind=/usr/bin/vgrind",
+      "--with-grap=/usr/bin/grap"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "man-db",
+  "phase": "base",
+  "requires": [
+    "glibc",
+    "gdbm",
+    "groff",
+    "less",
+    "libpipeline",
+    "zlib"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "man-db-2.13.1.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ]
+  ],
+  "test": [
+    [
+      "make",
+      "check"
+    ]
+  ],
+  "validation": "Pinned MLFS m32-systemd Chapter 8 configure/build/check/DESTDIR install. This is the systemd variant; setuid installation is disabled and cache owner is bin. The configured browser/formatter defaults are optional programs outside this LFS package set. Guest build and Alp ownership acceptance remain pending.",
+  "version": "2.13.1"
+}

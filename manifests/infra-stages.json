@@ -1,0 +1,15 @@
+{
+  "schema": "alpbahOS.stages/v1",
+  "heavy_build_authorization": "OC tamam, başla + explicit 32-bit choice",
+  "stages": [
+    {"id": "stability", "requires": [], "checkpoint": true, "acceptance": ["20–30 minute observation", "SBU j1 and j16", "two identical package hashes", "no new host RPM/kernel/MCE fault"]},
+    {"id": "toolchain", "requires": ["stability"], "checkpoint": true, "acceptance": ["user-selected ABI", "ELF interpreter/linker sanity", "source/recipe/environment hashes", "Alp ownership"]},
+    {"id": "base", "requires": ["toolchain"], "checkpoint": true, "acceptance": ["79 official LFS 12.4 packages", "all package staged paths owned", "completed glibc/binutils/gcc test policies"]},
+    {"id": "kernel", "requires": ["base"], "checkpoint": true, "acceptance": ["CONFIG_IA32_EMULATION=y", "virtio and boot support", "owned kernel/module payload"]},
+    {"id": "blfs-core", "requires": ["kernel"], "checkpoint": true, "acceptance": ["BLFS 12.4 matched sources", "per-package ownership"]},
+    {"id": "plasma", "requires": ["blfs-core"], "checkpoint": true, "acceptance": ["Wayland login", "KWin session", "GL render/readback on virtio-gpu"]},
+    {"id": "profiles", "requires": ["plasma"], "checkpoint": true, "acceptance": ["reviewed Claude profile commit/hash", "staged ownership"]},
+    {"id": "iso", "requires": ["profiles"], "checkpoint": true, "acceptance": ["BIOS and UEFI live boot", "second-run identical rootfs/ISO hashes", "no host RPM degradation"]}
+  ],
+  "status": "Infrastructure stage contracts; production recipes must be reviewed before execution. This file is not build/boot acceptance."
+}

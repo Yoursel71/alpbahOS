@@ -1,0 +1,66 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "LFS-12.4-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/grep.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "2b34b616fcb1b6daacd058c989f065fc84554a7334415da8db24302366b83d07",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--prefix=/usr"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 8,
+  "name": "grep",
+  "phase": "base",
+  "post_stage": [],
+  "pre": [
+    [
+      "sed",
+      "-i",
+      "s/echo/#echo/",
+      "src/egrep.sh"
+    ]
+  ],
+  "requires": [
+    "glibc"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "grep-3.12.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "make",
+      "-j{jobs}",
+      "check"
+    ]
+  ],
+  "validation": "LFS egrep compatibility edit/configure/check/install staged below DESTDIR; no guest build or Alp ownership acceptance yet",
+  "version": "3.12"
+}

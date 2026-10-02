@@ -133,7 +133,10 @@ def main() -> int:
                 "sha256": args.source_sha256.lower(),
             },
         },
-        "captured_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "captured_at": (
+            datetime.fromtimestamp(int(os.environ["SOURCE_DATE_EPOCH"]), timezone.utc)
+            if "SOURCE_DATE_EPOCH" in os.environ else datetime.now(timezone.utc)
+        ).isoformat(timespec="seconds"),
         "entries": entries,
     }
     output.parent.mkdir(parents=True, exist_ok=True)

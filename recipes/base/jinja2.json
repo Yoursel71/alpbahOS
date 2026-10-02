@@ -1,0 +1,56 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/jinja2.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "c7e46c1d2dc4f3c7d1dd359443a0515cf7c53112f67b77d4fdaeee8a988e9480",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "pip3",
+      "wheel",
+      "-w",
+      "dist",
+      "--no-cache-dir",
+      "--no-build-isolation",
+      "--no-deps",
+      "{source}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "jinja2",
+  "phase": "base",
+  "requires": [
+    "python",
+    "markupsafe"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "jinja2-3.1.6.tar.gz",
+  "stage": [
+    [
+      "pip3",
+      "install",
+      "--root={stage}",
+      "--no-index",
+      "--find-links=dist",
+      "--no-deps",
+      "Jinja2"
+    ]
+  ],
+  "test": [],
+  "validation": "Pinned MLFS offline wheel build and local-only pip install beneath DESTDIR with dependency resolution disabled. The book provides no package test step. Guest build, installed payload and Alp ownership remain unverified.",
+  "version": "3.1.6"
+}

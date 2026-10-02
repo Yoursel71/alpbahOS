@@ -1,0 +1,55 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/flit-core.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "8546fa0b43f78b1389eb609ff5436fd6f7f423ebdf07bcd21fbc938edb923c80",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "pip3",
+      "wheel",
+      "-w",
+      "dist",
+      "--no-cache-dir",
+      "--no-build-isolation",
+      "--no-deps",
+      "{source}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "flit-core",
+  "phase": "base",
+  "requires": [
+    "python"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "flit_core-3.12.0.tar.gz",
+  "stage": [
+    [
+      "pip3",
+      "install",
+      "--root={stage}",
+      "--no-index",
+      "--find-links=dist",
+      "--no-deps",
+      "flit_core"
+    ]
+  ],
+  "test": [],
+  "validation": "Pinned MLFS offline wheel build and local-only pip install beneath DESTDIR with dependency resolution disabled. The book provides no package test step. Guest build, installed payload and Alp ownership remain unverified.",
+  "version": "3.12.0"
+}

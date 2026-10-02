@@ -1,0 +1,1140 @@
+{
+  "abi_selection": {
+    "authorization": "User b answer on 2026-10-01; OC/start not given",
+    "gcc_multilib_list": [
+      "m64",
+      "m32"
+    ],
+    "mode": "multilib-m32",
+    "x32": false
+  },
+  "alp": {
+    "git_commit": "e7db520a5e2b513b355dbd58b77a49a45170ec46",
+    "path": "docs/handoffs/claude/alp-prototype/alp.py",
+    "sha256": "055a416a14fbdf0bfdbe25f16ffbd563b3a47071f33a1fb8861d806cd9b4fa1a"
+  },
+  "blfs_book": "12.4-systemd",
+  "book": "12.4-systemd",
+  "book_inputs": {
+    "https://www.linuxfromscratch.org/lfs/downloads/12.4-systemd/md5sums": "d18a55ca1aa4eb0f483f134cd44287ea8d48eeb1def5fa0c8d07fe44f38dbb17",
+    "https://www.linuxfromscratch.org/lfs/downloads/12.4-systemd/wget-list-systemd": "575d66011500a76754afdcee6aeb816b1026f476abc5f5630cad5984eb09546c"
+  },
+  "builder": {
+    "checksum_document_sha256": "d76594b14771bdbcfe098e5a440a631ce5226cdb9268679a1e2a84ee197b9357",
+    "checksum_url": "https://cloud.debian.org/images/cloud/bookworm/20260923-2610/SHA512SUMS",
+    "filename": "debian-12-genericcloud-amd64-20260923-2610.qcow2",
+    "sha256": "7b3faf645268d65f91676b11cda5ab18294b1f0ac0062238f00d279551bdecad",
+    "sha512": "3d94c9dd66d8a283fde060b8810373b7ae04038b956ee00d553d1ae564f6fbdeaa2fd6e7404e87e53348b5a9509170f3ea7c0731ba737590c5c4cb8d559a47f8",
+    "signature": null,
+    "url": "https://cloud.debian.org/images/cloud/bookworm/20260923-2610/debian-12-genericcloud-amd64-20260923-2610.qcow2"
+  },
+  "builder_tools": [
+    {
+      "checksum_provenance": "GitHub primary release API asset digest for release 20250918",
+      "filename": "cpython-3.13.7+20250918-x86_64-unknown-linux-gnu-install_only.tar.gz",
+      "id": "builder-cpython-3.13.7",
+      "scope": "Builder-only prebuilt interpreter; never installed into LFS product",
+      "sha256": "0a01bad99fd4a165a11335c29eb43015dfdb8bd5ba8e305538ebb54f3bf3146d",
+      "signature": null,
+      "size": 120060763,
+      "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20250918/cpython-3.13.7%2B20250918-x86_64-unknown-linux-gnu-install_only.tar.gz"
+    }
+  ],
+  "excluded_non_systemd_entries": [
+    {
+      "reason": "not in official systemd checksum manifest",
+      "url": "https://www.linuxfromscratch.org/lfs/downloads/12.4/lfs-bootscripts-20250827.tar.xz"
+    },
+    {
+      "reason": "not in official systemd checksum manifest",
+      "url": "https://github.com/troglobit/sysklogd/releases/download/v2.7.2/sysklogd-2.7.2.tar.gz"
+    },
+    {
+      "reason": "not in official systemd checksum manifest",
+      "url": "https://github.com/slicer69/sysvinit/releases/download/3.14/sysvinit-3.14.tar.xz"
+    },
+    {
+      "reason": "not in official systemd checksum manifest",
+      "url": "https://anduin.linuxfromscratch.org/LFS/udev-lfs-20230818.tar.xz"
+    },
+    {
+      "reason": "not in official systemd checksum manifest",
+      "url": "https://www.linuxfromscratch.org/patches/lfs/12.4/sysvinit-3.14-consolidated-1.patch"
+    }
+  ],
+  "local_sources": [
+    {
+      "filename": "filesystem-layout.json",
+      "kind": "repository-file",
+      "path": "recipes/toolchain/filesystem-layout.json",
+      "sha256": "4033d93e5cc2ef175e8191ce0bbe55ae7a92e599de5b20865b2f4501183e97da",
+      "url": "urn:alpbahOS:source:filesystem-layout:12.4-ml32.1"
+    }
+  ],
+  "multilib_book": {
+    "architecture": "ml_32",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "inputs_sha256": {
+      "chapter04/creatingminlayout.xml": "022e533f42e8c5a92de5941b300aba731220bd8b34ff774b54cd79dcda0228ea",
+      "chapter05/binutils-pass1.xml": "08f4d3c482641def855bd388e9475ea336563ecd39e5da9012617b45e6ffdf4e",
+      "chapter05/gcc-pass1.xml": "f96eb75966f0a2abc6aeabfc52410b0cffaa166d9f7791b0b19043d3e95e1f88",
+      "chapter05/glibc.xml": "54740beed6a506c80d17c9c91c52bd65659886e38effd9ad41887efba4a91123",
+      "chapter05/libstdc++.xml": "274896fba8a96a0dd1a58f38fef7c5d920612a7bfacc683e94a11a2cef6c2c99",
+      "chapter05/linux-headers.xml": "95e8ba48efda4ed81a715ddf9937d213d8a554046a65b1e14a6091fa11597fba",
+      "packages.ent": "d7e0cb91b442e6540dd2214053cd777245d977f29eea29a70675ff9840277d26"
+    },
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "tag": "ml-12.4"
+  },
+  "pending_sources": [
+    {
+      "book_md5": "11ee9d335b227ea2e8579c4ba6e56138",
+      "id": "isl-0.27.tar.xz",
+      "required_by": "MLFS final GCC/ISL; not a pass 1 prerequisite",
+      "status": "NOT FROZEN: upstream HTTP 522; attempted LFS mirror HTTP 404; no SHA256 or cached archive accepted",
+      "url": "https://libisl.sourceforge.io/isl-0.27.tar.xz"
+    }
+  ],
+  "schema": "alpbahOS.sources/v1",
+  "source_date_epoch": 1756684800,
+  "sources": [
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "acl-2.3.2.tar.xz",
+      "id": "acl-2.3.2.tar.xz",
+      "official_md5": "590765dee95907dbc3c856f7255bd669",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "97203a72cae99ab89a067fe2210c1cbf052bc492b479eca7d226d9830883b0bd",
+      "signature": null,
+      "size": 371680,
+      "url": "https://download.savannah.gnu.org/releases/acl/acl-2.3.2.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "attr-2.5.2.tar.gz",
+      "id": "attr-2.5.2.tar.gz",
+      "official_md5": "227043ec2f6ca03c0948df5517f9c927",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "39bf67452fa41d0948c2197601053f48b3d78a029389734332a6309a680c6c87",
+      "signature": null,
+      "size": 492539,
+      "url": "https://download.savannah.gnu.org/releases/attr/attr-2.5.2.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "autoconf-2.72.tar.xz",
+      "id": "autoconf-2.72.tar.xz",
+      "official_md5": "1be79f7106ab6767f18391c5e22be701",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "ba885c1319578d6c94d46e9b0dceb4014caafe2490e437a0dbca3f270a223f5a",
+      "signature": null,
+      "size": 1389680,
+      "url": "https://ftpmirror.gnu.org/autoconf/autoconf-2.72.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "automake-1.18.1.tar.xz",
+      "id": "automake-1.18.1.tar.xz",
+      "official_md5": "cea31dbf1120f890cbf2a3032cfb9a68",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "168aa363278351b89af56684448f525a5bce5079d0b6842bd910fdd3f1646887",
+      "signature": null,
+      "size": 1652392,
+      "url": "https://ftpmirror.gnu.org/automake/automake-1.18.1.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "bash-5.3.tar.gz",
+      "id": "bash-5.3.tar.gz",
+      "official_md5": "977c8c0c5ae6309191e7768e28ebc951",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "0d5cd86965f869a26cf64f4b71be7b96f90a3ba8b3d74e27e8e9d9d5550f31ba",
+      "signature": null,
+      "size": 11355854,
+      "url": "https://ftpmirror.gnu.org/bash/bash-5.3.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "bc-7.0.3.tar.xz",
+      "id": "bc-7.0.3.tar.xz",
+      "official_md5": "ad4db5a0eb4fdbb3f6813be4b6b3da74",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "91eb74caed0ee6655b669711a4f350c25579778694df248e28363318e03c7fc4",
+      "signature": null,
+      "size": 474800,
+      "url": "https://github.com/gavinhoward/bc/releases/download/7.0.3/bc-7.0.3.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "binutils-2.45.tar.xz",
+      "id": "binutils-2.45.tar.xz",
+      "official_md5": "dee5b4267e0305a99a3c9d6131f45759",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "c50c0e7f9cb188980e2cc97e4537626b1672441815587f1eab69d2a1bfbef5d2",
+      "signature": {
+        "filename": "binutils-2.45.tar.xz.sig",
+        "keyring": "gnu",
+        "sha256": "987526135ba5e4c0269b397525d613ff9c737ec0cadf176e6b20d87ac6f7c073",
+        "signed_content": "archive",
+        "signing_fingerprint": "3A24BC1E8FB409FA9F14371813FCEF89DD9E3C4F",
+        "url": "https://sourceware.org/pub/binutils/releases/binutils-2.45.tar.xz.sig",
+        "verification": "VALIDSIG recorded; revalidated by scripts/infra/verify-signatures.py"
+      },
+      "size": 27868232,
+      "url": "https://sourceware.org/pub/binutils/releases/binutils-2.45.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "bison-3.8.2.tar.xz",
+      "id": "bison-3.8.2.tar.xz",
+      "official_md5": "c28f119f405a2304ff0a7ccdcc629713",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "9bba0214ccf7f1079c5d59210045227bcf619519840ebfa80cd3849cff5a5bf2",
+      "signature": null,
+      "size": 2817324,
+      "url": "https://ftpmirror.gnu.org/bison/bison-3.8.2.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "bzip2-1.0.8.tar.gz",
+      "id": "bzip2-1.0.8.tar.gz",
+      "official_md5": "67e051268d0c475ea773822f7500d0e5",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0c4a2269",
+      "signature": null,
+      "size": 810029,
+      "url": "https://www.sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "coreutils-9.7.tar.xz",
+      "id": "coreutils-9.7.tar.xz",
+      "official_md5": "6b7285faf7d5eb91592bdd689270d3f1",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "e8bb26ad0293f9b5a1fc43fb42ba970e312c66ce92c1b0b16713d7500db251bf",
+      "signature": null,
+      "size": 6158960,
+      "url": "https://ftpmirror.gnu.org/coreutils/coreutils-9.7.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "dbus-1.16.2.tar.xz",
+      "id": "dbus-1.16.2.tar.xz",
+      "official_md5": "97832e6f0a260936d28536e5349c22e5",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "0ba2a1a4b16afe7bceb2c07e9ce99a8c2c3508e5dec290dbb643384bd6beb7e2",
+      "signature": null,
+      "size": 1115644,
+      "url": "https://dbus.freedesktop.org/releases/dbus/dbus-1.16.2.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "dejagnu-1.6.3.tar.gz",
+      "id": "dejagnu-1.6.3.tar.gz",
+      "official_md5": "68c5208c58236eba447d7d6d1326b821",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "87daefacd7958b4a69f88c6856dbd1634261963c414079d0c371f589cd66a2e3",
+      "signature": null,
+      "size": 622059,
+      "url": "https://ftpmirror.gnu.org/dejagnu/dejagnu-1.6.3.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "diffutils-3.12.tar.xz",
+      "id": "diffutils-3.12.tar.xz",
+      "official_md5": "d1b18b20868fb561f77861cd90b05de4",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "7c8b7f9fc8609141fdea9cece85249d308624391ff61dedaf528fcb337727dfd",
+      "signature": null,
+      "size": 1938800,
+      "url": "https://ftpmirror.gnu.org/diffutils/diffutils-3.12.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "e2fsprogs-1.47.3.tar.gz",
+      "id": "e2fsprogs-1.47.3.tar.gz",
+      "official_md5": "113d7a7ee0710d2a670a44692a35fd2e",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "2f5164e64dd7d91eadd1e0e8a77d92c06dd7837bb19f1d9189ce1939b363d2b4",
+      "signature": null,
+      "size": 10087057,
+      "url": "https://downloads.sourceforge.net/project/e2fsprogs/e2fsprogs/v1.47.3/e2fsprogs-1.47.3.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "elfutils-0.193.tar.bz2",
+      "id": "elfutils-0.193.tar.bz2",
+      "official_md5": "ceefa052ded950a4c523688799193a44",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "7857f44b624f4d8d421df851aaae7b1402cfe6bcdd2d8049f15fc07d3dde7635",
+      "signature": null,
+      "size": 11974916,
+      "url": "https://sourceware.org/ftp/elfutils/0.193/elfutils-0.193.tar.bz2"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "expat-2.7.1.tar.xz",
+      "id": "expat-2.7.1.tar.xz",
+      "official_md5": "9f0c266ff4b9720beae0c6bd53ae4469",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "354552544b8f99012e5062f7d570ec77f14b412a3ff5c7d8d0dae62c0d217c30",
+      "signature": null,
+      "size": 496108,
+      "url": "https://github.com/libexpat/libexpat/releases/download/R_2_7_1/expat-2.7.1.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "expect5.45.4.tar.gz",
+      "id": "expect5.45.4.tar.gz",
+      "official_md5": "00fce8de158422f5ccd2666512329bd2",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "49a7da83b0bdd9f46d04a04deec19c7767bb9a323e40c4781f89caf760b92c34",
+      "signature": null,
+      "size": 632363,
+      "url": "https://prdownloads.sourceforge.net/expect/expect5.45.4.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "file-5.46.tar.gz",
+      "id": "file-5.46.tar.gz",
+      "official_md5": "459da2d4b534801e2e2861611d823864",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "c9cc77c7c560c543135edc555af609d5619dbef011997e988ce40a3d75d86088",
+      "signature": null,
+      "size": 1312892,
+      "url": "https://astron.com/pub/file/file-5.46.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "findutils-4.10.0.tar.xz",
+      "id": "findutils-4.10.0.tar.xz",
+      "official_md5": "870cfd71c07d37ebe56f9f4aaf4ad872",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "1387e0b67ff247d2abde998f90dfbf70c1491391a59ddfecb8ae698789f0a4f5",
+      "signature": null,
+      "size": 2240712,
+      "url": "https://ftpmirror.gnu.org/findutils/findutils-4.10.0.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "flex-2.6.4.tar.gz",
+      "id": "flex-2.6.4.tar.gz",
+      "official_md5": "2882e3179748cc9f9c23ec593d6adc8d",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "e87aae032bf07c26f85ac0ed3250998c37621d95f8bd748b31f15b33c45ee995",
+      "signature": null,
+      "size": 1419096,
+      "url": "https://github.com/westes/flex/releases/download/v2.6.4/flex-2.6.4.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "flit_core-3.12.0.tar.gz",
+      "id": "flit_core-3.12.0.tar.gz",
+      "official_md5": "c538415c1f27bd69cbbbf3cdd5135d39",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "18f63100d6f94385c6ed57a72073443e1a71a4acb4339491615d0f16d6ff01b2",
+      "signature": null,
+      "size": 53690,
+      "url": "https://pypi.org/packages/source/f/flit-core/flit_core-3.12.0.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "gawk-5.3.2.tar.xz",
+      "id": "gawk-5.3.2.tar.xz",
+      "official_md5": "b7014650c5f45e5d4837c31209dc0037",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "f8c3486509de705192138b00ef2c00bbbdd0e84c30d5c07d23fc73a9dc4cc9cc",
+      "signature": null,
+      "size": 3749260,
+      "url": "https://ftpmirror.gnu.org/gawk/gawk-5.3.2.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "gcc-15.2.0.tar.xz",
+      "id": "gcc-15.2.0.tar.xz",
+      "official_md5": "b861b092bf1af683c46a8aa2e689a6fd",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "438fd996826b0c82485a29da03a72d71d6e3541a83ec702df4271f6fe025d24e",
+      "signature": {
+        "filename": "gcc-15.2.0.tar.xz.sig",
+        "keyring": "gnu",
+        "sha256": "d2b4823f8427cc8d928650a44ef03f7c64f62146a114474adfcfd8428bb20c82",
+        "signed_content": "archive",
+        "signing_fingerprint": "7F74F97C103468EE5D750B583AB00996FC26A641",
+        "url": "https://ftp.gnu.org/gnu/gcc/gcc-15.2.0/gcc-15.2.0.tar.xz.sig",
+        "verification": "VALIDSIG recorded; revalidated by scripts/infra/verify-signatures.py"
+      },
+      "size": 101056276,
+      "url": "https://ftpmirror.gnu.org/gcc/gcc-15.2.0/gcc-15.2.0.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "gdbm-1.26.tar.gz",
+      "id": "gdbm-1.26.tar.gz",
+      "official_md5": "aaa600665bc89e2febb3c7bd90679115",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "6a24504a14de4a744103dcb936be976df6fbe88ccff26065e54c1c47946f4a5e",
+      "signature": null,
+      "size": 1226591,
+      "url": "https://ftpmirror.gnu.org/gdbm/gdbm-1.26.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "gettext-0.26.tar.xz",
+      "id": "gettext-0.26.tar.xz",
+      "official_md5": "8e14e926f088e292f5f2bce95b81d10e",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "d1fb86e260cfe7da6031f94d2e44c0da55903dbae0a2fa0fae78c91ae1b56f00",
+      "signature": null,
+      "size": 10061740,
+      "url": "https://ftpmirror.gnu.org/gettext/gettext-0.26.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "glibc-2.42.tar.xz",
+      "id": "glibc-2.42.tar.xz",
+      "official_md5": "23c6f5a27932b435cae94e087cb8b1f5",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "d1775e32e4628e64ef930f435b67bb63af7599acb6be2b335b9f19f16509f17f",
+      "signature": {
+        "filename": "glibc-2.42.tar.xz.sig",
+        "keyring": "gnu",
+        "sha256": "c25297a7fadb2249fc0e562f7ff141f160f023b2f7e63db58fd142cd500de89d",
+        "signed_content": "archive",
+        "signing_fingerprint": "FD19E6D31B192EE4DC63EAD3DC2B16215ED5412A",
+        "url": "https://ftp.gnu.org/gnu/glibc/glibc-2.42.tar.xz.sig",
+        "verification": "VALIDSIG recorded; revalidated by scripts/infra/verify-signatures.py"
+      },
+      "size": 19930508,
+      "url": "https://ftpmirror.gnu.org/glibc/glibc-2.42.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "gmp-6.3.0.tar.xz",
+      "id": "gmp-6.3.0.tar.xz",
+      "official_md5": "956dc04e864001a9c22429f761f2c283",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "a3c2b80201b89e68616f4ad30bc66aee4927c3ce50e33929ca819d5c43538898",
+      "signature": null,
+      "size": 2094196,
+      "url": "https://ftpmirror.gnu.org/gmp/gmp-6.3.0.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "gperf-3.3.tar.gz",
+      "id": "gperf-3.3.tar.gz",
+      "official_md5": "31753b021ea78a21f154bf9eecb8b079",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "fd87e0aba7e43ae054837afd6cd4db03a3f2693deb3619085e6ed9d8d9604ad8",
+      "signature": null,
+      "size": 1831294,
+      "url": "https://ftpmirror.gnu.org/gperf/gperf-3.3.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "grep-3.12.tar.xz",
+      "id": "grep-3.12.tar.xz",
+      "official_md5": "5d9301ed9d209c4a88c8d3a6fd08b9ac",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "2649b27c0e90e632eadcd757be06c6e9a4f48d941de51e7c0f83ff76408a07b9",
+      "signature": null,
+      "size": 1918448,
+      "url": "https://ftpmirror.gnu.org/grep/grep-3.12.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "groff-1.23.0.tar.gz",
+      "id": "groff-1.23.0.tar.gz",
+      "official_md5": "5e4f40315a22bb8a158748e7d5094c7d",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "6b9757f592b7518b4902eb6af7e54570bdccba37a871fddb2d30ae3863511c13",
+      "signature": null,
+      "size": 7433031,
+      "url": "https://ftpmirror.gnu.org/groff/groff-1.23.0.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "grub-2.12.tar.xz",
+      "id": "grub-2.12.tar.xz",
+      "official_md5": "60c564b1bdc39d8e43b3aab4bc0fb140",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "f3c97391f7c4eaa677a78e090c7e97e6dc47b16f655f04683ebd37bef7fe0faa",
+      "signature": null,
+      "size": 6675608,
+      "url": "https://ftpmirror.gnu.org/grub/grub-2.12.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "gzip-1.14.tar.xz",
+      "id": "gzip-1.14.tar.xz",
+      "official_md5": "4bf5a10f287501ee8e8ebe00ef62b2c2",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "01a7b881bd220bfdf615f97b8718f80bdfd3f6add385b993dcf6efd14e8c0ac6",
+      "signature": null,
+      "size": 885748,
+      "url": "https://ftpmirror.gnu.org/gzip/gzip-1.14.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "iana-etc-20250807.tar.gz",
+      "id": "iana-etc-20250807.tar.gz",
+      "official_md5": "de0a909103d4ff59d1424c5ec7ac9e4a",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "4f88470a2cac2a2f9568285aaff9aeaee0ab66c6ba3c12bba51adca915fa92b1",
+      "signature": null,
+      "size": 606207,
+      "url": "https://github.com/Mic92/iana-etc/releases/download/20250807/iana-etc-20250807.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "inetutils-2.6.tar.xz",
+      "id": "inetutils-2.6.tar.xz",
+      "official_md5": "401d7d07682a193960bcdecafd03de94",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "68bedbfeaf73f7d86be2a7d99bcfbd4093d829f52770893919ae174c0b2357ca",
+      "signature": null,
+      "size": 1764528,
+      "url": "https://ftpmirror.gnu.org/inetutils/inetutils-2.6.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "intltool-0.51.0.tar.gz",
+      "id": "intltool-0.51.0.tar.gz",
+      "official_md5": "12e517cac2b57a0121cda351570f1e63",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "67c74d94196b153b774ab9f89b2fa6c6ba79352407037c8c14d5aeb334e959cd",
+      "signature": null,
+      "size": 162286,
+      "url": "https://launchpad.net/intltool/trunk/0.51.0/+download/intltool-0.51.0.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "iproute2-6.16.0.tar.xz",
+      "id": "iproute2-6.16.0.tar.xz",
+      "official_md5": "80e1f91bf59d572acc15d5c6eb4f3e7c",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "5900ccc15f9ac3bf7b7eae81deb5937123df35e99347a7f11a22818482f0a8d0",
+      "signature": null,
+      "size": 931124,
+      "url": "https://www.kernel.org/pub/linux/utils/net/iproute2/iproute2-6.16.0.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "jinja2-3.1.6.tar.gz",
+      "id": "jinja2-3.1.6.tar.gz",
+      "official_md5": "66d4c25ff43d1deaf9637ccda523dec8",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d",
+      "signature": null,
+      "size": 245115,
+      "url": "https://pypi.org/packages/source/J/Jinja2/jinja2-3.1.6.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "kbd-2.8.0.tar.xz",
+      "id": "kbd-2.8.0.tar.xz",
+      "official_md5": "24b5d24f7483726b88f214dc6c77aa41",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "01f5806da7d1d34f594b7b2a6ae1ab23215344cf1064e8edcd3a90fef9776a11",
+      "signature": null,
+      "size": 1482152,
+      "url": "https://www.kernel.org/pub/linux/utils/kbd/kbd-2.8.0.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "kmod-34.2.tar.xz",
+      "id": "kmod-34.2.tar.xz",
+      "official_md5": "36f2cc483745e81ede3406fa55e1065a",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "5a5d5073070cc7e0c7a7a3c6ec2a0e1780850c8b47b3e3892226b93ffcb9cb54",
+      "signature": null,
+      "size": 443748,
+      "url": "https://www.kernel.org/pub/linux/utils/kernel/kmod/kmod-34.2.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "less-679.tar.gz",
+      "id": "less-679.tar.gz",
+      "official_md5": "0386dc14f6a081a94dfb4c2413864eed",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "9b68820c34fa8a0af6b0e01b74f0298bcdd40a0489c61649b47058908a153d78",
+      "signature": null,
+      "size": 877094,
+      "url": "https://www.greenwoodsoftware.com/less/less-679.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "libcap-2.76.tar.xz",
+      "id": "libcap-2.76.tar.xz",
+      "official_md5": "449ade7d620b5c4eeb15a632fbaa4f74",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "629da4ab29900d0f7fcc36227073743119925fd711c99a1689bbf5c9b40c8e6f",
+      "signature": null,
+      "size": 199200,
+      "url": "https://www.kernel.org/pub/linux/libs/security/linux-privs/libcap2/libcap-2.76.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "libffi-3.5.2.tar.gz",
+      "id": "libffi-3.5.2.tar.gz",
+      "official_md5": "92af9efad4ba398995abf44835c5d9e9",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "f3a3082a23b37c293a4fcd1053147b371f2ff91fa7ea1b2a52e335676bac82dc",
+      "signature": null,
+      "size": 1423124,
+      "url": "https://github.com/libffi/libffi/releases/download/v3.5.2/libffi-3.5.2.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "libpipeline-1.5.8.tar.gz",
+      "id": "libpipeline-1.5.8.tar.gz",
+      "official_md5": "17ac6969b2015386bcb5d278a08a40b5",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "1b1203ca152ccd63983c3f2112f7fe6fa5afd453218ede5153d1b31e11bb8405",
+      "signature": null,
+      "size": 1070254,
+      "url": "https://download.savannah.gnu.org/releases/libpipeline/libpipeline-1.5.8.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "libtool-2.5.4.tar.xz",
+      "id": "libtool-2.5.4.tar.xz",
+      "official_md5": "22e0a29df8af5fdde276ea3a7d351d30",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "f81f5860666b0bc7d84baddefa60d1cb9fa6fceb2398cc3baca6afaa60266675",
+      "signature": null,
+      "size": 1056924,
+      "url": "https://ftpmirror.gnu.org/libtool/libtool-2.5.4.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "libxcrypt-4.4.38.tar.xz",
+      "id": "libxcrypt-4.4.38.tar.xz",
+      "official_md5": "1796a5d20098e9dd9e3f576803c83000",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "80304b9c306ea799327f01d9a7549bdb28317789182631f1b54f4511b4206dd6",
+      "signature": null,
+      "size": 625756,
+      "url": "https://github.com/besser82/libxcrypt/releases/download/v4.4.38/libxcrypt-4.4.38.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "linux-6.16.1.tar.xz",
+      "id": "linux-6.16.1.tar.xz",
+      "official_md5": "32d45755e4b39d06e9be58f6817445ee",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "ea43491bc7ace1e414b3b2d957f8cf96e7049155123f0acce798accf8da1acba",
+      "signature": {
+        "filename": "linux-6.16.1.tar.sign",
+        "keyring": "kernel",
+        "sha256": "235e95dd9c42c8ad9214213ae15c1e91f54f6b68f05de731c1fb7d9a8abd137c",
+        "signed_content": "decompressed tar",
+        "signing_fingerprint": "647F28654894E3BD457199BE38DBBDC86092693E",
+        "url": "https://www.kernel.org/pub/linux/kernel/v6.x/linux-6.16.1.tar.sign",
+        "verification": "VALIDSIG recorded; revalidated by scripts/infra/verify-signatures.py"
+      },
+      "size": 152618660,
+      "url": "https://www.kernel.org/pub/linux/kernel/v6.x/linux-6.16.1.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "lz4-1.10.0.tar.gz",
+      "id": "lz4-1.10.0.tar.gz",
+      "official_md5": "dead9f5f1966d9ae56e1e32761e4e675",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "537512904744b35e232912055ccf8ec66d768639ff3abe5788d90d792ec5f48b",
+      "signature": null,
+      "size": 387114,
+      "url": "https://github.com/lz4/lz4/releases/download/v1.10.0/lz4-1.10.0.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "m4-1.4.20.tar.xz",
+      "id": "m4-1.4.20.tar.xz",
+      "official_md5": "6eb2ebed5b24e74b6e890919331d2132",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "e236ea3a1ccf5f6c270b1c4bb60726f371fa49459a8eaaebc90b216b328daf2b",
+      "signature": null,
+      "size": 2044756,
+      "url": "https://ftpmirror.gnu.org/m4/m4-1.4.20.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "make-4.4.1.tar.gz",
+      "id": "make-4.4.1.tar.gz",
+      "official_md5": "c8469a3713cbbe04d955d4ae4be23eeb",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "dd16fb1d67bfab79a72f5e8390735c49e3e8e70b4945a15ab1f81ddb78658fb3",
+      "signature": null,
+      "size": 2348200,
+      "url": "https://ftpmirror.gnu.org/make/make-4.4.1.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "man-db-2.13.1.tar.xz",
+      "id": "man-db-2.13.1.tar.xz",
+      "official_md5": "b6335533cbeac3b24cd7be31fdee8c83",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "8afebb6f7eb6bb8542929458841f5c7e6f240e30c86358c1fbcefbea076c87d9",
+      "signature": null,
+      "size": 2110328,
+      "url": "https://download.savannah.gnu.org/releases/man-db/man-db-2.13.1.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "man-pages-6.15.tar.xz",
+      "id": "man-pages-6.15.tar.xz",
+      "official_md5": "16f68d70139dd2bbcae4102be4705753",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "03d8ebf618bd5df57cb4bf355efa3f4cd3a00b771efd623d4fd042b5dceb4465",
+      "signature": null,
+      "size": 1860208,
+      "url": "https://www.kernel.org/pub/linux/docs/man-pages/man-pages-6.15.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "markupsafe-3.0.2.tar.gz",
+      "id": "markupsafe-3.0.2.tar.gz",
+      "official_md5": "cb0071711b573b155cc8f86e1de72167",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "ee55d3edf80167e48ea11a923c7386f4669df67d7994554387f84e7d8b0a2bf0",
+      "signature": null,
+      "size": 20537,
+      "url": "https://pypi.org/packages/source/M/MarkupSafe/markupsafe-3.0.2.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "meson-1.8.3.tar.gz",
+      "id": "meson-1.8.3.tar.gz",
+      "official_md5": "08221d2f515e759686f666ff6409a903",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "f118aa910fc0a137cc2dd0122232dbf82153d9a12fb5b0f5bb64896f6a157abf",
+      "signature": null,
+      "size": 2335924,
+      "url": "https://github.com/mesonbuild/meson/releases/download/1.8.3/meson-1.8.3.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "mpc-1.3.1.tar.gz",
+      "id": "mpc-1.3.1.tar.gz",
+      "official_md5": "5c9bc658c9fd0f940e8e3e0f09530c62",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "ab642492f5cf882b74aa0cb730cd410a81edcdbec895183ce930e706c1c759b8",
+      "signature": null,
+      "size": 773573,
+      "url": "https://ftpmirror.gnu.org/mpc/mpc-1.3.1.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "mpfr-4.2.2.tar.xz",
+      "id": "mpfr-4.2.2.tar.xz",
+      "official_md5": "7c32c39b8b6e3ae85f25156228156061",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "b67ba0383ef7e8a8563734e2e889ef5ec3c3b898a01d00fa0a6869ad81c6ce01",
+      "signature": null,
+      "size": 1505596,
+      "url": "https://ftpmirror.gnu.org/mpfr/mpfr-4.2.2.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "ncurses-6.5-20250809.tgz",
+      "id": "ncurses-6.5-20250809.tgz",
+      "official_md5": "679987405412f970561cc85e1e6428a2",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "b071468b8c79099a378ed9bea937a605509f71e720402e2541abe20ad753c555",
+      "signature": null,
+      "size": 3790967,
+      "url": "https://invisible-mirror.net/archives/ncurses/current/ncurses-6.5-20250809.tgz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "ninja-1.13.1.tar.gz",
+      "id": "ninja-1.13.1.tar.gz",
+      "official_md5": "c35f8f55f4cf60f1a916068d8f45a0f8",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "f0055ad0369bf2e372955ba55128d000cfcc21777057806015b45e4accbebf23",
+      "signature": null,
+      "size": 292098,
+      "url": "https://github.com/ninja-build/ninja/archive/v1.13.1/ninja-1.13.1.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "openssl-3.5.2.tar.gz",
+      "id": "openssl-3.5.2.tar.gz",
+      "official_md5": "890fc59f86fc21b5e4d1c031a698dbde",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "c53a47e5e441c930c3928cf7bf6fb00e5d129b630e0aa873b08258656e7345ec",
+      "signature": null,
+      "size": 53180161,
+      "url": "https://github.com/openssl/openssl/releases/download/openssl-3.5.2/openssl-3.5.2.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "packaging-25.0.tar.gz",
+      "id": "packaging-25.0.tar.gz",
+      "official_md5": "ab0ef21ddebe09d1803575120d3f99f8",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f",
+      "signature": null,
+      "size": 165727,
+      "url": "https://files.pythonhosted.org/packages/source/p/packaging/packaging-25.0.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "patch-2.8.tar.xz",
+      "id": "patch-2.8.tar.xz",
+      "official_md5": "149327a021d41c8f88d034eab41c039f",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "f87cee69eec2b4fcbf60a396b030ad6aa3415f192aa5f7ee84cad5e11f7f5ae3",
+      "signature": null,
+      "size": 907208,
+      "url": "https://ftpmirror.gnu.org/patch/patch-2.8.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "perl-5.42.0.tar.xz",
+      "id": "perl-5.42.0.tar.xz",
+      "official_md5": "7a6950a9f12d01eb96a9d2ed2f4e0072",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "73cf6cc1ea2b2b1c110a18c14bbbc73a362073003893ffcedc26d22ebdbdd0c3",
+      "signature": null,
+      "size": 14400988,
+      "url": "https://www.cpan.org/src/5.0/perl-5.42.0.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "pkgconf-2.5.1.tar.xz",
+      "id": "pkgconf-2.5.1.tar.xz",
+      "official_md5": "3291128c917fdb8fccd8c9e7784b643b",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "cd05c9589b9f86ecf044c10a2269822bc9eb001eced2582cfffd658b0a50c243",
+      "signature": null,
+      "size": 328064,
+      "url": "https://distfiles.ariadne.space/pkgconf/pkgconf-2.5.1.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "procps-ng-4.0.5.tar.xz",
+      "id": "procps-ng-4.0.5.tar.xz",
+      "official_md5": "90803e64f51f192f3325d25c3335d057",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "c2e6d193cc78f84cd6ddb72aaf6d5c6a9162f0470e5992092057f5ff518562fa",
+      "signature": null,
+      "size": 1517672,
+      "url": "https://sourceforge.net/projects/procps-ng/files/Production/procps-ng-4.0.5.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "psmisc-23.7.tar.xz",
+      "id": "psmisc-23.7.tar.xz",
+      "official_md5": "53eae841735189a896d614cba440eb10",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "58c55d9c1402474065adae669511c191de374b0871eec781239ab400b907c327",
+      "signature": null,
+      "size": 432208,
+      "url": "https://sourceforge.net/projects/psmisc/files/psmisc/psmisc-23.7.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "Python-3.13.7.tar.xz",
+      "id": "Python-3.13.7.tar.xz",
+      "official_md5": "256cdb3bbf45cdce7499e52ba6c36ea3",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "5462f9099dfd30e238def83c71d91897d8caa5ff6ebc7a50f14d4802cdaaa79a",
+      "signature": null,
+      "size": 22769492,
+      "url": "https://www.python.org/ftp/python/3.13.7/Python-3.13.7.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "python-3.13.7-docs-html.tar.bz2",
+      "id": "python-3.13.7-docs-html.tar.bz2",
+      "official_md5": "b84c0d81b2758398bb7f5b7411d3d908",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "e9b69b505b9ae08da6b9192f6ce8fff171ba33f2b21b4f1c213369eac2f92cef",
+      "signature": null,
+      "size": 10426777,
+      "url": "https://www.python.org/ftp/python/doc/3.13.7/python-3.13.7-docs-html.tar.bz2"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "readline-8.3.tar.gz",
+      "id": "readline-8.3.tar.gz",
+      "official_md5": "25a73bfb2a3ad7146c5e9d4408d9f6cd",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "fe5383204467828cd495ee8d1d3c037a7eba1389c22bc6a041f627976f9061cc",
+      "signature": null,
+      "size": 3419642,
+      "url": "https://ftpmirror.gnu.org/readline/readline-8.3.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "sed-4.9.tar.xz",
+      "id": "sed-4.9.tar.xz",
+      "official_md5": "6aac9b2dbafcd5b7a67a8a9bcb8036c3",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "6e226b732e1cd739464ad6862bd1a1aba42d7982922da7a53519631d24975181",
+      "signature": null,
+      "size": 1397092,
+      "url": "https://ftpmirror.gnu.org/sed/sed-4.9.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "setuptools-80.9.0.tar.gz",
+      "id": "setuptools-80.9.0.tar.gz",
+      "official_md5": "82e1d67883b713f9493659b50d13b436",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "f36b47402ecde768dbfafc46e8e4207b4360c654f1f3bb84475f0a28628fb19c",
+      "signature": null,
+      "size": 1319958,
+      "url": "https://pypi.org/packages/source/s/setuptools/setuptools-80.9.0.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "shadow-4.18.0.tar.xz",
+      "id": "shadow-4.18.0.tar.xz",
+      "official_md5": "30ef46f54363db1d624587be68794ef2",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "add4604d3bc410344433122a819ee4154b79dd8316a56298c60417e637c07608",
+      "signature": null,
+      "size": 2347912,
+      "url": "https://github.com/shadow-maint/shadow/releases/download/4.18.0/shadow-4.18.0.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "systemd-257.8.tar.gz",
+      "id": "systemd-257.8.tar.gz",
+      "official_md5": "25fe5d328e22641254761f1baa74cee0",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "f280278161446fe3838bedb970c7b3998043ad107f7627735a81483218c6f6f9",
+      "signature": null,
+      "size": 16385060,
+      "url": "https://github.com/systemd/systemd/archive/v257.8/systemd-257.8.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "systemd-man-pages-257.8.tar.xz",
+      "id": "systemd-man-pages-257.8.tar.xz",
+      "official_md5": "a44063e2ec0cf4adfd2ed5c9e9e095c5",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "89d32984d7f3cc410101806f7a2bb01ba20cad04b30c190c98387b1dd8fef7f5",
+      "signature": null,
+      "size": 753608,
+      "url": "https://anduin.linuxfromscratch.org/LFS/systemd-man-pages-257.8.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "tar-1.35.tar.xz",
+      "id": "tar-1.35.tar.xz",
+      "official_md5": "a2d8042658cfd8ea939e6d911eaf4152",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "4d62ff37342ec7aed748535323930c7cf94acf71c3591882b26a7ea50f3edc16",
+      "signature": null,
+      "size": 2317208,
+      "url": "https://ftpmirror.gnu.org/tar/tar-1.35.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "tcl8.6.16-src.tar.gz",
+      "id": "tcl8.6.16-src.tar.gz",
+      "official_md5": "eaef5d0a27239fb840f04af8ec608242",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "91cb8fa61771c63c262efb553059b7c7ad6757afa5857af6265e4b0bdc2a14a5",
+      "signature": null,
+      "size": 11678979,
+      "url": "https://downloads.sourceforge.net/tcl/tcl8.6.16-src.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "tcl8.6.16-html.tar.gz",
+      "id": "tcl8.6.16-html.tar.gz",
+      "official_md5": "750c221bcb6f8737a6791c1fbe98b684",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "87e66909c00a7f6f827502f63e44740141a6ce960a321945bb113d7ecd899282",
+      "signature": null,
+      "size": 1196445,
+      "url": "https://downloads.sourceforge.net/tcl/tcl8.6.16-html.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "texinfo-7.2.tar.xz",
+      "id": "texinfo-7.2.tar.xz",
+      "official_md5": "11939a7624572814912a18e76c8d8972",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "0329d7788fbef113fa82cb80889ca197a344ce0df7646fe000974c5d714363a6",
+      "signature": null,
+      "size": 6408432,
+      "url": "https://ftpmirror.gnu.org/texinfo/texinfo-7.2.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "tzdata2025b.tar.gz",
+      "id": "tzdata2025b.tar.gz",
+      "official_md5": "ad65154c48c74a9b311fe84778c5434f",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "11810413345fc7805017e27ea9fa4885fd74cd61b2911711ad038f5d28d71474",
+      "signature": null,
+      "size": 464295,
+      "url": "https://www.iana.org/time-zones/repository/releases/tzdata2025b.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "util-linux-2.41.1.tar.xz",
+      "id": "util-linux-2.41.1.tar.xz",
+      "official_md5": "7e5e68845e2f347cf96f5448165f1764",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "be9ad9a276f4305ab7dd2f5225c8be1ff54352f565ff4dede9628c1aaa7dec57",
+      "signature": null,
+      "size": 9606156,
+      "url": "https://www.kernel.org/pub/linux/utils/util-linux/v2.41/util-linux-2.41.1.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "vim-9.1.1629.tar.gz",
+      "id": "vim-9.1.1629.tar.gz",
+      "official_md5": "4f856c3233c1c4570bc17572e4f9e8e4",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "d92c6550e8eca741085fce94e5b0d3d13d2c62fcb5b69bf5a6010d3114de4828",
+      "signature": null,
+      "size": 18756124,
+      "url": "https://github.com/vim/vim/archive/v9.1.1629/vim-9.1.1629.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "wheel-0.46.1.tar.gz",
+      "id": "wheel-0.46.1.tar.gz",
+      "official_md5": "65e09ee84af36821e3b1e9564aa91bd5",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "fd477efb5da0f7df1d3c76c73c14394002c844451bd63229d8570f376f5e6a38",
+      "signature": null,
+      "size": 54400,
+      "url": "https://pypi.org/packages/source/w/wheel/wheel-0.46.1.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "XML-Parser-2.47.tar.gz",
+      "id": "XML-Parser-2.47.tar.gz",
+      "official_md5": "89a8e82cfd2ad948b349c0a69c494463",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "ad4aae643ec784f489b956abe952432871a622d4e2b5c619e8855accbfc4d1d8",
+      "signature": null,
+      "size": 279029,
+      "url": "https://cpan.metacpan.org/authors/id/T/TO/TODDR/XML-Parser-2.47.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "xz-5.8.1.tar.xz",
+      "id": "xz-5.8.1.tar.xz",
+      "official_md5": "cf5e1feb023d22c6bdaa30e84ef3abe3",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "0b54f79df85912504de0b14aec7971e3f964491af1812d83447005807513cd9e",
+      "signature": null,
+      "size": 1461872,
+      "url": "https://github.com//tukaani-project/xz/releases/download/v5.8.1/xz-5.8.1.tar.xz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "zlib-1.3.1.tar.gz",
+      "id": "zlib-1.3.1.tar.gz",
+      "official_md5": "9855b6d802d7fe5b7bd5b196a2271655",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23",
+      "signature": null,
+      "size": 1512791,
+      "url": "https://zlib.net/fossils/zlib-1.3.1.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "zstd-1.5.7.tar.gz",
+      "id": "zstd-1.5.7.tar.gz",
+      "official_md5": "780fc1896922b1bc52a4e90980cdda48",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3",
+      "signature": null,
+      "size": 2434947,
+      "url": "https://github.com/facebook/zstd/releases/download/v1.5.7/zstd-1.5.7.tar.gz"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "bzip2-1.0.8-install_docs-1.patch",
+      "id": "bzip2-1.0.8-install_docs-1.patch",
+      "official_md5": "6a5ac7e89b791aae556de0f745916f7f",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "35e3bbd9642af51fef2a8a83afba040d272da42d7e3a251d8e43255a7b496702",
+      "signature": null,
+      "size": 1684,
+      "url": "https://www.linuxfromscratch.org/patches/lfs/12.4/bzip2-1.0.8-install_docs-1.patch"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "coreutils-9.7-upstream_fix-1.patch",
+      "id": "coreutils-9.7-upstream_fix-1.patch",
+      "official_md5": "96382a5aa85d6651a74f94ffb61785d9",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "7fc7d0925452808b6eeb13a059b495fd7b7290bc7adc9fec213126f4862da649",
+      "signature": null,
+      "size": 4130,
+      "url": "https://www.linuxfromscratch.org/patches/lfs/12.4/coreutils-9.7-upstream_fix-1.patch"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "coreutils-9.7-i18n-1.patch",
+      "id": "coreutils-9.7-i18n-1.patch",
+      "official_md5": "33ebfad32b2dfb8417c3335c08671206",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "4af1cddb73b98350f64ba56cc6db3cb27ab3b3ca92af0089aad0965182f56ce0",
+      "signature": null,
+      "size": 162555,
+      "url": "https://www.linuxfromscratch.org/patches/lfs/12.4/coreutils-9.7-i18n-1.patch"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "expect-5.45.4-gcc15-1.patch",
+      "id": "expect-5.45.4-gcc15-1.patch",
+      "official_md5": "0ca4d6bb8d572fbcdb13cb36cd34833e",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "ab5fc0af9e2e0f80d7623c1a3a3dbeb1da3d8c9134276792199df401f9eb2cec",
+      "signature": null,
+      "size": 12155,
+      "url": "https://www.linuxfromscratch.org/patches/lfs/12.4/expect-5.45.4-gcc15-1.patch"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "glibc-2.42-fhs-1.patch",
+      "id": "glibc-2.42-fhs-1.patch",
+      "official_md5": "9a5997c3452909b1769918c759eff8a2",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "643552db030e2f2d7ffde4f558e0f5f83d3fabf34a2e0e56ebdb49750ac27b0d",
+      "signature": null,
+      "size": 2804,
+      "url": "https://www.linuxfromscratch.org/patches/lfs/12.4/glibc-2.42-fhs-1.patch"
+    },
+    {
+      "book": "LFS-12.4-systemd",
+      "filename": "kbd-2.8.0-backspace-1.patch",
+      "id": "kbd-2.8.0-backspace-1.patch",
+      "official_md5": "f75cca16a38da6caa7d52151f7136895",
+      "provenance": "official LFS 12.4 MD5 matched; SHA256 computed locally",
+      "sha256": "8be28dcb11420624a500f2ea4fe975f771174bffee50e54ec8cd295a2dec104e",
+      "signature": null,
+      "size": 12640,
+      "url": "https://www.linuxfromscratch.org/patches/lfs/12.4/kbd-2.8.0-backspace-1.patch"
+    }
+  ],
+  "trust_keys": [
+    {
+      "filename": "gnu-keyring.gpg",
+      "id": "gnu",
+      "sha256": "b136fbe57ade4ee5270ca66c402cae7b50349fd07646b5b3de7962d58d4df608",
+      "trust_basis": "GNU official HTTPS keyring, exact snapshot pinned; no web-of-trust claim",
+      "url": "https://ftp.gnu.org/gnu/gnu-keyring.gpg"
+    },
+    {
+      "filename": "kernel-maintainers.gpg",
+      "id": "kernel",
+      "sha256": "8467aa3e7270895f8d1e27a274ea37cffffaa8d204eb4cf4991f296a8f12fc6f",
+      "trust_basis": "kernel.org WKD + published 647F28654894E3BD457199BE38DBBDC86092693E fingerprint; cache is required for offline re-use",
+      "url": "wkd:gregkh@kernel.org"
+    }
+  ]
+}

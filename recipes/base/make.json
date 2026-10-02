@@ -1,0 +1,60 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "LFS-12.4-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/make.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "2c95795d631a2d1132ee1148d45623f61e67d5be7b7645e3fa9804f2b8e2e6cc",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--prefix=/usr"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 8,
+  "name": "make",
+  "phase": "base",
+  "post_stage": [],
+  "pre": [],
+  "requires": [
+    "glibc"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "make-4.4.1.tar.gz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "make",
+      "-j{jobs}",
+      "check"
+    ]
+  ],
+  "test_user": "tester",
+  "validation": "GNU Make tests run as tester per LFS; install staged through DESTDIR; no guest build or Alp ownership acceptance yet",
+  "version": "4.4.1"
+}

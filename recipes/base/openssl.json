@@ -1,0 +1,123 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/openssl.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "c32bd9094750ae4d4e4d66c50392f337510a6b337f0e7bca011328af86ed617f",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "./config",
+      "--prefix=/usr",
+      "--openssldir=/etc/ssl",
+      "--libdir=lib",
+      "shared",
+      "zlib-dynamic"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "openssl",
+  "phase": "base",
+  "post_stage": [
+    [
+      "mv",
+      "-v",
+      "{stage}/usr/share/doc/openssl",
+      "{stage}/usr/share/doc/openssl-3.5.2"
+    ],
+    [
+      "cp",
+      "-a",
+      "doc/.",
+      "{stage}/usr/share/doc/openssl-3.5.2/"
+    ],
+    [
+      "make",
+      "distclean"
+    ],
+    [
+      "./config",
+      "--prefix=/usr",
+      "--openssldir=/etc/ssl",
+      "--libdir=lib32",
+      "shared",
+      "zlib-dynamic",
+      "linux-x86"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ],
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}/.m32",
+      "install"
+    ],
+    [
+      "mkdir",
+      "-p",
+      "{stage}/usr/lib32"
+    ],
+    [
+      "cp",
+      "-a",
+      "{stage}/.m32/usr/lib32/.",
+      "{stage}/usr/lib32/"
+    ],
+    [
+      "rm",
+      "-rf",
+      "{stage}/.m32"
+    ]
+  ],
+  "requires": [
+    "glibc",
+    "perl",
+    "zlib"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "openssl-3.5.2.tar.gz",
+  "stage": [
+    [
+      "sed",
+      "-i",
+      "/INSTALL_LIBS/s/libcrypto.a libssl.a//",
+      "Makefile"
+    ],
+    [
+      "make",
+      "-j1",
+      "MANSUFFIX=ssl",
+      "DESTDIR={stage}",
+      "install"
+    ]
+  ],
+  "test": [
+    [
+      "env",
+      "HARNESS_JOBS={jobs}",
+      "make",
+      "test"
+    ]
+  ],
+  "validation": "Pinned MLFS m32-systemd OpenSSL m64 configure/build/test/shared staged install plus the book m32 linux-x86 rebuild. Static archives are excluded from the m64 install; docs are versioned and staged. The book records a conditional 30-test_afalg.t failure when the kernel lacks Crypto User API SKCIPHER/AES-CBC; current recipe test is strict and does not suppress that result. m32 install copies only lib32 payload under DESTDIR. Guest build and Alp ownership acceptance remain pending.",
+  "version": "3.5.2"
+}

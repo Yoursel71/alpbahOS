@@ -1,0 +1,67 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/gettext.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "504582539416fefe310cdeb8e4f8f3546434ca4aca8964bf10485ca2272c3a63",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--prefix=/usr",
+      "--disable-static",
+      "--docdir=/usr/share/doc/gettext-0.26"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "gettext",
+  "phase": "base",
+  "post_stage": [
+    [
+      "chmod",
+      "0755",
+      "{stage}/usr/lib/preloadable_libintl.so"
+    ]
+  ],
+  "requires": [
+    "glibc",
+    "ncurses"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "gettext-0.26.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "make",
+      "-j{jobs}",
+      "check"
+    ]
+  ],
+  "validation": "Pinned MLFS m32-systemd native Gettext 0.26 configure, make check and DESTDIR install; the book has no separate m32 build. No guest build or Alp ownership acceptance yet.",
+  "version": "0.26"
+}

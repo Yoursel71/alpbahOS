@@ -1,0 +1,107 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/libcap.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "a822f0c39c0d8968f5d025122659ae320ffa14645eaccd6cd04195f3364ee7e5",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "make",
+      "-j{jobs}",
+      "prefix=/usr",
+      "lib=lib"
+    ]
+  ],
+  "environment": {},
+  "jobs": 8,
+  "name": "libcap",
+  "phase": "base",
+  "post_stage": [],
+  "pre": [
+    [
+      "sed",
+      "-i",
+      "/install -m.*STA/d",
+      "libcap/Makefile"
+    ]
+  ],
+  "requires": [
+    "glibc"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "libcap-2.76.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "prefix={stage}/usr",
+      "lib=lib",
+      "install"
+    ],
+    [
+      "make",
+      "distclean"
+    ],
+    [
+      "make",
+      "-j{jobs}",
+      "CC=gcc -m32 -march=i686"
+    ],
+    [
+      "make",
+      "-j1",
+      "CC=gcc -m32 -march=i686",
+      "lib=lib32",
+      "prefix={stage}/.m32root/usr",
+      "-C",
+      "libcap",
+      "install"
+    ],
+    [
+      "cp",
+      "-a",
+      "{stage}/.m32root/usr/lib32/.",
+      "{stage}/usr/lib32"
+    ],
+    [
+      "sed",
+      "-i",
+      "s|^libdir=.*|libdir=/usr/lib32|",
+      "{stage}/usr/lib32/pkgconfig/libcap.pc",
+      "{stage}/usr/lib32/pkgconfig/libpsx.pc"
+    ],
+    [
+      "chmod",
+      "755",
+      "{stage}/usr/lib32/libcap.so.2"
+    ],
+    [
+      "rm",
+      "-rf",
+      "{stage}/.m32root"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "make",
+      "-j{jobs}",
+      "test"
+    ]
+  ],
+  "validation": "m64 test/install plus MLFS m32 library/pkg-config payload staged and path metadata corrected; no guest build or Alp ownership acceptance yet",
+  "version": "2.76"
+}

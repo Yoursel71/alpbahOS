@@ -1,0 +1,67 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "LFS-12.4-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/bash.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "9fe070f789e379dec2a68a64e5dfc06a6eb7d236f534d9c530b90d75bc7e97e6",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--prefix=/usr",
+      "--without-bash-malloc",
+      "--with-installed-readline",
+      "--docdir=/usr/share/doc/bash-5.3"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "bash",
+  "phase": "base",
+  "post_stage": [],
+  "pre": [],
+  "requires": [
+    "glibc",
+    "ncurses",
+    "readline",
+    "expect"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "bash-5.3.tar.gz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "expect",
+      "-c",
+      "set timeout -1\nspawn make tests\nexpect eof\nlassign [wait] _ _ _ value\nexit $value"
+    ]
+  ],
+  "test_locale": "C.UTF-8",
+  "test_user": "tester",
+  "validation": "Pinned Bash configure/readline integration, LFS Expect-driven test suite as tester with C.UTF-8, and DESTDIR install; not guest-built or Alp ownership-accepted.",
+  "version": "5.3"
+}

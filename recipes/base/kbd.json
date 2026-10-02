@@ -1,0 +1,86 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "LFS-12.4-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/kbd.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "c2e999d52dd892ab94009ff16460ed9e3e360fc6066481a2b25e15f41443c2f3",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--prefix=/usr",
+      "--disable-vlock"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "kbd",
+  "patches": [
+    {
+      "source": "kbd-2.8.0-backspace-1.patch",
+      "strip": 1
+    }
+  ],
+  "phase": "base",
+  "post_stage": [
+    [
+      "install",
+      "-d",
+      "-m755",
+      "{stage}/usr/share/doc/kbd-2.8.0"
+    ],
+    [
+      "cp",
+      "-R",
+      "-v",
+      "docs/doc/.",
+      "{stage}/usr/share/doc/kbd-2.8.0/"
+    ]
+  ],
+  "pre": [
+    [
+      "sed",
+      "-i",
+      "/RESIZECONS_PROGS=/s/yes/no/",
+      "configure"
+    ],
+    [
+      "sed",
+      "-i",
+      "s/resizecons.8 //",
+      "docs/man/man8/Makefile.in"
+    ]
+  ],
+  "requires": [
+    "glibc",
+    "sed"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "kbd-2.8.0.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ]
+  ],
+  "validation": "Pinned LFS configure/build/DESTDIR install, pinned backspace patch (applied with the bootstrap patch tool) and LFS resizecons removals. The book explicitly comments out make check because tests require valgrind and fail in graphical/chroot environments; no test is claimed. Guest build and Alp ownership acceptance are pending.",
+  "version": "2.8.0"
+}

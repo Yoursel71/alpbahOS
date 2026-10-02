@@ -1,0 +1,158 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/glibc.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "2e0963fd6ac1a86b623037f1fb778989ba8ec5eba281bf88074a8740e63c9830",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "../configure",
+      "--prefix=/usr",
+      "--disable-werror",
+      "--disable-nscd",
+      "libc_cv_slibdir=/usr/lib",
+      "--enable-stack-protector=strong",
+      "--enable-kernel=5.4"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "configure_build_guess": "scripts/config.guess",
+  "environment": {},
+  "jobs": 4,
+  "name": "glibc",
+  "patches": [
+    {
+      "source": "glibc-2.42-fhs-1.patch",
+      "strip": 1
+    }
+  ],
+  "phase": "base",
+  "post_stage": [],
+  "pre": [
+    [
+      "sed",
+      "-e",
+      "/unistd.h/i #include <string.h>",
+      "-e",
+      "/libc_rwlock_init/c\\\n  __libc_rwlock_define_initialized (, reset_lock);\\\n  memcpy (&lock, &reset_lock, sizeof (lock));",
+      "-i",
+      "stdlib/abort.c"
+    ],
+    [
+      "bash",
+      "-euc",
+      "printf '%s\\n' 'rootsbindir=/usr/sbin' > configparms"
+    ]
+  ],
+  "requires": [
+    "man-pages",
+    "iana-etc"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "separate_build": true,
+  "source": "glibc-2.42.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ],
+    [
+      "bash",
+      "-euc",
+      "find . -mindepth 1 -maxdepth 1 -exec rm -rf -- {{}} +; find .. -name '*.a' -delete"
+    ],
+    [
+      "env",
+      "CC=gcc -m32",
+      "CXX=g++ -m32",
+      "../configure",
+      "--prefix=/usr",
+      "--host=i686-pc-linux-gnu",
+      "--build={build_triplet}",
+      "--libdir=/usr/lib32",
+      "--libexecdir=/usr/lib32",
+      "--disable-werror",
+      "--disable-nscd",
+      "libc_cv_slibdir=/usr/lib32",
+      "--enable-stack-protector=strong",
+      "--enable-kernel=5.4"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ],
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}/.m32",
+      "install"
+    ],
+    [
+      "install",
+      "-d",
+      "{stage}/usr/lib32"
+    ],
+    [
+      "cp",
+      "-a",
+      "{stage}/.m32/usr/lib32/.",
+      "{stage}/usr/lib32/"
+    ],
+    [
+      "install",
+      "-D",
+      "-m644",
+      "{stage}/.m32/usr/include/gnu/lib-names-32.h",
+      "{stage}/usr/include/gnu/lib-names-32.h"
+    ],
+    [
+      "install",
+      "-D",
+      "-m644",
+      "{stage}/.m32/usr/include/gnu/stubs-32.h",
+      "{stage}/usr/include/gnu/stubs-32.h"
+    ],
+    [
+      "rm",
+      "-rf",
+      "{stage}/.m32"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "bash",
+      "-euc",
+      "set +e; make -k check; make_exit=$?; set -e; python3 /opt/alp-infra/scripts/infra/test-policy.py glibc --build . --make-exit \"$make_exit\" --output glibc-test-policy.json"
+    ]
+  ],
+  "test_locale": "C",
+  "test_policy": "glibc",
+  "test_user": "root",
+  "validation": "Pinned MLFS ml-12.4 Glibc 2.42 recipe. The critical m64 test suite is checked against the strict pinned summary policy before either ABI is accepted. m64 and i686 m32 installs are staged through DESTDIR; only the documented m32 library payload and two ABI headers are merged into the package stage. The book's /etc, locale, timezone and dynamic-loader configuration is deferred to target-root integration. Guest build/test and Alp ownership acceptance remain pending.",
+  "version": "2.42",
+  "working_directories": {
+    "compile": "build",
+    "post_stage": "build",
+    "stage": "build",
+    "test": "build"
+  }
+}

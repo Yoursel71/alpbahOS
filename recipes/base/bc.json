@@ -1,0 +1,31 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [1, 2, 4, 8],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/bc.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "b1ff66ff058a42331d9deb2a8544eb94c13d636809302f94c3d1adfa9776ca5c",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    ["env", "CC=gcc -std=c99", "./configure", "--prefix=/usr", "-G", "-O3", "-r"],
+    ["make", "-j{jobs}"]
+  ],
+  "environment": {},
+  "jobs": 8,
+  "name": "bc",
+  "phase": "base",
+  "requires": ["glibc", "readline"],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "bc-7.0.3.tar.xz",
+  "stage": [["make", "-j1", "DESTDIR={stage}", "install"]],
+  "strip_stage_prefix": "",
+  "test": [["make", "-j{jobs}", "test"]],
+  "validation": "64-bit utility recipe; build, tests and Alp ownership remain unverified",
+  "version": "7.0.3"
+}

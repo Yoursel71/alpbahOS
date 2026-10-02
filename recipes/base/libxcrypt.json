@@ -1,0 +1,146 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/libxcrypt.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "e87ee8f037b65e6750471cd79b526b3472e0e5671d28abd37ce54cd07ef64508",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--prefix=/usr",
+      "--enable-hashes=strong,glibc",
+      "--enable-obsolete-api=no",
+      "--disable-static",
+      "--disable-failure-tokens"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "libxcrypt",
+  "phase": "base",
+  "post_stage": [],
+  "pre": [],
+  "requires": [
+    "glibc"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "libxcrypt-4.4.38.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ],
+    [
+      "make",
+      "distclean"
+    ],
+    [
+      "./configure",
+      "--prefix=/usr",
+      "--enable-hashes=strong,glibc",
+      "--enable-obsolete-api=glibc",
+      "--disable-static",
+      "--disable-failure-tokens"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ],
+    [
+      "bash",
+      "-euo",
+      "pipefail",
+      "-c",
+      "cp -av --remove-destination .libs/libcrypt.so.1* \"$1\"",
+      "recipe",
+      "{stage}/usr/lib/"
+    ],
+    [
+      "make",
+      "distclean"
+    ],
+    [
+      "env",
+      "CC=gcc -m32",
+      "./configure",
+      "--prefix=/usr",
+      "--host=i686-pc-linux-gnu",
+      "--libdir=/usr/lib32",
+      "--enable-hashes=strong,glibc",
+      "--enable-obsolete-api=glibc",
+      "--disable-static",
+      "--disable-failure-tokens"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ],
+    [
+      "install",
+      "-d",
+      "{stage}/.m32root"
+    ],
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}/.m32root",
+      "install"
+    ],
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}/.m32root",
+      "install-pkgconfigDATA"
+    ],
+    [
+      "ln",
+      "-svf",
+      "libxcrypt.pc",
+      "{stage}/.m32root/usr/lib32/pkgconfig/libcrypt.pc"
+    ],
+    [
+      "install",
+      "-d",
+      "{stage}/usr/lib32"
+    ],
+    [
+      "cp",
+      "-a",
+      "{stage}/.m32root/usr/lib32/.",
+      "{stage}/usr/lib32"
+    ],
+    [
+      "rm",
+      "-rf",
+      "{stage}/.m32root"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "make",
+      "check"
+    ]
+  ],
+  "validation": "Pinned LFS m64 test/install, glibc-compatibility libcrypt.so.1 payload, and MLFS i686 build/package metadata staged under /usr/lib32; x32 omitted; not guest-built or Alp ownership-accepted.",
+  "version": "4.4.38"
+}

@@ -1,0 +1,75 @@
+{
+  "abi": "multilib-m32",
+  "adaptations": [
+    "Use official LFS 12.4 linux-6.16.1 archive, not the MLFS optional incremental kernel patch.",
+    "Stage sanitized headers before ownership capture."
+  ],
+  "allowed_jobs": [
+    1
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter05/linux-headers.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "95e8ba48efda4ed81a715ddf9937d213d8a554046a65b1e14a6091fa11597fba",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "make",
+      "-j1",
+      "headers"
+    ]
+  ],
+  "environment": {
+    "LFS": "{lfs}",
+    "LFS_TGT": "x86_64-lfs-linux-gnu",
+    "LFS_TGT32": "i686-lfs-linux-gnu",
+    "PATH": "{lfs}/tools/bin:/usr/bin:/bin"
+  },
+  "jobs": 1,
+  "name": "linux-headers",
+  "phase": "toolchain",
+  "pre": [
+    [
+      "make",
+      "mrproper"
+    ]
+  ],
+  "requires": [
+    "gcc-pass1"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "separate_build": false,
+  "source": "linux-6.16.1.tar.xz",
+  "stage": [
+    [
+      "find",
+      "{source}/usr/include",
+      "-type",
+      "f",
+      "!",
+      "-name",
+      "*.h",
+      "-delete"
+    ],
+    [
+      "mkdir",
+      "-p",
+      "{stage}/usr"
+    ],
+    [
+      "cp",
+      "-a",
+      "{source}/usr/include",
+      "{stage}/usr/"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [],
+  "validation": "Not compiled; guest and ownership acceptance pending",
+  "version": "6.16.1"
+}

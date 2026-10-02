@@ -1,0 +1,72 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/grub.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "a216f0354b18a18cbf7d7a6f4b1da4a4106dc742a53b51f3443c09bd0e67a2bf",
+    "tag": "ml-12.4"
+  },
+  "build_files": {
+    "grub-core/extra_deps.lst": "depends bli part_gpt\n"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--prefix=/usr",
+      "--sysconfdir=/etc",
+      "--disable-efiemu",
+      "--disable-werror"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "grub",
+  "phase": "base",
+  "post_stage": [
+    [
+      "mkdir",
+      "-p",
+      "{stage}/usr/share/bash-completion/completions"
+    ],
+    [
+      "mv",
+      "{stage}/etc/bash_completion.d/grub",
+      "{stage}/usr/share/bash-completion/completions/grub"
+    ]
+  ],
+  "requires": [
+    "glibc",
+    "gettext",
+    "bison",
+    "flex"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "grub-2.12.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [],
+  "validation": "Pinned MLFS m32-systemd native GRUB 2.12 configure/build/DESTDIR install; pinned book supplies no package test and no separate m32 build. Build dependency file and completion relocation are staged only. No guest build or Alp ownership acceptance yet.",
+  "version": "2.12"
+}

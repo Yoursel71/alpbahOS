@@ -1,0 +1,171 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/bzip2.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "fb2e8994a7c222e04aad253a0dccd812b21d01df584dad3653babb6cb69763f9",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "make",
+      "-f",
+      "Makefile-libbz2_so"
+    ],
+    [
+      "make",
+      "clean"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 8,
+  "name": "bzip2",
+  "patches": [
+    {
+      "source": "bzip2-1.0.8-install_docs-1.patch",
+      "strip": 1
+    }
+  ],
+  "phase": "base",
+  "pre": [
+    [
+      "sed",
+      "-i",
+      "s@\\(ln -s -f \\)$(PREFIX)/bin/@\\1@",
+      "Makefile"
+    ],
+    [
+      "sed",
+      "-i",
+      "s@(PREFIX)/man@(PREFIX)/share/man@g",
+      "Makefile"
+    ]
+  ],
+  "post_stage": [
+    [
+      "make",
+      "clean"
+    ],
+    [
+      "sed",
+      "-e",
+      "s/^CC=.*/CC=gcc -m32/",
+      "-i",
+      "Makefile"
+    ],
+    [
+      "sed",
+      "-e",
+      "s/^CC=.*/CC=gcc -m32/",
+      "-i",
+      "Makefile-libbz2_so"
+    ],
+    [
+      "make",
+      "-f",
+      "Makefile-libbz2_so"
+    ],
+    [
+      "make",
+      "libbz2.a"
+    ],
+    [
+      "install",
+      "-Dm755",
+      "libbz2.so.1.0.8",
+      "{stage}/usr/lib32/libbz2.so.1.0.8"
+    ],
+    [
+      "ln",
+      "-s",
+      "libbz2.so.1.0.8",
+      "{stage}/usr/lib32/libbz2.so"
+    ],
+    [
+      "ln",
+      "-s",
+      "libbz2.so.1.0.8",
+      "{stage}/usr/lib32/libbz2.so.1"
+    ],
+    [
+      "ln",
+      "-s",
+      "libbz2.so.1.0.8",
+      "{stage}/usr/lib32/libbz2.so.1.0"
+    ],
+    [
+      "install",
+      "-Dm644",
+      "libbz2.a",
+      "{stage}/usr/lib32/libbz2.a"
+    ]
+  ],
+  "requires": [
+    "iana-etc",
+    "glibc",
+    "zlib"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "bzip2-1.0.8.tar.gz",
+  "stage": [
+    [
+      "make",
+      "PREFIX={stage}/usr",
+      "install"
+    ],
+    [
+      "install",
+      "-Dm755",
+      "libbz2.so.1.0.8",
+      "{stage}/usr/lib/libbz2.so.1.0.8"
+    ],
+    [
+      "ln",
+      "-s",
+      "libbz2.so.1.0.8",
+      "{stage}/usr/lib/libbz2.so"
+    ],
+    [
+      "install",
+      "-m755",
+      "bzip2-shared",
+      "{stage}/usr/bin/bzip2"
+    ],
+    [
+      "ln",
+      "-sf",
+      "bzip2",
+      "{stage}/usr/bin/bzcat"
+    ],
+    [
+      "ln",
+      "-sf",
+      "bzip2",
+      "{stage}/usr/bin/bunzip2"
+    ],
+    [
+      "rm",
+      "-f",
+      "{stage}/usr/lib/libbz2.a"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [],
+  "validation": "Recipe only; multilib build, tests and Alp ownership remain unverified",
+  "version": "1.0.8"
+}

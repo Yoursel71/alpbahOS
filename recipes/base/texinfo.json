@@ -1,0 +1,81 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "LFS-12.4-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/texinfo.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "2cc17df2007db70ea92c5bc1ec41926e283a308ea32e49b4346c6a248a54f402",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--prefix=/usr"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "texinfo",
+  "phase": "base",
+  "pre": [
+    [
+      "find",
+      "tp/Texinfo/Convert",
+      "-type",
+      "f",
+      "-name",
+      "*.pm",
+      "-exec",
+      "sed",
+      "s/! $output_file eq/$output_file ne/",
+      "-i",
+      "{{}}",
+      "+"
+    ]
+  ],
+  "requires": [
+    "findutils",
+    "glibc",
+    "perl",
+    "sed"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "texinfo-7.2.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ],
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "TEXMF=/usr/share/texmf",
+      "install-tex"
+    ]
+  ],
+  "test": [
+    [
+      "make",
+      "check"
+    ]
+  ],
+  "validation": "Pinned LFS configure/build/check/install and staged optional TeX tree. Applies the Chapter 8 Perl-5.42 warning fix with find over only the upstream source module directory. No guest build or Alp ownership acceptance yet.",
+  "version": "7.2"
+}

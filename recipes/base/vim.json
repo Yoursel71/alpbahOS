@@ -1,0 +1,103 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/vim.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "cfd7f15689d106815f1de0f3dbb9e9ce2f7920261758ac9fc69916790dee355a",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--prefix=/usr"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "vim",
+  "phase": "base",
+  "post_stage": [
+    [
+      "ln",
+      "-sv",
+      "vim",
+      "{stage}/usr/bin/vi"
+    ],
+    [
+      "find",
+      "{stage}/usr/share/man",
+      "-type",
+      "f",
+      "-name",
+      "vim.1",
+      "-execdir",
+      "ln",
+      "-sv",
+      "vim.1",
+      "vi.1",
+      ";"
+    ],
+    [
+      "ln",
+      "-sv",
+      "../vim/vim91/doc",
+      "{stage}/usr/share/doc/vim-9.1.1629"
+    ]
+  ],
+  "pre": [
+    [
+      "sh",
+      "-c",
+      "printf '#define SYS_VIMRC_FILE \"/etc/vimrc\"\\n' >> src/feature.h"
+    ],
+    [
+      "sed",
+      "/test_plugin_glvs/d",
+      "-i",
+      "src/testdir/Make_all.mak"
+    ]
+  ],
+  "requires": [
+    "glibc",
+    "gettext",
+    "ncurses"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "vim-9.1.1629.tar.gz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ]
+  ],
+  "test": [
+    [
+      "env",
+      "TERM=xterm-256color",
+      "make",
+      "-j1",
+      "test"
+    ]
+  ],
+  "test_locale": "C.UTF-8",
+  "test_user": "tester",
+  "validation": "Pinned MLFS m32-systemd Chapter 8 configure/build/test/DESTDIR install. The recipe preserves the book test exclusion and tester-owned single-job test; runner logging captures terminal output. Stage-only vi/man/doc symlinks are created beneath DESTDIR using argv commands. No guest build or ownership acceptance claimed.",
+  "version": "9.1.1629"
+}

@@ -1,0 +1,121 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/shadow.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "1d36f34d5fdc48a9465e75ee5f3034024fde7ee299f0e1d9ada7f8c40019347a",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--sysconfdir=/etc",
+      "--disable-static",
+      "--with-bcrypt",
+      "--with-yescrypt",
+      "--without-libbsd",
+      "--with-group-name-max-length=32"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "shadow",
+  "phase": "base",
+  "post_stage": [],
+  "pre": [
+    [
+      "sed",
+      "-i",
+      "s/groups$(EXEEXT) //",
+      "src/Makefile.in"
+    ],
+    [
+      "find",
+      "man",
+      "-name",
+      "Makefile.in",
+      "-exec",
+      "sed",
+      "-i",
+      "s/groups\\.1 / /",
+      "{{}}",
+      ";"
+    ],
+    [
+      "find",
+      "man",
+      "-name",
+      "Makefile.in",
+      "-exec",
+      "sed",
+      "-i",
+      "s/getspnam\\.3 / /",
+      "{{}}",
+      ";"
+    ],
+    [
+      "find",
+      "man",
+      "-name",
+      "Makefile.in",
+      "-exec",
+      "sed",
+      "-i",
+      "s/passwd\\.5 / /",
+      "{{}}",
+      ";"
+    ],
+    [
+      "sed",
+      "-e",
+      "s:#ENCRYPT_METHOD DES:ENCRYPT_METHOD YESCRYPT:",
+      "-e",
+      "s:/var/spool/mail:/var/mail:",
+      "-e",
+      "/PATH=/{{s@/sbin:@@;s@/bin:@@}}",
+      "-i",
+      "etc/login.defs"
+    ]
+  ],
+  "requires": [
+    "glibc"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "shadow-4.18.0.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "exec_prefix=/usr",
+      "DESTDIR={stage}",
+      "install"
+    ],
+    [
+      "make",
+      "-j1",
+      "-C",
+      "man",
+      "DESTDIR={stage}",
+      "install-man"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [],
+  "validation": "Pinned MLFS m32-systemd Shadow 4.18.0 recipe stages binaries, manuals, and YESCRYPT login.defs. The book has no package test or separate m32 build. pwconv/grpconv/root-password and final target account setup are deliberately deferred to full LFS-root integration. No guest build or Alp ownership acceptance yet.",
+  "version": "4.18.0"
+}

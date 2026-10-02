@@ -1,0 +1,74 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "LFS-12.4-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/intltool.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "c21c20b8ca96bba6d4d35e68aa2fd0e5a084d820406f135ef6117b15ca5ff000",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--prefix=/usr"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "intltool",
+  "phase": "base",
+  "post_stage": [],
+  "pre": [
+    [
+      "sed",
+      "-i",
+      "s:\\\\\\${{:\\\\\\$\\\\{{:",
+      "intltool-update.in"
+    ]
+  ],
+  "requires": [
+    "glibc",
+    "perl",
+    "xml-parser"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "intltool-0.51.0.tar.gz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ],
+    [
+      "install",
+      "-v",
+      "-Dm644",
+      "doc/I18N-HOWTO",
+      "{stage}/usr/share/doc/intltool-0.51.0/I18N-HOWTO"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "make",
+      "check"
+    ]
+  ],
+  "validation": "Pinned Intltool pre-install Perl interpolation fix, configure/check/stage and LFS documentation path; not guest-built or Alp ownership-accepted.",
+  "version": "0.51.0"
+}

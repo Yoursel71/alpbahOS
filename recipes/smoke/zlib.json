@@ -1,0 +1,12 @@
+{
+  "schema": "alpbahOS.recipe/v1",
+  "name": "zlib",
+  "version": "1.3.1",
+  "source": "zlib-1.3.1.tar.gz",
+  "phase": "smoke",
+  "jobs": 2,
+  "compile": [["./configure", "--prefix=/usr"], ["make", "-j2"]],
+  "test": [["make", "-j2", "test"]],
+  "stage": [["make", "-j1", "install", "DESTDIR={stage}"]],
+  "description": "Real source build with DESTDIR; installed only into dedicated smoke-root by Alp"
+}

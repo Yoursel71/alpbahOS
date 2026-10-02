@@ -1,0 +1,87 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/gdbm.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "1951a1a97c5fcb87583799e20a0f94169ae5cec5cbe143353278387438b0ad63",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--prefix=/usr",
+      "--disable-static",
+      "--enable-libgdbm-compat"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 8,
+  "name": "gdbm",
+  "phase": "base",
+  "post_stage": [],
+  "pre": [],
+  "requires": [
+    "glibc",
+    "readline"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "gdbm-1.26.tar.gz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ],
+    [
+      "make",
+      "distclean"
+    ],
+    [
+      "env",
+      "CC=gcc -m32",
+      "CXX=g++ -m32",
+      "./configure",
+      "--host=i686-pc-linux-gnu",
+      "--prefix=/usr",
+      "--libdir=/usr/lib32",
+      "--disable-static",
+      "--enable-libgdbm-compat"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ],
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "make",
+      "-j{jobs}",
+      "check"
+    ]
+  ],
+  "validation": "m64 build/test plus MLFS m32 library build in /usr/lib32, both staged with DESTDIR; no guest build or Alp ownership acceptance yet",
+  "version": "1.26"
+}

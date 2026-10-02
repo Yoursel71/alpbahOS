@@ -1,0 +1,59 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "LFS-12.4-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/xml-parser.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "5cf31be76d0d56071f58807c8c64bf3d39b50628e48034e5a0bf8a73f9666b9f",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "perl",
+      "Makefile.PL"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "xml-parser",
+  "phase": "base",
+  "post_stage": [],
+  "pre": [],
+  "requires": [
+    "expat",
+    "perl"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "XML-Parser-2.47.tar.gz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "make",
+      "test"
+    ]
+  ],
+  "validation": "Pinned LFS XML::Parser MakeMaker/test/install flow using DESTDIR; not guest-built or ownership-accepted yet.",
+  "version": "2.47"
+}

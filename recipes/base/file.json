@@ -1,0 +1,97 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/file.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "9547a82e9d4bf3c4e174dedc70a5b64a7d949fa06bc092bf6bba3f18ebb6c118",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--prefix=/usr"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 8,
+  "name": "file",
+  "phase": "base",
+  "post_stage": [
+    [
+      "make",
+      "distclean"
+    ],
+    [
+      "env",
+      "CC=gcc -m32",
+      "./configure",
+      "--prefix=/usr",
+      "--libdir=/usr/lib32",
+      "--host=i686-pc-linux-gnu"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ],
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}/.m32",
+      "install"
+    ],
+    [
+      "mkdir",
+      "-p",
+      "{stage}/usr/lib32"
+    ],
+    [
+      "cp",
+      "-a",
+      "{stage}/.m32/usr/lib32/.",
+      "{stage}/usr/lib32/"
+    ],
+    [
+      "rm",
+      "-rf",
+      "{stage}/.m32"
+    ]
+  ],
+  "requires": [
+    "zlib"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "file-5.46.tar.gz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "make",
+      "-j{jobs}",
+      "check"
+    ]
+  ],
+  "validation": "Recipe only; m64/m32 build, tests and Alp ownership remain unverified",
+  "version": "5.46"
+}

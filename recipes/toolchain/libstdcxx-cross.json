@@ -1,0 +1,80 @@
+{
+  "abi": "multilib-m32",
+  "adaptations": [
+    "Cross GCC allowed multilib list must already be exactly m64;m32.",
+    "Libtool archives removed from stage for both ABI library directories before capture."
+  ],
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter05/libstdc++.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "274896fba8a96a0dd1a58f38fef7c5d920612a7bfacc683e94a11a2cef6c2c99",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "{source}/libstdc++-v3/configure",
+      "--host=x86_64-lfs-linux-gnu",
+      "--build={build_triplet}",
+      "--prefix=/usr",
+      "--enable-multilib",
+      "--disable-nls",
+      "--disable-libstdcxx-pch",
+      "--with-gxx-include-dir=/tools/x86_64-lfs-linux-gnu/include/c++/15.2.0"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "configure_build_guess": "config.guess",
+  "environment": {
+    "LFS": "{lfs}",
+    "LFS_TGT": "x86_64-lfs-linux-gnu",
+    "LFS_TGT32": "i686-lfs-linux-gnu",
+    "PATH": "{lfs}/tools/bin:/usr/bin:/bin"
+  },
+  "jobs": 8,
+  "name": "libstdcxx-cross",
+  "phase": "toolchain",
+  "post_stage": [
+    [
+      "find",
+      "{stage}/usr/lib",
+      "{stage}/usr/lib32",
+      "-name",
+      "*.la",
+      "-type",
+      "f",
+      "-delete"
+    ]
+  ],
+  "requires": [
+    "glibc-cross-m32"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "separate_build": true,
+  "source": "gcc-15.2.0.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [],
+  "test_policy": "Cross build has no native suite acceptance; actual m64/m32 C++ link/readelf sanity required. Final GCC/G++/libstdc++ test suite remains mandatory.",
+  "validation": "Not compiled; guest and ownership acceptance pending",
+  "version": "15.2.0"
+}

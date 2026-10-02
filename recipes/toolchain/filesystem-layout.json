@@ -1,0 +1,50 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter04/creatingminlayout.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "022e533f42e8c5a92de5941b300aba731220bd8b34ff774b54cd79dcda0228ea",
+    "tag": "ml-12.4"
+  },
+  "compile": [],
+  "directories": {
+    "etc": 493,
+    "lib64": 493,
+    "tools": 493,
+    "usr": 493,
+    "usr/bin": 493,
+    "usr/lib": 493,
+    "usr/lib32": 493,
+    "usr/sbin": 493,
+    "var": 493
+  },
+  "forbidden_paths": [
+    "usr/lib64",
+    "usr/libx32",
+    "libx32"
+  ],
+  "jobs": 1,
+  "kind": "layout",
+  "name": "filesystem-layout",
+  "phase": "toolchain",
+  "requires": [],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "filesystem-layout.json",
+  "stage": [],
+  "symlinks": {
+    "bin": "usr/bin",
+    "lib": "usr/lib",
+    "lib32": "usr/lib32",
+    "sbin": "usr/sbin"
+  },
+  "test": [],
+  "validation": "Generated layout preparation only; no actual guest Alp/toolchain acceptance",
+  "version": "12.4-ml32.1"
+}

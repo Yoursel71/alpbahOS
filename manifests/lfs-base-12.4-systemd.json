@@ -1,0 +1,663 @@
+{
+  "book": "LFS 12.4-systemd Chapter 8",
+  "count": 79,
+  "execution_status": "recipe coverage is partial; full stage runner and acceptance are incomplete",
+  "inventory_origin": {
+    "note": "Read-only copied from the pre-existing Codex main-tree inventory; never runtime-imported.",
+    "path": "docs/verification/manifests/lfs-base/m04-expected-chapter8-packages-12.4.json",
+    "sha256": "612f7d8bdf54f228910c877b3a0c5d3565ead067c030ab55f9a0df472428fff5"
+  },
+  "packages": [
+    {
+      "auxiliary_source_ids": [],
+      "name": "man-pages",
+      "order": 1,
+      "recipe": "recipes/base/man-pages.json",
+      "source_id": "man-pages-6.15.tar.xz",
+      "version": "6.15"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "iana-etc",
+      "order": 2,
+      "recipe": "recipes/base/iana-etc.json",
+      "source_id": "iana-etc-20250807.tar.gz",
+      "version": "20250807"
+    },
+    {
+      "auxiliary_source_ids": [
+        "glibc-2.42-fhs-1.patch"
+      ],
+      "name": "glibc",
+      "order": 3,
+      "recipe": "recipes/base/glibc.json",
+      "source_id": "glibc-2.42.tar.xz",
+      "version": "2.42"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "zlib",
+      "order": 4,
+      "recipe": "recipes/base/zlib.json",
+      "source_id": "zlib-1.3.1.tar.gz",
+      "version": "1.3.1"
+    },
+    {
+      "auxiliary_source_ids": [
+        "bzip2-1.0.8-install_docs-1.patch"
+      ],
+      "name": "bzip2",
+      "order": 5,
+      "recipe": "recipes/base/bzip2.json",
+      "source_id": "bzip2-1.0.8.tar.gz",
+      "version": "1.0.8"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "xz",
+      "order": 6,
+      "recipe": "recipes/base/xz.json",
+      "source_id": "xz-5.8.1.tar.xz",
+      "version": "5.8.1"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "lz4",
+      "order": 7,
+      "recipe": "recipes/base/lz4.json",
+      "source_id": "lz4-1.10.0.tar.gz",
+      "version": "1.10.0"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "zstd",
+      "order": 8,
+      "recipe": "recipes/base/zstd.json",
+      "source_id": "zstd-1.5.7.tar.gz",
+      "version": "1.5.7"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "file",
+      "order": 9,
+      "recipe": "recipes/base/file.json",
+      "source_id": "file-5.46.tar.gz",
+      "version": "5.46"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "readline",
+      "order": 10,
+      "recipe": "recipes/base/readline.json",
+      "source_id": "readline-8.3.tar.gz",
+      "version": "8.3"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "m4",
+      "order": 11,
+      "recipe": "recipes/base/m4.json",
+      "source_id": "m4-1.4.20.tar.xz",
+      "version": "1.4.20"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "bc",
+      "order": 12,
+      "recipe": "recipes/base/bc.json",
+      "source_id": "bc-7.0.3.tar.xz",
+      "version": "7.0.3"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "flex",
+      "order": 13,
+      "recipe": "recipes/base/flex.json",
+      "source_id": "flex-2.6.4.tar.gz",
+      "version": "2.6.4"
+    },
+    {
+      "auxiliary_source_ids": [
+        "tcl8.6.16-html.tar.gz"
+      ],
+      "name": "tcl",
+      "order": 14,
+      "recipe": "recipes/base/tcl.json",
+      "source_id": "tcl8.6.16-src.tar.gz",
+      "version": "8.6.16"
+    },
+    {
+      "auxiliary_source_ids": [
+        "expect-5.45.4-gcc15-1.patch"
+      ],
+      "name": "expect",
+      "order": 15,
+      "recipe": "recipes/base/expect.json",
+      "source_id": "expect5.45.4.tar.gz",
+      "version": "5.45.4"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "dejagnu",
+      "order": 16,
+      "recipe": "recipes/base/dejagnu.json",
+      "source_id": "dejagnu-1.6.3.tar.gz",
+      "version": "1.6.3"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "pkgconf",
+      "order": 17,
+      "recipe": "recipes/base/pkgconf.json",
+      "source_id": "pkgconf-2.5.1.tar.xz",
+      "version": "2.5.1"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "binutils",
+      "order": 18,
+      "recipe": "recipes/base/binutils.json",
+      "source_id": "binutils-2.45.tar.xz",
+      "version": "2.45"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "gmp",
+      "order": 19,
+      "recipe": "recipes/base/gmp.json",
+      "source_id": "gmp-6.3.0.tar.xz",
+      "version": "6.3.0"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "mpfr",
+      "order": 20,
+      "recipe": "recipes/base/mpfr.json",
+      "source_id": "mpfr-4.2.2.tar.xz",
+      "version": "4.2.2"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "mpc",
+      "order": 21,
+      "recipe": "recipes/base/mpc.json",
+      "source_id": "mpc-1.3.1.tar.gz",
+      "version": "1.3.1"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "attr",
+      "order": 22,
+      "recipe": "recipes/base/attr.json",
+      "source_id": "attr-2.5.2.tar.gz",
+      "version": "2.5.2"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "acl",
+      "order": 23,
+      "recipe": "recipes/base/acl.json",
+      "source_id": "acl-2.3.2.tar.xz",
+      "version": "2.3.2"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "libcap",
+      "order": 24,
+      "recipe": "recipes/base/libcap.json",
+      "source_id": "libcap-2.76.tar.xz",
+      "version": "2.76"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "libxcrypt",
+      "order": 25,
+      "recipe": "recipes/base/libxcrypt.json",
+      "source_id": "libxcrypt-4.4.38.tar.xz",
+      "version": "4.4.38"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "shadow",
+      "order": 26,
+      "recipe": "recipes/base/shadow.json",
+      "source_id": "shadow-4.18.0.tar.xz",
+      "version": "4.18.0"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "gcc",
+      "order": 27,
+      "recipe": "recipes/base/gcc.json",
+      "source_id": "gcc-15.2.0.tar.xz",
+      "version": "15.2.0"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "ncurses",
+      "order": 28,
+      "recipe": "recipes/base/ncurses.json",
+      "source_id": "ncurses-6.5-20250809.tgz",
+      "version": "6.5-20250809"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "sed",
+      "order": 29,
+      "recipe": "recipes/base/sed.json",
+      "source_id": "sed-4.9.tar.xz",
+      "version": "4.9"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "psmisc",
+      "order": 30,
+      "recipe": "recipes/base/psmisc.json",
+      "source_id": "psmisc-23.7.tar.xz",
+      "version": "23.7"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "gettext",
+      "order": 31,
+      "recipe": "recipes/base/gettext.json",
+      "source_id": "gettext-0.26.tar.xz",
+      "version": "0.26"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "bison",
+      "order": 32,
+      "recipe": "recipes/base/bison.json",
+      "source_id": "bison-3.8.2.tar.xz",
+      "version": "3.8.2"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "grep",
+      "order": 33,
+      "recipe": "recipes/base/grep.json",
+      "source_id": "grep-3.12.tar.xz",
+      "version": "3.12"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "bash",
+      "order": 34,
+      "recipe": "recipes/base/bash.json",
+      "source_id": "bash-5.3.tar.gz",
+      "version": "5.3"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "libtool",
+      "order": 35,
+      "recipe": "recipes/base/libtool.json",
+      "source_id": "libtool-2.5.4.tar.xz",
+      "version": "2.5.4"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "gdbm",
+      "order": 36,
+      "recipe": "recipes/base/gdbm.json",
+      "source_id": "gdbm-1.26.tar.gz",
+      "version": "1.26"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "gperf",
+      "order": 37,
+      "recipe": "recipes/base/gperf.json",
+      "source_id": "gperf-3.3.tar.gz",
+      "version": "3.3"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "expat",
+      "order": 38,
+      "recipe": "recipes/base/expat.json",
+      "source_id": "expat-2.7.1.tar.xz",
+      "version": "2.7.1"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "inetutils",
+      "order": 39,
+      "recipe": "recipes/base/inetutils.json",
+      "source_id": "inetutils-2.6.tar.xz",
+      "version": "2.6"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "less",
+      "order": 40,
+      "recipe": "recipes/base/less.json",
+      "source_id": "less-679.tar.gz",
+      "version": "679"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "perl",
+      "order": 41,
+      "recipe": "recipes/base/perl.json",
+      "source_id": "perl-5.42.0.tar.xz",
+      "version": "5.42.0"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "xml-parser",
+      "order": 42,
+      "recipe": "recipes/base/xml-parser.json",
+      "source_id": "XML-Parser-2.47.tar.gz",
+      "version": "2.47"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "intltool",
+      "order": 43,
+      "recipe": "recipes/base/intltool.json",
+      "source_id": "intltool-0.51.0.tar.gz",
+      "version": "0.51.0"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "autoconf",
+      "order": 44,
+      "recipe": "recipes/base/autoconf.json",
+      "source_id": "autoconf-2.72.tar.xz",
+      "version": "2.72"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "automake",
+      "order": 45,
+      "recipe": "recipes/base/automake.json",
+      "source_id": "automake-1.18.1.tar.xz",
+      "version": "1.18.1"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "openssl",
+      "order": 46,
+      "recipe": "recipes/base/openssl.json",
+      "source_id": "openssl-3.5.2.tar.gz",
+      "version": "3.5.2"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "libelf",
+      "order": 47,
+      "recipe": "recipes/base/libelf.json",
+      "source_id": "elfutils-0.193.tar.bz2",
+      "version": "0.193"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "libffi",
+      "order": 48,
+      "recipe": "recipes/base/libffi.json",
+      "source_id": "libffi-3.5.2.tar.gz",
+      "version": "3.5.2"
+    },
+    {
+      "auxiliary_source_ids": [
+        "python-3.13.7-docs-html.tar.bz2"
+      ],
+      "name": "python",
+      "order": 49,
+      "recipe": "recipes/base/python.json",
+      "source_id": "Python-3.13.7.tar.xz",
+      "version": "3.13.7"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "flit-core",
+      "order": 50,
+      "recipe": "recipes/base/flit-core.json",
+      "source_id": "flit_core-3.12.0.tar.gz",
+      "version": "3.12.0"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "packaging",
+      "order": 51,
+      "recipe": "recipes/base/packaging.json",
+      "source_id": "packaging-25.0.tar.gz",
+      "version": "25.0"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "wheel",
+      "order": 52,
+      "recipe": "recipes/base/wheel.json",
+      "source_id": "wheel-0.46.1.tar.gz",
+      "version": "0.46.1"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "setuptools",
+      "order": 53,
+      "recipe": "recipes/base/setuptools.json",
+      "source_id": "setuptools-80.9.0.tar.gz",
+      "version": "80.9.0"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "ninja",
+      "order": 54,
+      "recipe": "recipes/base/ninja.json",
+      "source_id": "ninja-1.13.1.tar.gz",
+      "version": "1.13.1"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "meson",
+      "order": 55,
+      "recipe": "recipes/base/meson.json",
+      "source_id": "meson-1.8.3.tar.gz",
+      "version": "1.8.3"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "kmod",
+      "order": 56,
+      "recipe": "recipes/base/kmod.json",
+      "source_id": "kmod-34.2.tar.xz",
+      "version": "34.2"
+    },
+    {
+      "auxiliary_source_ids": [
+        "coreutils-9.7-upstream_fix-1.patch",
+        "coreutils-9.7-i18n-1.patch"
+      ],
+      "name": "coreutils",
+      "order": 57,
+      "recipe": "recipes/base/coreutils.json",
+      "source_id": "coreutils-9.7.tar.xz",
+      "version": "9.7"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "diffutils",
+      "order": 58,
+      "recipe": "recipes/base/diffutils.json",
+      "source_id": "diffutils-3.12.tar.xz",
+      "version": "3.12"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "gawk",
+      "order": 59,
+      "recipe": "recipes/base/gawk.json",
+      "source_id": "gawk-5.3.2.tar.xz",
+      "version": "5.3.2"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "findutils",
+      "order": 60,
+      "recipe": "recipes/base/findutils.json",
+      "source_id": "findutils-4.10.0.tar.xz",
+      "version": "4.10.0"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "groff",
+      "order": 61,
+      "recipe": "recipes/base/groff.json",
+      "source_id": "groff-1.23.0.tar.gz",
+      "version": "1.23.0"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "grub",
+      "order": 62,
+      "recipe": "recipes/base/grub.json",
+      "source_id": "grub-2.12.tar.xz",
+      "version": "2.12"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "gzip",
+      "order": 63,
+      "recipe": "recipes/base/gzip.json",
+      "source_id": "gzip-1.14.tar.xz",
+      "version": "1.14"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "iproute2",
+      "order": 64,
+      "recipe": "recipes/base/iproute2.json",
+      "source_id": "iproute2-6.16.0.tar.xz",
+      "version": "6.16.0"
+    },
+    {
+      "auxiliary_source_ids": [
+        "kbd-2.8.0-backspace-1.patch"
+      ],
+      "name": "kbd",
+      "order": 65,
+      "recipe": "recipes/base/kbd.json",
+      "source_id": "kbd-2.8.0.tar.xz",
+      "version": "2.8.0"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "libpipeline",
+      "order": 66,
+      "recipe": "recipes/base/libpipeline.json",
+      "source_id": "libpipeline-1.5.8.tar.gz",
+      "version": "1.5.8"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "make",
+      "order": 67,
+      "recipe": "recipes/base/make.json",
+      "source_id": "make-4.4.1.tar.gz",
+      "version": "4.4.1"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "patch",
+      "order": 68,
+      "recipe": "recipes/base/patch.json",
+      "source_id": "patch-2.8.tar.xz",
+      "version": "2.8"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "tar",
+      "order": 69,
+      "recipe": "recipes/base/tar.json",
+      "source_id": "tar-1.35.tar.xz",
+      "version": "1.35"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "texinfo",
+      "order": 70,
+      "recipe": "recipes/base/texinfo.json",
+      "source_id": "texinfo-7.2.tar.xz",
+      "version": "7.2"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "vim",
+      "order": 71,
+      "recipe": "recipes/base/vim.json",
+      "source_id": "vim-9.1.1629.tar.gz",
+      "version": "9.1.1629"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "markupsafe",
+      "order": 72,
+      "recipe": "recipes/base/markupsafe.json",
+      "source_id": "markupsafe-3.0.2.tar.gz",
+      "version": "3.0.2"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "jinja2",
+      "order": 73,
+      "recipe": "recipes/base/jinja2.json",
+      "source_id": "jinja2-3.1.6.tar.gz",
+      "version": "3.1.6"
+    },
+    {
+      "auxiliary_source_ids": [
+        "systemd-man-pages-257.8.tar.xz"
+      ],
+      "name": "systemd",
+      "order": 74,
+      "recipe": "recipes/base/systemd.json",
+      "source_id": "systemd-257.8.tar.gz",
+      "version": "257.8"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "dbus",
+      "order": 75,
+      "recipe": "recipes/base/dbus.json",
+      "source_id": "dbus-1.16.2.tar.xz",
+      "version": "1.16.2"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "man-db",
+      "order": 76,
+      "recipe": "recipes/base/man-db.json",
+      "source_id": "man-db-2.13.1.tar.xz",
+      "version": "2.13.1"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "procps-ng",
+      "order": 77,
+      "recipe": "recipes/base/procps-ng.json",
+      "source_id": "procps-ng-4.0.5.tar.xz",
+      "version": "4.0.5"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "util-linux",
+      "order": 78,
+      "recipe": "recipes/base/util-linux.json",
+      "source_id": "util-linux-2.41.1.tar.xz",
+      "version": "2.41.1"
+    },
+    {
+      "auxiliary_source_ids": [],
+      "name": "e2fsprogs",
+      "order": 79,
+      "recipe": "recipes/base/e2fsprogs.json",
+      "source_id": "e2fsprogs-1.47.3.tar.gz",
+      "version": "1.47.3"
+    }
+  ],
+  "schema": "alpbahOS.lfs-base-inventory/v1",
+  "source_manifest_sha256": "aa8cc629f81a0dbae69cfa0454724e3521a7b16a8c9e75e0ab12b135069e6abb"
+}

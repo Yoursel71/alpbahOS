@@ -1,0 +1,69 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/mpfr.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "7049ee35134aad6c65a45aa1c37230c9babcc98486e35018695b7f96dca110c1",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--prefix=/usr",
+      "--disable-static",
+      "--enable-thread-safe",
+      "--docdir=/usr/share/doc/mpfr-4.2.2"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ],
+    [
+      "make",
+      "html"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "mpfr",
+  "phase": "base",
+  "requires": [
+    "glibc",
+    "gmp"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "mpfr-4.2.2.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ],
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install-html"
+    ]
+  ],
+  "test": [
+    [
+      "make",
+      "check"
+    ]
+  ],
+  "validation": "Pinned MLFS m32-systemd Chapter 8 recipe with thread-safe native library, generated HTML docs and the required complete make check (book specifies 198 passing tests). DESTDIR is used for both install targets. No guest test/build or ownership acceptance claimed.",
+  "version": "4.2.2"
+}

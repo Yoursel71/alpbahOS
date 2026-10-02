@@ -1,0 +1,97 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/acl.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "d81756a4f6e8338990760a903007695fdcb32d5e728e4d076c8ab201fd399fdf",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--prefix=/usr",
+      "--disable-static",
+      "--docdir=/usr/share/doc/acl-2.3.2"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 8,
+  "name": "acl",
+  "phase": "base",
+  "post_stage": [],
+  "pre": [],
+  "requires": [
+    "glibc",
+    "attr"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "acl-2.3.2.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ],
+    [
+      "make",
+      "distclean"
+    ],
+    [
+      "env",
+      "CC=gcc -m32",
+      "./configure",
+      "--prefix=/usr",
+      "--disable-static",
+      "--libdir=/usr/lib32",
+      "--libexecdir=/usr/lib32",
+      "--host=i686-pc-linux-gnu"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ],
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}/.m32root",
+      "install"
+    ],
+    [
+      "cp",
+      "-a",
+      "{stage}/.m32root/usr/lib32/.",
+      "{stage}/usr/lib32"
+    ],
+    [
+      "rm",
+      "-rf",
+      "{stage}/.m32root"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "make",
+      "-j{jobs}",
+      "check"
+    ]
+  ],
+  "validation": "m64 tests plus isolated MLFS m32 libraries and libexec payload in /usr/lib32; no guest build or Alp ownership acceptance yet",
+  "version": "2.3.2"
+}

@@ -1,0 +1,57 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/setuptools.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "c9a329047969372da2ad26fa185cf1f498cde4aa5ed28a9f9e79cbe13a758335",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "pip3",
+      "wheel",
+      "-w",
+      "dist",
+      "--no-cache-dir",
+      "--no-build-isolation",
+      "--no-deps",
+      "{source}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "setuptools",
+  "phase": "base",
+  "requires": [
+    "python",
+    "flit-core",
+    "wheel"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "setuptools-80.9.0.tar.gz",
+  "stage": [
+    [
+      "pip3",
+      "install",
+      "--root={stage}",
+      "--no-index",
+      "--find-links=dist",
+      "--no-deps",
+      "setuptools"
+    ]
+  ],
+  "test": [],
+  "validation": "Pinned MLFS offline wheel build and local-only pip install beneath DESTDIR with dependency resolution disabled. The book provides no package test step. Guest build, installed payload and Alp ownership remain unverified.",
+  "version": "80.9.0"
+}

@@ -1,0 +1,17 @@
+{
+  "schema": "alpbahOS.test-policy/v1",
+  "glibc": {"max_unexpected_failures": 0, "allowed_failures": {}, "required_completed": true,
+    "minimum_pass_count": 1000, "required_summary_names": ["tests.sum"]},
+  "binutils": {"max_unexpected_failures": 0, "allowed_failures": {}, "required_completed": true,
+    "minimum_pass_count": 3000, "required_summary_names": ["binutils.sum", "gas.sum", "ld.sum"]},
+  "gcc": {
+    "max_unexpected_failures": 0,
+    "allowed_failures": {"gcc.target/i386/pr90579.c": 4},
+    "allowed_failure_detail": "scan-assembler",
+    "basis": "LFS 12.4 GCC book known pr90579 failure; pinned GCC 15.2 source has four scan-assembler assertions under gcc.target/i386. ERROR/UNRESOLVED/XPASS always fatal; no generic failure count exception.",
+    "basis_url": "https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/gcc.html",
+    "minimum_pass_count": 50000,
+    "required_summary_names": ["gcc.sum", "g++.sum", "libstdc++.sum"],
+    "required_completed": true
+  }
+}

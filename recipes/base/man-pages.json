@@ -1,0 +1,57 @@
+{
+  "abi": "multilib-m32",
+  "adaptations": [
+    "Preserve the LFS pre-install removal of man3/crypt* inside the disposable source tree.",
+    "Use DESTDIR staging; rootfs install/ownership capture remains a separate Alp transaction."
+  ],
+  "allowed_jobs": [
+    1
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "LFS-12.4-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/man-pages.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "129bbfcb946e2c278a6cdb6777784610a16cf08ddde31679d3f0834d447ebbbe",
+    "tag": "ml-12.4"
+  },
+  "compile": [],
+  "environment": {},
+  "jobs": 1,
+  "name": "man-pages",
+  "phase": "base",
+  "post_stage": [],
+  "pre": [
+    [
+      "find",
+      "{source}/man3",
+      "-maxdepth",
+      "1",
+      "-type",
+      "f",
+      "-name",
+      "crypt*",
+      "-delete"
+    ]
+  ],
+  "requires": [],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "man-pages-6.15.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-R",
+      "GIT=false",
+      "prefix=/usr",
+      "DESTDIR={stage}",
+      "install"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [],
+  "validation": "Recipe only; not guest-run or Alp ownership accepted",
+  "version": "6.15"
+}

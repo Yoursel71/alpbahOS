@@ -1,0 +1,111 @@
+{
+  "abi": "multilib-m32",
+  "adaptations": [
+    "Fresh separate source/build avoids deleting the m64 package source or installed .a files.",
+    "Only usr/lib32, two gnu 32-bit headers and loader link enter the payload; 64-bit headers/tools are not overwritten.",
+    "Book /lib loader link is packaged at canonical usr/lib; owned layout must provide lib -> usr/lib.",
+    "No x32 ABI."
+  ],
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter05/glibc.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "54740beed6a506c80d17c9c91c52bd65659886e38effd9ad41887efba4a91123",
+    "tag": "ml-12.4"
+  },
+  "build_files": {
+    "configparms": "rootsbindir=/usr/sbin\n"
+  },
+  "compile": [
+    [
+      "{source}/configure",
+      "--prefix=/usr",
+      "--host=i686-lfs-linux-gnu",
+      "--build={build_triplet}",
+      "--disable-nscd",
+      "--with-headers={lfs}/usr/include",
+      "--libdir=/usr/lib32",
+      "--libexecdir=/usr/lib32",
+      "libc_cv_slibdir=/usr/lib32",
+      "--enable-kernel=5.4"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "configure_build_guess": "scripts/config.guess",
+  "environment": {
+    "CC": "x86_64-lfs-linux-gnu-gcc -m32",
+    "CXX": "x86_64-lfs-linux-gnu-g++ -m32",
+    "LFS": "{lfs}",
+    "LFS_TGT": "x86_64-lfs-linux-gnu",
+    "LFS_TGT32": "i686-lfs-linux-gnu",
+    "PATH": "{lfs}/tools/bin:/usr/bin:/bin"
+  },
+  "jobs": 8,
+  "name": "glibc-cross-m32",
+  "patches": [
+    {
+      "source": "glibc-2.42-fhs-1.patch",
+      "strip": 1
+    }
+  ],
+  "phase": "toolchain",
+  "post_stage": [
+    [
+      "ln",
+      "-s",
+      "../lib32/ld-linux.so.2",
+      "{stage}/usr/lib/ld-linux.so.2"
+    ]
+  ],
+  "requires": [
+    "glibc-cross-m64"
+  ],
+  "requires_layout": "Owned usr-merge skeleton, lib -> usr/lib; not installed by this recipe",
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "separate_build": true,
+  "source": "glibc-2.42.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={source}/build/DESTDIR",
+      "install"
+    ],
+    [
+      "mkdir",
+      "-p",
+      "{stage}/usr/include/gnu",
+      "{stage}/usr/lib"
+    ],
+    [
+      "cp",
+      "-a",
+      "{source}/build/DESTDIR/usr/lib32",
+      "{stage}/usr/"
+    ],
+    [
+      "install",
+      "-m644",
+      "{source}/build/DESTDIR/usr/include/gnu/lib-names-32.h",
+      "{source}/build/DESTDIR/usr/include/gnu/stubs-32.h",
+      "{stage}/usr/include/gnu/"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [],
+  "test_policy": "Cross Glibc skips native make check; m64/m32 ELF, interpreter, sysroot headers/startfiles/linker sanity required after installation. Final Glibc suite remains mandatory.",
+  "validation": "Not compiled; guest and ownership acceptance pending",
+  "version": "2.42"
+}

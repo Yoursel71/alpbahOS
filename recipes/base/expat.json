@@ -1,0 +1,100 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/expat.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "dc7434cf31175b066f4934c69e7dc681d6a14d551e521d75c65b9d668c7efc80",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--prefix=/usr",
+      "--disable-static",
+      "--docdir=/usr/share/doc/expat-2.7.1"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 8,
+  "name": "expat",
+  "phase": "base",
+  "post_stage": [],
+  "pre": [],
+  "requires": [
+    "glibc"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "expat-2.7.1.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ],
+    [
+      "install",
+      "-v",
+      "-m644",
+      "doc/reference.html",
+      "doc/style.css",
+      "doc/ok.min.css",
+      "{stage}/usr/share/doc/expat-2.7.1/"
+    ],
+    [
+      "sed",
+      "-e",
+      "/^am__append_1/ s/doc//",
+      "-i",
+      "Makefile"
+    ],
+    [
+      "make",
+      "clean"
+    ],
+    [
+      "env",
+      "CC=gcc -m32",
+      "./configure",
+      "--prefix=/usr",
+      "--disable-static",
+      "--libdir=/usr/lib32",
+      "--host=i686-pc-linux-gnu"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ],
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "make",
+      "-j{jobs}",
+      "check"
+    ]
+  ],
+  "validation": "m64 build/test/docs and MLFS m32 library staged in /usr/lib32; no guest build or Alp ownership acceptance yet",
+  "version": "2.7.1"
+}

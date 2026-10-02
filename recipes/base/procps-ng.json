@@ -1,0 +1,63 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/procps.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "bdc79f62082ae28313c36984b94e7df876eee9b9e5f115db01cd3c68598718be",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--prefix=/usr",
+      "--docdir=/usr/share/doc/procps-ng-4.0.5",
+      "--disable-static",
+      "--disable-kill",
+      "--enable-watch8bit",
+      "--with-systemd"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "procps-ng",
+  "phase": "base",
+  "requires": [
+    "glibc",
+    "ncurses",
+    "pkgconf"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "procps-ng-4.0.5.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ]
+  ],
+  "test": [
+    [
+      "make",
+      "check"
+    ]
+  ],
+  "test_user": "tester",
+  "validation": "Pinned MLFS m32-systemd Chapter 8 configure/build/check/DESTDIR install; tests run as the bounded tester identity, as the book directs. The book documents a pgrep chroot failure and a ps accounting test dependent on CONFIG_BSD_PROCESS_ACCT. Guest build and Alp ownership acceptance remain pending.",
+  "version": "4.0.5"
+}

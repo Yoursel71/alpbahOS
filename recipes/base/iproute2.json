@@ -1,0 +1,66 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/iproute2.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "3011c983412f13c79fdd0290496c3fc8208a423e7051b105829b0320187d1b7b",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "make",
+      "-j{jobs}",
+      "NETNS_RUN_DIR=/run/netns"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "iproute2",
+  "phase": "base",
+  "post_stage": [],
+  "pre": [
+    [
+      "sed",
+      "-i",
+      "/ARPD/d",
+      "Makefile"
+    ],
+    [
+      "rm",
+      "-fv",
+      "man/man8/arpd.8"
+    ]
+  ],
+  "requires": [
+    "glibc",
+    "flex",
+    "bison",
+    "libcap"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "iproute2-6.16.0.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "SBINDIR=/usr/sbin",
+      "DESTDIR={stage}",
+      "install"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [],
+  "validation": "Pinned MLFS m32-systemd IPRoute2 6.16.0 build. The book states that its test suite does not work, so no tests are claimed. arpd is excluded because Berkeley DB is outside LFS; optional documentation is omitted. Install is confined to DESTDIR with binaries staged under /usr/sbin. Guest build and Alp ownership acceptance remain pending.",
+  "version": "6.16.0"
+}

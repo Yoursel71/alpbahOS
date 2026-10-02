@@ -1,0 +1,68 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "LFS-12.4-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/tar.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "fc13763ecd1f9d190ed28d6ee8cdd7d4b40febe0f7a5c1f6d884bfbafb98ca87",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "env",
+      "FORCE_UNSAFE_CONFIGURE=1",
+      "./configure",
+      "--prefix=/usr"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 8,
+  "name": "tar",
+  "phase": "base",
+  "post_stage": [],
+  "pre": [],
+  "requires": [
+    "glibc"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "tar-1.35.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ],
+    [
+      "make",
+      "-C",
+      "doc",
+      "install-html",
+      "docdir={stage}/usr/share/doc/tar-1.35"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "make",
+      "-j{jobs}",
+      "check"
+    ]
+  ],
+  "validation": "GNU Tar configure/check/install plus HTML documentation staged through DESTDIR; no guest build or Alp ownership acceptance yet",
+  "version": "1.35"
+}

@@ -1,0 +1,95 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/perl.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "2a7ec6751e8cb85733922bd0ec2e0472dc0dfed1662fc912df6b8e262ab0b00c",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "env",
+      "BUILD_ZLIB=False",
+      "BUILD_BZIP2=0",
+      "sh",
+      "Configure",
+      "-des",
+      "-D",
+      "prefix=/usr",
+      "-D",
+      "vendorprefix=/usr",
+      "-D",
+      "privlib=/usr/lib/perl5/5.42.0/core_perl",
+      "-D",
+      "archlib=/usr/lib/perl5/5.42.0/core_perl",
+      "-D",
+      "sitelib=/usr/lib/perl5/5.42.0/site_perl",
+      "-D",
+      "sitearch=/usr/lib/perl5/5.42.0/site_perl",
+      "-D",
+      "vendorlib=/usr/lib/perl5/5.42.0/vendor_perl",
+      "-D",
+      "vendorarch=/usr/lib/perl5/5.42.0/vendor_perl",
+      "-D",
+      "man1dir=/usr/share/man/man1",
+      "-D",
+      "man3dir=/usr/share/man/man3",
+      "-D",
+      "pager=/usr/bin/less -isR",
+      "-D",
+      "useshrplib",
+      "-D",
+      "usethreads"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "perl",
+  "phase": "base",
+  "requires": [
+    "glibc",
+    "less"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "perl-5.42.0.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ],
+    [
+      "ln",
+      "-sf",
+      "less",
+      "{stage}/usr/bin/more"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "env",
+      "TEST_JOBS={jobs}",
+      "make",
+      "test_harness"
+    ]
+  ],
+  "validation": "Pinned MLFS m32-systemd Perl 5.42.0 Configure/build/test_harness and DESTDIR install. Optional Zlib/Bzip2 Perl backends are disabled as prescribed; no separate m32 build in the book. No guest build or Alp ownership acceptance yet.",
+  "version": "5.42.0"
+}

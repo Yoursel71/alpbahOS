@@ -1,0 +1,102 @@
+{
+  "abi": "multilib-m32",
+  "adaptations": [
+    "Loader links and ldd fix staged before Alp ownership capture.",
+    "Pinned MLFS mkheaders example is commented out; GCC full limits.h is staged during pass1 from limitx.h, glimits.h and limity.h."
+  ],
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter05/glibc.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "54740beed6a506c80d17c9c91c52bd65659886e38effd9ad41887efba4a91123",
+    "tag": "ml-12.4"
+  },
+  "build_files": {
+    "configparms": "rootsbindir=/usr/sbin\n"
+  },
+  "compile": [
+    [
+      "{source}/configure",
+      "--prefix=/usr",
+      "--host=x86_64-lfs-linux-gnu",
+      "--build={build_triplet}",
+      "--disable-nscd",
+      "libc_cv_slibdir=/usr/lib",
+      "--enable-kernel=5.4"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "configure_build_guess": "scripts/config.guess",
+  "environment": {
+    "LFS": "{lfs}",
+    "LFS_TGT": "x86_64-lfs-linux-gnu",
+    "LFS_TGT32": "i686-lfs-linux-gnu",
+    "PATH": "{lfs}/tools/bin:/usr/bin:/bin"
+  },
+  "jobs": 8,
+  "name": "glibc-cross-m64",
+  "patches": [
+    {
+      "source": "glibc-2.42-fhs-1.patch",
+      "strip": 1
+    }
+  ],
+  "phase": "toolchain",
+  "post_stage": [
+    [
+      "sed",
+      "/RTLDLIST=/s@/usr@@g",
+      "-i",
+      "{stage}/usr/bin/ldd"
+    ],
+    [
+      "mkdir",
+      "-p",
+      "{stage}/lib64"
+    ],
+    [
+      "ln",
+      "-s",
+      "../lib/ld-linux-x86-64.so.2",
+      "{stage}/lib64/ld-linux-x86-64.so.2"
+    ],
+    [
+      "ln",
+      "-s",
+      "../lib/ld-linux-x86-64.so.2",
+      "{stage}/lib64/ld-lsb-x86-64.so.3"
+    ]
+  ],
+  "requires": [
+    "linux-headers"
+  ],
+  "requires_layout": "Owned usr-merge skeleton, lib -> usr/lib; not installed by this recipe",
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "separate_build": true,
+  "source": "glibc-2.42.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [],
+  "test_policy": "Cross Glibc skips native make check; m64/m32 ELF, interpreter, sysroot headers/startfiles/linker sanity required after installation. Final Glibc suite remains mandatory.",
+  "validation": "Not compiled; guest and ownership acceptance pending",
+  "version": "2.42"
+}

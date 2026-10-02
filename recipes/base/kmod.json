@@ -1,0 +1,94 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/kmod.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "35922ba69fdb5aa0a819e2421e13f05252630e6b1d196842a1621ed16fbc452b",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "meson",
+      "setup",
+      "--prefix=/usr",
+      "--buildtype=release",
+      "-D",
+      "manpages=false",
+      "b64",
+      ".."
+    ],
+    [
+      "ninja",
+      "-C",
+      "b64"
+    ],
+    [
+      "env",
+      "PKG_CONFIG_PATH=/usr/lib32/pkgconfig",
+      "CC=gcc -m32 -march=i686",
+      "CXX=g++ -m32 -march=i686",
+      "meson",
+      "setup",
+      "--prefix=/usr",
+      "--buildtype=release",
+      "--libdir=/usr/lib32",
+      "-D",
+      "manpages=false",
+      "b32",
+      ".."
+    ],
+    [
+      "ninja",
+      "-C",
+      "b32"
+    ]
+  ],
+  "environment": {},
+  "jobs": 8,
+  "name": "kmod",
+  "phase": "base",
+  "post_stage": [],
+  "pre": [],
+  "requires": [
+    "glibc",
+    "zlib",
+    "ninja",
+    "meson"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "separate_build": true,
+  "source": "kmod-34.2.tar.xz",
+  "stage": [
+    [
+      "env",
+      "DESTDIR={stage}",
+      "ninja",
+      "-C",
+      "b64",
+      "install"
+    ],
+    [
+      "env",
+      "DESTDIR={stage}",
+      "ninja",
+      "-C",
+      "b32",
+      "install"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [],
+  "validation": "Meson m64 and MLFS m32 builds in isolated build directories; raw-kernel-header tests are outside LFS scope; no guest build or Alp ownership acceptance yet",
+  "version": "34.2"
+}

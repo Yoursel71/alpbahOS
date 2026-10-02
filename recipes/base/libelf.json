@@ -1,0 +1,129 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/libelf.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "70530e57829039ad80ed021961cdfa7e7dce06fbe8ff5d278f50af3207222dd1",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--prefix=/usr",
+      "--disable-debuginfod",
+      "--enable-libdebuginfod=dummy"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "libelf",
+  "phase": "base",
+  "post_stage": [
+    [
+      "make",
+      "distclean"
+    ],
+    [
+      "env",
+      "CC=gcc -m32",
+      "CXX=g++ -m32",
+      "./configure",
+      "--host=i686-pc-linux-gnu",
+      "--prefix=/usr",
+      "--libdir=/usr/lib32",
+      "--disable-debuginfod",
+      "--enable-libdebuginfod=dummy"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ],
+    [
+      "make",
+      "-j{jobs}",
+      "check"
+    ],
+    [
+      "make",
+      "-j1",
+      "-C",
+      "libelf",
+      "DESTDIR={stage}/.m32",
+      "install"
+    ],
+    [
+      "install",
+      "-D",
+      "-m644",
+      "config/libelf.pc",
+      "{stage}/.m32/usr/lib32/pkgconfig/libelf.pc"
+    ],
+    [
+      "cp",
+      "-a",
+      "{stage}/.m32/usr/lib32/.",
+      "{stage}/usr/lib32/"
+    ],
+    [
+      "rm",
+      "-rf",
+      "{stage}/.m32"
+    ]
+  ],
+  "requires": [
+    "glibc",
+    "zlib",
+    "bzip2",
+    "xz",
+    "zstd"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "elfutils-0.193.tar.bz2",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "-C",
+      "libelf",
+      "DESTDIR={stage}",
+      "install"
+    ],
+    [
+      "install",
+      "-D",
+      "-m644",
+      "config/libelf.pc",
+      "{stage}/usr/lib/pkgconfig/libelf.pc"
+    ],
+    [
+      "rm",
+      "-f",
+      "{stage}/usr/lib/libelf.a"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "make",
+      "-j{jobs}",
+      "check"
+    ]
+  ],
+  "validation": "Pinned MLFS m32-systemd elfutils 0.193 libelf-only build, make check, and staged i686 m32 library/pkg-config files. x32 is excluded. No guest build or Alp ownership acceptance yet.",
+  "version": "0.193"
+}

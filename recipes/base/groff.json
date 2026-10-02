@@ -1,0 +1,63 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/groff.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "3faac14b11858336ade409419f8d89ff3abf6483eee8f30881c0b27a57fb81bb",
+    "tag": "ml-12.4"
+  },
+  "compile": [
+    [
+      "env",
+      "PAGE=A4",
+      "./configure",
+      "--prefix=/usr"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "groff",
+  "phase": "base",
+  "post_stage": [],
+  "pre": [],
+  "requires": [
+    "glibc",
+    "perl",
+    "zlib"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "groff-1.23.0.tar.gz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "make",
+      "-j{jobs}",
+      "check"
+    ]
+  ],
+  "validation": "Pinned MLFS m32-systemd Groff 1.23.0 A4 configure, make check and DESTDIR install. The recipe is m64 only; guest build and Alp ownership acceptance remain pending.",
+  "version": "1.23.0"
+}

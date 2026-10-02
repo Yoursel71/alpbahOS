@@ -1,0 +1,241 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "basis": {
+    "architecture": "ml_32",
+    "book": "MLFS ml-12.4 m32-systemd",
+    "commit": "d7bc803361f445a649d0ca0832219f75b6e68683",
+    "file": "chapter08/ncurses.xml",
+    "repository": "https://git.linuxfromscratch.org/lfs.git",
+    "sha256": "eec73bf89c269fc666f6619a42d82ec563108b3e9990b0757b122d2f4b1a9986",
+    "tag": "ml-12.4"
+  },
+  "build_files": {
+    "infra-libncurses-form-linker-script": "INPUT(-lformw)\n",
+    "infra-libncurses-menu-linker-script": "INPUT(-lmenuw)\n",
+    "infra-libncurses-ncurses-linker-script": "INPUT(-lncursesw)\n",
+    "infra-libncurses-panel-linker-script": "INPUT(-lpanelw)\n"
+  },
+  "compile": [
+    [
+      "./configure",
+      "--prefix=/usr",
+      "--mandir=/usr/share/man",
+      "--with-shared",
+      "--without-debug",
+      "--without-normal",
+      "--with-cxx-shared",
+      "--enable-pc-files",
+      "--with-pkg-config-libdir=/usr/lib/pkgconfig"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "ncurses",
+  "phase": "base",
+  "post_stage": [
+    [
+      "sed",
+      "-e",
+      "s/^#if.*XOPEN.*$/#if 1/",
+      "-i",
+      "{stage}/usr/include/curses.h"
+    ],
+    [
+      "ln",
+      "-sf",
+      "libncursesw.so",
+      "{stage}/usr/lib/libncurses.so"
+    ],
+    [
+      "ln",
+      "-sf",
+      "libformw.so",
+      "{stage}/usr/lib/libform.so"
+    ],
+    [
+      "ln",
+      "-sf",
+      "libpanelw.so",
+      "{stage}/usr/lib/libpanel.so"
+    ],
+    [
+      "ln",
+      "-sf",
+      "libmenuw.so",
+      "{stage}/usr/lib/libmenu.so"
+    ],
+    [
+      "ln",
+      "-sf",
+      "ncursesw.pc",
+      "{stage}/usr/lib/pkgconfig/ncurses.pc"
+    ],
+    [
+      "ln",
+      "-sf",
+      "formw.pc",
+      "{stage}/usr/lib/pkgconfig/form.pc"
+    ],
+    [
+      "ln",
+      "-sf",
+      "panelw.pc",
+      "{stage}/usr/lib/pkgconfig/panel.pc"
+    ],
+    [
+      "ln",
+      "-sf",
+      "menuw.pc",
+      "{stage}/usr/lib/pkgconfig/menu.pc"
+    ],
+    [
+      "ln",
+      "-sf",
+      "libncursesw.so",
+      "{stage}/usr/lib/libcurses.so"
+    ],
+    [
+      "cp",
+      "-a",
+      "{source}/doc",
+      "{stage}/usr/share/doc/ncurses-6.5-20250809"
+    ]
+  ],
+  "requires": [
+    "glibc"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "ncurses-6.5-20250809.tgz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ],
+    [
+      "make",
+      "distclean"
+    ],
+    [
+      "env",
+      "CC=gcc -m32",
+      "CXX=g++ -m32",
+      "./configure",
+      "--prefix=/usr",
+      "--host=i686-pc-linux-gnu",
+      "--libdir=/usr/lib32",
+      "--mandir=/usr/share/man",
+      "--with-shared",
+      "--without-debug",
+      "--without-normal",
+      "--with-cxx-shared",
+      "--enable-pc-files",
+      "--with-pkg-config-libdir=/usr/lib32/pkgconfig"
+    ],
+    [
+      "make",
+      "-j{jobs}"
+    ],
+    [
+      "make",
+      "-j1",
+      "DESTDIR={stage}",
+      "install"
+    ],
+    [
+      "mkdir",
+      "-p",
+      "{stage}/usr/lib32/pkgconfig"
+    ],
+    [
+      "rm",
+      "-f",
+      "{stage}/usr/lib32/libncurses.so",
+      "{stage}/usr/lib32/libform.so",
+      "{stage}/usr/lib32/libpanel.so",
+      "{stage}/usr/lib32/libmenu.so"
+    ],
+    [
+      "install",
+      "-m644",
+      "infra-libncurses-ncurses-linker-script",
+      "{stage}/usr/lib32/libncurses.so"
+    ],
+    [
+      "install",
+      "-m644",
+      "infra-libncurses-form-linker-script",
+      "{stage}/usr/lib32/libform.so"
+    ],
+    [
+      "install",
+      "-m644",
+      "infra-libncurses-panel-linker-script",
+      "{stage}/usr/lib32/libpanel.so"
+    ],
+    [
+      "install",
+      "-m644",
+      "infra-libncurses-menu-linker-script",
+      "{stage}/usr/lib32/libmenu.so"
+    ],
+    [
+      "rm",
+      "-f",
+      "{stage}/usr/lib32/libcursesw.so"
+    ],
+    [
+      "install",
+      "-m644",
+      "infra-libncurses-ncurses-linker-script",
+      "{stage}/usr/lib32/libcursesw.so"
+    ],
+    [
+      "ln",
+      "-sf",
+      "libncurses.so",
+      "{stage}/usr/lib32/libcurses.so"
+    ],
+    [
+      "ln",
+      "-sf",
+      "ncursesw.pc",
+      "{stage}/usr/lib32/pkgconfig/ncurses.pc"
+    ],
+    [
+      "ln",
+      "-sf",
+      "formw.pc",
+      "{stage}/usr/lib32/pkgconfig/form.pc"
+    ],
+    [
+      "ln",
+      "-sf",
+      "panelw.pc",
+      "{stage}/usr/lib32/pkgconfig/panel.pc"
+    ],
+    [
+      "ln",
+      "-sf",
+      "menuw.pc",
+      "{stage}/usr/lib32/pkgconfig/menu.pc"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [],
+  "validation": "Pinned MLFS m32-systemd Ncurses 6.5-20250809 m64 and i686 m32 builds, DESTDIR-only installs, wide-character header adjustment, pkg-config aliases, and m32 linker scripts. The book describes tests as post-install-only and provides no isolated staged test recipe; no test pass is claimed. Documentation is staged from the primary source. No guest build or Alp ownership acceptance yet.",
+  "version": "6.5-20250809"
+}

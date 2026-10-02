@@ -1,0 +1,16 @@
+{
+  "schema": "alpbahOS.recipe/v1",
+  "name": "binutils-sbu",
+  "version": "2.45",
+  "source": "binutils-2.45.tar.xz",
+  "phase": "stability",
+  "requires_oc_and_abi_authorization": true,
+  "jobs": 1,
+  "allowed_jobs": [1, 16],
+  "separate_build": true,
+  "strip_stage_prefix": "srv/lfs/sbu-root",
+  "compile": [["{source}/configure", "--prefix=/srv/lfs/sbu-root/tools", "--with-sysroot=/srv/lfs/sbu-root", "--target=x86_64-lfs-linux-gnu", "--disable-nls", "--enable-gprofng=no", "--disable-werror", "--enable-new-dtags", "--enable-default-hash-style=gnu"], ["make", "-j{jobs}"]],
+  "test": [],
+  "stage": [["make", "-j1", "install", "DESTDIR={stage}"]],
+  "basis": "LFS 12.4 Chapter 5 Binutils pass 1, disposable SBU prefix; not production toolchain acceptance"
+}

@@ -10,6 +10,7 @@ import stat
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "m04-package-install-transaction.py"
@@ -47,11 +48,25 @@ class Fixture:
 
 class TransactionTests(unittest.TestCase):
     def setUp(self):
+        # Fedora labels every temporary fixture with the host's SELinux
+        # context. That label is ambient filesystem policy, not package
+        # payload metadata; the LFS transaction target does not import it.
+        # Keep the production validator intact while making fixture behavior
+        # portable, and leave every other xattr visible to the tests.
+        listxattr = os.listxattr
+
+        def without_host_selinux_label(path, *args, **kwargs):
+            attrs = listxattr(path, *args, **kwargs)
+            return [attr for attr in attrs if attr != "security.selinux"]
+
+        self._xattr_view = patch.object(tx.os, "listxattr", without_host_selinux_label)
+        self._xattr_view.start()
         self.temp = tempfile.TemporaryDirectory()
         self.fx = Fixture(self.temp)
 
     def tearDown(self):
         self.temp.cleanup()
+        self._xattr_view.stop()
 
     def ledger(self):
         path = self.fx.root / tx.LEDGER_NAME
