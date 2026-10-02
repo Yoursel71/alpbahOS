@@ -1,7 +1,10 @@
 import importlib.util
 import json
 from pathlib import Path
+import runpy
+import sys
 import tempfile
+import types
 import unittest
 from unittest.mock import patch
 
@@ -48,6 +51,7 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
         self.assertEqual(handoff['guest_boot_id'], guest_boot)
         self.assertEqual(authorization['handoff_sha256'], base_stage.digest(payload['handoff_raw'].encode()))
         self.assertEqual(base_auth['guest_boot_id'], guest_boot)
+        self.assertEqual(base_auth['guest_runner_sha256'], base_stage.sha(base_stage.GUEST_RUNNER))
         self.assertEqual(receipt['proof_sha256'], base_stage.digest(base_stage.TOOLCHAIN_ACCEPTANCE.read_bytes()))
 
     def test_old_guest_auth_pair_must_be_intact_before_rebinding(self):
@@ -75,20 +79,43 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
                 path = infra / name; path.write_bytes(raw); path.chmod(0o600)
             sources = Path(directory) / 'infra-sources.json'
             sources.write_bytes((base_stage.REPO / 'manifests/infra-sources.json').read_bytes())
+            guest_runner = Path(directory) / 'infra-base-guest-run.py'
+            guest_runner.write_bytes(base_stage.GUEST_RUNNER.read_bytes())
             boot = Path(directory) / 'boot-id'; boot.write_text(guest_boot)
             with (patch.object(base_authorize, 'INFRA', infra),
                   patch.object(base_authorize, 'SOURCES', sources),
+                  patch.object(base_authorize, 'GUEST_RUNNER', guest_runner),
                   patch.object(base_authorize, 'BOOT', boot),
                   patch.object(base_authorize, 'guest_install_guard'),
                   patch.object(base_authorize.os, 'geteuid', return_value=0)):
                 installed = base_authorize.install(base_stage.encoded(payload))
             self.assertEqual(installed['result'], 'INSTALLED')
+            self.assertEqual(installed['guest_runner_sha256'], base_stage.sha(guest_runner))
             self.assertEqual(json.loads((infra / 'phase2-authorization.json').read_bytes()), authorization)
             self.assertEqual((infra / 'stability-acceptance.json').read_bytes(), payload['handoff_raw'].encode())
             self.assertEqual(json.loads((infra / 'toolchain-acceptance.json').read_bytes()), receipt)
             self.assertEqual(json.loads((infra / 'base-authorization.json').read_bytes()), base_auth)
             self.assertEqual(installed['base_authorization_sha256'], base_stage.digest(
                 (infra / 'base-authorization.json').read_bytes()))
+
+    def test_guest_runner_resolves_separate_build_paths_from_source_root(self):
+        import package_stage
+        original = package_stage.recipe_working_directory
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / 'glibc-source'; source.mkdir()
+            work = source / 'build'; work.mkdir()
+            fake_guest = types.SimpleNamespace(main=lambda: None)
+            with (patch.dict(sys.modules, {'guest_base': fake_guest}),
+                  patch.object(sys, 'argv', [str(base_stage.GUEST_RUNNER),
+                                             base_stage.sha(base_stage.GUEST_RUNNER)])):
+                runpy.run_path(str(base_stage.GUEST_RUNNER), run_name='__main__')
+            try:
+                resolved = package_stage.recipe_working_directory(
+                    work, {'separate_build': True, 'working_directories': {'compile': 'build'}},
+                    'compile')
+                self.assertEqual(resolved, work)
+            finally:
+                package_stage.recipe_working_directory = original
 
 
 if __name__ == '__main__':

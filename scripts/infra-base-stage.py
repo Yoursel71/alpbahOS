@@ -37,6 +37,7 @@ TOOLCHAIN_RUN = '8b76ccbdf744511554afa9a4178fec73'
 TOOLCHAIN_AUDIT = '2067d45d1491e662bae03753194241cb'
 TOOLCHAIN_ACCEPTANCE = buildctl.ARTIFACTS / 'toolchain-acceptance.json'
 GUEST_HELPER = REPO / 'scripts/infra-base-authorize.py'
+GUEST_RUNNER = REPO / 'scripts/infra-base-guest-run.py'
 BOOT_PATTERN = re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')
 
 
@@ -155,7 +156,7 @@ def guest_write_exclusive(path, raw):
         raise RuntimeError('Exclusive guest evidence write failed: ' + path)
 
 
-def copy_inputs(plan, artifact_root):
+def copy_inputs(plan, artifact_root, guest_runner_sha256):
     buildctl.verify_cache()
     transport = shlex.join(buildctl.ssh_args()[:-1])
     remote = 'root@127.0.0.1:'
@@ -174,6 +175,10 @@ def copy_inputs(plan, artifact_root):
                     remote + '/opt/alp-infra/recipes/base/'], check=True, timeout=120)
     subprocess.run(['rsync', '-rt', '-e', transport, str(GUEST_HELPER),
                     remote + '/opt/alp-infra/infra-base-authorize.py'], check=True, timeout=120)
+    if sha(GUEST_RUNNER) != guest_runner_sha256:
+        raise RuntimeError('Guest base runner changed after stage binding')
+    subprocess.run(['rsync', '-rt', '-e', transport, str(GUEST_RUNNER),
+                    remote + '/opt/alp-infra/infra-base-guest-run.py'], check=True, timeout=120)
     wanted = sorted({source['filename'] for row in plan
                      for source in [row['source'], *row['auxiliary_sources']]})
     list_path = artifact_root / 'source-list.txt'
@@ -194,12 +199,16 @@ def copy_inputs(plan, artifact_root):
             raise RuntimeError('Pinned base source bytes changed: ' + name)
     subprocess.run(['rsync', '-rt', '--files-from=' + str(list_path), '-e', transport,
                     str(buildctl.CACHE) + '/', remote + '/srv/lfs/sources/'], check=True, timeout=1800)
+    if sha(GUEST_RUNNER) != guest_runner_sha256:
+        raise RuntimeError('Guest base runner changed during input transfer')
     return {'count': len(wanted), 'files': wanted,
             'source_list_sha256': sha(list_path),
+            'guest_runner_sha256': guest_runner_sha256,
             'total_bytes': sum((buildctl.CACHE / name).stat().st_size for name in wanted)}
 
 
-def package_auth(plan, run_id, guest_boot, proof, parent_raw):
+def package_auth(plan, run_id, guest_boot, proof, parent_raw, guest_runner_sha=None):
+    guest_runner_sha = guest_runner_sha or sha(GUEST_RUNNER)
     parent = json.loads(parent_raw)
     old_auth = json.loads(guest_read('cat /srv/infra/phase2-authorization.json'))
     old_handoff_raw = guest_read('cat /srv/infra/stability-acceptance.json')
@@ -229,11 +238,12 @@ def package_auth(plan, run_id, guest_boot, proof, parent_raw):
         'stability_acceptance_sha256': digest(handoff_raw),
         'toolchain_acceptance_sha256': digest(receipt_raw),
         'controller_sha256': controller_sha,
+        'guest_runner_sha256': guest_runner_sha,
         'guest_boot_id': guest_boot, 'authorized_at_ns': time.time_ns()}
     payload = {'toolchain_raw': toolchain_raw.decode(), 'toolchain_receipt': receipt,
         'parent_raw': parent_raw.decode(), 'handoff_raw': handoff_raw.decode(),
         'authorization': authorization, 'base_authorization': base,
-        'controller_sha256': controller_sha}
+        'controller_sha256': controller_sha, 'guest_runner_sha256': guest_runner_sha}
     if len(encoded(payload)) > 262144:
         raise RuntimeError('Base guest authorization payload exceeds fixed bound')
     return payload, authorization, base, receipt
@@ -349,6 +359,7 @@ def execute():
         run_root = stage_runs.directory(stage_runs.RUNS, run_id)
         artifact_root = stage_runs.directory(stage_runs.ARTIFACTS, run_id)
         controller_sha = sha(Path(__file__))
+        guest_runner_sha = sha(GUEST_RUNNER)
         inputs_sha = initial_inputs
         sources_sha = buildctl.sha(REPO / 'manifests/infra-sources.json')
         phase1_sha = buildctl.sha(buildctl.ARTIFACTS / 'phase1-acceptance.json')
@@ -360,13 +371,15 @@ def execute():
             'created_at_ns': time.time_ns(), 'before_request': str(before_path),
             'before_request_sha256': before_sha, 'producer_sha256': digest(stage_runs.PRODUCER.read_bytes()),
             'controller_sha256': controller_sha, 'toolchain_checkpoint_sha256': proof['checkpoint_sha256'],
+            'guest_runner_sha256': guest_runner_sha,
             'toolchain_transaction_sha256': proof['transaction_sha256'],
             'toolchain_run_id': proof['run_id']}
         stage_runs.write(run_root / 'run.json', value)
         run_raw = (run_root / 'run.json').read_bytes(); run_sha = digest(run_raw)
         stage_runs.write(artifact_root / 'controller.json', {'path': str(Path(__file__)),
             'sha256': controller_sha, 'git_head': subprocess.check_output(
-                ['git', '-C', str(REPO), 'rev-parse', 'HEAD'], text=True).strip()})
+                ['git', '-C', str(REPO), 'rev-parse', 'HEAD'], text=True).strip(),
+            'guest_runner_path': str(GUEST_RUNNER), 'guest_runner_sha256': guest_runner_sha})
         baseline = host_monitor.sample()
         host_monitor.validate_sample(baseline)
         if baseline['boot_id'] != value['boot_id']:
@@ -395,12 +408,15 @@ def execute():
                 'started_at_ns': boot_query_start, 'ended_at_ns': boot_query_end,
                 'exit': 0, 'stdout': guest_boot + '\n', 'stderr': ''})
             payload, authorization, base_auth, receipt = package_auth(
-                plan, run_id, guest_boot, proof, parent_raw)
+                plan, run_id, guest_boot, proof, parent_raw, guest_runner_sha)
             stage_runs.write(artifact_root / 'authorization.json', {
                 **authorization, 'base_run_id': run_id,
                 'base_authorization_sha256': digest(encoded(base_auth)),
                 'controller_sha256': controller_sha})
-            stage_runs.write(artifact_root / 'source-transfer.json', copy_inputs(plan, artifact_root))
+            transfer = copy_inputs(plan, artifact_root, guest_runner_sha)
+            if transfer.get('guest_runner_sha256') != guest_runner_sha:
+                raise RuntimeError('Guest runner transfer pin differs')
+            stage_runs.write(artifact_root / 'source-transfer.json', transfer)
             install = subprocess.run(buildctl.ssh_args() + [
                 'set -euo pipefail; source /opt/alp-infra/scripts/infra/guest-guard.sh; '
                 'guest_guard; python3 /opt/alp-infra/infra-base-authorize.py'],
@@ -410,6 +426,7 @@ def execute():
             installed = json.loads(install.stdout)
             if (installed.get('result') != 'INSTALLED' or installed.get('run_id') != run_id
                     or installed.get('guest_boot_id') != guest_boot
+                    or installed.get('guest_runner_sha256') != guest_runner_sha
                     or installed.get('toolchain_acceptance_sha256') != digest(encoded(receipt))
                     or installed.get('base_authorization_sha256') != digest(encoded(base_auth))):
                 raise RuntimeError('Guest base authorization receipt differs')
@@ -419,7 +436,8 @@ def execute():
             with log_path.open('xb') as log, telemetry_path.open('x') as telemetry:
                 command = host_monitor.run_monitored(buildctl.ssh_args() + [
                     'set -euo pipefail; source /opt/alp-infra/scripts/infra/guest-guard.sh; '
-                    'guest_guard; python3 /opt/alp-infra/scripts/infra/guest_base.py'],
+                    'guest_guard; python3 /opt/alp-infra/infra-base-guest-run.py '
+                    + guest_runner_sha],
                     log, telemetry, buildctl.space_guard, binding=binding)
             stage_runs.write(artifact_root / 'base-command.json', command)
             buildctl.stop()
@@ -484,6 +502,7 @@ def accept(run_id, after_id, plan, toolchain_proof, install_receipt, base_author
     hashes = stage_runs.file_hashes(artifacts)
     if (value.get('stage') != 'base' or value.get('run_id') != run_id
             or value.get('controller_sha256') != sha(Path(__file__))
+            or value.get('guest_runner_sha256') != sha(GUEST_RUNNER)
             or value.get('toolchain_checkpoint_sha256') != toolchain_proof['checkpoint_sha256']
             or digest(run_raw) != outcome.get('run_sha256')
             or outcome.get('result') != 'PENDING_PRIVILEGED_POST' or outcome.get('errors') != []
@@ -528,6 +547,7 @@ def accept(run_id, after_id, plan, toolchain_proof, install_receipt, base_author
     boot_query = json.loads(audit.read_file(artifacts / 'boot-query.json', audit.USER_UID))
     guest = json.loads(audit.read_file(artifacts / 'guest-artifact-proof.json', audit.USER_UID))
     authorization = json.loads(audit.read_file(artifacts / 'authorization.json', audit.USER_UID))
+    controller = json.loads(audit.read_file(artifacts / 'controller.json', audit.USER_UID))
     if (guest.get('result') != 'VERIFIED_GUEST_BYTES' or guest.get('run_id') != run_id
             or guest.get('package_count') != 79
             or guest.get('inputs_sha256') != value['inputs_sha256']
@@ -539,7 +559,10 @@ def accept(run_id, after_id, plan, toolchain_proof, install_receipt, base_author
                  <= boot_query.get('ended_at_ns', 0) <= command.get('started_at_ns', 0)
             or authorization.get('base_run_id') != run_id
             or authorization.get('base_authorization_sha256') != base_authorization_sha
+            or authorization.get('guest_runner_sha256') != value.get('guest_runner_sha256')
             or authorization.get('guest_boot_id') != guest.get('guest_boot_id')
+            or controller.get('guest_runner_sha256') != value.get('guest_runner_sha256')
+            or install_receipt.get('guest_runner_sha256') != value.get('guest_runner_sha256')
             or install_receipt.get('result') != 'INSTALLED'
             or install_receipt.get('run_id') != run_id
             or install_receipt.get('base_authorization_sha256') != base_authorization_sha):

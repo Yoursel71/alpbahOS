@@ -16,6 +16,7 @@ INFRA = Path('/srv/infra')
 LFS = Path('/srv/lfs')
 BOOT = Path('/proc/sys/kernel/random/boot_id')
 SOURCES = Path('/opt/alp-infra/manifests/infra-sources.json')
+GUEST_RUNNER = Path('/opt/alp-infra/infra-base-guest-run.py')
 HEX64 = re.compile(r'[0-9a-f]{64}')
 HEX32 = re.compile(r'[0-9a-f]{32}')
 
@@ -33,13 +34,18 @@ def install(payload_raw):
         raise RuntimeError('Base authorization requires guarded guest root and bounded input')
     payload = json.loads(payload_raw)
     required = {'toolchain_raw', 'toolchain_receipt', 'parent_raw', 'handoff_raw',
-                'authorization', 'base_authorization', 'controller_sha256'}
+                'authorization', 'base_authorization', 'controller_sha256',
+                'guest_runner_sha256'}
     if not isinstance(payload, dict) or set(payload) != required:
         raise RuntimeError('Base authorization payload schema invalid')
     guest_install_guard(LFS, LFS / 'results/base')
     controller = payload['controller_sha256']
-    if not isinstance(controller, str) or not HEX64.fullmatch(controller):
+    guest_runner = payload['guest_runner_sha256']
+    if (not isinstance(controller, str) or not HEX64.fullmatch(controller)
+            or not isinstance(guest_runner, str) or not HEX64.fullmatch(guest_runner)):
         raise RuntimeError('Base controller source pin malformed')
+    if digest(GUEST_RUNNER.read_bytes()) != guest_runner:
+        raise RuntimeError('Guest base runner bytes differ from controller pin')
 
     toolchain_raw = payload['toolchain_raw'].encode()
     toolchain = json.loads(toolchain_raw)
@@ -116,6 +122,7 @@ def install(payload_raw):
             or base.get('stability_acceptance_sha256') != digest(handoff_raw)
             or base.get('toolchain_acceptance_sha256') != digest(receipt_raw)
             or base.get('controller_sha256') != controller
+            or base.get('guest_runner_sha256') != guest_runner
             or base.get('inputs_sha256') != inputs.get('inputs_sha256')
             or base.get('sources_sha256') != inputs.get('sources_sha256')
             or not HEX32.fullmatch(str(base.get('run_id', '')))
@@ -136,6 +143,7 @@ def install(payload_raw):
     guest_handoff.exclusive(base_path, base_raw)
     return {'schema': 'alpbahOS.base-authorization-install/v1', 'result': 'INSTALLED',
             'run_id': base['run_id'], 'guest_boot_id': boot_id,
+            'guest_runner_sha256': guest_runner,
             'toolchain_acceptance_sha256': digest(receipt_raw),
             'handoff_sha256': digest(handoff_raw), 'base_authorization_sha256': digest(base_raw)}
 
