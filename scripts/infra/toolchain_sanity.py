@@ -92,7 +92,7 @@ def parse_trace(stdout, stderr):
     return {'header_search': headers, 'linker_search': search, 'selected_inputs': selected}
 
 
-def validate_trace(root, stdout, stderr):
+def validate_trace(root, stdout, stderr, generated_dir=None):
     trace = parse_trace(stdout, stderr)
     headers, search, selected = (trace[k] for k in ('header_search', 'linker_search', 'selected_inputs'))
     if not headers or str(root / 'usr/include') not in headers:
@@ -105,8 +105,21 @@ def validate_trace(root, stdout, stderr):
         raise RuntimeError('Linker search is not consistently sysroot-relative')
     if not selected:
         raise RuntimeError('Linker selected-file evidence missing')
+    generated_dir = Path(generated_dir).resolve() if generated_dir is not None else None
+    generated = []
     for raw in selected:
+        path = Path(raw)
+        resolved = path.resolve()
+        if (generated_dir is not None and path.is_absolute() and resolved.parent == generated_dir
+                and re.fullmatch(r'cc[A-Za-z0-9]{6}\.o', path.name)):
+            # GCC's driver creates one transient object for the probe itself. Keep
+            # TMPDIR inside this probe's private work directory, then allow only
+            # the exact assembler temporary naming shape there.
+            generated.append(resolved)
+            continue
         owned_path(root, raw, {'gcc-pass1', 'glibc-cross-m64', 'glibc-cross-m32', 'libstdcxx-cross'})
+    if generated_dir is not None and len(generated) != 1:
+        raise RuntimeError('Expected exactly one private GCC temporary object in linker evidence')
     return trace
 
 
@@ -137,10 +150,11 @@ def probe(stage, root, result):
     evidence = result / serial; evidence.mkdir()
     artifacts, rows = {}, []
 
-    def command(argv, cwd, label, input=None):
+    def command(argv, cwd, label, input=None, extra_env=None):
         args = ['runuser', '-u', 'lfs', '--', 'env', '-i', 'HOME=/home/lfs',
                 'PATH=' + str(root / 'tools/bin') + ':/usr/bin:/bin', 'LC_ALL=C', 'LANG=C', 'TZ=UTC',
-                f'SOURCE_DATE_EPOCH={sources["source_date_epoch"]}', *map(str, argv)]
+                f'SOURCE_DATE_EPOCH={sources["source_date_epoch"]}',
+                *(f'{key}={value}' for key, value in sorted((extra_env or {}).items())), *map(str, argv)]
         out, err = evidence / (label + '.stdout'), evidence / (label + '.stderr')
         with (evidence / 'commands.jsonl').open('a') as log:
             log.write(json.dumps({'argv': args, 'cwd': str(cwd), 'input': input}, sort_keys=True) + '\n')
@@ -197,9 +211,9 @@ def probe(stage, root, result):
         source = probe_source(language)
         compile_out, compile_err = command([compiler, flag, '-x', language, '-', '-O2', '-g0',
             '-ffile-prefix-map=' + str(work) + '=/usr/src/alp-abi-probe', '-v', '-Wl,--verbose', '-o', 'probe'],
-            work, abi + '-compile', input=source)
+            work, abi + '-compile', input=source, extra_env={'TMPDIR': work})
         identity = elf_identity(work / 'probe', abi)
-        trace = validate_trace(root, compile_out, compile_err)
+        trace = validate_trace(root, compile_out, compile_err, generated_dir=work)
         chosen = {Path(raw).resolve() for raw in trace['selected_inputs']}
         if not set(map(Path, startfiles.values())) <= chosen or libc not in chosen or (stdlib and stdlib not in chosen):
             raise RuntimeError('Verbose link evidence does not select target CRT/libc inputs')

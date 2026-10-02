@@ -478,6 +478,14 @@ class AbiSanityTests(unittest.TestCase):
             stderr = '#include <...> search starts here:\n ' + str(root / 'usr/include') + '\nEnd of search list.\n'
             stdout = 'SEARCH_DIR("=/usr/lib");\nattempt to open ' + str(libc) + ' succeeded\n'
             toolchain_sanity.validate_trace(root, stdout, stderr)
+            generated = root / 'build/abi-probe'; generated.mkdir(parents=True)
+            transient = generated / 'ccQyyjkM.o'
+            with_transient = stdout + 'attempt to open ' + str(transient) + ' succeeded\n'
+            toolchain_sanity.validate_trace(root, with_transient, stderr, generated_dir=generated)
+            for raw in ('/tmp/ccQyyjkM.o', str(generated / 'unexpected.o')):
+                invalid = stdout + 'attempt to open ' + raw + ' succeeded\n'
+                with self.assertRaises(RuntimeError):
+                    toolchain_sanity.validate_trace(root, invalid, stderr, generated_dir=generated)
             for out, err in ((stdout, stderr.replace(str(root / 'usr/include'), '/usr/include')),
                              (stdout.replace('=/usr/lib', '/usr/lib'), stderr),
                              (stdout.replace(str(libc), '/usr/lib/libc.so.6'), stderr)):
@@ -1210,7 +1218,7 @@ class BackgroundSuiteTests(unittest.TestCase):
             root, lfs, infra, build = self.fixture(directory)
             def make(argv, log, cwd=None, env=None):
                 self.assertEqual(argv[-4:], ['make', '-j2', '-k', 'check'])
-                self.assertEqual(argv[:4], ['/usr/sbin/runuser', '-u', 'lfs', '--'])
+                self.assertEqual(argv[:4], ['runuser', '-u', 'lfs', '--'])
                 self.assertIn('env', argv); self.assertIn('-i', argv)
                 self.assertEqual(env['LC_ALL'], 'C')
                 # Real safe child/monitor/exit path; the child writes synthetic
