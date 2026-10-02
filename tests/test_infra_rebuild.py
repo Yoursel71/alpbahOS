@@ -1210,7 +1210,7 @@ class BackgroundSuiteTests(unittest.TestCase):
             root, lfs, infra, build = self.fixture(directory)
             def make(argv, log, cwd=None, env=None):
                 self.assertEqual(argv[-4:], ['make', '-j2', '-k', 'check'])
-                self.assertEqual(argv[:4], ['runuser', '-u', 'lfs', '--'])
+                self.assertEqual(argv[:4], ['/usr/sbin/runuser', '-u', 'lfs', '--'])
                 self.assertIn('env', argv); self.assertIn('-i', argv)
                 self.assertEqual(env['LC_ALL'], 'C')
                 # Real safe child/monitor/exit path; the child writes synthetic

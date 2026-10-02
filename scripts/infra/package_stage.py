@@ -15,6 +15,7 @@ REPO = Path('/opt/alp-infra')
 LFS = Path('/srv/lfs')
 INFRA = Path('/srv/infra')
 BOOT = Path('/proc/sys/kernel/random/boot_id')
+RUNUSER = '/usr/sbin/runuser'
 
 
 def sha(path):
@@ -276,22 +277,22 @@ def build_staged(recipe, run_id, result, jobs=None):
     build.mkdir(); stage.mkdir()
     subprocess.run(['chown', 'lfs:lfs', str(build), str(stage)], check=True)
     log = result / f'{run_id}.log'
-    run(['runuser', '-u', 'lfs', '--', 'tar', '-xf', str(source),
+    run([RUNUSER, '-u', 'lfs', '--', 'tar', '-xf', str(source),
          '--strip-components=1', '-C', str(build)], log)
     for prerequisite, archive in verified_prerequisites:
         target = relative_path(build, prerequisite['directory'])
         target.mkdir()
         subprocess.run(['chown', 'lfs:lfs', str(target)], check=True)
-        run(['runuser', '-u', 'lfs', '--', 'tar', '-xf', str(archive),
+        run([RUNUSER, '-u', 'lfs', '--', 'tar', '-xf', str(archive),
              '--strip-components=1', '-C', str(target)], log)
     substitutions = {'stage': str(stage), 'jobs': jobs, 'source': str(build), 'lfs': str(LFS)}
     environment.update({key: value.format(**substitutions) for key, value in recipe.get('environment', {}).items()})
     for patch, archive in verified_patches:
-        run(['runuser', '-u', 'lfs', '--', 'patch', f'-Np{patch["strip"]}', '-i', str(archive)],
+        run([RUNUSER, '-u', 'lfs', '--', 'patch', f'-Np{patch["strip"]}', '-i', str(archive)],
             log, cwd=build, env=environment)
     for argv in recipe.get('pre', []):
         command = [arg.format(**substitutions) for arg in argv]
-        run(['runuser', '-u', 'lfs', '--', *command], log, cwd=build, env=environment)
+        run([RUNUSER, '-u', 'lfs', '--', *command], log, cwd=build, env=environment)
     work = build
     if recipe.get('separate_build'):
         work = build / 'build'; work.mkdir()
@@ -302,7 +303,7 @@ def build_staged(recipe, run_id, result, jobs=None):
         subprocess.run(['chown', 'lfs:lfs', str(target)], check=True)
     if recipe.get('configure_build_guess'):
         guess = relative_path(build, recipe['configure_build_guess'])
-        process = subprocess.run(['runuser', '-u', 'lfs', '--', str(guess)],
+        process = subprocess.run([RUNUSER, '-u', 'lfs', '--', str(guess)],
                                  capture_output=True, text=True, check=True, env=environment)
         triplet = process.stdout.strip()
         if not re.fullmatch(r'[A-Za-z0-9_.+-]+', triplet):
@@ -321,7 +322,7 @@ def build_staged(recipe, run_id, result, jobs=None):
             try:
                 if test_user == 'tester':
                     run(['chown', '-hR', 'tester:tester', str(build)], log)
-                run(['runuser', '-u', test_user, '--', 'env', f'LC_ALL={test_locale}',
+                run([RUNUSER, '-u', test_user, '--', 'env', f'LC_ALL={test_locale}',
                      f'LANG={test_locale}', 'TZ=UTC',
                      f'SOURCE_DATE_EPOCH={manifest["source_date_epoch"]}', f'CFLAGS={flags}',
                      f'CXXFLAGS={flags}', *command], log, cwd=step_cwd, env=environment)
