@@ -686,6 +686,16 @@ def collect_toolchain_guest(run_id, destination):
     return destination
 
 
+def toolchain_guest_boot_id(context):
+    """Return the measured boot identity pinned in the authorized handoff."""
+    authorization = context.get('authorization')
+    guest_boot_id = authorization.get('guest_boot_id') if isinstance(authorization, dict) else None
+    if not isinstance(guest_boot_id, str) or not re.fullmatch(
+            r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}', guest_boot_id):
+        fail('Toolchain guest boot identity missing from measured handoff authorization')
+    return guest_boot_id
+
+
 def execute_toolchain_guest(context):
     """Run the fixed Builder command; collect and revalidate all guest bytes."""
     value, run_sha256 = context['value'], context['run_sha256']
@@ -721,7 +731,7 @@ def execute_toolchain_guest(context):
     authorization = json.loads(auth_raw)
     proof = toolchain_evidence.verify(guest, REPO,
         {'inputs_sha256': value['inputs_sha256'], 'sources_sha256': value['sources_sha256']},
-        capsule_raw, authorization, value['guest_boot_id'])
+        capsule_raw, authorization, toolchain_guest_boot_id(context))
     expected = {'schema': 'alpbahOS.toolchain-guest-evidence/v1', 'result': 'VERIFIED_GUEST_BYTES',
                 'inputs_sha256': value['inputs_sha256'], 'sources_sha256': value['sources_sha256'],
                 'run_id': value['run_id'], 'guest_boot_id': value['guest_boot_id'],

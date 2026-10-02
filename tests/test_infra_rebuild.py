@@ -1837,6 +1837,13 @@ class BaseStageAuthorizationTests(unittest.TestCase):
 
 
 class ToolchainSessionTests(unittest.TestCase):
+    def test_guest_boot_identity_comes_from_measured_handoff_authorization(self):
+        boot_id = '22222222-2222-4222-8222-222222222222'
+        self.assertEqual(ctl.toolchain_guest_boot_id({'authorization': {'guest_boot_id': boot_id}}), boot_id)
+        for context in ({}, {'authorization': {}}, {'authorization': {'guest_boot_id': 'not-a-boot-id'}}):
+            with self.subTest(context=context), self.assertRaisesRegex(RuntimeError, 'boot identity missing'):
+                ctl.toolchain_guest_boot_id(context)
+
     @contextmanager
     def fixture(self, directory):
         with ToolchainHandoffTests().fixture(directory) as f:
