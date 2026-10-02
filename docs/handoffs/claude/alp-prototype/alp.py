@@ -59,7 +59,28 @@ class AlpError(RuntimeError):
 
 
 def _now() -> str:
-    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    """Return UTC time, with an explicit reproducible-build override.
+
+    SOURCE_DATE_EPOCH by itself never changes normal package-manager use.
+    Build runners must opt in with ALP_REPRODUCIBLE_BUILD=1 and provide a
+    non-negative Unix epoch; this keeps user installs on the real clock while
+    making generated package database timestamps reproducible.
+    """
+    build_mode = os.environ.get("ALP_REPRODUCIBLE_BUILD")
+    if build_mode is None:
+        return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    if build_mode != "1":
+        raise AlpError("ALP_REPRODUCIBLE_BUILD yalnızca '1' olabilir; değişkeni kaldırın veya build modunu etkinleştirin.")
+
+    epoch = os.environ.get("SOURCE_DATE_EPOCH")
+    if epoch is None:
+        raise AlpError("Tekrarlanabilir build modu için SOURCE_DATE_EPOCH gereklidir.")
+    if not re.fullmatch(r"[0-9]+", epoch, flags=re.ASCII):
+        raise AlpError("SOURCE_DATE_EPOCH sıfır veya pozitif ondalık Unix zamanı olmalıdır.")
+    try:
+        return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(int(epoch, 10)))
+    except (OverflowError, OSError, ValueError) as exc:
+        raise AlpError("SOURCE_DATE_EPOCH desteklenen UTC zaman aralığının dışında.") from exc
 
 
 # --------------------------------------------------------------------------
