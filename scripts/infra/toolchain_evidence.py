@@ -121,6 +121,31 @@ class Payload:
             raise RuntimeError('Recorded toolchain forbidden ABI path')
 
 
+def selected_payload_files(payload, selected_inputs, owners, private_work):
+    """Validate linker inputs, allowing only GCC's one private probe object.
+
+    The matching guest-side trace validator permits the compiler's transient
+    assembler object in the ABI probe directory. That object is intentionally
+    absent from installed package payload manifests, so the host verifier must
+    enforce the same exact path and filename rule before checking installed
+    linker inputs against package ownership.
+    """
+    if not isinstance(selected_inputs, list) or any(not isinstance(path, str) for path in selected_inputs):
+        raise RuntimeError('ABI selected linker inputs are invalid')
+    generated = []
+    installed = set()
+    for raw in selected_inputs:
+        path = Path(raw)
+        if (path.is_absolute() and path.parent.as_posix() == private_work
+                and re.fullmatch(r'cc[A-Za-z0-9]{6}\.o', path.name)):
+            generated.append(raw)
+        else:
+            installed.add(payload.file(raw, owners))
+    if len(generated) != 1:
+        raise RuntimeError('Expected exactly one private GCC temporary object in linker evidence')
+    return installed
+
+
 def verify_packages(root, repo, inputs, capsule_raw, authorization, guest_boot_id):
     """All seven real bundles, raw DB prefixes, receipts and observed payload.
 
@@ -384,8 +409,10 @@ def verify_abi(root, proof, payload, source_date_epoch):
                     raise RuntimeError('ABI header search directory not in observed payload')
             if any(not raw.startswith('=') for raw in trace['linker_search']):
                 raise RuntimeError('ABI linker searched host directories')
-            selected = {payload.file(raw, {'gcc-pass1', 'glibc-cross-m64', 'glibc-cross-m32', 'libstdcxx-cross'})
-                        for raw in trace['selected_inputs']}
+            private_work = '/srv/lfs/build/' + directory.name + '-' + abi
+            selected = selected_payload_files(
+                payload, trace['selected_inputs'],
+                {'gcc-pass1', 'glibc-cross-m64', 'glibc-cross-m32', 'libstdcxx-cross'}, private_work)
             if not set(startfiles.values()) | {libc} | ({stdlib} if stdlib else set()) <= selected:
                 raise RuntimeError('ABI actual linker omitted target CRT/libc/C++ inputs')
             dynamic, _ = command(abi + '-dynamic', ['/usr/bin/readelf', '-d', '--wide', work + '/probe'])

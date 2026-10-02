@@ -308,9 +308,10 @@ class ToolchainAbiEvidenceTests(unittest.TestCase):
                     command(abi + '-libstdcxx', [compiler, flag, '-print-file-name=libstdc++.so'], library + '\n')
                     stdlib = payload.file(library, {'libstdcxx-cross'}, libdir)
                 selected = [*startfiles.values(), libc, *([stdlib] if stdlib else [])]
+                work = '/srv/lfs/build/' + directory.name + '-' + abi
+                selected.append(work + '/ccfndLjD.o')
                 stdout = 'SEARCH_DIR("=/' + libdir + '");\n' + ''.join('attempt to open ' + path + ' succeeded\n' for path in selected)
                 stderr = '#include <...> search starts here:\n /srv/lfs/usr/include\nEnd of search list.\n'
-                work = '/srv/lfs/build/' + directory.name + '-' + abi
                 command(abi + '-compile', [compiler, flag, '-x', language, '-', '-O2', '-g0',
                     '-ffile-prefix-map=' + work + '=/usr/src/alp-abi-probe', '-v', '-Wl,--verbose', '-o', 'probe'],
                     stdout, stderr, cwd=work, input=toolchain_sanity.probe_source(language))

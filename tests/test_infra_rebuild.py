@@ -36,6 +36,7 @@ import toolchain_handoff
 import handoff_binding
 import guest_handoff
 import toolchain_artifacts
+import toolchain_evidence
 guest_stability_spec = importlib.util.spec_from_file_location('guest_stability', REPO / 'scripts/infra/guest-stability.py')
 guest_stability = importlib.util.module_from_spec(guest_stability_spec)
 guest_stability_spec.loader.exec_module(guest_stability)
@@ -2273,6 +2274,47 @@ class StageAuditTests(unittest.TestCase):
                     changed = {**json.loads(after), key: value}
                     with self.assertRaisesRegex(RuntimeError, 'different stages/runs'):
                         host_stage_audit.verify_pair(before, json.dumps(changed).encode(), '3' * 64, base, base + 40000)
+
+
+class ToolchainEvidenceTests(unittest.TestCase):
+    def test_abi_linker_allows_only_one_temporary_object_in_private_probe_work(self):
+        class FixturePayload:
+            def __init__(self):
+                self.checked = []
+
+            def file(self, path, owners):
+                self.checked.append(path)
+                if path != '/srv/lfs/tools/bin/ld':
+                    raise RuntimeError('not an installed payload file: ' + path)
+                return path
+
+        work = '/srv/lfs/build/abi-glibc-cross-m64-123-m64'
+        temp = work + '/ccfndLjD.o'
+        payload = FixturePayload()
+        selected = toolchain_evidence.selected_payload_files(
+            payload, [temp, '/srv/lfs/tools/bin/ld'], {'gcc-pass1'}, work)
+        self.assertEqual(selected, {'/srv/lfs/tools/bin/ld'})
+        self.assertEqual(payload.checked, ['/srv/lfs/tools/bin/ld'])
+
+    def test_abi_linker_rejects_temporary_objects_outside_private_probe_work(self):
+        class FixturePayload:
+            def file(self, path, owners):
+                raise RuntimeError('not an installed payload file: ' + path)
+
+        work = '/srv/lfs/build/abi-glibc-cross-m64-123-m64'
+        with self.assertRaisesRegex(RuntimeError, 'outside/private|not an installed payload'):
+            toolchain_evidence.selected_payload_files(
+                FixturePayload(), ['/srv/lfs/build/other/ccfndLjD.o'], {'gcc-pass1'}, work)
+
+    def test_abi_linker_requires_exactly_one_private_temporary_object(self):
+        class FixturePayload:
+            def file(self, path, owners):
+                return path
+
+        work = '/srv/lfs/build/abi-glibc-cross-m64-123-m64'
+        with self.assertRaisesRegex(RuntimeError, 'exactly one private GCC temporary object'):
+            toolchain_evidence.selected_payload_files(
+                FixturePayload(), ['/srv/lfs/tools/bin/ld'], {'gcc-pass1'}, work)
 
 
 class TestPolicyRegressionTests(unittest.TestCase):
