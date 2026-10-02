@@ -1845,6 +1845,15 @@ class ToolchainSessionTests(unittest.TestCase):
             with self.subTest(context=context), self.assertRaisesRegex(RuntimeError, 'boot identity missing'):
                 ctl.toolchain_guest_boot_id(context)
 
+    def test_guest_evidence_binding_uses_authorized_boot_id_not_unset_stage_field(self):
+        boot_id = '22222222-2222-4222-8222-222222222222'
+        value = {'run_id': 'a' * 32, 'inputs_sha256': '1' * 64, 'sources_sha256': '2' * 64}
+        authorization = {'guest_boot_id': boot_id, 'handoff_sha256': '3' * 64}
+        self.assertEqual(ctl.expected_toolchain_guest_evidence(value, authorization), {
+            'schema': 'alpbahOS.toolchain-guest-evidence/v1', 'result': 'VERIFIED_GUEST_BYTES',
+            'inputs_sha256': '1' * 64, 'sources_sha256': '2' * 64, 'run_id': 'a' * 32,
+            'guest_boot_id': boot_id, 'handoff_sha256': '3' * 64})
+
     @contextmanager
     def fixture(self, directory):
         with ToolchainHandoffTests().fixture(directory) as f:

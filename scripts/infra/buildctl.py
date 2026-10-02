@@ -696,6 +696,14 @@ def toolchain_guest_boot_id(context):
     return guest_boot_id
 
 
+def expected_toolchain_guest_evidence(value, authorization):
+    """Bind verified guest bytes to the measured boot identity in authorization."""
+    return {'schema': 'alpbahOS.toolchain-guest-evidence/v1', 'result': 'VERIFIED_GUEST_BYTES',
+            'inputs_sha256': value['inputs_sha256'], 'sources_sha256': value['sources_sha256'],
+            'run_id': value['run_id'], 'guest_boot_id': authorization['guest_boot_id'],
+            'handoff_sha256': authorization['handoff_sha256']}
+
+
 def execute_toolchain_guest(context):
     """Run the fixed Builder command; collect and revalidate all guest bytes."""
     value, run_sha256 = context['value'], context['run_sha256']
@@ -732,10 +740,7 @@ def execute_toolchain_guest(context):
     proof = toolchain_evidence.verify(guest, REPO,
         {'inputs_sha256': value['inputs_sha256'], 'sources_sha256': value['sources_sha256']},
         capsule_raw, authorization, toolchain_guest_boot_id(context))
-    expected = {'schema': 'alpbahOS.toolchain-guest-evidence/v1', 'result': 'VERIFIED_GUEST_BYTES',
-                'inputs_sha256': value['inputs_sha256'], 'sources_sha256': value['sources_sha256'],
-                'run_id': value['run_id'], 'guest_boot_id': value['guest_boot_id'],
-                'handoff_sha256': authorization['handoff_sha256']}
+    expected = expected_toolchain_guest_evidence(value, authorization)
     if any(proof.get(key) != expected_value for key, expected_value in expected.items()):
         fail('Canonical toolchain verifier returned evidence for another run')
     stage_runs.write(root / 'guest-artifact-proof.json', proof)
