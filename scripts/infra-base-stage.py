@@ -352,7 +352,7 @@ def execute():
             'run_id': run_id, 'inputs_sha256': inputs_sha, 'sources_sha256': sources_sha,
             'phase1_sha256': phase1_sha, 'boot_id': audit.BOOT.read_text().strip(),
             'created_at_ns': time.time_ns(), 'before_request': str(before_path),
-            'before_request_sha256': before_sha, 'producer_sha256': digest(audit.PRODUCER.read_bytes()),
+            'before_request_sha256': before_sha, 'producer_sha256': digest(stage_runs.PRODUCER.read_bytes()),
             'controller_sha256': controller_sha, 'toolchain_checkpoint_sha256': proof['checkpoint_sha256'],
             'toolchain_transaction_sha256': proof['transaction_sha256'],
             'toolchain_run_id': proof['run_id']}
