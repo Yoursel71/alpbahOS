@@ -22,12 +22,19 @@ class CleanupProcessGuardTests(unittest.TestCase):
         self.assertTrue(cleanup.within_hdd_build('/mnt/alpbahOS-data/alpbahOS-build/backups'))
         self.assertFalse(cleanup.within_hdd_build('/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs'))
 
-    def test_exact_opera_flatpak_sandbox_is_not_misclassified_as_build(self):
+    def test_current_user_flatpak_dbus_sandbox_is_not_misclassified_as_build(self):
         cgroup = r'0::/user.slice/user-1000.slice/user@1000.service/app.slice/app-flatpak-com.opera.opera\x2dgx-1295026887.scope'
         self.assertTrue(cleanup.desktop_sandbox_identity(
-            1000, [cgroup], ['/usr/bin/bwrap', '--args', '77', '--', 'opera-gx']))
+            1000, [cgroup], ['/usr/bin/bwrap', '--args', '77', '--', '/usr/bin/xdg-dbus-proxy']))
         self.assertTrue(cleanup.desktop_sandbox_identity(
             1000, [cgroup], ['/usr/bin/bwrap', '--args', '79', '--', '/usr/bin/xdg-dbus-proxy']))
+        self.assertTrue(cleanup.desktop_sandbox_identity(
+            1000, [cgroup], ['/usr/bin/bwrap', '--args', '77', '--', '/app/bin/zypak-helper']))
+        spotify = '0::/user.slice/user-1000.slice/user@1000.service/app.slice/app-flatpak-com.spotify.Client-1168654954.scope'
+        self.assertTrue(cleanup.desktop_sandbox_identity(
+            1000, [spotify], ['/usr/bin/bwrap', '--args', '77', '--', '/usr/bin/xdg-dbus-proxy', '--args=76']))
+        self.assertTrue(cleanup.desktop_sandbox_identity(
+            1000, [spotify], ['/usr/bin/bwrap', '--args', '75', '--', 'spotify']))
 
     def test_build_sandbox_or_other_user_cannot_use_desktop_exception(self):
         opera_cgroup = r'0::/user.slice/user-1000.slice/user@1000.service/app.slice/app-flatpak-com.opera.opera\x2dgx-1295026887.scope'

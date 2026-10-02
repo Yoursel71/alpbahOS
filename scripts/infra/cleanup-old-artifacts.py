@@ -18,9 +18,9 @@ DIR_ROOTS = (Path('/home/yrslf/alpbahOS-nvme/builds/m07'),
              Path('/home/yrslf/alpbahOS-nvme/m10-alpha-20260930T'),
              Path('/mnt/alpbahOS-data/alpbahOS-build/backups'),
              Path('/mnt/alpbahOS-ssd/alpbahos-builds/archive'))
-OPERA_CGROUP = re.compile(
+FLATPAK_CGROUP = re.compile(
     r'^0::/user\.slice/user-1000\.slice/user@1000\.service/app\.slice/'
-    r'app-flatpak-com\.opera\.opera\\x2dgx-[0-9]+\.scope$')
+    r'app-flatpak-[A-Za-z0-9_.\\x2d-]+-[0-9]+\.scope$')
 DEVICE_MATCH_CACHE = {}
 SUBVOLUME_INDEX = {}
 
@@ -39,15 +39,16 @@ def sha(path):
 
 
 def desktop_sandbox_identity(uid, cgroups, argv):
-    """Recognize only the current user's exact Opera GX Flatpak namespace."""
-    if not any(OPERA_CGROUP.fullmatch(line) for line in cgroups) or not argv or argv[0] != '/usr/bin/bwrap':
+    """Recognize current-user Flatpak app/proxy processes in their own app scope."""
+    if uid != 1000 or not any(FLATPAK_CGROUP.fullmatch(line) for line in cgroups):
         return False
-    return uid == 1000 and any(arg == 'opera-gx' or arg == '/usr/bin/xdg-dbus-proxy'
-                               or arg == '/app/bin/zypak-helper' for arg in argv)
+    return (bool(argv) and argv[0] == '/usr/bin/bwrap'
+            and any(arg in ('/usr/bin/xdg-dbus-proxy', '/app/bin/zypak-helper', 'spotify', 'opera-gx')
+                    for arg in argv))
 
 
 def known_desktop_sandbox(proc):
-    """Do not mistake Opera GX's Flatpak namespace for a build sandbox."""
+    """Do not mistake a Flatpak app process for a build sandbox."""
     try:
         uid = proc.stat().st_uid
         cgroups = (proc / 'cgroup').read_text().splitlines()
