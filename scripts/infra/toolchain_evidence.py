@@ -288,7 +288,12 @@ def verify_abi(root, proof, payload, source_date_epoch):
                   'SOURCE_DATE_EPOCH=' + str(source_date_epoch)]
 
         def command(label, argv, cwd=evidence_guest, input=None):
-            expected = {'argv': prefix + argv, 'cwd': cwd, 'input': input}
+            command_prefix = prefix
+            if label.endswith('-compile'):
+                if not re.fullmatch(r'/srv/lfs/build/abi-[a-z0-9-]+-(?:m64|m32)', cwd):
+                    raise RuntimeError('ABI compile TMPDIR is outside its private work directory')
+                command_prefix = [*prefix, 'TMPDIR=' + cwd]
+            expected = {'argv': command_prefix + argv, 'cwd': cwd, 'input': input}
             commands.append(expected)
             filenames = [label + suffix for suffix in ('.stdout', '.stderr', '.space.jsonl', '.command.json')]
             required.update(filenames)

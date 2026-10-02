@@ -270,7 +270,8 @@ class ToolchainAbiEvidenceTests(unittest.TestCase):
             commands, artifacts, rows = [], {}, []
 
             def command(label, argv, stdout='', stderr='', cwd=guest, input=None):
-                expected = {'argv': prefix + argv, 'cwd': cwd, 'input': input}; commands.append(expected)
+                command_prefix = [*prefix, 'TMPDIR=' + cwd] if label.endswith('-compile') else prefix
+                expected = {'argv': command_prefix + argv, 'cwd': cwd, 'input': input}; commands.append(expected)
                 (directory / (label + '.stdout')).write_text(stdout)
                 (directory / (label + '.stderr')).write_text(stderr)
                 started = 1_000_000_000_000 + len(commands) * 1_000_000_000
@@ -361,14 +362,17 @@ class ToolchainAbiEvidenceTests(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError, cause): self.verify(root, args, epoch)
 
     def test_failed_wrong_boot_or_changed_compile_input_rejected(self):
-        for change in ('exit', 'boot', 'input', 'argv'):
+        for change in ('exit', 'boot', 'input', 'argv', 'tmpdir'):
             with self.subTest(change=change), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory); args, epoch = self.fixture(root); probe = root / 'abi-glibc-cross-m64-1'
                 path = probe / 'm64-compile.command.json'; value = json.loads(path.read_bytes())
                 if change == 'exit': value['exit'] = 1
                 elif change == 'boot': value['guest_boot_id'] = '22222222-2222-4222-8222-222222222222'
                 elif change == 'input': value['input'] = 'int main(){return 0;}'
-                else: value['argv'].append('-march=native')
+                elif change == 'argv': value['argv'].append('-march=native')
+                else:
+                    index = next(i for i, arg in enumerate(value['argv']) if arg.startswith('TMPDIR='))
+                    value['argv'][index] = 'TMPDIR=/srv/lfs/build/unrelated'
                 write_json(path, value); self.rebind_probe(root, probe)
                 with self.assertRaisesRegex(RuntimeError, 'command execution/argv/input/boot'):
                     self.verify(root, args, epoch)
