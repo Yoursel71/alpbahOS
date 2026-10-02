@@ -160,10 +160,16 @@ def copy_inputs(plan, artifact_root):
     transport = shlex.join(buildctl.ssh_args()[:-1])
     remote = 'root@127.0.0.1:'
     subprocess.run(buildctl.ssh_args() + [
-        'mkdir -p /opt/alp-infra/recipes/base /srv/lfs/sources'], check=True, timeout=30)
+        'mkdir -p /opt/alp-infra/recipes/base /opt/alp-infra/configs /srv/lfs/sources'],
+        check=True, timeout=30)
     subprocess.run(['rsync', '-rt', '-e', transport,
                     str(REPO / 'manifests/lfs-base-12.4-systemd.json'),
                     remote + '/opt/alp-infra/manifests/'], check=True, timeout=120)
+    subprocess.run(['rsync', '-rt', '-e', transport,
+                    str(REPO / 'manifests/infra-stages.json'),
+                    remote + '/opt/alp-infra/manifests/'], check=True, timeout=120)
+    subprocess.run(['rsync', '-rt', '-e', transport, str(REPO / 'configs') + '/',
+                    remote + '/opt/alp-infra/configs/'], check=True, timeout=120)
     subprocess.run(['rsync', '-rt', '-e', transport, str(REPO / 'recipes/base') + '/',
                     remote + '/opt/alp-infra/recipes/base/'], check=True, timeout=120)
     subprocess.run(['rsync', '-rt', '-e', transport, str(GUEST_HELPER),
@@ -418,7 +424,7 @@ def execute():
             stage_runs.write(artifact_root / 'base-command.json', command)
             buildctl.stop()
             stage_runs.repository_snapshot(value, 'after')
-            guest_dir = stage_runs.directory(artifact_root, 'guest-base')
+            guest_dir = artifact_root / 'guest-base'
             capture_guest(run_id, guest_dir)
             install_receipt = json.loads((artifact_root / 'authorization-install.json').read_bytes())
             auth_record = json.loads((artifact_root / 'authorization.json').read_bytes())
@@ -433,7 +439,7 @@ def execute():
             try:
                 stop_guest()
                 if buildctl.pid() is None and not (artifact_root / 'guest-base').exists():
-                    guest_dir = stage_runs.directory(artifact_root, 'guest-base-partial')
+                    guest_dir = artifact_root / 'guest-base-partial'
                     capture_guest(run_id, guest_dir)
             except BaseException as capture_error:
                 errors.append(capture_error)
