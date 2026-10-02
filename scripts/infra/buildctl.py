@@ -30,6 +30,7 @@ import stage_acceptance
 import toolchain_handoff
 import handoff_binding
 import toolchain_evidence
+import toolchain_acceptance
 import base_plan
 
 REPO = Path(__file__).resolve().parents[2]
@@ -487,7 +488,7 @@ def checkpoint(name, run_id=None, after_audit_id=None):
         fail('Checkpoint requires a powered-off Builder')
     if name not in CHECKPOINTS:
         fail('Checkpoint name not allowlisted')
-    if name in STAGES and (name != 'stability' or not run_id or not after_audit_id):
+    if name in STAGES and (name not in ('stability', 'toolchain') or not run_id or not after_audit_id):
         fail('Product stage checkpoint needs verified guest artifacts, current privileged post-stage host audit and acceptance producer; not integrated yet')
     acceptance = None
     if name == 'stability':
@@ -495,6 +496,12 @@ def checkpoint(name, run_id=None, after_audit_id=None):
         _, receipt = stage_runs.read(stage_runs.RUNS / run_id / 'acceptance.json')
         if receipt.get('evidence') != proof:
             fail('Stability receipt differs from revalidated current raw evidence')
+        acceptance = proof
+    if name == 'toolchain':
+        proof = toolchain_proof(run_id, after_audit_id)
+        _, receipt = stage_runs.read(stage_runs.RUNS / run_id / 'acceptance.json')
+        if receipt.get('evidence') != proof:
+            fail('Toolchain receipt differs from revalidated current raw evidence')
         acceptance = proof
     if name == 'smoke':
         phase1_acceptance_guard()
@@ -639,6 +646,13 @@ def stability_proof(run_id, after_audit_id, *, checkpointed=False):
     return stage_acceptance.verify(value, checksum, after_audit_id, manifest(), recipes,
                                     VM, stability_command(), stopped_stability_writer, space_guard,
                                     checkpointed=checkpointed)
+
+
+def toolchain_proof(run_id, after_audit_id):
+    mode = manifest()['abi_selection']['mode']
+    value, checksum, _ = current_stage_run(run_id, mode, stage='toolchain')
+    return toolchain_acceptance.verify(value, checksum, after_audit_id, manifest(), {},
+        VM, toolchain_command(), stopped_stability_writer, space_guard)
 
 
 def toolchain_parent(run_id, after_audit_id, toolchain_run_id):
@@ -833,6 +847,32 @@ def accept_stability(run_id, mode, after_audit_id):
     print('Verified stability gate checkpoint created; other product stages remain separate.')
 
 
+def accept_toolchain(run_id, mode, after_audit_id):
+    if mode != manifest()['abi_selection']['mode'] or mode != 'multilib-m32':
+        fail('Toolchain acceptance ABI differs from selected mode')
+    proof = toolchain_proof(run_id, after_audit_id)
+    receipt = {'evidence': proof, 'accepted_at_ns': time.time_ns()}
+    path = stage_runs.RUNS / run_id / 'acceptance.json'
+    if path.exists():
+        _, saved = stage_runs.read(path)
+        if saved.get('evidence') != proof:
+            fail('Previous toolchain acceptance differs; preserve evidence')
+    else:
+        stage_runs.write(path, receipt)
+    acceptance_path = ARTIFACTS / 'toolchain-acceptance.json'
+    if acceptance_path.exists() or acceptance_path.is_symlink():
+        fail('Existing toolchain acceptance artifact preserved; no overwrite')
+    checkpoint('toolchain', run_id, after_audit_id)
+    def stopped():
+        if pid(): fail('Toolchain checkpoint inspection observed a live Builder; STOP')
+    checkpoint_proof = checkpoint_store.inspect_accepted_checkpoint(
+        VM, stopped, space_guard, name='toolchain')
+    authority = {**proof, 'checkpoint_sha256': checkpoint_proof['checkpoint_sha256'],
+                 'transaction_sha256': checkpoint_proof['transaction_sha256']}
+    stage_runs.write(acceptance_path, authority)
+    print('Verified toolchain gate checkpoint created; base package stage remains separate.')
+
+
 def phase2(mode, oc_confirmed, run_id=None):
     if not oc_confirmed or mode not in ('x86_64', 'multilib-m32'):
         fail('Requires explicit OC-complete/start authorization and a 32-bit choice')
@@ -888,7 +928,7 @@ def phase2(mode, oc_confirmed, run_id=None):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action', choices=('prepare', 'verify-cache', 'launch', 'provision', 'sync',
-                                          'builder-python', 'smoke', 'stop', 'checkpoint', 'restore', 'monitor', 'verify-base-inventory', 'stage-request', 'stage-after-request', 'accept-stability', 'phase2', 'toolchain-run'))
+                                          'builder-python', 'smoke', 'stop', 'checkpoint', 'restore', 'monitor', 'verify-base-inventory', 'stage-request', 'stage-after-request', 'accept-stability', 'accept-toolchain', 'phase2', 'toolchain-run'))
     parser.add_argument('--offline', action='store_true')
     parser.add_argument('--name')
     parser.add_argument('--mode', choices=('x86_64', 'multilib-m32'))
@@ -921,6 +961,7 @@ def main():
             if pid(): fail('Post audit request requires stopped guest writers')
             print(json.dumps(stage_runs.after_request(value, run_sha256), sort_keys=True))
         elif args.action == 'accept-stability': accept_stability(args.run_id, args.mode, args.audit_id)
+        elif args.action == 'accept-toolchain': accept_toolchain(args.run_id, args.mode, args.audit_id)
         elif args.action == 'phase2': phase2(args.mode, args.oc_confirmed, args.run_id)
         elif args.action == 'toolchain-run': run_toolchain(args.mode, args.oc_confirmed, args.run_id)
 

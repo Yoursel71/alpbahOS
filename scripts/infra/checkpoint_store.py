@@ -95,15 +95,17 @@ def inspect_disks(vm, stopped, space_guard):
     return chains
 
 
-def inspect_accepted_checkpoint(vm, stopped, space_guard):
-    """Revalidate relocated stability bytes and their never-started children.
+def inspect_accepted_checkpoint(vm, stopped, space_guard, name='stability'):
+    """Revalidate relocated accepted stage bytes and their fresh children.
 
     Only the former active filename is relocated. Hashes and all ancestor
     filenames must stay exactly as captured by the closed stage.
     """
     vm = Path(vm)
     current = inspect_disks(vm, stopped, space_guard)
-    directory = vm / 'checkpoint-stability'
+    if name not in ('stability', 'toolchain'):
+        raise RuntimeError('Unsupported accepted checkpoint stage')
+    directory = vm / ('checkpoint-' + name)
     if (directory.resolve() != directory or not directory.is_dir()
             or directory.stat().st_uid != os.getuid() or directory.stat().st_mode & 0o077):
         raise RuntimeError('Accepted checkpoint directory is not private/canonical')
@@ -117,9 +119,11 @@ def inspect_accepted_checkpoint(vm, stopped, space_guard):
     raw, record = read('checkpoint.json')
     transaction_raw, transaction = read('transaction.json')
     proof = record.get('acceptance')
-    if (not isinstance(proof, dict) or proof.get('schema') != 'alpbahOS.stability-acceptance/v1'
-            or proof.get('result') != 'PASS' or transaction.get('status') != 'COMPLETE'
-            or transaction.get('name') != 'stability' or transaction.get('acceptance') != proof
+    schema = {'stability': 'alpbahOS.stability-acceptance/v1',
+              'toolchain': 'alpbahOS.toolchain-acceptance/v1'}[name]
+    if (not isinstance(proof, dict) or proof.get('schema') != schema or proof.get('result') != 'PASS'
+            or transaction.get('status') != 'COMPLETE'
+            or transaction.get('name') != name or transaction.get('acceptance') != proof
             or any(transaction.get(k) != list(DISKS) for k in ('linked', 'created', 'committed'))
             or type(transaction.get('start_ns')) is not int or type(transaction.get('end_ns')) is not int
             or transaction['end_ns'] < transaction['start_ns']

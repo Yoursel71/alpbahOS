@@ -1337,6 +1337,22 @@ class CheckpointTransactionTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, 'exists'):
                 self.create(root)
 
+    def test_toolchain_checkpoint_requires_and_revalidates_toolchain_acceptance(self):
+        with tempfile.TemporaryDirectory(dir=ctl.STATE) as directory:
+            root = Path(directory); self.disks(root)
+            chains = checkpoint_store.inspect_disks(root, lambda: None, lambda: None)
+            proof = {'schema': 'alpbahOS.toolchain-acceptance/v1', 'result': 'PASS',
+                     'inputs_sha256': '1' * 64, 'sources_sha256': '2' * 64,
+                     'closed_disk_chains': chains}
+            checkpoint_store.create(root, 'toolchain', '1' * 64, '2' * 64,
+                                     proof, lambda: None, lambda: None)
+            inspected = checkpoint_store.inspect_accepted_checkpoint(
+                root, lambda: None, lambda: None, name='toolchain')
+            self.assertEqual(inspected['acceptance'], proof)
+            with self.assertRaisesRegex(RuntimeError, 'Unsupported accepted checkpoint stage'):
+                checkpoint_store.inspect_accepted_checkpoint(root, lambda: None, lambda: None,
+                                                              name='base')
+
     def test_second_overlay_failure_rolls_back_original_pair(self):
         with tempfile.TemporaryDirectory(dir=ctl.STATE) as directory:
             root = Path(directory); original = self.disks(root); real = checkpoint_store.command
