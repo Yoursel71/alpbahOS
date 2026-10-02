@@ -134,6 +134,47 @@ def test_save_db_is_atomic_and_stamps_updated_at(paths: alp.Paths):
     assert reloaded["updated_at"] is not None
 
 
+def test_now_uses_real_clock_by_default_even_when_source_date_epoch_is_set(monkeypatch):
+    monkeypatch.delenv("ALP_REPRODUCIBLE_BUILD", raising=False)
+    monkeypatch.setenv("SOURCE_DATE_EPOCH", "1756684800")
+    with mock.patch.object(alp.time, "gmtime") as gmtime, \
+         mock.patch.object(alp.time, "strftime", return_value="wall-clock") as strftime:
+        assert alp._now() == "wall-clock"
+    gmtime.assert_called_once_with()
+    strftime.assert_called_once_with("%Y-%m-%dT%H:%M:%SZ", gmtime.return_value)
+
+
+def test_now_uses_source_date_epoch_only_in_explicit_build_mode(monkeypatch):
+    monkeypatch.setenv("ALP_REPRODUCIBLE_BUILD", "1")
+    monkeypatch.setenv("SOURCE_DATE_EPOCH", "1756684800")
+    assert alp._now() == "2025-09-01T00:00:00Z"
+
+
+def test_save_db_stamps_reproducible_updated_at(paths: alp.Paths, monkeypatch):
+    monkeypatch.setenv("ALP_REPRODUCIBLE_BUILD", "1")
+    monkeypatch.setenv("SOURCE_DATE_EPOCH", "1756684800")
+    alp.save_db(paths, alp.load_db(paths))
+    assert alp.load_db(paths)["updated_at"] == "2025-09-01T00:00:00Z"
+
+
+@pytest.mark.parametrize("epoch", [None, "-1", "+1", "not-an-epoch", "9" * 100])
+def test_now_rejects_missing_invalid_or_out_of_range_epoch(monkeypatch, epoch):
+    monkeypatch.setenv("ALP_REPRODUCIBLE_BUILD", "1")
+    if epoch is None:
+        monkeypatch.delenv("SOURCE_DATE_EPOCH", raising=False)
+    else:
+        monkeypatch.setenv("SOURCE_DATE_EPOCH", epoch)
+    with pytest.raises(alp.AlpError, match="SOURCE_DATE_EPOCH"):
+        alp._now()
+
+
+def test_now_rejects_ambiguous_reproducible_build_mode(monkeypatch):
+    monkeypatch.setenv("ALP_REPRODUCIBLE_BUILD", "true")
+    monkeypatch.setenv("SOURCE_DATE_EPOCH", "1756684800")
+    with pytest.raises(alp.AlpError, match="ALP_REPRODUCIBLE_BUILD"):
+        alp._now()
+
+
 # --------------------------------------------------------------------------
 # resolve_source_url
 # --------------------------------------------------------------------------
