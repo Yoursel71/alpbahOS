@@ -33,8 +33,6 @@ MODE = 'multilib-m32'
 TOOLCHAIN_PACKAGES = ('filesystem-layout', 'binutils-pass1', 'gcc-pass1', 'linux-headers',
                       'glibc-cross-m64', 'glibc-cross-m32', 'libstdcxx-cross')
 CHECKPOINT = buildctl.VM / 'checkpoint-toolchain'
-TOOLCHAIN_RUN = '8b76ccbdf744511554afa9a4178fec73'
-TOOLCHAIN_AUDIT = '2067d45d1491e662bae03753194241cb'
 TOOLCHAIN_ACCEPTANCE = buildctl.ARTIFACTS / 'toolchain-acceptance.json'
 GUEST_HELPER = REPO / 'scripts/infra-base-authorize.py'
 GUEST_RUNNER = REPO / 'scripts/infra-base-guest-run.py'
@@ -57,6 +55,18 @@ def encoded(value):
     return (json.dumps(value, indent=2, sort_keys=True) + '\n').encode()
 
 
+def toolchain_parent_ids(proof, transaction, parent):
+    """Resolve accepted run identities from the mutually bound receipts."""
+    run_id = stage_runs.identity(proof.get('run_id'))
+    audit_id = stage_runs.identity(proof.get('after_audit_id'))
+    parent_run_id = stage_runs.identity(parent.get('parent_run_id'))
+    if (transaction.get('acceptance', {}).get('run_id') != run_id
+            or parent.get('run_id') != run_id or parent.get('parent_run_id') != parent_run_id
+            or parent.get('stage') != 'toolchain' or parent.get('mode') != MODE):
+        raise RuntimeError('Toolchain/stability parent identities do not match their receipts')
+    return run_id, audit_id, parent_run_id
+
+
 def stop_guest():
     if buildctl.pid() is not None:
         buildctl.stop()
@@ -73,9 +83,14 @@ def accepted_toolchain():
     checkpoint_raw = (CHECKPOINT / 'checkpoint.json').read_bytes()
     transaction_raw = (CHECKPOINT / 'transaction.json').read_bytes()
     record, transaction = json.loads(checkpoint_raw), json.loads(transaction_raw)
+    run_id = stage_runs.identity(proof.get('run_id'))
+    parent_path = stage_runs.RUNS / run_id / 'parent.json'
+    parent_raw = parent_path.read_bytes()
+    parent = json.loads(parent_raw)
+    run_id, audit_id, parent_run_id = toolchain_parent_ids(proof, transaction, parent)
     if (proof.get('schema') != 'alpbahOS.toolchain-acceptance/v1' or proof.get('result') != 'PASS'
             or proof.get('stage') != 'toolchain' or proof.get('mode') != MODE
-            or proof.get('run_id') != TOOLCHAIN_RUN or proof.get('after_audit_id') != TOOLCHAIN_AUDIT
+            or proof.get('run_id') != run_id or proof.get('after_audit_id') != audit_id
             or proof.get('inputs_sha256') != buildctl.inputs_digest()
             or proof.get('sources_sha256') != buildctl.sha(REPO / 'manifests/infra-sources.json')
             or proof.get('checkpoint_sha256') != digest(checkpoint_raw)
@@ -84,7 +99,7 @@ def accepted_toolchain():
             or transaction.get('status') != 'COMPLETE' or transaction.get('name') != 'toolchain'
             or transaction.get('acceptance', {}).get('schema') != 'alpbahOS.toolchain-acceptance/v1'
             or transaction.get('acceptance', {}).get('result') != 'PASS'
-            or transaction.get('acceptance', {}).get('run_id') != TOOLCHAIN_RUN
+            or transaction.get('acceptance', {}).get('run_id') != run_id
             or transaction.get('inputs_sha256') != proof.get('inputs_sha256')
             or transaction.get('sources_sha256') != proof.get('sources_sha256')):
         raise RuntimeError('Current toolchain artifact/checkpoint/transaction do not form the accepted parent')
@@ -113,18 +128,15 @@ def accepted_toolchain():
         if active_check.returncode or 'No errors were found' not in active_check.stdout:
             raise RuntimeError('Restored active qcow2 failed check: ' + disk)
     # Revalidate the previous stability parent via immutable toolchain-run bytes.
-    parent_path = stage_runs.RUNS / TOOLCHAIN_RUN / 'parent.json'
-    parent_raw = parent_path.read_bytes()
     if (digest(parent_raw) != proof.get('parent_sha256')
             or digest(parent_raw) != proof.get('parent_capsule_sha256')):
         raise RuntimeError('Accepted toolchain stability-parent bytes changed')
-    parent = json.loads(parent_raw)
     if (parent.get('schema') != toolchain_handoff.PARENT_SCHEMA
             or parent.get('result') != 'VERIFIED_PARENT' or parent.get('stage') != 'toolchain'
-            or parent.get('run_id') != TOOLCHAIN_RUN or parent.get('mode') != MODE
+            or parent.get('run_id') != run_id or parent.get('parent_run_id') != parent_run_id
+            or parent.get('mode') != MODE
             or parent.get('inputs_sha256') != proof.get('inputs_sha256')
-            or parent.get('sources_sha256') != proof.get('sources_sha256')
-            or parent.get('parent_run_id') != 'f9c28f7284f6fe3e89c270273e9e9f63'):
+            or parent.get('sources_sha256') != proof.get('sources_sha256')):
         raise RuntimeError('Accepted toolchain parent capsule identity invalid')
     return proof, parent_raw
 

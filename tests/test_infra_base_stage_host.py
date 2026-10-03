@@ -31,6 +31,31 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
                                          'sources_sha256': cls.proof['sources_sha256']})
         cls.plan = base_stage.base_plan.load(base_stage.REPO)
 
+    def test_toolchain_parent_identities_follow_current_receipts(self):
+        run_id, audit_id, parent_run_id = 'a' * 32, 'b' * 32, 'c' * 32
+        proof = {'run_id': run_id, 'after_audit_id': audit_id}
+        transaction = {'acceptance': {'run_id': run_id}}
+        parent = {'run_id': run_id, 'parent_run_id': parent_run_id,
+                  'stage': 'toolchain', 'mode': 'multilib-m32'}
+        self.assertEqual(base_stage.toolchain_parent_ids(proof, transaction, parent),
+                         (run_id, audit_id, parent_run_id))
+
+    def test_toolchain_parent_identity_mismatch_is_rejected(self):
+        proof = {'run_id': 'a' * 32, 'after_audit_id': 'b' * 32}
+        transaction = {'acceptance': {'run_id': 'd' * 32}}
+        parent = {'run_id': 'a' * 32, 'parent_run_id': 'c' * 32,
+                  'stage': 'toolchain', 'mode': 'multilib-m32'}
+        with self.assertRaisesRegex(RuntimeError, 'identities do not match'):
+            base_stage.toolchain_parent_ids(proof, transaction, parent)
+
+    def test_toolchain_parent_identity_must_use_stage_run_ids(self):
+        proof = {'run_id': 'a' * 32, 'after_audit_id': 'bad-id'}
+        transaction = {'acceptance': {'run_id': 'a' * 32}}
+        parent = {'run_id': 'a' * 32, 'parent_run_id': 'c' * 32,
+                  'stage': 'toolchain', 'mode': 'multilib-m32'}
+        with self.assertRaisesRegex(RuntimeError, 'Invalid stage run identity'):
+            base_stage.toolchain_parent_ids(proof, transaction, parent)
+
     def setUp(self):
         records = {
             'cat /srv/infra/phase2-authorization.json': self.old_authorization,
