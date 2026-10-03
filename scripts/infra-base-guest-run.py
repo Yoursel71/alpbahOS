@@ -25,17 +25,27 @@ def root_test_tree(cwd, build_root=Path('/srv/lfs/build')):
 
 
 M32_KERNEL_UAPI_DIRECTORIES = ('asm', 'asm-generic', 'linux')
+M32_C_COMPILER = 'CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32'
+M32_CXX_COMPILER = 'CXX=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-g++ -m32'
+M32_HOST_C_COMPILER = 'CC=gcc -m32'
+M32_HOST_CXX_COMPILER = 'CXX=g++ -m32'
+
+
+def uses_m32_uapi_configure(argv, header_include='/srv/lfs/build/.m32-kernel-uapi/include'):
+    marker = ' -I' + header_include
+    return ('../configure' in argv
+            and any(value.startswith(('CC=', 'CXX='))
+                    and ' -m32' in value and marker in value for value in argv))
 
 
 def prepare_m32_kernel_headers(argv, header_include='/srv/lfs/build/.m32-kernel-uapi/include'):
     """Point the Builder's 32-bit compiler at an isolated kernel-header view."""
     argv = list(argv)
-    if '../configure' not in argv or 'CC=gcc -m32' not in argv:
+    if '../configure' not in argv:
         return argv
     for index, value in enumerate(argv):
-        if value == 'CC=gcc -m32':
-            argv[index] = value + ' -I' + header_include
-        elif value == 'CXX=g++ -m32':
+        if value in (M32_C_COMPILER, M32_HOST_C_COMPILER,
+                     M32_CXX_COMPILER, M32_HOST_CXX_COMPILER):
             argv[index] = value + ' -I' + header_include
     return argv
 
@@ -102,7 +112,7 @@ _run = package_stage.run
 
 def run_with_root_owned_test_tree(argv, log, cwd=None, env=None):
     argv = prepare_m32_kernel_headers(argv)
-    if ('CC=gcc -m32 -I/srv/lfs/build/.m32-kernel-uapi/include' in argv):
+    if uses_m32_uapi_configure(argv):
         install_m32_kernel_headers()
     if (len(argv) >= 3 and argv[0] == package_stage.RUNUSER
             and argv[1:3] == ['-u', 'root']):

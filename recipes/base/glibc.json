@@ -81,8 +81,8 @@
     ],
     [
       "env",
-      "CC=gcc -m32",
-      "CXX=g++ -m32",
+      "CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32",
+      "CXX=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-g++ -m32",
       "../configure",
       "--prefix=/usr",
       "--host=i686-pc-linux-gnu",

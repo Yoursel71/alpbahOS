@@ -166,6 +166,8 @@ class BaseInventoryTests(unittest.TestCase):
         self.assertEqual(glibc['test_policy'], 'glibc')
         self.assertEqual(glibc['test_user'], 'root')
         self.assertIn('make -k check', glibc['test'][0][2])
+        self.assertIn('CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32', glibc['stage'][2])
+        self.assertIn('CXX=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-g++ -m32', glibc['stage'][2])
         self.assertIn('--host=i686-pc-linux-gnu', glibc['stage'][2])
         self.assertIn('--build={build_triplet}', glibc['stage'][2])
         self.assertEqual(glibc['stage'][6][-2:], ['{stage}/.m32/usr/lib32/.', '{stage}/usr/lib32/'])

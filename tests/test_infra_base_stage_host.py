@@ -151,6 +151,18 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
                     '/custom/include'),
                     ['env', 'CC=gcc -m32 -I/custom/include',
                      'CXX=g++ -m32 -I/custom/include', '../configure'])
+                cross_configure = ['env',
+                    'CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32',
+                    'CXX=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-g++ -m32',
+                    '../configure']
+                prepared_cross = runner['prepare_m32_kernel_headers'](
+                    cross_configure, '/custom/include')
+                self.assertEqual(prepared_cross, ['env',
+                    'CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32 -I/custom/include',
+                    'CXX=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-g++ -m32 -I/custom/include',
+                    '../configure'])
+                self.assertTrue(runner['uses_m32_uapi_configure'](prepared_cross,
+                                                                  '/custom/include'))
                 self.assertEqual(runner['prepare_m32_kernel_headers'](
                     ['make', '-j4']), ['make', '-j4'])
                 kernel_source = Path(directory) / 'kernel-source'
@@ -187,6 +199,15 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
                         Path(directory) / 'm32-configure.log', cwd=work)
                     self.assertIn('CC=gcc -m32 -I/srv/lfs/build/.m32-kernel-uapi/include',
                                   run.call_args.args[0])
+                with patch.object(package_stage, 'run') as run, patch.dict(
+                        runner_globals, {'_run': run,
+                            'install_m32_kernel_headers': lambda: kernel_include}):
+                    runner['run_with_root_owned_test_tree'](
+                        cross_configure, Path(directory) / 'm32-cross-configure.log', cwd=work)
+                    self.assertIn(
+                        'CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32 '
+                        '-I/srv/lfs/build/.m32-kernel-uapi/include',
+                        run.call_args.args[0])
             finally:
                 package_stage.recipe_working_directory = original
                 package_stage.run = original_run
