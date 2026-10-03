@@ -146,6 +146,13 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
                     'compile')
                 self.assertEqual(resolved, work)
                 self.assertEqual(runner['root_test_tree'](work, build_root), source)
+                self.assertEqual(runner['prepare_m32_kernel_headers'](
+                    ['env', 'CC=gcc -m32', 'CXX=g++ -m32', '../configure'],
+                    '/custom/include'),
+                    ['env', 'CC=gcc -m32 -I/custom/include',
+                     'CXX=g++ -m32 -I/custom/include', '../configure'])
+                self.assertEqual(runner['prepare_m32_kernel_headers'](
+                    ['make', '-j4']), ['make', '-j4'])
                 runner_globals = runner['run_with_root_owned_test_tree'].__globals__
                 root_test_tree = runner_globals['root_test_tree']
                 with patch.object(package_stage, 'run') as run, patch.dict(

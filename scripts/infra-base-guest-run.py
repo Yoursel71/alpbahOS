@@ -24,6 +24,19 @@ def root_test_tree(cwd, build_root=Path('/srv/lfs/build')):
     return tree
 
 
+def prepare_m32_kernel_headers(argv, header_include='/srv/lfs/usr/include'):
+    """Point the Builder's 32-bit compiler at the pinned LFS kernel headers."""
+    argv = list(argv)
+    if '../configure' not in argv or 'CC=gcc -m32' not in argv:
+        return argv
+    for index, value in enumerate(argv):
+        if value == 'CC=gcc -m32':
+            argv[index] = value + ' -I' + header_include
+        elif value == 'CXX=g++ -m32':
+            argv[index] = value + ' -I' + header_include
+    return argv
+
+
 if len(sys.argv) != 2 or not re.fullmatch(r'[0-9a-f]{64}', sys.argv[1]):
     raise SystemExit('STOP: expected pinned guest runner SHA-256')
 if sha(__file__) != sys.argv[1]:
@@ -50,6 +63,10 @@ _run = package_stage.run
 
 
 def run_with_root_owned_test_tree(argv, log, cwd=None, env=None):
+    argv = prepare_m32_kernel_headers(argv)
+    if ('CC=gcc -m32 -I/srv/lfs/usr/include' in argv
+            and not Path('/srv/lfs/usr/include/asm/errno.h').is_file()):
+        raise RuntimeError('Pinned LFS 32-bit kernel header is missing')
     if (len(argv) >= 3 and argv[0] == package_stage.RUNUSER
             and argv[1:3] == ['-u', 'root']):
         tree = root_test_tree(cwd)
