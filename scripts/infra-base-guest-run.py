@@ -50,10 +50,17 @@ def uses_m32_uapi_build(cwd, header_include='/srv/lfs/build/.m32-kernel-uapi/inc
 
 
 def disable_unavailable_m32_cxx(argv, cwd):
-    """Keep bootstrap m32 Glibc from linking its optional C++ test helper."""
+    """Keep bootstrap m32 Glibc from linking its optional C++ helper."""
     argv = list(argv)
-    if (uses_m32_uapi_build(cwd) and len(argv) >= 2 and argv[-2] == 'make'
-            and re.fullmatch(r'-j[1-8]', argv[-1])):
+    make_indexes = [index for index, value in enumerate(argv) if value == 'make']
+    if not uses_m32_uapi_build(cwd) or not make_indexes:
+        return argv
+    tail = argv[make_indexes[-1] + 1:]
+    building = len(tail) == 1 and re.fullmatch(r'-j[1-8]', tail[0])
+    installing = (len(tail) >= 3 and re.fullmatch(r'-j[1-8]', tail[0])
+                  and tail[-1] == 'install'
+                  and any(value.startswith('DESTDIR=') for value in tail[1:-1]))
+    if building or installing:
         argv.append('CXX=')
     return argv
 

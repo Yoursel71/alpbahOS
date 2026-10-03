@@ -231,12 +231,24 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
                         [package_stage.RUNUSER, '-u', 'lfs', '--', 'env', 'make', '-j4'],
                         Path(directory) / 'm32-build.log', cwd=work)
                     self.assertEqual(patched['_run'].call_args.args[0][-1], 'CXX=')
+                with patch.dict(runner_globals, {'_run': Mock()}) as patched:
+                    runner['run_with_root_owned_test_tree'](
+                        [package_stage.RUNUSER, '-u', 'lfs', '--', 'env', 'make', '-j1',
+                         'DESTDIR=/srv/lfs/stage/base-glibc/.m32', 'install'],
+                        Path(directory) / 'm32-install.log', cwd=work)
+                    self.assertEqual(patched['_run'].call_args.args[0][-1], 'CXX=')
                 (work / 'config.make').write_text('CC = gcc\n')
                 with patch.dict(runner_globals, {'_run': Mock()}) as patched:
                     runner['run_with_root_owned_test_tree'](
                         [package_stage.RUNUSER, '-u', 'lfs', '--', 'env', 'make', '-j4'],
                         Path(directory) / 'm64-build.log', cwd=work)
                     self.assertEqual(patched['_run'].call_args.args[0][-1], '-j4')
+                with patch.dict(runner_globals, {'_run': Mock()}) as patched:
+                    command = [package_stage.RUNUSER, '-u', 'lfs', '--', 'env', 'make', '-j1',
+                               'DESTDIR=/srv/lfs/stage/base-glibc/.m32', 'install']
+                    runner['run_with_root_owned_test_tree'](
+                        command, Path(directory) / 'm64-install.log', cwd=work)
+                    self.assertEqual(patched['_run'].call_args.args[0], command)
             finally:
                 package_stage.recipe_working_directory = original
                 package_stage.run = original_run

@@ -402,6 +402,7 @@ def execute():
         started = True
         errors = []
         guest_proof = None
+        guest_dir = artifact_root / 'guest-base'
         try:
             stage_runs.execution_guard(value, run_sha)
             stage_runs.repository_snapshot(value, 'before')
@@ -452,10 +453,9 @@ def execute():
                     + guest_runner_sha],
                     log, telemetry, buildctl.space_guard, binding=binding)
             stage_runs.write(artifact_root / 'base-command.json', command)
+            capture_guest(run_id, guest_dir)
             buildctl.stop()
             stage_runs.repository_snapshot(value, 'after')
-            guest_dir = artifact_root / 'guest-base'
-            capture_guest(run_id, guest_dir)
             install_receipt = json.loads((artifact_root / 'authorization-install.json').read_bytes())
             auth_record = json.loads((artifact_root / 'authorization.json').read_bytes())
             guest_proof = validate_guest_export(guest_dir, plan, run_id, inputs_sha, sources_sha,
@@ -467,10 +467,16 @@ def execute():
         except BaseException as error:
             errors.append(error)
             try:
+                if buildctl.pid() is not None and not guest_dir.exists():
+                    # Preserve guest failure logs while SSH is still available.
+                    capture_guest(run_id, artifact_root / 'guest-base-partial')
+            except BaseException as capture_error:
+                errors.append(capture_error)
+            try:
                 stop_guest()
-                if buildctl.pid() is None and not (artifact_root / 'guest-base').exists():
-                    guest_dir = artifact_root / 'guest-base-partial'
-                    capture_guest(run_id, guest_dir)
+                if (buildctl.pid() is None and not guest_dir.exists()
+                        and not (artifact_root / 'guest-base-partial').exists()):
+                    capture_guest(run_id, artifact_root / 'guest-base-partial')
             except BaseException as capture_error:
                 errors.append(capture_error)
             try:
