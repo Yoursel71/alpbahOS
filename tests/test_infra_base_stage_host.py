@@ -255,7 +255,7 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
                 package_stage.recipe_working_directory = original
                 package_stage.run = original_run
 
-    def rpc_handoff_fixture(self, directory):
+    def glibc_handoff_fixture(self, directory):
         import package_stage
         original_recipe_working_directory = package_stage.recipe_working_directory
         run_id = 'a' * 32
@@ -278,6 +278,9 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
         entry = {'path': '/etc/rpc', 'type': 'file', 'mode': 0o644,
                  'uid': os.getuid(), 'gid': os.getgid(), 'size': len(payload),
                  'sha256': hashlib.sha256(payload).hexdigest()}
+        old_manifest = {'schema': 'alpbahOS.package-files/v1',
+                        'package': {'name': 'glibc-cross-m64', 'version': '2.42'},
+                        'entries': [entry]}
         fake_guest = types.SimpleNamespace(main=lambda: None, install_staged=lambda *args, **kwargs: None)
         with (patch.dict(sys.modules, {'guest_base': fake_guest}),
               patch.object(sys, 'argv', [str(base_stage.GUEST_RUNNER),
@@ -299,48 +302,212 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
 
         installer.side_effect = install
         built = {'manifest_sha256': 'b' * 64, 'manifest': 'unused'}
-        recipe = {'name': 'glibc', 'phase': 'base'}
-        package_install = types.SimpleNamespace(validate_bundle=lambda *_: {'entries': [entry]})
-        return runner, package_stage, root, target, db, raw_db, result, payload, built, recipe, package_install, installer
+        recipe = {'name': 'glibc', 'phase': 'base', 'version': '2.42'}
+        ownership_check = Mock()
+        package_install = types.SimpleNamespace(validate_bundle=lambda *_: {'entries': [entry]},
+                                                ownership_check=ownership_check)
+        return (runner, package_stage, root, target, db, raw_db, result, payload, built, recipe,
+                package_install, installer, old_manifest)
 
-    def test_glibc_rpc_bootstrap_owner_handoff_is_exact_and_receipted(self):
+    def test_glibc_bootstrap_owner_handoff_is_exact_and_receipted(self):
         with tempfile.TemporaryDirectory() as directory:
             (runner, _, root, target, db, raw_db, result, payload, built, recipe,
-             package_install, installer) = self.rpc_handoff_fixture(directory)
-            outcome = runner['handoff_glibc_rpc_bootstrap_owner'](
-                recipe, built, root, result, installer, package_install)
+             package_install, installer, old_manifest) = self.glibc_handoff_fixture(directory)
+            outcome = runner['handoff_glibc_cross_m64_owner'](
+                recipe, built, root, result, installer, package_install, old_manifest)
             self.assertEqual(outcome, {'result': 'INSTALLED'})
             self.assertEqual(target.read_bytes(), payload)
             database = json.loads(db.read_bytes())
             self.assertNotIn('/etc/rpc', database['packages']['glibc-cross-m64']['files'])
             self.assertIn('/etc/rpc', database['packages']['glibc']['files'])
-            self.assertEqual((result / 'glibc-rpc-ownership-transfer.json').exists(), True)
-            self.assertEqual(list(target.parent.glob('.rpc.infra-transfer-*.bak')), [])
+            transfer = json.loads((result / 'glibc-cross-m64-ownership-transfer.json').read_bytes())
+            self.assertEqual(transfer['path_count'], 1)
+            self.assertEqual(transfer['paths'], ['/etc/rpc'])
+            self.assertEqual(package_install.ownership_check.call_count, 1)
+            self.assertEqual(list((root / 'var/tmp').glob('alp-infra-glibc-handoff-*')), [])
             self.assertNotEqual(db.read_bytes(), raw_db)
 
-    def test_glibc_rpc_handoff_rolls_back_db_and_file_when_alp_fails(self):
+    def test_glibc_handoff_rolls_back_db_and_file_when_alp_fails(self):
         with tempfile.TemporaryDirectory() as directory:
             (runner, _, root, target, db, raw_db, result, payload, built, recipe,
-             package_install, installer) = self.rpc_handoff_fixture(directory)
+             package_install, installer, old_manifest) = self.glibc_handoff_fixture(directory)
             installer.side_effect = RuntimeError('simulated Alp failure')
             with self.assertRaisesRegex(RuntimeError, 'simulated Alp failure'):
-                runner['handoff_glibc_rpc_bootstrap_owner'](
-                    recipe, built, root, result, installer, package_install)
+                runner['handoff_glibc_cross_m64_owner'](
+                    recipe, built, root, result, installer, package_install, old_manifest)
             self.assertEqual(target.read_bytes(), payload)
             self.assertEqual(db.read_bytes(), raw_db)
-            self.assertEqual(list(target.parent.glob('.rpc.infra-transfer-*.bak')), [])
-            self.assertFalse((result / 'glibc-rpc-ownership-transfer.json').exists())
+            self.assertEqual(list((root / 'var/tmp').glob('alp-infra-glibc-handoff-*')), [])
+            self.assertFalse((result / 'glibc-cross-m64-ownership-transfer.json').exists())
 
-    def test_glibc_rpc_handoff_rejects_changed_bootstrap_bytes_before_mutation(self):
+    def test_glibc_handoff_rejects_changed_bootstrap_bytes_before_alp(self):
         with tempfile.TemporaryDirectory() as directory:
             (runner, _, root, target, db, raw_db, result, _, built, recipe,
-             package_install, installer) = self.rpc_handoff_fixture(directory)
+             package_install, installer, old_manifest) = self.glibc_handoff_fixture(directory)
             target.write_bytes(b'different bootstrap content\n')
-            with self.assertRaisesRegex(RuntimeError, 'does not exactly match'):
-                runner['handoff_glibc_rpc_bootstrap_owner'](
-                    recipe, built, root, result, installer, package_install)
+            with self.assertRaisesRegex(RuntimeError, 'payload bytes changed'):
+                runner['handoff_glibc_cross_m64_owner'](
+                    recipe, built, root, result, installer, package_install, old_manifest)
             installer.assert_not_called()
             self.assertEqual(db.read_bytes(), raw_db)
+
+    def test_glibc_handoff_replaces_different_cross_compiler_binary_transactionally(self):
+        import package_stage
+        original_recipe_working_directory = package_stage.recipe_working_directory
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / 'root'
+            target = root / 'usr/bin/gencat'
+            target.parent.mkdir(parents=True)
+            old_payload, new_payload = b'old cross compiler binary', b'new base compiler binary'
+            target.write_bytes(old_payload)
+            target.chmod(0o755)
+            db = root / 'var/lib/alp/db.json'
+            db.parent.mkdir(parents=True)
+            prior = {'schema_version': 1, 'packages': {
+                'glibc-cross-m64': {'status': 'installed', 'files': ['/usr/bin/gencat'], 'symlinks': []}}}
+            raw_db = (json.dumps(prior, sort_keys=True, indent=2) + '\n').encode()
+            db.write_bytes(raw_db)
+            run_id = 'd' * 32
+            result = Path(directory) / 'results' / run_id / 'glibc'
+            result.mkdir(parents=True)
+            metadata = {'mode': 0o755, 'uid': os.getuid(), 'gid': os.getgid()}
+            old_entry = {'path': '/usr/bin/gencat', 'type': 'file', **metadata,
+                         'size': len(old_payload), 'sha256': hashlib.sha256(old_payload).hexdigest()}
+            new_entry = {'path': '/usr/bin/gencat', 'type': 'file', **metadata,
+                         'size': len(new_payload), 'sha256': hashlib.sha256(new_payload).hexdigest()}
+            old_manifest = {'schema': 'alpbahOS.package-files/v1',
+                            'package': {'name': 'glibc-cross-m64', 'version': '2.42'},
+                            'entries': [old_entry]}
+            fake_guest = types.SimpleNamespace(main=lambda: None, install_staged=lambda *args, **kwargs: None)
+            with (patch.dict(sys.modules, {'guest_base': fake_guest}),
+                  patch.object(sys, 'argv', [str(base_stage.GUEST_RUNNER),
+                                             base_stage.sha(base_stage.GUEST_RUNNER)])):
+                runner = runpy.run_path(str(base_stage.GUEST_RUNNER), run_name='__main__')
+            package_stage.recipe_working_directory = original_recipe_working_directory
+            package_install = types.SimpleNamespace(validate_bundle=lambda *_: {'entries': [new_entry]},
+                                                    ownership_check=Mock())
+            recipe = {'name': 'glibc', 'phase': 'base', 'version': '2.42'}
+            built = {'manifest_sha256': 'c' * 64}
+
+            def install(*_):
+                target.write_bytes(new_payload)
+                target.chmod(0o755)
+                database = json.loads(db.read_bytes())
+                database['packages']['glibc'] = {'status': 'installed',
+                                                  'files': ['/usr/bin/gencat'], 'symlinks': []}
+                db.write_text(json.dumps(database, sort_keys=True, indent=2) + '\n')
+                return {'result': 'INSTALLED'}
+
+            outcome = runner['handoff_glibc_cross_m64_owner'](
+                recipe, built, root, result, install, package_install, old_manifest)
+            self.assertEqual(outcome, {'result': 'INSTALLED'})
+            self.assertEqual(target.read_bytes(), new_payload)
+            database = json.loads(db.read_bytes())
+            self.assertEqual(database['packages']['glibc-cross-m64']['files'], [])
+            self.assertEqual(database['packages']['glibc']['files'], ['/usr/bin/gencat'])
+            self.assertEqual(package_install.ownership_check.call_count, 1)
+            self.assertEqual(list((root / 'var/tmp').glob('alp-infra-glibc-handoff-*')), [])
+
+            # A later Alp failure after writing the new payload restores both the old bytes and DB.
+            target.write_bytes(old_payload)
+            db.write_bytes(raw_db)
+            second_result = Path(directory) / 'results' / ('e' * 32) / 'glibc'
+            second_result.mkdir(parents=True)
+
+            def fail_after_partial_install(*_):
+                target.write_bytes(new_payload)
+                database = json.loads(db.read_bytes())
+                database['packages']['glibc'] = {'status': 'installed',
+                                                  'files': ['/usr/bin/gencat'], 'symlinks': []}
+                db.write_text(json.dumps(database, sort_keys=True, indent=2) + '\n')
+                raise RuntimeError('simulated late Alp failure')
+
+            with self.assertRaisesRegex(RuntimeError, 'late Alp failure'):
+                runner['handoff_glibc_cross_m64_owner'](
+                    recipe, built, root, second_result, fail_after_partial_install,
+                    package_install, old_manifest)
+            self.assertEqual(target.read_bytes(), old_payload)
+            self.assertEqual(db.read_bytes(), raw_db)
+
+    def test_cross_m64_manifest_loader_requires_the_current_accepted_receipt(self):
+        import package_stage
+        original_recipe_working_directory = package_stage.recipe_working_directory
+        with tempfile.TemporaryDirectory() as directory:
+            top = Path(directory)
+            root = top / 'lfs'
+            infra = top / 'infra'
+            repo = top / 'repo'
+            run_id, inputs_sha = 'f' * 32, 'a' * 64
+            accepted_dir = root / 'results/toolchain' / run_id / 'glibc-cross-m64'
+            accepted_dir.mkdir(parents=True)
+            infra.mkdir()
+            recipe_path = repo / 'recipes/toolchain/glibc-cross-m64.json'
+            source_path = repo / 'manifests/infra-sources.json'
+            recipe_path.parent.mkdir(parents=True)
+            source_path.parent.mkdir(parents=True)
+            recipe = {'name': 'glibc-cross-m64', 'version': '2.42', 'source': 'glibc-2.42.tar.xz'}
+            recipe_path.write_text(json.dumps(recipe))
+            source_path.write_text('{}\n')
+            source = {'filename': 'glibc-2.42.tar.xz', 'url': 'https://example.invalid/glibc.tar.xz',
+                      'sha256': 'b' * 64}
+            (infra / 'toolchain-acceptance.json').write_text(json.dumps({
+                'schema': 'alpbahOS.toolchain-acceptance/v1', 'result': 'PASS', 'stage': 'toolchain',
+                'run_id': run_id, 'inputs_sha256': inputs_sha}))
+            (infra / 'inputs.json').write_text(json.dumps({'inputs_sha256': inputs_sha}))
+            manifest_path = accepted_dir / 'toolchain-glibc-cross-m64.json'
+            archive_path = accepted_dir / 'toolchain-glibc-cross-m64.tar.gz'
+            manifest = {'schema': 'alpbahOS.package-files/v1',
+                        'package': {'name': recipe['name'], 'version': recipe['version'],
+                                    'source': {'url': source['url'], 'sha256': source['sha256']}},
+                        'entries': []}
+            manifest_raw = json.dumps(manifest).encode()
+            archive_raw = b'pinned accepted cross-m64 archive'
+            manifest_path.write_bytes(manifest_raw)
+            archive_path.write_bytes(archive_raw)
+            snapshot = {'schema_version': 1, 'packages': {
+                'glibc-cross-m64': {'status': 'installed', 'files': [], 'symlinks': []}}}
+            snapshot_path = accepted_dir / 'glibc-cross-m64.db.json'
+            snapshot_raw = json.dumps(snapshot).encode()
+            snapshot_path.write_bytes(snapshot_raw)
+            built = {'manifest': str(manifest_path),
+                     'manifest_sha256': hashlib.sha256(manifest_raw).hexdigest(),
+                     'archive': str(archive_path),
+                     'archive_sha256': hashlib.sha256(archive_raw).hexdigest(),
+                     'source': source}
+            (accepted_dir / 'built.json').write_text(json.dumps({
+                'result': 'BUILT', 'binding': {'run_id': run_id, 'inputs_sha256': inputs_sha},
+                'built': built}))
+            record = snapshot['packages']['glibc-cross-m64']
+            runner_fingerprint = lambda value: hashlib.sha256(
+                json.dumps(value, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+            receipt = {'result': 'PASS', 'package': recipe['name'], 'root': str(root),
+                       'version': recipe['version'], 'inputs_sha256': inputs_sha,
+                       'recipe_sha256': runner_fingerprint(recipe),
+                       'manifest_sha256': built['manifest_sha256'], 'archive_sha256': built['archive_sha256'],
+                       'db_sha256': hashlib.sha256(snapshot_raw).hexdigest(),
+                       'package_record_sha256': runner_fingerprint(record)}
+            (accepted_dir / 'glibc-cross-m64.installed.json').write_text(json.dumps(receipt))
+            fake_guest = types.SimpleNamespace(main=lambda: None, install_staged=lambda *args, **kwargs: None)
+            with (patch.dict(sys.modules, {'guest_base': fake_guest}),
+                  patch.object(sys, 'argv', [str(base_stage.GUEST_RUNNER),
+                                             base_stage.sha(base_stage.GUEST_RUNNER)])):
+                runner = runpy.run_path(str(base_stage.GUEST_RUNNER), run_name='__main__')
+            package_stage.recipe_working_directory = original_recipe_working_directory
+
+            def file_sha(path):
+                return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+            package_install = types.SimpleNamespace(
+                sha=file_sha, fingerprint=runner_fingerprint,
+                packages=lambda _: snapshot['packages'],
+                source_pin=lambda *_: source,
+                validate_bundle=lambda _recipe, _built: manifest)
+            runner['accepted_glibc_cross_m64_manifest'].__globals__['INFRA'] = infra
+            runner['accepted_glibc_cross_m64_manifest'].__globals__['REPO'] = repo
+            self.assertEqual(runner['accepted_glibc_cross_m64_manifest'](root, package_install), manifest)
+            archive_path.write_bytes(archive_raw + b'tamper')
+            with self.assertRaisesRegex(RuntimeError, 'archive bytes changed'):
+                runner['accepted_glibc_cross_m64_manifest'](root, package_install)
 
 
 if __name__ == '__main__':
