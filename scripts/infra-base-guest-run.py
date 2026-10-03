@@ -25,7 +25,7 @@ def root_test_tree(cwd, build_root=Path('/srv/lfs/build')):
 
 
 M32_KERNEL_UAPI_DIRECTORIES = ('asm', 'asm-generic', 'linux')
-M32_C_COMPILER = 'CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32'
+M32_C_COMPILER = 'CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32 -static-libgcc'
 M32_CXX_COMPILER = 'CXX=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-g++ -m32 -static-libgcc'
 M32_HOST_C_COMPILER = 'CC=gcc -m32'
 M32_HOST_CXX_COMPILER = 'CXX=g++ -m32'
