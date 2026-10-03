@@ -146,6 +146,9 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
                     'compile')
                 self.assertEqual(resolved, work)
                 self.assertEqual(runner['root_test_tree'](work, build_root), source)
+                self.assertFalse(runner['uses_m32_uapi_build'](None))
+                self.assertEqual(runner['disable_unavailable_m32_cxx'](['tar', '-xf', 'source'], None),
+                                 ['tar', '-xf', 'source'])
                 self.assertEqual(runner['prepare_m32_kernel_headers'](
                     ['env', 'CC=gcc -m32', 'CXX=g++ -m32', '../configure'],
                     '/custom/include'),

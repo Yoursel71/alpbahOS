@@ -40,6 +40,8 @@ def uses_m32_uapi_configure(argv, header_include='/srv/lfs/build/.m32-kernel-uap
 
 def uses_m32_uapi_build(cwd, header_include='/srv/lfs/build/.m32-kernel-uapi/include'):
     """Identify Glibc's m32 build from its isolated compiler configuration."""
+    if cwd is None:
+        return False
     config = Path(cwd) / 'config.make'
     if config.is_symlink() or not config.is_file():
         return False
