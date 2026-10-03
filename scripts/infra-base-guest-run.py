@@ -44,9 +44,11 @@ def prepare_m32_kernel_headers(argv, header_include='/srv/lfs/build/.m32-kernel-
     if '../configure' not in argv:
         return argv
     for index, value in enumerate(argv):
-        if value in (M32_C_COMPILER, M32_HOST_C_COMPILER,
-                     M32_CXX_COMPILER, M32_HOST_CXX_COMPILER):
-            argv[index] = value + ' -I' + header_include
+        if value in (M32_HOST_C_COMPILER, M32_HOST_CXX_COMPILER):
+            compiler = M32_C_COMPILER if value.startswith('CC=') else M32_CXX_COMPILER
+            argv[index] = compiler
+        if argv[index] in (M32_C_COMPILER, M32_CXX_COMPILER):
+            argv[index] += ' -I' + header_include
     return argv
 
 

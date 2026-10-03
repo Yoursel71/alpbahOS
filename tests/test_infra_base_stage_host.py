@@ -149,8 +149,10 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
                 self.assertEqual(runner['prepare_m32_kernel_headers'](
                     ['env', 'CC=gcc -m32', 'CXX=g++ -m32', '../configure'],
                     '/custom/include'),
-                    ['env', 'CC=gcc -m32 -I/custom/include',
-                     'CXX=g++ -m32 -I/custom/include', '../configure'])
+                    ['env',
+                     'CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32 -I/custom/include',
+                     'CXX=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-g++ -m32 -I/custom/include',
+                     '../configure'])
                 cross_configure = ['env',
                     'CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32',
                     'CXX=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-g++ -m32',
@@ -197,7 +199,9 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
                     runner['run_with_root_owned_test_tree'](
                         ['env', 'CC=gcc -m32', 'CXX=g++ -m32', '../configure'],
                         Path(directory) / 'm32-configure.log', cwd=work)
-                    self.assertIn('CC=gcc -m32 -I/srv/lfs/build/.m32-kernel-uapi/include',
+                    self.assertIn(
+                        'CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32 '
+                        '-I/srv/lfs/build/.m32-kernel-uapi/include',
                                   run.call_args.args[0])
                 with patch.object(package_stage, 'run') as run, patch.dict(
                         runner_globals, {'_run': run,
