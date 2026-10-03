@@ -6,7 +6,7 @@ import sys
 import tempfile
 import types
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 
 SCRIPT = Path(__file__).resolve().parents[1] / 'scripts/infra-base-stage.py'
@@ -220,6 +220,20 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
                         'CXX=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-g++ -m32 -static-libgcc '
                         '-I/srv/lfs/build/.m32-kernel-uapi/include',
                         run.call_args.args[0])
+                (work / 'config.make').write_text(
+                    'CC = /srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32 '
+                    '-I/srv/lfs/build/.m32-kernel-uapi/include\n')
+                with patch.dict(runner_globals, {'_run': Mock()}) as patched:
+                    runner['run_with_root_owned_test_tree'](
+                        [package_stage.RUNUSER, '-u', 'lfs', '--', 'env', 'make', '-j4'],
+                        Path(directory) / 'm32-build.log', cwd=work)
+                    self.assertEqual(patched['_run'].call_args.args[0][-1], 'CXX=')
+                (work / 'config.make').write_text('CC = gcc\n')
+                with patch.dict(runner_globals, {'_run': Mock()}) as patched:
+                    runner['run_with_root_owned_test_tree'](
+                        [package_stage.RUNUSER, '-u', 'lfs', '--', 'env', 'make', '-j4'],
+                        Path(directory) / 'm64-build.log', cwd=work)
+                    self.assertEqual(patched['_run'].call_args.args[0][-1], '-j4')
             finally:
                 package_stage.recipe_working_directory = original
                 package_stage.run = original_run

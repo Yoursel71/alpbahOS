@@ -38,6 +38,24 @@ def uses_m32_uapi_configure(argv, header_include='/srv/lfs/build/.m32-kernel-uap
                     and ' -m32' in value and marker in value for value in argv))
 
 
+def uses_m32_uapi_build(cwd, header_include='/srv/lfs/build/.m32-kernel-uapi/include'):
+    """Identify Glibc's m32 build from its isolated compiler configuration."""
+    config = Path(cwd) / 'config.make'
+    if config.is_symlink() or not config.is_file():
+        return False
+    compiler = 'CC = /srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32 -I' + header_include
+    return any(line == compiler for line in config.read_text().splitlines())
+
+
+def disable_unavailable_m32_cxx(argv, cwd):
+    """Keep bootstrap m32 Glibc from linking its optional C++ test helper."""
+    argv = list(argv)
+    if (uses_m32_uapi_build(cwd) and len(argv) >= 2 and argv[-2] == 'make'
+            and re.fullmatch(r'-j[1-8]', argv[-1])):
+        argv.append('CXX=')
+    return argv
+
+
 def prepare_m32_kernel_headers(argv, header_include='/srv/lfs/build/.m32-kernel-uapi/include'):
     """Point the Builder's 32-bit compiler at an isolated kernel-header view."""
     argv = list(argv)
@@ -114,6 +132,7 @@ _run = package_stage.run
 
 def run_with_root_owned_test_tree(argv, log, cwd=None, env=None):
     argv = prepare_m32_kernel_headers(argv)
+    argv = disable_unavailable_m32_cxx(argv, cwd)
     if uses_m32_uapi_configure(argv):
         install_m32_kernel_headers()
     if (len(argv) >= 3 and argv[0] == package_stage.RUNUSER
