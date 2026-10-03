@@ -24,8 +24,11 @@ def root_test_tree(cwd, build_root=Path('/srv/lfs/build')):
     return tree
 
 
-def prepare_m32_kernel_headers(argv, header_include='/srv/lfs/usr/include'):
-    """Point the Builder's 32-bit compiler at the pinned LFS kernel headers."""
+M32_KERNEL_UAPI_DIRECTORIES = ('asm', 'asm-generic', 'linux')
+
+
+def prepare_m32_kernel_headers(argv, header_include='/srv/lfs/build/.m32-kernel-uapi/include'):
+    """Point the Builder's 32-bit compiler at an isolated kernel-header view."""
     argv = list(argv)
     if '../configure' not in argv or 'CC=gcc -m32' not in argv:
         return argv
@@ -35,6 +38,41 @@ def prepare_m32_kernel_headers(argv, header_include='/srv/lfs/usr/include'):
         elif value == 'CXX=g++ -m32':
             argv[index] = value + ' -I' + header_include
     return argv
+
+
+def install_m32_kernel_headers(source_include='/srv/lfs/usr/include',
+                               header_include='/srv/lfs/build/.m32-kernel-uapi/include'):
+    """Expose only installed Linux UAPI directories to the Builder compiler."""
+    source = Path(source_include)
+    target = Path(header_include)
+    source_directories = {}
+    for name in M32_KERNEL_UAPI_DIRECTORIES:
+        directory = source / name
+        if not directory.is_dir() or directory.is_symlink():
+            raise RuntimeError('Pinned LFS kernel UAPI directory is missing: ' + str(directory))
+        source_directories[name] = directory.resolve()
+    if not (source / 'asm/errno.h').is_file():
+        raise RuntimeError('Pinned LFS kernel UAPI errno header is missing')
+    if target.is_symlink():
+        raise RuntimeError('Kernel UAPI include root must not be a symlink')
+    target.mkdir(parents=True, exist_ok=True)
+    if not target.is_dir():
+        raise RuntimeError('Kernel UAPI include root is not a directory')
+    expected_names = set(M32_KERNEL_UAPI_DIRECTORIES)
+    if any(path.name not in expected_names for path in target.iterdir()):
+        raise RuntimeError('Kernel UAPI include root contains unexpected entries')
+    for name, source_directory in source_directories.items():
+        link = target / name
+        if link.is_symlink():
+            if link.resolve() != source_directory:
+                raise RuntimeError('Kernel UAPI link target changed: ' + str(link))
+        elif link.exists():
+            raise RuntimeError('Kernel UAPI include entry is not an expected symlink: ' + str(link))
+        else:
+            link.symlink_to(source_directory, target_is_directory=True)
+    if not (target / 'asm/errno.h').is_file():
+        raise RuntimeError('Kernel UAPI include view is incomplete')
+    return target
 
 
 if len(sys.argv) != 2 or not re.fullmatch(r'[0-9a-f]{64}', sys.argv[1]):
@@ -64,9 +102,8 @@ _run = package_stage.run
 
 def run_with_root_owned_test_tree(argv, log, cwd=None, env=None):
     argv = prepare_m32_kernel_headers(argv)
-    if ('CC=gcc -m32 -I/srv/lfs/usr/include' in argv
-            and not Path('/srv/lfs/usr/include/asm/errno.h').is_file()):
-        raise RuntimeError('Pinned LFS 32-bit kernel header is missing')
+    if ('CC=gcc -m32 -I/srv/lfs/build/.m32-kernel-uapi/include' in argv):
+        install_m32_kernel_headers()
     if (len(argv) >= 3 and argv[0] == package_stage.RUNUSER
             and argv[1:3] == ['-u', 'root']):
         tree = root_test_tree(cwd)

@@ -153,6 +153,21 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
                      'CXX=g++ -m32 -I/custom/include', '../configure'])
                 self.assertEqual(runner['prepare_m32_kernel_headers'](
                     ['make', '-j4']), ['make', '-j4'])
+                kernel_source = Path(directory) / 'kernel-source'
+                kernel_include = Path(directory) / 'kernel-only-include'
+                for name in ('asm', 'asm-generic', 'linux'):
+                    (kernel_source / name).mkdir(parents=True)
+                (kernel_source / 'asm/errno.h').write_text('/* pinned UAPI */\n')
+                installed = runner['install_m32_kernel_headers'](
+                    kernel_source, kernel_include)
+                self.assertEqual(installed, kernel_include)
+                self.assertEqual({path.name for path in kernel_include.iterdir()},
+                                 {'asm', 'asm-generic', 'linux'})
+                for name in ('asm', 'asm-generic', 'linux'):
+                    self.assertTrue((kernel_include / name).is_symlink())
+                    self.assertEqual((kernel_include / name).resolve(),
+                                     (kernel_source / name).resolve())
+                self.assertTrue((kernel_include / 'asm/errno.h').is_file())
                 runner_globals = runner['run_with_root_owned_test_tree'].__globals__
                 root_test_tree = runner_globals['root_test_tree']
                 with patch.object(package_stage, 'run') as run, patch.dict(
@@ -164,6 +179,14 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
                     self.assertEqual(run.call_args_list[0].args[0],
                                      ['chown', '-hR', 'root:root', str(source)])
                     self.assertEqual(run.call_args_list[1].args[0][0], package_stage.RUNUSER)
+                with patch.object(package_stage, 'run') as run, patch.dict(
+                        runner_globals, {'_run': run,
+                            'install_m32_kernel_headers': lambda: kernel_include}):
+                    runner['run_with_root_owned_test_tree'](
+                        ['env', 'CC=gcc -m32', 'CXX=g++ -m32', '../configure'],
+                        Path(directory) / 'm32-configure.log', cwd=work)
+                    self.assertIn('CC=gcc -m32 -I/srv/lfs/build/.m32-kernel-uapi/include',
+                                  run.call_args.args[0])
             finally:
                 package_stage.recipe_working_directory = original
                 package_stage.run = original_run
