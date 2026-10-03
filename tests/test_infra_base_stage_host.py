@@ -321,14 +321,14 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             (runner, _, root, target, db, raw_db, result, payload, built, recipe,
              package_install, installer, old_manifest) = self.glibc_handoff_fixture(directory)
-            outcome = runner['handoff_glibc_cross_m64_owner'](
-                recipe, built, root, result, installer, package_install, old_manifest)
+            outcome = runner['handoff_glibc_bootstrap_owners'](
+                recipe, built, root, result, installer, package_install, [old_manifest])
             self.assertEqual(outcome, {'result': 'INSTALLED'})
             self.assertEqual(target.read_bytes(), payload)
             database = json.loads(db.read_bytes())
             self.assertNotIn('/etc/rpc', database['packages']['glibc-cross-m64']['files'])
             self.assertIn('/etc/rpc', database['packages']['glibc']['files'])
-            transfer = json.loads((result / 'glibc-cross-m64-ownership-transfer.json').read_bytes())
+            transfer = json.loads((result / 'glibc-bootstrap-ownership-transfer.json').read_bytes())
             self.assertEqual(transfer['path_count'], 1)
             self.assertEqual(transfer['paths'], ['/etc/rpc'])
             self.assertEqual(package_install.ownership_check.call_count, 1)
@@ -344,13 +344,61 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
             database = json.loads(db.read_bytes())
             database['packages']['glibc-cross-m64']['files'].append('/etc')
             db.write_text(json.dumps(database, sort_keys=True, indent=2) + '\n')
-            outcome = runner['handoff_glibc_cross_m64_owner'](
-                recipe, built, root, result, installer, package_install, old_manifest)
+            outcome = runner['handoff_glibc_bootstrap_owners'](
+                recipe, built, root, result, installer, package_install, [old_manifest])
             self.assertEqual(outcome, {'result': 'INSTALLED'})
             self.assertEqual(target.read_bytes(), payload)
-            transfer = json.loads((result / 'glibc-cross-m64-ownership-transfer.json').read_bytes())
+            transfer = json.loads((result / 'glibc-bootstrap-ownership-transfer.json').read_bytes())
             self.assertEqual(transfer['paths'], ['/etc/rpc'])
             self.assertIn('/etc', json.loads(db.read_bytes())['packages']['glibc-cross-m64']['files'])
+
+    def test_glibc_handoff_transfers_m64_and_m32_bootstrap_owners(self):
+        with tempfile.TemporaryDirectory() as directory:
+            (runner, _, root, target, db, _, result, payload, built, recipe,
+             package_install, installer, old_m64) = self.glibc_handoff_fixture(directory)
+            path32 = '/usr/include/gnu/lib-names-32.h'
+            target32 = root / path32.lstrip('/')
+            target32.parent.mkdir(parents=True)
+            old32, new32 = b'bootstrap m32 header\n', b'base multilib header\n'
+            target32.write_bytes(old32)
+            target32.chmod(0o644)
+            database = json.loads(db.read_bytes())
+            database['packages']['glibc-cross-m32'] = {
+                'status': 'installed', 'files': [path32], 'symlinks': []}
+            db.write_text(json.dumps(database, sort_keys=True, indent=2) + '\n')
+            old_m32_entry = {'path': path32, 'type': 'file', 'mode': 0o644,
+                             'uid': os.getuid(), 'gid': os.getgid(), 'size': len(old32),
+                             'sha256': hashlib.sha256(old32).hexdigest()}
+            old_m32 = {'schema': 'alpbahOS.package-files/v1',
+                       'package': {'name': 'glibc-cross-m32', 'version': '2.42'},
+                       'entries': [old_m32_entry]}
+            new_m32_entry = {'path': path32, 'type': 'file', 'mode': 0o644,
+                             'uid': os.getuid(), 'gid': os.getgid(), 'size': len(new32),
+                             'sha256': hashlib.sha256(new32).hexdigest()}
+            base_m64_entry = package_install.validate_bundle(None, None)['entries'][0]
+            package_install.validate_bundle = lambda *_: {'entries': [base_m64_entry, new_m32_entry]}
+
+            def install(*_):
+                target.write_bytes(payload)
+                target32.write_bytes(new32)
+                database = json.loads(db.read_bytes())
+                database['packages']['glibc'] = {
+                    'status': 'installed', 'files': ['/etc/rpc', path32], 'symlinks': []}
+                db.write_text(json.dumps(database, sort_keys=True, indent=2) + '\n')
+                return {'result': 'INSTALLED'}
+
+            outcome = runner['handoff_glibc_bootstrap_owners'](
+                recipe, built, root, result, install, package_install, [old_m64, old_m32])
+            self.assertEqual(outcome, {'result': 'INSTALLED'})
+            database = json.loads(db.read_bytes())['packages']
+            self.assertEqual(database['glibc-cross-m64']['files'], [])
+            self.assertEqual(database['glibc-cross-m32']['files'], [])
+            self.assertEqual(database['glibc']['files'], ['/etc/rpc', path32])
+            self.assertEqual(target32.read_bytes(), new32)
+            transfer = json.loads((result / 'glibc-bootstrap-ownership-transfer.json').read_bytes())
+            self.assertEqual(transfer['paths'], ['/etc/rpc', path32])
+            self.assertEqual(transfer['paths_by_package']['glibc-cross-m64'], ['/etc/rpc'])
+            self.assertEqual(transfer['paths_by_package']['glibc-cross-m32'], [path32])
 
     def test_glibc_handoff_rolls_back_db_and_file_when_alp_fails(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -358,12 +406,12 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
              package_install, installer, old_manifest) = self.glibc_handoff_fixture(directory)
             installer.side_effect = RuntimeError('simulated Alp failure')
             with self.assertRaisesRegex(RuntimeError, 'simulated Alp failure'):
-                runner['handoff_glibc_cross_m64_owner'](
-                    recipe, built, root, result, installer, package_install, old_manifest)
+                runner['handoff_glibc_bootstrap_owners'](
+                    recipe, built, root, result, installer, package_install, [old_manifest])
             self.assertEqual(target.read_bytes(), payload)
             self.assertEqual(db.read_bytes(), raw_db)
             self.assertEqual(list((root / 'var/tmp').glob('alp-infra-glibc-handoff-*')), [])
-            self.assertFalse((result / 'glibc-cross-m64-ownership-transfer.json').exists())
+            self.assertFalse((result / 'glibc-bootstrap-ownership-transfer.json').exists())
 
     def test_glibc_handoff_rejects_changed_bootstrap_bytes_before_alp(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -371,8 +419,8 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
              package_install, installer, old_manifest) = self.glibc_handoff_fixture(directory)
             target.write_bytes(b'different bootstrap content\n')
             with self.assertRaisesRegex(RuntimeError, 'payload bytes changed'):
-                runner['handoff_glibc_cross_m64_owner'](
-                    recipe, built, root, result, installer, package_install, old_manifest)
+                runner['handoff_glibc_bootstrap_owners'](
+                    recipe, built, root, result, installer, package_install, [old_manifest])
             installer.assert_not_called()
             self.assertEqual(db.read_bytes(), raw_db)
 
@@ -423,8 +471,8 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
                 db.write_text(json.dumps(database, sort_keys=True, indent=2) + '\n')
                 return {'result': 'INSTALLED'}
 
-            outcome = runner['handoff_glibc_cross_m64_owner'](
-                recipe, built, root, result, install, package_install, old_manifest)
+            outcome = runner['handoff_glibc_bootstrap_owners'](
+                recipe, built, root, result, install, package_install, [old_manifest])
             self.assertEqual(outcome, {'result': 'INSTALLED'})
             self.assertEqual(target.read_bytes(), new_payload)
             database = json.loads(db.read_bytes())
@@ -448,9 +496,9 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
                 raise RuntimeError('simulated late Alp failure')
 
             with self.assertRaisesRegex(RuntimeError, 'late Alp failure'):
-                runner['handoff_glibc_cross_m64_owner'](
+                runner['handoff_glibc_bootstrap_owners'](
                     recipe, built, root, second_result, fail_after_partial_install,
-                    package_install, old_manifest)
+                    package_install, [old_manifest])
             self.assertEqual(target.read_bytes(), old_payload)
             self.assertEqual(db.read_bytes(), raw_db)
 

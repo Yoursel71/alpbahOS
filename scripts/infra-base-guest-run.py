@@ -79,8 +79,10 @@ def disable_unavailable_m32_cxx(argv, cwd):
     return argv
 
 
-def accepted_glibc_cross_m64_manifest(root, package_install):
-    """Load the exact accepted cross-m64 bundle that owns the bootstrap sysroot."""
+def accepted_glibc_cross_manifest(root, package_install, package_name):
+    """Load an exact accepted cross-ABI Glibc bundle from the toolchain stage."""
+    if package_name not in ('glibc-cross-m64', 'glibc-cross-m32'):
+        raise RuntimeError('Unsupported accepted bootstrap Glibc package')
     acceptance_path = INFRA / 'toolchain-acceptance.json'
     inputs_path = INFRA / 'inputs.json'
     for path in (acceptance_path, inputs_path):
@@ -93,32 +95,32 @@ def accepted_glibc_cross_m64_manifest(root, package_install):
             or not re.fullmatch(r'[0-9a-f]{32}', str(run_id))
             or inputs.get('inputs_sha256') != acceptance.get('inputs_sha256')):
         raise RuntimeError('Accepted toolchain binding is invalid')
-    directory = root / 'results/toolchain' / run_id / 'glibc-cross-m64'
-    receipt_path, built_path, snapshot_path = (directory / 'glibc-cross-m64.installed.json',
+    directory = root / 'results/toolchain' / run_id / package_name
+    receipt_path, built_path, snapshot_path = (directory / (package_name + '.installed.json'),
                                                 directory / 'built.json',
-                                                directory / 'glibc-cross-m64.db.json')
+                                                directory / (package_name + '.db.json'))
     for path in (directory, receipt_path, built_path, snapshot_path):
         if path.is_symlink() or path.resolve() != path:
-            raise RuntimeError('Accepted Glibc cross-m64 evidence is aliased')
+            raise RuntimeError('Accepted bootstrap Glibc evidence is aliased')
     receipt = json.loads(receipt_path.read_bytes())
     record = json.loads(built_path.read_bytes())
     snapshot = json.loads(snapshot_path.read_bytes())
-    old_recipe_path = REPO / 'recipes/toolchain/glibc-cross-m64.json'
+    old_recipe_path = REPO / 'recipes/toolchain' / (package_name + '.json')
     if old_recipe_path.is_symlink() or not old_recipe_path.is_file():
-        raise RuntimeError('Pinned Glibc cross-m64 recipe is unavailable')
+        raise RuntimeError('Pinned bootstrap Glibc recipe is unavailable')
     old_recipe = json.loads(old_recipe_path.read_bytes())
     source_manifest = REPO / 'manifests/infra-sources.json'
     sources = json.loads(source_manifest.read_bytes())
     pinned_source = package_install.source_pin(sources, old_recipe['source'], REPO)
     built = record.get('built', {})
-    manifest_path = directory / 'toolchain-glibc-cross-m64.json'
-    archive_path = directory / 'toolchain-glibc-cross-m64.tar.gz'
-    prior_record = snapshot.get('packages', {}).get('glibc-cross-m64')
+    prior_record = snapshot.get('packages', {}).get(package_name)
+    manifest_path = directory / ('toolchain-' + package_name + '.json')
+    archive_path = directory / ('toolchain-' + package_name + '.tar.gz')
     if (record.get('result') != 'BUILT'
             or record.get('binding', {}).get('run_id') != run_id
             or record.get('binding', {}).get('inputs_sha256') != inputs.get('inputs_sha256')
             or built.get('manifest') != str(manifest_path) or built.get('archive') != str(archive_path)
-            or receipt.get('result') != 'PASS' or receipt.get('package') != 'glibc-cross-m64'
+            or receipt.get('result') != 'PASS' or receipt.get('package') != package_name
             or receipt.get('root') != str(root) or receipt.get('version') != old_recipe.get('version')
             or receipt.get('inputs_sha256') != inputs.get('inputs_sha256')
             or receipt.get('recipe_sha256') != fingerprint(old_recipe)
@@ -129,40 +131,56 @@ def accepted_glibc_cross_m64_manifest(root, package_install):
             or receipt.get('db_sha256') != package_install.sha(snapshot_path)
             or not isinstance(prior_record, dict)
             or receipt.get('package_record_sha256') != fingerprint(prior_record)):
-        raise RuntimeError('Accepted Glibc cross-m64 receipt does not match its pinned bundle/DB')
-    current = package_install.packages(root).get('glibc-cross-m64')
+        raise RuntimeError('Accepted Glibc bootstrap receipt does not match its pinned bundle/DB')
+    current = package_install.packages(root).get(package_name)
     if not isinstance(current, dict) or fingerprint(current) != fingerprint(prior_record):
-        raise RuntimeError('Installed Glibc cross-m64 DB record differs from accepted toolchain evidence')
+        raise RuntimeError('Installed bootstrap Glibc DB record differs from accepted toolchain evidence')
     if package_install.sha(manifest_path) != built.get('manifest_sha256'):
-        raise RuntimeError('Accepted Glibc cross-m64 manifest bytes changed')
+        raise RuntimeError('Accepted bootstrap Glibc manifest bytes changed')
     if package_install.sha(archive_path) != built.get('archive_sha256'):
-        raise RuntimeError('Accepted Glibc cross-m64 archive bytes changed')
+        raise RuntimeError('Accepted bootstrap Glibc archive bytes changed')
     package_install.validate_bundle(old_recipe, built)
     return json.loads(manifest_path.read_bytes())
 
 
-def handoff_glibc_cross_m64_owner(recipe, built, root, result, installer,
-                                  package_install, previous_manifest):
-    """Transactionally transfer every shared path from bootstrap Glibc to base Glibc.
+def accepted_glibc_cross_m64_manifest(root, package_install):
+    return accepted_glibc_cross_manifest(root, package_install, 'glibc-cross-m64')
 
-    Both packages are pinned builds of the same Glibc source, but their staged
-    executable/library bytes can differ. Verify the accepted old manifest,
-    back up every overlapping payload, then let Alp install the base package
-    as the sole owner. Restore both bytes and DB if installation fails.
+
+def accepted_glibc_cross_m32_manifest(root, package_install):
+    return accepted_glibc_cross_manifest(root, package_install, 'glibc-cross-m32')
+
+
+def handoff_glibc_bootstrap_owners(recipe, built, root, result, installer,
+                                   package_install, previous_manifests):
+    """Transactionally transfer shared paths from accepted bootstrap Glibc packages.
+
+    The multilib toolchain's m64 and m32 Glibc packages can both own paths in
+    the final base Glibc manifest. Verify each accepted manifest, back up every
+    overlap, and let Alp install the base package as the sole owner. Restore
+    every payload and DB record if installation fails.
     """
     if recipe.get('name') != 'glibc' or recipe.get('phase') != 'base':
         raise RuntimeError('Bootstrap Glibc ownership handoff is only for base Glibc')
     value = package_install.validate_bundle(recipe, built)
-    if (previous_manifest.get('schema') != 'alpbahOS.package-files/v1'
-            or previous_manifest.get('package', {}).get('name') != 'glibc-cross-m64'
-            or previous_manifest.get('package', {}).get('version') != recipe.get('version')):
-        raise RuntimeError('Previous Glibc manifest identity is invalid')
     new_entries = {entry['path']: entry for entry in value['entries'] if entry['type'] != 'directory'}
-    previous_entries = previous_manifest.get('entries', [])
-    old_entries = {entry['path']: entry for entry in previous_entries
-                   if entry.get('type') != 'directory'}
-    old_directories = {entry['path'] for entry in previous_entries
-                       if entry.get('type') == 'directory'}
+    old_entries_by_owner = {}
+    old_directories_by_owner = {}
+    manifests_by_owner = {}
+    for previous_manifest in previous_manifests:
+        owner = previous_manifest.get('package', {}).get('name')
+        if (owner not in ('glibc-cross-m64', 'glibc-cross-m32') or owner in manifests_by_owner
+                or previous_manifest.get('schema') != 'alpbahOS.package-files/v1'
+                or previous_manifest.get('package', {}).get('version') != recipe.get('version')):
+            raise RuntimeError('Previous bootstrap Glibc manifest identity is invalid')
+        manifests_by_owner[owner] = previous_manifest
+        entries = previous_manifest.get('entries', [])
+        old_entries_by_owner[owner] = {entry['path']: entry for entry in entries
+                                       if entry.get('type') != 'directory'}
+        old_directories_by_owner[owner] = {entry['path'] for entry in entries
+                                           if entry.get('type') == 'directory'}
+    if not manifests_by_owner:
+        raise RuntimeError('Accepted bootstrap Glibc manifests are missing')
     root, result = Path(root), Path(result)
     db = root / 'var/lib/alp/db.json'
     for path in (root, db.parent, result):
@@ -170,7 +188,7 @@ def handoff_glibc_cross_m64_owner(recipe, built, root, result, installer,
             raise RuntimeError('Glibc ownership handoff path is aliased')
     if not result.is_dir():
         raise RuntimeError('Glibc ownership receipt directory is missing')
-    receipt = result / 'glibc-cross-m64-ownership-transfer.json'
+    receipt = result / 'glibc-bootstrap-ownership-transfer.json'
     if receipt.exists() or receipt.is_symlink():
         raise RuntimeError('Existing Glibc ownership transfer receipt; preserve attempt')
     if db.is_symlink() or not db.is_file():
@@ -180,38 +198,47 @@ def handoff_glibc_cross_m64_owner(recipe, built, root, result, installer,
     if database.get('schema_version') != 1 or not isinstance(database.get('packages'), dict):
         raise RuntimeError('Unsupported Alp database during Glibc ownership handoff')
     packages = database['packages']
-    if 'glibc-cross-m64' not in packages:
-        raise RuntimeError('Bootstrap cross-m64 Glibc package is missing')
-    old_record = packages['glibc-cross-m64']
-    if old_record.get('status') != 'installed':
-        raise RuntimeError('Bootstrap Glibc owner is not installed')
+    for owner in manifests_by_owner:
+        if owner not in packages or packages[owner].get('status') != 'installed':
+            raise RuntimeError('Bootstrap Glibc owner is not installed: ' + owner)
     run_id = result.parent.name
     if not re.fullmatch(r'[0-9a-f]{32}', run_id):
         raise RuntimeError('Glibc ownership transfer is not bound to a base run')
     prior_db_sha = hashlib.sha256(raw_db).hexdigest()
     db_stat = db.stat(follow_symlinks=False)
-    claims = {str(path) if str(path).startswith('/') else '/' + str(path)
-              for field in ('files', 'symlinks') for path in old_record.get(field, [])}
-    # Alp records manifest directories in the DB's `files` list when this
-    # package created them. Directories shared with earlier packages are not
-    # attributed to this package, so their absence is expected. Exclude only
-    # the accepted manifest's directories before requiring exact payload
-    # ownership; stray non-directory claims still fail closed.
-    if claims - old_directories != set(old_entries):
-        raise RuntimeError('Accepted Glibc manifest differs from cross-m64 DB ownership')
-    transfer_paths = sorted(claims & set(new_entries))
+    claims_by_owner = {}
+    for owner in manifests_by_owner:
+        record = packages[owner]
+        claims = {str(path) if str(path).startswith('/') else '/' + str(path)
+                  for field in ('files', 'symlinks') for path in record.get(field, [])}
+        # Alp records created directories in `files`, but omits shared dirs.
+        if claims - old_directories_by_owner[owner] != set(old_entries_by_owner[owner]):
+            raise RuntimeError('Accepted Glibc manifest differs from DB ownership: ' + owner)
+        claims_by_owner[owner] = claims
+    transfer_owners = {}
+    for owner, claims in claims_by_owner.items():
+        for path in claims & set(new_entries):
+            transfer_owners.setdefault(path, set()).add(owner)
+    transfer_paths = sorted(transfer_owners)
     if not transfer_paths:
-        raise RuntimeError('Base Glibc has no paths to take over from cross-m64 Glibc')
+        raise RuntimeError('Base Glibc has no paths to take over from bootstrap Glibc')
     for path in transfer_paths:
-        if owners := [owner for owner, record in packages.items()
-                      if any(str(item).lstrip('/') == path.lstrip('/')
-                             for field in ('files', 'symlinks') for item in record.get(field, []))]:
-            if owners != ['glibc-cross-m64']:
-                raise RuntimeError('Shared Glibc path has additional Alp owners: ' + path)
+        owners = {owner for owner, record in packages.items()
+                  if any(str(item).lstrip('/') == path.lstrip('/')
+                         for field in ('files', 'symlinks') for item in record.get(field, []))}
+        if owners != transfer_owners[path]:
+            raise RuntimeError('Shared Glibc path has unverified Alp owners: ' + path)
+        entries = [old_entries_by_owner[owner][path] for owner in sorted(transfer_owners[path])]
+        if any(entry != entries[0] for entry in entries[1:]):
+            raise RuntimeError('Bootstrap Glibc owners disagree on shared payload: ' + path)
+    old_entries = {path: old_entries_by_owner[sorted(transfer_owners[path])[0]][path]
+                   for path in transfer_paths}
     transfer_set = set(transfer_paths)
-    old_record['files'] = [path for path in old_record.get('files', [])
+    for owner in manifests_by_owner:
+        record = packages[owner]
+        record['files'] = [path for path in record.get('files', [])
                            if ('/' + str(path).lstrip('/')) not in transfer_set]
-    old_record['symlinks'] = [path for path in old_record.get('symlinks', [])
+        record['symlinks'] = [path for path in record.get('symlinks', [])
                               if ('/' + str(path).lstrip('/')) not in transfer_set]
     updated_db = (json.dumps(database, sort_keys=True, indent=2) + '\n').encode()
 
@@ -297,12 +324,17 @@ def handoff_glibc_cross_m64_owner(recipe, built, root, result, installer,
             raise RuntimeError('Base Glibc did not claim shared bootstrap payload in Alp DB')
         glibc = current_db['packages']['glibc']
         package_install.ownership_check(root, value, current_db['packages'], 'glibc')
-        evidence = {'schema': 'alpbahOS.glibc-cross-m64-ownership-transfer/v1',
+        evidence = {'schema': 'alpbahOS.glibc-bootstrap-ownership-transfer/v2',
                     'run_id': run_id, 'paths': transfer_paths,
-                    'from_package': 'glibc-cross-m64', 'to_package': 'glibc',
+                    'from_packages': sorted({owner for owners in transfer_owners.values()
+                                             for owner in owners}), 'to_package': 'glibc',
                     'prior_db_sha256': prior_db_sha,
                     'manifest_sha256': built['manifest_sha256'],
-                    'previous_manifest_sha256': fingerprint(previous_manifest),
+                    'previous_manifest_sha256': {owner: fingerprint(manifests_by_owner[owner])
+                                                 for owner in sorted(manifests_by_owner)},
+                    'paths_by_package': {owner: sorted(path for path in transfer_paths
+                                                       if owner in transfer_owners[path])
+                                         for owner in sorted(manifests_by_owner)},
                     'path_count': len(transfer_paths), 'result': 'TRANSFERRED'}
         for parent in {target.parent for target, _ in moved_paths} | {db.parent}:
             dirfd = os.open(parent, os.O_RDONLY | getattr(os, 'O_DIRECTORY', 0))
@@ -441,9 +473,10 @@ _install_staged = guest_base.install_staged
 
 def install_staged_with_glibc_handoff(recipe, built, root, result, reinstall=False):
     if recipe.get('name') == 'glibc':
-        previous_manifest = accepted_glibc_cross_m64_manifest(root, package_install)
-        return handoff_glibc_cross_m64_owner(
-            recipe, built, root, result, _install_staged, package_install, previous_manifest)
+        previous_manifests = [accepted_glibc_cross_m64_manifest(root, package_install),
+                              accepted_glibc_cross_m32_manifest(root, package_install)]
+        return handoff_glibc_bootstrap_owners(
+            recipe, built, root, result, _install_staged, package_install, previous_manifests)
     return _install_staged(recipe, built, root, result, reinstall=reinstall)
 
 
