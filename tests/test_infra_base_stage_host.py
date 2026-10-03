@@ -43,8 +43,9 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
 
     def test_parent_handoff_is_rebound_to_the_measured_current_guest_boot(self):
         guest_boot = '11111111-2222-4333-8444-555555555555'
-        payload, authorization, base_auth, receipt = base_stage.package_auth(
-            self.plan, 'a' * 32, guest_boot, self.proof, self.parent_raw)
+        with patch.object(base_stage.buildctl, 'inputs_digest', return_value=self.proof['inputs_sha256']):
+            payload, authorization, base_auth, receipt = base_stage.package_auth(
+                self.plan, 'a' * 32, guest_boot, self.proof, self.parent_raw)
 
         handoff = json.loads(payload['handoff_raw'])
         self.assertNotEqual(handoff['guest_boot_id'], json.loads(self.old_handoff)['guest_boot_id'])
@@ -68,8 +69,9 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
 
     def test_guest_installer_atomically_refreshes_the_pair_and_installs_base_token(self):
         guest_boot = '11111111-2222-4333-8444-555555555555'
-        payload, authorization, base_auth, receipt = base_stage.package_auth(
-            self.plan, 'c' * 32, guest_boot, self.proof, self.parent_raw)
+        with patch.object(base_stage.buildctl, 'inputs_digest', return_value=self.proof['inputs_sha256']):
+            payload, authorization, base_auth, receipt = base_stage.package_auth(
+                self.plan, 'c' * 32, guest_boot, self.proof, self.parent_raw)
         with tempfile.TemporaryDirectory() as directory:
             infra = Path(directory) / 'infra'; infra.mkdir(mode=0o700)
             inputs = infra / 'inputs.json'

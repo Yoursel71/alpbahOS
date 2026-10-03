@@ -1,7 +1,21 @@
 {
   "schema": "alpbahOS.test-policy/v1",
-  "glibc": {"max_unexpected_failures": 0, "allowed_failures": {}, "required_completed": true,
-    "minimum_pass_count": 1000, "required_summary_names": ["tests.sum"]},
+  "glibc": {
+    "max_unexpected_failures": 0,
+    "allowed_failures": {"stdlib/tst-system": 1},
+    "allowed_failure_output_contains": {
+      "stdlib/tst-system": [
+        "tst-system.c:211: numeric comparison failure",
+        "system (\"\")",
+        "right: -1"
+      ]
+    },
+    "basis": "MLFS Glibc 2.42 runs this privileged suite as root; the RLIMIT_NPROC subtest expects system(\"\") to fail, but Linux exempts real UID 0. Only this exact test and observed assertion may be accepted; all other FAIL/ERROR/UNRESOLVED/XPASS remain fatal.",
+    "required_completed": true,
+    "minimum_pass_count": 6000,
+    "minimum_result_count": 6800,
+    "required_summary_names": ["tests.sum"]
+  },
   "binutils": {"max_unexpected_failures": 0, "allowed_failures": {}, "required_completed": true,
     "minimum_pass_count": 3000, "required_summary_names": ["binutils.sum", "gas.sum", "ld.sum"]},
   "gcc": {

@@ -2335,12 +2335,15 @@ class TestPolicyRegressionTests(unittest.TestCase):
                 if name == missing:
                     continue
                 path = Path(directory) / name
-                text = ('PASS: fixture\n' * policy['minimum_pass_count'] if i == 0 else 'PASS: fixture\n')
+                minimum_rows = max(policy['minimum_pass_count'], policy.get('minimum_result_count', 0))
+                text = (''.join(f'PASS: fixture-{row}\n' for row in range(minimum_rows))
+                        if i == 0 else 'PASS: fixture\n')
                 if name != unfinished:
-                    text += '\t=== fixture Summary ===\n'
+                    text += ('\t=== glibc tests ===\n' if package == 'glibc' and name == 'tests.sum'
+                             else '\t=== fixture Summary ===\n')
                 path.write_text(text + (extra if i == 0 else ''))
                 files.append(path)
-            return test_policy.evaluate(package, files, make_exit, policy)
+            return test_policy.evaluate(package, files, make_exit, policy, Path(directory))
 
     def test_fatal_results_cannot_pass_with_zero_make_exit(self):
         for status in ('ERROR', 'UNRESOLVED', 'XPASS'):
@@ -2359,6 +2362,25 @@ class TestPolicyRegressionTests(unittest.TestCase):
         self.assertFalse(self.evaluate('gcc', missing='g++.sum')['accepted'])
         self.assertFalse(self.evaluate('binutils', unfinished='gas.sum')['accepted'])
         self.assertFalse(self.evaluate('glibc', make_exit=124)['accepted'])
+
+    def test_glibc_known_root_rlimit_failure_requires_exact_output(self):
+        policy = POLICIES['glibc']
+        with tempfile.TemporaryDirectory(dir=ctl.STATE) as directory:
+            root = Path(directory)
+            summary = root / 'tests.sum'
+            summary.write_text(''.join(f'PASS: fixture-{row}\n'
+                                       for row in range(policy['minimum_result_count']))
+                               + 'FAIL: stdlib/tst-system\n\t=== glibc tests ===\n')
+            test_output = root / 'stdlib/tst-system.out'
+            test_output.parent.mkdir()
+            test_output.write_text('tst-system.c:211: numeric comparison failure\n'
+                                   'left: 0; from: system ("")\nright: -1\n')
+            result = test_policy.evaluate('glibc', [summary], 2, policy, root)
+            self.assertTrue(result['accepted'])
+            test_output.write_text('different failure\n')
+            result = test_policy.evaluate('glibc', [summary], 2, policy, root)
+            self.assertFalse(result['accepted'])
+            self.assertEqual(result['unexpected_failures'], {'stdlib/tst-system': 1})
 
 
 if __name__ == '__main__':

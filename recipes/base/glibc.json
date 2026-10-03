@@ -141,7 +141,7 @@
     [
       "bash",
       "-euc",
-      "set +e; make -k check; make_exit=$?; set -e; python3 /opt/alp-infra/scripts/infra/test-policy.py glibc --build . --make-exit \"$make_exit\" --output glibc-test-policy.json"
+      "set +e; make -k check with-lld=; make_exit=$?; set -e; python3 /opt/alp-infra/scripts/infra/test-policy.py glibc --build . --make-exit \"$make_exit\" --output glibc-test-policy.json"
     ]
   ],
   "test_locale": "C",
