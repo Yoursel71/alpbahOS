@@ -150,17 +150,17 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
                     ['env', 'CC=gcc -m32', 'CXX=g++ -m32', '../configure'],
                     '/custom/include'),
                     ['env',
-                     'CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32 -static-libgcc -I/custom/include',
+                     'CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32 -I/custom/include',
                      'CXX=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-g++ -m32 -static-libgcc -I/custom/include',
                      '../configure'])
                 cross_configure = ['env',
-                    'CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32 -static-libgcc',
+                    'CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32',
                     'CXX=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-g++ -m32 -static-libgcc',
                     '../configure']
                 prepared_cross = runner['prepare_m32_kernel_headers'](
                     cross_configure, '/custom/include')
                 self.assertEqual(prepared_cross, ['env',
-                    'CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32 -static-libgcc -I/custom/include',
+                    'CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32 -I/custom/include',
                     'CXX=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-g++ -m32 -static-libgcc -I/custom/include',
                     '../configure'])
                 self.assertTrue(runner['uses_m32_uapi_configure'](prepared_cross,
@@ -200,7 +200,7 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
                         ['env', 'CC=gcc -m32', 'CXX=g++ -m32', '../configure'],
                         Path(directory) / 'm32-configure.log', cwd=work)
                     self.assertIn(
-                        'CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32 -static-libgcc '
+                        'CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32 '
                         '-I/srv/lfs/build/.m32-kernel-uapi/include',
                         run.call_args.args[0])
                     self.assertIn(
@@ -213,7 +213,7 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
                     runner['run_with_root_owned_test_tree'](
                         cross_configure, Path(directory) / 'm32-cross-configure.log', cwd=work)
                     self.assertIn(
-                        'CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32 -static-libgcc '
+                        'CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32 '
                         '-I/srv/lfs/build/.m32-kernel-uapi/include',
                         run.call_args.args[0])
                     self.assertIn(

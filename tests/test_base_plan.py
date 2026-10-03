@@ -168,6 +168,7 @@ class BaseInventoryTests(unittest.TestCase):
         self.assertIn('make -k check', glibc['test'][0][2])
         self.assertIn('CC=gcc -m32', glibc['stage'][2])
         self.assertIn('CXX=g++ -m32', glibc['stage'][2])
+        self.assertEqual(glibc['stage'][3], ['make', '-j{jobs}', 'CXX='])
         self.assertIn('--host=i686-pc-linux-gnu', glibc['stage'][2])
         self.assertIn('--build={build_triplet}', glibc['stage'][2])
         self.assertEqual(glibc['stage'][6][-2:], ['{stage}/.m32/usr/lib32/.', '{stage}/usr/lib32/'])

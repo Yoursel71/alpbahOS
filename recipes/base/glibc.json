@@ -97,7 +97,8 @@
     ],
     [
       "make",
-      "-j{jobs}"
+      "-j{jobs}",
+      "CXX="
     ],
     [
       "make",
@@ -147,7 +148,7 @@
   "test_locale": "C",
   "test_policy": "glibc",
   "test_user": "root",
-  "validation": "Pinned MLFS ml-12.4 Glibc 2.42 recipe. The critical m64 test suite is checked against the strict pinned summary policy before either ABI is accepted. m64 and i686 m32 installs are staged through DESTDIR; only the documented m32 library payload and two ABI headers are merged into the package stage. The book's /etc, locale, timezone and dynamic-loader configuration is deferred to target-root integration. Guest build/test and Alp ownership acceptance remain pending.",
+  "validation": "Pinned MLFS ml-12.4 Glibc 2.42 recipe. The critical m64 test suite is checked against the strict pinned summary policy before either ABI is accepted. m64 and i686 m32 installs are staged through DESTDIR; the m32 bootstrap make overrides CXX= because its support link helper otherwise requires the not-yet-built m32 libgcc_s/libstdc++ runtime. Only the documented m32 library payload and two ABI headers are merged into the package stage. The book's /etc, locale, timezone and dynamic-loader configuration is deferred to target-root integration. Guest build/test and Alp ownership acceptance remain pending.",
   "version": "2.42",
   "working_directories": {
     "compile": "build",
