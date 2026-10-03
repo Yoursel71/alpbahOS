@@ -131,12 +131,6 @@ def test_identity_guard(recipe):
         raise RuntimeError(f'{identity}-owned tests require the guest root coordinator')
 
 
-def prepare_test_tree(build, test_user, log):
-    """Give namespace-based root tests ownership before entering user namespaces."""
-    if test_user in ('root', 'tester'):
-        run(['chown', '-hR', f'{test_user}:{test_user}', str(build)], log)
-
-
 def phase2_authorization_guard(recipe):
     """Stability may run before its receipt, but never before OC/ABI approval."""
     if recipe.get('phase') not in ('stability', 'toolchain'):
@@ -326,7 +320,8 @@ def build_staged(recipe, run_id, result, jobs=None):
         for argv in recipe.get(step, []):
             command = [arg.format(**substitutions) for arg in argv]
             try:
-                prepare_test_tree(build, test_user, log)
+                if test_user == 'tester':
+                    run(['chown', '-hR', 'tester:tester', str(build)], log)
                 run([RUNUSER, '-u', test_user, '--', 'env', f'LC_ALL={test_locale}',
                      f'LANG={test_locale}', 'TZ=UTC',
                      f'SOURCE_DATE_EPOCH={manifest["source_date_epoch"]}', f'CFLAGS={flags}',

@@ -128,21 +128,38 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
     def test_guest_runner_resolves_separate_build_paths_from_source_root(self):
         import package_stage
         original = package_stage.recipe_working_directory
+        original_run = package_stage.run
         with tempfile.TemporaryDirectory() as directory:
-            source = Path(directory) / 'glibc-source'; source.mkdir()
+            build_root = Path(directory) / 'build'
+            source = build_root / 'glibc-source'; source.mkdir(parents=True)
+            (source / 'Makefile').write_text('')
             work = source / 'build'; work.mkdir()
+            (work / 'config.make').write_text('')
             fake_guest = types.SimpleNamespace(main=lambda: None)
             with (patch.dict(sys.modules, {'guest_base': fake_guest}),
                   patch.object(sys, 'argv', [str(base_stage.GUEST_RUNNER),
                                              base_stage.sha(base_stage.GUEST_RUNNER)])):
-                runpy.run_path(str(base_stage.GUEST_RUNNER), run_name='__main__')
+                runner = runpy.run_path(str(base_stage.GUEST_RUNNER), run_name='__main__')
             try:
                 resolved = package_stage.recipe_working_directory(
                     work, {'separate_build': True, 'working_directories': {'compile': 'build'}},
                     'compile')
                 self.assertEqual(resolved, work)
+                self.assertEqual(runner['root_test_tree'](work, build_root), source)
+                runner_globals = runner['run_with_root_owned_test_tree'].__globals__
+                root_test_tree = runner_globals['root_test_tree']
+                with patch.object(package_stage, 'run') as run, patch.dict(
+                        runner_globals, {'_run': run, 'root_test_tree':
+                                 lambda path: root_test_tree(path, build_root)}):
+                    runner['run_with_root_owned_test_tree'](
+                        [package_stage.RUNUSER, '-u', 'root', '--', 'env'],
+                        Path(directory) / 'test.log', cwd=work)
+                    self.assertEqual(run.call_args_list[0].args[0],
+                                     ['chown', '-hR', 'root:root', str(source)])
+                    self.assertEqual(run.call_args_list[1].args[0][0], package_stage.RUNUSER)
             finally:
                 package_stage.recipe_working_directory = original
+                package_stage.run = original_run
 
 
 if __name__ == '__main__':

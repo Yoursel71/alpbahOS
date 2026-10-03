@@ -7,7 +7,7 @@ from pathlib import Path
 
 import base_plan
 import guest_base
-from package_stage import prepare_test_tree, recipe_working_directory, test_identity_guard, validate_recipe
+from package_stage import recipe_working_directory, test_identity_guard, validate_recipe
 
 REPO = Path(__file__).resolve().parents[1]
 
@@ -345,16 +345,6 @@ class BaseInventoryTests(unittest.TestCase):
             with self.subTest(identity=identity), patch('package_stage.os.geteuid', return_value=0):
                 test_identity_guard(recipe)
         test_identity_guard({'test_user': 'root', 'test': []})
-
-    def test_root_test_tree_is_owned_before_user_namespace_tests(self):
-        from unittest.mock import patch
-        build, log = Path('/srv/lfs/build/glibc'), Path('/tmp/glibc.log')
-        with patch('package_stage.run') as run:
-            prepare_test_tree(build, 'root', log)
-            run.assert_called_once_with(['chown', '-hR', 'root:root', str(build)], log)
-            run.reset_mock()
-            prepare_test_tree(build, 'lfs', log)
-            run.assert_not_called()
 
     def test_ninja_job_cap_is_bounded_and_injected_as_environment(self):
         plan = base_plan.load(REPO)
