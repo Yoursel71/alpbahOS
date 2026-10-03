@@ -1,5 +1,7 @@
 import importlib.util
+import hashlib
 import json
+import os
 from pathlib import Path
 import runpy
 import sys
@@ -135,7 +137,7 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
             (source / 'Makefile').write_text('')
             work = source / 'build'; work.mkdir()
             (work / 'config.make').write_text('')
-            fake_guest = types.SimpleNamespace(main=lambda: None)
+            fake_guest = types.SimpleNamespace(main=lambda: None, install_staged=lambda *args, **kwargs: None)
             with (patch.dict(sys.modules, {'guest_base': fake_guest}),
                   patch.object(sys, 'argv', [str(base_stage.GUEST_RUNNER),
                                              base_stage.sha(base_stage.GUEST_RUNNER)])):
@@ -252,6 +254,93 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
             finally:
                 package_stage.recipe_working_directory = original
                 package_stage.run = original_run
+
+    def rpc_handoff_fixture(self, directory):
+        import package_stage
+        original_recipe_working_directory = package_stage.recipe_working_directory
+        run_id = 'a' * 32
+        root = Path(directory) / 'root'
+        target = root / 'etc/rpc'
+        target.parent.mkdir(parents=True)
+        payload = b'100000\tportmapper\n'
+        target.write_bytes(payload)
+        target.chmod(0o644)
+        db = root / 'var/lib/alp/db.json'
+        db.parent.mkdir(parents=True)
+        prior = {'schema_version': 1, 'packages': {
+            'glibc-cross-m64': {'status': 'installed', 'files': ['/etc/rpc'], 'symlinks': []},
+            'linux-headers': {'status': 'installed', 'files': ['/usr/include/linux/x.h'],
+                              'symlinks': []}}}
+        raw_db = (json.dumps(prior, sort_keys=True, indent=2) + '\n').encode()
+        db.write_bytes(raw_db)
+        result = Path(directory) / 'results' / run_id / 'glibc'
+        result.mkdir(parents=True)
+        entry = {'path': '/etc/rpc', 'type': 'file', 'mode': 0o644,
+                 'uid': os.getuid(), 'gid': os.getgid(), 'size': len(payload),
+                 'sha256': hashlib.sha256(payload).hexdigest()}
+        fake_guest = types.SimpleNamespace(main=lambda: None, install_staged=lambda *args, **kwargs: None)
+        with (patch.dict(sys.modules, {'guest_base': fake_guest}),
+              patch.object(sys, 'argv', [str(base_stage.GUEST_RUNNER),
+                                         base_stage.sha(base_stage.GUEST_RUNNER)])):
+            runner = runpy.run_path(str(base_stage.GUEST_RUNNER), run_name='__main__')
+        package_stage.recipe_working_directory = original_recipe_working_directory
+        installer = Mock()
+
+        def install(recipe, built, install_root, install_result):
+            installed = install_root / 'etc/rpc'
+            installed.write_bytes(payload)
+            installed.chmod(0o644)
+            database = json.loads((install_root / 'var/lib/alp/db.json').read_bytes())
+            database['packages']['glibc'] = {'status': 'installed', 'files': ['/etc/rpc'],
+                                             'symlinks': []}
+            (install_root / 'var/lib/alp/db.json').write_text(
+                json.dumps(database, sort_keys=True, indent=2) + '\n')
+            return {'result': 'INSTALLED'}
+
+        installer.side_effect = install
+        built = {'manifest_sha256': 'b' * 64, 'manifest': 'unused'}
+        recipe = {'name': 'glibc', 'phase': 'base'}
+        package_install = types.SimpleNamespace(validate_bundle=lambda *_: {'entries': [entry]})
+        return runner, package_stage, root, target, db, raw_db, result, payload, built, recipe, package_install, installer
+
+    def test_glibc_rpc_bootstrap_owner_handoff_is_exact_and_receipted(self):
+        with tempfile.TemporaryDirectory() as directory:
+            (runner, _, root, target, db, raw_db, result, payload, built, recipe,
+             package_install, installer) = self.rpc_handoff_fixture(directory)
+            outcome = runner['handoff_glibc_rpc_bootstrap_owner'](
+                recipe, built, root, result, installer, package_install)
+            self.assertEqual(outcome, {'result': 'INSTALLED'})
+            self.assertEqual(target.read_bytes(), payload)
+            database = json.loads(db.read_bytes())
+            self.assertNotIn('/etc/rpc', database['packages']['glibc-cross-m64']['files'])
+            self.assertIn('/etc/rpc', database['packages']['glibc']['files'])
+            self.assertEqual((result / 'glibc-rpc-ownership-transfer.json').exists(), True)
+            self.assertEqual(list(target.parent.glob('.rpc.infra-transfer-*.bak')), [])
+            self.assertNotEqual(db.read_bytes(), raw_db)
+
+    def test_glibc_rpc_handoff_rolls_back_db_and_file_when_alp_fails(self):
+        with tempfile.TemporaryDirectory() as directory:
+            (runner, _, root, target, db, raw_db, result, payload, built, recipe,
+             package_install, installer) = self.rpc_handoff_fixture(directory)
+            installer.side_effect = RuntimeError('simulated Alp failure')
+            with self.assertRaisesRegex(RuntimeError, 'simulated Alp failure'):
+                runner['handoff_glibc_rpc_bootstrap_owner'](
+                    recipe, built, root, result, installer, package_install)
+            self.assertEqual(target.read_bytes(), payload)
+            self.assertEqual(db.read_bytes(), raw_db)
+            self.assertEqual(list(target.parent.glob('.rpc.infra-transfer-*.bak')), [])
+            self.assertFalse((result / 'glibc-rpc-ownership-transfer.json').exists())
+
+    def test_glibc_rpc_handoff_rejects_changed_bootstrap_bytes_before_mutation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            (runner, _, root, target, db, raw_db, result, _, built, recipe,
+             package_install, installer) = self.rpc_handoff_fixture(directory)
+            target.write_bytes(b'different bootstrap content\n')
+            with self.assertRaisesRegex(RuntimeError, 'does not exactly match'):
+                runner['handoff_glibc_rpc_bootstrap_owner'](
+                    recipe, built, root, result, installer, package_install)
+            installer.assert_not_called()
+            self.assertEqual(db.read_bytes(), raw_db)
 
 
 if __name__ == '__main__':
