@@ -380,15 +380,18 @@ def handoff_glibc_bootstrap_owners(recipe, built, root, result, installer,
 
 
 def prepare_m32_kernel_headers(argv, header_include='/srv/lfs/build/.m32-kernel-uapi/include'):
-    """Point the Builder's 32-bit compiler at an isolated kernel-header view."""
+    """Use the LFS 32-bit compiler and isolate Glibc's kernel-header view."""
     argv = list(argv)
-    if '../configure' not in argv:
+    configure = any(value in ('configure', './configure', '../configure')
+                    or value.endswith('/configure') for value in argv)
+    if not configure:
         return argv
+    glibc_configure = '../configure' in argv
     for index, value in enumerate(argv):
         if value in (M32_HOST_C_COMPILER, M32_HOST_CXX_COMPILER):
             compiler = M32_C_COMPILER if value.startswith('CC=') else M32_CXX_COMPILER
             argv[index] = compiler
-        if argv[index] in (M32_C_COMPILER, M32_CXX_COMPILER):
+        if glibc_configure and argv[index] in (M32_C_COMPILER, M32_CXX_COMPILER):
             argv[index] += ' -I' + header_include
     return argv
 

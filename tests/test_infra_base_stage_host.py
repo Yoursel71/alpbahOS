@@ -166,6 +166,16 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
                      'CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32 -I/custom/include',
                      'CXX=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-g++ -m32 -static-libgcc -I/custom/include',
                      '../configure'])
+                self.assertEqual(runner['prepare_m32_kernel_headers'](
+                    ['env', 'CC=gcc -m32', './configure']),
+                    ['env',
+                     'CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32',
+                     './configure'])
+                self.assertEqual(runner['prepare_m32_kernel_headers'](
+                    ['env', 'CC=gcc -m32', 'subdir/configure']),
+                    ['env',
+                     'CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32',
+                     'subdir/configure'])
                 cross_configure = ['env',
                     'CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32',
                     'CXX=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-g++ -m32 -static-libgcc',
