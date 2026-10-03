@@ -58,6 +58,14 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, 'Invalid stage run identity'):
             base_stage.toolchain_parent_ids(proof, transaction, parent)
 
+    def test_base_stage_help_does_not_start_a_build(self):
+        with patch.object(sys, 'argv', [str(SCRIPT), '--help']), \
+                patch.object(base_stage, 'execute') as execute:
+            with self.assertRaises(SystemExit) as error:
+                base_stage.main()
+        self.assertEqual(error.exception.code, 0)
+        execute.assert_not_called()
+
     def setUp(self):
         records = {
             'cat /srv/infra/phase2-authorization.json': self.old_authorization,
@@ -326,6 +334,23 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
             self.assertEqual(package_install.ownership_check.call_count, 1)
             self.assertEqual(list((root / 'var/tmp').glob('alp-infra-glibc-handoff-*')), [])
             self.assertNotEqual(db.read_bytes(), raw_db)
+
+    def test_glibc_handoff_accepts_manifest_directories_in_alp_files_ownership(self):
+        with tempfile.TemporaryDirectory() as directory:
+            (runner, _, root, target, db, _, result, payload, built, recipe,
+             package_install, installer, old_manifest) = self.glibc_handoff_fixture(directory)
+            old_manifest['entries'].append({'path': '/etc', 'type': 'directory',
+                                            'mode': 0o755, 'uid': os.getuid(), 'gid': os.getgid()})
+            database = json.loads(db.read_bytes())
+            database['packages']['glibc-cross-m64']['files'].append('/etc')
+            db.write_text(json.dumps(database, sort_keys=True, indent=2) + '\n')
+            outcome = runner['handoff_glibc_cross_m64_owner'](
+                recipe, built, root, result, installer, package_install, old_manifest)
+            self.assertEqual(outcome, {'result': 'INSTALLED'})
+            self.assertEqual(target.read_bytes(), payload)
+            transfer = json.loads((result / 'glibc-cross-m64-ownership-transfer.json').read_bytes())
+            self.assertEqual(transfer['paths'], ['/etc/rpc'])
+            self.assertIn('/etc', json.loads(db.read_bytes())['packages']['glibc-cross-m64']['files'])
 
     def test_glibc_handoff_rolls_back_db_and_file_when_alp_fails(self):
         with tempfile.TemporaryDirectory() as directory:

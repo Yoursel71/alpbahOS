@@ -636,9 +636,16 @@ def verify_base_checkpoint(directory, acceptance):
     return {'checkpoint_sha256': digest(cp_raw), 'transaction_sha256': digest(tx_raw)}
 
 
+def main():
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.parse_args()
+    execute()
+
+
 if __name__ == '__main__':
     try:
-        execute()
+        main()
     except (RuntimeError, OSError, subprocess.SubprocessError, ValueError, KeyError) as error:
         print('STOP: ' + str(error), file=sys.stderr)
         raise SystemExit(1)

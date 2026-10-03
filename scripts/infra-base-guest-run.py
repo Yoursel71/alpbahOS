@@ -158,8 +158,11 @@ def handoff_glibc_cross_m64_owner(recipe, built, root, result, installer,
             or previous_manifest.get('package', {}).get('version') != recipe.get('version')):
         raise RuntimeError('Previous Glibc manifest identity is invalid')
     new_entries = {entry['path']: entry for entry in value['entries'] if entry['type'] != 'directory'}
-    old_entries = {entry['path']: entry for entry in previous_manifest.get('entries', [])
+    previous_entries = previous_manifest.get('entries', [])
+    old_entries = {entry['path']: entry for entry in previous_entries
                    if entry.get('type') != 'directory'}
+    old_directories = {entry['path'] for entry in previous_entries
+                       if entry.get('type') == 'directory'}
     root, result = Path(root), Path(result)
     db = root / 'var/lib/alp/db.json'
     for path in (root, db.parent, result):
@@ -189,7 +192,12 @@ def handoff_glibc_cross_m64_owner(recipe, built, root, result, installer,
     db_stat = db.stat(follow_symlinks=False)
     claims = {str(path) if str(path).startswith('/') else '/' + str(path)
               for field in ('files', 'symlinks') for path in old_record.get(field, [])}
-    if claims != set(old_entries):
+    # Alp records manifest directories in the DB's `files` list when this
+    # package created them. Directories shared with earlier packages are not
+    # attributed to this package, so their absence is expected. Exclude only
+    # the accepted manifest's directories before requiring exact payload
+    # ownership; stray non-directory claims still fail closed.
+    if claims - old_directories != set(old_entries):
         raise RuntimeError('Accepted Glibc manifest differs from cross-m64 DB ownership')
     transfer_paths = sorted(claims & set(new_entries))
     if not transfer_paths:
