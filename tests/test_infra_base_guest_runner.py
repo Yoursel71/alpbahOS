@@ -92,24 +92,23 @@ class ReadlineNcursesLinkPathTests(unittest.TestCase):
     def tearDown(self):
         self.temporary.cleanup()
 
-    def test_readline_link_gets_both_staged_abis_and_preserves_existing_path(self):
+    def test_readline_link_gets_direct_staged_search_paths(self):
         env = {'PATH': '/tools/bin', 'LIBRARY_PATH': '/existing/lib'}
-        command = ['/usr/sbin/runuser', '-u', 'lfs', '--', 'env', 'LC_ALL=C',
-                   'make', '-j8', 'SHLIB_LIBS=-lncursesw']
+        command = ['make', '-j8', 'SHLIB_LIBS=-lncursesw']
         updated = readline_ncurses_environment(
             command, self.build, env,
             build_dir=self.build, stage_root=self.stage)
-        expected = f'{self.stage}/usr/lib:{self.stage}/usr/lib32:/existing/lib'
-        self.assertEqual(updated['LIBRARY_PATH'],
-                         expected)
-        self.assertEqual(command[command.index('env') + 1], 'LIBRARY_PATH=' + expected)
+        expected = (f'SHLIB_LIBS=-L{self.stage}/usr/lib32 '
+                    f'-L{self.stage}/usr/lib -lncursesw')
+        self.assertIs(updated, env)
+        self.assertEqual(command[-1], expected)
         self.assertEqual(env['LIBRARY_PATH'], '/existing/lib')
 
-    def test_readline_link_requires_runuser_env_boundary(self):
-        with self.assertRaisesRegex(RuntimeError, 'runuser boundary'):
-            readline_ncurses_environment(
-                ['make', 'SHLIB_LIBS=-lncursesw'], self.build, {},
-                build_dir=self.build, stage_root=self.stage)
+    def test_readline_updates_each_matching_link_variable(self):
+        command = ['make', 'SHLIB_LIBS=-lncursesw', 'SHLIB_LIBS=-lncursesw']
+        readline_ncurses_environment(
+            command, self.build, {}, build_dir=self.build, stage_root=self.stage)
+        self.assertTrue(all(arg.startswith('SHLIB_LIBS=-L') for arg in command[1:]))
 
     def test_unrelated_command_and_directory_are_unchanged(self):
         env = {'PATH': '/tools/bin'}

@@ -135,32 +135,26 @@ def use_staged_file_magic_compiler(argv, cwd,
 def readline_ncurses_environment(argv, cwd, env,
                                 build_dir='/srv/lfs/build/base-readline',
                                 stage_root='/srv/lfs/stage/base-ncurses'):
-    """Expose staged Ncurses only to the canonical Readline linker commands."""
+    """Expose staged Ncurses to Readline through explicit linker search paths."""
     if cwd is None or Path(cwd).resolve() != Path(build_dir).resolve():
         return env
-    if 'SHLIB_LIBS=-lncursesw' not in argv:
+    link_variables = [index for index, arg in enumerate(argv)
+                      if arg == 'SHLIB_LIBS=-lncursesw']
+    if not link_variables:
         return env
     stage = Path(stage_root)
     library_dirs = (stage / 'usr/lib', stage / 'usr/lib32')
     for directory in library_dirs:
         if directory.is_symlink() or not directory.is_dir() or directory.resolve() != directory:
             raise RuntimeError('Pinned staged Ncurses library directory is missing or unsafe')
-    updated = dict(os.environ if env is None else env)
-    staged = ':'.join(str(directory) for directory in library_dirs)
-    existing = updated.get('LIBRARY_PATH')
-    updated['LIBRARY_PATH'] = staged + (':' + existing if existing else '')
-    # runuser intentionally sanitizes much of the caller's environment. Put
-    # the path on env's argv as well so the lfs process doing the actual link
-    # receives it regardless of runuser/PAM environment policy.
-    try:
-        separator = argv.index('--')
-    except ValueError as error:
-        raise RuntimeError('Readline linker command is missing its runuser boundary') from error
-    env_index = separator + 1
-    if env_index >= len(argv) or argv[env_index] != 'env':
-        raise RuntimeError('Readline linker command is missing its bounded env wrapper')
-    argv.insert(env_index + 1, 'LIBRARY_PATH=' + updated['LIBRARY_PATH'])
-    return updated
+    # GCC's LIBRARY_PATH is rewritten through a cross compiler's sysroot on
+    # some targets. Pass -L directly in SHLIB_LIBS so ld receives the staged
+    # directories as-is. Search m32 first for the multilib build; GNU ld skips
+    # an incompatible ELF class and then selects the m64 library when needed.
+    search = ' '.join(f'-L{directory}' for directory in reversed(library_dirs))
+    for index in link_variables:
+        argv[index] = f'SHLIB_LIBS={search} -lncursesw'
+    return env
 
 
 def ncurses_doc_parent_setup(argv, stage_root='/srv/lfs/stage/base-ncurses',
