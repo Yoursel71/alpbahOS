@@ -172,6 +172,10 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
                      'CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32',
                      './configure'])
                 self.assertEqual(runner['prepare_m32_kernel_headers'](
+                    ['env', 'CFLAGS=-m32 -O2', 'CXXFLAGS=-m32 -O2', './configure']),
+                    ['env', 'CFLAGS=-m32 -O2', 'CXXFLAGS=-m32 -O2',
+                     'CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32', './configure'])
+                self.assertEqual(runner['prepare_m32_kernel_headers'](
                     ['env', 'CC=gcc -m32', 'subdir/configure']),
                     ['env',
                      'CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32',

@@ -393,6 +393,15 @@ def prepare_m32_kernel_headers(argv, header_include='/srv/lfs/build/.m32-kernel-
             argv[index] = compiler
         if glibc_configure and argv[index] in (M32_C_COMPILER, M32_CXX_COMPILER):
             argv[index] += ' -I' + header_include
+    m32_cflags = any(value.startswith('CFLAGS=')
+                     and re.search(r'(?:^|\s)-m32(?:\s|$)', value.partition('=')[2])
+                     for value in argv)
+    configured_m32_cc = any(value.startswith('CC=') and ' -m32' in value for value in argv)
+    if m32_cflags and not configured_m32_cc:
+        configure_index = next(index for index, value in enumerate(argv)
+                               if value in ('configure', './configure', '../configure')
+                               or value.endswith('/configure'))
+        argv.insert(configure_index, M32_C_COMPILER)
     return argv
 
 
