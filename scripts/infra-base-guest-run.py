@@ -94,7 +94,11 @@ def use_staged_file_magic_compiler(argv, cwd,
     if cwd is None or Path(cwd).resolve() != Path(build_dir).resolve():
         return argv
     makefile = Path(cwd) / 'magic/Makefile'
-    if not makefile.is_file() or 'FILE_COMPILE = file' not in makefile.read_text().splitlines():
+    native_file_compiler = re.compile(
+        r'FILE_COMPILE = file(?:\$\{EXEEXT\}|\$\(EXEEXT\))?')
+    if (not makefile.is_file()
+            or not any(native_file_compiler.fullmatch(line)
+                       for line in makefile.read_text().splitlines())):
         return argv
     make_indexes = [index for index, value in enumerate(argv) if value == 'make']
     if not make_indexes:

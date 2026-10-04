@@ -46,6 +46,13 @@ class StagedFileMagicCompilerTests(unittest.TestCase):
         self.assertIn('FILE_COMPILE=' + str(self.compiler), result)
         self.assertEqual(result.count('FILE_COMPILE=' + str(self.compiler)), 1)
 
+    def test_configured_executable_suffix_uses_staged_native_file(self):
+        (self.build / 'magic/Makefile').write_text(
+            'FILE_COMPILE = file${EXEEXT}\n')
+        result = self.rewrite()
+        self.assertIn('LD_LIBRARY_PATH=' + str(self.stage / 'usr/lib'), result)
+        self.assertIn('FILE_COMPILE=' + str(self.compiler), result)
+
     def test_native_make_is_unchanged(self):
         (self.build / 'magic/Makefile').write_text(
             'FILE_COMPILE = $(top_builddir)/src/file\n')
