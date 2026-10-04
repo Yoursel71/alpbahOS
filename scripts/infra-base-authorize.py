@@ -70,6 +70,12 @@ def install(payload_raw):
     old_auth = json.loads((INFRA / 'phase2-authorization.json').read_bytes())
     old_handoff_raw = (INFRA / 'stability-acceptance.json').read_bytes()
     old_handoff = json.loads(old_handoff_raw)
+    expected_parent_receipt = parent.get('parent_receipt_sha256')
+    if (handoff.get('host_boot_id') != parent.get('host_boot_id')
+            and HEX64.fullmatch(str(expected_parent_receipt or ''))):
+        expected_parent_receipt = digest(
+            b'alpbahOS.base-resume-parent/v1\0' + parent_raw + b'\0'
+            + bytes.fromhex(expected_parent_receipt))
 
     if (not isinstance(toolchain, dict) or toolchain.get('schema') != 'alpbahOS.toolchain-acceptance/v1'
             or toolchain.get('result') != 'PASS' or toolchain.get('stage') != 'toolchain'
@@ -96,13 +102,12 @@ def install(payload_raw):
             or any(authorization.get(k) != inputs.get(k) for k in ('inputs_sha256', 'sources_sha256'))
             or any(handoff.get(k) != parent.get(k) for k in (
                 'result', 'stage', 'mode', 'run_id', 'parent_run_id',
-                'inputs_sha256', 'sources_sha256', 'parent_receipt_sha256',
+                'inputs_sha256', 'sources_sha256',
                 'parent_proof_sha256', 'checkpoint_sha256', 'transaction_sha256',
                 'active_overlay_sha256'))
-            or handoff.get('schema') != 'alpbahOS.base-toolchain-handoff/v1'
+            or handoff.get('schema') != handoff_binding.SCHEMA
             or handoff.get('host_boot_id') != authorization.get('boot_id')
-            or handoff.get('source_host_boot_id') != parent.get('host_boot_id')
-            or handoff.get('source_parent_sha256') != digest(parent_raw)
+            or handoff.get('parent_receipt_sha256') != expected_parent_receipt
             or handoff.get('guest_boot_id') != boot_id):
         raise RuntimeError('Accepted toolchain, parent and measured guest handoff disagree')
 

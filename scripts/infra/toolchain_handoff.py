@@ -65,30 +65,3 @@ def bind_guest(parent_raw, parent_sha256, toolchain_run_id, guest_boot_id):
         raise RuntimeError('Toolchain binding needs current pinned parent/distinct job/guest boot')
     capsule = {**parent, 'schema': SCHEMA, 'run_id': toolchain_run_id, 'guest_boot_id': guest_boot_id}
     return (json.dumps(capsule, sort_keys=True, indent=2) + '\n').encode()
-
-
-def bind_guest_for_base_resume(parent_raw, parent_sha256, toolchain_run_id, guest_boot_id):
-    """Bind an accepted toolchain parent to this host/guest boot for base resume.
-
-    The source stability capsule remains byte-pinned. A fresh base-stage host
-    audit and monitored run establish the current host boot; this derived
-    capsule carries the original capsule hash and host boot as provenance.
-    """
-    parent = json.loads(parent_raw)
-    host_boot_id = audit.BOOT.read_text().strip()
-    stage_runs.identity(toolchain_run_id)
-    boot_pattern = r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
-    if (not valid(parent_sha256, '[0-9a-f]{64}') or audit.digest(parent_raw) != parent_sha256
-            or not isinstance(parent, dict) or set(parent) != KEYS - {'guest_boot_id'}
-            or parent.get('schema') != PARENT_SCHEMA or parent.get('result') != 'VERIFIED_PARENT'
-            or parent.get('stage') != 'toolchain' or parent.get('run_id') != toolchain_run_id
-            or not valid(parent.get('host_boot_id'), boot_pattern)
-            or not valid(host_boot_id, boot_pattern) or not valid(guest_boot_id, boot_pattern)
-            or toolchain_run_id == parent.get('parent_run_id')
-            or guest_boot_id == host_boot_id):
-        raise RuntimeError('Base resume binding needs a pinned accepted parent and distinct current boots')
-    capsule = {**parent, 'schema': 'alpbahOS.base-toolchain-handoff/v1',
-               'host_boot_id': host_boot_id, 'guest_boot_id': guest_boot_id,
-               'source_parent_sha256': parent_sha256,
-               'source_host_boot_id': parent['host_boot_id']}
-    return (json.dumps(capsule, sort_keys=True, indent=2) + '\n').encode()

@@ -1679,27 +1679,6 @@ class ToolchainHandoffTests(unittest.TestCase):
                     toolchain_handoff.bind_guest(parent, hashlib.sha256(parent).hexdigest(), 'a' * 32,
                                                   '22222222-2222-4222-8222-222222222222')
 
-    def test_base_resume_rebinds_original_parent_to_current_host_boot(self):
-        with tempfile.TemporaryDirectory(dir=ctl.STATE) as directory, self.fixture(directory) as f:
-            parent = self.prepare(f)
-            current_boot = Path(directory) / 'current-boot'
-            current_boot.write_text('33333333-3333-4333-8333-333333333333\n')
-            guest_boot = '22222222-2222-4222-8222-222222222222'
-            with patch.object(host_stage_audit, 'BOOT', current_boot):
-                raw = toolchain_handoff.bind_guest_for_base_resume(
-                    parent, hashlib.sha256(parent).hexdigest(), 'a' * 32, guest_boot)
-            auth = {'inputs_sha256': f['value']['inputs_sha256'],
-                    'sources_sha256': f['value']['sources_sha256'],
-                    'oc_confirmed': True, 'stage': 'toolchain', 'mode': 'multilib-m32',
-                    'run_id': 'a' * 32, 'boot_id': current_boot.read_text().strip(),
-                    'guest_boot_id': guest_boot, 'handoff_sha256': hashlib.sha256(raw).hexdigest()}
-            capsule = handoff_binding.validate(raw, auth,
-                {k: f['value'][k] for k in ('inputs_sha256', 'sources_sha256')}, guest_boot)
-            source = json.loads(parent)
-            self.assertEqual(capsule['source_parent_sha256'], hashlib.sha256(parent).hexdigest())
-            self.assertEqual(capsule['source_host_boot_id'], source['host_boot_id'])
-            self.assertEqual(capsule['host_boot_id'], current_boot.read_text().strip())
-
     def test_guest_guard_rejects_generic_pass_raw_drift_and_replay_bindings(self):
         with tempfile.TemporaryDirectory(dir=ctl.STATE) as directory, patch.object(package_stage, 'INFRA', Path(directory)), \
                 patch.object(package_stage, 'REPO', REPO), \

@@ -91,9 +91,10 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
         self.assertNotEqual(handoff['guest_boot_id'], json.loads(self.old_handoff)['guest_boot_id'])
         self.assertEqual(handoff['guest_boot_id'], guest_boot)
         parent = json.loads(self.parent_raw)
-        self.assertEqual(handoff['schema'], 'alpbahOS.base-toolchain-handoff/v1')
-        self.assertEqual(handoff['source_parent_sha256'], base_stage.digest(self.parent_raw))
-        self.assertEqual(handoff['source_host_boot_id'], parent['host_boot_id'])
+        self.assertEqual(handoff['schema'], 'alpbahOS.toolchain-handoff/v1')
+        self.assertEqual(handoff['parent_receipt_sha256'], base_stage.digest(
+            b'alpbahOS.base-resume-parent/v1\0' + self.parent_raw + b'\0'
+            + bytes.fromhex(parent['parent_receipt_sha256'])))
         self.assertEqual(handoff['host_boot_id'], self.current_host_boot)
         self.assertEqual(authorization['handoff_sha256'], base_stage.digest(payload['handoff_raw'].encode()))
         self.assertEqual(base_auth['guest_boot_id'], guest_boot)
@@ -137,7 +138,7 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
                   patch.object(base_authorize.os, 'geteuid', return_value=0)):
                 bad_payload = dict(payload)
                 bad_handoff = json.loads(payload['handoff_raw'])
-                bad_handoff['source_parent_sha256'] = '0' * 64
+                bad_handoff['parent_receipt_sha256'] = '0' * 64
                 bad_payload['handoff_raw'] = base_stage.encoded(bad_handoff).decode()
                 with self.assertRaisesRegex(RuntimeError, 'parent and measured guest handoff disagree'):
                     base_authorize.install(base_stage.encoded(bad_payload))

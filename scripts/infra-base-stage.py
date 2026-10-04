@@ -219,6 +219,42 @@ def copy_inputs(plan, artifact_root, guest_runner_sha256):
             'total_bytes': sum((buildctl.CACHE / name).stat().st_size for name in wanted)}
 
 
+def bind_base_resume(parent_raw, parent_sha256, toolchain_run_id, guest_boot_id):
+    """Rebind an accepted parent after host reboot without changing guest schema.
+
+    The original parent bytes remain in the authorization payload. Its receipt
+    pin is domain-separated and combined with those exact bytes so the guest
+    installer can verify provenance while the existing handoff validator
+    checks this host/guest boot pair.
+    """
+    parent = json.loads(parent_raw)
+    host_boot_id = audit.BOOT.read_text().strip()
+    stage_runs.identity(toolchain_run_id)
+    if (not isinstance(parent_sha256, str) or not re.fullmatch('[0-9a-f]{64}', parent_sha256)
+            or digest(parent_raw) != parent_sha256
+            or not isinstance(parent, dict) or set(parent) != toolchain_handoff.KEYS - {'guest_boot_id'}
+            or parent.get('schema') != toolchain_handoff.PARENT_SCHEMA
+            or parent.get('result') != 'VERIFIED_PARENT' or parent.get('stage') != 'toolchain'
+            or parent.get('run_id') != toolchain_run_id
+            or not isinstance(parent.get('parent_run_id'), str)
+            or not re.fullmatch('[0-9a-f]{32}', parent.get('parent_run_id', ''))
+            or parent.get('parent_run_id') == toolchain_run_id
+            or not isinstance(parent.get('parent_receipt_sha256'), str)
+            or not re.fullmatch('[0-9a-f]{64}', parent.get('parent_receipt_sha256', ''))
+            or not isinstance(parent.get('host_boot_id'), str)
+            or not BOOT_PATTERN.fullmatch(parent.get('host_boot_id', ''))
+            or not BOOT_PATTERN.fullmatch(host_boot_id) or not BOOT_PATTERN.fullmatch(guest_boot_id)
+            or guest_boot_id == host_boot_id):
+        raise RuntimeError('Base resume needs a pinned accepted parent and distinct current boots')
+    receipt_pin = hashlib.sha256(
+        b'alpbahOS.base-resume-parent/v1\0' + parent_raw + b'\0'
+        + bytes.fromhex(parent['parent_receipt_sha256'])).hexdigest()
+    handoff = {**parent, 'schema': handoff_binding.SCHEMA,
+        'host_boot_id': host_boot_id, 'guest_boot_id': guest_boot_id,
+        'parent_receipt_sha256': receipt_pin}
+    return (json.dumps(handoff, sort_keys=True, indent=2) + '\n').encode()
+
+
 def package_auth(plan, run_id, guest_boot, proof, parent_raw, guest_runner_sha=None):
     guest_runner_sha = guest_runner_sha or sha(GUEST_RUNNER)
     parent = json.loads(parent_raw)
@@ -236,7 +272,7 @@ def package_auth(plan, run_id, guest_boot, proof, parent_raw, guest_runner_sha=N
         handoff_raw = toolchain_handoff.bind_guest(
             parent_raw, digest(parent_raw), proof['run_id'], guest_boot)
     else:
-        handoff_raw = toolchain_handoff.bind_guest_for_base_resume(
+        handoff_raw = bind_base_resume(
             parent_raw, digest(parent_raw), proof['run_id'], guest_boot)
     authorization = {'schema': 'alpbahOS.phase2-authorization/v1', 'stage': 'toolchain',
         'mode': MODE, 'oc_confirmed': True, 'run_id': proof['run_id'],
