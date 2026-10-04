@@ -67,6 +67,10 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
         execute.assert_not_called()
 
     def setUp(self):
+        self.host_boot = patch.object(base_stage.audit, 'BOOT')
+        mocked_boot = self.host_boot.start()
+        mocked_boot.read_text.return_value = json.loads(self.parent_raw)['host_boot_id'] + '\n'
+        self.addCleanup(self.host_boot.stop)
         records = {
             'cat /srv/infra/phase2-authorization.json': self.old_authorization,
             'cat /srv/infra/stability-acceptance.json': self.old_handoff,

@@ -50,6 +50,9 @@ POLICIES = json.loads((REPO / 'manifests/infra-test-policy.json').read_text())
 host_spec = importlib.util.spec_from_file_location('host_integrity', REPO / 'scripts/infra/host-integrity.py')
 host_integrity = importlib.util.module_from_spec(host_spec)
 host_spec.loader.exec_module(host_integrity)
+base_stage_spec = importlib.util.spec_from_file_location('infra_base_stage', REPO / 'scripts/infra-base-stage.py')
+infra_base_stage = importlib.util.module_from_spec(base_stage_spec)
+base_stage_spec.loader.exec_module(infra_base_stage)
 
 
 def handoff_fixture(infra, inputs):
@@ -1835,6 +1838,27 @@ class BaseStageAuthorizationTests(unittest.TestCase):
             (f['infra'] / 'base-authorization.json').unlink()
             with self.assertRaisesRegex(RuntimeError, 'need OC, stability, toolchain and base-stage'):
                 package_stage.base_stage_authorization_guard({'phase': 'base', 'abi': 'multilib-m32'})
+
+    def test_host_rebooted_toolchain_parent_fails_before_guest_restore(self):
+        with tempfile.TemporaryDirectory(dir=ctl.STATE) as directory:
+            root = Path(directory)
+            checkpoint = root / 'checkpoint-toolchain'; checkpoint.mkdir()
+            (checkpoint / 'checkpoint.json').write_text('{}')
+            (checkpoint / 'transaction.json').write_text('{}')
+            run_id = 'a' * 32
+            runs = root / 'runs'; (runs / run_id).mkdir(parents=True)
+            (runs / run_id / 'parent.json').write_text(json.dumps({
+                'host_boot_id': '11111111-1111-4111-8111-111111111111'}))
+            acceptance = root / 'toolchain-acceptance.json'
+            acceptance.write_text(json.dumps({'run_id': run_id, 'after_audit_id': 'b' * 32}))
+            boot = root / 'boot-id'; boot.write_text('22222222-2222-4222-8222-222222222222\n')
+            with patch.object(infra_base_stage, 'CHECKPOINT', checkpoint), \
+                    patch.object(infra_base_stage, 'TOOLCHAIN_ACCEPTANCE', acceptance), \
+                    patch.object(infra_base_stage.stage_runs, 'RUNS', runs), \
+                    patch.object(infra_base_stage.audit, 'BOOT', boot), \
+                    patch.object(infra_base_stage.buildctl, 'space_guard'):
+                with self.assertRaisesRegex(RuntimeError, 'another host boot'):
+                    infra_base_stage.accepted_toolchain()
 
 
 class ToolchainSessionTests(unittest.TestCase):

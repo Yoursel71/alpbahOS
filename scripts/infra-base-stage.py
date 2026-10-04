@@ -87,6 +87,8 @@ def accepted_toolchain():
     parent_path = stage_runs.RUNS / run_id / 'parent.json'
     parent_raw = parent_path.read_bytes()
     parent = json.loads(parent_raw)
+    if parent.get('host_boot_id') != audit.BOOT.read_text().strip():
+        raise RuntimeError('Accepted toolchain belongs to another host boot; rerun current-boot stability/toolchain gates')
     run_id, audit_id, parent_run_id = toolchain_parent_ids(proof, transaction, parent)
     if (proof.get('schema') != 'alpbahOS.toolchain-acceptance/v1' or proof.get('result') != 'PASS'
             or proof.get('stage') != 'toolchain' or proof.get('mode') != MODE
