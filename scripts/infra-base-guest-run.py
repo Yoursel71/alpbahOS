@@ -149,6 +149,17 @@ def readline_ncurses_environment(argv, cwd, env,
     staged = ':'.join(str(directory) for directory in library_dirs)
     existing = updated.get('LIBRARY_PATH')
     updated['LIBRARY_PATH'] = staged + (':' + existing if existing else '')
+    # runuser intentionally sanitizes much of the caller's environment. Put
+    # the path on env's argv as well so the lfs process doing the actual link
+    # receives it regardless of runuser/PAM environment policy.
+    try:
+        separator = argv.index('--')
+    except ValueError as error:
+        raise RuntimeError('Readline linker command is missing its runuser boundary') from error
+    env_index = separator + 1
+    if env_index >= len(argv) or argv[env_index] != 'env':
+        raise RuntimeError('Readline linker command is missing its bounded env wrapper')
+    argv.insert(env_index + 1, 'LIBRARY_PATH=' + updated['LIBRARY_PATH'])
     return updated
 
 

@@ -94,12 +94,22 @@ class ReadlineNcursesLinkPathTests(unittest.TestCase):
 
     def test_readline_link_gets_both_staged_abis_and_preserves_existing_path(self):
         env = {'PATH': '/tools/bin', 'LIBRARY_PATH': '/existing/lib'}
+        command = ['/usr/sbin/runuser', '-u', 'lfs', '--', 'env', 'LC_ALL=C',
+                   'make', '-j8', 'SHLIB_LIBS=-lncursesw']
         updated = readline_ncurses_environment(
-            ['make', '-j8', 'SHLIB_LIBS=-lncursesw'], self.build, env,
+            command, self.build, env,
             build_dir=self.build, stage_root=self.stage)
+        expected = f'{self.stage}/usr/lib:{self.stage}/usr/lib32:/existing/lib'
         self.assertEqual(updated['LIBRARY_PATH'],
-                         f'{self.stage}/usr/lib:{self.stage}/usr/lib32:/existing/lib')
+                         expected)
+        self.assertEqual(command[command.index('env') + 1], 'LIBRARY_PATH=' + expected)
         self.assertEqual(env['LIBRARY_PATH'], '/existing/lib')
+
+    def test_readline_link_requires_runuser_env_boundary(self):
+        with self.assertRaisesRegex(RuntimeError, 'runuser boundary'):
+            readline_ncurses_environment(
+                ['make', 'SHLIB_LIBS=-lncursesw'], self.build, {},
+                build_dir=self.build, stage_root=self.stage)
 
     def test_unrelated_command_and_directory_are_unchanged(self):
         env = {'PATH': '/tools/bin'}
