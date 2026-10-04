@@ -8,10 +8,12 @@ import json
 import re
 
 SCHEMA = 'alpbahOS.toolchain-handoff/v1'
+BASE_RESUME_SCHEMA = 'alpbahOS.base-toolchain-handoff/v1'
 KEYS = {'schema', 'result', 'stage', 'mode', 'run_id', 'parent_run_id',
         'host_boot_id', 'guest_boot_id', 'inputs_sha256', 'sources_sha256',
         'parent_receipt_sha256', 'parent_proof_sha256', 'checkpoint_sha256',
         'transaction_sha256', 'active_overlay_sha256'}
+BASE_RESUME_KEYS = KEYS | {'source_parent_sha256', 'source_host_boot_id'}
 
 
 def valid(value, pattern):
@@ -20,11 +22,14 @@ def valid(value, pattern):
 
 def validate(raw, authorization, inputs, guest_boot_id):
     receipt = json.loads(raw)
+    resume = isinstance(receipt, dict) and receipt.get('schema') == BASE_RESUME_SCHEMA
+    expected_keys = BASE_RESUME_KEYS if resume else KEYS
     hashes = ('inputs_sha256', 'sources_sha256', 'parent_receipt_sha256',
               'parent_proof_sha256', 'checkpoint_sha256', 'transaction_sha256')
     boot_pattern = r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
-    if (not isinstance(receipt, dict) or set(receipt) != KEYS
-            or receipt.get('schema') != SCHEMA or receipt.get('result') != 'VERIFIED_PARENT'
+    if (not isinstance(receipt, dict) or set(receipt) != expected_keys
+            or receipt.get('schema') not in (SCHEMA, BASE_RESUME_SCHEMA)
+            or receipt.get('result') != 'VERIFIED_PARENT'
             or receipt.get('stage') != 'toolchain' or receipt.get('mode') != 'multilib-m32'
             or not all(valid(receipt.get(k), '[0-9a-f]{64}') for k in hashes)
             or not all(valid(receipt.get(k), '[0-9a-f]{32}') for k in ('run_id', 'parent_run_id'))
@@ -33,6 +38,10 @@ def validate(raw, authorization, inputs, guest_boot_id):
             or receipt['host_boot_id'] == receipt['guest_boot_id']
             or receipt['guest_boot_id'] != guest_boot_id):
         raise RuntimeError('Toolchain handoff schema/run/guest boot invalid')
+    if resume and (not valid(receipt.get('source_parent_sha256'), '[0-9a-f]{64}')
+                   or not valid(receipt.get('source_host_boot_id'), boot_pattern)
+                   or receipt['source_host_boot_id'] == receipt['host_boot_id']):
+        raise RuntimeError('Base resume handoff does not pin its original parent and host boot')
     overlays = receipt.get('active_overlay_sha256')
     if (not isinstance(overlays, dict) or set(overlays) != {'builder', 'lfs'}
             or not all(valid(v, '[0-9a-f]{64}') for v in overlays.values())):

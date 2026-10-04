@@ -87,7 +87,6 @@ def install(payload_raw):
             or parent.get('mode') != toolchain.get('mode')
             or parent.get('inputs_sha256') != inputs.get('inputs_sha256')
             or parent.get('sources_sha256') != inputs.get('sources_sha256')
-            or parent.get('host_boot_id') != authorization.get('boot_id')
             or sources.get('abi_selection', {}).get('mode') != 'multilib-m32'
             or authorization.get('stage') != 'toolchain'
             or authorization.get('run_id') != toolchain.get('run_id')
@@ -96,11 +95,14 @@ def install(payload_raw):
             or authorization.get('oc_confirmed') is not True
             or any(authorization.get(k) != inputs.get(k) for k in ('inputs_sha256', 'sources_sha256'))
             or any(handoff.get(k) != parent.get(k) for k in (
-                'result', 'stage', 'mode', 'run_id', 'parent_run_id', 'host_boot_id',
+                'result', 'stage', 'mode', 'run_id', 'parent_run_id',
                 'inputs_sha256', 'sources_sha256', 'parent_receipt_sha256',
                 'parent_proof_sha256', 'checkpoint_sha256', 'transaction_sha256',
                 'active_overlay_sha256'))
-            or handoff.get('schema') != 'alpbahOS.toolchain-handoff/v1'
+            or handoff.get('schema') != 'alpbahOS.base-toolchain-handoff/v1'
+            or handoff.get('host_boot_id') != authorization.get('boot_id')
+            or handoff.get('source_host_boot_id') != parent.get('host_boot_id')
+            or handoff.get('source_parent_sha256') != digest(parent_raw)
             or handoff.get('guest_boot_id') != boot_id):
         raise RuntimeError('Accepted toolchain, parent and measured guest handoff disagree')
 

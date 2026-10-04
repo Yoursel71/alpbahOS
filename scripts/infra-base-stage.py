@@ -87,8 +87,6 @@ def accepted_toolchain():
     parent_path = stage_runs.RUNS / run_id / 'parent.json'
     parent_raw = parent_path.read_bytes()
     parent = json.loads(parent_raw)
-    if parent.get('host_boot_id') != audit.BOOT.read_text().strip():
-        raise RuntimeError('Accepted toolchain belongs to another host boot; rerun current-boot stability/toolchain gates')
     run_id, audit_id, parent_run_id = toolchain_parent_ids(proof, transaction, parent)
     if (proof.get('schema') != 'alpbahOS.toolchain-acceptance/v1' or proof.get('result') != 'PASS'
             or proof.get('stage') != 'toolchain' or proof.get('mode') != MODE
@@ -233,11 +231,17 @@ def package_auth(plan, run_id, guest_boot, proof, parent_raw, guest_runner_sha=N
             or old_auth.get('handoff_sha256') != digest(old_handoff_raw)
             or old_auth.get('guest_boot_id') != json.loads(old_handoff_raw).get('guest_boot_id')):
         raise RuntimeError('Restored toolchain guest authorization has stale inputs or unpaired evidence')
-    handoff_raw = toolchain_handoff.bind_guest(parent_raw, digest(parent_raw), proof['run_id'], guest_boot)
+    current_host_boot = audit.BOOT.read_text().strip()
+    if current_host_boot == parent.get('host_boot_id'):
+        handoff_raw = toolchain_handoff.bind_guest(
+            parent_raw, digest(parent_raw), proof['run_id'], guest_boot)
+    else:
+        handoff_raw = toolchain_handoff.bind_guest_for_base_resume(
+            parent_raw, digest(parent_raw), proof['run_id'], guest_boot)
     authorization = {'schema': 'alpbahOS.phase2-authorization/v1', 'stage': 'toolchain',
         'mode': MODE, 'oc_confirmed': True, 'run_id': proof['run_id'],
         'inputs_sha256': proof['inputs_sha256'], 'sources_sha256': proof['sources_sha256'],
-        'boot_id': parent['host_boot_id'], 'guest_boot_id': guest_boot,
+        'boot_id': current_host_boot, 'guest_boot_id': guest_boot,
         'handoff_sha256': digest(handoff_raw), 'authorized_at_ns': time.time_ns()}
     handoff_binding.validate(handoff_raw, authorization, inputs, guest_boot)
     toolchain_raw = TOOLCHAIN_ACCEPTANCE.read_bytes()
