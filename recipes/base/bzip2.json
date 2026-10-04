@@ -62,14 +62,14 @@
     [
       "sed",
       "-e",
-      "s/^CC=.*/CC=gcc -m32/",
+      "s@^CC=.*@CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32@",
       "-i",
       "Makefile"
     ],
     [
       "sed",
       "-e",
-      "s/^CC=.*/CC=gcc -m32/",
+      "s@^CC=.*@CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32@",
       "-i",
       "Makefile-libbz2_so"
     ],

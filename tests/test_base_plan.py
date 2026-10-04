@@ -243,6 +243,13 @@ class BaseInventoryTests(unittest.TestCase):
             self.assertTrue(any('-m32' in word for word in words), name)
             self.assertFalse(any('-mx32' in word for word in words), name)
             self.assertEqual(recipe['basis']['commit'], base_plan.BOOK_COMMIT)
+        bzip2 = next(row['recipe_data'] for row in plan if row['name'] == 'bzip2')
+        m32_makefile_compilers = [command[2] for command in bzip2['post_stage']
+                                  if command[:2] == ['sed', '-e']
+                                  and len(command) > 2 and 'Makefile' in command[-1]]
+        self.assertEqual(len(m32_makefile_compilers), 2)
+        self.assertTrue(all('x86_64-lfs-linux-gnu-gcc -m32' in command
+                            for command in m32_makefile_compilers))
 
     def test_source_manifest_drift_stops_inventory_resolution(self):
         with tempfile.TemporaryDirectory() as directory:
