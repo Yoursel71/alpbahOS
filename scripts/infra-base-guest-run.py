@@ -152,6 +152,35 @@ def readline_ncurses_environment(argv, cwd, env,
     return updated
 
 
+def ncurses_doc_parent_setup(argv, stage_root='/srv/lfs/stage/base-ncurses',
+                            build_root='/srv/lfs/build/base-ncurses'):
+    """Create Ncurses' documentation parent before its staged-only doc copy."""
+    stage, build = Path(stage_root), Path(build_root)
+    expected = ['cp', '-a', str(build / 'doc'),
+                str(stage / 'usr/share/doc/ncurses-6.5-20250809')]
+    if list(argv[-4:]) != expected:
+        return []
+    source = build / 'doc'
+    if (stage.is_symlink() or stage.resolve() != stage or not stage.is_dir()
+            or build.is_symlink() or build.resolve() != build or not build.is_dir()
+            or source.is_symlink() or source.resolve() != source or not source.is_dir()):
+        raise RuntimeError('Ncurses documentation stage/source path is missing or unsafe')
+    for ancestor in (stage / 'usr', stage / 'usr/share'):
+        if ancestor.exists() and (ancestor.is_symlink() or not ancestor.is_dir()
+                                  or ancestor.resolve() != ancestor):
+            raise RuntimeError('Ncurses documentation parent contains an unsafe path')
+    parent = stage / 'usr/share/doc'
+    if parent.exists():
+        if (parent.is_symlink() or not parent.is_dir() or parent.resolve() != parent
+                or (parent.stat().st_uid, parent.stat().st_gid)
+                != (build.stat().st_uid, build.stat().st_gid)):
+            raise RuntimeError('Ncurses documentation parent has unexpected owner or type')
+        return []
+    owner = build.stat()
+    return [['mkdir', '-p', str(parent)],
+            ['chown', f'{owner.st_uid}:{owner.st_gid}', str(parent)]]
+
+
 def bootstrap_ncurses_bundle(guest_base, package_stage):
     """Stage the pinned Ncurses bundle before Readline without installing it."""
     plan = guest_base.canonical_plan(REPO)
@@ -592,6 +621,8 @@ def run_with_root_owned_test_tree(argv, log, cwd=None, env=None):
     argv = disable_unavailable_m32_cxx(argv, cwd)
     argv = use_staged_file_magic_compiler(argv, cwd)
     env = readline_ncurses_environment(argv, cwd, env)
+    for setup_command in ncurses_doc_parent_setup(argv):
+        _run(setup_command, log)
     if uses_m32_uapi_configure(argv):
         install_m32_kernel_headers()
     if (len(argv) >= 3 and argv[0] == package_stage.RUNUSER

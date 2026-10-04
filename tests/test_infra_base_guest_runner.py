@@ -13,12 +13,16 @@ FUNCTION = next(node for node in TREE.body
 NCURSES_FUNCTION = next(node for node in TREE.body
                         if isinstance(node, ast.FunctionDef)
                         and node.name == 'readline_ncurses_environment')
-MODULE = ast.Module(body=[FUNCTION, NCURSES_FUNCTION], type_ignores=[])
+NCURSES_DOC_FUNCTION = next(node for node in TREE.body
+                            if isinstance(node, ast.FunctionDef)
+                            and node.name == 'ncurses_doc_parent_setup')
+MODULE = ast.Module(body=[FUNCTION, NCURSES_FUNCTION, NCURSES_DOC_FUNCTION], type_ignores=[])
 ast.fix_missing_locations(MODULE)
 NAMESPACE = {'Path': Path, 're': re, 'os': __import__('os')}
 exec(compile(MODULE, str(RUNNER), 'exec'), NAMESPACE)
 use_staged_file_magic_compiler = NAMESPACE['use_staged_file_magic_compiler']
 readline_ncurses_environment = NAMESPACE['readline_ncurses_environment']
+ncurses_doc_parent_setup = NAMESPACE['ncurses_doc_parent_setup']
 
 
 class StagedFileMagicCompilerTests(unittest.TestCase):
@@ -112,6 +116,45 @@ class ReadlineNcursesLinkPathTests(unittest.TestCase):
             readline_ncurses_environment(
                 ['make', 'SHLIB_LIBS=-lncursesw'], self.build, {},
                 build_dir=self.build, stage_root=self.stage)
+
+
+class NcursesDocumentationStageTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.root = Path(self.temporary.name)
+        self.stage = self.root / 'stage/base-ncurses'
+        self.stage.mkdir(parents=True)
+        self.build = self.root / 'build/base-ncurses'
+        (self.build / 'doc').mkdir(parents=True)
+        self.command = ['runuser', '-u', 'lfs', '--', 'env', 'CFLAGS=-O2',
+                        'cp', '-a', str(self.build / 'doc'),
+                        str(self.stage / 'usr/share/doc/ncurses-6.5-20250809')]
+
+    def tearDown(self):
+        self.temporary.cleanup()
+
+    def test_missing_doc_parent_is_created_with_build_owner(self):
+        setup = ncurses_doc_parent_setup(
+            self.command, stage_root=self.stage, build_root=self.build)
+        parent = self.stage / 'usr/share/doc'
+        self.assertEqual(setup, [['mkdir', '-p', str(parent)],
+                                 ['chown', f'{self.build.stat().st_uid}:{self.build.stat().st_gid}',
+                                  str(parent)]])
+
+    def test_existing_doc_parent_must_be_real_and_owned_by_builder(self):
+        parent = self.stage / 'usr/share/doc'
+        parent.mkdir(parents=True)
+        self.assertEqual(ncurses_doc_parent_setup(
+            self.command, stage_root=self.stage, build_root=self.build), [])
+        parent.rmdir()
+        parent.symlink_to(self.root)
+        with self.assertRaisesRegex(RuntimeError, 'unexpected owner or type'):
+            ncurses_doc_parent_setup(self.command, stage_root=self.stage, build_root=self.build)
+
+    def test_only_the_pinned_ncurses_doc_copy_is_adjusted(self):
+        self.assertEqual(ncurses_doc_parent_setup(
+            ['cp', '-a', '/other/doc', '/other/stage/doc'],
+            stage_root=self.stage, build_root=self.build), [])
 
 
 if __name__ == '__main__':
