@@ -79,6 +79,55 @@ def disable_unavailable_m32_cxx(argv, cwd):
     return argv
 
 
+def use_staged_file_magic_compiler(argv, cwd,
+                                   build_dir='/srv/lfs/build/base-file',
+                                   stage_root='/srv/lfs/stage/base-file'):
+    """Use the just-built native file tool for the multilib magic database.
+
+    The file package's --host=i686 configure step marks its magic compiler as
+    cross-compiled and defaults FILE_COMPILE to the Builder's installed
+    `file`. That version can lag the source release. The native package stage
+    already contains the matching 64-bit file executable and libmagic, so use
+    those for this one cross-build make invocation.
+    """
+    argv = list(argv)
+    if cwd is None or Path(cwd).resolve() != Path(build_dir).resolve():
+        return argv
+    makefile = Path(cwd) / 'magic/Makefile'
+    if not makefile.is_file() or 'FILE_COMPILE = file' not in makefile.read_text().splitlines():
+        return argv
+    make_indexes = [index for index, value in enumerate(argv) if value == 'make']
+    if not make_indexes:
+        return argv
+    make_index = make_indexes[-1]
+    make_args = argv[make_index + 1:]
+    if not any(re.fullmatch(r'-j[1-8]', value) for value in make_args) or 'install' in make_args:
+        return argv
+    if any(value.startswith('FILE_COMPILE=') for value in make_args):
+        return argv
+
+    stage = Path(stage_root)
+    compiler = stage / 'usr/bin/file'
+    library_dir = stage / 'usr/lib'
+    if (compiler.is_symlink() or not compiler.is_file() or not os.access(compiler, os.X_OK)
+            or library_dir.is_symlink() or not library_dir.is_dir()):
+        raise RuntimeError('Matching staged native file compiler is missing or unsafe')
+    env_indexes = [index for index, value in enumerate(argv[:make_index]) if value == 'env']
+    if not env_indexes:
+        raise RuntimeError('Cross-compiled file make is missing its bounded env wrapper')
+    env_index = env_indexes[-1]
+    ld_library_path = 'LD_LIBRARY_PATH=' + str(library_dir)
+    existing_ld = next((index for index in range(env_index + 1, make_index)
+                        if argv[index].startswith('LD_LIBRARY_PATH=')), None)
+    if existing_ld is None:
+        argv.insert(env_index + 1, ld_library_path)
+        make_index += 1
+    else:
+        argv[existing_ld] = ld_library_path
+    argv.insert(make_index + 1, 'FILE_COMPILE=' + str(compiler))
+    return argv
+
+
 def accepted_glibc_cross_manifest(root, package_install, package_name):
     """Load an exact accepted cross-ABI Glibc bundle from the toolchain stage."""
     if package_name not in ('glibc-cross-m64', 'glibc-cross-m32'):
@@ -469,6 +518,7 @@ _run = package_stage.run
 def run_with_root_owned_test_tree(argv, log, cwd=None, env=None):
     argv = prepare_m32_kernel_headers(argv)
     argv = disable_unavailable_m32_cxx(argv, cwd)
+    argv = use_staged_file_magic_compiler(argv, cwd)
     if uses_m32_uapi_configure(argv):
         install_m32_kernel_headers()
     if (len(argv) >= 3 and argv[0] == package_stage.RUNUSER
