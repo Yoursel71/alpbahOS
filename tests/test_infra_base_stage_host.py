@@ -194,6 +194,13 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
                                                                   '/custom/include'))
                 self.assertEqual(runner['prepare_m32_kernel_headers'](
                     ['make', '-j4']), ['make', '-j4'])
+                self.assertEqual(runner['prepare_m32_kernel_headers'](
+                    ['env', 'CC=gcc -m32 -march=i686', 'CXX=g++ -m32 -march=i686',
+                     'make', '-f', 'Makefile-libbz2_so']),
+                    ['env',
+                     'CC=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32 -march=i686',
+                     'CXX=/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-g++ -m32 -static-libgcc -march=i686',
+                     'make', '-f', 'Makefile-libbz2_so'])
                 kernel_source = Path(directory) / 'kernel-source'
                 kernel_include = Path(directory) / 'kernel-only-include'
                 for name in ('asm', 'asm-generic', 'linux'):
