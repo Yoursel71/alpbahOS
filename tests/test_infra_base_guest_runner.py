@@ -10,11 +10,15 @@ TREE = ast.parse(RUNNER.read_text())
 FUNCTION = next(node for node in TREE.body
                 if isinstance(node, ast.FunctionDef)
                 and node.name == 'use_staged_file_magic_compiler')
-MODULE = ast.Module(body=[FUNCTION], type_ignores=[])
+NCURSES_FUNCTION = next(node for node in TREE.body
+                        if isinstance(node, ast.FunctionDef)
+                        and node.name == 'readline_ncurses_environment')
+MODULE = ast.Module(body=[FUNCTION, NCURSES_FUNCTION], type_ignores=[])
 ast.fix_missing_locations(MODULE)
 NAMESPACE = {'Path': Path, 're': re, 'os': __import__('os')}
 exec(compile(MODULE, str(RUNNER), 'exec'), NAMESPACE)
 use_staged_file_magic_compiler = NAMESPACE['use_staged_file_magic_compiler']
+readline_ncurses_environment = NAMESPACE['readline_ncurses_environment']
 
 
 class StagedFileMagicCompilerTests(unittest.TestCase):
@@ -69,6 +73,45 @@ class StagedFileMagicCompilerTests(unittest.TestCase):
         self.compiler.unlink()
         with self.assertRaisesRegex(RuntimeError, 'staged native file compiler'):
             self.rewrite()
+
+
+class ReadlineNcursesLinkPathTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.root = Path(self.temporary.name)
+        self.build = self.root / 'build/base-readline'
+        self.build.mkdir(parents=True)
+        self.stage = self.root / 'stage/base-ncurses'
+        for suffix in ('usr/lib', 'usr/lib32'):
+            (self.stage / suffix).mkdir(parents=True)
+
+    def tearDown(self):
+        self.temporary.cleanup()
+
+    def test_readline_link_gets_both_staged_abis_and_preserves_existing_path(self):
+        env = {'PATH': '/tools/bin', 'LIBRARY_PATH': '/existing/lib'}
+        updated = readline_ncurses_environment(
+            ['make', '-j8', 'SHLIB_LIBS=-lncursesw'], self.build, env,
+            build_dir=self.build, stage_root=self.stage)
+        self.assertEqual(updated['LIBRARY_PATH'],
+                         f'{self.stage}/usr/lib:{self.stage}/usr/lib32:/existing/lib')
+        self.assertEqual(env['LIBRARY_PATH'], '/existing/lib')
+
+    def test_unrelated_command_and_directory_are_unchanged(self):
+        env = {'PATH': '/tools/bin'}
+        self.assertIs(readline_ncurses_environment(
+            ['make', '-j8'], self.build, env,
+            build_dir=self.build, stage_root=self.stage), env)
+        self.assertIs(readline_ncurses_environment(
+            ['make', '-j8', 'SHLIB_LIBS=-lncursesw'], self.root / 'build/other', env,
+            build_dir=self.build, stage_root=self.stage), env)
+
+    def test_missing_abi_library_directory_fails_closed(self):
+        (self.stage / 'usr/lib32').rmdir()
+        with self.assertRaisesRegex(RuntimeError, 'staged Ncurses library directory'):
+            readline_ncurses_environment(
+                ['make', 'SHLIB_LIBS=-lncursesw'], self.build, {},
+                build_dir=self.build, stage_root=self.stage)
 
 
 if __name__ == '__main__':

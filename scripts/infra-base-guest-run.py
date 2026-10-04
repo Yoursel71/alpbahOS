@@ -132,6 +132,74 @@ def use_staged_file_magic_compiler(argv, cwd,
     return argv
 
 
+def readline_ncurses_environment(argv, cwd, env,
+                                build_dir='/srv/lfs/build/base-readline',
+                                stage_root='/srv/lfs/stage/base-ncurses'):
+    """Expose staged Ncurses only to the canonical Readline linker commands."""
+    if cwd is None or Path(cwd).resolve() != Path(build_dir).resolve():
+        return env
+    if 'SHLIB_LIBS=-lncursesw' not in argv:
+        return env
+    stage = Path(stage_root)
+    library_dirs = (stage / 'usr/lib', stage / 'usr/lib32')
+    for directory in library_dirs:
+        if directory.is_symlink() or not directory.is_dir() or directory.resolve() != directory:
+            raise RuntimeError('Pinned staged Ncurses library directory is missing or unsafe')
+    updated = dict(os.environ if env is None else env)
+    staged = ':'.join(str(directory) for directory in library_dirs)
+    existing = updated.get('LIBRARY_PATH')
+    updated['LIBRARY_PATH'] = staged + (':' + existing if existing else '')
+    return updated
+
+
+def bootstrap_ncurses_bundle(guest_base, package_stage):
+    """Stage the pinned Ncurses bundle before Readline without installing it."""
+    plan = guest_base.canonical_plan(REPO)
+    recipes = guest_base.recipes(plan)
+    recipe = next((item for item in recipes if item.get('name') == 'ncurses'), None)
+    if recipe is None:
+        raise RuntimeError('Canonical base package plan has no Ncurses recipe')
+    for item in recipes:
+        guest_base.heavy_recipe_guard(item)
+    auth = guest_base.safe_json(INFRA / 'base-authorization.json')
+    run_id = auth.get('run_id')
+    if not re.fullmatch(r'[0-9a-f]{32}', str(run_id)):
+        raise RuntimeError('Base authorization has no valid run identity')
+    result_root = LFS / 'results/base'
+    result = result_root / run_id
+    guest_base.guest_install_guard(LFS, result_root)
+    if (result_root.is_symlink() or result_root.resolve() != result_root
+            or result.is_symlink() or result.resolve() != result):
+        raise RuntimeError('Unsafe Ncurses bootstrap evidence directory')
+    result_root.mkdir(exist_ok=True)
+    result.mkdir(exist_ok=True)
+    binding = guest_base.current_binding(plan, LFS)
+    header = result / 'inputs.json'
+    if header.exists():
+        if guest_base.safe_json(header) != binding:
+            raise RuntimeError('Ncurses bootstrap binding changed; restore checkpoint')
+    else:
+        guest_base.safe_json(header, binding)
+    directory = result / 'ncurses'
+    if directory.is_symlink() or directory.resolve() != directory:
+        raise RuntimeError('Unsafe Ncurses package evidence directory')
+    directory.mkdir(exist_ok=True)
+    state = directory / 'built.json'
+    if state.exists():
+        built = guest_base.saved_bundle(recipe, directory, binding)
+    else:
+        marker = directory / 'build-started.json'
+        if marker.exists() or marker.is_symlink():
+            raise RuntimeError('Interrupted Ncurses bootstrap needs checkpoint recovery')
+        guest_base.safe_json(marker, binding)
+        built = package_stage.build_staged(recipe, 'base-ncurses', directory)
+        guest_base.validate_bundle(recipe, built)
+        saved = {key: str(value) if isinstance(value, Path) else value
+                 for key, value in built.items()}
+        guest_base.safe_json(state, {'binding': binding, 'result': 'BUILT', 'built': saved})
+    return built
+
+
 def accepted_glibc_cross_manifest(root, package_install, package_name):
     """Load an exact accepted cross-ABI Glibc bundle from the toolchain stage."""
     if package_name not in ('glibc-cross-m64', 'glibc-cross-m32'):
@@ -523,6 +591,7 @@ def run_with_root_owned_test_tree(argv, log, cwd=None, env=None):
     argv = prepare_m32_kernel_headers(argv)
     argv = disable_unavailable_m32_cxx(argv, cwd)
     argv = use_staged_file_magic_compiler(argv, cwd)
+    env = readline_ncurses_environment(argv, cwd, env)
     if uses_m32_uapi_configure(argv):
         install_m32_kernel_headers()
     if (len(argv) >= 3 and argv[0] == package_stage.RUNUSER
@@ -549,5 +618,11 @@ def install_staged_with_glibc_handoff(recipe, built, root, result, reinstall=Fal
 
 import package_install
 guest_base.install_staged = install_staged_with_glibc_handoff
+
+# The canonical LFS sequence builds Readline before Ncurses although Readline
+# links against it. Prebuild Ncurses into its normal package evidence/stage;
+# the sequence still installs it later at its canonical position.
+if hasattr(guest_base, 'current_binding'):
+    bootstrap_ncurses_bundle(guest_base, package_stage)
 
 guest_base.main()
