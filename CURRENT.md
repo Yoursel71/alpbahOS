@@ -59,9 +59,9 @@
 
 **Son altyapı ilerlemesi:** sürekli host izleme, hata kanıtı ve VM poweroff akışı eklendi; manifest capture epoch aktarımı düzeltildi. 22 host testi geçti; yeni guest kabulü yok. Root-owned kullanıcı journal'ı bozuk bildirildi (`journalctl --verify` exit 1); dosyaya dokunulmadı. [Güncel izleme kanıtı](docs/verification/infra-monitoring-2026-10-01.md).
 
-**Son ilerleme — kullanıcı temizlik isteği:** eski imaj/build artıkları temizlendi; NVMe 163,96 GiB / %34,57, SSD 67,24 GiB / %60,15, HDD 261,80 GiB / %57,24 boş. %15 disk engeli kalktı. Son D34 kökü ve büyük milestone imajları korundu. Root'a ait 1.117 snapshot +199 artık dizin için kullanıcı-run komut hazır; bu bölüm henüz uygulanmadı. 15 sınır/regression testi geçti; DB hash kabulü olmadan Phase 2 başlatılamıyor. [Temizlik kaydı ve root komutu](docs/verification/infra-cleanup-2026-10-01.md).
+**Son ilerleme — temizlik ve Phase 2:** eski imaj/build artıkları önceki çalışmada temizlendi. Güncel frozen temizlik planındaki 2 ISO, 1.177 dizin ve 1.117 subvolume hedefinin hiçbiri diskte yok; 7 milestone yedeği mevcut ve hash doğrulamasından geçti. Phase 1 kapıları kabul edildi. Son base koşusu Expect Tcl loader yolu varsayımı nedeniyle temiz kapandı; yol düzeltmesi yapıldı ve tam suite 337 test/2 skip ile geçti. Şimdi değişikliği commit/push edip yeni izlenen base VM koşusunu başlatıyorum. [Temizlik kaydı](docs/verification/infra-cleanup-2026-10-01.md).
 
-**HAZIR DEĞİL / DUR.** Geçerli ortam Fedora 44 + yerel QEMU/KVM; Windows/Hyper-V hedefleri aşağıda tarihsel kayıttır ve bu görevde kullanılmaz. Çalışma `/home/yrslf/alpbahOS-infra-rebuild`, dal `codex/infra-rebuild`; main ve Claude ağaçlarına yazılmadı, push/commit yok.
+**Devam eden iş:** Geçerli ortam Fedora 44 + yerel QEMU/KVM; Windows/Hyper-V hedefleri aşağıda tarihsel kayıttır. Çalışma `/home/yrslf/alpbahOS-infra-rebuild`, dal `codex/infra-rebuild`; Phase 1 kabulü geçerli, Phase 2 base build henüz kabul edilmedi.
 
 - **Temizlik öncesi tarihsel kontrol:** NVMe `/` 22,33 GiB / %4,71 ile kapıda durmuştu. Kullanıcının sonraki temizlik yetkisiyle yukarıdaki alan kazanımı sağlandı. Builder kapalı; Alp zaman düzeltmesi ve root audit kabulü hâlâ açık.
 

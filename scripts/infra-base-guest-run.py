@@ -239,7 +239,7 @@ def expect_tclsh_wrapper(build_dir='/srv/lfs/build/base-expect', lfs_root='/srv/
             or build.is_symlink() or build.resolve() != build or not build.is_dir()
             or build.parent != root / 'build'):
         raise RuntimeError('Expect build directory is not the dedicated LFS source tree')
-    loader = root / 'lib/ld-linux-x86-64.so.2'
+    loader = root / 'usr/lib/ld-linux-x86-64.so.2'
     tclsh = root / 'usr/bin/tclsh8.6'
     tcl_library = root / 'usr/lib/tcl8.6/init.tcl'
     for path in (loader, tclsh):
@@ -252,7 +252,7 @@ def expect_tclsh_wrapper(build_dir='/srv/lfs/build/base-expect', lfs_root='/srv/
     contents = ('#!/bin/sh\n'
                 'export LD_LIBRARY_PATH=/srv/lfs/usr/lib\n'
                 'export TCL_LIBRARY=/srv/lfs/usr/lib/tcl8.6\n'
-                'exec /srv/lfs/lib/ld-linux-x86-64.so.2 --library-path /srv/lfs/usr/lib '
+                'exec /srv/lfs/usr/lib/ld-linux-x86-64.so.2 --library-path /srv/lfs/usr/lib '
                 '/srv/lfs/usr/bin/tclsh8.6 "$@"\n')
     if wrapper.exists() or wrapper.is_symlink():
         if (wrapper.is_symlink() or wrapper.resolve() != wrapper or not wrapper.is_file()

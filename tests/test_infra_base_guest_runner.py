@@ -232,14 +232,14 @@ class ExpectTclSysrootTests(unittest.TestCase):
         self.includedir = self.root / 'usr/include'
         self.libdir.mkdir(parents=True)
         self.includedir.mkdir(parents=True)
-        (self.root / 'lib').mkdir()
         (self.root / 'usr/bin').mkdir(parents=True)
+        (self.root / 'usr/lib').mkdir(parents=True, exist_ok=True)
         (self.root / 'usr/lib/tcl8.6').mkdir(parents=True)
         (self.libdir / 'tclConfig.sh').write_text("TCL_LIB_SPEC='-L/usr/lib -ltcl8.6'\n")
         (self.libdir / 'libtcl8.6.so').write_bytes(b'tcl shared library')
         (self.includedir / 'tcl.h').write_text('/* Tcl public header */\n')
-        (self.root / 'lib/ld-linux-x86-64.so.2').write_text('loader')
-        (self.root / 'lib/ld-linux-x86-64.so.2').chmod(0o755)
+        (self.root / 'usr/lib/ld-linux-x86-64.so.2').write_text('loader')
+        (self.root / 'usr/lib/ld-linux-x86-64.so.2').chmod(0o755)
         (self.root / 'usr/bin/tclsh8.6').write_text('tclsh')
         (self.root / 'usr/bin/tclsh8.6').chmod(0o755)
         (self.root / 'usr/lib/tcl8.6/init.tcl').write_text('# Tcl library')
@@ -300,7 +300,7 @@ class ExpectTclSysrootTests(unittest.TestCase):
         self.assertEqual(wrapper.read_text(),
                          '#!/bin/sh\nexport LD_LIBRARY_PATH=/srv/lfs/usr/lib\n'
                          'export TCL_LIBRARY=/srv/lfs/usr/lib/tcl8.6\n'
-                         'exec /srv/lfs/lib/ld-linux-x86-64.so.2 --library-path '
+                         'exec /srv/lfs/usr/lib/ld-linux-x86-64.so.2 --library-path '
                          '/srv/lfs/usr/lib /srv/lfs/usr/bin/tclsh8.6 "$@"\n')
 
     def test_other_workdirs_are_unchanged(self):
