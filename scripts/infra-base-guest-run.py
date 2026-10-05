@@ -185,8 +185,9 @@ def expect_lfs_tcl_sysroot(argv, cwd, env, lfs_root='/srv/lfs',
     The book recipe is written for a chroot where /usr/lib and /usr/include
     are the target root. This isolated builder runs outside that root, so the
     configure probe must point at the accepted Tcl installation under LFS.
-    The configured Tcl metadata still uses /usr paths; the LFS cross compiler
-    resolves those through its /srv/lfs sysroot.
+    The configured Tcl metadata still uses target-root /usr paths. Its static
+    stub archive is outside the Builder's /usr, so configure also gets the
+    verified LFS library directory as its link search path.
     """
     argv = list(argv)
     if cwd is None or Path(cwd).resolve() != Path(build_dir).resolve():
@@ -198,20 +199,24 @@ def expect_lfs_tcl_sysroot(argv, cwd, env, lfs_root='/srv/lfs',
     libdir, includedir = root / 'usr/lib', root / 'usr/include'
     config, header, library = (libdir / 'tclConfig.sh', includedir / 'tcl.h',
                                libdir / 'libtcl8.6.so')
+    stub_archive = libdir / 'libtclstub8.6.a'
     if (libdir.is_symlink() or includedir.is_symlink()
             or not libdir.is_dir() or not includedir.is_dir()
             or config.is_symlink() or not config.is_file()
             or header.is_symlink() or not header.is_file()
-            or not library.is_file()):
-        raise RuntimeError('Accepted Tcl config, headers or shared library are missing')
+            or not library.is_file() or stub_archive.is_symlink()
+            or not stub_archive.is_file()):
+        raise RuntimeError('Accepted Tcl config, headers, shared library or stub archive are missing')
     root_real = root.resolve()
-    for path in (config, header, library):
+    for path in (config, header, library, stub_archive):
         resolved = path.resolve(strict=True)
         if root_real not in resolved.parents:
             raise RuntimeError('Tcl sysroot payload escapes the dedicated LFS root')
 
     configure_indexes = [index for index, value in enumerate(argv) if value == './configure']
     configure_applied = False
+    updated_env = dict(env or {})
+    updated_env.pop('LD_LIBRARY_PATH', None)
     if configure_indexes:
         replacements = {
             '--with-tcl=/usr/lib': '--with-tcl=' + str(libdir),
@@ -221,14 +226,19 @@ def expect_lfs_tcl_sysroot(argv, cwd, env, lfs_root='/srv/lfs',
             if argv.count(original) != 1:
                 raise RuntimeError('Expect configure arguments differ from the pinned Tcl recipe')
             argv[argv.index(original)] = replacement
+        # tclConfig.sh intentionally keeps target-root /usr paths for use
+        # inside the LFS chroot. Expect is configured outside that chroot, so
+        # its -L/usr/lib -ltclstub8.6 would otherwise search the Builder's
+        # host libraries. Pass the verified LFS libdir to configure's link
+        # probes and generated Makefile without exporting target libraries to
+        # Builder executables.
+        updated_env['LDFLAGS'] = '-L' + str(libdir)
         configure_applied = True
 
     # A target-LFS LD_LIBRARY_PATH is unsafe for Builder tools (runuser, Bash,
     # make, and configure all use the Builder's ABI).  Drop any inherited path
     # here. A dedicated Tcl wrapper below selects the LFS loader only when
     # Tcl/Expect target programs actually run.
-    updated_env = dict(env or {})
-    updated_env.pop('LD_LIBRARY_PATH', None)
     return argv, updated_env, configure_applied
 
 

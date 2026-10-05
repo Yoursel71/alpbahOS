@@ -237,6 +237,7 @@ class ExpectTclSysrootTests(unittest.TestCase):
         (self.root / 'usr/lib/tcl8.6').mkdir(parents=True)
         (self.libdir / 'tclConfig.sh').write_text("TCL_LIB_SPEC='-L/usr/lib -ltcl8.6'\n")
         (self.libdir / 'libtcl8.6.so').write_bytes(b'tcl shared library')
+        (self.libdir / 'libtclstub8.6.a').write_bytes(b'tcl stub archive')
         (self.includedir / 'tcl.h').write_text('/* Tcl public header */\n')
         (self.root / 'usr/lib/ld-linux-x86-64.so.2').write_text('loader')
         (self.root / 'usr/lib/ld-linux-x86-64.so.2').chmod(0o755)
@@ -262,17 +263,25 @@ class ExpectTclSysrootTests(unittest.TestCase):
         self.assertTrue(applied)
         self.assertIn('--with-tcl=' + str(self.libdir), result)
         self.assertIn('--with-tclinclude=' + str(self.includedir), result)
+        self.assertEqual(env['LDFLAGS'], '-L' + str(self.libdir))
         self.assertNotIn('LD_LIBRARY_PATH', env)
         self.assertEqual(self.command[-2:], ['--with-tcl=/usr/lib',
                                              '--with-tclinclude=/usr/include'])
 
     def test_expect_configure_removes_inherited_library_path_from_builder(self):
-        result, env, applied = self.rewrite(env={'LD_LIBRARY_PATH': '/existing/lib'})
+        result, env, applied = self.rewrite(env={
+            'LD_LIBRARY_PATH': '/existing/lib', 'LDFLAGS': '-Wl,--as-needed'})
         self.assertTrue(applied)
         self.assertEqual(result, ['runuser', '-u', 'lfs', '--', 'env', 'LC_ALL=C',
                                   './configure', '--prefix=/usr', '--with-tcl=' + str(self.libdir),
                                   '--with-tclinclude=' + str(self.includedir)])
+        self.assertEqual(env['LDFLAGS'], '-L' + str(self.libdir))
         self.assertNotIn('LD_LIBRARY_PATH', env)
+
+    def test_expect_configure_requires_the_target_stub_archive(self):
+        (self.libdir / 'libtclstub8.6.a').unlink()
+        with self.assertRaisesRegex(RuntimeError, 'stub archive are missing'):
+            self.rewrite()
 
     def test_expect_patch_does_not_leak_target_library_path_into_runuser(self):
         patch = ['runuser', '-u', 'lfs', '--', 'patch', '-Np1', '-i', 'expect.patch']
@@ -312,7 +321,7 @@ class ExpectTclSysrootTests(unittest.TestCase):
 
     def test_missing_tcl_config_fails_closed(self):
         (self.libdir / 'tclConfig.sh').unlink()
-        with self.assertRaisesRegex(RuntimeError, 'Tcl config, headers or shared library'):
+        with self.assertRaisesRegex(RuntimeError, 'Tcl config, headers, shared library or stub archive'):
             self.rewrite()
 
     def test_unexpected_configure_arguments_fail_closed(self):
