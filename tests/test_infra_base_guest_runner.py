@@ -22,8 +22,15 @@ TCL_FUNCTION = next(node for node in TREE.body
 EXPECT_FUNCTION = next(node for node in TREE.body
                        if isinstance(node, ast.FunctionDef)
                        and node.name == 'expect_lfs_tcl_sysroot')
+EXPECT_WRAPPER_FUNCTION = next(node for node in TREE.body
+                               if isinstance(node, ast.FunctionDef)
+                               and node.name == 'expect_tclsh_wrapper')
+EXPECT_MAKE_FUNCTION = next(node for node in TREE.body
+                            if isinstance(node, ast.FunctionDef)
+                            and node.name == 'expect_make_tclsh')
 MODULE = ast.Module(body=[FUNCTION, NCURSES_FUNCTION, TCL_FUNCTION, NCURSES_DOC_FUNCTION,
-                          EXPECT_FUNCTION], type_ignores=[])
+                          EXPECT_FUNCTION, EXPECT_WRAPPER_FUNCTION, EXPECT_MAKE_FUNCTION],
+                     type_ignores=[])
 ast.fix_missing_locations(MODULE)
 NAMESPACE = {'Path': Path, 're': re, 'os': __import__('os')}
 exec(compile(MODULE, str(RUNNER), 'exec'), NAMESPACE)
@@ -32,6 +39,8 @@ readline_ncurses_environment = NAMESPACE['readline_ncurses_environment']
 ncurses_doc_parent_setup = NAMESPACE['ncurses_doc_parent_setup']
 tcl_stub_archive_chmod = NAMESPACE['tcl_stub_archive_chmod']
 expect_lfs_tcl_sysroot = NAMESPACE['expect_lfs_tcl_sysroot']
+expect_tclsh_wrapper = NAMESPACE['expect_tclsh_wrapper']
+expect_make_tclsh = NAMESPACE['expect_make_tclsh']
 
 
 class StagedFileMagicCompilerTests(unittest.TestCase):
@@ -223,9 +232,17 @@ class ExpectTclSysrootTests(unittest.TestCase):
         self.includedir = self.root / 'usr/include'
         self.libdir.mkdir(parents=True)
         self.includedir.mkdir(parents=True)
+        (self.root / 'lib').mkdir()
+        (self.root / 'usr/bin').mkdir(parents=True)
+        (self.root / 'usr/lib/tcl8.6').mkdir(parents=True)
         (self.libdir / 'tclConfig.sh').write_text("TCL_LIB_SPEC='-L/usr/lib -ltcl8.6'\n")
         (self.libdir / 'libtcl8.6.so').write_bytes(b'tcl shared library')
         (self.includedir / 'tcl.h').write_text('/* Tcl public header */\n')
+        (self.root / 'lib/ld-linux-x86-64.so.2').write_text('loader')
+        (self.root / 'lib/ld-linux-x86-64.so.2').chmod(0o755)
+        (self.root / 'usr/bin/tclsh8.6').write_text('tclsh')
+        (self.root / 'usr/bin/tclsh8.6').chmod(0o755)
+        (self.root / 'usr/lib/tcl8.6/init.tcl').write_text('# Tcl library')
         self.command = ['runuser', '-u', 'lfs', '--', 'env', 'LC_ALL=C',
                         './configure', '--prefix=/usr', '--with-tcl=/usr/lib',
                         '--with-tclinclude=/usr/include']
@@ -245,16 +262,16 @@ class ExpectTclSysrootTests(unittest.TestCase):
         self.assertTrue(applied)
         self.assertIn('--with-tcl=' + str(self.libdir), result)
         self.assertIn('--with-tclinclude=' + str(self.includedir), result)
-        self.assertEqual(result[result.index('env') + 1], 'LD_LIBRARY_PATH=' + str(self.libdir))
         self.assertNotIn('LD_LIBRARY_PATH', env)
         self.assertEqual(self.command[-2:], ['--with-tcl=/usr/lib',
                                              '--with-tclinclude=/usr/include'])
 
-    def test_existing_library_path_is_preserved_after_target_library(self):
+    def test_expect_configure_removes_inherited_library_path_from_builder(self):
         result, env, applied = self.rewrite(env={'LD_LIBRARY_PATH': '/existing/lib'})
         self.assertTrue(applied)
-        self.assertEqual(result[result.index('env') + 1],
-                         'LD_LIBRARY_PATH=' + str(self.libdir) + ':/existing/lib')
+        self.assertEqual(result, ['runuser', '-u', 'lfs', '--', 'env', 'LC_ALL=C',
+                                  './configure', '--prefix=/usr', '--with-tcl=' + str(self.libdir),
+                                  '--with-tclinclude=' + str(self.includedir)])
         self.assertNotIn('LD_LIBRARY_PATH', env)
 
     def test_expect_patch_does_not_leak_target_library_path_into_runuser(self):
@@ -264,13 +281,27 @@ class ExpectTclSysrootTests(unittest.TestCase):
         self.assertEqual(result, patch)
         self.assertNotIn('LD_LIBRARY_PATH', env)
 
-    def test_expect_child_env_gets_target_library_path_without_poisoning_runuser(self):
+    def test_expect_make_gets_wrapper_without_poisoning_builder_tools(self):
         command = ['runuser', '-u', 'lfs', '--', 'env', 'LC_ALL=C', 'make', '-j4']
         result, env, applied = self.rewrite(command=command)
+        wrapper = self.root / 'build/base-expect/.alp-tclsh'
+        wrapper.parent.mkdir(parents=True, exist_ok=True)
+        wrapper.write_text('wrapper')
+        result = expect_make_tclsh(result, self.build, wrapper, build_dir=self.build)
         self.assertFalse(applied)
-        self.assertEqual(result[5], 'LD_LIBRARY_PATH=' + str(self.libdir))
-        self.assertEqual(result[6:], command[5:])
+        self.assertEqual(result[7], 'TCLSH_PROG=' + str(wrapper))
+        self.assertEqual(result[8:], command[7:])
         self.assertNotIn('LD_LIBRARY_PATH', env)
+
+    def test_target_tclsh_wrapper_uses_target_loader_only_for_tcl_process(self):
+        self.build.mkdir(parents=True, exist_ok=True)
+        wrapper = expect_tclsh_wrapper(self.build, self.root)
+        self.assertEqual(wrapper.stat().st_mode & 0o777, 0o755)
+        self.assertEqual(wrapper.read_text(),
+                         '#!/bin/sh\nexport LD_LIBRARY_PATH=/srv/lfs/usr/lib\n'
+                         'export TCL_LIBRARY=/srv/lfs/usr/lib/tcl8.6\n'
+                         'exec /srv/lfs/lib/ld-linux-x86-64.so.2 --library-path '
+                         '/srv/lfs/usr/lib /srv/lfs/usr/bin/tclsh8.6 "$@"\n')
 
     def test_other_workdirs_are_unchanged(self):
         result, env, applied = self.rewrite(cwd=self.root / 'build/other')
