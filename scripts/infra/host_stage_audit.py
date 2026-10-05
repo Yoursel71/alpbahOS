@@ -29,11 +29,11 @@ COMMANDS = {'scripts_before': VERIFY_SCRIPT_QUERY,
 FAULT = re.compile(r'\[Hardware Error\]|\bMachine check\b|\bMCE:.*(?:error|failure)|'
                    r'\bKernel panic\b|\bOops:|\bBUG:|\bOut of memory:|'
                    r'\bKilled process\b|\bBTRFS.*(?:error|corrupt)|\bI/O error\b', re.I)
-# Same-boot, root-captured cleanup audit before any new Builder stage. The
-# --noscript RPM check produced the same bytes as this rpm -Va output. Permit
-# only this exact pre-existing host state; a changed file/metadata finding
-# changes the digest and still stops the stage.
-KNOWN_RPM_BASELINE_SHA256 = '190d9b93916f6d39015b23fa3f7c1ef1fd44adde2eff676e1e37c87a56d3a079'
+# Same-boot, root-captured audit before a Builder stage. The exact observed
+# host state includes the existing Windows EFI chainloader stanza in
+# /etc/grub.d/40_custom. Permit only this RPM verification output; any further
+# file or metadata drift changes the digest and stops the stage.
+KNOWN_RPM_BASELINE_SHA256 = '2ae99151a7213553c55656e37637870996a85e9cdceefea62d53ddd0370c2ead'
 
 
 def digest(raw):
