@@ -16,3 +16,5 @@ Authoritative evidence:
 A user systemd service, `alpbahos-infra-base-memwait-v2-20261005`, checks `MemAvailable` once per minute and starts a new persistent base-stage controller only when the 12 GiB safety threshold is met. It uses negligible resources while waiting and does not terminate the desktop or user applications. The failed run remains preserved and is never replayed; the waiter will create a fresh run after the host has enough available memory.
 
 The accepted toolchain input digest remains `d120f4db2e8f69e107069f8c13e3800d76f3f5e2fcae8ee1d547097f209c13cf`. No 79-package base-stage acceptance has been achieved yet.
+
+The controller now repeats the same memory wait at the immediate QEMU launch boundary, after audit and overlay preparation, so a dip during that preflight cannot produce another failed run. The change is in the separately pinned host controller and does not alter the accepted build input digest. Its focused tests verify that it waits for 12 GiB and fails closed if `MemAvailable` is absent or malformed.

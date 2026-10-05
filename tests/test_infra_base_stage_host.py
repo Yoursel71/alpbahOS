@@ -21,6 +21,29 @@ base_authorize = importlib.util.module_from_spec(HELPER_SPEC)
 HELPER_SPEC.loader.exec_module(base_authorize)
 
 
+class BuilderMemoryWaitTests(unittest.TestCase):
+    def test_waits_until_guest_and_host_reserve_fit_before_launch(self):
+        with tempfile.TemporaryDirectory() as directory:
+            meminfo = Path(directory) / 'meminfo'
+            meminfo.write_text('MemAvailable: 10485760 kB\n')
+            waits = []
+
+            def sleep(seconds):
+                waits.append(seconds)
+                meminfo.write_text('MemAvailable: 12582912 kB\n')
+
+            available = base_stage.wait_for_builder_memory(meminfo, interval=7, sleep=sleep)
+        self.assertEqual(available, 12 * 1024**3)
+        self.assertEqual(waits, [7])
+
+    def test_missing_memavailable_fails_closed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            meminfo = Path(directory) / 'meminfo'
+            meminfo.write_text('MemFree: 1000 kB\n')
+            with self.assertRaisesRegex(RuntimeError, 'MemAvailable is missing or malformed'):
+                base_stage.wait_for_builder_memory(meminfo, sleep=lambda _: None)
+
+
 class BaseStageHostAuthorizationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

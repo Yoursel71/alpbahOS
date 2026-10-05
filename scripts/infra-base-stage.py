@@ -153,6 +153,23 @@ def root_capture(request_path, request_sha):
     return value
 
 
+def wait_for_builder_memory(meminfo_path=Path('/proc/meminfo'), required_bytes=12 * 1024**3,
+                            interval=60, sleep=None):
+    """Wait at the launch boundary until the guest and host reserve both fit."""
+    sleep = sleep or time.sleep
+    while True:
+        fields = Path(meminfo_path).read_text().splitlines()
+        available = next((int(line.split()[1]) * 1024 for line in fields
+                          if line.startswith('MemAvailable:') and len(line.split()) >= 2), None)
+        if available is None:
+            raise RuntimeError('Host MemAvailable is missing or malformed')
+        if available >= required_bytes:
+            return available
+        print(f'Waiting at Builder launch: MemAvailable={available} bytes; '
+              f'require {required_bytes} bytes for 8 GiB guest plus 4 GiB host reserve.')
+        sleep(interval)
+
+
 def guest_read(command, limit=262144):
     result = subprocess.run(buildctl.ssh_args() + [command], capture_output=True, timeout=30)
     if result.returncode or result.stderr or len(result.stdout) > limit:
@@ -497,6 +514,7 @@ def execute():
         try:
             stage_runs.execution_guard(value, run_sha)
             stage_runs.repository_snapshot(value, 'before')
+            wait_for_builder_memory()
             buildctl.launch(offline=True, vcpus=16)
             buildctl.sync()
             if buildctl.inputs_digest() != inputs_sha:
