@@ -1,5 +1,12 @@
 # alpbahOS — İş kaydı
 
+## 5 Ekim 2026 — canlı base-run için eski overlay temizliği
+
+- Sahip: Codex. Kullanıcının eski ve kullanılmayan alpbahOS kalıntılarını temizleme yetkisi kapsamında, aktif VM disklerinden bağımsız dört eski `preserved-overlays-*` klasörü kaldırıldı. Her klasörde yalnızca `builder-active.qcow2` ve `lfs-active.qcow2` vardı; her iki imajın backing dosyaları `checkpoint-toolchain` altındaydı ve etkin QEMU komut satırı bu klasörlere başvurmuyordu. En yeni üç korunan overlay bırakıldı.
+- SSD boşluğu 30,64 GiB arttı; `/mnt/alpbahOS-ssd` boş alanı 50,99 GiB'ye (%45 civarı) yükseldi. Ayrıntılı yol/boyut/backing kontrolü ve önce/sonra disk makbuzu `/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/cleanup-infra-overlays-20261005.json` içinde.
+- Temizlik sırasında canlı Builder QEMU PID 494050 ve base-run `8c3fa34507986406be0298fb269a26c7` devam etti. Sonrasında glibc `make check` hâlâ `printf` testindeydi; sıcaklık 57,9°C, host izleme `errors=[]`, `kernel_faults=[]`. Expect ve base kabulü henüz yok.
+- Temizlik sırasında bir kod değişmedi. Kanıt ve ayrıntı: `docs/verification/infra-overlay-prune-2026-10-05.md`.
+
 ## 2 Ekim 2026 — NVMe/HDD temizliği ve Faz 2 kapısı
 
 - Kullanıcının açık isteğiyle donmuş temizleme planı `67c3b0c8cbd5b660199f60ce30cb7b633d7eae7584782fcad08057c7f55dd675` uygulanıp NVMe’deki 1.222 eski hedef ve HDD’deki 93 eski yedek/build dizini kaldırıldı. Korunan milestone listesi hash/inode ile doğrulandı; M09 VirGL imajı, üç GCC arşivi ve QtBase replay arşivi HDD’de kaldı. GCC/QtBase kaynakları yalnız destination hash eşleşmesinden sonra kaldırıldı. Snapshot’ları zaten silinmiş glibc/OpenSSL/binutils/Python akışları hash/inode ve snapshot makbuzuyla silindi. Ayrıntı: `docs/verification/infra-cleanup-2026-10-02.md`.
