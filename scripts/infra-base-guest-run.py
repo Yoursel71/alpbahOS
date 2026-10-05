@@ -223,14 +223,29 @@ def expect_lfs_tcl_sysroot(argv, cwd, env, lfs_root='/srv/lfs',
             argv[argv.index(original)] = replacement
         configure_applied = True
 
+    # `env` is also the environment of runuser itself.  Putting the target
+    # LFS library directory there makes the Builder's privileged runuser load
+    # LFS libc before it switches to lfs; keep that path on the child command
+    # instead.  This matters even for earlier commands such as patch, which do
+    # not need Tcl at all.
     updated_env = dict(env or {})
-    old_library_path = updated_env.get('LD_LIBRARY_PATH', '')
+    old_library_path = updated_env.pop('LD_LIBRARY_PATH', '')
     search = str(libdir)
     if old_library_path:
-        if search not in old_library_path.split(':'):
-            updated_env['LD_LIBRARY_PATH'] = search + ':' + old_library_path
-    else:
-        updated_env['LD_LIBRARY_PATH'] = search
+        search = ':'.join([search, *(part for part in old_library_path.split(':')
+                                    if part and part != str(libdir))])
+    try:
+        command_start = argv.index('--') + 1
+    except ValueError:
+        command_start = len(argv)
+    if command_start < len(argv) and argv[command_start] == 'env':
+        assignment = 'LD_LIBRARY_PATH=' + search
+        existing = next((index for index in range(command_start + 1, len(argv))
+                         if argv[index].startswith('LD_LIBRARY_PATH=')), None)
+        if existing is None:
+            argv.insert(command_start + 1, assignment)
+        else:
+            argv[existing] = assignment
     return argv, updated_env, configure_applied
 
 

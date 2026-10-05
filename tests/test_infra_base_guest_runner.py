@@ -245,14 +245,32 @@ class ExpectTclSysrootTests(unittest.TestCase):
         self.assertTrue(applied)
         self.assertIn('--with-tcl=' + str(self.libdir), result)
         self.assertIn('--with-tclinclude=' + str(self.includedir), result)
-        self.assertEqual(env['LD_LIBRARY_PATH'], str(self.libdir))
+        self.assertEqual(result[result.index('env') + 1], 'LD_LIBRARY_PATH=' + str(self.libdir))
+        self.assertNotIn('LD_LIBRARY_PATH', env)
         self.assertEqual(self.command[-2:], ['--with-tcl=/usr/lib',
                                              '--with-tclinclude=/usr/include'])
 
     def test_existing_library_path_is_preserved_after_target_library(self):
-        _, env, applied = self.rewrite(env={'LD_LIBRARY_PATH': '/existing/lib'})
+        result, env, applied = self.rewrite(env={'LD_LIBRARY_PATH': '/existing/lib'})
         self.assertTrue(applied)
-        self.assertEqual(env['LD_LIBRARY_PATH'], str(self.libdir) + ':/existing/lib')
+        self.assertEqual(result[result.index('env') + 1],
+                         'LD_LIBRARY_PATH=' + str(self.libdir) + ':/existing/lib')
+        self.assertNotIn('LD_LIBRARY_PATH', env)
+
+    def test_expect_patch_does_not_leak_target_library_path_into_runuser(self):
+        patch = ['runuser', '-u', 'lfs', '--', 'patch', '-Np1', '-i', 'expect.patch']
+        result, env, applied = self.rewrite(command=patch)
+        self.assertFalse(applied)
+        self.assertEqual(result, patch)
+        self.assertNotIn('LD_LIBRARY_PATH', env)
+
+    def test_expect_child_env_gets_target_library_path_without_poisoning_runuser(self):
+        command = ['runuser', '-u', 'lfs', '--', 'env', 'LC_ALL=C', 'make', '-j4']
+        result, env, applied = self.rewrite(command=command)
+        self.assertFalse(applied)
+        self.assertEqual(result[5], 'LD_LIBRARY_PATH=' + str(self.libdir))
+        self.assertEqual(result[6:], command[5:])
+        self.assertNotIn('LD_LIBRARY_PATH', env)
 
     def test_other_workdirs_are_unchanged(self):
         result, env, applied = self.rewrite(cwd=self.root / 'build/other')
