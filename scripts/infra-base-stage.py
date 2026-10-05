@@ -175,6 +175,13 @@ def base_guest_service_command(run_id, guest_runner_sha256):
         raise RuntimeError('Guest runner hash is invalid')
     unit = 'alpbahos-base-' + run_id
     result = '/srv/lfs/results/base/' + run_id
+    service_script = '\n'.join((
+        'set -euo pipefail',
+        'source /opt/alp-infra/scripts/infra/guest-guard.sh',
+        'guest_guard',
+        'exec /usr/bin/python3 /opt/alp-infra/infra-base-guest-run.py ' + guest_runner_sha256,
+        '',
+    ))
     lines = [
         'set -euo pipefail',
         'unit=' + shlex.quote(unit),
@@ -182,7 +189,12 @@ def base_guest_service_command(run_id, guest_runner_sha256):
         'summary="$result/summary.json"',
         'result_root=/srv/lfs/results/base',
         'test -d "$result_root" && test ! -L "$result_root" && test "$(realpath -e "$result_root")" = "$result_root"',
-        'systemd-run --unit="$unit" --no-block --property=Type=exec --property=RuntimeMaxSec=infinity --property=TimeoutStartSec=infinity --property=StandardOutput=journal --property=StandardError=journal /usr/bin/python3 /opt/alp-infra/infra-base-guest-run.py ' + guest_runner_sha256,
+        # The SSH shell currently owns FD 9. Release it before handing the run
+        # to systemd; the service acquires the same writer lock itself and
+        # keeps FD 9 across exec into Python for the whole guest build.
+        'flock -u 9',
+        'exec 9<&-',
+        'systemd-run --unit="$unit" --no-block --property=Type=exec --property=RuntimeMaxSec=infinity --property=TimeoutStartSec=infinity --property=StandardOutput=journal --property=StandardError=journal /bin/bash -c ' + shlex.quote(service_script),
         'while :; do',
         '  state=$(systemctl show --property=ActiveState --value "$unit.service")',
         '  case "$state" in',

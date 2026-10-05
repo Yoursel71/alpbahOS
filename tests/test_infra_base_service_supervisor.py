@@ -31,6 +31,11 @@ class BaseGuestServiceSupervisorTests(unittest.TestCase):
         self.assertIn('--property=RuntimeMaxSec=infinity', script)
         self.assertIn('--property=StandardOutput=journal', script)
         self.assertIn('/opt/alp-infra/infra-base-guest-run.py ' + 'b' * 64, script)
+        self.assertLess(script.index('flock -u 9'), script.index('systemd-run --unit="$unit"'))
+        self.assertLess(script.index('exec 9<&-'), script.index('systemd-run --unit="$unit"'))
+        self.assertIn('source /opt/alp-infra/scripts/infra/guest-guard.sh', script)
+        self.assertIn('guest_guard', script)
+        self.assertIn('/bin/bash -c', script)
         self.assertIn('systemctl show --property=ActiveState --value', script)
         self.assertIn('"$result_state" == success', script)
         self.assertIn('-f "$summary" && ! -L "$summary"', script)
@@ -50,6 +55,9 @@ class BaseGuestServiceSupervisorTests(unittest.TestCase):
             systemd_run = fake_bin / 'systemd-run'
             systemd_run.write_text('#!/usr/bin/env bash\nexit 0\n')
             systemd_run.chmod(0o755)
+            flock = fake_bin / 'flock'
+            flock.write_text('#!/usr/bin/env bash\nexit 0\n')
+            flock.chmod(0o755)
             systemctl = fake_bin / 'systemctl'
             systemctl.write_text('''#!/usr/bin/env bash
 set -euo pipefail
