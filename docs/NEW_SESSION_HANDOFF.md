@@ -1,6 +1,8 @@
 # alpbahOS — Yeni sohbet / ajan teknik devri
 
-Son canlı doğrulama: 24 Eylül 2026, Europe/Istanbul
+Son canlı doğrulama: 5 Ekim 2026, Europe/Istanbul
+
+Güncel yerel Faz 2 / Fedora-QEMU durumu `CURRENT.md` ve son `docs/WORKLOG.md` kaydındadır. 5 Ekim’de kısmi base denemesi SSH kullanıcı oturumu kapanınca kesildi; Builder kapalıdır. Yeniden başlatmadan önce kesinti raporunu ve `scripts/run-persistent-base-stage.sh` düzeltmesini oku. Bu belgenin aşağıdaki Windows/Hyper-V envanteri tarihsel bağlamdır, yerel Fedora-QEMU Builder için geçerli değildir.
 
 Bu belge yeni Codex/Claude sohbetinin ortamı yeniden keşfetmeye çalışırken yanlış VM'i, diski veya rootfs'yi değiştirmesini önlemek içindir. Önce bunu, sonra `AGENTS.md`, `CURRENT.md` ve `docs/WORKLOG.md` dosyalarını oku.
 

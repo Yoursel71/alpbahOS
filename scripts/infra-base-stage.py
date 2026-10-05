@@ -168,6 +168,43 @@ def guest_write_exclusive(path, raw):
         raise RuntimeError('Exclusive guest evidence write failed: ' + path)
 
 
+def base_guest_service_command(run_id, guest_runner_sha256):
+    """Run base packages as a guest system service, independent of the SSH login scope."""
+    stage_runs.identity(run_id)
+    if not re.fullmatch(r'[0-9a-f]{64}', str(guest_runner_sha256)):
+        raise RuntimeError('Guest runner hash is invalid')
+    unit = 'alpbahos-base-' + run_id
+    result = '/srv/lfs/results/base/' + run_id
+    lines = [
+        'set -euo pipefail',
+        'unit=' + shlex.quote(unit),
+        'result=' + shlex.quote(result),
+        'summary="$result/summary.json"',
+        'result_root=/srv/lfs/results/base',
+        'test -d "$result_root" && test ! -L "$result_root" && test "$(realpath -e "$result_root")" = "$result_root"',
+        'systemd-run --unit="$unit" --no-block --property=Type=exec --property=RuntimeMaxSec=infinity --property=TimeoutStartSec=infinity --property=StandardOutput=journal --property=StandardError=journal /usr/bin/python3 /opt/alp-infra/infra-base-guest-run.py ' + guest_runner_sha256,
+        'while :; do',
+        '  state=$(systemctl show --property=ActiveState --value "$unit.service")',
+        '  case "$state" in',
+        '    active|activating|deactivating) sleep 5 ;;',
+        '    inactive|failed) break ;;',
+        '    *) printf "Unexpected guest systemd state: %s\\n" "$state" >&2; exit 1 ;;',
+        '  esac',
+        'done',
+        'result_state=$(systemctl show --property=Result --value "$unit.service")',
+        'exit_code=$(systemctl show --property=ExecMainCode --value "$unit.service")',
+        'exit_status=$(systemctl show --property=ExecMainStatus --value "$unit.service")',
+        'journalctl --unit="$unit.service" --no-pager --output=cat || true',
+        'if [[ "$state" == inactive && "$result_state" == success && "$exit_code" == exited && "$exit_status" == 0 && -f "$summary" && ! -L "$summary" ]]; then',
+        '  exit 0',
+        'fi',
+        'systemctl --no-pager --full status "$unit.service" >&2 || true',
+        'printf "Guest service failed: state=%s result=%s code=%s status=%s\\n" "$state" "$result_state" "$exit_code" "$exit_status" >&2',
+        'exit 1',
+    ]
+    return 'bash -c ' + shlex.quote('\n'.join(lines) + '\n')
+
+
 def copy_inputs(plan, artifact_root, guest_runner_sha256):
     buildctl.verify_cache()
     transport = shlex.join(buildctl.ssh_args()[:-1])
@@ -491,8 +528,7 @@ def execute():
             with log_path.open('xb') as log, telemetry_path.open('x') as telemetry:
                 command = host_monitor.run_monitored(buildctl.ssh_args() + [
                     'set -euo pipefail; source /opt/alp-infra/scripts/infra/guest-guard.sh; '
-                    'guest_guard; python3 /opt/alp-infra/infra-base-guest-run.py '
-                    + guest_runner_sha],
+                    'guest_guard; ' + base_guest_service_command(run_id, guest_runner_sha)],
                     log, telemetry, buildctl.space_guard, binding=binding)
             stage_runs.write(artifact_root / 'base-command.json', command)
             capture_guest(run_id, guest_dir)
