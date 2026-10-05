@@ -19,7 +19,11 @@ NCURSES_DOC_FUNCTION = next(node for node in TREE.body
 TCL_FUNCTION = next(node for node in TREE.body
                     if isinstance(node, ast.FunctionDef)
                     and node.name == 'tcl_stub_archive_chmod')
-MODULE = ast.Module(body=[FUNCTION, NCURSES_FUNCTION, TCL_FUNCTION, NCURSES_DOC_FUNCTION], type_ignores=[])
+EXPECT_FUNCTION = next(node for node in TREE.body
+                       if isinstance(node, ast.FunctionDef)
+                       and node.name == 'expect_lfs_tcl_sysroot')
+MODULE = ast.Module(body=[FUNCTION, NCURSES_FUNCTION, TCL_FUNCTION, NCURSES_DOC_FUNCTION,
+                          EXPECT_FUNCTION], type_ignores=[])
 ast.fix_missing_locations(MODULE)
 NAMESPACE = {'Path': Path, 're': re, 'os': __import__('os')}
 exec(compile(MODULE, str(RUNNER), 'exec'), NAMESPACE)
@@ -27,6 +31,7 @@ use_staged_file_magic_compiler = NAMESPACE['use_staged_file_magic_compiler']
 readline_ncurses_environment = NAMESPACE['readline_ncurses_environment']
 ncurses_doc_parent_setup = NAMESPACE['ncurses_doc_parent_setup']
 tcl_stub_archive_chmod = NAMESPACE['tcl_stub_archive_chmod']
+expect_lfs_tcl_sysroot = NAMESPACE['expect_lfs_tcl_sysroot']
 
 
 class StagedFileMagicCompilerTests(unittest.TestCase):
@@ -206,6 +211,66 @@ class TclStubArchiveChmodTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, 'Tcl stub archive staging layout'):
             tcl_stub_archive_chmod(
                 self.command, self.build, build_dir=self.build, stage_root=self.stage)
+
+
+class ExpectTclSysrootTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.root = Path(self.temporary.name)
+        self.build = self.root / 'build/base-expect'
+        self.build.mkdir(parents=True)
+        self.libdir = self.root / 'usr/lib'
+        self.includedir = self.root / 'usr/include'
+        self.libdir.mkdir(parents=True)
+        self.includedir.mkdir(parents=True)
+        (self.libdir / 'tclConfig.sh').write_text("TCL_LIB_SPEC='-L/usr/lib -ltcl8.6'\n")
+        (self.libdir / 'libtcl8.6.so').write_bytes(b'tcl shared library')
+        (self.includedir / 'tcl.h').write_text('/* Tcl public header */\n')
+        self.command = ['runuser', '-u', 'lfs', '--', 'env', 'LC_ALL=C',
+                        './configure', '--prefix=/usr', '--with-tcl=/usr/lib',
+                        '--with-tclinclude=/usr/include']
+
+    def tearDown(self):
+        self.temporary.cleanup()
+
+    def rewrite(self, command=None, env=None, cwd=None):
+        return expect_lfs_tcl_sysroot(
+            self.command if command is None else command,
+            self.build if cwd is None else cwd,
+            {'PATH': '/srv/lfs/tools/bin', **(env or {})},
+            lfs_root=self.root, build_dir=self.build)
+
+    def test_expect_configure_probes_tcl_inside_the_target_root(self):
+        result, env, applied = self.rewrite()
+        self.assertTrue(applied)
+        self.assertIn('--with-tcl=' + str(self.libdir), result)
+        self.assertIn('--with-tclinclude=' + str(self.includedir), result)
+        self.assertEqual(env['LD_LIBRARY_PATH'], str(self.libdir))
+        self.assertEqual(self.command[-2:], ['--with-tcl=/usr/lib',
+                                             '--with-tclinclude=/usr/include'])
+
+    def test_existing_library_path_is_preserved_after_target_library(self):
+        _, env, applied = self.rewrite(env={'LD_LIBRARY_PATH': '/existing/lib'})
+        self.assertTrue(applied)
+        self.assertEqual(env['LD_LIBRARY_PATH'], str(self.libdir) + ':/existing/lib')
+
+    def test_other_workdirs_are_unchanged(self):
+        result, env, applied = self.rewrite(cwd=self.root / 'build/other')
+        self.assertFalse(applied)
+        self.assertEqual(result, self.command)
+        self.assertEqual(env['PATH'], '/srv/lfs/tools/bin')
+        self.assertNotIn('LD_LIBRARY_PATH', env)
+
+    def test_missing_tcl_config_fails_closed(self):
+        (self.libdir / 'tclConfig.sh').unlink()
+        with self.assertRaisesRegex(RuntimeError, 'Tcl config, headers or shared library'):
+            self.rewrite()
+
+    def test_unexpected_configure_arguments_fail_closed(self):
+        command = list(self.command)
+        command[-1] = '--with-tclinclude=/wrong/include'
+        with self.assertRaisesRegex(RuntimeError, 'arguments differ from the pinned Tcl recipe'):
+            self.rewrite(command)
 
 
 if __name__ == '__main__':

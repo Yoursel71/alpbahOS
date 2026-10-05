@@ -178,6 +178,62 @@ def tcl_stub_archive_chmod(argv, cwd,
     return argv
 
 
+def expect_lfs_tcl_sysroot(argv, cwd, env, lfs_root='/srv/lfs',
+                           build_dir='/srv/lfs/build/base-expect'):
+    """Translate LFS-root paths for Expect's unchrooted Builder configure.
+
+    The book recipe is written for a chroot where /usr/lib and /usr/include
+    are the target root. This isolated builder runs outside that root, so the
+    configure probe must point at the accepted Tcl installation under LFS.
+    The configured Tcl metadata still uses /usr paths; the LFS cross compiler
+    resolves those through its /srv/lfs sysroot.
+    """
+    argv = list(argv)
+    if cwd is None or Path(cwd).resolve() != Path(build_dir).resolve():
+        return argv, env, False
+
+    root = Path(lfs_root)
+    if root.is_symlink() or root.resolve() != root or not root.is_dir():
+        raise RuntimeError('Expect Tcl sysroot is not the dedicated LFS root')
+    libdir, includedir = root / 'usr/lib', root / 'usr/include'
+    config, header, library = (libdir / 'tclConfig.sh', includedir / 'tcl.h',
+                               libdir / 'libtcl8.6.so')
+    if (libdir.is_symlink() or includedir.is_symlink()
+            or not libdir.is_dir() or not includedir.is_dir()
+            or config.is_symlink() or not config.is_file()
+            or header.is_symlink() or not header.is_file()
+            or not library.is_file()):
+        raise RuntimeError('Accepted Tcl config, headers or shared library are missing')
+    root_real = root.resolve()
+    for path in (config, header, library):
+        resolved = path.resolve(strict=True)
+        if root_real not in resolved.parents:
+            raise RuntimeError('Tcl sysroot payload escapes the dedicated LFS root')
+
+    configure_indexes = [index for index, value in enumerate(argv) if value == './configure']
+    configure_applied = False
+    if configure_indexes:
+        replacements = {
+            '--with-tcl=/usr/lib': '--with-tcl=' + str(libdir),
+            '--with-tclinclude=/usr/include': '--with-tclinclude=' + str(includedir),
+        }
+        for original, replacement in replacements.items():
+            if argv.count(original) != 1:
+                raise RuntimeError('Expect configure arguments differ from the pinned Tcl recipe')
+            argv[argv.index(original)] = replacement
+        configure_applied = True
+
+    updated_env = dict(env or {})
+    old_library_path = updated_env.get('LD_LIBRARY_PATH', '')
+    search = str(libdir)
+    if old_library_path:
+        if search not in old_library_path.split(':'):
+            updated_env['LD_LIBRARY_PATH'] = search + ':' + old_library_path
+    else:
+        updated_env['LD_LIBRARY_PATH'] = search
+    return argv, updated_env, configure_applied
+
+
 def ncurses_doc_parent_setup(argv, stage_root='/srv/lfs/stage/base-ncurses',
                             build_root='/srv/lfs/build/base-ncurses'):
     """Create Ncurses' documentation parent before its staged-only doc copy."""
@@ -648,6 +704,11 @@ def run_with_root_owned_test_tree(argv, log, cwd=None, env=None):
     argv = use_staged_file_magic_compiler(argv, cwd)
     env = readline_ncurses_environment(argv, cwd, env)
     argv = tcl_stub_archive_chmod(argv, cwd)
+    argv, env, expect_tcl_adapter = expect_lfs_tcl_sysroot(argv, cwd, env)
+    if expect_tcl_adapter:
+        with Path(log).open('ab') as output:
+            output.write(b'BUILD_ADAPTER expect-configure=/srv/lfs/usr/lib/tclConfig.sh '
+                         b'include=/srv/lfs/usr/include/tcl.h\n')
     for setup_command in ncurses_doc_parent_setup(argv):
         _run(setup_command, log)
     if uses_m32_uapi_configure(argv):
