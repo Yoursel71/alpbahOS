@@ -16,13 +16,17 @@ NCURSES_FUNCTION = next(node for node in TREE.body
 NCURSES_DOC_FUNCTION = next(node for node in TREE.body
                             if isinstance(node, ast.FunctionDef)
                             and node.name == 'ncurses_doc_parent_setup')
-MODULE = ast.Module(body=[FUNCTION, NCURSES_FUNCTION, NCURSES_DOC_FUNCTION], type_ignores=[])
+TCL_FUNCTION = next(node for node in TREE.body
+                    if isinstance(node, ast.FunctionDef)
+                    and node.name == 'tcl_stub_archive_chmod')
+MODULE = ast.Module(body=[FUNCTION, NCURSES_FUNCTION, TCL_FUNCTION, NCURSES_DOC_FUNCTION], type_ignores=[])
 ast.fix_missing_locations(MODULE)
 NAMESPACE = {'Path': Path, 're': re, 'os': __import__('os')}
 exec(compile(MODULE, str(RUNNER), 'exec'), NAMESPACE)
 use_staged_file_magic_compiler = NAMESPACE['use_staged_file_magic_compiler']
 readline_ncurses_environment = NAMESPACE['readline_ncurses_environment']
 ncurses_doc_parent_setup = NAMESPACE['ncurses_doc_parent_setup']
+tcl_stub_archive_chmod = NAMESPACE['tcl_stub_archive_chmod']
 
 
 class StagedFileMagicCompilerTests(unittest.TestCase):
@@ -164,6 +168,44 @@ class NcursesDocumentationStageTests(unittest.TestCase):
         self.assertEqual(ncurses_doc_parent_setup(
             ['cp', '-a', '/other/doc', '/other/stage/doc'],
             stage_root=self.stage, build_root=self.build), [])
+
+
+class TclStubArchiveChmodTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.root = Path(self.temporary.name)
+        self.build = self.root / 'build/base-tcl/unix'
+        self.build.mkdir(parents=True)
+        self.stage = self.root / 'stage/base-tcl'
+        library = self.stage / 'usr/lib'
+        library.mkdir(parents=True)
+        self.stub_archive = library / 'libtclstub8.6.a'
+        self.stub_archive.write_bytes(b'archive')
+        self.command = ['runuser', '-u', 'lfs', '--', 'env', 'chmod', '644',
+                        str(library / 'libtcl8.6.a')]
+
+    def tearDown(self):
+        self.temporary.cleanup()
+
+    def test_only_tcl_build_chmod_is_mapped_to_existing_stub_archive(self):
+        result = tcl_stub_archive_chmod(
+            self.command, self.build, build_dir=self.build, stage_root=self.stage)
+        self.assertEqual(result[-1], str(self.stub_archive))
+        self.assertEqual(self.command[-1], str(self.stage / 'usr/lib/libtcl8.6.a'))
+
+    def test_unrelated_command_and_build_directory_are_unchanged(self):
+        self.assertEqual(tcl_stub_archive_chmod(
+            ['chmod', '644', '/tmp/other.a'], self.build,
+            build_dir=self.build, stage_root=self.stage), ['chmod', '644', '/tmp/other.a'])
+        self.assertEqual(tcl_stub_archive_chmod(
+            self.command, self.root / 'build/other',
+            build_dir=self.build, stage_root=self.stage), self.command)
+
+    def test_missing_stub_archive_fails_closed(self):
+        self.stub_archive.unlink()
+        with self.assertRaisesRegex(RuntimeError, 'Tcl stub archive staging layout'):
+            tcl_stub_archive_chmod(
+                self.command, self.build, build_dir=self.build, stage_root=self.stage)
 
 
 if __name__ == '__main__':

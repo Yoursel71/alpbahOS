@@ -157,6 +157,27 @@ def readline_ncurses_environment(argv, cwd, env,
     return env
 
 
+def tcl_stub_archive_chmod(argv, cwd,
+                           build_dir='/srv/lfs/build/base-tcl/unix',
+                           stage_root='/srv/lfs/stage/base-tcl'):
+    """Map Tcl's stale archive path to the installed stub archive, fail closed."""
+    argv = list(argv)
+    if cwd is None or Path(cwd).resolve() != Path(build_dir).resolve():
+        return argv
+    requested = Path(stage_root) / 'usr/lib/libtcl8.6.a'
+    actual = Path(stage_root) / 'usr/lib/libtclstub8.6.a'
+    if argv[-3:] != ['chmod', '644', str(requested)]:
+        return argv
+    stage, library = Path(stage_root), Path(stage_root) / 'usr/lib'
+    if (stage.is_symlink() or stage.resolve() != stage or not stage.is_dir()
+            or library.is_symlink() or library.resolve() != library or not library.is_dir()
+            or requested.exists() or requested.is_symlink()
+            or actual.is_symlink() or actual.resolve() != actual or not actual.is_file()):
+        raise RuntimeError('Tcl stub archive staging layout is unexpected')
+    argv[-1] = str(actual)
+    return argv
+
+
 def ncurses_doc_parent_setup(argv, stage_root='/srv/lfs/stage/base-ncurses',
                             build_root='/srv/lfs/build/base-ncurses'):
     """Create Ncurses' documentation parent before its staged-only doc copy."""
@@ -626,6 +647,7 @@ def run_with_root_owned_test_tree(argv, log, cwd=None, env=None):
     argv = disable_unavailable_m32_cxx(argv, cwd)
     argv = use_staged_file_magic_compiler(argv, cwd)
     env = readline_ncurses_environment(argv, cwd, env)
+    argv = tcl_stub_archive_chmod(argv, cwd)
     for setup_command in ncurses_doc_parent_setup(argv):
         _run(setup_command, log)
     if uses_m32_uapi_configure(argv):
