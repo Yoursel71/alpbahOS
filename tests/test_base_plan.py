@@ -250,6 +250,8 @@ class BaseInventoryTests(unittest.TestCase):
         self.assertEqual(len(m32_makefile_compilers), 2)
         self.assertTrue(all('x86_64-lfs-linux-gnu-gcc -m32' in command
                             for command in m32_makefile_compilers))
+        tcl = next(row['recipe_data'] for row in plan if row['name'] == 'tcl')
+        self.assertIn(['chmod', '644', '{stage}/usr/lib/libtclstub8.6.a'], tcl['stage'])
 
     def test_source_manifest_drift_stops_inventory_resolution(self):
         with tempfile.TemporaryDirectory() as directory:
