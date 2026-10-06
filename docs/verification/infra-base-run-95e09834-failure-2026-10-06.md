@@ -7,12 +7,13 @@ The guest journal records `make -j4 tooldir=/usr` failing in Binutils BFD becaus
 and `/srv/lfs/usr/include/zlib.h` was present. Builds run outside the target LFS
 root, so the host compiler did not search that target include directory.
 
-The Binutils recipe now passes `CPPFLAGS=-I/srv/lfs/usr/include` through its
-allowlisted recipe environment. This keeps the pinned `--with-system-zlib`
-configuration while making its installed LFS dependency visible during the
-isolated host-side compile. Recipe JSON validation and the 79-package inventory
-and recipe-coverage check pass. A new Base run is required because the runner
-preserves an interrupted `build-started` package and refuses to replay it.
+The Binutils recipe now sets its compiler to
+`gcc -I/srv/lfs/usr/include` through the existing allowlisted `CC` recipe
+environment. This keeps the pinned `--with-system-zlib` configuration while
+making its installed LFS dependency visible during the isolated host-side
+compile. Recipe JSON validation and the 79-package inventory and recipe-coverage
+check pass. A new Base run is required because the runner preserves an
+interrupted `build-started` package and refuses to replay it.
 
 The failed run’s VM was powered off; partial guest artifacts were captured at
 `/mnt/alpbahOS-data/alpbahos-infra-rebuild/artifacts/stage-runs/95e09834a6a310402d00451954c2d409/guest-base-partial`.

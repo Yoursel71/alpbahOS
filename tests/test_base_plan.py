@@ -366,10 +366,10 @@ class BaseInventoryTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, 'NINJAJOBS'):
             validate_recipe(invalid, invalid['jobs'])
 
-    def test_binutils_uses_lfs_zlib_headers_from_unchrooted_builder(self):
+    def test_binutils_compiler_sees_lfs_zlib_headers_from_unchrooted_builder(self):
         plan = base_plan.load(REPO)
         recipe = next(row['recipe_data'] for row in plan if row['name'] == 'binutils')
-        self.assertEqual(recipe['environment'], {'CPPFLAGS': '-I/srv/lfs/usr/include'})
+        self.assertEqual(recipe['environment'], {'CC': 'gcc -I/srv/lfs/usr/include'})
         validate_recipe(recipe, recipe['jobs'])
         invalid = dict(recipe, environment={'CPATH': '/srv/lfs/usr/include'})
         with self.assertRaisesRegex(RuntimeError, 'environment name'):
