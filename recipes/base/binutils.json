@@ -35,7 +35,9 @@
       "tooldir=/usr"
     ]
   ],
-  "environment": {},
+  "environment": {
+    "CPPFLAGS": "-I/srv/lfs/usr/include"
+  },
   "jobs": 4,
   "name": "binutils",
   "phase": "base",

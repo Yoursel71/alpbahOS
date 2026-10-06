@@ -125,7 +125,8 @@ def validate_recipe(recipe, jobs):
     for item in recipe.get('prerequisites', []):
         if not re.fullmatch(r'[a-zA-Z0-9][a-zA-Z0-9._+-]*', item['directory']):
             raise RuntimeError('Unsafe prerequisite directory')
-    allowed_env = {'PATH', 'LFS', 'LFS_TGT', 'LFS_TGT32', 'CC', 'CXX', 'AR', 'RANLIB', 'MAKEFLAGS', 'NINJAJOBS'}
+    allowed_env = {'PATH', 'LFS', 'LFS_TGT', 'LFS_TGT32', 'CC', 'CXX', 'AR', 'RANLIB',
+                   'CPPFLAGS', 'MAKEFLAGS', 'NINJAJOBS'}
     if set(recipe.get('environment', {})) - allowed_env:
         raise RuntimeError('Recipe environment name not allowlisted')
     if 'NINJAJOBS' in recipe.get('environment', {}) and not re.fullmatch(
