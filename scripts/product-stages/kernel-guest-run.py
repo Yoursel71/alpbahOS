@@ -76,6 +76,9 @@ def run(run_id, recipe_sha256):
     started = time.time_ns()
     built = package_stage.build_staged(recipe, run_id, result, jobs=recipe['jobs'])
     built = {**built, 'archive': str(built['archive']), 'manifest': str(built['manifest'])}
+    built_sha = write_new(result / 'built.json', {'schema': 'alpbahOS.kernel-built/v1',
+                                                   'run_id': run_id, 'recipe_sha256': recipe_sha256,
+                                                   'built': built})
     bundle = package_install.validate_bundle(recipe, built)
     installed = package_install.install_staged(recipe, built, LFS, result)
     package_db = package_install.packages(LFS)
@@ -89,6 +92,12 @@ def run(run_id, recipe_sha256):
     observed_paths = {entry['path'] for entry in bundle['entries'] if entry['type'] != 'directory'}
     if not expected_boot.issubset(observed_paths):
         raise RuntimeError('Kernel package lacks boot image/map/config ownership')
+    db_raw = (LFS / 'var/lib/alp/db.json').read_bytes()
+    db_path = result / 'db-final.json'
+    with db_path.open('xb') as stream:
+        stream.write(db_raw)
+        stream.flush()
+        os.fsync(stream.fileno())
     config = LFS / 'build' / run_id / '.config'
     release_file = LFS / 'build' / run_id / 'include/config/kernel.release'
     if (config.is_symlink() or not config.is_file() or not HEX64.fullmatch(sha(config))
@@ -104,10 +113,13 @@ def run(run_id, recipe_sha256):
         'config_sha256': sha(config), 'config_options_required': 26,
         'archive': Path(built['archive']).name, 'archive_sha256': built['archive_sha256'],
         'manifest': Path(built['manifest']).name, 'manifest_sha256': built['manifest_sha256'],
+        'built_record_sha256': built_sha,
         'manifest_entry_count': len(bundle['entries']), 'alp_package': recipe['name'],
         'alp_version': record['version'], 'alp_record_sha256': package_install.fingerprint(record),
-        'alp_database_sha256': sha(LFS / 'var/lib/alp/db.json'),
+        'alp_database_sha256': hashlib.sha256(db_raw).hexdigest(),
         'install_receipt_sha256': sha(result / 'linux-kernel.installed.json'),
+        'build_log_sha256': sha(result / f'{run_id}.log'),
+        'install_log_sha256': sha(result / 'linux-kernel.install.log'),
         'test': 'headers_check', 'result_directory': str(result),
         'started_at_ns': started, 'ended_at_ns': time.time_ns()
     }
