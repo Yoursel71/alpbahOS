@@ -842,6 +842,19 @@ class ToolchainPreparationTests(unittest.TestCase):
                 with self.assertRaises(RuntimeError):
                     package_stage.relative_path(root, name)
 
+    def test_recipe_build_files_create_safe_nested_parents(self):
+        with tempfile.TemporaryDirectory(dir=ctl.STATE) as directory:
+            root = Path(directory) / 'build'; root.mkdir()
+            target = package_stage.write_recipe_build_file(
+                root, 'infra-alp-personalities/i686-pc-linux-gnu.personality', 'linux32\n')
+            self.assertEqual(target.read_text(), 'linux32\n')
+            (root / 'inside').mkdir()
+            (root / 'linked-parent').symlink_to(root / 'inside', target_is_directory=True)
+            with self.assertRaisesRegex(RuntimeError, 'parent is symlink'):
+                package_stage.write_recipe_build_file(root, 'linked-parent/file', 'unsafe\n')
+            with self.assertRaises(RuntimeError):
+                package_stage.write_recipe_build_file(root, '../escape', 'unsafe\n')
+
     def test_pass1_recipes_use_m32_and_pinned_prerequisites(self):
         manifest = ctl.manifest()
         sources = {s['filename'] for s in [*manifest['sources'], *manifest.get('local_sources', [])]}

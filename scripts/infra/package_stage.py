@@ -71,6 +71,25 @@ def relative_path(root, name):
     return target
 
 
+def write_recipe_build_file(root, name, contents):
+    """Create a pinned recipe file without following symlinked parent paths."""
+    path = Path(name)
+    target = relative_path(root, name)
+    parent = Path(root)
+    for part in path.parts[:-1]:
+        parent = parent / part
+        if parent.is_symlink():
+            raise RuntimeError('Recipe build file parent is symlink')
+        if parent.exists():
+            if not parent.is_dir():
+                raise RuntimeError('Recipe build file parent is not a directory')
+        else:
+            parent.mkdir()
+    target = relative_path(root, name)
+    target.write_text(contents)
+    return target
+
+
 def recipe_working_directory(root, recipe, step):
     """Resolve an optional recipe step directory under its private build tree."""
     relative = recipe.get('working_directories', {}).get(step, '.')
@@ -298,8 +317,7 @@ def build_staged(recipe, run_id, result, jobs=None):
         work = build / 'build'; work.mkdir()
         subprocess.run(['chown', 'lfs:lfs', str(work)], check=True)
     for name, contents in recipe.get('build_files', {}).items():
-        target = relative_path(work, name)
-        target.write_text(contents)
+        target = write_recipe_build_file(work, name, contents)
         subprocess.run(['chown', 'lfs:lfs', str(target)], check=True)
     if recipe.get('configure_build_guess'):
         guess = relative_path(build, recipe['configure_build_guess'])
