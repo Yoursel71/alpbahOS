@@ -82,5 +82,10 @@
     ]
   ],
   "validation": "Pinned out-of-tree DejaGNU configure/check/install with staged generated HTML and text documentation; no guest build or Alp ownership acceptance yet.",
-  "version": "1.6.3"
+  "version": "1.6.3",
+  "working_directories": {
+    "compile": "build",
+    "stage": "build",
+    "test": "build"
+  }
 }

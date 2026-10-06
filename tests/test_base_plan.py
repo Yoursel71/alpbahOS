@@ -219,6 +219,8 @@ class BaseInventoryTests(unittest.TestCase):
         self.assertEqual(expect['patches'], [{'source': 'expect-5.45.4-gcc15-1.patch', 'strip': 1}])
         dejagnu = next(row['recipe_data'] for row in plan if row['name'] == 'dejagnu')
         self.assertTrue(dejagnu['separate_build'])
+        self.assertEqual(dejagnu['working_directories'], {
+            'compile': 'build', 'stage': 'build', 'test': 'build'})
         intltool = next(row['recipe_data'] for row in plan if row['name'] == 'intltool')
         self.assertEqual(intltool['requires'], ['glibc', 'perl', 'xml-parser'])
         autoconf = next(row['recipe_data'] for row in plan if row['name'] == 'autoconf')
