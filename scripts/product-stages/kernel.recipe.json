@@ -1,0 +1,151 @@
+{
+  "abi": "multilib-m32",
+  "allowed_jobs": [
+    1,
+    2,
+    4
+  ],
+  "compile": [
+    [
+      "python3",
+      "/opt/alp-infra/scripts/product-stages/verify-kernel-config.py",
+      "--config",
+      "{source}/.config",
+      "--required",
+      "/opt/alp-infra/configs/kernel/infra-required.config"
+    ],
+    [
+      "make",
+      "-j{jobs}",
+      "KBUILD_BUILD_USER=alpbahOS",
+      "KBUILD_BUILD_HOST=reproducible",
+      "bzImage",
+      "modules"
+    ]
+  ],
+  "environment": {},
+  "jobs": 4,
+  "name": "linux-kernel",
+  "phase": "base",
+  "post_stage": [
+    [
+      "python3",
+      "/opt/alp-infra/scripts/product-stages/verify-kernel-config.py",
+      "--config",
+      "{source}/.config",
+      "--required",
+      "/opt/alp-infra/configs/kernel/infra-required.config",
+      "--release-file",
+      "{source}/include/config/kernel.release"
+    ],
+    [
+      "mkdir",
+      "-p",
+      "{stage}/boot"
+    ],
+    [
+      "install",
+      "-m",
+      "0644",
+      "{source}/arch/x86/boot/bzImage",
+      "{stage}/boot/vmlinuz-6.16.1-alpbahOS"
+    ],
+    [
+      "install",
+      "-m",
+      "0644",
+      "{source}/System.map",
+      "{stage}/boot/System.map-6.16.1-alpbahOS"
+    ],
+    [
+      "install",
+      "-m",
+      "0644",
+      "{source}/.config",
+      "{stage}/boot/config-6.16.1-alpbahOS"
+    ],
+    [
+      "rm",
+      "-f",
+      "{stage}/lib/modules/6.16.1-alpbahOS/build",
+      "{stage}/lib/modules/6.16.1-alpbahOS/source"
+    ],
+    [
+      "depmod",
+      "-b",
+      "{stage}",
+      "6.16.1-alpbahOS"
+    ]
+  ],
+  "pre": [
+    [
+      "make",
+      "defconfig"
+    ],
+    [
+      "scripts/kconfig/merge_config.sh",
+      "-m",
+      ".config",
+      "/opt/alp-infra/configs/kernel/infra-required.config"
+    ],
+    [
+      "make",
+      "olddefconfig"
+    ],
+    [
+      "scripts/config",
+      "--file",
+      ".config",
+      "--enable",
+      "MODULES"
+    ],
+    [
+      "scripts/config",
+      "--file",
+      ".config",
+      "--set-str",
+      "LOCALVERSION",
+      "-alpbahOS"
+    ],
+    [
+      "make",
+      "olddefconfig"
+    ]
+  ],
+  "requires": [
+    "bash",
+    "bc",
+    "binutils",
+    "coreutils",
+    "gcc",
+    "kmod",
+    "make",
+    "perl",
+    "python",
+    "xz"
+  ],
+  "requires_oc_and_abi_authorization": true,
+  "requires_stability_receipt": true,
+  "schema": "alpbahOS.recipe/v1",
+  "source": "linux-6.16.1.tar.xz",
+  "stage": [
+    [
+      "make",
+      "-j1",
+      "INSTALL_MOD_PATH={stage}",
+      "modules_install"
+    ]
+  ],
+  "strip_stage_prefix": "",
+  "test": [
+    [
+      "make",
+      "-j{jobs}",
+      "headers_check"
+    ]
+  ],
+  "test_locale": "C",
+  "test_user": "lfs",
+  "validation": "Pinned LFS 12.4 Linux 6.16.1 tarball; merge the reviewed required guest/EFI/multilib config into x86_64 defconfig, verify every required option before build, then build image and modules, run headers_check, stage modules plus boot artifacts and run depmod under the staging root. Product-stage host audit/checkpoint acceptance remains required.",
+  "version": "6.16.1-alpbahOS"
+}
