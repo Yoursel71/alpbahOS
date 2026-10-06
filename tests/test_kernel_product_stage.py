@@ -125,6 +125,9 @@ class KernelProductStageTests(unittest.TestCase):
                 proof = kernel_stage.grow_lfs_disk()
             self.assertEqual(proof['bytes'], 96 * 1024**3)
             self.assertEqual(proof['backing_checkpoint'], str(checkpoint / 'lfs.qcow2'))
+            self.assertEqual(proof['original_bytes'], 40 * 1024**3)
+            self.assertEqual(proof['backing_checkpoint_sha256'], kernel_stage.sha(checkpoint / 'lfs.qcow2'))
+            self.assertEqual(proof['sha256'], kernel_stage.sha(active))
             self.assertEqual(responses, [])
 
     def test_lfs_guest_filesystem_capacity_must_be_verified_after_growth(self):

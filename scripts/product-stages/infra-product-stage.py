@@ -138,6 +138,7 @@ def grow_lfs_disk():
     if (len(chain) < 2 or Path(chain[0].get('filename', '')) != active
             or Path(chain[1].get('filename', '')) != base_disk):
         raise RuntimeError('LFS overlay is not a direct child of the accepted Base checkpoint')
+    base_disk_sha256 = sha(base_disk)
     subprocess.run(['qemu-img', 'resize', active, str(LFS_DISK_BYTES)],
                    check=True, capture_output=True, text=True)
     buildctl.space_guard()
@@ -145,8 +146,10 @@ def grow_lfs_disk():
                                       check=True, capture_output=True, text=True).stdout)
     if grown.get('virtual-size') != LFS_DISK_BYTES:
         raise RuntimeError('LFS qcow2 did not reach the declared 96 GiB capacity')
-    return {'path': str(active), 'bytes': LFS_DISK_BYTES,
-            'backing_checkpoint': str(base_disk), 'result': 'PASS'}
+    return {'path': str(active), 'original_bytes': 40 * 1024**3,
+            'bytes': LFS_DISK_BYTES, 'sha256': sha(active),
+            'backing_checkpoint': str(base_disk),
+            'backing_checkpoint_sha256': base_disk_sha256, 'result': 'PASS'}
 
 
 def grow_lfs_filesystem():
