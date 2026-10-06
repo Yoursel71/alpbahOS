@@ -26,6 +26,12 @@ class KernelProductStageTests(unittest.TestCase):
         import package_stage
 
         package_stage.validate_recipe(self.recipe, self.recipe['jobs'])
+        substitutions = {'stage': '/srv/lfs/stage/test', 'source': '/srv/lfs/build/test',
+                         'lfs': '/srv/lfs', 'jobs': 4, 'build_triplet': 'x86_64-linux-gnu'}
+        for step in ('pre', 'compile', 'test', 'stage', 'post_stage'):
+            for command in self.recipe.get(step, []):
+                for argument in command:
+                    argument.format(**substitutions)
         plan = base_plan.load(REPO)
         self.assertEqual(len(plan), 79)
         self.assertFalse(set(self.recipe['requires']) - {row['name'] for row in plan})
