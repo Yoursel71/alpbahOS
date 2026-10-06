@@ -385,6 +385,7 @@ def guest(action):
     if not pid():
         fail('Builder must be running')
     if action == 'smoke':
+        ensure_builder_python()
         remote = 'bash /opt/alp-infra/scripts/infra/guest-package.sh zlib-smoke'
         previous = ARTIFACTS / 'phase1-acceptance.json'
         if previous.exists():
@@ -423,6 +424,19 @@ def guest(action):
     else:
         record_phase1_acceptance()
     print(f'{action} finished; log={log} sha256={sha(log)}')
+
+
+def ensure_builder_python():
+    """Install the pinned Builder-only Python runtime before package smoke tests."""
+    check = 'test -x /opt/alp-builder-python/bin/python3 && sha256sum -c /srv/infra/builder-python.sha256'
+    result = subprocess.run(ssh_args() + [check], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                            text=True)
+    if result.returncode:
+        builder_python()
+        result = subprocess.run(ssh_args() + [check], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                text=True)
+    if result.returncode:
+        fail('Pinned Builder Python runtime is not installed and verified: ' + result.stdout[-2000:])
 
 
 def builder_python():

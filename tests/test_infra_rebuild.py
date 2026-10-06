@@ -88,6 +88,36 @@ def stage_job_fixture(directory, started=True, audited=True, sources_sha256='2' 
         yield value, run_sha256, request_raw
 
 
+class BuilderPythonPreflightTests(unittest.TestCase):
+    def test_runtime_preflight_installs_then_rechecks_missing_or_invalid_runtime(self):
+        failed = subprocess.CompletedProcess([], 1, stdout='missing checksum')
+        passed = subprocess.CompletedProcess([], 0, stdout='builder-python.sha256: OK')
+        with patch.object(ctl, 'ssh_args', return_value=['ssh', 'builder']), \
+                patch.object(ctl.subprocess, 'run', side_effect=[failed, passed]) as check, \
+                patch.object(ctl, 'builder_python') as install:
+            ctl.ensure_builder_python()
+        install.assert_called_once_with()
+        self.assertEqual(check.call_count, 2)
+        self.assertIn('sha256sum -c /srv/infra/builder-python.sha256', check.call_args.args[0][-1])
+
+    def test_runtime_preflight_leaves_verified_runtime_untouched(self):
+        passed = subprocess.CompletedProcess([], 0, stdout='builder-python.sha256: OK')
+        with patch.object(ctl, 'ssh_args', return_value=['ssh', 'builder']), \
+                patch.object(ctl.subprocess, 'run', return_value=passed) as check, \
+                patch.object(ctl, 'builder_python') as install:
+            ctl.ensure_builder_python()
+        check.assert_called_once()
+        install.assert_not_called()
+
+    def test_runtime_preflight_fails_closed_if_install_does_not_verify(self):
+        failed = subprocess.CompletedProcess([], 1, stdout='checksum mismatch')
+        with patch.object(ctl, 'ssh_args', return_value=['ssh', 'builder']), \
+                patch.object(ctl.subprocess, 'run', return_value=failed), \
+                patch.object(ctl, 'builder_python'):
+            with self.assertRaisesRegex(RuntimeError, 'not installed and verified'):
+                ctl.ensure_builder_python()
+
+
 class BoundaryTests(unittest.TestCase):
     def test_input_digest_tracks_kernel_config_and_local_patches(self):
         with tempfile.TemporaryDirectory() as directory:
