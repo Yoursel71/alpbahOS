@@ -1,5 +1,13 @@
 # alpbahOS — İş kaydı
 
+## 6 Ekim 2026 — Faz 2 LFS temel sistemi canlı derlemede
+
+- Base stage run `009fbe8de7579b975f2f11e1d4e7e840` VM içinde aktif; guest systemd birimi `alpbahos-base-009fbe8de7579b975f2f11e1d4e7e840.service`. Girdi özeti SHA-256 `d120f4db2e8f69e107069f8c13e3800d76f3f5e2fcae8ee1d547097f209c13cf`.
+- Son kontrolde `man-pages` ve `iana-etc` kurulum makbuzları mevcut; ncurses Readline için bootstrap olarak derlenmiş. Glibc `make check` sürüyordu: 2.665 sonuç dosyası, 28.713.266 bayt log. Son görülen test alt dizini `time`; base stage ve Glibc henüz kabul edilmedi, 79 paketlik aşama tamamlanmadı.
+- Glibc `stdlib/tst-system` çıktısı `RLIMIT_NPROC` testi sırasında root için beklenen tek hata ile eşleşiyor. `manifests/infra-test-policy.json` bunu yalnız bu kesin test ve çıktı için izinli sayıyor; sonuç henüz tam Glibc test-kümesi kabulü değil.
+- Host izleme son örneğinde `errors=[]`, `kernel_faults=[]`, sıcaklık 55°C, throttle sayacı boş; host boş alanları `/` %26,85, `/mnt/alpbahOS-data` %15,13 ve `/mnt/alpbahOS-ssd` %24,74. HDD alanı alt sınıra yakın olduğundan 15% kapısı izleniyor. Bu süreçte masaüstü ve kullanıcı uygulamalarına müdahale edilmedi, CPU ayarları değiştirilmedi.
+- Canlı log ve paket kanıtları `/mnt/alpbahOS-data/alpbahos-infra-rebuild/artifacts/stage-runs/009fbe8de7579b975f2f11e1d4e7e840/` altında; guest sonuçları `/srv/lfs/results/base/009fbe8de7579b975f2f11e1d4e7e840/` altında. Bu bir ilerleme kaydıdır, kabul raporu değildir.
+
 ## 5 Ekim 2026 — canlı base-run için eski overlay temizliği
 
 - Sahip: Codex. Kullanıcının eski ve kullanılmayan alpbahOS kalıntılarını temizleme yetkisi kapsamında, aktif VM disklerinden bağımsız dört eski `preserved-overlays-*` klasörü kaldırıldı. Her klasörde yalnızca `builder-active.qcow2` ve `lfs-active.qcow2` vardı; her iki imajın backing dosyaları `checkpoint-toolchain` altındaydı ve etkin QEMU komut satırı bu klasörlere başvurmuyordu. En yeni üç korunan overlay bırakıldı.
