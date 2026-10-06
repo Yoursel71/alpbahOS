@@ -35,9 +35,7 @@
       "tooldir=/usr"
     ]
   ],
-  "environment": {
-    "CC": "gcc -I/srv/lfs/usr/include"
-  },
+  "environment": {},
   "jobs": 4,
   "name": "binutils",
   "phase": "base",

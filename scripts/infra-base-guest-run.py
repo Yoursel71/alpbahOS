@@ -729,6 +729,30 @@ def prepare_m32_kernel_headers(argv, header_include='/srv/lfs/build/.m32-kernel-
     return argv
 
 
+def binutils_lfs_zlib_environment(argv, cwd,
+                                  build_dir='/srv/lfs/build/base-binutils/build',
+                                  lfs_root='/srv/lfs'):
+    """Expose the installed LFS zlib headers to only the unchrooted Binutils build."""
+    command = list(argv)
+    if cwd is None or Path(cwd).resolve() != Path(build_dir).resolve():
+        return command
+    root = Path(lfs_root)
+    header = root / 'usr/include/zlib.h'
+    include = root / 'usr/include'
+    if (root.is_symlink() or root.resolve() != root or not root.is_dir()
+            or include.is_symlink() or include.resolve() != include
+            or not include.is_dir() or header.is_symlink() or not header.is_file()
+            or include not in header.resolve().parents):
+        raise RuntimeError('Installed LFS zlib header is missing or aliased for Binutils')
+    prefix = ['/usr/sbin/runuser', '-u', 'lfs', '--', 'env']
+    if command[:len(prefix)] != prefix:
+        raise RuntimeError('Binutils LFS zlib adapter received an unexpected runner command')
+    if any(item.startswith('CC=') for item in command[len(prefix):]):
+        raise RuntimeError('Binutils compiler already has an explicit override')
+    command.insert(len(prefix), 'CC=gcc -I' + str(include))
+    return command
+
+
 def install_m32_kernel_headers(source_include='/srv/lfs/usr/include',
                                header_include='/srv/lfs/build/.m32-kernel-uapi/include'):
     """Expose only installed Linux UAPI directories to the Builder compiler."""
@@ -791,6 +815,7 @@ _run = package_stage.run
 
 def run_with_root_owned_test_tree(argv, log, cwd=None, env=None):
     argv = prepare_m32_kernel_headers(argv)
+    argv = binutils_lfs_zlib_environment(argv, cwd)
     argv = disable_unavailable_m32_cxx(argv, cwd)
     argv = use_staged_file_magic_compiler(argv, cwd)
     env = readline_ncurses_environment(argv, cwd, env)

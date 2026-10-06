@@ -28,8 +28,12 @@ EXPECT_TCLSH_FUNCTION = next(node for node in TREE.body
 EXPECT_MAKE_FUNCTION = next(node for node in TREE.body
                             if isinstance(node, ast.FunctionDef)
                             and node.name == 'expect_make_tclsh')
+BINUTILS_FUNCTION = next(node for node in TREE.body
+                         if isinstance(node, ast.FunctionDef)
+                         and node.name == 'binutils_lfs_zlib_environment')
 MODULE = ast.Module(body=[FUNCTION, NCURSES_FUNCTION, TCL_FUNCTION, NCURSES_DOC_FUNCTION,
-                          EXPECT_FUNCTION, EXPECT_TCLSH_FUNCTION, EXPECT_MAKE_FUNCTION],
+                          EXPECT_FUNCTION, EXPECT_TCLSH_FUNCTION, EXPECT_MAKE_FUNCTION,
+                          BINUTILS_FUNCTION],
                      type_ignores=[])
 ast.fix_missing_locations(MODULE)
 NAMESPACE = {'Path': Path, 're': re, 'os': __import__('os')}
@@ -41,6 +45,7 @@ tcl_stub_archive_chmod = NAMESPACE['tcl_stub_archive_chmod']
 expect_lfs_tcl_sysroot = NAMESPACE['expect_lfs_tcl_sysroot']
 expect_tclsh_command = NAMESPACE['expect_tclsh_command']
 expect_make_tclsh = NAMESPACE['expect_make_tclsh']
+binutils_lfs_zlib_environment = NAMESPACE['binutils_lfs_zlib_environment']
 
 
 class StagedFileMagicCompilerTests(unittest.TestCase):
@@ -349,6 +354,47 @@ class ExpectTclSysrootTests(unittest.TestCase):
         command[-1] = '--with-tclinclude=/wrong/include'
         with self.assertRaisesRegex(RuntimeError, 'arguments differ from the pinned Tcl recipe'):
             self.rewrite(command)
+
+
+class BinutilsLfsZlibEnvironmentTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.root = Path(self.temporary.name)
+        self.build = self.root / 'build/base-binutils/build'
+        self.build.mkdir(parents=True)
+        self.lfs = self.root / 'lfs'
+        include = self.lfs / 'usr/include'
+        include.mkdir(parents=True)
+        (include / 'zlib.h').write_text('/* staged LFS zlib header */\n')
+        self.command = ['/usr/sbin/runuser', '-u', 'lfs', '--', 'env',
+                        'LC_ALL=C', 'CFLAGS=-O2', 'make', '-j4']
+
+    def tearDown(self):
+        self.temporary.cleanup()
+
+    def test_only_binutils_gets_staged_lfs_include_path(self):
+        result = binutils_lfs_zlib_environment(
+            self.command, self.build, build_dir=self.build, lfs_root=self.lfs)
+        self.assertEqual(result[5], 'CC=gcc -I' + str(self.lfs / 'usr/include'))
+        self.assertEqual(result[6:], self.command[5:])
+        unchanged = binutils_lfs_zlib_environment(
+            self.command, self.root / 'build/other', build_dir=self.build, lfs_root=self.lfs)
+        self.assertEqual(unchanged, self.command)
+
+    def test_missing_zlib_header_fails_closed(self):
+        (self.lfs / 'usr/include/zlib.h').unlink()
+        with self.assertRaisesRegex(RuntimeError, 'zlib header is missing'):
+            binutils_lfs_zlib_environment(
+                self.command, self.build, build_dir=self.build, lfs_root=self.lfs)
+
+    def test_unexpected_runner_or_existing_compiler_fails_closed(self):
+        with self.assertRaisesRegex(RuntimeError, 'unexpected runner command'):
+            binutils_lfs_zlib_environment(['env', 'make'], self.build,
+                                           build_dir=self.build, lfs_root=self.lfs)
+        command = self.command.copy(); command.insert(5, 'CC=gcc')
+        with self.assertRaisesRegex(RuntimeError, 'explicit override'):
+            binutils_lfs_zlib_environment(command, self.build,
+                                           build_dir=self.build, lfs_root=self.lfs)
 
 
 if __name__ == '__main__':
