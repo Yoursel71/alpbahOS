@@ -931,6 +931,7 @@ def phase2(mode, oc_confirmed, run_id=None):
         stage_runs.repository_snapshot(value, 'before')
         launch(offline=True, vcpus=16)
         sync()
+        ensure_builder_python()
         authorization = {'stage': 'stability', 'mode': mode, 'oc_confirmed': True, 'inputs_sha256': inputs_digest(),
                          'run_id': run_id, 'sources_sha256': value['sources_sha256'],
                          'boot_id': value['boot_id'], 'authorized_at_ns': time.time_ns()}
