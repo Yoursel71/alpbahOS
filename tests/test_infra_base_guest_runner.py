@@ -372,10 +372,11 @@ class BinutilsLfsZlibEnvironmentTests(unittest.TestCase):
     def tearDown(self):
         self.temporary.cleanup()
 
-    def test_only_binutils_gets_staged_lfs_include_path(self):
+    def test_only_binutils_gets_staged_lfs_headers_as_fallback(self):
         result = binutils_lfs_zlib_environment(
             self.command, self.build, build_dir=self.build, lfs_root=self.lfs)
-        self.assertEqual(result[5], 'CC=gcc -I' + str(self.lfs / 'usr/include'))
+        self.assertEqual(result[5], 'CC=gcc -idirafter ' + str(self.lfs / 'usr/include'))
+        self.assertNotIn('CC=gcc -I' + str(self.lfs / 'usr/include'), result)
         self.assertEqual(result[6:], self.command[5:])
         unchanged = binutils_lfs_zlib_environment(
             self.command, self.root / 'build/other', build_dir=self.build, lfs_root=self.lfs)

@@ -732,7 +732,7 @@ def prepare_m32_kernel_headers(argv, header_include='/srv/lfs/build/.m32-kernel-
 def binutils_lfs_zlib_environment(argv, cwd,
                                   build_dir='/srv/lfs/build/base-binutils/build',
                                   lfs_root='/srv/lfs'):
-    """Expose the installed LFS zlib headers to only the unchrooted Binutils build."""
+    """Make staged LFS headers a fallback for only the unchrooted Binutils build."""
     command = list(argv)
     if cwd is None or Path(cwd).resolve() != Path(build_dir).resolve():
         return command
@@ -749,7 +749,11 @@ def binutils_lfs_zlib_environment(argv, cwd,
         raise RuntimeError('Binutils LFS zlib adapter received an unexpected runner command')
     if any(item.startswith('CC=') for item in command[len(prefix):]):
         raise RuntimeError('Binutils compiler already has an explicit override')
-    command.insert(len(prefix), 'CC=gcc -I' + str(include))
+    # Binutils is built with the Builder's libc and its own headers.  A normal
+    # -I here puts every staged LFS header ahead of both, mixing target and
+    # Builder headers (notably glibc's obstack.h/stdlib.h).  The staged tree
+    # must only be a fallback so its zlib.h is available when Builder lacks it.
+    command.insert(len(prefix), 'CC=gcc -idirafter ' + str(include))
     return command
 
 
