@@ -252,47 +252,58 @@ def expect_lfs_tcl_sysroot(argv, cwd, env, lfs_root='/srv/lfs',
 
     # A target-LFS LD_LIBRARY_PATH is unsafe for Builder tools (runuser, Bash,
     # make, and configure all use the Builder's ABI).  Drop any inherited path
-    # here. A dedicated Tcl wrapper below selects the LFS loader only when
+    # here. The test-only command below uses the LFS loader directly when
     # Tcl/Expect target programs actually run.
     return argv, updated_env, configure_applied
 
 
-def expect_tclsh_wrapper(build_dir='/srv/lfs/build/base-expect', lfs_root='/srv/lfs'):
-    """Create a safe Builder-shell wrapper for target Tcl and Expect tests."""
+def expect_tclsh_command(build_dir='/srv/lfs/build/base-expect', lfs_root='/srv/lfs'):
+    """Run target Tcl directly and sanitize its environment before tests spawn tools."""
     root, build = Path(lfs_root), Path(build_dir)
     if (root.is_symlink() or root.resolve() != root or not root.is_dir()
             or build.is_symlink() or build.resolve() != build or not build.is_dir()
             or build.parent != root / 'build'):
         raise RuntimeError('Expect build directory is not the dedicated LFS source tree')
     loader = root / 'usr/lib/ld-linux-x86-64.so.2'
+    libdir = root / 'usr/lib'
     tclsh = root / 'usr/bin/tclsh8.6'
-    tcl_library = root / 'usr/lib/tcl8.6/init.tcl'
+    tcl_library_dir = libdir / 'tcl8.6'
+    tcl_library = tcl_library_dir / 'init.tcl'
     for path in (loader, tclsh):
         if path.is_symlink() or path.resolve() != path or not path.is_file() or not os.access(path, os.X_OK):
             raise RuntimeError('Target Tcl loader, executable or script library is missing or unsafe')
     if (tcl_library.is_symlink() or tcl_library.resolve() != tcl_library
             or not tcl_library.is_file() or not os.access(tcl_library, os.R_OK)):
         raise RuntimeError('Target Tcl script library is missing or unsafe')
-    wrapper = build / '.alp-tclsh'
-    contents = ('#!/bin/sh\n'
-                'export LD_LIBRARY_PATH=/srv/lfs/usr/lib\n'
-                'export TCL_LIBRARY=/srv/lfs/usr/lib/tcl8.6\n'
-                'exec /srv/lfs/usr/lib/ld-linux-x86-64.so.2 --library-path /srv/lfs/usr/lib '
-                '/srv/lfs/usr/bin/tclsh8.6 "$@"\n')
-    if wrapper.exists() or wrapper.is_symlink():
-        if (wrapper.is_symlink() or wrapper.resolve() != wrapper or not wrapper.is_file()
-                or wrapper.read_text() != contents or wrapper.stat().st_mode & 0o777 != 0o755):
-            raise RuntimeError('Existing Expect Tcl wrapper differs from the pinned adapter')
+    bootstrap = build / '.alp-tclsh-bootstrap.tcl'
+    contents = ("set test_script [lindex $argv 0]\n"
+                "if {$test_script eq \"\"} { error \"missing test script\" }\n"
+                "set argv [lrange $argv 1 end]\n"
+                "set argc [llength $argv]\n"
+                "set argv0 $test_script\n"
+                "unset -nocomplain env(LD_LIBRARY_PATH)\n"
+                f"set env(TCL_LIBRARY) {{{tcl_library_dir}}}\n"
+                "source $test_script\n")
+    if bootstrap.exists() or bootstrap.is_symlink():
+        if (bootstrap.is_symlink() or bootstrap.resolve() != bootstrap
+                or not bootstrap.is_file() or bootstrap.read_text() != contents
+                or bootstrap.stat().st_mode & 0o777 != 0o644):
+            raise RuntimeError('Existing Expect Tcl bootstrap differs from the pinned adapter')
     else:
-        with wrapper.open('x') as stream:
+        with bootstrap.open('x') as stream:
             stream.write(contents)
-        wrapper.chmod(0o755)
-    return wrapper
+        bootstrap.chmod(0o644)
+    # Expect's Makefile sets LD_LIBRARY_PATH for every spawned child. Passing
+    # Tcl through a shell wrapper makes that shell load the target LFS glibc,
+    # while clearing the variable only after Tcl starts keeps Builder tools
+    # such as cat, rm, and stty on the Builder's own ABI.
+    return (f'TCL_LIBRARY={tcl_library_dir} {loader} --library-path {libdir} '
+            f'{tclsh} {bootstrap}')
 
 
-def expect_make_tclsh(argv, cwd, wrapper,
+def expect_make_tclsh(argv, cwd, tclsh_command,
                       build_dir='/srv/lfs/build/base-expect'):
-    """Make every Expect target invoke Tcl through its target loader wrapper."""
+    """Make Expect tests invoke Tcl through the verified target loader/bootstrap."""
     argv = list(argv)
     if cwd is None or Path(cwd).resolve() != Path(build_dir).resolve():
         return argv
@@ -303,12 +314,12 @@ def expect_make_tclsh(argv, cwd, wrapper,
     make_index = next((i for i in range(command_start, len(argv)) if argv[i] == 'make'), None)
     if make_index is None:
         return argv
-    assignment = 'TCLSH_PROG=' + str(wrapper)
+    assignment = 'TCLSH_PROG=' + str(tclsh_command)
     existing = [i for i in range(make_index + 1, len(argv))
                 if argv[i].startswith('TCLSH_PROG=')]
     if existing:
         if len(existing) != 1 or argv[existing[0]] != assignment:
-            raise RuntimeError('Expect make command overrides the target Tcl wrapper')
+            raise RuntimeError('Expect make command overrides the target Tcl adapter')
     else:
         argv.insert(make_index + 1, assignment)
     return argv
@@ -785,15 +796,14 @@ def run_with_root_owned_test_tree(argv, log, cwd=None, env=None):
     env = readline_ncurses_environment(argv, cwd, env)
     argv = tcl_stub_archive_chmod(argv, cwd)
     argv, env, expect_tcl_adapter = expect_lfs_tcl_sysroot(argv, cwd, env)
-    expect_wrapper = None
     if cwd is not None and Path(cwd).resolve() == Path('/srv/lfs/build/base-expect'):
-        expect_wrapper = expect_tclsh_wrapper()
-        argv = expect_make_tclsh(argv, cwd, expect_wrapper)
+        expect_command = expect_tclsh_command()
+        argv = expect_make_tclsh(argv, cwd, expect_command)
     if expect_tcl_adapter:
         with Path(log).open('ab') as output:
             output.write(('BUILD_ADAPTER expect-configure=/srv/lfs/usr/lib/tclConfig.sh '
                           'include=/srv/lfs/usr/include/tcl.h '
-                          'tclsh-wrapper=' + str(expect_wrapper) + '\n').encode())
+                          'tclsh-command=' + str(expect_command) + '\n').encode())
     for setup_command in ncurses_doc_parent_setup(argv):
         _run(setup_command, log)
     if uses_m32_uapi_configure(argv):
