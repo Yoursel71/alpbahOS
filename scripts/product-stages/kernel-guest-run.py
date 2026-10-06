@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -40,6 +41,20 @@ def write_new(path, value):
         stream.flush()
         os.fsync(stream.fileno())
     return hashlib.sha256(raw).hexdigest()
+
+
+def remove_transient(path, parent):
+    """Remove only a direct, canonical per-run build/stage directory in LFS."""
+    path, parent = Path(path), Path(parent)
+    if (os.geteuid() != 0 or parent not in (LFS / 'build', LFS / 'stage')
+            or parent.is_symlink()
+            or not parent.is_dir() or path.parent != parent or path.is_symlink()
+            or path.resolve() != path or not re.fullmatch(r'[0-9a-f]{32}', path.name)
+            or not path.is_dir()):
+        raise RuntimeError('Transient cleanup path is not a direct private LFS run directory')
+    shutil.rmtree(path)
+    if path.exists() or path.is_symlink():
+        raise RuntimeError('Transient per-run directory remains after cleanup')
 
 
 def run(run_id, recipe_sha256):
@@ -123,6 +138,12 @@ def run(run_id, recipe_sha256):
         'test': 'headers_check', 'result_directory': str(result),
         'started_at_ns': started, 'ended_at_ns': time.time_ns()
     }
+    remove_transient(LFS / 'build' / run_id, LFS / 'build')
+    remove_transient(LFS / 'stage' / run_id, LFS / 'stage')
+    if (LFS / 'build' / run_id).exists() or (LFS / 'stage' / run_id).exists():
+        raise RuntimeError('Kernel build/stage cleanup verification failed')
+    summary['transient_build_removed'] = True
+    summary['transient_stage_removed'] = True
     summary_sha = write_new(result / 'kernel-summary.json', summary)
     print(json.dumps({'result': 'PASS', 'summary': str(result / 'kernel-summary.json'),
                       'summary_sha256': summary_sha, 'archive_sha256': built['archive_sha256'],

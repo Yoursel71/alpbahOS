@@ -5,6 +5,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 REPO = Path(__file__).resolve().parents[1]
 PRODUCT = REPO / 'scripts/product-stages'
@@ -12,6 +13,10 @@ SPEC = importlib.util.spec_from_file_location(
     'infra_product_kernel_stage_test', PRODUCT / 'infra-product-stage.py')
 kernel_stage = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(kernel_stage)
+GUEST_SPEC = importlib.util.spec_from_file_location(
+    'kernel_guest_cleanup_test', PRODUCT / 'kernel-guest-run.py')
+kernel_guest = importlib.util.module_from_spec(GUEST_SPEC)
+GUEST_SPEC.loader.exec_module(kernel_guest)
 
 
 class KernelProductStageTests(unittest.TestCase):
@@ -87,6 +92,27 @@ class KernelProductStageTests(unittest.TestCase):
         base = kernel_stage.load_base_controller()
         self.assertEqual(Path(base.REPO), Path('/home/yrslf/alpbahOS-infra-rebuild'))
         self.assertEqual(kernel_stage.buildctl.inputs_digest(), base.buildctl.inputs_digest())
+
+    def test_guest_cleanup_removes_only_a_direct_per_run_build_or_stage_directory(self):
+        with tempfile.TemporaryDirectory() as temp:
+            lfs = Path(temp)
+            build = lfs / 'build'
+            stage = lfs / 'stage'
+            build.mkdir(); stage.mkdir()
+            run_id = 'a' * 32
+            target = build / run_id
+            target.mkdir()
+            (target / 'temporary.o').write_bytes(b'object')
+            sibling = build / ('b' * 32)
+            sibling.mkdir()
+            with patch.object(kernel_guest, 'LFS', lfs), patch.object(kernel_guest.os, 'geteuid', return_value=0):
+                kernel_guest.remove_transient(target, build)
+                self.assertFalse(target.exists())
+                self.assertTrue(sibling.is_dir())
+                with self.assertRaisesRegex(RuntimeError, 'direct private LFS run directory'):
+                    kernel_guest.remove_transient(sibling, lfs)
+                with self.assertRaisesRegex(RuntimeError, 'direct private LFS run directory'):
+                    kernel_guest.remove_transient(lfs / 'outside', lfs / 'outside')
 
 
 if __name__ == '__main__':
