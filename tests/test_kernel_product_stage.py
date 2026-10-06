@@ -93,6 +93,52 @@ class KernelProductStageTests(unittest.TestCase):
         self.assertEqual(Path(base.REPO), Path('/home/yrslf/alpbahOS-infra-rebuild'))
         self.assertEqual(kernel_stage.buildctl.inputs_digest(), base.buildctl.inputs_digest())
 
+    def test_lfs_overlay_growth_is_limited_to_fresh_accepted_base_child(self):
+        with tempfile.TemporaryDirectory() as temp:
+            vm = Path(temp)
+            checkpoint = vm / 'checkpoint-base'
+            checkpoint.mkdir()
+            (checkpoint / 'lfs.qcow2').write_bytes(b'accepted-base')
+            active = vm / 'lfs-active.qcow2'
+            active.write_bytes(b'fresh-child')
+            responses = [
+                {'format': 'qcow2', 'virtual-size': 40 * 1024**3},
+                None,
+                {'format': 'qcow2', 'virtual-size': 96 * 1024**3},
+            ]
+
+            def run(argv, **kwargs):
+                if argv[1:3] == ['info', '--output=json']:
+                    value = responses.pop(0)
+                    if value is None:
+                        return subprocess.CompletedProcess(argv, 0, json.dumps([
+                            {'filename': str(active), 'format': 'qcow2'},
+                            {'filename': str(checkpoint / 'lfs.qcow2'), 'format': 'qcow2'}]), '')
+                    return subprocess.CompletedProcess(argv, 0, json.dumps(value), '')
+                self.assertEqual(argv, ['qemu-img', 'resize', active, str(96 * 1024**3)])
+                return subprocess.CompletedProcess(argv, 0, '', '')
+
+            with (patch.object(kernel_stage.buildctl, 'VM', vm),
+                  patch.object(kernel_stage.buildctl, 'space_guard'),
+                  patch.object(kernel_stage, 'assert_stopped'),
+                  patch.object(kernel_stage.subprocess, 'run', side_effect=run)):
+                proof = kernel_stage.grow_lfs_disk()
+            self.assertEqual(proof['bytes'], 96 * 1024**3)
+            self.assertEqual(proof['backing_checkpoint'], str(checkpoint / 'lfs.qcow2'))
+            self.assertEqual(responses, [])
+
+    def test_lfs_guest_filesystem_capacity_must_be_verified_after_growth(self):
+        with patch.object(kernel_stage, 'guest_read', side_effect=[b'resized',
+                b'Filesystem 1B-blocks Available\n/dev/vdb 103079215104 85899345920\n']) as read:
+            proof = kernel_stage.grow_lfs_filesystem()
+        self.assertEqual(proof['result'], 'PASS')
+        self.assertGreaterEqual(proof['available_bytes'], 70 * 1024**3)
+        self.assertEqual(read.call_count, 2)
+        with patch.object(kernel_stage, 'guest_read', side_effect=[b'resized',
+                b'Filesystem 1B-blocks Available\n/dev/vdb 42949672960 26843545600\n']):
+            with self.assertRaisesRegex(RuntimeError, 'did not grow enough'):
+                kernel_stage.grow_lfs_filesystem()
+
     def test_guest_cleanup_removes_only_a_direct_per_run_build_or_stage_directory(self):
         with tempfile.TemporaryDirectory() as temp:
             lfs = Path(temp)

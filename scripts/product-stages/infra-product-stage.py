@@ -28,6 +28,7 @@ STAGE = 'kernel'
 RUNNER_ID = re.compile(r'[0-9a-f]{32}')
 HASH = re.compile(r'[0-9a-f]{64}')
 BOOT_ID = re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')
+LFS_DISK_BYTES = 96 * 1024**3
 
 sys.path.insert(0, str(REPO / 'scripts/infra'))
 import buildctl
@@ -115,6 +116,50 @@ def root_capture(request_path, request_sha):
 def assert_stopped():
     if buildctl.pid() is not None:
         raise RuntimeError('Builder is live; refusing disk inspection/checkpoint')
+
+
+def grow_lfs_disk():
+    """Grow only the fresh Base child overlay; never mutate its accepted parent."""
+    assert_stopped()
+    buildctl.space_guard()
+    active = buildctl.VM / 'lfs-active.qcow2'
+    if (active.resolve() != active or not active.is_file() or active.is_symlink()
+            or active.stat().st_uid != os.getuid() or active.stat().st_nlink != 1
+            or buildctl.VM not in active.parents):
+        raise RuntimeError('LFS active overlay is not a private canonical file')
+    result = subprocess.run(['qemu-img', 'info', '--output=json', active],
+                            check=True, capture_output=True, text=True)
+    info = json.loads(result.stdout)
+    if info.get('format') != 'qcow2' or info.get('virtual-size') != 40 * 1024**3:
+        raise RuntimeError('Fresh Base LFS child is not the expected 40 GiB qcow2')
+    chain = json.loads(subprocess.run(['qemu-img', 'info', '--output=json', '--backing-chain', active],
+                                      check=True, capture_output=True, text=True).stdout)
+    base_disk = buildctl.VM / 'checkpoint-base' / 'lfs.qcow2'
+    if (len(chain) < 2 or Path(chain[0].get('filename', '')) != active
+            or Path(chain[1].get('filename', '')) != base_disk):
+        raise RuntimeError('LFS overlay is not a direct child of the accepted Base checkpoint')
+    subprocess.run(['qemu-img', 'resize', active, str(LFS_DISK_BYTES)],
+                   check=True, capture_output=True, text=True)
+    buildctl.space_guard()
+    grown = json.loads(subprocess.run(['qemu-img', 'info', '--output=json', active],
+                                      check=True, capture_output=True, text=True).stdout)
+    if grown.get('virtual-size') != LFS_DISK_BYTES:
+        raise RuntimeError('LFS qcow2 did not reach the declared 96 GiB capacity')
+    return {'path': str(active), 'bytes': LFS_DISK_BYTES,
+            'backing_checkpoint': str(base_disk), 'result': 'PASS'}
+
+
+def grow_lfs_filesystem():
+    """Expand the guest's ext4 filesystem and verify usable capacity over SSH."""
+    guest_read('resize2fs /dev/vdb', 4096)
+    raw = guest_read('df -B1 --output=size,avail /srv/lfs', 1024).decode().splitlines()
+    try:
+        size, available = map(int, raw[-1].split()[-2:])
+    except (IndexError, ValueError) as error:
+        raise RuntimeError('Guest LFS filesystem capacity report is malformed') from error
+    if size < 90 * 1024**3 or available < 70 * 1024**3:
+        raise RuntimeError(f'Guest LFS filesystem did not grow enough: size={size} free={available}')
+    return {'filesystem_bytes': size, 'available_bytes': available, 'result': 'PASS'}
 
 
 def wait_for_memory(required=12 * 1024**3, interval=30):
@@ -318,6 +363,7 @@ def execute():
             raise RuntimeError('Kernel ABI differs from accepted user selection')
         buildctl.verify_cache(); buildctl.verify_signatures()
         buildctl.restore('base')
+        lfs_disk_capacity = grow_lfs_disk()
 
         run_id = os.urandom(16).hex()
         run_root = stage_runs.directory(stage_runs.RUNS, run_id)
@@ -364,6 +410,9 @@ def execute():
             guest_boot = boot_raw.decode().strip()
             if not BOOT_ID.fullmatch(guest_boot):
                 raise RuntimeError('Kernel Builder boot identity malformed')
+            lfs_filesystem_capacity = grow_lfs_filesystem()
+            stage_runs.write(artifact_root / 'lfs-capacity.json', {
+                'disk': lfs_disk_capacity, 'filesystem': lfs_filesystem_capacity})
             stage_runs.write(artifact_root / 'guest-boot.json', {'boot_id': guest_boot,
                 'queried_at_ns': time.time_ns(), 'result': 'PASS'})
             transfer_inputs(run_id, artifact_root, source)
