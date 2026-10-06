@@ -366,6 +366,10 @@ class BinutilsLfsZlibEnvironmentTests(unittest.TestCase):
         include = self.lfs / 'usr/include'
         include.mkdir(parents=True)
         (include / 'zlib.h').write_text('/* staged LFS zlib header */\n')
+        library_dir = self.lfs / 'usr/lib'
+        library_dir.mkdir(parents=True)
+        (library_dir / 'libz.so.1.3.1').write_bytes(b'ELF test stub')
+        (library_dir / 'libz.so').symlink_to('libz.so.1.3.1')
         self.command = ['/usr/sbin/runuser', '-u', 'lfs', '--', 'env',
                         'LC_ALL=C', 'CFLAGS=-O2', 'make', '-j4']
 
@@ -376,15 +380,22 @@ class BinutilsLfsZlibEnvironmentTests(unittest.TestCase):
         result = binutils_lfs_zlib_environment(
             self.command, self.build, build_dir=self.build, lfs_root=self.lfs)
         self.assertEqual(result[5], 'CC=gcc -idirafter ' + str(self.lfs / 'usr/include'))
+        self.assertEqual(result[6], 'LDFLAGS=-L' + str(self.lfs / 'usr/lib'))
         self.assertNotIn('CC=gcc -I' + str(self.lfs / 'usr/include'), result)
-        self.assertEqual(result[6:], self.command[5:])
+        self.assertEqual(result[7:], self.command[5:])
         unchanged = binutils_lfs_zlib_environment(
             self.command, self.root / 'build/other', build_dir=self.build, lfs_root=self.lfs)
         self.assertEqual(unchanged, self.command)
 
     def test_missing_zlib_header_fails_closed(self):
         (self.lfs / 'usr/include/zlib.h').unlink()
-        with self.assertRaisesRegex(RuntimeError, 'zlib header is missing'):
+        with self.assertRaisesRegex(RuntimeError, 'zlib headers or shared library are missing'):
+            binutils_lfs_zlib_environment(
+                self.command, self.build, build_dir=self.build, lfs_root=self.lfs)
+
+    def test_missing_zlib_shared_library_fails_closed(self):
+        (self.lfs / 'usr/lib/libz.so').unlink()
+        with self.assertRaisesRegex(RuntimeError, 'zlib headers or shared library are missing'):
             binutils_lfs_zlib_environment(
                 self.command, self.build, build_dir=self.build, lfs_root=self.lfs)
 
@@ -393,7 +404,11 @@ class BinutilsLfsZlibEnvironmentTests(unittest.TestCase):
             binutils_lfs_zlib_environment(['env', 'make'], self.build,
                                            build_dir=self.build, lfs_root=self.lfs)
         command = self.command.copy(); command.insert(5, 'CC=gcc')
-        with self.assertRaisesRegex(RuntimeError, 'explicit override'):
+        with self.assertRaisesRegex(RuntimeError, 'compiler or linker flags already have an explicit override'):
+            binutils_lfs_zlib_environment(command, self.build,
+                                           build_dir=self.build, lfs_root=self.lfs)
+        command = self.command.copy(); command.insert(5, 'LDFLAGS=-L/usr/lib')
+        with self.assertRaisesRegex(RuntimeError, 'compiler or linker flags already have an explicit override'):
             binutils_lfs_zlib_environment(command, self.build,
                                            build_dir=self.build, lfs_root=self.lfs)
 

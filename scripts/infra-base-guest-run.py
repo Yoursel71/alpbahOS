@@ -732,28 +732,41 @@ def prepare_m32_kernel_headers(argv, header_include='/srv/lfs/build/.m32-kernel-
 def binutils_lfs_zlib_environment(argv, cwd,
                                   build_dir='/srv/lfs/build/base-binutils/build',
                                   lfs_root='/srv/lfs'):
-    """Make staged LFS headers a fallback for only the unchrooted Binutils build."""
+    """Expose staged LFS zlib only to the unchrooted Binutils build."""
     command = list(argv)
     if cwd is None or Path(cwd).resolve() != Path(build_dir).resolve():
         return command
     root = Path(lfs_root)
     header = root / 'usr/include/zlib.h'
     include = root / 'usr/include'
+    library_dir = root / 'usr/lib'
+    library = library_dir / 'libz.so'
     if (root.is_symlink() or root.resolve() != root or not root.is_dir()
             or include.is_symlink() or include.resolve() != include
             or not include.is_dir() or header.is_symlink() or not header.is_file()
-            or include not in header.resolve().parents):
-        raise RuntimeError('Installed LFS zlib header is missing or aliased for Binutils')
+            or include not in header.resolve().parents
+            or library_dir.is_symlink() or library_dir.resolve() != library_dir
+            or not library_dir.is_dir() or not library.is_file()):
+        raise RuntimeError('Installed LFS zlib headers or shared library are missing or aliased for Binutils')
+    try:
+        resolved_library = library.resolve(strict=True)
+    except (OSError, RuntimeError) as error:
+        raise RuntimeError('Installed LFS zlib shared library is missing or aliased for Binutils') from error
+    if resolved_library.parent != library_dir:
+        raise RuntimeError('Installed LFS zlib shared library escapes its library directory')
     prefix = ['/usr/sbin/runuser', '-u', 'lfs', '--', 'env']
     if command[:len(prefix)] != prefix:
         raise RuntimeError('Binutils LFS zlib adapter received an unexpected runner command')
-    if any(item.startswith('CC=') for item in command[len(prefix):]):
-        raise RuntimeError('Binutils compiler already has an explicit override')
+    if any(item.startswith(('CC=', 'LDFLAGS=')) for item in command[len(prefix):]):
+        raise RuntimeError('Binutils compiler or linker flags already have an explicit override')
     # Binutils is built with the Builder's libc and its own headers.  A normal
     # -I here puts every staged LFS header ahead of both, mixing target and
     # Builder headers (notably glibc's obstack.h/stdlib.h).  The staged tree
     # must only be a fallback so its zlib.h is available when Builder lacks it.
+    # Configure and libtool also need the staged m64 zlib library: this
+    # Builder does not provide an unversioned libz for Binutils' -lz link.
     command.insert(len(prefix), 'CC=gcc -idirafter ' + str(include))
+    command.insert(len(prefix) + 1, 'LDFLAGS=-L' + str(library_dir))
     return command
 
 
