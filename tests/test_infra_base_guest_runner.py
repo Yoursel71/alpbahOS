@@ -263,6 +263,7 @@ class ExpectTclSysrootTests(unittest.TestCase):
         self.assertTrue(applied)
         self.assertIn('--with-tcl=' + str(self.libdir), result)
         self.assertIn('--with-tclinclude=' + str(self.includedir), result)
+        self.assertIn('CC=gcc --sysroot=' + str(self.root), result)
         self.assertEqual(env['LDFLAGS'], '-L' + str(self.libdir))
         self.assertNotIn('LD_LIBRARY_PATH', env)
         self.assertEqual(self.command[-2:], ['--with-tcl=/usr/lib',
@@ -272,11 +273,20 @@ class ExpectTclSysrootTests(unittest.TestCase):
         result, env, applied = self.rewrite(env={
             'LD_LIBRARY_PATH': '/existing/lib', 'LDFLAGS': '-Wl,--as-needed'})
         self.assertTrue(applied)
-        self.assertEqual(result, ['runuser', '-u', 'lfs', '--', 'env', 'LC_ALL=C',
+        self.assertEqual(result, ['runuser', '-u', 'lfs', '--', 'env',
+                                  'CC=gcc --sysroot=' + str(self.root), 'LC_ALL=C',
                                   './configure', '--prefix=/usr', '--with-tcl=' + str(self.libdir),
                                   '--with-tclinclude=' + str(self.includedir)])
         self.assertEqual(env['LDFLAGS'], '-L' + str(self.libdir))
         self.assertNotIn('LD_LIBRARY_PATH', env)
+
+    def test_expect_configure_replaces_an_inherited_compiler_assignment(self):
+        command = self.command.copy()
+        command.insert(command.index('./configure'), 'CC=gcc')
+        result, _, applied = self.rewrite(command=command)
+        self.assertTrue(applied)
+        self.assertEqual(result.count('CC=gcc --sysroot=' + str(self.root)), 1)
+        self.assertNotIn('CC=gcc', result)
 
     def test_expect_configure_requires_the_target_stub_archive(self):
         (self.libdir / 'libtclstub8.6.a').unlink()

@@ -187,7 +187,10 @@ def expect_lfs_tcl_sysroot(argv, cwd, env, lfs_root='/srv/lfs',
     configure probe must point at the accepted Tcl installation under LFS.
     The configured Tcl metadata still uses target-root /usr paths. Its static
     stub archive is outside the Builder's /usr, so configure also gets the
-    verified LFS library directory as its link search path.
+    verified LFS library directory as its link search path. The Builder's
+    compiler must use the same sysroot: LFS's libc linker script names its
+    libraries as absolute /usr/lib paths, which otherwise resolve against the
+    Builder root and make configure's compiler probe fail.
     """
     argv = list(argv)
     if cwd is None or Path(cwd).resolve() != Path(build_dir).resolve():
@@ -226,12 +229,24 @@ def expect_lfs_tcl_sysroot(argv, cwd, env, lfs_root='/srv/lfs',
             if argv.count(original) != 1:
                 raise RuntimeError('Expect configure arguments differ from the pinned Tcl recipe')
             argv[argv.index(original)] = replacement
+        env_indexes = [index for index, value in enumerate(argv[:configure_indexes[0]])
+                       if value == 'env']
+        if len(env_indexes) != 1:
+            raise RuntimeError('Expect configure is missing its bounded env wrapper')
+        compiler = 'CC=gcc --sysroot=' + str(root)
+        assignments = [index for index, value in enumerate(argv) if value.startswith('CC=')]
+        if assignments:
+            if len(assignments) != 1:
+                raise RuntimeError('Expect configure has multiple compiler assignments')
+            argv[assignments[0]] = compiler
+        else:
+            argv.insert(env_indexes[0] + 1, compiler)
         # tclConfig.sh intentionally keeps target-root /usr paths for use
         # inside the LFS chroot. Expect is configured outside that chroot, so
         # its -L/usr/lib -ltclstub8.6 would otherwise search the Builder's
-        # host libraries. Pass the verified LFS libdir to configure's link
-        # probes and generated Makefile without exporting target libraries to
-        # Builder executables.
+        # host libraries. Pass the verified LFS sysroot and libdir to
+        # configure's link probes and generated Makefile without exporting
+        # target libraries to unrelated Builder executables.
         updated_env['LDFLAGS'] = '-L' + str(libdir)
         configure_applied = True
 
