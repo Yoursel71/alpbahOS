@@ -1,5 +1,12 @@
 # alpbahOS — İş kaydı
 
+## 7 Ekim 2026 — Base run 72821817e429772543623ef287542341 Binutils test ortamı
+
+- Run kabul edilmiş `checkpoint-toolchain` ve input SHA-256 `abbd6785375cc5570ca89d0b5ba2d7227b9e61cdd6136a79b00baaed12b24a5b` ile başladı. Glibc politikası, 1.881 girişli sahiplik manifesti ve m32 handoff geçti. Binutils derlemesi tamamlandı; strict test policy 5 binutils ve 8 ld testindeki beklenmeyen FAIL nedeniyle reddetti (5.649 PASS). Base acceptance/checkpoint yok.
+- Kaydedilen `addr2line` çıktısı `/usr/src/binutils/...` yolunu gösterdi; testin kaynak beklentisi canlı `$srcdir/$subdir` yoludur. Build’in `-ffile-prefix-map` seçeneği yalnız test fixture’larına yansıdı. Ayrıca Binutils 2.45 ar testi kendisi `SOURCE_DATE_EPOCH`’in test ortamında bulunmamasını şart koştu. Recipe derleme/install deterministik ayarlarını korur, testleri epoch ve file-path remapping olmadan serial çalıştırır. Yedi ld bootstrap FAIL’in ayrıntılı `.log` dosyaları bu run’da korunmadı; düzeltmenin bunlara etkisi fresh run’da doğrulanmalı. Test politikası değişmedi.
+- Guest kontrollü kapandı; host kernel, MCE/OOM ve termal hata kaydı yok. Overlay çifti `/mnt/alpbahOS-ssd/alpbahos-infra-rebuild/preserved-overlays-1791354589394428975/` altında korundu. Outcome SHA-256 `569984f601cf774de9c2724d1a00adb3afe661ababb5c605ae14410c322c58ec`; Binutils log SHA-256 `99c37ab16f5d1ccafb40bc23d2a9c2c0bb1d9f09e2e8f39bedbf8bcdfc976f74`.
+- Recipe inventory test güncellendi. Tam suite 350 test, 2 skip, 91.157 sn PASS; yeni input SHA-256 `c76a1c737693aab8a4380a395a9515da8d86a7f641099c6f9e5ba4166e4f7306`. Detay: [Binutils test ortamı raporu](verification/infra-base-run-72821817e429772543623ef287542341-binutils-test-environment.md). Fresh Base run’ı temiz checkpoint’ten çalıştır.
+
 ## 7 Ekim 2026 — Base run 76c9cfbdb809ba41e151802844c59efa guard hatası
 
 - Run kabul edilmiş `checkpoint-toolchain` ve input SHA-256 `abbd6785375cc5570ca89d0b5ba2d7227b9e61cdd6136a79b00baaed12b24a5b` ile başladı. `iana-etc`, `man-pages`, `ncurses` tamamlandı. Glibc test politikası 7.092 sonuç (6.984 PASS, 16 XFAIL, 91 UNSUPPORTED ve izinli `stdlib/tst-system` FAIL) ile kabul edildi; fakat 32-bit `others` derlemesi ve Glibc paket makbuzu bitmedi.

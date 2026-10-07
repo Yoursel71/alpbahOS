@@ -191,7 +191,9 @@ class BaseInventoryTests(unittest.TestCase):
         self.assertEqual(binutils['working_directories'],
                          {'compile': 'build', 'test': 'build', 'stage': 'build', 'post_stage': 'build'})
         self.assertEqual(binutils['test_policy'], 'binutils')
-        self.assertIn('make -j{jobs} -k check', binutils['test'][0][2])
+        self.assertIn('env -u SOURCE_DATE_EPOCH make', binutils['test'][0][2])
+        self.assertIn("CFLAGS='-O2 -g0' CXXFLAGS='-O2 -g0' -j1 -k check",
+                      binutils['test'][0][2])
         self.assertIn('binutils --build . --make-exit', binutils['test'][0][2])
         self.assertTrue(all(path.startswith('{stage}/') for path in binutils['post_stage'][0][2:]))
         pkgconf = next(row['recipe_data'] for row in plan if row['name'] == 'pkgconf')

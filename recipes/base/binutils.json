@@ -80,13 +80,13 @@
     [
       "bash",
       "-euc",
-      "set +e\nmake -j{jobs} -k check\nmake_exit=$?\nset -e\npython3 /opt/alp-infra/scripts/infra/test-policy.py binutils --build . --make-exit \"$make_exit\" --output binutils-test-policy.json"
+      "set +e\nenv -u SOURCE_DATE_EPOCH make CFLAGS='-O2 -g0' CXXFLAGS='-O2 -g0' -j1 -k check\nmake_exit=$?\nset -e\npython3 /opt/alp-infra/scripts/infra/test-policy.py binutils --build . --make-exit \"$make_exit\" --output binutils-test-policy.json"
     ]
   ],
   "test_locale": "C",
   "test_policy": "binutils",
   "test_user": "lfs",
-  "validation": "Pinned MLFS ml-12.4 Binutils 2.45 native build. Mandatory binutils/gas/ld summaries are evaluated by the strict pinned test policy; make failures are accepted only if the exact policy accepts completed raw summaries. DESTDIR install removes only book-listed static archives and gprofng documentation from the stage. No guest build or Alp ownership acceptance yet.",
+  "validation": "Pinned MLFS ml-12.4 Binutils 2.45 native build. Reproducible flags and SOURCE_DATE_EPOCH apply to compile/install; tests run serially with SOURCE_DATE_EPOCH and path-remapping flags omitted because the upstream suite checks native source paths and tests nondeterministic archives. Mandatory binutils/gas/ld summaries are evaluated by the strict pinned test policy; make failures are accepted only if the exact policy accepts completed raw summaries. DESTDIR install removes only book-listed static archives and gprofng documentation from the stage. No guest build or Alp ownership acceptance yet.",
   "version": "2.45",
   "working_directories": {
     "compile": "build",
