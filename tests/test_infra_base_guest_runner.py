@@ -31,9 +31,12 @@ EXPECT_MAKE_FUNCTION = next(node for node in TREE.body
 BINUTILS_FUNCTION = next(node for node in TREE.body
                          if isinstance(node, ast.FunctionDef)
                          and node.name == 'binutils_lfs_zlib_environment')
+GMP_FUNCTION = next(node for node in TREE.body
+                    if isinstance(node, ast.FunctionDef)
+                    and node.name == 'gmp_gcc15_configure_compatibility')
 MODULE = ast.Module(body=[FUNCTION, NCURSES_FUNCTION, TCL_FUNCTION, NCURSES_DOC_FUNCTION,
                           EXPECT_FUNCTION, EXPECT_TCLSH_FUNCTION, EXPECT_MAKE_FUNCTION,
-                          BINUTILS_FUNCTION],
+                          BINUTILS_FUNCTION, GMP_FUNCTION],
                      type_ignores=[])
 ast.fix_missing_locations(MODULE)
 NAMESPACE = {'Path': Path, 're': re, 'os': __import__('os')}
@@ -46,6 +49,7 @@ expect_lfs_tcl_sysroot = NAMESPACE['expect_lfs_tcl_sysroot']
 expect_tclsh_command = NAMESPACE['expect_tclsh_command']
 expect_make_tclsh = NAMESPACE['expect_make_tclsh']
 binutils_lfs_zlib_environment = NAMESPACE['binutils_lfs_zlib_environment']
+gmp_gcc15_configure_compatibility = NAMESPACE['gmp_gcc15_configure_compatibility']
 
 
 class StagedFileMagicCompilerTests(unittest.TestCase):
@@ -445,6 +449,50 @@ class BinutilsLfsZlibEnvironmentTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, 'compiler or linker flags already have an explicit override'):
             binutils_lfs_zlib_environment(command, self.build,
                                            build_dir=self.build, lfs_root=self.lfs)
+
+
+class GmpGcc15ConfigureCompatibilityTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.root = Path(self.temporary.name)
+        self.build = self.root / 'build/base-gmp'
+        self.build.mkdir(parents=True)
+        self.command = ['/usr/sbin/runuser', '-u', 'lfs', '--', 'sed', '-i',
+                        '/long long t1;/,+1s/()/(...)/', 'configure']
+
+    def tearDown(self):
+        self.temporary.cleanup()
+
+    def test_gcc12_skips_gcc15_only_prototype_edit(self):
+        result, message = gmp_gcc15_configure_compatibility(
+            self.command, self.build, '12.2.0', build_dir=self.build)
+        self.assertEqual(result, ['/usr/bin/true'])
+        self.assertEqual(message,
+                         'BUILD_ADAPTER gmp-gcc15-sed=skipped guest-gcc=12.2.0')
+
+    def test_gcc15_keeps_pinned_configure_edit(self):
+        result, message = gmp_gcc15_configure_compatibility(
+            self.command, self.build, '15.1.0', build_dir=self.build)
+        self.assertEqual(result, self.command)
+        self.assertEqual(message,
+                         'BUILD_ADAPTER gmp-gcc15-sed=kept guest-gcc=15.1.0')
+
+    def test_other_package_commands_are_unchanged(self):
+        result, message = gmp_gcc15_configure_compatibility(
+            ['make', '-j4'], self.build, '12.2.0', build_dir=self.build)
+        self.assertEqual(result, ['make', '-j4'])
+        self.assertIsNone(message)
+
+    def test_other_build_directories_are_unchanged(self):
+        result, message = gmp_gcc15_configure_compatibility(
+            self.command, self.root / 'build/other', '12.2.0', build_dir=self.build)
+        self.assertEqual(result, self.command)
+        self.assertIsNone(message)
+
+    def test_unparseable_compiler_version_fails_closed(self):
+        with self.assertRaisesRegex(RuntimeError, 'could not parse the guest GCC version'):
+            gmp_gcc15_configure_compatibility(
+                self.command, self.build, 'GNU GCC', build_dir=self.build)
 
 
 if __name__ == '__main__':

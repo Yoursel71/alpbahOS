@@ -803,6 +803,27 @@ def binutils_lfs_zlib_environment(argv, cwd,
     return command
 
 
+def gmp_gcc15_configure_compatibility(argv, cwd, gcc_version,
+                                      build_dir='/srv/lfs/build/base-gmp'):
+    """Apply GMP's configure sed workaround only on the GCC versions that need it."""
+    command = list(argv)
+    if cwd is None or Path(cwd).resolve() != Path(build_dir).resolve():
+        return command, None
+    expected = ['/usr/sbin/runuser', '-u', 'lfs', '--', 'sed', '-i',
+                '/long long t1;/,+1s/()/(...)/', 'configure']
+    if command != expected:
+        return command, None
+    match = re.match(r'^\s*(\d+)(?:\.|$)', str(gcc_version))
+    if not match:
+        raise RuntimeError('GMP configure adapter could not parse the guest GCC version')
+    major = int(match.group(1))
+    if major < 15:
+        # The pinned MLFS edit changes a C function prototype to the GCC-15
+        # compatibility form. GCC 12 rejects that form as invalid ISO C.
+        return ['/usr/bin/true'], f'BUILD_ADAPTER gmp-gcc15-sed=skipped guest-gcc={gcc_version}'
+    return command, f'BUILD_ADAPTER gmp-gcc15-sed=kept guest-gcc={gcc_version}'
+
+
 def install_m32_kernel_headers(source_include='/srv/lfs/usr/include',
                                header_include='/srv/lfs/build/.m32-kernel-uapi/include'):
     """Expose only installed Linux UAPI directories to the Builder compiler."""
@@ -866,6 +887,16 @@ _run = package_stage.run
 def run_with_root_owned_test_tree(argv, log, cwd=None, env=None):
     argv = prepare_m32_kernel_headers(argv)
     argv = binutils_lfs_zlib_environment(argv, cwd)
+    gmp_pre = (cwd is not None and Path(cwd).resolve() == Path('/srv/lfs/build/base-gmp')
+               and argv == ['/usr/sbin/runuser', '-u', 'lfs', '--', 'sed', '-i',
+                            '/long long t1;/,+1s/()/(...)/', 'configure'])
+    if gmp_pre:
+        version = subprocess.run(['/usr/bin/gcc', '-dumpfullversion'], check=True,
+                                 capture_output=True, text=True).stdout.strip()
+        argv, message = gmp_gcc15_configure_compatibility(argv, cwd, version)
+        if message:
+            with Path(log).open('ab') as output:
+                output.write((message + '\n').encode())
     argv = disable_unavailable_m32_cxx(argv, cwd)
     argv = use_staged_file_magic_compiler(argv, cwd)
     env = readline_ncurses_environment(argv, cwd, env)

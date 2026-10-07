@@ -1,3 +1,9 @@
+## 7 Ekim 2026 — Binutils geçti, GMP configure düzeltmesi
+
+- Base run `d5ae6797ec32c7c2a47500317db36e50` Glibc test/manifest/kurulum kabulünü ve Binutils test politikası `5.662 PASS, 0 beklenmeyen FAIL` ile manifest/kurulum kabulünü geçti. GMP configure, GCC 12’nin GCC-15-only varargs sed düzenlemesini reddetmesi nedeniyle durdu; host örneklerinde MCE/kernel fault yok. Base acceptance/checkpoint üretilmedi.
+- Recipe ve toolchain input özeti korunarak guest runner’a GCC sürümüne bağlı, sadece tam GMP pre-komutu için adapter eklendi; GCC <15 sed’i atlar, ≥15 sed’i korur. Beş test eklendi. Tam suite 357 test/2 skip PASS; input digest `c76a1c737693aab8a4380a395a9515da8d86a7f641099c6f9e5ba4166e4f7306` değişmedi. Ayrıntı: [GMP configure hata raporu](verification/infra-base-run-d5ae6797ec32c7c2a47500317db36e50-gmp-configure.md).
+- Hata run’ının qcow2 overlay çifti doğrulanıp root arşivine taşındı. Son boş alan root 48 GB, SSD 34 GB, HDD 71 GB; `buildctl.space_guard()` PASS. Makbuz HDD’de `archive-offload-preserved-overlays-d5ae6797ec32c7c2a47500317db36e50.json`.
+
 ## 7 Ekim 2026 — başarısız Base overlay arşivi
 
 - SSD boşluğunu %15 tabanının üzerine çıkarmak için iki kapalı, başarısız Base overlay çifti root NVMe arşivine taşındı. Kaynak ve arşiv SHA-256 değerleri eşleşti; dört imajın `qemu-img check` sonucu temiz. `checkpoint-stability` ve kabul edilmiş `checkpoint-toolchain` backing zincirleri korundu.
