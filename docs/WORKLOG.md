@@ -1,5 +1,13 @@
 # alpbahOS — İş kaydı
 
+## 7 Ekim 2026 — Base run 76c9cfbdb809ba41e151802844c59efa guard hatası
+
+- Run kabul edilmiş `checkpoint-toolchain` ve input SHA-256 `abbd6785375cc5570ca89d0b5ba2d7227b9e61cdd6136a79b00baaed12b24a5b` ile başladı. `iana-etc`, `man-pages`, `ncurses` tamamlandı. Glibc test politikası 7.092 sonuç (6.984 PASS, 16 XFAIL, 91 UNSUPPORTED ve izinli `stdlib/tst-system` FAIL) ile kabul edildi; fakat 32-bit `others` derlemesi ve Glibc paket makbuzu bitmedi.
+- Önceki Base run’ından kalan 7 GB overlay çifti NVMe’den HDD arşivine taşındı. Eski NVMe konumunu korumak için oluşturduğum symlink `buildctl.space_guard()` tarafından reddedildi: `Unexpected symlink in runtime: /mnt/alpbahOS-ssd/alpbahos-infra-rebuild/preserved-overlays-1791350318583462269`. Run outcome `FAIL`; acceptance/checkpoint yok. Host monitor kayıtlarında 384 örneğin tamamında `errors=[]`, kernel fault yok; min boşluk `/` %22,43, SSD %15,42, HDD %15,87. Başarısız run’ın aktif overlay’leri `qemu-img check` PASS ve saklandı.
+- Symlink kaldırıldı, HDD arşivi kalıcı yerinde bırakıldı. `PYTHONPATH=scripts/infra python3 -c 'import buildctl; print(buildctl.space_guard())'` PASS; çalışma ağacında değişiklik yok.
+- Controller logu `/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/alpbahos-infra-base-20261007T051654Z-1631853.log`, SHA-256 `9cc1a28fbde0f9fbd9004d4a5e42751ea1282460b659e8a28e28bb66d7f5c61a`; host örnekleri SHA-256 `f2231e45382bb5a81e2cc867d013569237d5e8b8bd1fb7774f88402e6fa20946`; outcome SHA-256 `90d0b1fc529c5048f7ffa278ee847a8f5820e0e60e6034c2629b643e230a21a7`.
+- Olay raporu: [Base run guard symlink hatası](verification/infra-base-run-76c9cfbdb809ba41e151802844c59efa-guard-symlink.md). Rapor ve güncel durum commit/push edildikten sonra temiz checkpoint’ten yeni run başlatılacak.
+
 ## 7 Ekim 2026 — Binutils gprofng C++ zlib başlığı ve düzeltme
 
 - Base run `48cd72466b25fb070e623d7692072bd2`, kabul edilmiş `checkpoint-toolchain`'den ve input SHA-256 `abbd6785375cc5570ca89d0b5ba2d7227b9e61cdd6136a79b00baaed12b24a5b` ile çalıştı. Glibc test politikası geçti: 7.092 sonuç, 6.984 PASS, 16 XFAIL, 91 UNSUPPORTED; yalnız izinli root-only `stdlib/tst-system` FAIL vardı. Glibc manifesti 1.881 kayıt ve m32 sahiplik aktarımı geçti. Binutils öncesinde 18 paket `BUILT` makbuzu vardı.
