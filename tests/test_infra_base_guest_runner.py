@@ -380,9 +380,10 @@ class BinutilsLfsZlibEnvironmentTests(unittest.TestCase):
         result = binutils_lfs_zlib_environment(
             self.command, self.build, build_dir=self.build, lfs_root=self.lfs)
         self.assertEqual(result[5], 'CC=gcc -idirafter ' + str(self.lfs / 'usr/include'))
-        self.assertEqual(result[6], 'LDFLAGS=-L' + str(self.lfs / 'stage/base-zlib/usr/lib'))
+        self.assertEqual(result[6], 'CXX=g++ -idirafter ' + str(self.lfs / 'usr/include'))
+        self.assertEqual(result[7], 'LDFLAGS=-L' + str(self.lfs / 'stage/base-zlib/usr/lib'))
         self.assertNotIn('CC=gcc -I' + str(self.lfs / 'usr/include'), result)
-        self.assertEqual(result[7:], self.command[5:])
+        self.assertEqual(result[8:], self.command[5:])
         unchanged = binutils_lfs_zlib_environment(
             self.command, self.root / 'build/other', build_dir=self.build, lfs_root=self.lfs)
         self.assertEqual(unchanged, self.command)
@@ -415,6 +416,10 @@ class BinutilsLfsZlibEnvironmentTests(unittest.TestCase):
             binutils_lfs_zlib_environment(command, self.build,
                                            build_dir=self.build, lfs_root=self.lfs)
         command = self.command.copy(); command.insert(5, 'LDFLAGS=-L/usr/lib')
+        with self.assertRaisesRegex(RuntimeError, 'compiler or linker flags already have an explicit override'):
+            binutils_lfs_zlib_environment(command, self.build,
+                                           build_dir=self.build, lfs_root=self.lfs)
+        command = self.command.copy(); command.insert(5, 'CXX=g++')
         with self.assertRaisesRegex(RuntimeError, 'compiler or linker flags already have an explicit override'):
             binutils_lfs_zlib_environment(command, self.build,
                                            build_dir=self.build, lfs_root=self.lfs)

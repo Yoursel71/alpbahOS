@@ -766,16 +766,19 @@ def binutils_lfs_zlib_environment(argv, cwd,
     prefix = ['/usr/sbin/runuser', '-u', 'lfs', '--', 'env']
     if command[:len(prefix)] != prefix:
         raise RuntimeError('Binutils LFS zlib adapter received an unexpected runner command')
-    if any(item.startswith(('CC=', 'LDFLAGS=')) for item in command[len(prefix):]):
+    if any(item.startswith(('CC=', 'CXX=', 'LDFLAGS=')) for item in command[len(prefix):]):
         raise RuntimeError('Binutils compiler or linker flags already have an explicit override')
     # Binutils is built with the Builder's libc and its own headers.  A normal
     # -I here puts every staged LFS header ahead of both, mixing target and
     # Builder headers (notably glibc's obstack.h/stdlib.h).  The staged tree
-    # must only be a fallback so its zlib.h is available when Builder lacks it.
+    # must only be a fallback so zlib.h is available when Builder lacks it;
+    # pass the same fallback to both C and C++ because gprofng compiles zlib.h
+    # through CXX rather than CC.
     # Configure and libtool also need the staged m64 zlib library: this
     # Builder does not provide an unversioned libz for Binutils' -lz link.
     command.insert(len(prefix), 'CC=gcc -idirafter ' + str(include))
-    command.insert(len(prefix) + 1, 'LDFLAGS=-L' + str(library_dir))
+    command.insert(len(prefix) + 1, 'CXX=g++ -idirafter ' + str(include))
+    command.insert(len(prefix) + 2, 'LDFLAGS=-L' + str(library_dir))
     return command
 
 

@@ -1,5 +1,12 @@
 # alpbahOS — İş kaydı
 
+## 7 Ekim 2026 — Binutils gprofng C++ zlib başlığı ve düzeltme
+
+- Base run `48cd72466b25fb070e623d7692072bd2`, kabul edilmiş `checkpoint-toolchain`'den ve input SHA-256 `abbd6785375cc5570ca89d0b5ba2d7227b9e61cdd6136a79b00baaed12b24a5b` ile çalıştı. Glibc test politikası geçti: 7.092 sonuç, 6.984 PASS, 16 XFAIL, 91 UNSUPPORTED; yalnız izinli root-only `stdlib/tst-system` FAIL vardı. Glibc manifesti 1.881 kayıt ve m32 sahiplik aktarımı geçti. Binutils öncesinde 18 paket `BUILT` makbuzu vardı.
+- Önceki linker çatışmasını çözen `LDFLAGS=-L/srv/lfs/stage/base-zlib/usr/lib` doğrulandı; Binutils configure ve derlemesi ilerledi. Derleme `gprofng/src/DbeJarFile.cc:27` noktasında `zlib.h` bulunamadığı için durdu: zlib include fallback'i `CC=gcc -idirafter /srv/lfs/usr/include` olarak yalnız C derleyicisine verilmişti, gprofng ise `g++` kullanıyordu. Base acceptance/checkpoint oluşmadı.
+- Controller VM'i kapatıp qcow2 yazıcılarını kapattı; her iki aktif imajın `qemu-img check` sonucu temiz. Guest kanıtı `artifacts/stage-runs/48cd72466b25fb070e623d7692072bd2/guest-base-partial/` altında korunuyor. Binutils günlük SHA-256 `7a5868277271254a0f4c26801a3e36c2352937279a7e5365f172f793041ec16f`.
+- Binutils adapter'ına `CXX=g++ -idirafter /srv/lfs/usr/include` eklendi ve mevcut CXX override'ı kapalı hata ile reddediliyor. Odaklı test 5/5 PASS; tam suite 350 test/2 skip/90.693 sn PASS. Log SHA-256 `7c0d44d0c0d496b98bc5c51ba87c9149de551b40e833351d7ace7f547d052ade`; `py_compile` ve `git diff --check` PASS. Ayrıntı: [Binutils C++ zlib başlığı hata raporu](verification/infra-base-run-48cd72466b25fb070e623d7692072bd2-binutils-cxx-zlib-header.md).
+
 
 ## 7 Ekim 2026 — Binutils link aramasını zlib staging dizinine daraltma
 
