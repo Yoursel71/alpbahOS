@@ -1,3 +1,13 @@
+## 7 Ekim 2026 — başarısız Base overlay arşivi
+
+- SSD boşluğunu %15 tabanının üzerine çıkarmak için iki kapalı, başarısız Base overlay çifti root NVMe arşivine taşındı. Kaynak ve arşiv SHA-256 değerleri eşleşti; dört imajın `qemu-img check` sonucu temiz. `checkpoint-stability` ve kabul edilmiş `checkpoint-toolchain` backing zincirleri korundu.
+- Taşıma sonrası root 56.38 GB (%21.0), SSD 27.91 GB (%23.3), HDD 75.98 GB (%15.5) boş; `buildctl.space_guard()` PASS. Milestone imajları, kabul edilmiş checkpoint ve masaüstü değiştirilmedi. Makbuz `/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/archive-offload-preserved-overlays-20261007-b.json`; ayrıntı: [başarısız overlay arşivi](verification/infra-archive-offload-2026-10-07b.md).
+
+## 7 Ekim 2026 — başarısız Base overlay arşivi
+
+- SSD boşluğunu %15 tabanının üzerine çıkarmak için iki kapalı, başarısız Base overlay çifti root NVMe arşivine taşındı. Kaynak ve arşiv SHA-256 değerleri eşleşti; dört imajın `qemu-img check` sonucu temiz. `checkpoint-stability` ve kabul edilmiş `checkpoint-toolchain` backing zincirleri korundu.
+- Taşıma sonrası root 56.38 GB (%21.0), SSD 27.91 GB (%23.3), HDD 75.98 GB (%15.5) boş; `buildctl.space_guard()` PASS. Milestone imajları, kabul edilmiş checkpoint ve masaüstü değiştirilmedi. Makbuz `/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/archive-offload-preserved-overlays-20261007-b.json`; ayrıntı: [başarısız overlay arşivi](verification/infra-archive-offload-2026-10-07b.md).
+
 # alpbahOS — İş kaydı
 
 ## 7 Ekim 2026 — Base run 72821817e429772543623ef287542341 Binutils test ortamı
