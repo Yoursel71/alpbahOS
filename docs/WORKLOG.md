@@ -1,3 +1,10 @@
+# 7 Ekim 2026 — GMP runner import hatası düzeltildi
+
+- Base run `1aa349b3e6abd8ef7a0257e2dfa8eebf`, GMP configure öncesinde guest runner’ın `subprocess.run()` çağrısında eksik `subprocess` importu yüzünden durdu. Base acceptance/checkpoint oluşmadı; koşu tekrarlanmayacak. Kısmi paket ve telemetry kanıtları `/mnt/alpbahOS-data/alpbahos-infra-rebuild/artifacts/stage-runs/1aa349b3e6abd8ef7a0257e2dfa8eebf/` altında korundu.
+- Guest runner importu düzeltildi ve GCC 12’nin GMP için GCC-15’e özel sed’i atladığını doğrulayan regresyon testi eklendi. Odaklı test 18/18, tam suite 358 test/2 skip geçti (93,366 sn). Tam log: `/mnt/alpbahOS-data/alpbahos-infra-rebuild/logs/infra-full-tests-subprocess-import-20261007.log`, SHA-256 `062acc452c081c9aba4ab8e032f7b1393d0974539d31b54fe9782804ae5e5e2e`.
+- `buildctl.inputs_digest()` değişmedi: `c76a1c737693aab8a4380a395a9515da8d86a7f641099c6f9e5ba4166e4f7306`. 506 host telemetry örneğinde hata/kernel fault yok; sıcaklık 39,375–59,5°C; tüm disklerde en düşük boş alan %15 sınırının üstünde kaldı. Ayrıntı: [runner import hata raporu](verification/infra-base-run-1aa349b3e6abd8ef7a0257e2dfa8eebf-runner-import.md).
+- Sonraki adım: düzeltmeyi commit/push etmek, ardından kalıcı launcher ile `checkpoint-toolchain` üzerinden yeni Base run başlatmak. Önceki kapalı overlay’ler restore sırasında korunacak.
+
 ## 7 Ekim 2026 — Binutils geçti, GMP configure düzeltmesi
 
 - Base run `d5ae6797ec32c7c2a47500317db36e50` Glibc test/manifest/kurulum kabulünü ve Binutils test politikası `5.662 PASS, 0 beklenmeyen FAIL` ile manifest/kurulum kabulünü geçti. GMP configure, GCC 12’nin GCC-15-only varargs sed düzenlemesini reddetmesi nedeniyle durdu; host örneklerinde MCE/kernel fault yok. Base acceptance/checkpoint üretilmedi.

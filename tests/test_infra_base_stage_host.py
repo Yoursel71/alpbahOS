@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import runpy
 import sys
+import subprocess
 import tempfile
 import types
 import unittest
@@ -325,6 +326,40 @@ class BaseStageHostAuthorizationTests(unittest.TestCase):
             finally:
                 package_stage.recipe_working_directory = original
                 package_stage.run = original_run
+
+    def test_guest_runner_gmp_adapter_reads_guest_gcc_version(self):
+        import package_stage
+        original = package_stage.run
+        original_resolver = package_stage.recipe_working_directory
+        guest_bootstrap = types.SimpleNamespace(
+            main=lambda: None, install_staged=lambda *args, **kwargs: None)
+        command = ['/usr/sbin/runuser', '-u', 'lfs', '--', 'sed', '-i',
+                   '/long long t1;/,+1s/()/(...)/', 'configure']
+        with tempfile.TemporaryDirectory() as directory:
+            log = Path(directory) / 'gmp.log'
+            with (patch.object(package_stage, 'run'),
+                  patch.dict(sys.modules, {'guest_base': guest_bootstrap}),
+                  patch.object(sys, 'argv', [str(base_stage.GUEST_RUNNER),
+                                             base_stage.sha(base_stage.GUEST_RUNNER)])):
+                runner = runpy.run_path(str(base_stage.GUEST_RUNNER), run_name='__main__')
+            try:
+                runner_globals = runner['run_with_root_owned_test_tree'].__globals__
+                run_mock = Mock()
+                with (patch.dict(runner_globals, {'_run': run_mock}),
+                      patch('subprocess.run', return_value=subprocess.CompletedProcess(
+                          ['/usr/bin/gcc', '-dumpfullversion'], 0, '12.2.0\n', '')) as gcc_version):
+                    runner['run_with_root_owned_test_tree'](
+                        command, log, cwd='/srv/lfs/build/base-gmp')
+                gcc_version.assert_called_once_with(
+                    ['/usr/bin/gcc', '-dumpfullversion'], check=True,
+                    capture_output=True, text=True)
+                self.assertIn('gmp-gcc15-sed=skipped guest-gcc=12.2.0',
+                              log.read_text())
+                run_mock.assert_called_once_with(
+                    ['/usr/bin/true'], log, cwd='/srv/lfs/build/base-gmp', env=None)
+            finally:
+                package_stage.recipe_working_directory = original_resolver
+                package_stage.run = original
 
     def glibc_handoff_fixture(self, directory):
         import package_stage
