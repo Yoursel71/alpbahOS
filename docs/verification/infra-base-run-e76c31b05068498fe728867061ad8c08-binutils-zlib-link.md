@@ -1,5 +1,7 @@
 # Base run Binutils zlib linker-path failure — 7 October 2026
 
+> Follow-up: the broad `-L/srv/lfs/usr/lib` adjustment recorded below did not survive the next clean Base run. Binutils then selected the LFS Glibc linker script and could not resolve Builder libc paths. The corrective isolated-zlib search path and its tests are documented in [the follow-up run report](infra-base-run-01a829601216c58d25099545aaf78d71-binutils-isolated-zlib.md).
+
 Base run `e76c31b05068498fe728867061ad8c08` started at 00:57 (+03) from the accepted toolchain checkpoint with input SHA-256 `abbd6785375cc5570ca89d0b5ba2d7227b9e61cdd6136a79b00baaed12b24a5b`. It ran for 1 h 16 min before the Binutils build failed. This run has no Base acceptance or checkpoint.
 
 ## Verified progress and failure

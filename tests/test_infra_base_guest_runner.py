@@ -366,7 +366,7 @@ class BinutilsLfsZlibEnvironmentTests(unittest.TestCase):
         include = self.lfs / 'usr/include'
         include.mkdir(parents=True)
         (include / 'zlib.h').write_text('/* staged LFS zlib header */\n')
-        library_dir = self.lfs / 'usr/lib'
+        library_dir = self.lfs / 'stage/base-zlib/usr/lib'
         library_dir.mkdir(parents=True)
         (library_dir / 'libz.so.1.3.1').write_bytes(b'ELF test stub')
         (library_dir / 'libz.so').symlink_to('libz.so.1.3.1')
@@ -380,7 +380,7 @@ class BinutilsLfsZlibEnvironmentTests(unittest.TestCase):
         result = binutils_lfs_zlib_environment(
             self.command, self.build, build_dir=self.build, lfs_root=self.lfs)
         self.assertEqual(result[5], 'CC=gcc -idirafter ' + str(self.lfs / 'usr/include'))
-        self.assertEqual(result[6], 'LDFLAGS=-L' + str(self.lfs / 'usr/lib'))
+        self.assertEqual(result[6], 'LDFLAGS=-L' + str(self.lfs / 'stage/base-zlib/usr/lib'))
         self.assertNotIn('CC=gcc -I' + str(self.lfs / 'usr/include'), result)
         self.assertEqual(result[7:], self.command[5:])
         unchanged = binutils_lfs_zlib_environment(
@@ -394,8 +394,15 @@ class BinutilsLfsZlibEnvironmentTests(unittest.TestCase):
                 self.command, self.build, build_dir=self.build, lfs_root=self.lfs)
 
     def test_missing_zlib_shared_library_fails_closed(self):
-        (self.lfs / 'usr/lib/libz.so').unlink()
+        (self.lfs / 'stage/base-zlib/usr/lib/libz.so').unlink()
         with self.assertRaisesRegex(RuntimeError, 'zlib headers or shared library are missing'):
+            binutils_lfs_zlib_environment(
+                self.command, self.build, build_dir=self.build, lfs_root=self.lfs)
+
+    def test_linker_search_directory_cannot_shadow_builder_libc(self):
+        builder_shadow = self.lfs / 'stage/base-zlib/usr/lib/libc.so'
+        builder_shadow.write_text('GROUP (/usr/lib/libc.so.6)\n')
+        with self.assertRaisesRegex(RuntimeError, 'Builder-shadowing system libraries'):
             binutils_lfs_zlib_environment(
                 self.command, self.build, build_dir=self.build, lfs_root=self.lfs)
 

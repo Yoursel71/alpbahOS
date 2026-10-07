@@ -739,15 +739,24 @@ def binutils_lfs_zlib_environment(argv, cwd,
     root = Path(lfs_root)
     header = root / 'usr/include/zlib.h'
     include = root / 'usr/include'
-    library_dir = root / 'usr/lib'
+    # Search only the zlib package's isolated staging directory.  The merged
+    # LFS library directory also contains glibc's linker script, whose absolute
+    # /usr/lib references are invalid while linking against the Builder libc.
+    library_dir = root / 'stage/base-zlib/usr/lib'
     library = library_dir / 'libz.so'
     if (root.is_symlink() or root.resolve() != root or not root.is_dir()
             or include.is_symlink() or include.resolve() != include
             or not include.is_dir() or header.is_symlink() or not header.is_file()
             or include not in header.resolve().parents
-            or library_dir.is_symlink() or library_dir.resolve() != library_dir
+            or any(path.is_symlink() or path.resolve() != path
+                   for path in (root / 'stage', root / 'stage/base-zlib',
+                                root / 'stage/base-zlib/usr', library_dir))
             or not library_dir.is_dir() or not library.is_file()):
         raise RuntimeError('Installed LFS zlib headers or shared library are missing or aliased for Binutils')
+    if any((library_dir / name).exists()
+           for name in ('libc.so', 'libc.so.6', 'libc_nonshared.a',
+                        'ld-linux-x86-64.so.2')):
+        raise RuntimeError('Isolated LFS zlib staging directory contains Builder-shadowing system libraries')
     try:
         resolved_library = library.resolve(strict=True)
     except (OSError, RuntimeError) as error:
