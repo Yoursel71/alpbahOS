@@ -736,6 +736,27 @@ def binutils_lfs_zlib_environment(argv, cwd,
     command = list(argv)
     if cwd is None or Path(cwd).resolve() != Path(build_dir).resolve():
         return command
+    # The pinned Binutils recipe is part of the already accepted toolchain
+    # input digest, so keep its declared command unchanged.  Adapt only its
+    # exact test invocation here: DejaGNU rebuilds target objects with the
+    # configured path-map flags, and linker bootstrap checks need staged zlib.
+    test_scripts = [index for index, value in enumerate(command)
+                    if isinstance(value, str) and 'test-policy.py binutils' in value]
+    if test_scripts:
+        if len(test_scripts) != 1:
+            raise RuntimeError('Binutils test adapter found an ambiguous test-policy command')
+        script = command[test_scripts[0]]
+        original = ("env -u SOURCE_DATE_EPOCH make CFLAGS='-O2 -g0' "
+                    "CXXFLAGS='-O2 -g0' -j1 -k check")
+        staged_zlib = str(Path(lfs_root) / 'stage/base-zlib/usr/lib')
+        adapted = ("env -u SOURCE_DATE_EPOCH "
+                   f"LIBRARY_PATH={staged_zlib} LD_LIBRARY_PATH={staged_zlib} make "
+                   "CFLAGS='-O2 -g0' CXXFLAGS='-O2 -g0' "
+                   "CFLAGS_FOR_TARGET='-g -O2 -g0' "
+                   "CXXFLAGS_FOR_TARGET='-g -O2 -g0 -D_GNU_SOURCE' -j1 -k check")
+        if script.count(original) != 1:
+            raise RuntimeError('Binutils test command differs from the pinned recipe')
+        command[test_scripts[0]] = script.replace(original, adapted)
     root = Path(lfs_root)
     header = root / 'usr/include/zlib.h'
     include = root / 'usr/include'

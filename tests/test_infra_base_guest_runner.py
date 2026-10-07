@@ -388,6 +388,28 @@ class BinutilsLfsZlibEnvironmentTests(unittest.TestCase):
             self.command, self.root / 'build/other', build_dir=self.build, lfs_root=self.lfs)
         self.assertEqual(unchanged, self.command)
 
+    def test_binutils_test_gets_native_debug_paths_and_staged_zlib(self):
+        original = ("env -u SOURCE_DATE_EPOCH make CFLAGS='-O2 -g0' "
+                    "CXXFLAGS='-O2 -g0' -j1 -k check")
+        script = ('set +e\n' + original + '\nmake_exit=$?\nset -e\n'
+                  'python3 /opt/alp-infra/scripts/infra/test-policy.py binutils')
+        command = self.command[:5] + ['bash', '-euc', script]
+        result = binutils_lfs_zlib_environment(
+            command, self.build, build_dir=self.build, lfs_root=self.lfs)
+        adapted = result[-1]
+        self.assertNotIn(original, adapted)
+        self.assertIn("LIBRARY_PATH=" + str(self.lfs / 'stage/base-zlib/usr/lib'), adapted)
+        self.assertIn("LD_LIBRARY_PATH=" + str(self.lfs / 'stage/base-zlib/usr/lib'), adapted)
+        self.assertIn("CFLAGS_FOR_TARGET='-g -O2 -g0'", adapted)
+        self.assertIn("CXXFLAGS_FOR_TARGET='-g -O2 -g0 -D_GNU_SOURCE'", adapted)
+
+    def test_binutils_test_adapter_fails_closed_on_recipe_drift(self):
+        command = self.command[:5] + [
+            'bash', '-euc', 'make check\npython3 test-policy.py binutils']
+        with self.assertRaisesRegex(RuntimeError, 'differs from the pinned recipe'):
+            binutils_lfs_zlib_environment(
+                command, self.build, build_dir=self.build, lfs_root=self.lfs)
+
     def test_missing_zlib_header_fails_closed(self):
         (self.lfs / 'usr/include/zlib.h').unlink()
         with self.assertRaisesRegex(RuntimeError, 'zlib headers or shared library are missing'):
