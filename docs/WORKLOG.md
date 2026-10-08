@@ -1,3 +1,11 @@
+# 8 Ekim 2026 — MPC geçti, ACL staged Attr düzeltmesi
+
+- Sahip Codex; dosya sınırı guest runner/testler ve kanıt belgeleri. Aktif controller kapandıktan sonra değişiklik yapıldı. Run `df7d37687c6345496ff969e338e840a4`, MPC/Attr dahil 22 kurulum sonrası ACL'nin `attr/error_context.h` arama yolu eksikliğiyle durdu. MPC derleme/test/kurulum PASS; GCC ve tam Base henüz kabul edilmedi.
+- ACL için Attr shared-only görünümü m64/m32 configure ve sonraki make/install adımlarında doğru ABI'yi seçiyor. Coreutils'in Attr/ACL native bağımlılıkları ve değişmeyen root/tester suite runtime yolları da izole staging üzerinden sağlandı. 55 odaklı test; 376 test/2 skip tam suite PASS (90,135 sn), input digest aynı. Yeni ACL/Coreutils guest başarısı henüz kanıtlanmadı.
+- Glibc 1.861,923 sn; guest'te altı `ranlib -D` çalıştı. Altı yeni hash, önceki gerçek arşivlerin normalize edilmiş kopyalarıyla eşit; diğer 1.875 manifest girişi aynı. Tam repeat-byte kabulü bekliyor.
+- 340 host örneğinde hata/kernel fault yok, maksimum 62,25°C ve tüm disklerde %15 boşluk korundu. Kapalı aktif qcow2 kontrolleri PASS. Eski başarısız run'ın referanssız overlay çifti 78 imaj metadatası/hash/stat kontrolünden sonra temizlendi; 7.903.977.472 ayrılan bayt geri kazanıldı. Güncel hata imajları ve checkpoint'ler korundu.
+- [Kanıt/hash/limitler](verification/infra-base-run-df7d37687c6345496ff969e338e840a4-acl-attr.md). Sonraki adım commit/push ve accepted toolchain üzerinden fresh kalıcı Base run.
+
 # 8 Ekim 2026 — MPC Libtool ve Glibc indeks düzeltmesi
 
 - Sahip Codex; kapsam guest runner, odaklı testler ve kanıt belgeleri. Aktif controller kapandıktan sonra değişiklik yapıldı; ortak rootfs/checkpoint değiştirilmedi.

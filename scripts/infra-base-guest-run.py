@@ -854,7 +854,25 @@ def shared_library_dependency_view(library, view):
     return view
 
 
-def native_math_dependency_environment(argv, cwd, lfs_root='/srv/lfs'):
+def acl_dependency_library_directory(argv, build):
+    """Select Attr's ABI from ACL's configure command or generated compiler."""
+    if './configure' in argv:
+        compilers = [value for value in argv if value.startswith('CC=')]
+        if compilers not in ([], ['CC=gcc -m32']):
+            raise RuntimeError('ACL dependency adapter received an unexpected compiler')
+        return 'lib32' if compilers else 'lib'
+    status = Path(build) / 'config.status'
+    if status.is_symlink() or not status.is_file() or status.resolve() != status:
+        raise RuntimeError('ACL configured compiler metadata is missing or aliased')
+    if status.stat().st_size > 8 * 1024 * 1024:
+        raise RuntimeError('ACL configured compiler metadata is unexpectedly large')
+    compilers = re.findall(r'^S\["CC"\]="([^"\n]+)"$', status.read_text(), re.MULTILINE)
+    if compilers not in (['gcc'], ['gcc -m32']):
+        raise RuntimeError('ACL dependency adapter received an unexpected configured compiler')
+    return 'lib32' if compilers == ['gcc -m32'] else 'lib'
+
+
+def native_staged_dependency_environment(argv, cwd, lfs_root='/srv/lfs'):
     """Give unchrooted native builds only their isolated staged dependencies."""
     command = list(argv)
     root = Path(lfs_root)
@@ -862,6 +880,8 @@ def native_math_dependency_environment(argv, cwd, lfs_root='/srv/lfs'):
         root / 'build/base-mpfr': ('gmp',),
         root / 'build/base-mpc': ('gmp', 'mpfr'),
         root / 'build/base-gcc/build': ('gmp', 'mpfr', 'mpc', 'zlib'),
+        root / 'build/base-acl': ('attr',),
+        root / 'build/base-coreutils': ('attr', 'acl'),
     }
     dependencies = consumers.get(Path(cwd).resolve()) if cwd is not None else None
     if dependencies is None:
@@ -869,25 +889,32 @@ def native_math_dependency_environment(argv, cwd, lfs_root='/srv/lfs'):
     # Recipe pre/post actions do not use the env wrapper and need no link paths.
     if len(command) < 5 or command[4] != 'env':
         return command
+    coreutils_root_tests = (Path(cwd).resolve() == root / 'build/base-coreutils'
+                            and command[2] == 'root')
     if (command[0] != '/usr/sbin/runuser' or command[1] != '-u'
-            or command[2] not in ('lfs', 'tester') or command[3] != '--'):
+            or (command[2] not in ('lfs', 'tester') and not coreutils_root_tests)
+            or command[3] != '--'):
         raise RuntimeError('Native math dependency adapter received an unexpected runner')
     variables = ('CPPFLAGS=', 'LDFLAGS=', 'LD_LIBRARY_PATH=', 'LIBRARY_PATH=')
     if any(value.startswith(variables) for value in command[5:]):
         raise RuntimeError('Native math dependency flags already have an explicit override')
-    headers = {'gmp': 'gmp.h', 'mpfr': 'mpfr.h', 'mpc': 'mpc.h', 'zlib': 'zlib.h'}
+    headers = {'gmp': 'gmp.h', 'mpfr': 'mpfr.h', 'mpc': 'mpc.h', 'zlib': 'zlib.h',
+               'attr': 'attr/error_context.h', 'acl': 'sys/acl.h'}
     libraries = {'gmp': 'libgmp.so', 'mpfr': 'libmpfr.so',
-                 'mpc': 'libmpc.so', 'zlib': 'libz.so'}
+                 'mpc': 'libmpc.so', 'zlib': 'libz.so',
+                 'attr': 'libattr.so', 'acl': 'libacl.so'}
+    library_directory = (acl_dependency_library_directory(command, root / 'build/base-acl')
+                         if dependencies == ('attr',) else 'lib')
     includes, libdirs = [], []
     for name in dependencies:
         stage = root / ('stage/base-' + name)
-        include, libdir = stage / 'usr/include', stage / 'usr/lib'
+        include, libdir = stage / 'usr/include', stage / 'usr' / library_directory
         for directory in (root, root / 'stage', stage, stage / 'usr', include, libdir):
             if (directory.is_symlink() or directory.resolve() != directory
                     or not directory.is_dir()):
                 raise RuntimeError('Native dependency directory missing or aliased: ' + str(directory))
         header, library = include / headers[name], libdir / libraries[name]
-        if header.is_symlink() or not header.is_file():
+        if header.is_symlink() or not header.is_file() or header.resolve() != header:
             raise RuntimeError('Native dependency header missing or aliased: ' + str(header))
         try:
             resolved = library.resolve(strict=True)
@@ -902,11 +929,21 @@ def native_math_dependency_environment(argv, cwd, lfs_root='/srv/lfs'):
                        for item in ('stdio.h', 'stdlib.h', 'string.h', 'unistd.h'))):
             raise RuntimeError('Native dependency stage contains Builder-shadowing system files')
         view = shared_library_dependency_view(
-            library, root / ('build/.native-dependency-libs/' + name))
+            library, root / ('build/.native-dependency-libs/' + name
+                             + ('-m32' if library_directory == 'lib32' else '')))
         includes.append(str(include)); libdirs.append(str(view))
     command[5:5] = ['CPPFLAGS=' + ' '.join('-I' + path for path in includes),
                     'LD_LIBRARY_PATH=' + ':'.join(libdirs),
                     'LIBRARY_PATH=' + ':'.join(libdirs)]
+    if coreutils_root_tests:
+        # Nested runuser drops LD_LIBRARY_PATH. Restore only the isolated
+        # dependency view for the unchanged book tester suite.
+        original = 'runuser -u tester -- env "PATH=$test_path" LC_ALL=C.UTF-8'
+        if command[-3:-1] != ['bash', '-euc'] or command[-1].count(original) != 1:
+            raise RuntimeError('Coreutils root/tester command differs from the pinned recipe')
+        command[-1] = command[-1].replace(
+            original, 'runuser -u tester -- env "PATH=$test_path" '
+            'LD_LIBRARY_PATH=' + ':'.join(libdirs) + ' LC_ALL=C.UTF-8')
     # GCC finds the view through LIBRARY_PATH, without exporting -L build
     # paths into installed .la dependency_libs. The view excludes .la files,
     # so Libtool cannot follow their target /usr/lib paths on the Builder.
@@ -1049,7 +1086,7 @@ def run_with_root_owned_test_tree(argv, log, cwd=None, env=None):
     argv = prepare_m32_kernel_headers(argv)
     argv = binutils_lfs_zlib_environment(argv, cwd)
     original = argv
-    argv = native_math_dependency_environment(argv, cwd)
+    argv = native_staged_dependency_environment(argv, cwd)
     argv = parallel_glibc_tests(argv, cwd)
     if argv != original:
         with Path(log).open('ab') as output:

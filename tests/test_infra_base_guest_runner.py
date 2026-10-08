@@ -38,7 +38,10 @@ GMP_FUNCTION = next(node for node in TREE.body
                     and node.name == 'gmp_gcc15_configure_compatibility')
 MATH_FUNCTION = next(node for node in TREE.body
                      if isinstance(node, ast.FunctionDef)
-                     and node.name == 'native_math_dependency_environment')
+                     and node.name == 'native_staged_dependency_environment')
+ACL_ABI_FUNCTION = next(node for node in TREE.body
+                        if isinstance(node, ast.FunctionDef)
+                        and node.name == 'acl_dependency_library_directory')
 LIBRARY_VIEW_FUNCTION = next(node for node in TREE.body
                              if isinstance(node, ast.FunctionDef)
                              and node.name == 'shared_library_dependency_view')
@@ -52,7 +55,7 @@ MODULE = ast.Module(body=[FUNCTION, NCURSES_FUNCTION, TCL_FUNCTION, NCURSES_DOC_
                           EXPECT_FUNCTION, EXPECT_TCLSH_FUNCTION, EXPECT_MAKE_FUNCTION,
                           BINUTILS_FUNCTION, GMP_FUNCTION, MATH_FUNCTION,
                           GLIBC_PARALLEL_FUNCTION, LIBRARY_VIEW_FUNCTION,
-                          GLIBC_ARCHIVE_FUNCTION],
+                          GLIBC_ARCHIVE_FUNCTION, ACL_ABI_FUNCTION],
                      type_ignores=[])
 ast.fix_missing_locations(MODULE)
 NAMESPACE = {'Path': Path, 're': re, 'os': __import__('os'), 'shutil': shutil}
@@ -66,7 +69,7 @@ expect_tclsh_command = NAMESPACE['expect_tclsh_command']
 expect_make_tclsh = NAMESPACE['expect_make_tclsh']
 binutils_lfs_zlib_environment = NAMESPACE['binutils_lfs_zlib_environment']
 gmp_gcc15_configure_compatibility = NAMESPACE['gmp_gcc15_configure_compatibility']
-native_math_dependency_environment = NAMESPACE['native_math_dependency_environment']
+native_staged_dependency_environment = NAMESPACE['native_staged_dependency_environment']
 parallel_glibc_tests = NAMESPACE['parallel_glibc_tests']
 glibc_deterministic_archive_commands = NAMESPACE['glibc_deterministic_archive_commands']
 
@@ -514,17 +517,20 @@ class GmpGcc15ConfigureCompatibilityTests(unittest.TestCase):
                 self.command, self.build, 'GNU GCC', build_dir=self.build)
 
 
-class NativeMathDependencyTests(unittest.TestCase):
+class NativeStagedDependencyTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
         self.root = Path(self.temporary.name)
         for name, header, library in (('gmp', 'gmp.h', 'libgmp'),
                                       ('mpfr', 'mpfr.h', 'libmpfr'),
                                       ('mpc', 'mpc.h', 'libmpc'),
-                                      ('zlib', 'zlib.h', 'libz')):
+                                      ('zlib', 'zlib.h', 'libz'),
+                                      ('attr', 'attr/error_context.h', 'libattr'),
+                                      ('acl', 'sys/acl.h', 'libacl')):
             prefix = self.root / ('stage/base-' + name) / 'usr'
             (prefix / 'include').mkdir(parents=True)
             (prefix / 'lib').mkdir()
+            (prefix / 'include' / header).parent.mkdir(parents=True, exist_ok=True)
             (prefix / 'include' / header).write_text('/* dependency header */\n')
             (prefix / 'lib' / (library + '.so.1')).write_bytes(b'ELF fixture')
             (prefix / 'lib' / (library + '.so')).symlink_to(library + '.so.1')
@@ -538,7 +544,7 @@ class NativeMathDependencyTests(unittest.TestCase):
         path = self.root / ('build/base-' + package)
         if package == 'gcc':
             path /= 'build'
-        return native_math_dependency_environment(
+        return native_staged_dependency_environment(
             self.command if command is None else command, path, lfs_root=self.root)
 
     def test_mpfr_configure_and_tests_find_only_staged_gmp(self):
@@ -562,6 +568,84 @@ class NativeMathDependencyTests(unittest.TestCase):
                 for name in names), result)
         command = list(self.command); command[2] = 'tester'
         self.assertEqual(self.rewrite('gcc', command)[2], 'tester')
+
+    def test_acl_uses_matching_attr_abi_for_configure_and_following_make(self):
+        prefix = self.root / 'stage/base-attr/usr'
+        (prefix / 'lib32').mkdir()
+        (prefix / 'lib32/libattr.so.1').write_bytes(b'm32 ELF fixture')
+        (prefix / 'lib32/libattr.so').symlink_to('libattr.so.1')
+        build = self.root / 'build/base-acl'; build.mkdir(parents=True)
+        for cc, libdir, viewname in (('gcc', 'lib', 'attr'),
+                                     ('gcc -m32', 'lib32', 'attr-m32')):
+            command = list(self.command)
+            if cc != 'gcc': command.insert(5, 'CC=' + cc)
+            result = self.rewrite('acl', command)
+            view = self.root / ('build/.native-dependency-libs/' + viewname)
+            self.assertIn('CPPFLAGS=-I' + str(prefix / 'include'), result)
+            self.assertIn('LIBRARY_PATH=' + str(view), result)
+            self.assertIn('LD_LIBRARY_PATH=' + str(view), result)
+            self.assertEqual((view / 'libattr.so').read_bytes(),
+                             (prefix / libdir / 'libattr.so').read_bytes())
+            (build / 'config.status').write_text('S["CC"]="' + cc + '"\n')
+            for tail in (['make', '-j8'], ['make', 'DESTDIR=stage', 'install'],
+                         ['make', 'distclean']):
+                result = self.rewrite('acl', self.command[:7] + tail)
+                self.assertIn('LIBRARY_PATH=' + str(view), result)
+
+    def test_acl_rejects_unknown_abi_or_missing_m32_library(self):
+        command = list(self.command); command.insert(5, 'CC=clang -m32')
+        with self.assertRaisesRegex(RuntimeError, 'unexpected compiler'):
+            self.rewrite('acl', command)
+        command[5] = 'CC=gcc -m32'
+        with self.assertRaisesRegex(RuntimeError, 'directory missing or aliased'):
+            self.rewrite('acl', command)
+        build = self.root / 'build/base-acl'; build.mkdir(parents=True)
+        command = self.command[:7] + ['make', '-j8']
+        with self.assertRaisesRegex(RuntimeError, 'metadata is missing or aliased'):
+            self.rewrite('acl', command)
+        (build / 'config.status').write_text('S["CC"]="clang"\n')
+        with self.assertRaisesRegex(RuntimeError, 'unexpected configured compiler'):
+            self.rewrite('acl', command)
+        (build / 'config.status').unlink()
+        outside = self.root / 'outside-status'; outside.write_text('S["CC"]="gcc"\n')
+        (build / 'config.status').symlink_to(outside)
+        with self.assertRaisesRegex(RuntimeError, 'metadata is missing or aliased'):
+            self.rewrite('acl', command)
+
+    def test_nested_dependency_header_alias_is_rejected(self):
+        prefix = self.root / 'stage/base-attr/usr/include'
+        (prefix / 'attr').rename(prefix / 'real-attr')
+        (prefix / 'attr').symlink_to(prefix / 'real-attr', target_is_directory=True)
+        with self.assertRaisesRegex(RuntimeError, 'header missing or aliased'):
+            self.rewrite('acl')
+
+    def test_coreutils_finds_both_attr_and_acl_without_target_libc(self):
+        result = self.rewrite('coreutils')
+        views = [self.root / ('build/.native-dependency-libs/' + name)
+                 for name in ('attr', 'acl')]
+        self.assertIn('LIBRARY_PATH=' + ':'.join(map(str, views)), result)
+        self.assertIn('LD_LIBRARY_PATH=' + ':'.join(map(str, views)), result)
+        self.assertIn('CPPFLAGS=' + ' '.join('-I' + str(self.root / ('stage/base-' + n)
+                                                   / 'usr/include')
+                                            for n in ('attr', 'acl')), result)
+
+    def test_coreutils_root_and_tester_checks_keep_isolated_runtime_paths(self):
+        recipe = __import__('json').loads((RUNNER.parent.parent
+                                           / 'recipes/base/coreutils.json').read_text())
+        command = self.command[:7] + recipe['test'][0]
+        command[2] = 'root'
+        result = self.rewrite('coreutils', command)
+        views = ':'.join(str(self.root / ('build/.native-dependency-libs/' + name))
+                         for name in ('attr', 'acl'))
+        self.assertIn('runuser -u tester -- env "PATH=$test_path" LD_LIBRARY_PATH='
+                      + views + ' LC_ALL=C.UTF-8', result[-1])
+        self.assertIn('make NON_ROOT_USERNAME=tester check-root', result[-1])
+        self.assertIn('RUN_EXPENSIVE_TESTS=yes check </dev/null', result[-1])
+        command[-1] = 'make check'
+        with self.assertRaisesRegex(RuntimeError, 'differs from the pinned recipe'):
+            self.rewrite('coreutils', command)
+        with self.assertRaisesRegex(RuntimeError, 'unexpected runner'):
+            self.rewrite('mpfr', command)
 
     def test_other_package_and_pre_action_are_unchanged(self):
         self.assertEqual(self.rewrite('gmp'), self.command)
