@@ -1,3 +1,10 @@
+# 8 Ekim 2026 — Libcap build-time compiler ve gerçek ACL multilib geçişi
+
+- Sahip Codex; dosya sınırı guest runner, adapter testleri ve doğrulama/durum kayıtları. Run `2a3ebdbc5a291130cff95c10e84bcc0f`, ACL m64/m32 dahil 23 kurulum sonrası Libcap m32 `_makenames` yardımcı yükleyici hatasıyla kapandı; Base kabulü yok.
+- Upstream destekli `BUILD_CC=/usr/bin/gcc` yalnız iki pinned Libcap m32 make adımına eklenir; target compiler, testler ve accepted input digest korunur. 61 odaklı test; tam suite 382 test/2 skip PASS (90,652 sn). Gerçek checksum-verified kaynağın yalnız küçük yardımcı probe'u ELF64 olarak çalıştı; tam Libcap guest geçişi bekliyor.
+- 345 host örneğinde hata/kernel fault yok, en yüksek 62,5°C; kapalı iki qcow2 kontrolü geçti. Önceki referanssız failed overlay çifti 91 metadata taraması sonrası kaldırıldı, 7.915.511.808 byte alan boşaldı; güncel failed overlay ve milestone checkpoint/ISO korundu. Glibc package-byte repeat üçüncü fresh koşuda da eşit; full Base/ISO acceptance değildir.
+- [Kanıt/hash/sınırlar](verification/infra-base-run-2a3ebdbc5a291130cff95c10e84bcc0f-libcap-generator.md). Sonraki adım commit/push ve accepted checkpoint üzerinden fresh persistent Base run.
+
 # 8 Ekim 2026 — ACL m32 adapter sırası ve Glibc byte tekrarı
 
 - Sahip Codex; kapsam guest runner, testler ve kanıt belgeleri. Controller kapandıktan sonra düzenlendi. Run `50b177e8cda3242c0c0b0e2f5a680c05` 22 kurulum ve ACL m64 testleri (9 PASS, 4 SKIP, 2 XFAIL, 0 FAIL) sonrası m32 compiler whitelist kontrolünde kapandı. Önceki adapter recipe GCC komutunu pinned LFS cross-compiler'a çeviriyordu; ACL kontrolü bu değeri kabul etmiyordu.

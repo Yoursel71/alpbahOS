@@ -17,6 +17,9 @@ M32_CONSTANTS = [node for node in TREE.body
 M32_PREPARE_FUNCTION = next(node for node in TREE.body
                            if isinstance(node, ast.FunctionDef)
                            and node.name == 'prepare_m32_kernel_headers')
+LIBCAP_FUNCTION = next(node for node in TREE.body
+                       if isinstance(node, ast.FunctionDef)
+                       and node.name == 'libcap_native_build_compiler')
 FUNCTION = next(node for node in TREE.body
                 if isinstance(node, ast.FunctionDef)
                 and node.name == 'use_staged_file_magic_compiler')
@@ -59,7 +62,7 @@ GLIBC_ARCHIVE_FUNCTION = next(node for node in TREE.body
 GLIBC_PARALLEL_FUNCTION = next(node for node in TREE.body
                                if isinstance(node, ast.FunctionDef)
                                and node.name == 'parallel_glibc_tests')
-MODULE = ast.Module(body=[*M32_CONSTANTS, M32_PREPARE_FUNCTION,
+MODULE = ast.Module(body=[*M32_CONSTANTS, M32_PREPARE_FUNCTION, LIBCAP_FUNCTION,
                           FUNCTION, NCURSES_FUNCTION, TCL_FUNCTION, NCURSES_DOC_FUNCTION,
                           EXPECT_FUNCTION, EXPECT_TCLSH_FUNCTION, EXPECT_MAKE_FUNCTION,
                           BINUTILS_FUNCTION, GMP_FUNCTION, MATH_FUNCTION,
@@ -82,6 +85,82 @@ native_staged_dependency_environment = NAMESPACE['native_staged_dependency_envir
 parallel_glibc_tests = NAMESPACE['parallel_glibc_tests']
 glibc_deterministic_archive_commands = NAMESPACE['glibc_deterministic_archive_commands']
 prepare_m32_kernel_headers = NAMESPACE['prepare_m32_kernel_headers']
+libcap_native_build_compiler = NAMESPACE['libcap_native_build_compiler']
+
+
+class LibcapNativeGeneratorTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.build = Path(self.temporary.name) / 'base-libcap'
+        (self.build / 'libcap').mkdir(parents=True)
+        (self.build / 'Make.Rules').write_text('BUILD_CC ?= $(CC)\n')
+        self.rule = ('_makenames: _makenames.c cap_names.list.h\n'
+                     '\t$(BUILD_CC) $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $< -o $@\n')
+        (self.build / 'libcap/Makefile').write_text(self.rule)
+        import json
+        recipe = json.loads((RUNNER.parents[1] / 'recipes/base/libcap.json').read_text())
+        self.command = ['runuser', '-u', 'lfs', '--', 'env', 'LC_ALL=C',
+                        *[v.replace('{jobs}', '8') for v in recipe['stage'][2]]]
+        self.install = [v.replace('{stage}', '/srv/lfs/stage/base-libcap')
+                        for v in recipe['stage'][3]]
+
+    def tearDown(self):
+        self.temporary.cleanup()
+
+    def rewrite(self, command):
+        return libcap_native_build_compiler(
+            prepare_m32_kernel_headers(command), self.build, build_dir=self.build)
+
+    def test_actual_m32_recipe_composes_with_pinned_cc_and_native_generator(self):
+        adapted = self.rewrite(self.command)
+        self.assertIn(NAMESPACE['M32_C_COMPILER'] + ' -march=i686', adapted)
+        self.assertEqual(adapted[-1], 'BUILD_CC=/usr/bin/gcc')
+        # GNU Make evaluates the upstream BUILD_CC default separately from CC.
+        makefile = self.build / 'libcap/Makefile'
+        makefile.write_text('include ../Make.Rules\n' + self.rule
+                            + '\ntarget.o: _makenames.c\n\t$(CC) -c $< -o $@\n')
+        (self.build / 'libcap/_makenames.c').write_text('int main(void) { return 0; }\n')
+        (self.build / 'libcap/cap_names.list.h').touch()
+        args = adapted[adapted.index('make') + 1:]
+        generated = subprocess.run(['make', '-n', *args, '_makenames', 'target.o'],
+                                   cwd=makefile.parent, check=True,
+                                   capture_output=True, text=True).stdout.splitlines()
+        self.assertTrue(generated[0].startswith('/usr/bin/gcc '))
+        self.assertNotIn('-m32', generated[0])
+        self.assertIn('/srv/lfs/tools/bin/x86_64-lfs-linux-gnu-gcc -m32 -march=i686',
+                      generated[1])
+
+    def test_actual_m32_install_keeps_target_and_destination(self):
+        adapted = self.rewrite(self.install)
+        self.assertEqual(adapted[:-1], prepare_m32_kernel_headers(self.install))
+        self.assertEqual(adapted[-1], 'BUILD_CC=/usr/bin/gcc')
+
+    def test_native_tests_and_other_packages_unchanged(self):
+        for command in (['make', '-j8', 'test'], ['make', 'distclean'],
+                        ['make', '-j8', 'prefix=/usr', 'lib=lib']):
+            self.assertEqual(self.rewrite(command), command)
+        prepared = prepare_m32_kernel_headers(self.command)
+        self.assertEqual(libcap_native_build_compiler(
+            prepared, self.build.parent, build_dir=self.build), prepared)
+
+    def test_m32_command_drift_and_overrides_fail_closed(self):
+        for changed in (self.command + ['BUILD_CC=/tmp/gcc'],
+                        self.command + ['test'],
+                        [v.replace('-march=i686', '-march=native') for v in self.command],
+                        [v.replace('gcc -m32', '/tmp/gcc -m32') for v in self.command]):
+            with self.subTest(command=changed), self.assertRaisesRegex(
+                    RuntimeError, 'Unexpected Libcap m32 make command'):
+                self.rewrite(changed)
+
+    def test_generator_rule_drift_and_alias_fail_closed(self):
+        makefile = self.build / 'libcap/Makefile'
+        makefile.write_text(self.rule.replace('$(BUILD_CC)', '$(CC)'))
+        with self.assertRaisesRegex(RuntimeError, 'generator rule changed'):
+            self.rewrite(self.command)
+        makefile.unlink()
+        makefile.symlink_to('../Make.Rules')
+        with self.assertRaisesRegex(RuntimeError, 'metadata'):
+            self.rewrite(self.command)
 
 
 class StagedFileMagicCompilerTests(unittest.TestCase):

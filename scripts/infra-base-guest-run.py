@@ -730,6 +730,49 @@ def prepare_m32_kernel_headers(argv, header_include='/srv/lfs/build/.m32-kernel-
     return argv
 
 
+def libcap_native_build_compiler(argv, cwd, build_dir='/srv/lfs/build/base-libcap'):
+    """Build Libcap's executable header generator for the Builder ABI.
+
+    Libcap defaults BUILD_CC to CC. Its m32 libraries use the isolated target
+    compiler, whose interpreter is unavailable outside the LFS root. The
+    upstream BUILD_CC override keeps _makenames native without changing CC.
+    """
+    command = list(argv)
+    if cwd is None or Path(cwd).resolve() != Path(build_dir).resolve():
+        return command
+    make_indexes = [i for i, value in enumerate(command) if value == 'make']
+    if not make_indexes:
+        return command
+    index = make_indexes[-1]
+    tail = command[index + 1:]
+    compilers = [value for value in tail if value.startswith('CC=')]
+    if not any(' -m32' in value for value in compilers):
+        return command
+    compiler = M32_C_COMPILER + ' -march=i686'
+    compiling = (len(tail) == 2 and re.fullmatch(r'-j[1248]', tail[0])
+                 and tail[1] == compiler)
+    installing = (len(tail) == 7 and tail[:3] == ['-j1', compiler, 'lib=lib32']
+                  and tail[3] == 'prefix=/srv/lfs/stage/base-libcap/.m32root/usr'
+                  and tail[4:] == ['-C', 'libcap', 'install'])
+    if not (compiling or installing):
+        raise RuntimeError('Unexpected Libcap m32 make command')
+    tree = Path(cwd)
+    if tree.is_symlink() or tree.resolve() != tree:
+        raise RuntimeError('Unsafe Libcap source directory')
+    rules = tree / 'Make.Rules'
+    makefile = tree / 'libcap/Makefile'
+    if any(p.is_symlink() or not p.is_file() or p.resolve() != p
+           for p in (rules, makefile)):
+        raise RuntimeError('Unsafe Libcap build compiler metadata')
+    generator = ('_makenames: _makenames.c cap_names.list.h\n'
+                 '\t$(BUILD_CC) $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $< -o $@\n')
+    if (rules.read_text().splitlines().count('BUILD_CC ?= $(CC)') != 1
+            or makefile.read_text().count(generator) != 1):
+        raise RuntimeError('Libcap native generator rule changed')
+    command.append('BUILD_CC=/usr/bin/gcc')
+    return command
+
+
 def binutils_lfs_zlib_environment(argv, cwd,
                                   build_dir='/srv/lfs/build/base-binutils/build',
                                   lfs_root='/srv/lfs'):
@@ -1086,6 +1129,11 @@ _run = package_stage.run
 
 def run_with_root_owned_test_tree(argv, log, cwd=None, env=None):
     argv = prepare_m32_kernel_headers(argv)
+    original_libcap = argv
+    argv = libcap_native_build_compiler(argv, cwd)
+    if argv != original_libcap:
+        with Path(log).open('ab') as output:
+            output.write(b'BUILD_ADAPTER libcap BUILD_CC=/usr/bin/gcc; target CC unchanged\n')
     argv = binutils_lfs_zlib_environment(argv, cwd)
     original = argv
     argv = native_staged_dependency_environment(argv, cwd)
