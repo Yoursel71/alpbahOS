@@ -1,3 +1,10 @@
+# 8 Ekim 2026 — MPFR bağımlılık yolları ve Glibc test paralelliği
+
+- Sahip: Codex; sınır: `scripts/infra-base-guest-run.py`, guest adapter testleri ve bu doğrulama/durum kayıtları. Run `f6c8fcb01988262f6a7c55d33ac24001`, 19 paket kurulum makbuzundan sonra MPFR configure sırasında GMP başlığı arama yolunda bulunmadığı için temiz kapandı. Base kabulü yok; mevcut başarısız koşu tekrarlanmayacak.
+- MPFR/MPC/GCC için yalnız bağımlılıkların ayrı staging dizinlerine include/link/runtime yolları eklendi; libc/header gölgeleme ve alias/override durumları reddediliyor. Glibc'nin tam testleri, aynı politika ve dört iş bütçesiyle paralel çalışacak. Gerçek yeni guest geçişi ve süre kazancı henüz ölçülmedi.
+- 44 odaklı test ve 365 test/2 skip tam suite PASS (91,805 sn); input digest değişmedi. 506 host örneğinde hata/kernel fault yok; disklerin boşluğu %15 üstünde. Kullanıcının temizlik yetkisiyle hiçbir imajın referans vermediği iki eski overlay çifti kaldırıldı, 16,34 GB ayrılan alan boşaltıldı; güncel hata imajları ve kabul edilmiş checkpoint'ler korundu. Önceki root arşivine taşıma da kayda geçirildi.
+- Kanıt, hash'ler ve kapsam: [MPFR hata/düzeltme raporu](verification/infra-base-run-f6c8fcb01988262f6a7c55d33ac24001-mpfr-dependency-path.md). Sonraki adım commit/push ve kabul edilmiş toolchain üzerinden yeni kalıcı Base run.
+
 # 8 Ekim 2026 — Base run host restart ile kesildi
 
 - Yeni Base run `5188473e4bb066bbff3900f2f8cacfac`, kabul edilmiş `checkpoint-toolchain` ve input SHA-256 `c76a1c737693aab8a4380a395a9515da8d86a7f641099c6f9e5ba4166e4f7306` ile guest’i açtı. Salt okunur guest incelemesinde `ncurses` derleme günlüğü 436 KiB; `base-ncurses.json` ve `built.json` boş, kurulum makbuzu yok. Base acceptance/checkpoint oluşmadı.

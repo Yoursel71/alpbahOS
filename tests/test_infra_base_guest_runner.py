@@ -34,9 +34,16 @@ BINUTILS_FUNCTION = next(node for node in TREE.body
 GMP_FUNCTION = next(node for node in TREE.body
                     if isinstance(node, ast.FunctionDef)
                     and node.name == 'gmp_gcc15_configure_compatibility')
+MATH_FUNCTION = next(node for node in TREE.body
+                     if isinstance(node, ast.FunctionDef)
+                     and node.name == 'native_math_dependency_environment')
+GLIBC_PARALLEL_FUNCTION = next(node for node in TREE.body
+                               if isinstance(node, ast.FunctionDef)
+                               and node.name == 'parallel_glibc_tests')
 MODULE = ast.Module(body=[FUNCTION, NCURSES_FUNCTION, TCL_FUNCTION, NCURSES_DOC_FUNCTION,
                           EXPECT_FUNCTION, EXPECT_TCLSH_FUNCTION, EXPECT_MAKE_FUNCTION,
-                          BINUTILS_FUNCTION, GMP_FUNCTION],
+                          BINUTILS_FUNCTION, GMP_FUNCTION, MATH_FUNCTION,
+                          GLIBC_PARALLEL_FUNCTION],
                      type_ignores=[])
 ast.fix_missing_locations(MODULE)
 NAMESPACE = {'Path': Path, 're': re, 'os': __import__('os')}
@@ -50,6 +57,8 @@ expect_tclsh_command = NAMESPACE['expect_tclsh_command']
 expect_make_tclsh = NAMESPACE['expect_make_tclsh']
 binutils_lfs_zlib_environment = NAMESPACE['binutils_lfs_zlib_environment']
 gmp_gcc15_configure_compatibility = NAMESPACE['gmp_gcc15_configure_compatibility']
+native_math_dependency_environment = NAMESPACE['native_math_dependency_environment']
+parallel_glibc_tests = NAMESPACE['parallel_glibc_tests']
 
 
 class StagedFileMagicCompilerTests(unittest.TestCase):
@@ -493,6 +502,108 @@ class GmpGcc15ConfigureCompatibilityTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, 'could not parse the guest GCC version'):
             gmp_gcc15_configure_compatibility(
                 self.command, self.build, 'GNU GCC', build_dir=self.build)
+
+
+class NativeMathDependencyTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.root = Path(self.temporary.name)
+        for name, header, library in (('gmp', 'gmp.h', 'libgmp'),
+                                      ('mpfr', 'mpfr.h', 'libmpfr'),
+                                      ('mpc', 'mpc.h', 'libmpc'),
+                                      ('zlib', 'zlib.h', 'libz')):
+            prefix = self.root / ('stage/base-' + name) / 'usr'
+            (prefix / 'include').mkdir(parents=True)
+            (prefix / 'lib').mkdir()
+            (prefix / 'include' / header).write_text('/* dependency header */\n')
+            (prefix / 'lib' / (library + '.so.1')).write_bytes(b'ELF fixture')
+            (prefix / 'lib' / (library + '.so')).symlink_to(library + '.so.1')
+        self.command = ['/usr/sbin/runuser', '-u', 'lfs', '--', 'env',
+                        'LC_ALL=C', 'CFLAGS=-O2', './configure', '--prefix=/usr']
+
+    def tearDown(self):
+        self.temporary.cleanup()
+
+    def rewrite(self, package='mpfr', command=None):
+        path = self.root / ('build/base-' + package)
+        if package == 'gcc':
+            path /= 'build'
+        return native_math_dependency_environment(
+            self.command if command is None else command, path, lfs_root=self.root)
+
+    def test_mpfr_configure_and_tests_find_only_staged_gmp(self):
+        stage = self.root / 'stage/base-gmp/usr'
+        for tail in (['./configure', '--prefix=/usr'], ['make', 'check']):
+            result = self.rewrite(command=self.command[:7] + tail)
+            self.assertIn('CPPFLAGS=-I' + str(stage / 'include'), result)
+            self.assertIn('LDFLAGS=-L' + str(stage / 'lib'), result)
+            self.assertIn('LD_LIBRARY_PATH=' + str(stage / 'lib'), result)
+            self.assertEqual(result[-len(tail):], tail)
+            self.assertNotIn('-I' + str(self.root / 'usr/include'), ' '.join(result))
+
+    def test_mpc_and_gcc_find_all_required_staged_libraries(self):
+        for package, names in (('mpc', ('gmp', 'mpfr')),
+                               ('gcc', ('gmp', 'mpfr', 'mpc', 'zlib'))):
+            result = self.rewrite(package)
+            self.assertIn('LD_LIBRARY_PATH=' + ':'.join(
+                str(self.root / ('stage/base-' + name) / 'usr/lib')
+                for name in names), result)
+        command = list(self.command); command[2] = 'tester'
+        self.assertEqual(self.rewrite('gcc', command)[2], 'tester')
+
+    def test_other_package_and_pre_action_are_unchanged(self):
+        self.assertEqual(self.rewrite('gmp'), self.command)
+        pre = self.command[:4] + ['sed', '-i', 'pattern', 'configure']
+        self.assertEqual(self.rewrite(command=pre), pre)
+
+    def test_explicit_override_and_unknown_runner_are_rejected(self):
+        for value in ('CPPFLAGS=-I/other', 'LDFLAGS=-L/other',
+                      'LD_LIBRARY_PATH=/other', 'LIBRARY_PATH=/other'):
+            with self.assertRaisesRegex(RuntimeError, 'explicit override'):
+                self.rewrite(command=self.command[:5] + [value] + self.command[5:])
+        command = list(self.command); command[2] = 'other'
+        with self.assertRaisesRegex(RuntimeError, 'unexpected runner'):
+            self.rewrite(command=command)
+
+    def test_missing_header_and_escaped_library_are_rejected(self):
+        stage = self.root / 'stage/base-gmp/usr'
+        (stage / 'include/gmp.h').unlink()
+        with self.assertRaisesRegex(RuntimeError, 'header missing'):
+            self.rewrite()
+        (stage / 'include/gmp.h').write_text('restored')
+        outside = self.root / 'outside.so'; outside.write_bytes(b'ELF')
+        (stage / 'lib/libgmp.so').unlink()
+        (stage / 'lib/libgmp.so').symlink_to(outside)
+        with self.assertRaisesRegex(RuntimeError, 'escapes its stage'):
+            self.rewrite()
+
+    def test_shadowing_system_files_and_aliased_directory_are_rejected(self):
+        stage = self.root / 'stage/base-gmp/usr'
+        for relative in ('lib/libc.so', 'include/stdlib.h'):
+            path = stage / relative; path.write_text('shadow')
+            with self.assertRaisesRegex(RuntimeError, 'Builder-shadowing'):
+                self.rewrite()
+            path.unlink()
+        real = stage / 'real-include'
+        (stage / 'include').rename(real)
+        (stage / 'include').symlink_to(real, target_is_directory=True)
+        with self.assertRaisesRegex(RuntimeError, 'directory missing or aliased'):
+            self.rewrite()
+
+
+class ParallelGlibcTests(unittest.TestCase):
+    def test_all_tests_and_policy_remain_in_the_four_job_command(self):
+        script = ('set +e; make -k check with-lld=; make_exit=$?; set -e; '
+                  'python3 /opt/alp-infra/scripts/infra/test-policy.py glibc '
+                  '--build . --make-exit "$make_exit" --output glibc-test-policy.json')
+        command = ['bash', '-euc', script]
+        result = parallel_glibc_tests(command, '/srv/lfs/build/base-glibc/build')
+        self.assertEqual(result[:2], command[:2])
+        self.assertEqual(result[2], script.replace('make -k check', 'make -j4 -k check'))
+        self.assertEqual(parallel_glibc_tests(command, '/other'), command)
+        with self.assertRaisesRegex(RuntimeError, 'differs from the pinned recipe'):
+            parallel_glibc_tests(['bash', '-euc', script.replace('make -k', 'make -j1 -k')],
+                                 '/srv/lfs/build/base-glibc/build')
 
 
 if __name__ == '__main__':

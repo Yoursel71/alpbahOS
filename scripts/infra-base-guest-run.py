@@ -804,6 +804,78 @@ def binutils_lfs_zlib_environment(argv, cwd,
     return command
 
 
+def native_math_dependency_environment(argv, cwd, lfs_root='/srv/lfs'):
+    """Give unchrooted native builds only their isolated staged dependencies."""
+    command = list(argv)
+    root = Path(lfs_root)
+    consumers = {
+        root / 'build/base-mpfr': ('gmp',),
+        root / 'build/base-mpc': ('gmp', 'mpfr'),
+        root / 'build/base-gcc/build': ('gmp', 'mpfr', 'mpc', 'zlib'),
+    }
+    dependencies = consumers.get(Path(cwd).resolve()) if cwd is not None else None
+    if dependencies is None:
+        return command
+    # Recipe pre/post actions do not use the env wrapper and need no link paths.
+    if len(command) < 5 or command[4] != 'env':
+        return command
+    if (command[0] != '/usr/sbin/runuser' or command[1] != '-u'
+            or command[2] not in ('lfs', 'tester') or command[3] != '--'):
+        raise RuntimeError('Native math dependency adapter received an unexpected runner')
+    variables = ('CPPFLAGS=', 'LDFLAGS=', 'LD_LIBRARY_PATH=', 'LIBRARY_PATH=')
+    if any(value.startswith(variables) for value in command[5:]):
+        raise RuntimeError('Native math dependency flags already have an explicit override')
+    headers = {'gmp': 'gmp.h', 'mpfr': 'mpfr.h', 'mpc': 'mpc.h', 'zlib': 'zlib.h'}
+    libraries = {'gmp': 'libgmp.so', 'mpfr': 'libmpfr.so',
+                 'mpc': 'libmpc.so', 'zlib': 'libz.so'}
+    includes, libdirs = [], []
+    for name in dependencies:
+        stage = root / ('stage/base-' + name)
+        include, libdir = stage / 'usr/include', stage / 'usr/lib'
+        for directory in (root, root / 'stage', stage, stage / 'usr', include, libdir):
+            if (directory.is_symlink() or directory.resolve() != directory
+                    or not directory.is_dir()):
+                raise RuntimeError('Native dependency directory missing or aliased: ' + str(directory))
+        header, library = include / headers[name], libdir / libraries[name]
+        if header.is_symlink() or not header.is_file():
+            raise RuntimeError('Native dependency header missing or aliased: ' + str(header))
+        try:
+            resolved = library.resolve(strict=True)
+        except (OSError, RuntimeError) as error:
+            raise RuntimeError('Native dependency shared library missing: ' + str(library)) from error
+        if not resolved.is_file() or resolved.parent != libdir:
+            raise RuntimeError('Native dependency shared library escapes its stage: ' + str(library))
+        if (any((libdir / item).exists() or (libdir / item).is_symlink()
+                for item in ('libc.so', 'libc.so.6', 'libc_nonshared.a',
+                             'ld-linux-x86-64.so.2'))
+                or any((include / item).exists() or (include / item).is_symlink()
+                       for item in ('stdio.h', 'stdlib.h', 'string.h', 'unistd.h'))):
+            raise RuntimeError('Native dependency stage contains Builder-shadowing system files')
+        includes.append(str(include)); libdirs.append(str(libdir))
+    command[5:5] = ['CPPFLAGS=' + ' '.join('-I' + path for path in includes),
+                    'LDFLAGS=' + ' '.join('-L' + path for path in libdirs),
+                    'LD_LIBRARY_PATH=' + ':'.join(libdirs),
+                    'LIBRARY_PATH=' + ':'.join(libdirs)]
+    return command
+
+
+def parallel_glibc_tests(argv, cwd, build_dir='/srv/lfs/build/base-glibc/build'):
+    """Use the recipe's four-job budget for the complete critical test suite."""
+    command = list(argv)
+    if cwd is None or Path(cwd).resolve() != Path(build_dir).resolve():
+        return command
+    scripts = [index for index, value in enumerate(command)
+               if isinstance(value, str) and 'test-policy.py glibc' in value]
+    if not scripts:
+        return command
+    original = 'set +e; make -k check with-lld=; make_exit=$?; set -e; '
+    if len(scripts) != 1 or command[scripts[0]].count(original) != 1:
+        raise RuntimeError('Glibc test command differs from the pinned recipe')
+    command[scripts[0]] = command[scripts[0]].replace(
+        original, 'set +e; make -j4 -k check with-lld=; make_exit=$?; set -e; ')
+    return command
+
+
 def gmp_gcc15_configure_compatibility(argv, cwd, gcc_version,
                                       build_dir='/srv/lfs/build/base-gmp'):
     """Apply GMP's configure sed workaround only on the GCC versions that need it."""
@@ -888,6 +960,12 @@ _run = package_stage.run
 def run_with_root_owned_test_tree(argv, log, cwd=None, env=None):
     argv = prepare_m32_kernel_headers(argv)
     argv = binutils_lfs_zlib_environment(argv, cwd)
+    original = argv
+    argv = native_math_dependency_environment(argv, cwd)
+    argv = parallel_glibc_tests(argv, cwd)
+    if argv != original:
+        with Path(log).open('ab') as output:
+            output.write(('BUILD_ADAPTER native-dependencies-or-glibc-j4 cwd=' + str(cwd) + '\n').encode())
     gmp_pre = (cwd is not None and Path(cwd).resolve() == Path('/srv/lfs/build/base-gmp')
                and argv == ['/usr/sbin/runuser', '-u', 'lfs', '--', 'sed', '-i',
                             '/long long t1;/,+1s/()/(...)/', 'configure'])
