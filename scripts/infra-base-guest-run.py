@@ -773,6 +773,40 @@ def libcap_native_build_compiler(argv, cwd, build_dir='/srv/lfs/build/base-libca
     return command
 
 
+def man_pages_crypt_source_directory(argv, cwd, build_dir='/srv/lfs/build/base-man-pages'):
+    """Run the pinned crypt-page exclusion on Man-pages' real source directory.
+
+    Version 6.15's man3 is a compatibility symlink to man/man3. GNU find's
+    default traversal skips that symlink, silently leaving the Libxcrypt
+    pages installed and claimed by Man-pages. Validate the internal alias
+    and use its canonical directory for the existing removal command.
+    """
+    command = list(argv)
+    if cwd is None or Path(cwd).resolve() != Path(build_dir).resolve():
+        return command
+    if 'find' not in command:
+        return command
+    tree = Path(cwd)
+    expected = ['/usr/sbin/runuser', '-u', 'lfs', '--', 'find', str(tree / 'man3'),
+                '-maxdepth', '1', '-type', 'f', '-name', 'crypt*', '-delete']
+    if command != expected:
+        raise RuntimeError('Unexpected Man-pages crypt exclusion command')
+    directory = tree / 'man/man3'
+    alias = tree / 'man3'
+    if (tree.resolve() != tree or tree.is_symlink()
+            or not alias.is_symlink() or os.readlink(alias) != 'man/man3'
+            or alias.resolve() != directory
+            or any(p.is_symlink() or not p.is_dir() or p.resolve() != p
+                   for p in (tree, tree / 'man', directory))):
+        raise RuntimeError('Unsafe Man-pages source directory alias')
+    pages = sorted(directory.glob('crypt*'))
+    if ({p.name for p in pages} != {'crypt.3', 'crypt_r.3'}
+            or any(p.is_symlink() or not p.is_file() for p in pages)):
+        raise RuntimeError('Man-pages crypt exclusion source payload changed')
+    command[5] = str(directory)
+    return command
+
+
 def binutils_lfs_zlib_environment(argv, cwd,
                                   build_dir='/srv/lfs/build/base-binutils/build',
                                   lfs_root='/srv/lfs'):
@@ -1129,6 +1163,11 @@ _run = package_stage.run
 
 def run_with_root_owned_test_tree(argv, log, cwd=None, env=None):
     argv = prepare_m32_kernel_headers(argv)
+    original_man_pages = argv
+    argv = man_pages_crypt_source_directory(argv, cwd)
+    if argv != original_man_pages:
+        with Path(log).open('ab') as output:
+            output.write(b'BUILD_ADAPTER man-pages crypt exclusion uses canonical man/man3\n')
     original_libcap = argv
     argv = libcap_native_build_compiler(argv, cwd)
     if argv != original_libcap:

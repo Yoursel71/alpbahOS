@@ -20,6 +20,9 @@ M32_PREPARE_FUNCTION = next(node for node in TREE.body
 LIBCAP_FUNCTION = next(node for node in TREE.body
                        if isinstance(node, ast.FunctionDef)
                        and node.name == 'libcap_native_build_compiler')
+MAN_PAGES_FUNCTION = next(node for node in TREE.body
+                          if isinstance(node, ast.FunctionDef)
+                          and node.name == 'man_pages_crypt_source_directory')
 FUNCTION = next(node for node in TREE.body
                 if isinstance(node, ast.FunctionDef)
                 and node.name == 'use_staged_file_magic_compiler')
@@ -62,7 +65,7 @@ GLIBC_ARCHIVE_FUNCTION = next(node for node in TREE.body
 GLIBC_PARALLEL_FUNCTION = next(node for node in TREE.body
                                if isinstance(node, ast.FunctionDef)
                                and node.name == 'parallel_glibc_tests')
-MODULE = ast.Module(body=[*M32_CONSTANTS, M32_PREPARE_FUNCTION, LIBCAP_FUNCTION,
+MODULE = ast.Module(body=[*M32_CONSTANTS, M32_PREPARE_FUNCTION, LIBCAP_FUNCTION, MAN_PAGES_FUNCTION,
                           FUNCTION, NCURSES_FUNCTION, TCL_FUNCTION, NCURSES_DOC_FUNCTION,
                           EXPECT_FUNCTION, EXPECT_TCLSH_FUNCTION, EXPECT_MAKE_FUNCTION,
                           BINUTILS_FUNCTION, GMP_FUNCTION, MATH_FUNCTION,
@@ -86,6 +89,70 @@ parallel_glibc_tests = NAMESPACE['parallel_glibc_tests']
 glibc_deterministic_archive_commands = NAMESPACE['glibc_deterministic_archive_commands']
 prepare_m32_kernel_headers = NAMESPACE['prepare_m32_kernel_headers']
 libcap_native_build_compiler = NAMESPACE['libcap_native_build_compiler']
+man_pages_crypt_source_directory = NAMESPACE['man_pages_crypt_source_directory']
+
+
+class ManPagesCryptExclusionTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.build = Path(self.temporary.name) / 'base-man-pages'
+        self.directory = self.build / 'man/man3'
+        self.directory.mkdir(parents=True)
+        (self.build / 'man3').symlink_to('man/man3')
+        for name in ('crypt.3', 'crypt_r.3', 'cbc_crypt.3', 'unrelated.3'):
+            (self.directory / name).write_text(name + '\n')
+        import json
+        recipe = json.loads((RUNNER.parents[1] / 'recipes/base/man-pages.json').read_text())
+        self.command = ['/usr/sbin/runuser', '-u', 'lfs', '--',
+                        *[v.replace('{source}', str(self.build)) for v in recipe['pre'][0]]]
+
+    def tearDown(self):
+        self.temporary.cleanup()
+
+    def rewrite(self, command=None):
+        return man_pages_crypt_source_directory(
+            self.command if command is None else command,
+            self.build, build_dir=self.build)
+
+    def test_actual_recipe_reproduces_noop_then_removes_only_libxcrypt_pages(self):
+        subprocess.run(self.command[4:], check=True)
+        self.assertTrue((self.directory / 'crypt.3').exists())
+        adapted = self.rewrite()
+        subprocess.run(adapted[4:], check=True)
+        self.assertEqual({p.name for p in self.directory.iterdir()},
+                         {'cbc_crypt.3', 'unrelated.3'})
+        self.assertEqual(adapted[:5], self.command[:5])
+        self.assertEqual(adapted[6:], self.command[6:])
+
+    def test_unrelated_step_and_package_are_unchanged(self):
+        command = ['/usr/sbin/runuser', '-u', 'lfs', '--', 'make', 'install']
+        self.assertEqual(self.rewrite(command), command)
+        self.assertEqual(man_pages_crypt_source_directory(
+            self.command, self.build.parent, build_dir=self.build), self.command)
+
+    def test_alias_escape_fails_without_deleting_source(self):
+        alias = self.build / 'man3'
+        alias.unlink(); alias.symlink_to('../outside')
+        with self.assertRaisesRegex(RuntimeError, 'directory alias'):
+            self.rewrite()
+        self.assertTrue((self.directory / 'crypt.3').exists())
+
+    def test_payload_drift_and_symlink_are_rejected(self):
+        (self.directory / 'crypt_extra.3').write_text('unexpected')
+        with self.assertRaisesRegex(RuntimeError, 'source payload changed'):
+            self.rewrite()
+        (self.directory / 'crypt_extra.3').unlink()
+        page = self.directory / 'crypt.3'
+        page.unlink();page.symlink_to('unrelated.3')
+        with self.assertRaisesRegex(RuntimeError, 'source payload changed'):
+            self.rewrite()
+
+    def test_command_drift_is_rejected(self):
+        for command in (self.command + ['-print'],
+                        [v.replace('crypt*', '*crypt*') for v in self.command]):
+            with self.subTest(command=command), self.assertRaisesRegex(
+                    RuntimeError, 'Unexpected Man-pages crypt exclusion command'):
+                self.rewrite(command)
 
 
 class LibcapNativeGeneratorTests(unittest.TestCase):

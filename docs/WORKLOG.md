@@ -1,3 +1,9 @@
+# 8 Ekim 2026 — Man-pages crypt source alias ve Libxcrypt sahipliği
+
+- Sahip Codex; dosya sınırı guest runner, adapter testleri ve bu doğrulama/durum kayıtları. Run `242ccde0598d732459f7f88158dc2e92`, Libcap dahil 24 kuruluma ulaştı. Libxcrypt tam staging ve native testler geçti; iki crypt man sayfası ownership çakışması kurulumu güvenli biçimde durdurdu.
+- Recipe mevcut find komutu Man-pages 6.15'in `man3 -> man/man3` kaynak alias'ını izlemiyordu. Adapter yalnız doğrulanmış gerçek source dizinini seçiyor; hiçbir ownership/test kontrolü değişmedi. 66 odaklı test, tam suite 387 test/2 skip PASS (93,283 sn); gerçek kaynak DESTDIR probe'unda iki dosya çıktı, diğer 3.011 payload aynı.
+- 352 host örneğinde hata/kernel fault yok, en yüksek 61,875°C; kapanmış qcow2 kontrolleri PASS. Yeni gerçek Libxcrypt/Coreutils/GCC kabulü ve tam pipeline açık. [Kanıt/hash/sınırlar](verification/infra-base-run-242ccde0598d732459f7f88158dc2e92-man-pages-crypt.md). Sonraki adım commit/push ve accepted toolchain üzerinden fresh persistent Base run.
+
 # 8 Ekim 2026 — Libcap build-time compiler ve gerçek ACL multilib geçişi
 
 - Sahip Codex; dosya sınırı guest runner, adapter testleri ve doğrulama/durum kayıtları. Run `2a3ebdbc5a291130cff95c10e84bcc0f`, ACL m64/m32 dahil 23 kurulum sonrası Libcap m32 `_makenames` yardımcı yükleyici hatasıyla kapandı; Base kabulü yok.
