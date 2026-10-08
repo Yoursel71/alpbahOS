@@ -1,3 +1,11 @@
+# 8 Ekim 2026 — Libxcrypt geçti, GCC hedef build sysroot düzeltmesi
+
+- Sahip Codex; sınır guest runner, odaklı testler ve kanıt/durum belgeleri. Aktif controller kapandıktan sonra değişiklik yapıldı. Run `d4a081f804cbc11076eface5434ac2e7` 26 kurulum PASS; Libxcrypt native 32 PASS/11 SKIP/0 FAIL, m64/m32 staging ve sahiplikli kurulum gerçek guest’te geçti.
+- GCC m32 Libgcc hedef başlıkları Builder `/usr/include` üzerinden aradığı için durdu. Pinned configure’e yalnız upstream build sysroot ve deployed root seçenekleri eklendi; native host compiler, multilib kapsamı, tester komutu ve expected-failure politikası korundu. Kaynak/başlık/ABI/alias/komut drift fail-closed. 72 odaklı test; 393 test/2 skip tam suite PASS (92,417 sn); gerçek kaynak ve Glibc payload probe PASS. Yeni tam GCC/Coreutils/Base sonucu kanıtlanmadı.
+- 360 artifact hash’i outcome ile eşit; 411 host örneğinde hata/kernel fault yok, max 63°C, her disk yüzde 15 üstünde. Kapalı current qcow2 kontrolleri PASS. Glibc arşivi/manifesti önceki fresh koşularla aynı; tam Base/ISO repeat kabulü değil.
+- Full suite sonrası 91 managed qcow2 metadata kaydında referanssız olduğu doğrulanan eski 242cc failed overlay çifti check/hash/stat kontrolleriyle temizlendi; 7.281.713.152 ayrılan bayt geri kazanıldı. Current hata imajları ve accepted checkpoint’ler korundu.
+- [Kanıt/hash/kapsam](verification/infra-base-run-d4a081f804cbc11076eface5434ac2e7-gcc-build-sysroot.md). Sonraki adım commit/push ve accepted toolchain üzerinden tek fresh kalıcı run.
+
 # 8 Ekim 2026 — Man-pages crypt source alias ve Libxcrypt sahipliği
 
 - Sahip Codex; dosya sınırı guest runner, adapter testleri ve bu doğrulama/durum kayıtları. Run `242ccde0598d732459f7f88158dc2e92`, Libcap dahil 24 kuruluma ulaştı. Libxcrypt tam staging ve native testler geçti; iki crypt man sayfası ownership çakışması kurulumu güvenli biçimde durdurdu.

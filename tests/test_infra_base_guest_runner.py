@@ -23,6 +23,9 @@ LIBCAP_FUNCTION = next(node for node in TREE.body
 MAN_PAGES_FUNCTION = next(node for node in TREE.body
                           if isinstance(node, ast.FunctionDef)
                           and node.name == 'man_pages_crypt_source_directory')
+GCC_SYSROOT_FUNCTION = next(node for node in TREE.body
+                           if isinstance(node, ast.FunctionDef)
+                           and node.name == 'gcc_target_build_sysroot')
 FUNCTION = next(node for node in TREE.body
                 if isinstance(node, ast.FunctionDef)
                 and node.name == 'use_staged_file_magic_compiler')
@@ -66,6 +69,7 @@ GLIBC_PARALLEL_FUNCTION = next(node for node in TREE.body
                                if isinstance(node, ast.FunctionDef)
                                and node.name == 'parallel_glibc_tests')
 MODULE = ast.Module(body=[*M32_CONSTANTS, M32_PREPARE_FUNCTION, LIBCAP_FUNCTION, MAN_PAGES_FUNCTION,
+                          GCC_SYSROOT_FUNCTION,
                           FUNCTION, NCURSES_FUNCTION, TCL_FUNCTION, NCURSES_DOC_FUNCTION,
                           EXPECT_FUNCTION, EXPECT_TCLSH_FUNCTION, EXPECT_MAKE_FUNCTION,
                           BINUTILS_FUNCTION, GMP_FUNCTION, MATH_FUNCTION,
@@ -90,6 +94,95 @@ glibc_deterministic_archive_commands = NAMESPACE['glibc_deterministic_archive_co
 prepare_m32_kernel_headers = NAMESPACE['prepare_m32_kernel_headers']
 libcap_native_build_compiler = NAMESPACE['libcap_native_build_compiler']
 man_pages_crypt_source_directory = NAMESPACE['man_pages_crypt_source_directory']
+gcc_target_build_sysroot = NAMESPACE['gcc_target_build_sysroot']
+
+
+class GccTargetSysrootTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.root = Path(self.temporary.name) / 'lfs'
+        self.build = self.root / 'build/base-gcc/build'
+        self.build.mkdir(parents=True)
+        include = self.root / 'usr/include'
+        for name in ('stdio.h', 'bits/libc-header-start.h',
+                     'gnu/stubs-32.h', 'gnu/stubs-64.h'):
+            p = include / name; p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text('/* target header */\n')
+        for library, elf_class, machine in (('lib', 2, 62), ('lib32', 1, 3)):
+            lib = self.root / 'usr' / library; lib.mkdir()
+            for name in ('libc.so', 'libc_nonshared.a', 'crt1.o', 'crti.o', 'crtn.o'):
+                (lib / name).write_text('target input\n')
+            header = b'\x7fELF' + bytes((elf_class, 1)) + b'\0' * 12
+            (lib / 'libc.so.6').write_bytes(header + machine.to_bytes(2, 'little'))
+        (self.build.parent / 'gcc').mkdir()
+        (self.build.parent / 'configure').write_text(
+            'SYSROOT_CFLAGS_FOR_TARGET="--sysroot=$withval"\n')
+        self.test_rule = '@echo "set TEST_ALWAYS_FLAGS \\"$(SYSROOT_CFLAGS_FOR_TARGET)\\"" >> ./site.tmp'
+        (self.build.parent / 'gcc/Makefile.in').write_text(self.test_rule + '\n')
+        import json
+        self.recipe = json.loads((RUNNER.parents[1] / 'recipes/base/gcc.json').read_text())
+        self.command = ['/usr/sbin/runuser', '-u', 'lfs', '--', 'env',
+                        'LC_ALL=C', 'CFLAGS=-O2 -g0', *self.recipe['compile'][0]]
+
+    def tearDown(self):
+        self.temporary.cleanup()
+
+    def rewrite(self, command=None):
+        return gcc_target_build_sysroot(self.command if command is None else command,
+                                       self.build, lfs_root=self.root)
+
+    def test_actual_recipe_keeps_native_compiler_and_deployed_root(self):
+        adapted = self.rewrite()
+        self.assertEqual(adapted[:-2], self.command)
+        self.assertEqual(adapted[-2:], ['--with-sysroot=/',
+                                       '--with-build-sysroot=' + str(self.root)])
+        self.assertIn('--with-multilib-list=m64,m32', adapted)
+        self.assertFalse(any(v.startswith(('CC=', 'CXX=')) for v in adapted))
+        makefile = self.build / 'probe.mk'
+        makefile.write_text('SYSROOT_CFLAGS_FOR_TARGET = --sysroot=' + str(self.root)
+                            + '\nall:\n\t' + self.test_rule + '\n')
+        subprocess.run(['make', '-f', str(makefile)], cwd=self.build, check=True,
+                       capture_output=True)
+        self.assertEqual((self.build / 'site.tmp').read_text(),
+                         'set TEST_ALWAYS_FLAGS "--sysroot=' + str(self.root) + '"\n')
+
+    def test_tests_staging_and_other_packages_remain_unchanged(self):
+        for command in (['make', '-j4'], *self.recipe['test'], *self.recipe['stage']):
+            self.assertEqual(self.rewrite(command), command)
+        self.assertEqual(gcc_target_build_sysroot(
+            self.command, self.build.parent, lfs_root=self.root), self.command)
+
+    def test_compiler_option_and_runner_drift_fail_closed(self):
+        for command in (self.command + ['--disable-multilib'],
+                        self.command + ['--with-build-sysroot=/tmp/other'],
+                        self.command[:5] + ['CC=/tmp/gcc'] + self.command[5:],
+                        [v.replace('lfs', 'tester') if v == 'lfs' else v for v in self.command]):
+            with self.subTest(command=command), self.assertRaisesRegex(RuntimeError, 'pinned recipe'):
+                self.rewrite(command)
+
+    def test_missing_or_aliased_target_headers_fail_closed(self):
+        path = self.root / 'usr/include/gnu/stubs-32.h'
+        path.unlink()
+        with self.assertRaisesRegex(RuntimeError, 'input missing or aliased'):
+            self.rewrite()
+        path.symlink_to('stubs-64.h')
+        with self.assertRaisesRegex(RuntimeError, 'input missing or aliased'):
+            self.rewrite()
+
+    def test_wrong_libc_abi_fails_closed(self):
+        path = self.root / 'usr/lib32/libc.so.6'
+        path.write_bytes((self.root / 'usr/lib/libc.so.6').read_bytes())
+        with self.assertRaisesRegex(RuntimeError, 'wrong ABI'):
+            self.rewrite()
+
+    def test_source_rule_and_alias_drift_fail_closed(self):
+        path = self.build.parent / 'gcc/Makefile.in'
+        path.write_text('set TEST_ALWAYS_FLAGS ""\n')
+        with self.assertRaisesRegex(RuntimeError, 'source rule changed'):
+            self.rewrite()
+        path.unlink(); path.symlink_to('../configure')
+        with self.assertRaisesRegex(RuntimeError, 'metadata missing or aliased'):
+            self.rewrite()
 
 
 class ManPagesCryptExclusionTests(unittest.TestCase):

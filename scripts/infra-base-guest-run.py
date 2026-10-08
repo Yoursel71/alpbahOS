@@ -951,6 +951,64 @@ def acl_dependency_library_directory(argv, build):
     return 'lib32' if compilers[0] in m32_compilers else 'lib'
 
 
+def gcc_target_build_sysroot(argv, cwd, lfs_root='/srv/lfs'):
+    """Keep GCC's native build tools separate from its LFS target libraries."""
+    command = list(argv)
+    root = Path(lfs_root)
+    build = root / 'build/base-gcc/build'
+    if cwd is None or Path(cwd).resolve() != build or '../configure' not in command:
+        return command
+    configure = command.index('../configure')
+    expected = ['../configure', '--prefix=/usr', 'LD=ld', '--enable-languages=c,c++',
+                '--enable-default-pie', '--enable-default-ssp', '--enable-host-pie',
+                '--enable-multilib', '--with-multilib-list=m64,m32',
+                '--disable-bootstrap', '--disable-fixincludes', '--with-system-zlib']
+    if (command[:5] != ['/usr/sbin/runuser', '-u', 'lfs', '--', 'env']
+            or command[configure:] != expected
+            or any(value.startswith(('SYSROOT_CFLAGS_FOR_TARGET=', 'CC=', 'CXX=',
+                                     'GCC_FOR_TARGET=', 'CXX_FOR_TARGET='))
+                   for value in command[5:configure])):
+        raise RuntimeError('GCC sysroot adapter command differs from the pinned recipe')
+    for directory in (root, root / 'build', build.parent, build, root / 'usr',
+                      root / 'usr/include', root / 'usr/include/bits',
+                      root / 'usr/include/gnu', root / 'usr/lib', root / 'usr/lib32'):
+        if (directory.is_symlink() or directory.resolve() != directory
+                or not directory.is_dir()):
+            raise RuntimeError('GCC target sysroot directory missing or aliased: ' + str(directory))
+    files = ['usr/include/stdio.h', 'usr/include/bits/libc-header-start.h',
+             'usr/include/gnu/stubs-64.h', 'usr/include/gnu/stubs-32.h']
+    files += ['usr/' + lib + '/' + name for lib in ('lib', 'lib32')
+              for name in ('libc.so', 'libc.so.6', 'libc_nonshared.a', 'crt1.o',
+                           'crti.o', 'crtn.o')]
+    for name in files:
+        path = root / name
+        if path.is_symlink() or not path.is_file() or path.resolve() != path:
+            raise RuntimeError('GCC target sysroot input missing or aliased: ' + str(path))
+    for library, elf_class, machine in (('lib', 2, 62), ('lib32', 1, 3)):
+        with (root / 'usr' / library / 'libc.so.6').open('rb') as stream:
+            header = stream.read(20)
+        if (len(header) != 20 or header[:6] != b'\x7fELF' + bytes((elf_class, 1))
+                or int.from_bytes(header[18:20], 'little') != machine):
+            raise RuntimeError('GCC target libc has the wrong ABI: ' + library)
+    # Both rules are from the checksum-verified GCC 15.2 source. The latter
+    # also supplies the build sysroot to every DejaGNU compilation, without
+    # replacing the recipe's test command or expected-failure policy.
+    rules = {
+        build.parent / 'configure': 'SYSROOT_CFLAGS_FOR_TARGET="--sysroot=$withval"',
+        build.parent / 'gcc/Makefile.in':
+            '@echo "set TEST_ALWAYS_FLAGS \\"$(SYSROOT_CFLAGS_FOR_TARGET)\\"" >> ./site.tmp',
+    }
+    for path, rule in rules.items():
+        if path.is_symlink() or not path.is_file() or path.resolve() != path:
+            raise RuntimeError('GCC sysroot source metadata missing or aliased')
+        if path.stat().st_size > 4 * 1024 * 1024 or rule not in path.read_text():
+            raise RuntimeError('GCC build/test sysroot source rule changed')
+    # The installed native compiler uses the deployed system root. Only
+    # build/test target headers and libraries use the isolated Builder tree.
+    command += ['--with-sysroot=/', '--with-build-sysroot=' + str(root)]
+    return command
+
+
 def native_staged_dependency_environment(argv, cwd, lfs_root='/srv/lfs'):
     """Give unchrooted native builds only their isolated staged dependencies."""
     command = list(argv)
@@ -1174,6 +1232,11 @@ def run_with_root_owned_test_tree(argv, log, cwd=None, env=None):
         with Path(log).open('ab') as output:
             output.write(b'BUILD_ADAPTER libcap BUILD_CC=/usr/bin/gcc; target CC unchanged\n')
     argv = binutils_lfs_zlib_environment(argv, cwd)
+    original_gcc = argv
+    argv = gcc_target_build_sysroot(argv, cwd)
+    if argv != original_gcc:
+        with Path(log).open('ab') as output:
+            output.write(b'BUILD_ADAPTER gcc target build/test sysroot=/srv/lfs; installed sysroot=/\n')
     original = argv
     argv = native_staged_dependency_environment(argv, cwd)
     argv = parallel_glibc_tests(argv, cwd)
