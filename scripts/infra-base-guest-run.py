@@ -804,6 +804,56 @@ def binutils_lfs_zlib_environment(argv, cwd,
     return command
 
 
+def shared_library_dependency_view(library, view):
+    """Copy a verified shared library and its aliases without libtool metadata."""
+    library, view = Path(library), Path(view)
+    libdir = library.parent
+    resolved = library.resolve(strict=True)
+    expected = {resolved.name}
+    aliases = {}
+    for source in sorted(libdir.glob(library.name + '*')):
+        if source.resolve(strict=True) != resolved:
+            raise RuntimeError('Native dependency shared-library alias has an unexpected target')
+        if source.is_symlink():
+            aliases[source.name] = resolved.name
+            expected.add(source.name)
+        elif source != resolved:
+            raise RuntimeError('Native dependency has an unexpected shared-library file')
+    # These guest-only directories are owned by the orchestrator, outside all
+    # package stages. No accepted package file or .la sidecar is modified.
+    for directory in reversed((view, *view.parents)):
+        if directory.is_symlink() or directory.resolve() != directory:
+            raise RuntimeError('Native dependency view directory is aliased')
+        if not directory.exists():
+            directory.mkdir()
+        if not directory.is_dir():
+            raise RuntimeError('Native dependency view path is not a directory')
+    if view.stat().st_uid != os.geteuid():
+        raise RuntimeError('Native dependency view has an unexpected owner')
+    if any(path.name not in expected for path in view.iterdir()):
+        raise RuntimeError('Native dependency view contains unexpected files or libtool metadata')
+    target = view / resolved.name
+    if target.is_symlink():
+        raise RuntimeError('Native dependency view payload is aliased')
+    if target.exists():
+        if not target.is_file() or target.read_bytes() != resolved.read_bytes():
+            raise RuntimeError('Native dependency view payload differs from its stage')
+    else:
+        with target.open('xb') as output, resolved.open('rb') as source:
+            shutil.copyfileobj(source, output)
+        shutil.copystat(resolved, target)
+    for name, destination in aliases.items():
+        alias = view / name
+        if alias.is_symlink():
+            if os.readlink(alias) != destination:
+                raise RuntimeError('Native dependency view alias changed')
+        elif alias.exists():
+            raise RuntimeError('Native dependency view alias is not a symlink')
+        else:
+            alias.symlink_to(destination)
+    return view
+
+
 def native_math_dependency_environment(argv, cwd, lfs_root='/srv/lfs'):
     """Give unchrooted native builds only their isolated staged dependencies."""
     command = list(argv)
@@ -851,11 +901,15 @@ def native_math_dependency_environment(argv, cwd, lfs_root='/srv/lfs'):
                 or any((include / item).exists() or (include / item).is_symlink()
                        for item in ('stdio.h', 'stdlib.h', 'string.h', 'unistd.h'))):
             raise RuntimeError('Native dependency stage contains Builder-shadowing system files')
-        includes.append(str(include)); libdirs.append(str(libdir))
+        view = shared_library_dependency_view(
+            library, root / ('build/.native-dependency-libs/' + name))
+        includes.append(str(include)); libdirs.append(str(view))
     command[5:5] = ['CPPFLAGS=' + ' '.join('-I' + path for path in includes),
-                    'LDFLAGS=' + ' '.join('-L' + path for path in libdirs),
                     'LD_LIBRARY_PATH=' + ':'.join(libdirs),
                     'LIBRARY_PATH=' + ':'.join(libdirs)]
+    # GCC finds the view through LIBRARY_PATH, without exporting -L build
+    # paths into installed .la dependency_libs. The view excludes .la files,
+    # so Libtool cannot follow their target /usr/lib paths on the Builder.
     return command
 
 
@@ -874,6 +928,40 @@ def parallel_glibc_tests(argv, cwd, build_dir='/srv/lfs/build/base-glibc/build')
     command[scripts[0]] = command[scripts[0]].replace(
         original, 'set +e; make -j4 -k check with-lld=; make_exit=$?; set -e; ')
     return command
+
+
+def glibc_deterministic_archive_commands(argv, stage_root='/srv/lfs/stage/base-glibc'):
+    """Normalize m32 ar symbol indexes before manifest/archive capture."""
+    if list(argv[:2]) != ['python3', '/opt/alp-infra/scripts/capture-package-manifest.py']:
+        return []
+    if '--name' not in argv:
+        return []
+    name_index = argv.index('--name') + 1
+    if name_index >= len(argv):
+        raise RuntimeError('Glibc archive normalization received an unexpected capture command')
+    if argv[name_index] != 'glibc':
+        return []
+    stage = Path(stage_root)
+    if (list(argv).count('--stage') != 1
+            or argv.index('--stage') + 1 >= len(argv)
+            or argv[argv.index('--stage') + 1] != str(stage)
+            or list(argv).count('--name') != 1):
+        raise RuntimeError('Glibc archive normalization received an unexpected capture command')
+    directory = stage / 'usr/lib32'
+    for path in (stage, stage / 'usr', directory):
+        if path.is_symlink() or path.resolve() != path or not path.is_dir():
+            raise RuntimeError('Glibc archive normalization directory is missing or aliased')
+    commands = []
+    for name in ('libBrokenLocale.a', 'libc.a', 'libc_nonshared.a',
+                 'libg.a', 'libm.a', 'libresolv.a'):
+        archive = directory / name
+        if archive.is_symlink() or not archive.is_file() or archive.stat().st_uid != os.geteuid():
+            raise RuntimeError('Glibc static archive is missing, aliased or foreign-owned')
+        with archive.open('rb') as stream:
+            if stream.read(8) != b'!<arch>\n':
+                raise RuntimeError('Glibc static archive has an unexpected format')
+        commands.append(['/usr/bin/ranlib', '-D', str(archive)])
+    return commands
 
 
 def gmp_gcc15_configure_compatibility(argv, cwd, gcc_version,
@@ -991,6 +1079,8 @@ def run_with_root_owned_test_tree(argv, log, cwd=None, env=None):
                           'tclsh-command=' + str(expect_command) + '\n').encode())
     for setup_command in ncurses_doc_parent_setup(argv):
         _run(setup_command, log)
+    for normalize_command in glibc_deterministic_archive_commands(argv):
+        _run(normalize_command, log)
     if uses_m32_uapi_configure(argv):
         install_m32_kernel_headers()
     if (len(argv) >= 3 and argv[0] == package_stage.RUNUSER

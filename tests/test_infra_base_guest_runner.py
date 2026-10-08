@@ -1,5 +1,7 @@
 import ast
 import re
+import shutil
+import subprocess
 from pathlib import Path
 import tempfile
 import unittest
@@ -37,16 +39,23 @@ GMP_FUNCTION = next(node for node in TREE.body
 MATH_FUNCTION = next(node for node in TREE.body
                      if isinstance(node, ast.FunctionDef)
                      and node.name == 'native_math_dependency_environment')
+LIBRARY_VIEW_FUNCTION = next(node for node in TREE.body
+                             if isinstance(node, ast.FunctionDef)
+                             and node.name == 'shared_library_dependency_view')
+GLIBC_ARCHIVE_FUNCTION = next(node for node in TREE.body
+                              if isinstance(node, ast.FunctionDef)
+                              and node.name == 'glibc_deterministic_archive_commands')
 GLIBC_PARALLEL_FUNCTION = next(node for node in TREE.body
                                if isinstance(node, ast.FunctionDef)
                                and node.name == 'parallel_glibc_tests')
 MODULE = ast.Module(body=[FUNCTION, NCURSES_FUNCTION, TCL_FUNCTION, NCURSES_DOC_FUNCTION,
                           EXPECT_FUNCTION, EXPECT_TCLSH_FUNCTION, EXPECT_MAKE_FUNCTION,
                           BINUTILS_FUNCTION, GMP_FUNCTION, MATH_FUNCTION,
-                          GLIBC_PARALLEL_FUNCTION],
+                          GLIBC_PARALLEL_FUNCTION, LIBRARY_VIEW_FUNCTION,
+                          GLIBC_ARCHIVE_FUNCTION],
                      type_ignores=[])
 ast.fix_missing_locations(MODULE)
-NAMESPACE = {'Path': Path, 're': re, 'os': __import__('os')}
+NAMESPACE = {'Path': Path, 're': re, 'os': __import__('os'), 'shutil': shutil}
 exec(compile(MODULE, str(RUNNER), 'exec'), NAMESPACE)
 use_staged_file_magic_compiler = NAMESPACE['use_staged_file_magic_compiler']
 readline_ncurses_environment = NAMESPACE['readline_ncurses_environment']
@@ -59,6 +68,7 @@ binutils_lfs_zlib_environment = NAMESPACE['binutils_lfs_zlib_environment']
 gmp_gcc15_configure_compatibility = NAMESPACE['gmp_gcc15_configure_compatibility']
 native_math_dependency_environment = NAMESPACE['native_math_dependency_environment']
 parallel_glibc_tests = NAMESPACE['parallel_glibc_tests']
+glibc_deterministic_archive_commands = NAMESPACE['glibc_deterministic_archive_commands']
 
 
 class StagedFileMagicCompilerTests(unittest.TestCase):
@@ -536,8 +546,10 @@ class NativeMathDependencyTests(unittest.TestCase):
         for tail in (['./configure', '--prefix=/usr'], ['make', 'check']):
             result = self.rewrite(command=self.command[:7] + tail)
             self.assertIn('CPPFLAGS=-I' + str(stage / 'include'), result)
-            self.assertIn('LDFLAGS=-L' + str(stage / 'lib'), result)
-            self.assertIn('LD_LIBRARY_PATH=' + str(stage / 'lib'), result)
+            view = self.root / 'build/.native-dependency-libs/gmp'
+            self.assertIn('LD_LIBRARY_PATH=' + str(view), result)
+            self.assertIn('LIBRARY_PATH=' + str(view), result)
+            self.assertFalse(any(value.startswith('LDFLAGS=') for value in result))
             self.assertEqual(result[-len(tail):], tail)
             self.assertNotIn('-I' + str(self.root / 'usr/include'), ' '.join(result))
 
@@ -546,7 +558,7 @@ class NativeMathDependencyTests(unittest.TestCase):
                                ('gcc', ('gmp', 'mpfr', 'mpc', 'zlib'))):
             result = self.rewrite(package)
             self.assertIn('LD_LIBRARY_PATH=' + ':'.join(
-                str(self.root / ('stage/base-' + name) / 'usr/lib')
+                str(self.root / ('build/.native-dependency-libs/' + name))
                 for name in names), result)
         command = list(self.command); command[2] = 'tester'
         self.assertEqual(self.rewrite('gcc', command)[2], 'tester')
@@ -590,6 +602,42 @@ class NativeMathDependencyTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, 'directory missing or aliased'):
             self.rewrite()
 
+    def test_libtool_sidecars_are_excluded_and_originals_are_unchanged(self):
+        source = self.root / 'stage/base-mpfr/usr/lib'
+        sidecar = source / 'libmpfr.la'
+        metadata = "dependency_libs='/usr/lib/libgmp.la'\nlibdir='/usr/lib'\n"
+        sidecar.write_text(metadata)
+        original = (source / 'libmpfr.so.1').read_bytes()
+        self.rewrite('mpc')
+        view = self.root / 'build/.native-dependency-libs/mpfr'
+        self.assertEqual(sorted(path.name for path in view.iterdir()),
+                         ['libmpfr.so', 'libmpfr.so.1'])
+        self.assertEqual((view / 'libmpfr.so').read_bytes(), original)
+        self.assertNotEqual((view / 'libmpfr.so.1').stat().st_ino,
+                            (source / 'libmpfr.so.1').stat().st_ino)
+        self.assertEqual(sidecar.read_text(), metadata)
+        self.assertEqual((source / 'libmpfr.so.1').read_bytes(), original)
+        self.assertEqual(self.rewrite('mpc'), self.rewrite('mpc'))
+
+    def test_tampered_dependency_view_is_rejected(self):
+        self.rewrite()
+        view = self.root / 'build/.native-dependency-libs/gmp'
+        (view / 'libgmp.la').write_text('unexpected metadata')
+        with self.assertRaisesRegex(RuntimeError, 'unexpected files or libtool metadata'):
+            self.rewrite()
+        (view / 'libgmp.la').unlink()
+        (view / 'libgmp.so.1').write_bytes(b'changed library')
+        with self.assertRaisesRegex(RuntimeError, 'payload differs'):
+            self.rewrite()
+
+    def test_escaped_dependency_view_alias_is_rejected(self):
+        self.rewrite()
+        view = self.root / 'build/.native-dependency-libs/gmp'
+        (view / 'libgmp.so').unlink()
+        (view / 'libgmp.so').symlink_to(self.root / 'stage/base-gmp/usr/lib/libgmp.so')
+        with self.assertRaisesRegex(RuntimeError, 'view alias changed'):
+            self.rewrite()
+
 
 class ParallelGlibcTests(unittest.TestCase):
     def test_all_tests_and_policy_remain_in_the_four_job_command(self):
@@ -604,6 +652,76 @@ class ParallelGlibcTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, 'differs from the pinned recipe'):
             parallel_glibc_tests(['bash', '-euc', script.replace('make -k', 'make -j1 -k')],
                                  '/srv/lfs/build/base-glibc/build')
+
+
+class GlibcDeterministicArchiveTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.root = Path(self.temporary.name)
+        self.stage = self.root / 'stage/base-glibc'
+        self.libdir = self.stage / 'usr/lib32'
+        self.libdir.mkdir(parents=True)
+        for name in ('libBrokenLocale.a', 'libc.a', 'libc_nonshared.a',
+                     'libg.a', 'libm.a', 'libresolv.a'):
+            (self.libdir / name).write_bytes(b'!<arch>\n')
+        self.command = ['python3', '/opt/alp-infra/scripts/capture-package-manifest.py',
+                        '--stage', str(self.stage), '--name', 'glibc']
+
+    def tearDown(self):
+        self.temporary.cleanup()
+
+    def rewrite(self, command=None):
+        return glibc_deterministic_archive_commands(
+            self.command if command is None else command, stage_root=self.stage)
+
+    def test_normalizes_only_six_m32_indexes_before_capture(self):
+        commands = self.rewrite()
+        self.assertEqual(len(commands), 6)
+        self.assertTrue(all(command[:2] == ['/usr/bin/ranlib', '-D'] for command in commands))
+        self.assertTrue(all(Path(command[2]).parent == self.libdir for command in commands))
+        self.assertEqual(self.rewrite(['make', 'check']), [])
+        other = list(self.command); other[-1] = 'mpfr'
+        self.assertEqual(self.rewrite(other), [])
+
+    def test_wrong_stage_missing_symlink_and_nonarchive_are_rejected(self):
+        for malformed in (self.command[:-1], self.command + ['--stage']):
+            with self.assertRaisesRegex(RuntimeError, 'unexpected capture'):
+                self.rewrite(malformed)
+        wrong = list(self.command); wrong[3] = '/other'
+        with self.assertRaisesRegex(RuntimeError, 'unexpected capture'):
+            self.rewrite(wrong)
+        path = self.libdir / 'libc.a'; path.unlink()
+        with self.assertRaisesRegex(RuntimeError, 'missing, aliased'):
+            self.rewrite()
+        path.symlink_to(self.libdir / 'libg.a')
+        with self.assertRaisesRegex(RuntimeError, 'missing, aliased'):
+            self.rewrite()
+        path.unlink(); path.write_bytes(b'/* linker script */')
+        with self.assertRaisesRegex(RuntimeError, 'unexpected format'):
+            self.rewrite()
+
+    @unittest.skipUnless(all(shutil.which(tool) for tool in ('as', 'ar', 'ranlib')),
+                         'GNU assembler/archive tools unavailable')
+    def test_real_ar_indexes_become_equal_without_changing_object_payload(self):
+        source = self.root / 'tiny.s'
+        source.write_text('.globl fixture_symbol\nfixture_symbol:\n.byte 0\n')
+        obj = self.root / 'tiny.o'
+        subprocess.run(['as', '--32', '-o', str(obj), str(source)], check=True)
+        archive = self.libdir / 'libc.a'
+        subprocess.run(['ar', 'rcD', str(archive), str(obj)], check=True)
+        original = archive.read_bytes()
+        self.assertEqual(original[8:24].strip(), b'/')
+        older = bytearray(original); older[24:36] = b'1111111111  '
+        newer = bytearray(original); newer[24:36] = b'2222222222  '
+        outputs = []
+        for raw in (older, newer):
+            archive.write_bytes(raw)
+            command = next(value for value in self.rewrite() if value[2] == str(archive))
+            subprocess.run(command, check=True)
+            outputs.append(archive.read_bytes())
+            self.assertEqual(subprocess.run(['ar', 'p', str(archive), obj.name],
+                                           capture_output=True, check=True).stdout, obj.read_bytes())
+        self.assertEqual(outputs[0], outputs[1])
 
 
 if __name__ == '__main__':

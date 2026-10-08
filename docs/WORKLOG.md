@@ -1,3 +1,11 @@
+# 8 Ekim 2026 — MPC Libtool ve Glibc indeks düzeltmesi
+
+- Sahip Codex; kapsam guest runner, odaklı testler ve kanıt belgeleri. Aktif controller kapandıktan sonra değişiklik yapıldı; ortak rootfs/checkpoint değiştirilmedi.
+- Run `0b2b1a2bd079706ba6bb99971c84d907`, MPFR dahil 20 kurulum sonrası MPC'nin staged `.la` metadata'sındaki target GMP yoluyla kapandı. Yeni adapter shared-library dosyalarını guest scratch görünümüne kopyalar; `.la` sidecar'ları dışarıda bırakır, kurulu stage dosyalarını korur. Yeni MPC/GCC guest başarısı henüz kanıtlanmadı.
+- Glibc 1.867,168 sn; önceki 3.784,325 sn. Altı m32 static archive yalnız indeks zaman damgasıyla farklı; gerçek dosyaların geçici kopyaları `ranlib -D` sonrası eşit, diğer bütün baytlar aynı. Yeni manifest capture öncesinde yalnız bu altı indeks normalize edilir. Tam repeat-byte kabulü bekliyor.
+- 50 odaklı test; 371 test/2 skip tam suite PASS (90,316 sn). Digest korundu, kapalı qcow2 kontrolleri ve space guard geçti. 330 host örneğinde hata/kernel fault yok, en yüksek 62,75°C; tüm disklerde %15 boşluk korundu.
+- [Kanıt/hash/limitler](verification/infra-base-run-0b2b1a2bd079706ba6bb99971c84d907-mpc-libtool.md). Sonraki adım commit/push ve accepted toolchain üzerinden fresh kalıcı Base run. Base ve devam fazları tamamlanmış sayılmıyor.
+
 # 8 Ekim 2026 — MPFR bağımlılık yolları ve Glibc test paralelliği
 
 - Sahip: Codex; sınır: `scripts/infra-base-guest-run.py`, guest adapter testleri ve bu doğrulama/durum kayıtları. Run `f6c8fcb01988262f6a7c55d33ac24001`, 19 paket kurulum makbuzundan sonra MPFR configure sırasında GMP başlığı arama yolunda bulunmadığı için temiz kapandı. Base kabulü yok; mevcut başarısız koşu tekrarlanmayacak.
