@@ -1,3 +1,11 @@
+# 8 Ekim 2026 — ACL m32 adapter sırası ve Glibc byte tekrarı
+
+- Sahip Codex; kapsam guest runner, testler ve kanıt belgeleri. Controller kapandıktan sonra düzenlendi. Run `50b177e8cda3242c0c0b0e2f5a680c05` 22 kurulum ve ACL m64 testleri (9 PASS, 4 SKIP, 2 XFAIL, 0 FAIL) sonrası m32 compiler whitelist kontrolünde kapandı. Önceki adapter recipe GCC komutunu pinned LFS cross-compiler'a çeviriyordu; ACL kontrolü bu değeri kabul etmiyordu.
+- ACL ABI seçimi aynı pinned compiler değerini configure/config.status için kabul ediyor; değiştirilmiş prefix veya ek seçenekler reddediliyor. Gerçek ACL recipe'sini iki adapter'dan sırasıyla geçiren regresyon testi eklendi. 56 odaklı ve 377 test/2 skip tam suite PASS (92,176 sn); input digest ve test politikaları korundu.
+- Glibc archive/manifest hash'leri önceki fresh `df7d` koşusuyla birebir aynı. Aktif guest read-only hashleri ve kapanış sonrası export hashleri doğrulandı. Bu yalnız Glibc paket-byte tekrarıdır; tam Base/ISO kabulü değil. Kanıt şimdi güvenle belgelendi.
+- 341 host örneğinde hata/kernel fault yok, maksimum 62,5°C; diskler %15 üstünde. İki kapalı current qcow2 PASS. Eski referanssız `df7d` overlay çifti 73 managed imaj metadatası ve hash/stat kontrollerinden sonra temizlendi; 7.199.006.720 ayrılan bayt geri kazanıldı, current hata/checkpoint'ler korundu.
+- [Rapor/hash/limitler](verification/infra-base-run-50b177e8cda3242c0c0b0e2f5a680c05-acl-m32-adapter.md). Sonraki adım commit/push ve accepted toolchain üzerinden fresh kalıcı run. Tam ACL/Coreutils/GCC guest başarısı hâlâ kanıtlanmalı.
+
 # 8 Ekim 2026 — MPC geçti, ACL staged Attr düzeltmesi
 
 - Sahip Codex; dosya sınırı guest runner/testler ve kanıt belgeleri. Aktif controller kapandıktan sonra değişiklik yapıldı. Run `df7d37687c6345496ff969e338e840a4`, MPC/Attr dahil 22 kurulum sonrası ACL'nin `attr/error_context.h` arama yolu eksikliğiyle durdu. MPC derleme/test/kurulum PASS; GCC ve tam Base henüz kabul edilmedi.

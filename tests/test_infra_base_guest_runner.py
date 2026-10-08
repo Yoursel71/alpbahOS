@@ -9,6 +9,14 @@ import unittest
 
 RUNNER = Path(__file__).resolve().parents[1] / 'scripts/infra-base-guest-run.py'
 TREE = ast.parse(RUNNER.read_text())
+M32_CONSTANTS = [node for node in TREE.body
+                 if isinstance(node, ast.Assign) and len(node.targets) == 1
+                 and isinstance(node.targets[0], ast.Name)
+                 and node.targets[0].id in ('M32_C_COMPILER', 'M32_CXX_COMPILER',
+                                            'M32_HOST_C_COMPILER', 'M32_HOST_CXX_COMPILER')]
+M32_PREPARE_FUNCTION = next(node for node in TREE.body
+                           if isinstance(node, ast.FunctionDef)
+                           and node.name == 'prepare_m32_kernel_headers')
 FUNCTION = next(node for node in TREE.body
                 if isinstance(node, ast.FunctionDef)
                 and node.name == 'use_staged_file_magic_compiler')
@@ -51,7 +59,8 @@ GLIBC_ARCHIVE_FUNCTION = next(node for node in TREE.body
 GLIBC_PARALLEL_FUNCTION = next(node for node in TREE.body
                                if isinstance(node, ast.FunctionDef)
                                and node.name == 'parallel_glibc_tests')
-MODULE = ast.Module(body=[FUNCTION, NCURSES_FUNCTION, TCL_FUNCTION, NCURSES_DOC_FUNCTION,
+MODULE = ast.Module(body=[*M32_CONSTANTS, M32_PREPARE_FUNCTION,
+                          FUNCTION, NCURSES_FUNCTION, TCL_FUNCTION, NCURSES_DOC_FUNCTION,
                           EXPECT_FUNCTION, EXPECT_TCLSH_FUNCTION, EXPECT_MAKE_FUNCTION,
                           BINUTILS_FUNCTION, GMP_FUNCTION, MATH_FUNCTION,
                           GLIBC_PARALLEL_FUNCTION, LIBRARY_VIEW_FUNCTION,
@@ -72,6 +81,7 @@ gmp_gcc15_configure_compatibility = NAMESPACE['gmp_gcc15_configure_compatibility
 native_staged_dependency_environment = NAMESPACE['native_staged_dependency_environment']
 parallel_glibc_tests = NAMESPACE['parallel_glibc_tests']
 glibc_deterministic_archive_commands = NAMESPACE['glibc_deterministic_archive_commands']
+prepare_m32_kernel_headers = NAMESPACE['prepare_m32_kernel_headers']
 
 
 class StagedFileMagicCompilerTests(unittest.TestCase):
@@ -611,6 +621,33 @@ class NativeStagedDependencyTests(unittest.TestCase):
         (build / 'config.status').symlink_to(outside)
         with self.assertRaisesRegex(RuntimeError, 'metadata is missing or aliased'):
             self.rewrite('acl', command)
+
+    def test_acl_recipe_survives_prior_m32_compiler_adapter_and_make(self):
+        recipe = __import__('json').loads((RUNNER.parent.parent
+                                           / 'recipes/base/acl.json').read_text())
+        cross_configure = next(command for command in recipe['stage']
+                               if './configure' in command)
+        command = self.command[:7] + cross_configure
+        prepared = prepare_m32_kernel_headers(command)
+        cc = NAMESPACE['M32_C_COMPILER']
+        self.assertIn(cc, prepared)
+        prefix = self.root / 'stage/base-attr/usr/lib32'; prefix.mkdir()
+        (prefix / 'libattr.so.1').write_bytes(b'm32 ELF fixture')
+        (prefix / 'libattr.so').symlink_to('libattr.so.1')
+        configured = self.rewrite('acl', prepared)
+        self.assertIn(cc, configured)
+        view = self.root / 'build/.native-dependency-libs/attr-m32'
+        self.assertIn('LIBRARY_PATH=' + str(view), configured)
+        build = self.root / 'build/base-acl'; build.mkdir()
+        (build / 'config.status').write_text('S["CC"]="' + cc.removeprefix('CC=') + '"\n')
+        made = self.rewrite('acl', prepare_m32_kernel_headers(
+            self.command[:7] + ['make', '-j8']))
+        self.assertIn('LIBRARY_PATH=' + str(view), made)
+        self.assertEqual((view / 'libattr.so').read_bytes(), b'm32 ELF fixture')
+        for bad in (cc + ' -I/unreviewed', cc.replace('/srv/lfs/tools/', '/other/')):
+            changed = [bad if value == cc else value for value in prepared]
+            with self.assertRaisesRegex(RuntimeError, 'unexpected compiler'):
+                self.rewrite('acl', changed)
 
     def test_nested_dependency_header_alias_is_rejected(self):
         prefix = self.root / 'stage/base-attr/usr/include'

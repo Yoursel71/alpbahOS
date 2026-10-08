@@ -856,9 +856,11 @@ def shared_library_dependency_view(library, view):
 
 def acl_dependency_library_directory(argv, build):
     """Select Attr's ABI from ACL's configure command or generated compiler."""
+    m32_compilers = ('gcc -m32', M32_C_COMPILER.removeprefix('CC='))
     if './configure' in argv:
         compilers = [value for value in argv if value.startswith('CC=')]
-        if compilers not in ([], ['CC=gcc -m32']):
+        if compilers and (len(compilers) != 1
+                          or compilers[0].removeprefix('CC=') not in m32_compilers):
             raise RuntimeError('ACL dependency adapter received an unexpected compiler')
         return 'lib32' if compilers else 'lib'
     status = Path(build) / 'config.status'
@@ -867,9 +869,9 @@ def acl_dependency_library_directory(argv, build):
     if status.stat().st_size > 8 * 1024 * 1024:
         raise RuntimeError('ACL configured compiler metadata is unexpectedly large')
     compilers = re.findall(r'^S\["CC"\]="([^"\n]+)"$', status.read_text(), re.MULTILINE)
-    if compilers not in (['gcc'], ['gcc -m32']):
+    if len(compilers) != 1 or compilers[0] not in ('gcc', *m32_compilers):
         raise RuntimeError('ACL dependency adapter received an unexpected configured compiler')
-    return 'lib32' if compilers == ['gcc -m32'] else 'lib'
+    return 'lib32' if compilers[0] in m32_compilers else 'lib'
 
 
 def native_staged_dependency_environment(argv, cwd, lfs_root='/srv/lfs'):
