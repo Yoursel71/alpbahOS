@@ -1,3 +1,9 @@
+# 8 Ekim 2026 — Base run host restart ile kesildi
+
+- Yeni Base run `5188473e4bb066bbff3900f2f8cacfac`, kabul edilmiş `checkpoint-toolchain` ve input SHA-256 `c76a1c737693aab8a4380a395a9515da8d86a7f641099c6f9e5ba4166e4f7306` ile guest’i açtı. Salt okunur guest incelemesinde `ncurses` derleme günlüğü 436 KiB; `base-ncurses.json` ve `built.json` boş, kurulum makbuzu yok. Base acceptance/checkpoint oluşmadı.
+- Host boot ID değişmiş; eski user service/QEMU yok ve eski boot’ta temiz kapanış kaydı bulunmuyor. Restart nedeni kanıtlanamadı. Önceki logda yalnız 8 host örneği ve boş `errors`/`kernel_faults` var; son Tctl 50,875°C. Geçerli boot AMD reset nedeni “software wrote 0x6 to reset-control register 0xCF9” bildiriyor, ancak bunu hangi süreç/kişinin yaptığı belli değil. Bu az örnek CPU kararlılığını kanıtlamaz.
+- İki kapanmış overlay `qemu-img check` PASS; salt okunur disk incelemesi yapıldı, diskler korundu. Bu run devam ettirilmeyecek; sonraki deneme farklı run ID’siyle kabul edilmiş checkpoint’ten açılmalı. Ayrıntı: [kesinti raporu](verification/infra-base-run-5188473e4bb066bbff3900f2f8cacfac-interrupted.md).
+
 # 7 Ekim 2026 — GMP runner import hatası düzeltildi
 
 - Base run `1aa349b3e6abd8ef7a0257e2dfa8eebf`, GMP configure öncesinde guest runner’ın `subprocess.run()` çağrısında eksik `subprocess` importu yüzünden durdu. Base acceptance/checkpoint oluşmadı; koşu tekrarlanmayacak. Kısmi paket ve telemetry kanıtları `/mnt/alpbahOS-data/alpbahos-infra-rebuild/artifacts/stage-runs/1aa349b3e6abd8ef7a0257e2dfa8eebf/` altında korundu.
