@@ -1,6 +1,11 @@
 import ast
+import hashlib
+import json
+import os
 import re
+import signal
 import shutil
+import stat
 import subprocess
 from pathlib import Path
 import tempfile
@@ -26,6 +31,8 @@ MAN_PAGES_FUNCTION = next(node for node in TREE.body
 GCC_SYSROOT_FUNCTION = next(node for node in TREE.body
                            if isinstance(node, ast.FunctionDef)
                            and node.name == 'gcc_target_build_sysroot')
+GCC_TESTER_FUNCTIONS = [node for node in TREE.body if isinstance(node, ast.FunctionDef)
+                       and node.name in ('gcc_tester_runtime_files', 'run_gcc_tester_runtime')]
 FUNCTION = next(node for node in TREE.body
                 if isinstance(node, ast.FunctionDef)
                 and node.name == 'use_staged_file_magic_compiler')
@@ -69,7 +76,7 @@ GLIBC_PARALLEL_FUNCTION = next(node for node in TREE.body
                                if isinstance(node, ast.FunctionDef)
                                and node.name == 'parallel_glibc_tests')
 MODULE = ast.Module(body=[*M32_CONSTANTS, M32_PREPARE_FUNCTION, LIBCAP_FUNCTION, MAN_PAGES_FUNCTION,
-                          GCC_SYSROOT_FUNCTION,
+                          GCC_SYSROOT_FUNCTION, *GCC_TESTER_FUNCTIONS,
                           FUNCTION, NCURSES_FUNCTION, TCL_FUNCTION, NCURSES_DOC_FUNCTION,
                           EXPECT_FUNCTION, EXPECT_TCLSH_FUNCTION, EXPECT_MAKE_FUNCTION,
                           BINUTILS_FUNCTION, GMP_FUNCTION, MATH_FUNCTION,
@@ -77,7 +84,8 @@ MODULE = ast.Module(body=[*M32_CONSTANTS, M32_PREPARE_FUNCTION, LIBCAP_FUNCTION,
                           GLIBC_ARCHIVE_FUNCTION, ACL_ABI_FUNCTION],
                      type_ignores=[])
 ast.fix_missing_locations(MODULE)
-NAMESPACE = {'Path': Path, 're': re, 'os': __import__('os'), 'shutil': shutil}
+NAMESPACE = {'Path': Path, 're': re, 'os': os, 'shutil': shutil,
+             'hashlib': hashlib, 'json': json, 'signal': signal, 'stat': stat}
 exec(compile(MODULE, str(RUNNER), 'exec'), NAMESPACE)
 use_staged_file_magic_compiler = NAMESPACE['use_staged_file_magic_compiler']
 readline_ncurses_environment = NAMESPACE['readline_ncurses_environment']
@@ -95,6 +103,190 @@ prepare_m32_kernel_headers = NAMESPACE['prepare_m32_kernel_headers']
 libcap_native_build_compiler = NAMESPACE['libcap_native_build_compiler']
 man_pages_crypt_source_directory = NAMESPACE['man_pages_crypt_source_directory']
 gcc_target_build_sysroot = NAMESPACE['gcc_target_build_sysroot']
+gcc_tester_runtime_files = NAMESPACE['gcc_tester_runtime_files']
+run_gcc_tester_runtime = NAMESPACE['run_gcc_tester_runtime']
+
+
+class GccTesterRuntimeTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name) / 'lfs'
+        self.build = self.root / 'build/base-gcc/build'
+        fixture = RUNNER.parent.parent / 'tests/fixtures/gcc-15.2-tester'
+        for name in ('build/base-gcc/build/gcc', 'usr/lib', 'usr/lib32',
+                     'stage/base-gmp/usr/include', 'build/base-gcc/gcc/testsuite/lib'):
+            (self.root / name).mkdir(parents=True, exist_ok=True)
+        for lib, elf_class, machine, loader in (
+                ('lib', 2, 62, 'ld-linux-x86-64.so.2'), ('lib32', 1, 3, 'ld-linux.so.2')):
+            header = bytearray(20)
+            header[:6] = b'\x7fELF' + bytes((elf_class, 1))
+            header[18:20] = machine.to_bytes(2, 'little')
+            for name in ('libc.so.6', loader):
+                (self.root / 'usr' / lib / name).write_bytes(header)
+        (self.root / 'stage/base-gmp/usr/include/gmp.h').write_text('/* GMP */\n')
+        self.specs, self.site = self.build / 'gcc/specs', self.build / 'gcc/site.exp'
+        self.specs.write_bytes((fixture / 'specs').read_bytes())
+        self.site.write_bytes((fixture / 'site.exp').read_bytes().replace(b'/srv/lfs', str(self.root).encode()))
+        (self.build.parent / 'gcc/testsuite/lib/plugin-support.exp').write_bytes(
+            (fixture / 'plugin-support.exp').read_bytes())
+        self.rules = self.build.parent / 'gcc/Makefile.in'
+        self.rules.write_text('$(GCC_FOR_TARGET) -dumpspecs > tmp-specs\n'
+                              'mv tmp-specs $(SPECS)\n@cat ./site.tmp > site.exp\n'
+                              "-e '1,/^## All variables above are.*##/ d' >> site.exp\n")
+        recipe = json.loads((RUNNER.parent.parent / 'recipes/base/gcc.json').read_text())
+        flags = ('-O2 -g0 -ffile-prefix-map=' + str(self.build.parent) + '=/usr/src/gcc '
+                 '-fdebug-prefix-map=' + str(self.build.parent) + '=/usr/src/gcc')
+        includes = ' '.join('-I' + str(self.root / ('stage/base-' + n + '/usr/include'))
+                            for n in ('gmp', 'mpfr', 'mpc', 'zlib'))
+        libraries = ':'.join(str(self.root / ('build/.native-dependency-libs/' + n))
+                             for n in ('gmp', 'mpfr', 'mpc', 'zlib'))
+        self.argv = ['/usr/sbin/runuser', '-u', 'tester', '--', 'env',
+                     'CPPFLAGS=' + includes, 'LD_LIBRARY_PATH=' + libraries,
+                     'LIBRARY_PATH=' + libraries, 'LC_ALL=C', 'LANG=C', 'TZ=UTC',
+                     'SOURCE_DATE_EPOCH=1756684800', 'CFLAGS=' + flags, 'CXXFLAGS=' + flags,
+                     *recipe['test'][0]]
+        self.log = self.root / 'test.log'
+        self.marker = self.root / 'build/.gcc-test-runtime-active.json'
+        self.original = {p: p.read_bytes() for p in (self.specs, self.site)}
+
+    def adapt(self, argv=None):
+        return gcc_tester_runtime_files(argv or self.argv, self.build, self.root)
+
+    def run_adapter(self, runner):
+        return run_gcc_tester_runtime(self.argv, self.log, self.build,
+                                      env={'native': 'unchanged'}, runner=runner, lfs_root=self.root)
+
+    def assert_restored(self):
+        for p, content in self.original.items():
+            self.assertEqual(p.read_bytes(), content)
+        self.assertFalse(self.marker.exists())
+
+    def test_only_link_section_and_user_override_change(self):
+        files = self.adapt()
+        adapted = files[0][2]
+        before = self.original[self.specs].split(b'*link:\n')
+        after = adapted.split(b'*link:\n')
+        self.assertEqual(before[0], after[0])
+        self.assertEqual(before[1].split(b'\n\n', 1)[1], after[1].split(b'\n\n', 1)[1])
+        self.assertEqual(adapted.count(str(self.root / 'usr/lib32/ld-linux.so.2').encode()), 2)
+        self.assertEqual(adapted.count(str(self.root / 'usr/lib/ld-linux-x86-64.so.2').encode()), 2)
+        for token in (b'%{shared:-shared}', b'%{static:-static}', b'%{static-pie:',
+                      b'/libx32/ld-linux-x32.so.2', b'/lib/ld-musl-i386.so.1'):
+            self.assertEqual(adapted.count(token), self.original[self.specs].count(token))
+        self.assertEqual(files[1][2], self.original[self.site] +
+                         ('set GMPINC "-I' + str(self.root / 'stage/base-gmp/usr/include') + '"\n').encode())
+
+    def test_success_preserves_command_env_identity_and_restores(self):
+        identities = {p: (p.stat().st_ino, p.stat().st_mode) for p in self.original}
+        def runner(argv, log, cwd, env):
+            self.assertEqual(argv, self.argv)
+            self.assertEqual(env, {'native': 'unchanged'})
+            self.assertEqual(stat.S_IMODE(self.marker.stat().st_mode), 0o600)
+            self.assertIn(b'set GMPINC "-I', self.site.read_bytes())
+            return 73
+        self.assertEqual(self.run_adapter(runner), 73)
+        self.assert_restored()
+        self.assertEqual(identities, {p: (p.stat().st_ino, p.stat().st_mode) for p in self.original})
+
+    def test_failure_restores(self):
+        def runner(*args, **kwargs):
+            raise RuntimeError('tester failed')
+        with self.assertRaisesRegex(RuntimeError, 'tester failed'):
+            self.run_adapter(runner)
+        self.assert_restored()
+
+    def test_catchable_signals_restore_and_handlers_survive(self):
+        for sig in (signal.SIGTERM, signal.SIGINT):
+            with self.subTest(signal=sig):
+                old = signal.getsignal(sig)
+                def runner(*args, **kwargs):
+                    os.kill(os.getpid(), sig)
+                with self.assertRaisesRegex(RuntimeError, 'interrupted by signal'):
+                    self.run_adapter(runner)
+                self.assert_restored()
+                self.assertEqual(signal.getsignal(sig), old)
+
+    def test_metadata_drift_restores_but_blocks_staging(self):
+        def runner(*args, **kwargs):
+            self.site.write_bytes(b'unexpected test modification')
+        with self.assertRaisesRegex(RuntimeError, 'metadata drift'):
+            self.run_adapter(runner)
+        self.assertEqual(self.site.read_bytes(), self.original[self.site])
+        self.assertTrue(self.marker.exists())
+        for argv in (self.argv, ['/usr/sbin/runuser', '-u', 'lfs', '--', 'make', 'install']):
+            with self.assertRaisesRegex(RuntimeError, 'blocks further'):
+                self.adapt(argv)
+
+    def test_replaced_metadata_is_not_overwritten(self):
+        def runner(*args, **kwargs):
+            replacement = self.site.with_name('replacement')
+            replacement.write_bytes(b'foreign inode')
+            replacement.replace(self.site)
+        with self.assertRaisesRegex(RuntimeError, 'identity changed'):
+            self.run_adapter(runner)
+        self.assertEqual(self.site.read_bytes(), b'foreign inode')
+        self.assertTrue(self.marker.exists())
+
+    def test_uncatchable_kill_leaves_durable_marker_and_blocks_install(self):
+        program = '''import json, os, signal, sys
+from pathlib import Path
+sys.path.insert(0, sys.argv[1])
+from test_infra_base_guest_runner import run_gcc_tester_runtime
+root = Path(sys.argv[2])
+def killed(*args, **kwargs):
+    os.kill(os.getpid(), signal.SIGKILL)
+run_gcc_tester_runtime(json.loads(sys.argv[3]), root / 'child.log',
+                      root / 'build/base-gcc/build', runner=killed, lfs_root=root)
+'''
+        result = subprocess.run([__import__('sys').executable, '-c', program,
+                                 str(RUNNER.parent.parent / 'tests'), str(self.root),
+                                 json.dumps(self.argv)], capture_output=True)
+        self.assertEqual(result.returncode, -signal.SIGKILL, result.stderr)
+        self.assertTrue(self.marker.exists())
+        backup = json.loads(self.marker.read_text())
+        for item in backup['files']:
+            self.assertEqual(hashlib.sha256(item['original'].encode()).hexdigest(), item['sha256'])
+        with self.assertRaisesRegex(RuntimeError, 'blocks further'):
+            self.adapt(['/usr/sbin/runuser', '-u', 'lfs', '--', 'make', 'install'])
+
+    def test_drift_fails_before_command_or_mutation(self):
+        targets = [self.specs, self.site, self.rules,
+                   self.build.parent / 'gcc/testsuite/lib/plugin-support.exp']
+        for path in targets:
+            with self.subTest(path=path):
+                original = path.read_bytes()
+                path.write_bytes(original.replace(b'@cat ./site.tmp', b'@cat ./other.tmp')
+                                 if path == self.rules else original + b'changed\n')
+                with self.assertRaises(RuntimeError):
+                    self.adapt()
+                path.write_bytes(original)
+                self.assert_restored()
+        bad = self.argv[:-1] + [self.argv[-1].replace('make -k check', 'make check')]
+        with self.assertRaisesRegex(RuntimeError, 'pinned recipe'):
+            self.adapt(bad)
+        bad = self.argv.copy(); bad[5] = 'LD_PRELOAD=/foreign.so'
+        with self.assertRaisesRegex(RuntimeError, 'native environment'):
+            self.adapt(bad)
+
+    def test_loader_abi_and_aliases_fail_closed(self):
+        for name in ('usr/lib/libc.so.6', 'usr/lib32/ld-linux.so.2',
+                     'stage/base-gmp/usr/include/gmp.h'):
+            path = self.root / name
+            original = path.read_bytes()
+            with self.subTest(path=name):
+                path.write_bytes(b'wrong ABI')
+                if name.endswith('.h'):
+                    path.unlink(); path.symlink_to(self.specs)
+                with self.assertRaises(RuntimeError):
+                    self.adapt()
+                path.unlink(); path.write_bytes(original)
+                self.assert_restored()
+
+    def test_unrelated_and_native_commands_are_unchanged(self):
+        native = ['/usr/sbin/runuser', '-u', 'lfs', '--', 'env', 'make', '-j4']
+        self.assertEqual(self.adapt(native), [])
+        self.assertEqual(gcc_tester_runtime_files(self.argv, self.root / 'build/base-other', self.root), [])
 
 
 class GccTargetSysrootTests(unittest.TestCase):

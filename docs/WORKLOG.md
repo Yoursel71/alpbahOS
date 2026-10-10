@@ -1,3 +1,7 @@
+# 10 Ekim 2026 — Kesilen GCC tester koşusu ve çalışma ortamı düzeltmesi
+
+- Sahip Codex; dosya sınırı `scripts/infra-base-guest-run.py`, odaklı adapter testleri/fixture ve kanıt/durum belgeleri. Host/controller/QEMU etkin olmadığı doğrulandı; accepted checkpoint değiştirilmiyor. `691e0e2baea5796a181d934fb1bfe80d` host yeniden açılışı sonrasında outcome olmadan kaldı; 26 kurulum ve kısmi GCC test kanıtı kabul değildir. Salt okunur guest kurtarma ve kapalı qcow2 kontrolleri yapıldı. Exact tester komutu boyunca hedef loader/RUNPATH specs uyarlaması ve upstream site.exp GMPINC override eklendi. Özgün metadata başarı/hata/SIGTERM/SIGINT sonrası byte-exact geri yüklenir; SIGKILL/power loss marker’ı staging’i bloke eder. 82 odaklı test, 403 test/2 skip tam suite ve gerçek kaynak/Glibc/GMP küçük integrated probe PASS. Referanssız eski MPFR failed overlay çifti, 89 imajın iki metadata taraması ve artifact/hash/stat kontrolleri sonrası temizlendi; 8.455.004.160 allocated byte geri kazanıldı. Son kesilen koşu ve milestone/checkpoint’ler korunuyor. Yeni tam guest sonucu henüz yok. [Kanıt](verification/infra-base-run-691e0e2baea5796a181d934fb1bfe80d-gcc-tester-runtime.md).
+
 # 8 Ekim 2026 — Libxcrypt geçti, GCC hedef build sysroot düzeltmesi
 
 - Sahip Codex; sınır guest runner, odaklı testler ve kanıt/durum belgeleri. Aktif controller kapandıktan sonra değişiklik yapıldı. Run `d4a081f804cbc11076eface5434ac2e7` 26 kurulum PASS; Libxcrypt native 32 PASS/11 SKIP/0 FAIL, m64/m32 staging ve sahiplikli kurulum gerçek guest’te geçti.

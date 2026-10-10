@@ -5,6 +5,7 @@ import json
 import os
 import re
 import shutil
+import signal
 import stat
 import subprocess
 import sys
@@ -1009,6 +1010,180 @@ def gcc_target_build_sysroot(argv, cwd, lfs_root='/srv/lfs'):
     return command
 
 
+def gcc_tester_runtime_files(argv, cwd, lfs_root='/srv/lfs'):
+    """Scope target loaders and native plugin headers to the pinned tester run."""
+    root = Path(lfs_root)
+    build = root / 'build/base-gcc/build'
+    if cwd is None or Path(cwd).resolve() != build:
+        return []
+    marker = root / 'build/.gcc-test-runtime-active.json'
+    if marker.exists() or marker.is_symlink():
+        raise RuntimeError('Unrestored GCC tester runtime blocks further build/staging')
+    command = list(argv)
+    if command[:5] != ['/usr/sbin/runuser', '-u', 'tester', '--', 'env']:
+        return []
+    recipe_test = ['bash', '-euc',
+        "ulimit -s -H unlimited; sed -e '/cpython/d' -i ../gcc/testsuite/gcc.dg/plugin/plugin.exp; "
+        'set +e; make -k check; make_exit=$?; set -e; ../contrib/test_summary > gcc-test-summary.log; '
+        'python3 /opt/alp-infra/scripts/infra/test-policy.py gcc --build . --make-exit "$make_exit" '
+        '--output gcc-test-policy.json']
+    if command[-3:] != recipe_test or any('=' not in v for v in command[5:-3]):
+        raise RuntimeError('GCC tester runtime command differs from the pinned recipe')
+    flags = ('-O2 -g0 -ffile-prefix-map=' + str(build.parent) + '=/usr/src/gcc '
+             '-fdebug-prefix-map=' + str(build.parent) + '=/usr/src/gcc')
+    includes = ' '.join('-I' + str(root / ('stage/base-' + name + '/usr/include'))
+                        for name in ('gmp', 'mpfr', 'mpc', 'zlib'))
+    libraries = ':'.join(str(root / ('build/.native-dependency-libs/' + name))
+                         for name in ('gmp', 'mpfr', 'mpc', 'zlib'))
+    expected_env = ['CPPFLAGS=' + includes, 'LD_LIBRARY_PATH=' + libraries,
+                    'LIBRARY_PATH=' + libraries, 'LC_ALL=C', 'LANG=C', 'TZ=UTC',
+                    'SOURCE_DATE_EPOCH=1756684800', 'CFLAGS=' + flags, 'CXXFLAGS=' + flags]
+    if command[5:-3] != expected_env:
+        raise RuntimeError('GCC tester native environment differs from the pinned adapters')
+    if not root.is_absolute() or not re.fullmatch(r'[A-Za-z0-9_./+-]+', str(root)):
+        raise RuntimeError('Unsafe GCC tester runtime root')
+    for directory in (root, root / 'build', build.parent, build, build / 'gcc',
+                      root / 'usr', root / 'usr/lib', root / 'usr/lib32',
+                      root / 'stage', root / 'stage/base-gmp',
+                      root / 'stage/base-gmp/usr', root / 'stage/base-gmp/usr/include'):
+        if directory.resolve() != directory or not directory.is_dir():
+            raise RuntimeError('GCC tester runtime directory missing or aliased: ' + str(directory))
+
+    def regular(path):
+        if path.resolve() != path or not stat.S_ISREG(path.lstat().st_mode):
+            raise RuntimeError('GCC tester runtime input missing or aliased: ' + str(path))
+        return path.read_bytes()
+
+    for lib, elf_class, machine, loader in (
+            ('lib', 2, 62, 'ld-linux-x86-64.so.2'), ('lib32', 1, 3, 'ld-linux.so.2')):
+        for name in ('libc.so.6', loader):
+            header = regular(root / 'usr' / lib / name)[:20]
+            if (len(header) != 20 or header[:6] != b'\x7fELF' + bytes((elf_class, 1))
+                    or int.from_bytes(header[18:20], 'little') != machine):
+                raise RuntimeError('GCC tester loader/libc has the wrong ABI: ' + lib + '/' + name)
+    regular(root / 'stage/base-gmp/usr/include/gmp.h')
+    support = regular(build.parent / 'gcc/testsuite/lib/plugin-support.exp')
+    if hashlib.sha256(support).hexdigest() != '6cc57b8b8057fcde7566bc42f17eb2e18a0518e28588bc522a5c1108cbc843ad':
+        raise RuntimeError('GCC native plugin source hook changed')
+    rules = regular(build.parent / 'gcc/Makefile.in')
+    for needle in (b'$(GCC_FOR_TARGET) -dumpspecs > tmp-specs',
+                   b'mv tmp-specs $(SPECS)', b'@cat ./site.tmp > site.exp',
+                   b"-e '1,/^## All variables above are.*##/ d' >> site.exp"):
+        if needle not in rules:
+            raise RuntimeError('GCC generated specs/site override source rule changed')
+    specs_path, site_path = build / 'gcc/specs', build / 'gcc/site.exp'
+    specs, site = regular(specs_path), regular(site_path)
+    if hashlib.sha256(specs).hexdigest() != '8b11ad11ba0940b4c607e18d902543471dbb935be04588e1d96c9bd7591c0df7':
+        raise RuntimeError('GCC generated specs differ from the verified multilib build')
+    normalized_site = site.replace(str(root).encode(), b'/srv/lfs')
+    if hashlib.sha256(normalized_site).hexdigest() != 'c6a13c29ec388d34a0b26670131ccc55b85fe80231e0eedc014cb4e095abed7e':
+        raise RuntimeError('GCC generated site configuration changed')
+    # Only glibc loader operands in the existing shared/static/ABI conditions
+    # change. Native compiler tools and every other specs section stay intact.
+    start = specs.index(b'*link:\n') + len(b'*link:\n')
+    end = specs.index(b'\n\n', start)
+    link = specs[start:end]
+    for old, lib, loader in ((b'/lib64/ld-linux-x86-64.so.2', 'lib', 'ld-linux-x86-64.so.2'),
+                             (b'/lib/ld-linux.so.2', 'lib32', 'ld-linux.so.2')):
+        if link.count(old) != 2:
+            raise RuntimeError('GCC glibc multilib loader operands changed')
+        replacement = (str(root / 'usr' / lib / loader) + ' -rpath ' +
+                       str(root / 'usr' / lib)).encode()
+        link = link.replace(old, replacement)
+    adapted_specs = specs[:start] + link + specs[end:]
+    adapted_site = site + ('set GMPINC "-I' + str(root / 'stage/base-gmp/usr/include') + '"\n').encode()
+    return [(specs_path, specs, adapted_specs), (site_path, site, adapted_site)]
+
+
+def run_gcc_tester_runtime(argv, log, cwd=None, env=None, runner=None, lfs_root='/srv/lfs'):
+    """Restore temporary generated metadata on success, failure and catchable signals.
+
+    A durable, coordinator-owned marker survives power loss/SIGKILL and blocks
+    subsequent build/staging. Fresh runs must use their accepted parent images.
+    """
+    files = gcc_tester_runtime_files(argv, cwd, lfs_root)
+    run_command = runner if runner is not None else _run
+    if not files:
+        return run_command(argv, log, cwd=cwd, env=env)
+    marker = Path(lfs_root) / 'build/.gcc-test-runtime-active.json'
+    identities = {path: path.stat() for path, _, _ in files}
+
+    def write_same_file(path, data):
+        fd = os.open(path, os.O_WRONLY | os.O_NOFOLLOW)
+        try:
+            before, actual = identities[path], os.fstat(fd)
+            if ((before.st_dev, before.st_ino, before.st_uid, before.st_gid, before.st_mode) !=
+                    (actual.st_dev, actual.st_ino, actual.st_uid, actual.st_gid, actual.st_mode)
+                    or path.resolve() != path):
+                raise RuntimeError('GCC tester metadata identity changed: ' + str(path))
+            with os.fdopen(fd, 'wb', closefd=False) as stream:
+                stream.write(data)
+                stream.truncate()
+                stream.flush()
+                os.fsync(fd)
+        finally:
+            os.close(fd)
+
+    backup = {'schema': 'alpbahOS.gcc-tester-runtime/v1', 'files': [
+        {'path': str(path), 'original': original.decode(),
+         'sha256': hashlib.sha256(original).hexdigest(),
+         'adapted_sha256': hashlib.sha256(adapted).hexdigest()}
+        for path, original, adapted in files]}
+    fd = os.open(marker, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+    with os.fdopen(fd, 'w') as stream:
+        json.dump(backup, stream, sort_keys=True)
+        stream.flush()
+        os.fsync(stream.fileno())
+
+    def sync_parent():
+        directory_fd = os.open(marker.parent, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(directory_fd)
+        finally:
+            os.close(directory_fd)
+
+    def interrupted(signum, frame):
+        raise RuntimeError('GCC tester interrupted by signal ' + str(signum))
+
+    handlers = {s: signal.getsignal(s) for s in (signal.SIGTERM, signal.SIGINT)}
+    applied, restoration_errors = [], []
+    try:
+        sync_parent()
+        for s in handlers:
+            signal.signal(s, interrupted)
+        for path, original, adapted in files:
+            applied.append((path, original, adapted))
+            write_same_file(path, adapted)
+        with Path(log).open('ab') as stream:
+            stream.write(b'BUILD_ADAPTER gcc tester target loaders/RUNPATH and native plugin GMPINC active\n')
+        return run_command(argv, log, cwd=cwd, env=env)
+    finally:
+        # Catchable signals already stop the child through guest_process's
+        # finally block. Defer a second signal during byte-exact restoration.
+        for s in handlers:
+            signal.signal(s, lambda signum, frame: None)
+        try:
+            for path, original, adapted in reversed(applied):
+                try:
+                    if path.read_bytes() != adapted:
+                        restoration_errors.append('GCC tester metadata drift: ' + str(path))
+                    write_same_file(path, original)
+                    if path.read_bytes() != original:
+                        raise RuntimeError('GCC tester metadata restore mismatch: ' + str(path))
+                except (OSError, RuntimeError) as error:
+                    restoration_errors.append(str(error))
+            if not restoration_errors:
+                marker.unlink()
+                sync_parent()
+                with Path(log).open('ab') as stream:
+                    stream.write(b'BUILD_ADAPTER gcc tester metadata restored byte-exact before staging\n')
+        finally:
+            for s, handler in handlers.items():
+                signal.signal(s, handler)
+        if restoration_errors:
+            raise RuntimeError('; '.join(restoration_errors))
+
+
 def native_staged_dependency_environment(argv, cwd, lfs_root='/srv/lfs'):
     """Give unchrooted native builds only their isolated staged dependencies."""
     command = list(argv)
@@ -1276,7 +1451,7 @@ def run_with_root_owned_test_tree(argv, log, cwd=None, env=None):
             and argv[1:3] == ['-u', 'root']):
         tree = root_test_tree(cwd)
         _run(['chown', '-hR', 'root:root', str(tree)], log)
-    return _run(argv, log, cwd=cwd, env=env)
+    return run_gcc_tester_runtime(argv, log, cwd=cwd, env=env)
 
 
 package_stage.run = run_with_root_owned_test_tree

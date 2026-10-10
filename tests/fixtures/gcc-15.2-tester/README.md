@@ -1,0 +1,1 @@
+GCC 15.2.0 tester fixtures recovered read-only from run 691e0e2baea5796a181d934fb1bfe80d. specs and site.exp are generated build metadata. plugin-support.exp is upstream GCC source (GPL-3.0-or-later), independently matched to gcc-15.2.0.tar.xz SHA256 438fd996826b0c82485a29da03a72d71d6e3541a83ec702df4271f6fe025d24e. These preserve actual inputs for drift and restoration checks.
