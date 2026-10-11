@@ -2,6 +2,9 @@
 
 Son canlı doğrulama: 11 Ekim 2026, Europe/Istanbul
 
+**11 Ekim Base parent hazırlığı:** historical root audit ve checkpoint sonrası Base kanıtı yeniden doğrulama bağlı. Gerçek eski toolchain root capture proof’u aynı, tiny layered qcow2/current-child drift ve katı negatif kapılar PASS. 17 focused ve final 457 test/2 skip PASS (91,724 sn). Actual Base artifact hâlâ yok; new current-boot host authorization/launch ve gerçek Base/kernel kabulü açık. Bu tur unprivileged full tests sırasında da boot değişti; kesilmiş log korunuyor, shutdown nedeni açık ve uzun production koşusu koruması sürüyor. Ayrıntı `docs/verification/infra-base-parent-preparation-2026-10-11.md`.
+
+
 Kernel guest transport ve FD9 shell entry hazırlığı: root-only bounded Base/parent/auth delivery, raw SHA, private exclusive attempt/completion receipt; producer altı helper + completion pinlerini zorunlu ister. 37 focused, 440 test/2 skip full suite ve actual host-entry refusal PASS. Actual guest delivery/build yok; host accepted-Base authorization/controller/SSH launch hâlâ eksik. Reboot koruması aynı. Ayrıntı `docs/verification/infra-kernel-handoff-preparation-2026-10-11.md`.
 
 Kernel guest producer `scripts/infra-kernel-build.py` hazırlandı: accepted Base/raw DB/79 payload ve root-owned boot/input/helper-bound auth olmadan mutation yok; unprivileged accepted LFS chroot, fixed Kbuild environment, actual upstream DESTDIR/depmod ve shared candidate packaging. Host launcher/auth transport, Alp kernel phase/install, installed/host/boot acceptance henüz bağlanmadı; actual kernel build yapılmadı. 10 focused, final 431 test/2 skip ve actual-source config/controls probe PASS. Host reboot açıklaması/uzun build koruması değişmedi. Ayrıntı `docs/verification/infra-kernel-build-preparation-2026-10-11.md`.

@@ -7,6 +7,7 @@ All package builds and Alp installs execute in the isolated KVM guest.
 """
 import fcntl
 import hashlib
+import importlib.util
 import json
 import os
 import re
@@ -53,6 +54,22 @@ def sha(path):
 
 def encoded(value):
     return (json.dumps(value, indent=2, sort_keys=True) + '\n').encode()
+
+
+def parent_helpers():
+    """Pinned read-only parent rules; fresh launch audits remain separate."""
+    modules = []
+    for name, checksum in (
+            ('infra-parent-audit.py', '7dd4e8513ad42b1eb8752539dda63214ebac04a153b3156be64d62549f3567e7'),
+            ('infra-base-parent.py', '5deaac7c59e59fff9717988d775d5df11de7178948e8a1095a197f2b41867a23')):
+        path = REPO / 'scripts' / name
+        if sha(path) != checksum:
+            raise RuntimeError('Completed Base parent helper source changed: ' + name)
+        spec = importlib.util.spec_from_file_location(name.replace('-', '_'), path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        modules.append(module)
+    return modules
 
 
 def toolchain_parent_ids(proof, transaction, parent):
@@ -619,7 +636,7 @@ def execute():
             'checkpoint': str(checkpoint), 'checkpoint_sha256': result['checkpoint_sha256']}, sort_keys=True))
 
 
-def accept(run_id, after_id, plan, toolchain_proof, install_receipt, base_authorization_sha):
+def accept(run_id, after_id, plan, toolchain_proof, install_receipt, base_authorization_sha, *, checkpointed=False):
     stage_runs.identity(run_id); stage_runs.identity(after_id)
     run_root, artifacts = stage_runs.RUNS / run_id, stage_runs.ARTIFACTS / run_id
     run_raw, value = stage_runs.read(run_root / 'run.json')
@@ -641,7 +658,8 @@ def accept(run_id, after_id, plan, toolchain_proof, install_receipt, base_author
         raise RuntimeError('Base post-audit request belongs to another run')
     before_raw = audit.read_file(Path(value['before_request']), audit.USER_UID, 65536)
     after_raw = audit.read_file(Path(after['request']), audit.USER_UID, 65536)
-    host = audit.verify_pair(before_raw, after_raw, value['producer_sha256'],
+    archived_audit, _ = parent_helpers()
+    host = archived_audit.verify_pair(before_raw, after_raw, value['producer_sha256'],
                              started['started_at_ns'], outcome['ended_at_ns'])
     if host['before'] != started.get('before_host_evidence'):
         raise RuntimeError('Base privileged before audit changed')
@@ -696,18 +714,31 @@ def accept(run_id, after_id, plan, toolchain_proof, install_receipt, base_author
     closed = json.loads(audit.read_file(artifacts / 'disks-closed.json', audit.USER_UID))
     if closed.get('run_id') != run_id or not command['ended_at_ns'] <= closed.get('time_ns', 0) <= outcome['ended_at_ns']:
         raise RuntimeError('Base disk closure evidence time invalid')
-    chains = checkpoint_store.inspect_disks(buildctl.VM, assert_guest_stopped, buildctl.space_guard)
-    if chains != closed.get('chains'):
-        raise RuntimeError('Base closed qcow2 chains changed before checkpoint')
+    chains = closed.get('chains')
     if stage_runs.file_hashes(artifacts) != hashes:
         raise RuntimeError('Base evidence bytes changed during acceptance')
-    return {'schema': 'alpbahOS.base-acceptance/v1', 'result': 'PASS', 'stage': 'base',
+    proof = {'schema': 'alpbahOS.base-acceptance/v1', 'result': 'PASS', 'stage': 'base',
         'run_id': run_id, 'after_audit_id': after_id, 'mode': MODE,
         'inputs_sha256': value['inputs_sha256'], 'sources_sha256': value['sources_sha256'],
         'run_sha256': digest(run_raw), 'outcome_sha256': digest(outcome_raw),
         'controller_sha256': value['controller_sha256'], 'artifact_sha256': hashes,
         'host': host, 'telemetry': telemetry, 'guest': guest, 'closed_disk_chains': chains,
         'scope': 'accepted LFS Chapter 8 package base only; kernel/BLFS/desktop/ISO remain separate'}
+    verify_base_disks(proof, checkpointed=checkpointed)
+    if stage_runs.file_hashes(artifacts) != hashes:
+        raise RuntimeError('Base evidence bytes changed during parent inspection')
+    return proof
+
+
+def verify_base_disks(proof, *, checkpointed=False):
+    """Acceptance always checks actual disks; only the stored path relocates."""
+    if checkpointed:
+        _, sealed_parent = parent_helpers()
+        sealed_parent.checkpoint(proof, 'base')
+    else:
+        chains = checkpoint_store.inspect_disks(buildctl.VM, assert_guest_stopped, buildctl.space_guard)
+        if chains != proof.get('closed_disk_chains'):
+            raise RuntimeError('Base closed qcow2 chains changed before checkpoint')
 
 
 def verify_base_checkpoint(directory, acceptance):
