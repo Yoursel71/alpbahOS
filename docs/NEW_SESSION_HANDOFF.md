@@ -1,6 +1,8 @@
 # alpbahOS — Yeni sohbet / ajan teknik devri
 
-Son canlı doğrulama: 10 Ekim 2026, Europe/Istanbul
+Son canlı doğrulama: 11 Ekim 2026, Europe/Istanbul
+
+En yeni run `fa5accc90d3627ccbcd6ea32323be518` de host açılışları arasında outcome olmadan kesildi. Canlı servis/controller/VM yok; kapalı imajlar kontrol edildi, sonuçlar salt okunur kurtarıldı. Glibc testi kısmi, yeni GCC adapter çalışmadı. Tekrarlanan kesintinin nedeni açıklığa kavuşmadan yeni uzun stage başlatma; kullanıcıya rebootların kasıtlı mı kendiliğinden mi olduğu soruldu. İmaj/checkpoint/milestone koruması ve katı test kapıları geçerli. Ayrıntı `docs/verification/infra-base-run-fa5accc90d3627ccbcd6ea32323be518-host-interruption.md`.
 
 Güncel yerel Faz 2 / Fedora-QEMU durumu `CURRENT.md` ve son `docs/WORKLOG.md` kaydındadır. `691e0e2baea5796a181d934fb1bfe80d` host reboot sonrası outcome olmadan kesildi; bu koşu kabul değildir. GCC tester runtime/GMPINC düzeltmesi host test ve küçük gerçek kaynak probe’undan geçti. Canlı controller/run her zaman yeniden keşfedilmeli; preparing/active koşu çoğaltılmaz. Ayrıntı `docs/verification/infra-base-run-691e0e2baea5796a181d934fb1bfe80d-gcc-tester-runtime.md`. Aşağıdaki Windows/Hyper-V envanteri tarihsel bağlamdır, yerel Fedora-QEMU Builder için geçerli değildir.
 
