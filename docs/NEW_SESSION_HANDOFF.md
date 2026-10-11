@@ -2,6 +2,8 @@
 
 Son canlı doğrulama: 11 Ekim 2026, Europe/Istanbul
 
+Kernel host session `scripts/infra-kernel-session.py`: pinned accepted-Base preflight → lock/restore/fresh child recheck → current root-before → offline launch API/transfer/measured boot → single-use bounded authorization + committed receipt. CLI yalnız read-only; actual Base yokken STOP. 12 focused/469 full test/2 skip PASS (507,452 sn). Bu tur gerçek VM/root capture/SSH/build yok. Session consumer olmadan FAIL, valid-shaped bound evidence ile yalnız PENDING_PRIVILEGED_POST; complete monitored producer/Alp install/ownership/collection/signal handling/boot/host-after acceptance henüz açık. Host kesinti clarification hold aynı; önceki soru tekrarlanmaz. Ayrıntı `docs/verification/infra-kernel-session-preparation-2026-10-11.md`.
+
 **11 Ekim Base parent hazırlığı:** historical root audit ve checkpoint sonrası Base kanıtı yeniden doğrulama bağlı. Gerçek eski toolchain root capture proof’u aynı, tiny layered qcow2/current-child drift ve katı negatif kapılar PASS. 17 focused ve final 457 test/2 skip PASS (91,724 sn). Actual Base artifact hâlâ yok; new current-boot host authorization/launch ve gerçek Base/kernel kabulü açık. Bu tur unprivileged full tests sırasında da boot değişti; kesilmiş log korunuyor, shutdown nedeni açık ve uzun production koşusu koruması sürüyor. Ayrıntı `docs/verification/infra-base-parent-preparation-2026-10-11.md`.
 
 
