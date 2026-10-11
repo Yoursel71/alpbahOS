@@ -34,7 +34,8 @@ BOOT = Path('/proc/sys/kernel/random/boot_id')
 VERSION = '6.16.1'
 SOURCE = 'linux-6.16.1.tar.xz'
 SOURCE_SHA = 'ea43491bc7ace1e414b3b2d957f8cf96e7049155123f0acce798accf8da1acba'
-HELPERS = ('infra-kernel-build.py', 'infra-kernel-config.py', 'infra-kernel-payload.py')
+HELPERS = ('infra-kernel-build.py', 'infra-kernel-config.py', 'infra-kernel-payload.py',
+           'infra-kernel-authorize.py', 'infra-kernel-authorize.sh', 'infra-kernel-build.sh')
 SOURCE_RULES = {
     'Makefile': '803380a08254402342d4953c68845b4ed57183f527fd1d798249cbf10e71eaa1',
     'scripts/Makefile.modinst': 'd7f7efd72c780532b4d6ae481946bf32af7771954d359284d805088b2a7f47d1',
@@ -94,6 +95,7 @@ def binding(auth, proof, parent, inputs, boot_id, helper_hashes, proof_sha, pare
     if (parent.get('schema') != 'alpbahOS.kernel-parent/v1' or parent.get('result') != 'VERIFIED_PARENT'
             or parent.get('stage') != 'kernel' or parent.get('mode') != 'multilib-m32'
             or parent.get('parent_run_id') != proof.get('run_id')
+            or parent.get('run_id') == parent.get('parent_run_id')
             or parent.get('base_acceptance_sha256') != proof_sha
             or any(parent.get(field) != proof.get(field) for field in ('inputs_sha256', 'sources_sha256',
                    'checkpoint_sha256', 'transaction_sha256'))
@@ -104,6 +106,7 @@ def binding(auth, proof, parent, inputs, boot_id, helper_hashes, proof_sha, pare
             or auth.get('mode') != 'multilib-m32' or auth.get('oc_confirmed') is not True
             or auth.get('run_id') != parent['run_id'] or auth.get('guest_boot_id') != boot_id
             or auth.get('host_boot_id') != parent.get('host_boot_id')
+            or auth.get('host_boot_id') == boot_id
             or not re.fullmatch(r'[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}', str(auth.get('host_boot_id', '')))
             or any(auth.get(field) != inputs[field] for field in ('inputs_sha256', 'sources_sha256'))
             or auth.get('base_acceptance_sha256') != proof_sha or auth.get('parent_sha256') != parent_sha
@@ -115,6 +118,22 @@ def binding(auth, proof, parent, inputs, boot_id, helper_hashes, proof_sha, pare
             'base_acceptance_sha256': proof_sha, 'parent_sha256': parent_sha,
             'inputs_sha256': inputs['inputs_sha256'], 'sources_sha256': inputs['sources_sha256'],
             'helper_sha256': helper_hashes, 'source_sha256': SOURCE_SHA}
+
+
+def completed_handoff(raw, current, authorization_raw):
+    record = json.loads(raw)
+    expected = {'schema': 'alpbahOS.kernel-handoff-response/v1', 'result': 'HANDOFF_BOUND',
+                'run_id': current['run_id'], 'guest_boot_id': current['guest_boot_id'],
+                'host_boot_id': current['host_boot_id'],
+                'base_acceptance_sha256': current['base_acceptance_sha256'],
+                'parent_sha256': current['parent_sha256'],
+                'authorization_sha256': hashlib.sha256(authorization_raw).hexdigest(),
+                'helper_sha256': current['helper_sha256']}
+    if (not isinstance(record, dict) or set(record) != set(expected) | {'payload_sha256'}
+            or any(record.get(key) != value for key, value in expected.items())
+            or not re.fullmatch('[0-9a-f]{64}', str(record.get('payload_sha256', '')))):
+        raise RuntimeError('Kernel handoff is partial or differs from delivered authorization')
+    return hashlib.sha256(raw).hexdigest()
 
 
 def base_payload(proof, plan):
@@ -214,6 +233,9 @@ def execute():
         hashes[name] = sha(path)
     current = binding(auth, proof, parent, inputs, BOOT.read_text().strip(), hashes,
                       hashlib.sha256(proof_raw).hexdigest(), hashlib.sha256(parent_raw).hexdigest())
+    receipt_path = INFRA / 'kernel-handoffs' / (current['run_id'] + '.completed.json')
+    receipt_raw, _ = read_record(receipt_path)
+    current['handoff_receipt_sha256'] = completed_handoff(receipt_raw, current, auth_raw)
     if (inputs['inputs_sha256'] != buildctl.inputs_digest()
             or inputs['sources_sha256'] != hashlib.sha256(sources_raw).hexdigest()
             or sources.get('abi_selection', {}).get('mode') != 'multilib-m32'):
@@ -295,6 +317,7 @@ def execute():
                 or (INFRA / 'kernel-build-authorization.json').read_bytes() != auth_raw
                 or (INFRA / 'kernel-base-acceptance.json').read_bytes() != proof_raw
                 or (INFRA / 'kernel-parent.json').read_bytes() != parent_raw
+                or receipt_path.read_bytes() != receipt_raw
                 or sha(source) != SOURCE_SHA or buildctl.inputs_digest() != current['inputs_sha256']):
             raise RuntimeError('Kernel build input/auth/parent drift; preserve evidence')
         summary = {'schema': 'alpbahOS.kernel-build/v1', 'result': 'BUILT_CANDIDATE',

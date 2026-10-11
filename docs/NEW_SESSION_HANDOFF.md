@@ -2,6 +2,8 @@
 
 Son canlı doğrulama: 11 Ekim 2026, Europe/Istanbul
 
+Kernel guest transport ve FD9 shell entry hazırlığı: root-only bounded Base/parent/auth delivery, raw SHA, private exclusive attempt/completion receipt; producer altı helper + completion pinlerini zorunlu ister. 37 focused, 440 test/2 skip full suite ve actual host-entry refusal PASS. Actual guest delivery/build yok; host accepted-Base authorization/controller/SSH launch hâlâ eksik. Reboot koruması aynı. Ayrıntı `docs/verification/infra-kernel-handoff-preparation-2026-10-11.md`.
+
 Kernel guest producer `scripts/infra-kernel-build.py` hazırlandı: accepted Base/raw DB/79 payload ve root-owned boot/input/helper-bound auth olmadan mutation yok; unprivileged accepted LFS chroot, fixed Kbuild environment, actual upstream DESTDIR/depmod ve shared candidate packaging. Host launcher/auth transport, Alp kernel phase/install, installed/host/boot acceptance henüz bağlanmadı; actual kernel build yapılmadı. 10 focused, final 431 test/2 skip ve actual-source config/controls probe PASS. Host reboot açıklaması/uzun build koruması değişmedi. Ayrıntı `docs/verification/infra-kernel-build-preparation-2026-10-11.md`.
 
 Kernel candidate payload kapısı `scripts/infra-kernel-payload.py` eklendi: 421 test/2 skip PASS, actual-source/tiny ELF fixture probe; tam manifest, config, boot header ve modül ABI/version/dependency kontrolü. Sonuç yalnız VERIFIED_CANDIDATE_BYTES; actual build/Alp/boot acceptance değildir. Production kernel runner ve accepted Base handoff hâlâ bağlanmalı; helper ayrı SHA-bound olmalı. Host kesintisi açıklaması ve uzun build koruması korunuyor. Ayrıntı `docs/verification/infra-kernel-payload-preparation-2026-10-11.md`.

@@ -32,10 +32,10 @@ class KernelBuild(unittest.TestCase):
                        'stage': 'kernel', 'mode': 'multilib-m32', 'run_id': 'b' * 32,
                        'parent_run_id': 'a' * 32, 'base_acceptance_sha256': '7' * 64,
                        'checkpoint_sha256': '4' * 64, 'transaction_sha256': '5' * 64,
-                       'guest_boot_id': self.boot, 'host_boot_id': self.boot, **self.inputs}
+                       'guest_boot_id': self.boot, 'host_boot_id': 'abcdefab-cdef-abcd-abcd-abcdefabcdef', **self.inputs}
         self.auth = {'schema': 'alpbahOS.kernel-build-authorization/v1', 'result': 'AUTHORIZED',
                      'stage': 'kernel', 'mode': 'multilib-m32', 'oc_confirmed': True,
-                     'run_id': 'b' * 32, 'guest_boot_id': self.boot, 'host_boot_id': self.boot,
+                     'run_id': 'b' * 32, 'guest_boot_id': self.boot, 'host_boot_id': 'abcdefab-cdef-abcd-abcd-abcdefabcdef',
                      'base_acceptance_sha256': '7' * 64, 'parent_sha256': '8' * 64,
                      'helper_sha256': self.hashes, 'source_sha256': kernel.SOURCE_SHA,
                      'authorized_at_ns': 10, **self.inputs}
@@ -73,6 +73,13 @@ class KernelBuild(unittest.TestCase):
             with self.subTest(key=key), self.assertRaises(RuntimeError): self.bind()
         self.auth = original; self.parent['parent_run_id'] = 'c' * 32
         with self.assertRaisesRegex(RuntimeError, 'capsule'): self.bind()
+        self.parent['parent_run_id'] = self.proof['run_id']
+        self.parent['run_id'] = self.proof['run_id']
+        with self.assertRaisesRegex(RuntimeError, 'capsule'): self.bind()
+        self.parent['run_id'] = self.auth['run_id']
+        self.auth['host_boot_id'] = self.boot
+        self.parent['host_boot_id'] = self.boot
+        with self.assertRaisesRegex(RuntimeError, 'pins disagree'): self.bind()
 
     def test_unprivileged_host_execution_fails_before_any_write_or_command(self):
         with patch('os.geteuid', return_value=1000), patch.object(kernel, 'run_logged') as run:
