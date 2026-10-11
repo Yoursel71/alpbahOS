@@ -1,5 +1,9 @@
 # 11 Ekim 2026 — Yeni Base koşusunun host açılışları arasında kesilmesi
 
+- Kernel payload kapısı tamamlandı: tam manifest ve bounded boot/EFI/ELF/vermagic/dependency/config kontrolü; unsafe build alias ve doc cycle reddedilir. Actual kaynak hookları + tiny host ELF/synthetic header/actual config probe PASS, temporary tree temiz. 10 odaklı, final 421 test/2 skip PASS (91,378 sn); Base digest aynı. Production runner/Alp kurulumu/boot/accepted ownership kanıtı yok. [Kanıt](verification/infra-kernel-payload-preparation-2026-10-11.md).
+
+- Codex kernel staging doğrulama işi: sınır yeni scripts-kökü payload doğrulayıcısı, odaklı testler ve kanıt/durum belgeleri. Controller/VM yok; mevcut Base canonical girdileri ve checkpointler korunur. Gerçek kernel üretimi/kurulumu yapılmadan boot header, modül ELF/vermagic, config ve manifest kapsamı denetimi eklenecek; yalnız fixture/source-hook kanıtı ayrı kaydedilecek.
+
 - Kernel config hazırlığı tamamlandı: 62 required seçenek gerçek SHA-doğrulanmış Linux 6.16.1 `olddefconfig` çıktısında PASS. İlk iki probe varsayımı somut kaynak çıktısıyla düzeltildi, ham kanıtlar korundu, final geçici ağaç temizlendi. 8 odaklı ve 411 test/2 skip tam suite PASS (92,354 sn). Base canonical digest/checkpoint değişmedi; kernel runner/derleme/boot kabulü yok. [Kanıt](verification/infra-kernel-config-preparation-2026-10-11.md).
 
 - Codex kernel hazırlığı: dosya sınırı kernel config doğrulayıcısı/testleri ve kanıt belgeleri; mevcut Base canonical girdileri/checkpointleri değiştirilmeyecek. Canlı üretim controller/VM yok. Önce SHA-doğrulanmış Linux 6.16.1 kaynağında gerekli config seçeneklerini yetkisiz geçici source/config probe ile denetle; kernel veya modül derlemesi/root kurulumu yapılmaz. Host reboot açıklaması beklerken sonraki aşamanın kaynakla doğrulanmış hazırlığı ilerletilir; bu kernel kabulü değildir.

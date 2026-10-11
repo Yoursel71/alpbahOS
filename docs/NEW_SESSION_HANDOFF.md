@@ -2,6 +2,8 @@
 
 Son canlı doğrulama: 11 Ekim 2026, Europe/Istanbul
 
+Kernel candidate payload kapısı `scripts/infra-kernel-payload.py` eklendi: 421 test/2 skip PASS, actual-source/tiny ELF fixture probe; tam manifest, config, boot header ve modül ABI/version/dependency kontrolü. Sonuç yalnız VERIFIED_CANDIDATE_BYTES; actual build/Alp/boot acceptance değildir. Production kernel runner ve accepted Base handoff hâlâ bağlanmalı; helper ayrı SHA-bound olmalı. Host kesintisi açıklaması ve uzun build koruması korunuyor. Ayrıntı `docs/verification/infra-kernel-payload-preparation-2026-10-11.md`.
+
 Kernel config hazırlığı eklendi: `scripts/infra-kernel-config.py` fragment/verify, 62 required seçenek, gerçek Linux 6.16.1 kaynak olddefconfig probe ve 411 test/2 skip PASS. Base girdileri değişmedi; gelecekteki kernel controller helper SHA/accepted Base/source/compiler/ownership/boot kanıtını ayrıca bağlamalı. Bu kernel runner veya aşama kabulü değildir; reboot açıklaması beklenirken uzun build başlatma koruması geçerli. Ayrıntı `docs/verification/infra-kernel-config-preparation-2026-10-11.md`.
 
 En yeni run `fa5accc90d3627ccbcd6ea32323be518` de host açılışları arasında outcome olmadan kesildi. Canlı servis/controller/VM yok; kapalı imajlar kontrol edildi, sonuçlar salt okunur kurtarıldı. Glibc testi kısmi, yeni GCC adapter çalışmadı. Tekrarlanan kesintinin nedeni açıklığa kavuşmadan yeni uzun stage başlatma; kullanıcıya rebootların kasıtlı mı kendiliğinden mi olduğu soruldu. İmaj/checkpoint/milestone koruması ve katı test kapıları geçerli. Ayrıntı `docs/verification/infra-base-run-fa5accc90d3627ccbcd6ea32323be518-host-interruption.md`.
