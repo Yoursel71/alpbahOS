@@ -1,0 +1,331 @@
+# Boxes (Note/Warning/Important/Caution/Tip) whose commands were COMMENTED OUT (SKIPPED-BOX).
+# Unique boxes (page + first command line): 16.  Per-file copies (one per package file): 284.
+# Every in-scope box was read; none is an unconditional instruction, so none is kept active.
+
+## A. unique boxes
+page	box	first command line	copied into (NN)
+general/libxml2.html	note	systemctl stop httpd.service	026
+general/glib2.html	warning	if [ -e /usr/include/glib-2.0 ]; then	047
+x/xcb-utilities.html	note	as_root()	074,075,076,077,078
+x/x7lib.html	note	as_root()	079,080,081,082,083,084,085,086,087,088,089,090,091,092,093,094,095,096,097,098,099,100,101,102,103,104,105,106,107,108,109,110
+x/xkeyboard-config.html	important	if [ -d $XORG_PREFIX/share/X11/xkb ]; then	113
+x/x7app.html	note	as_root()	130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162
+x/x7font.html	note	as_root()	164,165,166,167,168,169,170,171,172
+pst/cups.html	note	gtk-update-icon-cache -qtf /usr/share/icons/hicolor	184
+gnome/gsettings-desktop-schemas.html	note	glib-compile-schemas /usr/share/glib-2.0/schemas	185
+x/gdk-pixbuf.html	note	gdk-pixbuf-query-loaders --update-cache	186
+x/gtk3.html	note	gtk-query-immodules-3.0 --update-cache	190
+x/gtk3.html	note	glib-compile-schemas /usr/share/glib-2.0/schemas	190
+kde/frameworks6.html	note	as_root()	201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,256,257,258,259,260,261,262,263,264,265,266,267,268,269,270
+kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&	201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,256,257,258,259,260,261,262,263,264,265,266,267,268,269,270
+general/boost.html	note	rm -rf /usr/lib/cmake/[Bb]oost*	273
+kde/plasma-all.html	note	as_root()	280,281,282,283,284,285,286,287,288,289,290,291,292,293,294,295,296,297,298,299,300,301,302,303,304,305,306,307,308,309,310,311,312,313,314,315,316,317,318,319,320,321,322,323,324,325,326,327,328,329,330,331,332,333,334,335
+
+## B. per-file SKIPPED-BOX list
+NN	name-version	page	box	first command line
+026	libxml2-2.14.5	general/libxml2.html	note	systemctl stop httpd.service
+047	glib-2.84.4	general/glib2.html	warning	if [ -e /usr/include/glib-2.0 ]; then
+074	xcb-util-image-0.4.1	x/xcb-utilities.html	note	as_root()
+075	xcb-util-keysyms-0.4.1	x/xcb-utilities.html	note	as_root()
+076	xcb-util-renderutil-0.3.10	x/xcb-utilities.html	note	as_root()
+077	xcb-util-wm-0.4.2	x/xcb-utilities.html	note	as_root()
+078	xcb-util-cursor-0.1.5	x/xcb-utilities.html	note	as_root()
+079	xtrans-1.6.0	x/x7lib.html	note	as_root()
+080	libX11-1.8.12	x/x7lib.html	note	as_root()
+081	libXext-1.3.6	x/x7lib.html	note	as_root()
+082	libFS-1.0.10	x/x7lib.html	note	as_root()
+083	libICE-1.1.2	x/x7lib.html	note	as_root()
+084	libSM-1.2.6	x/x7lib.html	note	as_root()
+085	libXScrnSaver-1.2.4	x/x7lib.html	note	as_root()
+086	libXt-1.3.1	x/x7lib.html	note	as_root()
+087	libXmu-1.2.1	x/x7lib.html	note	as_root()
+088	libXpm-3.5.17	x/x7lib.html	note	as_root()
+089	libXaw-1.0.16	x/x7lib.html	note	as_root()
+090	libXfixes-6.0.1	x/x7lib.html	note	as_root()
+091	libXcomposite-0.4.6	x/x7lib.html	note	as_root()
+092	libXrender-0.9.12	x/x7lib.html	note	as_root()
+093	libXcursor-1.2.3	x/x7lib.html	note	as_root()
+094	libXdamage-1.1.6	x/x7lib.html	note	as_root()
+095	libfontenc-1.1.8	x/x7lib.html	note	as_root()
+096	libXfont2-2.0.7	x/x7lib.html	note	as_root()
+097	libXft-2.3.9	x/x7lib.html	note	as_root()
+098	libXi-1.8.2	x/x7lib.html	note	as_root()
+099	libXinerama-1.1.5	x/x7lib.html	note	as_root()
+100	libXrandr-1.5.4	x/x7lib.html	note	as_root()
+101	libXres-1.2.2	x/x7lib.html	note	as_root()
+102	libXtst-1.2.5	x/x7lib.html	note	as_root()
+103	libXv-1.0.13	x/x7lib.html	note	as_root()
+104	libXvMC-1.0.14	x/x7lib.html	note	as_root()
+105	libXxf86dga-1.1.6	x/x7lib.html	note	as_root()
+106	libXxf86vm-1.1.6	x/x7lib.html	note	as_root()
+107	libpciaccess-0.18.1	x/x7lib.html	note	as_root()
+108	libxkbfile-1.1.3	x/x7lib.html	note	as_root()
+109	libxshmfence-1.3.3	x/x7lib.html	note	as_root()
+110	libXpresent-1.0.1	x/x7lib.html	note	as_root()
+113	xkeyboard-config-2.45	x/xkeyboard-config.html	important	if [ -d $XORG_PREFIX/share/X11/xkb ]; then
+130	iceauth-1.0.10	x/x7app.html	note	as_root()
+131	mkfontscale-1.2.3	x/x7app.html	note	as_root()
+132	sessreg-1.1.4	x/x7app.html	note	as_root()
+133	setxkbmap-1.3.4	x/x7app.html	note	as_root()
+134	smproxy-1.0.8	x/x7app.html	note	as_root()
+135	xauth-1.1.4	x/x7app.html	note	as_root()
+136	xcmsdb-1.0.7	x/x7app.html	note	as_root()
+137	xcursorgen-1.0.9	x/x7app.html	note	as_root()
+138	xdpyinfo-1.4.0	x/x7app.html	note	as_root()
+139	xdriinfo-1.0.8	x/x7app.html	note	as_root()
+140	xev-1.2.6	x/x7app.html	note	as_root()
+141	xgamma-1.0.8	x/x7app.html	note	as_root()
+142	xhost-1.0.10	x/x7app.html	note	as_root()
+143	xinput-1.6.4	x/x7app.html	note	as_root()
+144	xkbcomp-1.4.7	x/x7app.html	note	as_root()
+145	xkbevd-1.1.6	x/x7app.html	note	as_root()
+146	xkbutils-1.0.6	x/x7app.html	note	as_root()
+147	xkill-1.0.6	x/x7app.html	note	as_root()
+148	xlsatoms-1.1.4	x/x7app.html	note	as_root()
+149	xlsclients-1.1.5	x/x7app.html	note	as_root()
+150	xmessage-1.0.7	x/x7app.html	note	as_root()
+151	xmodmap-1.0.11	x/x7app.html	note	as_root()
+152	xpr-1.2.0	x/x7app.html	note	as_root()
+153	xprop-1.2.8	x/x7app.html	note	as_root()
+154	xrandr-1.5.3	x/x7app.html	note	as_root()
+155	xrdb-1.2.2	x/x7app.html	note	as_root()
+156	xrefresh-1.1.0	x/x7app.html	note	as_root()
+157	xset-1.2.5	x/x7app.html	note	as_root()
+158	xsetroot-1.1.3	x/x7app.html	note	as_root()
+159	xvinfo-1.1.5	x/x7app.html	note	as_root()
+160	xwd-1.0.9	x/x7app.html	note	as_root()
+161	xwininfo-1.1.6	x/x7app.html	note	as_root()
+162	xwud-1.0.7	x/x7app.html	note	as_root()
+164	font-util-1.4.1	x/x7font.html	note	as_root()
+165	encodings-1.1.0	x/x7font.html	note	as_root()
+166	font-alias-1.0.5	x/x7font.html	note	as_root()
+167	font-adobe-utopia-type1-1.0.5	x/x7font.html	note	as_root()
+168	font-bh-ttf-1.0.4	x/x7font.html	note	as_root()
+169	font-bh-type1-1.0.4	x/x7font.html	note	as_root()
+170	font-ibm-type1-1.0.4	x/x7font.html	note	as_root()
+171	font-misc-ethiopic-1.0.5	x/x7font.html	note	as_root()
+172	font-xfree86-type1-1.0.5	x/x7font.html	note	as_root()
+184	cups-2.4.12	pst/cups.html	note	gtk-update-icon-cache -qtf /usr/share/icons/hicolor
+185	gsettings-desktop-schemas-48.0	gnome/gsettings-desktop-schemas.html	note	glib-compile-schemas /usr/share/glib-2.0/schemas
+186	gdk-pixbuf-2.42.12	x/gdk-pixbuf.html	note	gdk-pixbuf-query-loaders --update-cache
+190	gtk3-3.24.50	x/gtk3.html	note	gtk-query-immodules-3.0 --update-cache
+190	gtk3-3.24.50	x/gtk3.html	note	glib-compile-schemas /usr/share/glib-2.0/schemas
+201	attica-6.17.0	kde/frameworks6.html	note	as_root()
+201	attica-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+202	kapidox-6.17.0	kde/frameworks6.html	note	as_root()
+202	kapidox-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+203	karchive-6.17.0	kde/frameworks6.html	note	as_root()
+203	karchive-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+204	kcodecs-6.17.0	kde/frameworks6.html	note	as_root()
+204	kcodecs-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+205	kconfig-6.17.0	kde/frameworks6.html	note	as_root()
+205	kconfig-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+206	kcoreaddons-6.17.0	kde/frameworks6.html	note	as_root()
+206	kcoreaddons-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+207	kdbusaddons-6.17.0	kde/frameworks6.html	note	as_root()
+207	kdbusaddons-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+208	kdnssd-6.17.0	kde/frameworks6.html	note	as_root()
+208	kdnssd-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+209	kguiaddons-6.17.0	kde/frameworks6.html	note	as_root()
+209	kguiaddons-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+210	ki18n-6.17.0	kde/frameworks6.html	note	as_root()
+210	ki18n-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+211	kidletime-6.17.0	kde/frameworks6.html	note	as_root()
+211	kidletime-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+212	kimageformats-6.17.0	kde/frameworks6.html	note	as_root()
+212	kimageformats-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+213	kitemmodels-6.17.0	kde/frameworks6.html	note	as_root()
+213	kitemmodels-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+214	kitemviews-6.17.0	kde/frameworks6.html	note	as_root()
+214	kitemviews-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+215	kplotting-6.17.0	kde/frameworks6.html	note	as_root()
+215	kplotting-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+216	kwidgetsaddons-6.17.0	kde/frameworks6.html	note	as_root()
+216	kwidgetsaddons-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+217	kwindowsystem-6.17.0	kde/frameworks6.html	note	as_root()
+217	kwindowsystem-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+218	networkmanager-qt-6.17.0	kde/frameworks6.html	note	as_root()
+218	networkmanager-qt-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+219	solid-6.17.0	kde/frameworks6.html	note	as_root()
+219	solid-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+220	sonnet-6.17.0	kde/frameworks6.html	note	as_root()
+220	sonnet-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+221	threadweaver-6.17.0	kde/frameworks6.html	note	as_root()
+221	threadweaver-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+222	kauth-6.17.0	kde/frameworks6.html	note	as_root()
+222	kauth-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+223	kcompletion-6.17.0	kde/frameworks6.html	note	as_root()
+223	kcompletion-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+224	kcrash-6.17.0	kde/frameworks6.html	note	as_root()
+224	kcrash-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+225	kdoctools-6.17.0	kde/frameworks6.html	note	as_root()
+225	kdoctools-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+226	kpty-6.17.0	kde/frameworks6.html	note	as_root()
+226	kpty-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+227	kunitconversion-6.17.0	kde/frameworks6.html	note	as_root()
+227	kunitconversion-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+228	kcolorscheme-6.17.0	kde/frameworks6.html	note	as_root()
+228	kcolorscheme-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+229	kconfigwidgets-6.17.0	kde/frameworks6.html	note	as_root()
+229	kconfigwidgets-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+230	kservice-6.17.0	kde/frameworks6.html	note	as_root()
+230	kservice-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+231	kglobalaccel-6.17.0	kde/frameworks6.html	note	as_root()
+231	kglobalaccel-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+232	kpackage-6.17.0	kde/frameworks6.html	note	as_root()
+232	kpackage-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+233	kdesu-6.17.0	kde/frameworks6.html	note	as_root()
+233	kdesu-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+234	kiconthemes-6.17.0	kde/frameworks6.html	note	as_root()
+234	kiconthemes-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+235	knotifications-6.17.0	kde/frameworks6.html	note	as_root()
+235	knotifications-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+236	kjobwidgets-6.17.0	kde/frameworks6.html	note	as_root()
+236	kjobwidgets-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+237	ktextwidgets-6.17.0	kde/frameworks6.html	note	as_root()
+237	ktextwidgets-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+238	kxmlgui-6.17.0	kde/frameworks6.html	note	as_root()
+238	kxmlgui-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+239	kbookmarks-6.17.0	kde/frameworks6.html	note	as_root()
+239	kbookmarks-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+240	kwallet-6.17.0	kde/frameworks6.html	note	as_root()
+240	kwallet-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+241	kded-6.17.0	kde/frameworks6.html	note	as_root()
+241	kded-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+242	kio-6.17.0	kde/frameworks6.html	note	as_root()
+242	kio-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+243	kdeclarative-6.17.0	kde/frameworks6.html	note	as_root()
+243	kdeclarative-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+244	kcmutils-6.17.0	kde/frameworks6.html	note	as_root()
+244	kcmutils-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+245	kirigami-6.17.0	kde/frameworks6.html	note	as_root()
+245	kirigami-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+246	syndication-6.17.0	kde/frameworks6.html	note	as_root()
+246	syndication-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+247	knewstuff-6.17.0	kde/frameworks6.html	note	as_root()
+247	knewstuff-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+248	frameworkintegration-6.17.0	kde/frameworks6.html	note	as_root()
+248	frameworkintegration-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+249	kparts-6.17.0	kde/frameworks6.html	note	as_root()
+249	kparts-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+250	syntax-highlighting-6.17.0	kde/frameworks6.html	note	as_root()
+250	syntax-highlighting-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+251	ktexteditor-6.17.0	kde/frameworks6.html	note	as_root()
+251	ktexteditor-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+252	modemmanager-qt-6.17.0	kde/frameworks6.html	note	as_root()
+252	modemmanager-qt-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+253	kcontacts-6.17.0	kde/frameworks6.html	note	as_root()
+253	kcontacts-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+254	kpeople-6.17.0	kde/frameworks6.html	note	as_root()
+254	kpeople-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+255	bluez-qt-6.17.0	kde/frameworks6.html	note	as_root()
+255	bluez-qt-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+256	kfilemetadata-6.17.0	kde/frameworks6.html	note	as_root()
+256	kfilemetadata-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+257	baloo-6.17.0	kde/frameworks6.html	note	as_root()
+257	baloo-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+258	krunner-6.17.0	kde/frameworks6.html	note	as_root()
+258	krunner-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+259	prison-6.17.0	kde/frameworks6.html	note	as_root()
+259	prison-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+260	qqc2-desktop-style-6.17.0	kde/frameworks6.html	note	as_root()
+260	qqc2-desktop-style-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+261	kholidays-6.17.0	kde/frameworks6.html	note	as_root()
+261	kholidays-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+262	purpose-6.17.0	kde/frameworks6.html	note	as_root()
+262	purpose-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+263	kcalendarcore-6.17.0	kde/frameworks6.html	note	as_root()
+263	kcalendarcore-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+264	kquickcharts-6.17.0	kde/frameworks6.html	note	as_root()
+264	kquickcharts-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+265	knotifyconfig-6.17.0	kde/frameworks6.html	note	as_root()
+265	knotifyconfig-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+266	kdav-6.17.0	kde/frameworks6.html	note	as_root()
+266	kdav-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+267	kstatusnotifieritem-6.17.0	kde/frameworks6.html	note	as_root()
+267	kstatusnotifieritem-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+268	ksvg-6.17.0	kde/frameworks6.html	note	as_root()
+268	ksvg-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+269	ktexttemplate-6.17.0	kde/frameworks6.html	note	as_root()
+269	ktexttemplate-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+270	kuserfeedback-6.17.0	kde/frameworks6.html	note	as_root()
+270	kuserfeedback-6.17.0	kde/frameworks6.html	caution	mv -v /opt/kf6 /opt/kf6.old                         &&
+273	boost-1.89.0	general/boost.html	note	rm -rf /usr/lib/cmake/[Bb]oost*
+280	kdecoration-6.4.4	kde/plasma-all.html	note	as_root()
+281	libkscreen-6.4.4	kde/plasma-all.html	note	as_root()
+282	libksysguard-6.4.4	kde/plasma-all.html	note	as_root()
+283	breeze-6.4.4	kde/plasma-all.html	note	as_root()
+284	breeze-gtk-6.4.4	kde/plasma-all.html	note	as_root()
+285	layer-shell-qt-6.4.4	kde/plasma-all.html	note	as_root()
+286	plasma-activities-6.4.4	kde/plasma-all.html	note	as_root()
+287	libplasma-6.4.4	kde/plasma-all.html	note	as_root()
+288	kscreenlocker-6.4.4	kde/plasma-all.html	note	as_root()
+289	kinfocenter-6.4.4	kde/plasma-all.html	note	as_root()
+290	kglobalacceld-6.4.4	kde/plasma-all.html	note	as_root()
+291	kwayland-6.4.4	kde/plasma-all.html	note	as_root()
+292	aurorae-6.4.4	kde/plasma-all.html	note	as_root()
+293	kwin-x11-6.4.4	kde/plasma-all.html	note	as_root()
+294	kwin-6.4.4	kde/plasma-all.html	note	as_root()
+295	plasma5support-6.4.4	kde/plasma-all.html	note	as_root()
+296	plasma-activities-stats-6.4.4	kde/plasma-all.html	note	as_root()
+297	kpipewire-6.4.4	kde/plasma-all.html	note	as_root()
+298	plasma-workspace-6.4.4	kde/plasma-all.html	note	as_root()
+299	plasma-disks-6.4.4	kde/plasma-all.html	note	as_root()
+300	bluedevil-6.4.4	kde/plasma-all.html	note	as_root()
+301	kde-gtk-config-6.4.4	kde/plasma-all.html	note	as_root()
+302	kmenuedit-6.4.4	kde/plasma-all.html	note	as_root()
+303	kscreen-6.4.4	kde/plasma-all.html	note	as_root()
+304	kwallet-pam-6.4.4	kde/plasma-all.html	note	as_root()
+305	kwrited-6.4.4	kde/plasma-all.html	note	as_root()
+306	milou-6.4.4	kde/plasma-all.html	note	as_root()
+307	plasma-nm-6.4.4	kde/plasma-all.html	note	as_root()
+308	plasma-pa-6.4.4	kde/plasma-all.html	note	as_root()
+309	plasma-workspace-wallpapers-6.4.4	kde/plasma-all.html	note	as_root()
+310	polkit-kde-agent-1-6.4.4	kde/plasma-all.html	note	as_root()
+311	powerdevil-6.4.4	kde/plasma-all.html	note	as_root()
+312	plasma-desktop-6.4.4	kde/plasma-all.html	note	as_root()
+313	kgamma-6.4.4	kde/plasma-all.html	note	as_root()
+314	ksshaskpass-6.4.4	kde/plasma-all.html	note	as_root()
+315	sddm-kcm-6.4.4	kde/plasma-all.html	note	as_root()
+316	kactivitymanagerd-6.4.4	kde/plasma-all.html	note	as_root()
+317	plasma-integration-6.4.4	kde/plasma-all.html	note	as_root()
+318	xdg-desktop-portal-kde-6.4.4	kde/plasma-all.html	note	as_root()
+319	drkonqi-6.4.4	kde/plasma-all.html	note	as_root()
+320	plasma-vault-6.4.4	kde/plasma-all.html	note	as_root()
+321	kde-cli-tools-6.4.4	kde/plasma-all.html	note	as_root()
+322	systemsettings-6.4.4	kde/plasma-all.html	note	as_root()
+323	plasma-thunderbolt-6.4.4	kde/plasma-all.html	note	as_root()
+324	plasma-firewall-6.4.4	kde/plasma-all.html	note	as_root()
+325	plasma-systemmonitor-6.4.4	kde/plasma-all.html	note	as_root()
+326	qqc2-breeze-style-6.4.4	kde/plasma-all.html	note	as_root()
+327	ksystemstats-6.4.4	kde/plasma-all.html	note	as_root()
+328	oxygen-sounds-6.4.4	kde/plasma-all.html	note	as_root()
+329	kdeplasma-addons-6.4.4	kde/plasma-all.html	note	as_root()
+330	plasma-welcome-6.4.4	kde/plasma-all.html	note	as_root()
+331	ocean-sound-theme-6.4.4	kde/plasma-all.html	note	as_root()
+332	print-manager-6.4.4	kde/plasma-all.html	note	as_root()
+333	wacomtablet-6.4.4	kde/plasma-all.html	note	as_root()
+334	oxygen-6.4.4	kde/plasma-all.html	note	as_root()
+335	spectacle-6.4.4	kde/plasma-all.html	note	as_root()
+
+## C. blocks NOT copied (outside Installation/Configuration), per page
+page	first line	box	package rows on page
+general/icu.html	ldd <application or library>	warning	1
+general/icu.html	readelf -d <application or library> | grep NEEDED	warning	1
+kde/frameworks6.html	url=https://download.kde.org/stable/frameworks/6.17/	-	70
+kde/frameworks6.html	cat > frameworks-6.17.0.md5 << "EOF"	-	70
+kde/plasma-all.html	url=https://download.kde.org/stable/plasma/6.4.4/	-	56
+kde/plasma-all.html	cat > plasma-6.4.4.md5 << "EOF"	-	56
+kde/plasma-all.html	cat > ~/.xinitrc << "EOF"	-	56
+kde/plasma-all.html	startx &> ~/x-session-errors	-	56
+x/mesa.html	lspci | grep VGA	note	1
+x/qt6.html	export QT6PREFIX=/opt/qt6	-	1
+x/qt6.html	mkdir -pv /opt/qt-6.9.2	tip	1
+x/x7app.html	cat > app-7.md5 << "EOF"	-	33
+x/x7app.html	mkdir app &&	-	33
+x/x7font.html	cat > font-7.md5 << "EOF"	-	9
+x/x7font.html	mkdir font &&	-	9
+x/x7lib.html	cat > lib-7.md5 << "EOF"	-	32
+x/x7lib.html	mkdir lib &&	-	32
+x/xcb-utilities.html	cat > xcb-utils.md5 << "EOF"	-	5
+x/xcb-utilities.html	mkdir xcb-utils &&	-	5

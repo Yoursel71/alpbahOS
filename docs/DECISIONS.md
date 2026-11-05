@@ -110,3 +110,13 @@ Uygulamaya geçişte kanıt gerektirenler: Hyper-V yönetim yetkisi, multilib s�
 - [Plasma derleme bölümü](https://www.linuxfromscratch.org/blfs/view/12.4-systemd/kde/plasma-all.html)
 - [Zsh autosuggestions](https://github.com/zsh-users/zsh-autosuggestions)
 - [KDE tema ve eklenti altyapısı](https://develop.kde.org/docs/plasma/)
+
+## 5 Kasım 2026 — asistan kararları (kullanıcı "kendin karar ver" dedi)
+
+Bu kararlar asistan tarafından verildi; geri alınabilir teknik seçimlerdir. Dışarıya dönük işler (push/sürüm) kullanıcı onayıyla yapıldı.
+
+| ID | Durum | Karar | Dayanak |
+|---|---|---|---|
+| D37 | Teknik seçim | Konsole 25.08.3 BLFS planına eklendi (terminal). GPG imzası doğrulandı; sha256 `095a7ff1…6615`. | Proje hedefi "Konsole/Zsh" terminali; kanıt: `docs/verification/m07-m08-qemu-evidence-2026-11-05.md`. |
+| D38 | Teknik seçim | Zsh 5.9 eklendi. GPG imzası doğrulandı; sha256 `9b8d1ecedd5b5e81fbf1918e876752a7dd948e05c1a0dba10ab863842d45acd5`. ncurses 6.5 çakışması için yalnız `termcap.c` içinde yerel yeniden adlandırma. | Aynı hedef; kanıt: aynı belge. |
+| D39 | Geçici kabul | Sapmalar test/geliştirme imajı için geçici kabul edildi: Sonnet arka uç yok, kwalletd kapalı, About System KCM ve OpenGL yardımcısı kapalı, X11 input KCM'leri kapalı, ffmpeg x86asm'sız. Release öncesi yeniden değerlendirilecek. | `scripts/lfs-blfs/` ve `docs/verification/evidence-2026-11-05/DEVIATIONS.md`. |

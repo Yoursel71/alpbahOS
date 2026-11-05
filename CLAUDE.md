@@ -54,3 +54,11 @@ Sonraki eylem:
 ```
 
 Son raporu Türkçe yaz. Yapılmamış testleri açıkça “çalıştırılmadı” olarak işaretle.
+
+## 5 Kasım 2026 — güncel bağlam (asistan oturumu)
+
+- **Ortam:** test ortamı Fedora + QEMU/KVM (D36). Bu oturumdaki kanıtlar `docs/verification/m07-m08-qemu-evidence-2026-11-05.md` içinde; Hyper-V yolları bu oturumda kullanılmadı.
+- **Milestone:** M07 kısmi (Plasma Wayland oturumu, Konsole, Zsh doğrulandı; Kickoff, klavye, ses applet ve kararlılık açık). M08 ilk dilim kısmi (duvar kâğıdı/profil uygulanmadı). M09–M12 açık.
+- **Derleme:** BLFS 12.4/KDE Plasma 6.4.4 derlemesi `DONE` (338 kayıt). Betikler `scripts/lfs-blfs/` içinde; kaynak tarball ve imajlar Git'te yok.
+- **Sapmalar** (kabul bekliyor): `docs/DECISIONS.md` D39 ve kanıt klasöründeki `DEVIATIONS.md`.
+- **Açık kapı:** M12 sürüm/yayın ayrıca onay ister; test şifreleri ve test yazı tipleri release'e girmemeli.
