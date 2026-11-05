@@ -11,7 +11,9 @@ Ortam: Fedora + QEMU/KVM (D36 test ortamı). Bu belge GitHub `main`'deki Hyper-V
 - **LFS Chapter 8 test tekrarı (M04):** kayıtlı 12 test hatası yeniden çalıştırılıyor (`lfs-test-rerun-summary-snapshot.txt`, anlık görüntü). Bitmedi.
 
 ## Kanıtlanmadı / açık
-- **M07 kalan maddeler (GitHub main):** Kickoff/Kirigami menüsü, klavye düzeni, ses/PipeWire applet modülleri, KWin render-node uyarısı. Henüz doğrulanmadı.
+- **M07 kalan maddeler (GitHub main):** Kickoff/Kirigami menüsü, klavye düzeni, ses/PipeWire applet modülleri, KWin render-node uyarısı.
+  - *Statik kontrol (rootfs, 5 Kasım):* Kickoff QML plasmoid'i (`/usr/share/plasma/plasmoids/org.kde.plasma.kickoff`), klavye düzeni QML plasmoid'i (`org.kde.plasma.keyboardlayout`), ses applet'i (`/usr/lib/plugins/plasma/applets/org.kde.plasma.volume.so`) ve Kirigami QML modülü kurulu.
+  - *Çalışma zamanı:* paneldeki bu öğeler ekranda doğrulanmadı; KWin render-node uyarısı da yalnızca çalışma sırasında görülür ve kontrol edilmedi. Test sınırı nedeniyle yeni VM oturumu açılmadı.
 - **Uzun süreli kararlılık:** ~5 dk gözlem. Saatlerce koşu ve yeniden başlatma kanıtı yok.
 - **M08 ilk dilim (kısmi, ekranda doğrulandı):** Atatürk duvar kâğıdı masaüstünde görünüyor (`m08_qemu_wallpaper.png`; görsel portre ve düşük çözünürlüklü, 1080p'de bulanıklık riski var). Konsole `alpbahOS` profiliyle açılıyor, başlık `~ : zsh — Konsole`, koyu renk şeması uygulanmış (`m08_qemu_check.png`). Profilde `Command=/bin/zsh` eksikti; eklendi. Windows kısayolları henüz uygulanmadı.
 - **M09** (canlı ISO kabulü), **M10** (alfa), **M11** (Calamares kurucu), **M12** (beta, sürüm) açık.
