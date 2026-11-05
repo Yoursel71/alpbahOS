@@ -42,13 +42,15 @@ Kaynak paketlerin sürüm/checksum doğrulaması ve LFS/BLFS zincirine eklenmesi
 
 ## Kabul kriterleri karşısında durum
 
+Güncel durum (5 Kasım 2026): [docs/verification/t3-zsh-chroot-2026-11-05.md](../../docs/verification/t3-zsh-chroot-2026-11-05.md). Aşağıdaki tablo bu belgeyle eşleşir; testler chroot + pty üzerinde yapıldı, Konsole içinde değil.
+
 | MASTER_PLAN §4.3 maddesi | Durum |
 |---|---|
-| 1. Temiz kullanıcıda öneri görünür, ağ gerekmez | Tasarlandı, **test edilmedi** |
-| 2. Öneri kabulü komutu çalıştırmaz, Enter gerekir | Eklenti varsayılanına dayanıyor, **test edilmedi** |
-| 3. Hatalı komut düzeltmesi açıklanır ve reddedilebilir | `CORRECT` açık, **test edilmedi** |
+| 1. Temiz kullanıcıda öneri görünür, ağ gerekmez | Chroot pty'de **doğrulandı** (Konsole'da değil) |
+| 2. Öneri kabulü komutu çalıştırmaz, Enter gerekir | Chroot pty'de **doğrulandı** |
+| 3. Hatalı komut düzeltmesi açıklanır ve reddedilebilir | Chroot pty'de istem ve red **doğrulandı** |
 | 4. Paket adı tamamlama, yazarken gereksiz root/ağ işlemi yok | PKG-01/02 bekliyor, **uygulanmadı** |
-| 5. Ctrl+C kesme davranışı korunur | Değiştirilmedi (varsayılan korunuyor), **test edilmedi** |
+| 5. Ctrl+C kesme davranışı korunur | Chroot pty'de **doğrulandı** |
 | 6. Logo çıktısı gerçek terminalde doğru renklerle çizilir | `docs/assets/alpbahOS-neofetch-ansi.txt` referansı var, **gerçek terminal doğrulaması yapılmadı** |
 
 ## Entegrasyon notu
