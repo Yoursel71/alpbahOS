@@ -31,3 +31,8 @@ Ortam: Fedora + QEMU/KVM (D36 test ortamı). Bu belge GitHub `main`'deki Hyper-V
 - Test şifresi ve test yazı tipleri yalnızca test imajında; release imajına girmemelidir (`post_blfs_test_config.sh` ortam değişkeninden okur).
 
 Ayrıntılı sapma listesi: `DEVIATIONS.md`. Karar kaydı: `DECISIONS-2026-11-05.md` ve `docs/DECISIONS.md` (D37–D39).
+
+## M08 kısayol teşhisi (5 Kasım 2026, ek)
+- `org.kde.kglobalaccel` D-Bus adı `kwin_wayland` tarafından tutuluyor (busctl). Ayrı `kglobalacceld` daemon'u bu adı alamadı (`Failed to register name`); yani daemon eksik değil, kısayol sahipliği KWin'de.
+- Doğrulayıcı yeniden çalıştırıldı, sonuç aynı: 7 geçti, 11 etkin değil (KWin'in kendi kısayolları dahil: Meta+Up/Down, Meta+Tab). Ayrıca `org.kde.krunner`, `dolphin`, `systemsettings` kısayolları için uygulama dosyaları/bileşenleri bu imajda kayıtsız veya kurulu değil.
+- Sonuç: kısayol kaydı KWin tarafında etkin değil. Çözüm için KWin'in kglobalaccel entegrasyonu ve kglobalshortcutsrc okunma yolu ayrıca incelenmeli; bu oturumda kesinleşmedi. M08 kısayol maddesi **açık**.
