@@ -7,6 +7,7 @@ CursorShape=1
 
 [General]
 Name=alpbahOS
+Command=/bin/zsh
 Parent=FALLBACK/
 TerminalCenter=false
 
