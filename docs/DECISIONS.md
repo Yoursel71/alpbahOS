@@ -143,3 +143,9 @@ Bu kararlar asistan tarafından verildi; geri alınabilir teknik seçimlerdir. D
 | D45 | Teknik seçim | LFS zsh 5.9, `configure` önbellek değişkenleri `zsh_cv_sys_sigsuspend`, `killesrch`, `link`, `tcsetpgrp` = yes ile yeniden derlendi. Önceki derlemede chroot içinde komut ikamesi kilitleniyordu. Derleme betiği güncellendi. | `docs/verification/t3-zsh-chroot-2026-11-05.md`; `337.log` configure çıktısı; strace. |
 | D46 | Teknik seçim | zsh-autosuggestions v0.7.1 (`e52ee8ca…`) ve zsh-syntax-highlighting 0.8.0 (`db085e46…`) etiket commit'leriyle doğrulanıp `/usr/share/` altına kuruldu; `zshrc.alpbah` `/etc/alpbahos/` içine, `~alpbah/.zshrc` bunu source eder. | Aynı belge. |
 | D47 | Geçici durum | §4.3 maddeleri 1, 2, 3, 5 yalnız chroot pty'de doğrulandı. Konsole içinde ve ISO'da doğrulama bekliyor. Madde 4 (`alp` tamamlama) ve 6 (logo) açık. | VM sınırı; `profiles/shell/README.md`. |
+
+## 5 Kasım 2026 — T5 alp (asistan kararları)
+
+| ID | Durum | Karar | Dayanak |
+|---|---|---|---|
+| D48 | Teknik seçim | `alp` motoru rootfs'e (`/usr/bin/alp`) kuruldu ve chroot içinde `--root /` ile htop kur/çalıştır/kaldır akışı çalıştırıldı. Kaynak sha256, upstream `.sha256` dosyasıyla doğrulandı. QEMU'da tekrar gerekiyor. | `docs/verification/t5-alp-htop-chroot-2026-11-05.md`. |
