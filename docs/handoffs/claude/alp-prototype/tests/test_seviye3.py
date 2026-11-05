@@ -437,3 +437,17 @@ def test_upgrade_all_only_kept_back_says_so(paths, tmp_path: Path, capsys):
     out = capsys.readouterr().out
     assert "geri tutuldu: lib" in out
     assert "Yükseltilebilecek başka paket yok." in out
+
+
+@pytest.mark.parametrize("a,b,expected", [
+    ("1.1.1k", "1.1.1", 1),
+    ("9.0p1", "9.0", 1),
+    ("1.0", "1.0.0", 0),
+    ("1.0.0.0", "1.0", 0),
+    ("1.0b1", "1.0", -1),
+    ("1.0beta", "1.0", -1),
+    ("1.1.1w", "1.1.1k", 1),
+])
+def test_vercmp_postrelease_and_trailing_zero(a, b, expected):
+    assert alp.vercmp(a, b) == expected
+    assert alp.vercmp(b, a) == -expected

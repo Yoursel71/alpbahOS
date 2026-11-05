@@ -122,6 +122,13 @@ def _emit(paths: Paths, event: str, **fields) -> None:
 # AGENTS.md: "Tek paket veri tabanı ve tek yazıcı/işlem kilidi kullan."
 # --------------------------------------------------------------------------
 
+def _pid_namespace() -> str:
+    try:
+        return os.readlink("/proc/self/ns/pid")
+    except OSError:
+        return "?"
+
+
 def _lock_holder_is_dead(holder: str) -> bool:
     """True only when the lock provably belongs to a process that no longer
     exists on this machine (e.g. after kill -9 or a power cut). Anything
@@ -131,6 +138,10 @@ def _lock_holder_is_dead(holder: str) -> bool:
         return False
     fields = dict(part.split("=", 1) for part in holder.split() if "=" in part)
     if fields.get("host") not in (None, socket.gethostname()):
+        return False
+    # A holder in another PID namespace (container) shares the hostname but
+    # not the pid numbering: its pid proves nothing here.
+    if fields.get("pidns") not in (None, _pid_namespace()):
         return False
     try:
         pid = int(fields["pid"])
@@ -159,19 +170,38 @@ class DbLock:
             except FileExistsError as exc:
                 holder = self._read_holder()
                 if attempt == 1 and _lock_holder_is_dead(holder):
-                    # Only remove the lock if it still holds the exact content
-                    # we judged stale, so a lock another process just took over
-                    # is not deleted.
-                    if self._read_holder() == holder:
+                    # Take the stale lock over atomically: rename it to a private
+                    # name (only one racing process can win the rename), then
+                    # check it is still the content we judged stale. If another
+                    # process had already replaced it, put it back.
+                    mine = self.lock_file.with_name(f"{self.lock_file.name}.stale.{os.getpid()}")
+                    try:
+                        os.rename(self.lock_file, mine)
+                    except FileNotFoundError:
+                        continue
+                    try:
+                        taken = mine.read_text(encoding="utf-8").strip()
+                    except OSError:
+                        taken = "?"
+                    if taken == holder:
+                        mine.unlink(missing_ok=True)
                         print(f"uyarı: sahibi çalışmayan eski kilit temizlendi ({holder})", file=sys.stderr)
-                        self.lock_file.unlink(missing_ok=True)
-                    continue
+                        continue
+                    try:
+                        os.link(mine, self.lock_file)  # fails if a new lock exists already
+                    except OSError:
+                        pass
+                    mine.unlink(missing_ok=True)
+                    raise AlpError(
+                        f"Veritabanı kilitli, başka bir alp/mağaza işlemi sürüyor ({taken}). "
+                        f"Kilit dosyası: {self.lock_file}"
+                    ) from exc
                 raise AlpError(
                     f"Veritabanı kilitli, başka bir alp/mağaza işlemi sürüyor ({holder}). "
                     f"Kilit dosyası: {self.lock_file}"
                 ) from exc
         with os.fdopen(fd, "w") as f:
-            f.write(f"pid={os.getpid()} host={socket.gethostname()} ts={_now()}\n")
+            f.write(f"pid={os.getpid()} host={socket.gethostname()} pidns={_pid_namespace()} ts={_now()}\n")
         self._held = True
         return self
 
@@ -194,19 +224,61 @@ class DbLock:
 def load_db(paths: Paths) -> dict:
     if not paths.db_file.exists():
         return {"schema_version": SCHEMA_VERSION, "updated_at": None, "packages": {}}
-    with open(paths.db_file, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    if data.get("schema_version") != SCHEMA_VERSION:
+    try:
+        with open(paths.db_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, ValueError) as exc:
+        raise AlpError(f"Paket veritabanı okunamadı/bozuk ({paths.db_file}): {exc}") from exc
+    if not isinstance(data, dict) or data.get("schema_version") != SCHEMA_VERSION:
         raise AlpError(f"Beklenmeyen db şema sürümü: {data.get('schema_version')!r}")
     return data
 
 
-def save_db(paths: Paths, db: dict) -> None:
+def _db_tmp(paths: Paths) -> Path:
+    return paths.db_file.with_suffix(".json.tmp")
+
+
+def _fsync_dir(path: Path) -> None:
+    try:
+        fd = os.open(str(path), os.O_RDONLY)
+    except OSError:
+        return
+    try:
+        os.fsync(fd)
+    except OSError:
+        pass
+    finally:
+        os.close(fd)
+
+
+def stage_db(paths: Paths, db: dict) -> None:
+    """Phase 1: write the new db next to the real one and fsync it. Nothing
+    reads the staged file until publish_db() renames it."""
     db["updated_at"] = _now()
-    tmp = paths.db_file.with_suffix(".json.tmp")
+    tmp = _db_tmp(paths)
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(db, f, indent=2, ensure_ascii=False, sort_keys=True)
+        f.flush()
+        os.fsync(f.fileno())
+
+
+def publish_db(paths: Paths) -> bool:
+    """Phase 2: atomically make the staged db the real one. False when nothing was staged."""
+    tmp = _db_tmp(paths)
+    if not tmp.exists():
+        return False
     tmp.replace(paths.db_file)  # atomic rename on the same filesystem
+    _fsync_dir(paths.db_file.parent)
+    return True
+
+
+def discard_staged_db(paths: Paths) -> None:
+    _db_tmp(paths).unlink(missing_ok=True)
+
+
+def save_db(paths: Paths, db: dict) -> None:
+    stage_db(paths, db)
+    publish_db(paths)
 
 
 def _base_manifest_relpath(raw: object) -> str:
@@ -394,8 +466,14 @@ def cmd_adopt_base(args: argparse.Namespace, paths: Paths) -> int:
 # --------------------------------------------------------------------------
 
 def load_index(index_path: Path) -> dict:
-    with open(index_path, "r", encoding="utf-8") as f:
-        return json.load(f)
+    try:
+        with open(index_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, ValueError) as exc:
+        raise AlpError(f"Katalog dizini okunamadı/geçersiz JSON ({index_path}): {exc}") from exc
+    if not isinstance(data, dict) or not isinstance(data.get("entries"), dict):
+        raise AlpError(f"Katalog dizininde 'entries' tablosu yok: {index_path}")
+    return data
 
 
 # --------------------------------------------------------------------------
@@ -650,6 +728,21 @@ def undo_journal(log_file: Path) -> list[str]:
     return failures
 
 
+def journal_committed(log_file: Path) -> bool:
+    try:
+        with open(log_file, "r", encoding="utf-8") as f:
+            for line in f:
+                try:
+                    e = json.loads(line)
+                except ValueError:
+                    continue
+                if e and e[0] == "commit":
+                    return True
+    except OSError:
+        pass
+    return False
+
+
 def pending_journals(paths: Paths) -> list[Path]:
     base = paths.state_dir / ROLLBACK_DIR
     if not base.is_dir():
@@ -667,6 +760,7 @@ def _transaction(paths: Paths, label: str):
         yield journal
     except BaseException:
         journal.close()
+        discard_staged_db(paths)
         failures = undo_journal(journal.log_file)
         if failures:
             print(
@@ -679,8 +773,12 @@ def _transaction(paths: Paths, label: str):
             print(f"alp: hata nedeniyle {label} için yapılan dosya değişiklikleri geri alındı.", file=sys.stderr)
         raise
     else:
+        # Commit point: the staged db is complete and fsynced. Once the marker
+        # is on disk, `alp recover` rolls forward (publishes the db) instead of
+        # rolling the files back, so db and files can never disagree.
         journal.commit()
         journal.close()
+        publish_db(paths)
         shutil.rmtree(journal.dir, ignore_errors=True)
 
 
@@ -1633,8 +1731,10 @@ def vercmp(a: str, b: str) -> int:
     Numeric segments compare as integers, letter segments as text, and a
     number beats letters at the same position (1.0.1 > 1.0a). When one side
     runs out, a remaining letter segment marks a pre-release (1.0rc1 < 1.0)
-    and a remaining number marks a newer release (1.0.1 > 1.0). Separators
-    (. - _ +) are ignored.
+    and a remaining number marks a newer release (1.0.1 > 1.0). Only known
+    pre-release words (alpha, beta, rc, pre, dev, a1/b1...) count as older;
+    other trailing letters are patch releases (1.1.1k > 1.1.1). Trailing
+    zero segments are ignored (1.0 == 1.0.0). Separators (. - _ +) are ignored.
     """
     ta, tb = _VERSION_TOKEN.findall(a), _VERSION_TOKEN.findall(b)
     for x, y in zip(ta, tb):
@@ -1649,8 +1749,27 @@ def vercmp(a: str, b: str) -> int:
     if len(ta) == len(tb):
         return 0
     if len(ta) > len(tb):
-        return -1 if ta[len(tb)].isalpha() else 1
-    return 1 if tb[len(ta)].isalpha() else -1
+        return _tail_cmp(ta, len(tb))
+    return -_tail_cmp(tb, len(ta))
+
+
+_PRERELEASE_WORDS = frozenset({"alpha", "beta", "rc", "pre", "preview", "dev", "snapshot", "nightly", "git", "svn"})
+
+
+def _tail_cmp(tokens: list[str], start: int) -> int:
+    """The longer version has `tokens[start:]` left over: +1 if it is newer
+    than the shorter one, -1 if older, 0 if equal (1.0 == 1.0.0)."""
+    rest = tokens[start:]
+    if all(t.isdigit() and int(t) == 0 for t in rest):
+        return 0
+    first = rest[0]
+    if first.isdigit():
+        return 1
+    word = first.lower()
+    followed_by_digit = len(rest) > 1 and rest[1].isdigit()
+    if word in _PRERELEASE_WORDS or (word in ("a", "b") and followed_by_digit):
+        return -1  # 1.0rc1 < 1.0
+    return 1  # 1.1.1k, 9.0p1: post-release letters are newer
 
 
 _SPEC_NAME = re.compile(r"\s*([A-Za-z0-9][A-Za-z0-9._+-]*?)\s*((?:[<>=!].*)?)$")
@@ -2020,7 +2139,7 @@ def _run_plan(
                     record["protected"] = True
                 if not dry_run:
                     db["packages"][step.name] = record
-                    save_db(paths, db)
+                    stage_db(paths, db)
         except Exception as exc:
             _emit(paths, "error", name=step.name, message=_first_line(exc), completed=list(done))
             if not dry_run:
@@ -2228,7 +2347,7 @@ def _remove_many(order: list[str], paths: Paths, db: dict, dry_run: bool) -> Non
             with _maybe_transaction(paths, f"remove-{name}", dry_run) as journal:
                 remove_package(paths, db, name, dry_run, journal=journal)
                 if not dry_run:
-                    save_db(paths, db)
+                    stage_db(paths, db)
         except Exception as exc:
             _emit(paths, "error", name=name, message=_first_line(exc), completed=list(order[:position]))
             if not dry_run:
@@ -2297,8 +2416,9 @@ def _require_no_pending(paths: Paths) -> None:
 
 def cmd_recover(args: argparse.Namespace, paths: Paths) -> int:
     """Undo what a killed alp process (kill -9, power cut) left half-done.
-    The db is only saved inside a transaction after its files were written,
-    so restoring the files puts both back to the last consistent state."""
+    A transaction stages the new db, writes a commit marker, then publishes
+    the db. A journal without the marker is rolled back (files restored, the
+    staged db dropped); one with the marker is rolled forward (db published)."""
     paths.ensure()
     with DbLock(paths.lock_file):
         pending = pending_journals(paths)
@@ -2307,6 +2427,12 @@ def cmd_recover(args: argparse.Namespace, paths: Paths) -> int:
             return 0
         bad = 0
         for journal_dir in reversed(pending):  # newest first
+            if journal_committed(journal_dir / JOURNAL_NAME):
+                publish_db(paths)
+                shutil.rmtree(journal_dir, ignore_errors=True)
+                print(f"{journal_dir.name}: tamamlanmış işlem, veritabanı yayımlandı.")
+                continue
+            discard_staged_db(paths)
             failures = undo_journal(journal_dir / JOURNAL_NAME)
             if failures:
                 bad += 1
@@ -2822,11 +2948,9 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "search":
             return cmd_search(index, args.term, as_json=args.json, index_dir=index_dir)
         if args.command == "info":
-            paths.ensure()
             db = load_db(paths)
             return cmd_info(index, db, args.name, index_dir=index_dir)
         if args.command == "list":
-            paths.ensure()
             return cmd_list(load_db(paths), as_json=args.json)
         paths.keep_build = getattr(args, "keep_build", False)
         paths.relocate = getattr(args, "relocate", False)
@@ -2853,10 +2977,12 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "autoremove":
             return cmd_autoremove(args, paths, index)
         if args.command == "check":
-            paths.ensure()
             return cmd_check(paths, index, index_dir)
         raise AlpError(f"Bilinmeyen komut: {args.command}")
     except AlpError as exc:
+        print(f"alp: hata: {exc}", file=sys.stderr)
+        return 1
+    except OSError as exc:
         print(f"alp: hata: {exc}", file=sys.stderr)
         return 1
     except subprocess.CalledProcessError as exc:

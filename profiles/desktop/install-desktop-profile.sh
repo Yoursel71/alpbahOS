@@ -8,7 +8,9 @@
 #   DATADIR/icons/hicolor/<N>x<N>/apps/alpbahos.png           alpbahOS sembol ikonu
 #   SYSCONFDIR/xdg/kdeglobals                                 LookAndFeelPackage varsayılanı
 #   SYSCONFDIR/xdg/kwinrc                                     Solid: blur/kontrast kapalı
-#   SYSCONFDIR/xdg/kglobalshortcutsrc                         Windows'a tanıdık kısayollar
+#   SYSCONFDIR/skel/.config/kglobalshortcutsrc                Windows'a tanıdık kısayollar (yeni kullanıcılar)
+#   <ev>/.config/kglobalshortcutsrc                           aynı dosya, her --user-home DIZIN için (mevcut kullanıcılar)
+#   (kglobalacceld /etc/xdg okumaz: D43; bu yüzden kısayollar skel + kullanıcı dosyasıdır)
 #   BINDIR/alpbah-gorunum                                     Solid/Glass geçiş aracı (0755)
 #   SYSCONFDIR/xdg/mimeapps.list                              varsayılan uygulamalar (profiles/apps/)
 #
@@ -33,6 +35,7 @@ MANIFEST=""
 FORCE=0
 ALLOW_LIVE_ROOT=0
 DRY_RUN=0
+USER_HOMES=()
 
 usage() {
     sed -n '2,/^set -euo/p' "${BASH_SOURCE[0]}" | sed -e '$d' -e 's/^# \{0,1\}//'
@@ -45,6 +48,7 @@ while [ $# -gt 0 ]; do
         --sysconfdir) SYSCONFDIR="${2:?--sysconfdir değer ister}"; shift 2 ;;
         --bindir) BINDIR="${2:?--bindir değer ister}"; shift 2 ;;
         --manifest) MANIFEST="${2:?--manifest değer ister}"; shift 2 ;;
+        --user-home) USER_HOMES+=("${2:?--user-home değer ister}"); shift 2 ;;
         --force) FORCE=1; shift ;;
         --allow-live-root) ALLOW_LIVE_ROOT=1; shift ;;
         --dry-run) DRY_RUN=1; shift ;;
@@ -98,7 +102,13 @@ add_tree "$REPO/branding/icons/hicolor" "$DATADIR/icons/hicolor"
 PAIRS+=("$REPO/profiles/desktop/colorscheme/alpbah-dark.colors|$DATADIR/color-schemes/alpbah-dark.colors")
 PAIRS+=("$REPO/profiles/desktop/xdg/kdeglobals|$SYSCONFDIR/xdg/kdeglobals")
 PAIRS+=("$REPO/profiles/desktop/xdg/kwinrc|$SYSCONFDIR/xdg/kwinrc")
-PAIRS+=("$REPO/profiles/shortcuts/generated/kglobalshortcutsrc|$SYSCONFDIR/xdg/kglobalshortcutsrc")
+# kglobalacceld /etc/xdg'yi okumaz (D43): kısayol dosyası skel'e ve verilen kullanıcı evlerine kurulur.
+PAIRS+=("$REPO/profiles/shortcuts/generated/kglobalshortcutsrc|$SYSCONFDIR/skel/.config/kglobalshortcutsrc")
+for uh in "${USER_HOMES[@]+"${USER_HOMES[@]}"}"; do
+    case "$uh" in /*) ;; *) echo "HATA: --user-home mutlak yol olmalı: $uh" >&2; exit 2 ;; esac
+    case "$uh" in *..*) echo "HATA: --user-home '..' içeremez: $uh" >&2; exit 2 ;; esac
+    PAIRS+=("$REPO/profiles/shortcuts/generated/kglobalshortcutsrc|${uh%/}/.config/kglobalshortcutsrc")
+done
 PAIRS+=("$REPO/profiles/desktop/bin/alpbah-gorunum|$BINDIR/alpbah-gorunum")
 PAIRS+=("$REPO/profiles/apps/generated/mimeapps.list|$SYSCONFDIR/xdg/mimeapps.list")
 

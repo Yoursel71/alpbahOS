@@ -405,6 +405,15 @@ class PerfToolTests(unittest.TestCase):
             with contextlib.redirect_stdout(io.StringIO()):
                 self.assertEqual(PERF_CSV.main([str(csv_path), "--budget-ms", "16.7"]), 1)
 
+    def test_equal_pageflip_timestamps_give_exit_2_not_traceback(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            csv_path = Path(temp_dir) / "flat.csv"
+            write_perf_csv(csv_path, [0.0] * 5)
+            err = io.StringIO()
+            with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(PERF_CSV.main([str(csv_path)]), 2)
+            self.assertIn("HATA", err.getvalue())
+
     def test_rejects_wrong_header(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             csv_path = Path(temp_dir) / "bad.csv"
@@ -506,7 +515,8 @@ class InstallScriptTests(unittest.TestCase):
             first = self.run_install("--destdir", root.as_posix(), "--manifest", (root / "m.txt").as_posix())
             self.assertEqual(first.returncode, 0, first.stderr)
             manifest = (root / "m.txt").read_text(encoding="utf-8").splitlines()
-            self.assertIn("/etc/xdg/kglobalshortcutsrc", "\n".join(manifest))
+            self.assertIn("/etc/skel/.config/kglobalshortcutsrc", "\n".join(manifest))
+            self.assertNotIn("/etc/xdg/kglobalshortcutsrc", "\n".join(manifest))
             self.assertTrue((root / "usr/share/plasma/look-and-feel/org.alpbahos.solid.desktop/metadata.json").exists())
             self.assertTrue((root / "usr/share/wallpapers/alpbahOS-Ataturk/contents/images/1920x1080.jpg").exists())
             second = self.run_install("--destdir", root.as_posix())

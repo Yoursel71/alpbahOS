@@ -12,10 +12,10 @@ Durum: **M08 ilk dilim — kurulabilir paket hazır, gerçek Plasma oturumunda t
 | `../../branding/icons/hicolor/` | `/usr/share/icons/hicolor/` | `alpbahos` sembol ikonu (32–256 px, geçici raster) |
 | `xdg/kdeglobals` | `/etc/xdg/kdeglobals` | `LookAndFeelPackage=org.alpbahos.solid.desktop` |
 | `xdg/kwinrc` | `/etc/xdg/kwinrc` | Solid: blur/kontrast efekti kapalı |
-| `../shortcuts/generated/kglobalshortcutsrc` | `/etc/xdg/kglobalshortcutsrc` | Windows'a tanıdık kısayollar ([conflicts.md](../shortcuts/conflicts.md)) |
+| `../shortcuts/generated/kglobalshortcutsrc` | `/etc/skel/.config/kglobalshortcutsrc` + her `--user-home` için `<ev>/.config/kglobalshortcutsrc` | Windows'a tanıdık kısayollar ([conflicts.md](../shortcuts/conflicts.md)). kglobalacceld `/etc/xdg` okumaz (D43) |
 | `bin/alpbah-gorunum` | `/usr/bin/alpbah-gorunum` (0755) | Solid/Glass geçiş aracı (§5.1) |
 
-Kurulum: `profiles/desktop/install-desktop-profile.sh --destdir <kök> [--datadir /usr/share] [--manifest dosya]`. Betik hedef kökü zorunlu ister, `/` için ayrıca `--allow-live-root` ister, farklı içerikli dosyanın üzerine `--force` olmadan yazmaz ve kurduğu her dosyayı SHA-256 ile manifest'e yazar. Builder `/mnt/lfs` rootfs'ine kurulum entegratörün (Codex) işidir. Plasma `/opt/kf6` önekiyle kurulu olduğundan `XDG_DATA_DIRS` içinde `/usr/share` bulunmalı (ayrı `--datadir` de verilebilir).
+Kurulum: `profiles/desktop/install-desktop-profile.sh --destdir <kök> [--datadir /usr/share] [--user-home /home/kullanici ...] [--manifest dosya]`. Betik hedef kökü zorunlu ister, `/` için ayrıca `--allow-live-root` ister, farklı içerikli dosyanın üzerine `--force` olmadan yazmaz ve kurduğu her dosyayı SHA-256 ile manifest'e yazar. Builder `/mnt/lfs` rootfs'ine kurulum entegratörün (Codex) işidir. Plasma `/opt/kf6` önekiyle kurulu olduğundan `XDG_DATA_DIRS` içinde `/usr/share` bulunmalı (ayrı `--datadir` de verilebilir).
 
 Mekanizma (Plasma 6.4.4 kaynağından): `startplasma` ilk oturumda `kdeglobals [KDE] LookAndFeelPackage` paketinin `contents/defaults` dosyasını `~/.config/kdedefaults/` altına uygular; varsayılan duvar kâğıdı `libkworkspace` `DefaultWallpaper` ile aynı dosyanın `[Wallpaper] Image` anahtarından bulunur (kilit ekranı da aynı varsayılanı kullanır); `contents/layouts/...-layout.js` yalnız düzeni olmayan yeni kullanıcıda ya da `plasma-apply-lookandfeel -a org.alpbahos.solid.desktop --resetLayout` ile çalışır.
 
