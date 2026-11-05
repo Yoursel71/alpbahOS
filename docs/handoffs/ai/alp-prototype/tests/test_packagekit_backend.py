@@ -151,3 +151,17 @@ def test_alp_updates_lists_newer_catalog_versions(env, tmp_path):
     env["index"].write_text(json.dumps(catalog), encoding="utf-8")
     updates = pkb.alp_updates(ALP_PY, env["root"], env["index"])
     assert [(u["name"], u["old_version"], u["new_version"]) for u in updates] == [("theme", "1.0.0", "2.0.0")]
+
+
+def test_package_id_has_four_fields():
+    assert pkb.package_id("htop", "3.3.0") == "htop;3.3.0;x86_64;alp"
+    assert pkb.package_id("htop").split(";") == ["htop", "", "x86_64", "alp"]
+
+
+def test_alp_remove_cascade_flag(monkeypatch):
+    seen = []
+    monkeypatch.setattr(pkb, "_run_alp", lambda a, r, i, args, timeout=None: seen.append(args) or __import__("subprocess").CompletedProcess(args, 0, "", ""))
+    pkb.alp_remove("a", "r", "i", "theme", cascade=True)
+    pkb.alp_remove("a", "r", "i", "theme")
+    pkb.alp_autoremove("a", "r", "i")
+    assert seen == [["remove", "--yes", "--cascade", "theme"], ["remove", "--yes", "theme"], ["autoremove", "--yes"]]

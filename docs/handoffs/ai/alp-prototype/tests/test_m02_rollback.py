@@ -147,7 +147,7 @@ def test_db_save_failure_after_files_were_written_rolls_files_back(paths, tmp_pa
     def boom(*a, **k):
         raise OSError(5, "I/O error")
 
-    monkeypatch.setattr(alp, "save_db", boom)
+    monkeypatch.setattr(alp, "stage_db", boom)
     with pytest.raises(OSError):
         alp.cmd_upgrade(_ns(name="tool"), paths, {"entries": entries}, tmp_path)
 
@@ -162,11 +162,11 @@ def test_failed_remove_restores_the_files(paths, tmp_path, monkeypatch):
     alp.cmd_install(_ns(name="tool"), paths, {"entries": entries}, tmp_path)
     before = _snapshot(paths.root)
 
-    real_save = alp.save_db
-    monkeypatch.setattr(alp, "save_db", lambda *a, **k: (_ for _ in ()).throw(OSError(5, "I/O error")))
+    real_save = alp.stage_db
+    monkeypatch.setattr(alp, "stage_db", lambda *a, **k: (_ for _ in ()).throw(OSError(5, "I/O error")))
     with pytest.raises(OSError):
         alp.cmd_remove(_ns(name="tool"), paths, {"entries": entries})
-    monkeypatch.setattr(alp, "save_db", real_save)
+    monkeypatch.setattr(alp, "stage_db", real_save)
 
     assert _snapshot(paths.root) == before
     assert "tool" in alp.load_db(paths)["packages"]
@@ -531,3 +531,42 @@ def test_cleanup_build_removes_trees_unless_keep_build(paths):
     paths.keep_build = True
     alp._cleanup_build(paths, d)
     assert d.exists()
+
+
+def test_crash_after_commit_marker_rolls_forward(paths, tmp_path, monkeypatch):
+    """Killed between the commit marker and the db rename: recover must publish
+    the staged db, not roll the files back (db and files stay consistent)."""
+    entries = _install_v1_then_offer_v2(paths, tmp_path)
+
+    def killed(_paths):
+        raise KeyboardInterrupt  # stands in for kill -9 right after the marker
+
+    monkeypatch.setattr(alp, "publish_db", killed)
+    with pytest.raises(KeyboardInterrupt):
+        alp.cmd_upgrade(_ns(name="tool"), paths, {"entries": entries}, tmp_path)
+    monkeypatch.undo()
+
+    assert alp.load_db(paths)["packages"]["tool"]["version"] == "1.0.0"  # db not yet published
+    assert alp.pending_journals(paths)
+    assert alp.cmd_recover(_ns(), paths) == 0
+    assert alp.load_db(paths)["packages"]["tool"]["version"] == "2.0.0"
+    assert not alp.pending_journals(paths)
+
+
+def test_crash_before_commit_marker_rolls_back_and_drops_staged_db(paths, tmp_path, monkeypatch):
+    entries = _install_v1_then_offer_v2(paths, tmp_path)
+    before = _snapshot(paths.root)
+
+    def killed(self):
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(alp.FileJournal, "commit", killed)
+    with pytest.raises(KeyboardInterrupt):
+        alp.cmd_upgrade(_ns(name="tool"), paths, {"entries": entries}, tmp_path)
+    monkeypatch.undo()
+    # the transaction body completed, so files are v2 and the db is only staged
+    assert alp.load_db(paths)["packages"]["tool"]["version"] == "1.0.0"
+    assert alp.cmd_recover(_ns(), paths) == 0
+    assert _snapshot(paths.root) == before
+    assert alp.load_db(paths)["packages"]["tool"]["version"] == "1.0.0"
+    assert not alp._db_tmp(paths).exists()

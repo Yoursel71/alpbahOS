@@ -73,6 +73,8 @@ def summarize(rows: list[dict]) -> dict:
     ms = 1_000_000.0
     flips = [r["pageflip timestamp"] for r in rows]
     intervals = [(b - a) / ms for a, b in zip(flips, flips[1:]) if b > a]
+    if not intervals:
+        raise PerfDataError("Ölçülebilir kare aralığı yok: pageflip zaman damgaları artmıyor (hepsi eşit veya 0).")
     renders = [(r["render end"] - r["render start"]) / ms for r in rows if r["render end"] >= r["render start"] > 0]
     refresh = statistics.median(r["refresh duration"] for r in rows) / ms
     late = sum(1 for r in rows if r["pageflip timestamp"] - r["target pageflip timestamp"] > r["refresh duration"] / 2)

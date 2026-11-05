@@ -2,9 +2,10 @@
 """generate_kglobalshortcutsrc.py -- alpbahOS kısayol profilini KDE biçimine çevirir (stdlib-only).
 
 Tek kaynak `profiles/shortcuts/shortcuts.json` (MASTER_PLAN §6). Çıktı, sistem
-genelinde varsayılan olarak `/etc/xdg/kglobalshortcutsrc` konumuna kurulacak bir
-KConfig dosyasıdır. KConfig bu dosyayı XDG_CONFIG_DIRS üzerinden katmanlı okur;
-kullanıcının `~/.config/kglobalshortcutsrc` içindeki değişikliği her zaman önce gelir.
+`/etc/skel/.config/kglobalshortcutsrc` ve mevcut kullanıcıların
+`~/.config/kglobalshortcutsrc` dosyasına kurulacak bir KConfig dosyasıdır.
+kglobalacceld `/etc/xdg` altını OKUMAZ (D43, canlı doğrulandı), bu yüzden sistem
+geneli xdg yolu kullanılmaz.
 
 Biçim (kglobalacceld, Plasma 6):
   [kwin]
@@ -244,7 +245,7 @@ def render(profile: dict, profile_name: str = "profiles/shortcuts/shortcuts.json
         "# alpbahOS kısayol profili -- ÜRETİLMİŞ DOSYA, elle düzenlemeyin.",
         f"# Kaynak: {profile_name}",
         "# Üretici: profiles/shortcuts/generate_kglobalshortcutsrc.py",
-        "# Kurulum hedefi: /etc/xdg/kglobalshortcutsrc (kullanıcı ayarı ~/.config/kglobalshortcutsrc önce gelir)",
+        "# Kurulum hedefi: /etc/skel/.config/kglobalshortcutsrc ve ~/.config/kglobalshortcutsrc (kglobalacceld /etc/xdg okumaz, D43)",
         f"# Hedef sürüm: Plasma {profile.get('hedef_surum', {}).get('plasma', '?')}; gerçek oturumda doğrulanmadı.",
     ]
     for name in sorted(components):

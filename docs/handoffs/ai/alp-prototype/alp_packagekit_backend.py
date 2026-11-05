@@ -80,11 +80,25 @@ def alp_install(alp_path: Path, root: Path, index: Path, name: str) -> str:
     return proc.stdout
 
 
-def alp_remove(alp_path: Path, root: Path, index: Path, name: str) -> str:
-    proc = _run_alp(alp_path, root, index, ["remove", "--yes", name])
+def alp_remove(alp_path: Path, root: Path, index: Path, name: str, cascade: bool = False) -> str:
+    args = ["remove", "--yes"] + (["--cascade"] if cascade else []) + [name]
+    proc = _run_alp(alp_path, root, index, args)
     if proc.returncode != 0:
         raise AlpBackendError(proc.stderr.strip() or f"alp remove {name} başarısız", is_locked=_is_lock_error(proc.stderr))
     return proc.stdout
+
+
+def alp_autoremove(alp_path: Path, root: Path, index: Path) -> str:
+    proc = _run_alp(alp_path, root, index, ["autoremove", "--yes"])
+    if proc.returncode != 0:
+        raise AlpBackendError(proc.stderr.strip() or "alp autoremove başarısız", is_locked=_is_lock_error(proc.stderr))
+    return proc.stdout
+
+
+def package_id(name: str, version: str = "", arch: str = "x86_64", data: str = "alp") -> str:
+    """PackageKit package_id: 'name;version;arch;data'. Unknown versions stay
+    empty rather than being invented."""
+    return f"{name};{version};{arch};{data}"
 
 
 def alp_upgrade(alp_path: Path, root: Path, index: Path, name: str) -> str:
@@ -155,7 +169,8 @@ if PACKAGEKIT_AVAILABLE:
                 self._fail(exc)
                 return
             for hit in hits:
-                self.package(hit["name"], INFO_AVAILABLE, "")
+                self.package(package_id(hit["name"], str(hit.get("version", ""))), INFO_AVAILABLE,
+                             hit.get("description", ""))
             self.finished()
 
         def resolve(self, filters, values):
@@ -166,7 +181,8 @@ if PACKAGEKIT_AVAILABLE:
                     self.error(ERROR_PACKAGE_NOT_FOUND, name)
                     continue
                 info = INFO_INSTALLED if details.get("status") != "not-installed" else INFO_AVAILABLE
-                self.package(name, info, "")
+                self.package(package_id(name, str(details.get("version", ""))), info,
+                             details.get("description", ""))
             self.finished()
 
         def get_files(self, package_ids):
@@ -194,7 +210,13 @@ if PACKAGEKIT_AVAILABLE:
             for pkg_id in package_ids:
                 name = pkg_id.split(";")[0]
                 try:
-                    alp_remove(self.ALP_PATH, self.ROOT, self.INDEX, name)
+                    alp_remove(self.ALP_PATH, self.ROOT, self.INDEX, name, cascade=bool(allow_deps))
+                except AlpBackendError as exc:
+                    self._fail(exc)
+                    return
+            if autoremove:
+                try:
+                    alp_autoremove(self.ALP_PATH, self.ROOT, self.INDEX)
                 except AlpBackendError as exc:
                     self._fail(exc)
                     return
@@ -219,6 +241,6 @@ if PACKAGEKIT_AVAILABLE:
                 self._fail(exc)
                 return
             for step in updates:
-                self.package(f"{step['name']};{step['new_version']};x86_64;alp", INFO_AVAILABLE,
+                self.package(package_id(step["name"], step["new_version"]), INFO_AVAILABLE,
                              f"{step['old_version']} -> {step['new_version']}")
             self.finished()
