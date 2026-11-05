@@ -93,5 +93,22 @@ if [ -n "${TEST_FONT_DIR:-}" ] && [ -d "$TEST_FONT_DIR" ]; then
   log "test yazı tipi: $TEST_FONT_DIR"
 fi
 
+# 8) Kısayol profili. kglobalacceld yalnızca ~/.config/kglobalshortcutsrc okur (/etc/xdg okumaz).
+#    SHORTCUT_PROFILE=/yol/generated/kglobalshortcutsrc ile verilir. Kullanıcı dosyası zaten varsa
+#    ELLENMEZ. Daha önce açılmış bir imajda dosya upstream varsayılanlarıyla dolu olabilir; o durumda
+#    dosyayı elle değiştirin (2026-11-05 T2: disk-blfs3.img bu yolla yamalandı, yedek t2-backup/).
+if [ -n "${SHORTCUT_PROFILE:-}" ] && [ -f "$SHORTCUT_PROFILE" ]; then
+  install -D -m 0644 "$SHORTCUT_PROFILE" "$LFS/usr/share/alpbahos/kglobalshortcutsrc"
+  install -d -o 1000 -g 1000 -m 0700 "$LFS/home/$USER_NAME/.config"
+  if [ ! -e "$LFS/home/$USER_NAME/.config/kglobalshortcutsrc" ]; then
+    install -o 1000 -g 1000 -m 0600 "$SHORTCUT_PROFILE" "$LFS/home/$USER_NAME/.config/kglobalshortcutsrc"
+    log "kısayol profili: ~$USER_NAME/.config/kglobalshortcutsrc yazıldı"
+  else
+    log "kısayol profili: kullanıcı dosyası mevcut, değiştirilmedi"
+  fi
+else
+  log "UYARI: SHORTCUT_PROFILE yok; kısayol profili kurulmadı"
+fi
+
 sync
 log "tamam"
