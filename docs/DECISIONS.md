@@ -128,3 +128,10 @@ Bu kararlar asistan tarafından verildi; geri alınabilir teknik seçimlerdir. D
 | D40 | Kabul (kullanıcı) | D39 sapmaları test ve geliştirme imajı için kabul edildi: Sonnet/kwalletd, About System KCM ve OpenGL yardımcısı, X11 input KCM'leri, ffmpeg x86asm'sız. Release öncesi yeniden değerlendirme sürer. | Kullanıcı mesajı, 5 Kasım 2026. |
 | D41 | Kabul (kullanıcı) | Kısayollar için kglobalaccel yeniden yükleme ve tek oturum doğrulama onaylandı. | Kullanıcı mesajı, 5 Kasım 2026. |
 | D42 | Kabul (kullanıcı) | LFS 12 test tekrarı yalnızca 1 saatten kısa testlerle sınırlı; uzun testler (Python, systemd, util-linux) bu turda yapılmayacak. | Kullanıcı mesajı ("1 saatten uzun süreli testler yapma"). |
+
+## 5 Kasım 2026 — T2 kısayol kök nedeni (asistan kararları)
+
+| ID | Durum | Karar | Dayanak |
+|---|---|---|---|
+| D43 | Teknik seçim | Kısayol profili test imajına doğrudan kuruldu: `~alpbah/.config/kglobalshortcutsrc` (kglobalacceld kullanıcı dosyasını okur, `/etc/xdg` okumaz). Eski dosya (upstream varsayılanları, çakışmalı) yedeklendi. Üretilmiş dosya `main` üzerinde `--check` ile güncel. Adım 8 `post_blfs_test_config.sh` içine eklendi; kullanıcı dosyası varsa ellenmez. Üretim gereksinimi: `alpbah-oturum-hazirla` KWin'den önce çalışmalı. | `022-t2-kisayol-2026-11-05.md`; kglobalacceld kaynak notu; yedek `scratch-lfs-bench/blfs-plan/t2-backup/`. |
+| D44 | Geçici kabul | Dolphin (`file-manager`, Meta+E) BLFS planında yok (`order.txt`), imajda kurulu değil; verifier `KAYITSIZ` döner. Test imajında kabul; Dolphin eklemesi ayrı karar (büyük KDE Gear bağımlılığı). Canlı doğrulama VM sınırı nedeniyle bekliyor. | Plan 021 T2 kabul ölçütü ("ayrıca karar"). |
