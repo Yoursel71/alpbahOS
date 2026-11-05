@@ -149,3 +149,11 @@ Bu kararlar asistan tarafından verildi; geri alınabilir teknik seçimlerdir. D
 | ID | Durum | Karar | Dayanak |
 |---|---|---|---|
 | D48 | Teknik seçim | `alp` motoru rootfs'e (`/usr/bin/alp`) kuruldu ve chroot içinde `--root /` ile htop kur/çalıştır/kaldır akışı çalıştırıldı. Kaynak sha256, upstream `.sha256` dosyasıyla doğrulandı. QEMU'da tekrar gerekiyor. | `docs/verification/t5-alp-htop-chroot-2026-11-05.md`. |
+
+## 5 Kasım 2026 — Dolphin, T4 yolu ve VM oturumu (asistan kararları)
+
+| ID | Durum | Karar | Dayanak |
+|---|---|---|---|
+| D49 | Kullanıcı onayı | Dolphin 25.08.3 BLFS planına (row 338) eklendi ve chroot'ta derlendi. Kaynak GPG (KDE anahtarı D81C0CB3…) ve sha256 ile doğrulandı. BalooWidgets ve PackageKit opsiyonel, derlenmedi (metadata özellikleri devre dışı). | Kullanıcı yanıtı: "BLFS'e ekle"; `338-dolphin-25.08.3.sh`. |
+| D50 | Kullanıcı onayı | T4: mevcut kırpma/ölçekleme yolu (kaynak kırpılmaz, yalnız ölçeklenir) kabul. Paket rootfs ve imaja kuruldu; varsayılan ayar ve görsel kontrol VM'de yapılmadı. | Kullanıcı yanıtı: "Kırpma/ölçekleme"; `build_wallpaper.py --check` güncel. |
+| D51 | Kullanıcı onayı (sapma) | VM: 2 açılış (plan 1). Geçici root şifresi test imajına yazıldı, repoya girmedi. SDDM autologin VM'de başarısız; T2 canlı doğrulama yapılamadı. | `docs/verification/vm-session-2026-11-05.md`. |
