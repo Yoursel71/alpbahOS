@@ -23,3 +23,11 @@ Durum: **derleme ve kurulum tamam; sanal disk kurulum testi (M11 kabulü) henüz
 1. Sanal diskte BIOS ve UEFI kurulum testi (`docs/handoffs`'taki M11 kriteri: önce sanal disk, sonra yetkilendirilmiş gerçek disk).
 2. Kurucu modülleri (unpackfs için squashfs, bootloader için GRUB, kullanıcı ve dil) yapılandırılmadı.
 3. Canlı ISO (M09) henüz yok; Calamares'in çalıştığı ortam bu ISO ile kurulacak.
+
+## Kurucu yapılandırması (chroot'ta yükleme testi)
+
+- Dosyalar: `scripts/lfs-blfs/calamares/settings.conf` (sıra düzenlendi: initcpio/initramfs/displaymanager çıkarıldı), `scripts/lfs-blfs/calamares/unpackfs.conf` (kaynak `/run/live/medium/live/filesystem.squashfs`, squashfs). Modül yapılandırmaları (49 `.conf`) rootfs `/etc/calamares/modules/` altına kaynak ağacından kopyalandı.
+- Test: `QT_QPA_PLATFORM=offscreen QT_PLUGIN_PATH=/usr/lib/plugins:/opt/qt6/plugins calamares -d` chroot içinde: 60 modül bulundu; `welcome`, `locale`, `keyboard` yüklendi; bölümleme arka ucu `pmsfdiskbackendplugin` yüklendi.
+- Önceki hata (`Failed to initialize KPMcore backend`) yanlış `QT_PLUGIN_PATH` yüzündendi (`/usr/lib/plugins` eklenince çözüldü).
+- Kalan uyarılar (chroot): D-Bus sistem soketi yok; `ckbcomp` yok (klavye önizlemesi devre dışı); `/etc/locale.gen` yok.
+- Henüz yapılmadı: gerçek kurulum (sanal disk) — canlı ISO (M09) gerekiyor.
