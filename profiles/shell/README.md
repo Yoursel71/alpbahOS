@@ -38,7 +38,7 @@ Kaynak paketlerin sürüm/checksum doğrulaması ve LFS/BLFS zincirine eklenmesi
 
 ## `pkg` tamamlama
 
-`compdef _pkg pkg` satırı yorum halinde bırakıldı; PKG-01/PKG-02'de komut motoru ve alt komutlar sabitlenmeden gerçek bir tamamlama fonksiyonu yazmak MASTER_PLAN'ın "paket motorunun API'si netleşmeden mağaza işlem mantığı yazma" uyarısına aykırı olur.
+Tamamlama artık `alp` CLI'ya (`alp.py`, rootfs'teki sürüm) göre yazıldı: alt komut adları ve `install/info/remove/upgrade/protect/unprotect` için paket adları yerel katalogdan (`ALP_INDEX`, yoksa `/usr/share/alp/index.json`) okunur. Ağ ve root gerekmez. Mağaza işlem mantığı hâlâ yazılmadı.
 
 ## Kabul kriterleri karşısında durum
 
@@ -49,7 +49,7 @@ Güncel durum (5 Kasım 2026): [docs/verification/t3-zsh-chroot-2026-11-05.md](.
 | 1. Temiz kullanıcıda öneri görünür, ağ gerekmez | Chroot pty'de **doğrulandı** (Konsole'da değil) |
 | 2. Öneri kabulü komutu çalıştırmaz, Enter gerekir | Chroot pty'de **doğrulandı** |
 | 3. Hatalı komut düzeltmesi açıklanır ve reddedilebilir | Chroot pty'de istem ve red **doğrulandı** |
-| 4. Paket adı tamamlama, yazarken gereksiz root/ağ işlemi yok | PKG-01/02 bekliyor, **uygulanmadı** |
+| 4. Paket adı tamamlama, yazarken gereksiz root/ağ işlemi yok | Chroot pty'de **doğrulandı**: `alp inst<TAB>` → `install`, `alp install ht<TAB>` → `htop`; yerel index okunur, kurulum tetiklenmez |
 | 5. Ctrl+C kesme davranışı korunur | Chroot pty'de **doğrulandı** |
 | 6. Logo çıktısı gerçek terminalde doğru renklerle çizilir | `docs/assets/alpbahOS-neofetch-ansi.txt` referansı var, **gerçek terminal doğrulaması yapılmadı** |
 
