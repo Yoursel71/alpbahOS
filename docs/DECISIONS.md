@@ -157,3 +157,10 @@ Bu kararlar asistan tarafından verildi; geri alınabilir teknik seçimlerdir. D
 | D49 | Kullanıcı onayı | Dolphin 25.08.3 BLFS planına (row 338) eklendi ve chroot'ta derlendi. Kaynak GPG (KDE anahtarı D81C0CB3…) ve sha256 ile doğrulandı. BalooWidgets ve PackageKit opsiyonel, derlenmedi (metadata özellikleri devre dışı). | Kullanıcı yanıtı: "BLFS'e ekle"; `338-dolphin-25.08.3.sh`. |
 | D50 | Kullanıcı onayı | T4: mevcut kırpma/ölçekleme yolu (kaynak kırpılmaz, yalnız ölçeklenir) kabul. Paket rootfs ve imaja kuruldu; varsayılan ayar ve görsel kontrol VM'de yapılmadı. | Kullanıcı yanıtı: "Kırpma/ölçekleme"; `build_wallpaper.py --check` güncel. |
 | D51 | Kullanıcı onayı (sapma) | VM: 2 açılış (plan 1). Geçici root şifresi test imajına yazıldı, repoya girmedi. SDDM autologin VM'de başarısız; T2 canlı doğrulama yapılamadı. | `docs/verification/vm-session-2026-11-05.md`. |
+
+## 5 Kasım 2026 — T6 uygulamaları (asistan kararları)
+
+| ID | Durum | Karar | Dayanak |
+|---|---|---|---|
+| D54 | Teknik seçim (sapma) | Okular PDF ile derlendi; PS/DjVu/ePub/Markdown/TIFF arka uçları isteğe bağlı kapatıldı (`FORCE_NOT_REQUIRED_DEPENDENCIES`). | `docs/verification/t6-apps-deps-2026-11-05.md`. |
+| D55 | Açık sorun | `gio open` ile varsayılan uygulama açılışında DBus etkinleştirilen Okular Wayland ortamını almıyor (xcb hatası). Doğrudan başlatma çalışıyor. Çözüm adayı: oturum ortamını DBus'a aktarma. | `docs/verification/vm-session-3-t6-2026-11-05.md`. |
