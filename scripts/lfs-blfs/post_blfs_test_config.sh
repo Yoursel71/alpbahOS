@@ -23,6 +23,16 @@ done
 # Mesa override'ı (kms_swrast) kaldır: EGL/drisw yolunu bozuyordu
 sed -i '/^MESA_LOADER_DRIVER_OVERRIDE=/d' "$ENVF"
 
+# 2b) sddm-autologin yığını system-local-login'i include eder (eksikse autologin 'Permission denied' verir)
+if [ ! -e "$LFS/etc/pam.d/system-local-login" ]; then
+  install -m 0644 "$LFS/etc/pam.d/system-login" "$LFS/etc/pam.d/system-local-login"
+  log "pam: system-local-login (system-login kopyasi)"
+fi
+# 2c) sddm-autologin pam_faillock preauth için /run/faillock açılışta oluşmalı
+install -D -m 0644 "$(dirname "$0")/sddm-autologin/alpbahos-autologin.conf" "$LFS/usr/lib/tmpfiles.d/alpbahos-autologin.conf"
+log "tmpfiles: /run/faillock kurali"
+# 2a) Kök dizin root:root olmalı (uid 1000 sahipliği systemd tmpfiles ve güvenlik kontrollerini bozar)
+chown 0:0 "$LFS" && chmod 0755 "$LFS"
 # 2) PAM: sddm ve login yığınları system-login'i include eder; LFS'te bu dosyalar yoktu
 mkdir -p "$LFS/etc/pam.d"
 if [ ! -e "$LFS/etc/pam.d/system-login" ]; then

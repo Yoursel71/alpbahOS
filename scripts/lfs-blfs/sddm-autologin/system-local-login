@@ -1,0 +1,6 @@
+# Begin /etc/pam.d/system-login
+auth      include   system-auth
+account   include   system-account
+password  include   system-password
+session   include   system-session
+# End /etc/pam.d/system-login
