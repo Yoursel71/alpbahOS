@@ -340,3 +340,4 @@
 335 spectacle-6.4.4 REQ https://www.linuxfromscratch.org/blfs/view/12.4-systemd/kde/plasma-all.html
 336 konsole-25.08.3 REQ https://docs.kde.org/stable6/en/konsole/konsole/
 337 zsh-5.9 REQ https://www.zsh.org/
+338 dolphin-25.08.3 REQ https://docs.kde.org/stable6/en/dolphin/dolphin/
