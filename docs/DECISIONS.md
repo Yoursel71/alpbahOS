@@ -120,3 +120,11 @@ Bu kararlar asistan tarafından verildi; geri alınabilir teknik seçimlerdir. D
 | D37 | Teknik seçim | Konsole 25.08.3 BLFS planına eklendi (terminal). GPG imzası doğrulandı; sha256 `095a7ff1…6615`. | Proje hedefi "Konsole/Zsh" terminali; kanıt: `docs/verification/m07-m08-qemu-evidence-2026-11-05.md`. |
 | D38 | Teknik seçim | Zsh 5.9 eklendi. GPG imzası doğrulandı; sha256 `9b8d1ecedd5b5e81fbf1918e876752a7dd948e05c1a0dba10ab863842d45acd5`. ncurses 6.5 çakışması için yalnız `termcap.c` içinde yerel yeniden adlandırma. | Aynı hedef; kanıt: aynı belge. |
 | D39 | Geçici kabul | Sapmalar test/geliştirme imajı için geçici kabul edildi: Sonnet arka uç yok, kwalletd kapalı, About System KCM ve OpenGL yardımcısı kapalı, X11 input KCM'leri kapalı, ffmpeg x86asm'sız. Release öncesi yeniden değerlendirilecek. | `scripts/lfs-blfs/` ve `docs/verification/evidence-2026-11-05/DEVIATIONS.md`. |
+
+## 5 Kasım 2026 — kullanıcı onayı: "herşeyi kabul onay"
+
+| ID | Durum | Karar | Dayanak |
+|---|---|---|---|
+| D40 | Kabul (kullanıcı) | D39 sapmaları test ve geliştirme imajı için kabul edildi: Sonnet/kwalletd, About System KCM ve OpenGL yardımcısı, X11 input KCM'leri, ffmpeg x86asm'sız. Release öncesi yeniden değerlendirme sürer. | Kullanıcı mesajı, 5 Kasım 2026. |
+| D41 | Kabul (kullanıcı) | Kısayollar için kglobalaccel yeniden yükleme ve tek oturum doğrulama onaylandı. | Kullanıcı mesajı, 5 Kasım 2026. |
+| D42 | Kabul (kullanıcı) | LFS 12 test tekrarı yalnızca 1 saatten kısa testlerle sınırlı; uzun testler (Python, systemd, util-linux) bu turda yapılmayacak. | Kullanıcı mesajı ("1 saatten uzun süreli testler yapma"). |
