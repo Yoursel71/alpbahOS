@@ -54,11 +54,31 @@ fi
 zstyle ':completion:*' menu select
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 
-# --- pkg tamamlama iskeleti ---
-# PKG-01/PKG-02 (motor + CLI sözleşmesi) sabitlenmeden gerçek bir _pkg
-# tamamlama fonksiyonu yazılmaz (MASTER_PLAN: "paket motorunun API'si
-# netleşmeden mağaza işlem mantığı yazma").
-# compdef _pkg pkg
+# --- alp paket adı tamamlama (MASTER_PLAN §4.3 madde 4) ---
+# Kaynak: yerel katalog index.json (ALP_INDEX ortam değişkeni, yoksa
+# /usr/share/alp/index.json). Yalnız okur; root ya da ağ gerekmez.
+# alp CLI sözleşmesi: alp.py (docs/handoffs/claude/alp-prototype/).
+_alp_index_names() {
+  local idx=${ALP_INDEX:-/usr/share/alp/index.json}
+  [[ -r $idx ]] || return 1
+  python3 -I -c 'import json,sys; print("\n".join(json.load(open(sys.argv[1],encoding="utf-8")).get("entries",{}).keys()))' "$idx" 2>/dev/null
+}
+
+_alp() {
+  local -a subcmds pkgs
+  subcmds=(search info list install remove upgrade autoremove update check recover protect unprotect help)
+  if (( CURRENT == 2 )); then
+    _describe 'alp komutu' subcmds
+    return
+  fi
+  case $words[2] in
+    install|info|remove|upgrade|protect|unprotect)
+      pkgs=(${(f)"$(_alp_index_names)"})
+      (( ${#pkgs} )) && _describe 'paket' pkgs
+      ;;
+  esac
+}
+compdef _alp alp
 
 # --- Ctrl+C ---
 # Zsh'nin varsayılan SIGINT/iş kesme davranışı KORUNUR; bu profil tarafından
