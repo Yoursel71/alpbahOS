@@ -164,3 +164,9 @@ Bu kararlar asistan tarafından verildi; geri alınabilir teknik seçimlerdir. D
 |---|---|---|---|
 | D54 | Teknik seçim (sapma) | Okular PDF ile derlendi; PS/DjVu/ePub/Markdown/TIFF arka uçları isteğe bağlı kapatıldı (`FORCE_NOT_REQUIRED_DEPENDENCIES`). | `docs/verification/t6-apps-deps-2026-11-05.md`. |
 | D55 | Açık sorun | `gio open` ile varsayılan uygulama açılışında DBus etkinleştirilen Okular Wayland ortamını almıyor (xcb hatası). Doğrudan başlatma çalışıyor. Çözüm adayı: oturum ortamını DBus'a aktarma. | `docs/verification/vm-session-3-t6-2026-11-05.md`. |
+
+## 5 Kasım 2026 — M11 kurucu zinciri (asistan kararları)
+
+| ID | Durum | Karar | Dayanak |
+|---|---|---|---|
+| D56 | Sapma (test) | M11 zinciri (yaml-cpp 0.9.0, GNU parted 3.6, kpmcore 25.08.3, Calamares 3.3.14) chroot'ta derlendi ve kuruldu. yaml-cpp, kpmcore ve Calamares için upstream sha256/imza yayınlanmamış (GitHub etiket arşivi sha256'sı kayıtlı). parted imzası geçerli ama anahtarın süresi dolmuş. parted'ta GCC 15 `incompatible-pointer-types` uyarısı kapatıldı. Calamares'te Python yapılandırma doğrulayıcısı atlandı. | `docs/verification/m11-calamares-chain-2026-11-05.md`. |
