@@ -13,7 +13,7 @@ Ortam: Fedora + QEMU/KVM (D36 test ortamı). Bu belge GitHub `main`'deki Hyper-V
 ## Kanıtlanmadı / açık
 - **M07 kalan maddeler (GitHub main):** Kickoff/Kirigami menüsü, klavye düzeni, ses/PipeWire applet modülleri, KWin render-node uyarısı. Henüz doğrulanmadı.
 - **Uzun süreli kararlılık:** ~5 dk gözlem. Saatlerce koşu ve yeniden başlatma kanıtı yok.
-- **M08 ilk dilim (kısmi):** Atatürk görseli (sha256 `f1dad1a9…`, PD-Turkey), Konsole profili ve zsh yapılandırması imaja kuruldu, ama ekran görüntüsünde duvar kâğıdı ve profil **uygulanmadı** (`host_shot5.png` ile belgelendi; yapılandırma yazıldı, etkisi doğrulanmadı). Windows kısayolları uygulanmadı.
+- **M08 ilk dilim (kısmi, ekranda doğrulandı):** Atatürk duvar kâğıdı masaüstünde görünüyor (`m08_qemu_wallpaper.png`; görsel portre ve düşük çözünürlüklü, 1080p'de bulanıklık riski var). Konsole `alpbahOS` profiliyle açılıyor, başlık `~ : zsh — Konsole`, koyu renk şeması uygulanmış (`m08_qemu_check.png`). Profilde `Command=/bin/zsh` eksikti; eklendi. Windows kısayolları henüz uygulanmadı.
 - **M09** (canlı ISO kabulü), **M10** (alfa), **M11** (Calamares kurucu), **M12** (beta, sürüm) açık.
 - **Sapmalar** (kabul bekliyor, geçici): Sonnet arka uç yok (`SONNET_NO_BACKENDS`), kwalletd kapalı (libsecret yok), About System KCM ve OpenGL yardımcısı kapalı (Qt Vulkan yok), plasma-desktop X11 input KCM'leri kapalı, ffmpeg x86asm'sız ve bazı codec'ler olmadan, sassc/gdk-pixbuf/NetworkManager yerel yamaları.
 
