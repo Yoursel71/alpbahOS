@@ -1,0 +1,26 @@
+export XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus; cd ~; timeout 200 python3 verify_shortcuts_live.py > /tmp/sc_verify2.txt 2>&1
+^MRC=1^M
+walk-windows                             GEM-CM-^GTM-DM-0        Alt+Tab, Alt+Shift+Tab^M
+show-desktop                             GEM-CM-^GTM-DM-0        Meta+D^M
+file-manager                             KAYITSIZ     kayM-DM-1tlM-DM-1 deM-DM-^_il: org.kde.dolphin.desktop/_launch^M
+lock-session                             GEM-CM-^GTM-DM-0        Meta+L^M
+run-launcher                             KALDI        Meta+R org.kde.krunner.desktop/_launch M-CM-<zerinde etkin deM-DM-^_il; Meta+R M-CM-'akM-DM-1M-EM-^_M-DM-1yor: org.k
+app-menu                                 GEM-CM-^GTM-DM-0        Meta^M
+settings                                 KALDI        Meta+I systemsettings.desktop/_launch M-CM-<zerinde etkin deM-DM-^_il^M
+tile-left                                GEM-CM-^GTM-DM-0        Meta+Left^M
+tile-right                               GEM-CM-^GTM-DM-0        Meta+Right^M
+maximize                                 KALDI        Meta+Up kwin/Window Maximize M-CM-<zerinde etkin deM-DM-^_il; Meta+Up M-CM-'akM-DM-1M-EM-^_M-DM-1yor: kwin/Window Qu
+minimize                                 KALDI        Meta+Down kwin/Window Minimize M-CM-<zerinde etkin deM-DM-^_il; Meta+Down M-CM-'akM-DM-1M-EM-^_M-DM-1yor: kwin/Windo
+overview                                 KALDI        Meta+Tab kwin/Overview M-CM-<zerinde etkin deM-DM-^_il; Meta+Tab M-CM-'akM-DM-1M-EM-^_M-DM-1yor: kwin/Walk Through W
+close-window                             GEM-CM-^GTM-DM-0        Alt+F4^M
+system-monitor                           KALDI        Ctrl+Shift+Esc org.kde.plasma-systemmonitor.desktop/_launch M-CM-<zerinde etkin deM-DM-^_il^M
+region-screenshot                        KALDI        Meta+Shift+S org.kde.spectacle.desktop/RectangularRegionScreenShot M-CM-<zerinde etkin deM-DM-^_il; Meta+Shift+S M-C
+clipboard-ops                            KAPSAM DIM-EM-^^I  uygulama katmanM-DM-1; sistem kM-DM-1sayolu deM-DM-^_il^M
+cozum:maximize:Window Quick Tile Top     KALDI        hM-CM-"lM-CM-" etkin: Meta+Up^M
+cozum:minimize:Window Quick Tile Bottom  KALDI        hM-CM-"lM-CM-" etkin: Meta+Down^M
+cozum:run-launcher:RecordRegion          KALDI        hM-CM-"lM-CM-" etkin: Meta+R^M
+cozum:region-screenshot:_launch          KALDI        hM-CM-"lM-CM-" etkin: Meta+Shift+S^M
+M-CM-6zet: GEM-CM-^GTM-DM-0=7, KALDI=11, KAPSAM DIM-EM-^^I=1, KAYITSIZ=1^M
+-bash-5.3$ 
+
+[exited with code 0]
