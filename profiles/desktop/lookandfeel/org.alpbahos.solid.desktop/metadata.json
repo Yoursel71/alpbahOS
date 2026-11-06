@@ -7,8 +7,8 @@
             }
         ],
         "Category": "",
-        "Description": "alpbahOS varsayılan Solid görünümü: koyu lacivert renkler, Atatürk duvar kâğıdı, üst panel ve dock",
-        "Description[tr]": "alpbahOS varsayılan Solid görünümü: koyu lacivert renkler, Atatürk duvar kâğıdı, üst panel ve dock",
+        "Description": "alpbahOS default Solid look: dark navy colours, alpbahOS-Brand default wallpaper (Atatürk wallpaper selectable), Windows-style bottom taskbar with Start menu",
+        "Description[tr]": "alpbahOS varsayılan Solid görünümü: koyu lacivert renkler, varsayılan alpbahOS-Brand duvar kâğıdı (Atatürk duvar kâğıdı seçilebilir), Başlat menülü Windows tarzı alt görev çubuğu",
         "Id": "org.alpbahos.solid.desktop",
         "License": "Proje lisansı belirlenecek (bkz. README.md)",
         "Name": "alpbahOS Solid",

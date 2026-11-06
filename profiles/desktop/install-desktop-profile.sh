@@ -4,7 +4,8 @@
 # Kurulanlar (DATADIR varsayılanı /usr/share, SYSCONFDIR varsayılanı /etc):
 #   DATADIR/plasma/look-and-feel/org.alpbahos.solid.desktop/   look-and-feel paketi
 #   DATADIR/color-schemes/alpbah-dark.colors                  renk şeması
-#   DATADIR/wallpapers/alpbahOS-Ataturk/                      Atatürk duvar kâğıdı paketi
+#   DATADIR/wallpapers/alpbahOS-Brand/                        varsayılan alpbahOS marka duvar kâğıdı (D114)
+#   DATADIR/wallpapers/alpbahOS-Ataturk/                      Atatürk duvar kâğıdı (seçilebilir alternatif, D114)
 #   DATADIR/icons/hicolor/<N>x<N>/apps/alpbahos.png           alpbahOS sembol ikonu
 #   SYSCONFDIR/xdg/kdeglobals                                 LookAndFeelPackage varsayılanı
 #   SYSCONFDIR/xdg/kwinrc                                     Solid: blur/kontrast kapalı
@@ -94,8 +95,11 @@ add_tree() {
 }
 
 LNF_SRC="$REPO/profiles/desktop/lookandfeel/org.alpbahos.solid.desktop"
+BRAND_WALL_SRC="$REPO/branding/alpbahos-brand/wallpaper/alpbahOS-Brand"
 WALL_SRC="$REPO/branding/ataturk-theme/wallpaper/alpbahOS-Ataturk"
 add_tree "$LNF_SRC" "$DATADIR/plasma/look-and-feel/org.alpbahos.solid.desktop"
+# Varsayılan marka duvar kâğıdı ve seçilebilir Atatürk duvar kâğıdı: ikisi de kurulur (D114).
+add_tree "$BRAND_WALL_SRC" "$DATADIR/wallpapers/alpbahOS-Brand"
 add_tree "$WALL_SRC" "$DATADIR/wallpapers/alpbahOS-Ataturk"
 PAIRS+=("$WALL_SRC/ATTRIBUTION.md|$DATADIR/wallpapers/alpbahOS-Ataturk/ATTRIBUTION.md")
 add_tree "$REPO/branding/icons/hicolor" "$DATADIR/icons/hicolor"

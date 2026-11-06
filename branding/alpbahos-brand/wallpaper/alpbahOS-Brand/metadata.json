@@ -1,0 +1,13 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "alpbahOS"
+            }
+        ],
+        "Description": "alpbahOS marka duvar kâğıdı: koyu lacivert degrade, dağ-terminal logosu, cyan ve turuncu vurgu",
+        "Id": "alpbahOS-Brand",
+        "License": "GPL-3.0-or-later",
+        "Name": "alpbahOS"
+    }
+}

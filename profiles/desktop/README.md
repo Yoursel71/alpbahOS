@@ -1,124 +1,130 @@
-# alpbahOS Masaüstü Profili — UI-01
+# alpbahOS Desktop Profile — UI-01
 
-Durum: **M08 ilk dilim — kurulabilir paket hazır, gerçek Plasma oturumunda test edilmedi.** Look-and-feel paketi, Atatürk duvar kâğıdı, sembol ikonu, sistem varsayılanları ve kurulum betiği repoda; biçimleri Plasma 6.4.4 kaynak koduna göre yazıldı ve statik testlerden geçti (`tests/test_m08_desktop_profile.py`). Gen2 imajına kurulup ekran görüntüsüyle doğrulanmadıkça "uygulandı" sayılmaz. Ayrıntı: [015 devir belgesi](../../docs/handoffs/claude/015-m08-lookandfeel-wallpaper-shortcuts.md).
+Status: **M08 first slice — installable package ready; not yet run in a real Plasma session.** The look-and-feel package, the Atatürk wallpaper, the symbol icon, system defaults and the install script are in the repo. They were written against the Plasma 6.4.4 source code and pass the static tests (`tests/test_m08_desktop_profile.py`, run on 26 September 2026). Nothing counts as "applied" until it has been installed on the Gen2 test image and checked with a screenshot. Details: [015 handoff](../../docs/handoffs/claude/015-m08-lookandfeel-wallpaper-shortcuts.md).
 
-## 0. M08 dosya düzeni ve kurulum
+Current design (2026-11-06, not yet run in a real Plasma session): the desktop uses a single bottom panel with a Start menu, the Solid appearance is the default and Glass is an option (D115, D116). Liquid is not in the first release (D116). The look-and-feel defaults use the `alpbahOS-Brand` wallpaper (D114). The Atatürk wallpaper is installed and can be selected (D114). Brand assets: [../../branding/alpbahos-brand/README.md](../../branding/alpbahos-brand/README.md). See the sections below for each item.
 
-| Repo yolu | Kurulum hedefi | İçerik |
+## 0. M08 file layout and installation
+
+| Repo path | Install target | Content |
 |---|---|---|
-| `lookandfeel/org.alpbahos.solid.desktop/` | `/usr/share/plasma/look-and-feel/org.alpbahos.solid.desktop/` | `metadata.json`, `contents/defaults` (renk şeması, ikon, dekorasyon, duvar kâğıdı adı), `contents/layouts/org.kde.plasma.desktop-layout.js` (üst panel + dock) |
-| `colorscheme/alpbah-dark.colors` | `/usr/share/color-schemes/alpbah-dark.colors` | Renk şeması |
-| `../../branding/ataturk-theme/wallpaper/alpbahOS-Ataturk/` | `/usr/share/wallpapers/alpbahOS-Ataturk/` | `Wallpaper/Images` paketi (5 çözünürlük) |
-| `../../branding/icons/hicolor/` | `/usr/share/icons/hicolor/` | `alpbahos` sembol ikonu (32–256 px, geçici raster) |
+| `lookandfeel/org.alpbahos.solid.desktop/` | `/usr/share/plasma/look-and-feel/org.alpbahos.solid.desktop/` | `metadata.json`, `contents/defaults` (color scheme, icon, decoration, wallpaper name), `contents/layouts/org.kde.plasma.desktop-layout.js` (single 44 px bottom panel, D115) |
+| `colorscheme/alpbah-dark.colors` | `/usr/share/color-schemes/alpbah-dark.colors` | Color scheme |
+| `../../branding/ataturk-theme/wallpaper/alpbahOS-Ataturk/` | `/usr/share/wallpapers/alpbahOS-Ataturk/` | `Wallpaper/Images` package (5 resolutions). Stays installed and selectable (D114) |
+| `../../branding/alpbahos-brand/wallpaper/alpbahOS-Brand/` | `/usr/share/wallpapers/alpbahOS-Brand/` | Default alpbahOS brand wallpaper package (D114). The look-and-feel defaults use `alpbahOS-Brand`. See [brand README](../../branding/alpbahos-brand/README.md) |
+| `../../branding/icons/hicolor/` | `/usr/share/icons/hicolor/` | `alpbahos` symbol icon (32–256 px, temporary raster) |
 | `xdg/kdeglobals` | `/etc/xdg/kdeglobals` | `LookAndFeelPackage=org.alpbahos.solid.desktop` |
-| `xdg/kwinrc` | `/etc/xdg/kwinrc` | Solid: blur/kontrast efekti kapalı |
-| `../shortcuts/generated/kglobalshortcutsrc` | `/etc/skel/.config/kglobalshortcutsrc` + her `--user-home` için `<ev>/.config/kglobalshortcutsrc` | Windows'a tanıdık kısayollar ([conflicts.md](../shortcuts/conflicts.md)). kglobalacceld `/etc/xdg` okumaz (D43) |
-| `bin/alpbah-gorunum` | `/usr/bin/alpbah-gorunum` (0755) | Solid/Glass geçiş aracı (§5.1) |
+| `xdg/kwinrc` | `/etc/xdg/kwinrc` | Solid: blur/contrast effect off |
+| `../shortcuts/generated/kglobalshortcutsrc` | `/etc/skel/.config/kglobalshortcutsrc` and `<home>/.config/kglobalshortcutsrc` for each `--user-home` | Windows-familiar shortcuts ([conflicts.md](../shortcuts/conflicts.md)). kglobalacceld does not read `/etc/xdg` (v1 D43) |
+| `bin/alpbah-gorunum` | `/usr/bin/alpbah-gorunum` (0755) | Solid/Glass switch tool (§5.1) |
 
-Kurulum: `profiles/desktop/install-desktop-profile.sh --destdir <kök> [--datadir /usr/share] [--user-home /home/kullanici ...] [--manifest dosya]`. Betik hedef kökü zorunlu ister, `/` için ayrıca `--allow-live-root` ister, farklı içerikli dosyanın üzerine `--force` olmadan yazmaz ve kurduğu her dosyayı SHA-256 ile manifest'e yazar. Builder `/mnt/lfs` rootfs'ine kurulum BLFS derleme zincirinin işidir. Plasma `/opt/kf6` önekiyle kurulu olduğundan `XDG_DATA_DIRS` içinde `/usr/share` bulunmalı (ayrı `--datadir` de verilebilir).
+Install: `profiles/desktop/install-desktop-profile.sh --destdir <root> [--datadir /usr/share] [--user-home /home/user ...] [--manifest file]`. The script requires a target root; for `/` it also requires `--allow-live-root`. It does not overwrite a file with different content unless `--force` is given, and it writes the SHA-256 of every file it installs to the manifest. Installing into the `/mnt/lfs` rootfs is the job of the BLFS build chain. Plasma is installed under the `/opt/kf6` prefix, so `/usr/share` must be in `XDG_DATA_DIRS` (a separate `--datadir` can also be given).
 
-Mekanizma (Plasma 6.4.4 kaynağından): `startplasma` ilk oturumda `kdeglobals [KDE] LookAndFeelPackage` paketinin `contents/defaults` dosyasını `~/.config/kdedefaults/` altına uygular; varsayılan duvar kâğıdı `libkworkspace` `DefaultWallpaper` ile aynı dosyanın `[Wallpaper] Image` anahtarından bulunur (kilit ekranı da aynı varsayılanı kullanır); `contents/layouts/...-layout.js` yalnız düzeni olmayan yeni kullanıcıda ya da `plasma-apply-lookandfeel -a org.alpbahos.solid.desktop --resetLayout` ile çalışır.
+Mechanism (from the Plasma 6.4.4 source): on the first session, `startplasma` applies the `contents/defaults` file of the package named in `kdeglobals [KDE] LookAndFeelPackage` to `~/.config/kdedefaults/`. The default wallpaper is read from the `[Wallpaper] Image` key of that same file through `libkworkspace` `DefaultWallpaper`; the lock screen uses the same default. `contents/layouts/...-layout.js` runs only for a new user with no layout, or with `plasma-apply-lookandfeel -a org.alpbahos.solid.desktop --resetLayout`.
 
-Kapsam: yalnızca `profiles/desktop/`. `pkg` backend'i, toolchain, kernel, rootfs ve Hyper-V ayarlarına dokunulmadı ([CLAUDE.md](../../CLAUDE.md), [CLAUDE_START.md](../../docs/archive/CLAUDE_START.md)). Hazır KDE/Qt/GTK bileşenleri özelleştirilir; yeni compositor veya masaüstü kabuğu önerilmez.
+Scope: only `profiles/desktop/`. The `pkg` backend, toolchain, kernel, rootfs and the earlier Windows-host VM settings were not touched (history in [docs/archive/](../../docs/archive/)). See also [CLAUDE.md](../../CLAUDE.md) and [CLAUDE_START.md](../../docs/archive/CLAUDE_START.md). Ready-made KDE/Qt/GTK components are customised; no new compositor or desktop shell is proposed.
 
-Kaynaklar: [docs/MASTER_PLAN.md](../../docs/MASTER_PLAN.md) §6–7, [docs/alpbahOS-design-mockups.md](../../docs/alpbahOS-design-mockups.md), [docs/assets/alpbahOS-logo.png](../../docs/assets/alpbahOS-logo.png).
+Sources: [docs/MASTER_PLAN.md](../../docs/MASTER_PLAN.md) §6–7, [docs/alpbahOS-design-mockups.md](../../docs/alpbahOS-design-mockups.md), [docs/assets/alpbahOS-logo.png](../../docs/assets/alpbahOS-logo.png).
 
-## 1. Global tema (Plasma Look-and-Feel)
+## 1. Global theme (Plasma look-and-feel)
 
-- Paket kimliği: `org.alpbahos.solid.desktop` ([`lookandfeel/`](lookandfeel/org.alpbahos.solid.desktop/metadata.json))
-- Üst tema (parent/fallback): **Breeze Dark** — olgun, erişilebilirlik desteği test edilmiş, düşük ek yük.
-- Paket biçimi KDE'nin standart `lookandfeel` yapısını izler: `metadata.json` + `contents/{colorscheme,icons,splash,lockscreen,windowswitcher,...}`. Yeni bir paket formatı icat edilmez.
-- Varsayılan profil adı `alpbah-solid` (bkz. MASTER_PLAN §7.1). Glass/Liquid ayrı profil paketleri olarak düşünülür, aynı token setinden türetilir (bkz. `tokens.json`).
+- Package ID: `org.alpbahos.solid.desktop` ([`lookandfeel/`](lookandfeel/org.alpbahos.solid.desktop/metadata.json))
+- Parent (fallback) theme: **Breeze Dark** — mature, accessibility support tested, low overhead.
+- The package format follows KDE's standard `lookandfeel` layout: `metadata.json` + `contents/{colorscheme,icons,splash,lockscreen,windowswitcher,...}`. No new package format is invented.
+- Default profile name: `alpbah-solid` (see MASTER_PLAN §7.1). Glass is an option built from the same token set (see `tokens.json`). Liquid is not in the first release (D116).
 
-## 2. Renk şeması
+## 2. Color scheme
 
-Taslak KDE renk şeması dosyası: [`colorscheme/alpbah-dark.colors`](colorscheme/alpbah-dark.colors). Değerler `docs/alpbahOS-design-mockups.md` §3.1 renk token'larından hex→RGB dönüştürülerek üretildi (dönüşüm elle yapıldı, System Settings → Renkler içinde içe aktarma testi **çalıştırılmadı**).
+Draft KDE color scheme file: [`colorscheme/alpbah-dark.colors`](colorscheme/alpbah-dark.colors). The values were made by converting hex to RGB from the color tokens in `docs/alpbahOS-design-mockups.md` §3.1. The conversion was done by hand; the import test in System Settings → Colors was **not run**.
 
-| Rol | Token | Hex | Kullanım |
+| Role | Token | Hex | Use |
 |---|---|---|---|
-| Pencere zemini | `--ab-bg-900` | `#11171c` | Window arka planı |
-| Görünüm zemini | `--ab-bg-950` | `#0b1014` | View/terminal zemini |
-| Yüzey | `--ab-surface-800` | `#16232d` | Kart, buton zemini |
-| Vurgu (seçim/odak) | `--ab-cyan` | `#00aeef` | Seçim, odak dekorasyonu, aktif pencere kenarlığı |
-| İkincil vurgu | `--ab-orange` | `#f5a623` | Uyarı, birincil eylem butonu, imleç |
-| Metin | `--ab-text` / `--ab-text-strong` | `#d4e0e8` / `#f4f8fb` | Gövde / başlık metni |
+| Window background | `--ab-bg-900` | `#11171c` | Window background |
+| View background | `--ab-bg-950` | `#0b1014` | View/terminal background |
+| Surface | `--ab-surface-800` | `#16232d` | Card, button background |
+| Accent (selection/focus) | `--ab-cyan` | `#00aeef` | Selection, focus decoration, active window border |
+| Secondary accent | `--ab-orange` | `#f5a623` | Warnings, primary action button, cursor |
+| Text | `--ab-text` / `--ab-text-strong` | `#d4e0e8` / `#f4f8fb` | Body / heading text |
 
-## 3. İkon teması
+## 3. Icon theme
 
-Açık teknik seçim — **test edilmedi**, iki aday var:
+Open technical choice — **not tested**; two candidates:
 
-1. **Papirus-Dark + `papirus-folders` accent** — klasör rengini cyan'a çevirmek kolay (hazır araç), geniş uygulama kapsamı. Kaynak: ayrı upstream proje; kaynak/checksum doğrulaması BLFS tarafında ABI-01/BUILD-01 kapsamında yapılmalı.
-2. **Breeze-Dark (tint edilmiş)** — ek bağımlılık yok, LFS/BLFS zincirine zaten dahil olması muhtemel, düşük RAM hedefine (P08) daha uygun.
+1. **Papirus-Dark + `papirus-folders` accent** — easy to turn folder colour to cyan (ready-made tool), wide application coverage. Source: a separate upstream project; source and checksum verification belongs to BLFS under ABI-01/BUILD-01.
+2. **Breeze-Dark (tinted)** — no extra dependency, probably already in the LFS/BLFS chain, better suited to the low-RAM target (v1 P08).
 
-Öneri: önce Breeze-Dark tint ile başla (bağımlılık eklemez), Papirus'u P08 ölçümlerinden sonra görsel zenginlik için değerlendir. Karar DECISIONS.md'ye işlenmeli.
+Recommendation: start with the Breeze-Dark tint (adds no dependency); evaluate Papirus for visual richness after the measurements against the D135 targets. The decision must be recorded in DECISIONS.md.
 
-## 4. Pencere dekorasyonu
+## 4. Window decoration
 
-- Temel: **Breeze** dekorasyonu (Aurorae/Breeze ayar API'si üzerinden özelleştirilir, yeni dekorasyon motoru yazılmaz).
-- Aktif pencere kenarlığı: `--ab-cyan`, `1px` (mockup §4.2 ile birebir).
-- Pasif pencere kenarlığı: `--ab-border` (`#29404f`).
-- Köşe yarıçapı: `10px` (genel), buton/rozet `999px` — bkz. `tokens.json` → `radius`.
-- Ağır blur/gölge yok (Solid profilinde); Glass profilinde kontrollü saydamlık ayrı token setiyle.
+- Base: **Breeze** decoration (customised through the Aurorae/Breeze settings API; no new decoration engine is written).
+- Active window border: `--ab-cyan`, `1px` (matches mockup §4.2).
+- Inactive window border: `--ab-border` (`#29404f`).
+- Corner radius: `10px` (general), buttons/badges `999px` — see `radius` in `tokens.json`.
+- No heavy blur or shadow in Solid; Glass uses controlled transparency with its own token set.
 
-## 5. Panel ve dock
+## 5. Panel and taskbar
 
-Mockup §4.1 düzeni korunur: üst panel (32–36px, `--ab-bg-950` yarı saydam) + merkez/alt dock.
+Current design (D115, decided 2026-11-06): a Windows-style **single bottom taskbar**. It is 44 px high, full width and opaque. It holds, left to right: the Kickoff Start menu, the icon task manager (pinned Dolphin, Firefox, Konsole and LibreOffice Writer, plus open windows), a separator, the system tray, the digital clock, and show-desktop at the right end. The top panel and the dock from the mockup are dropped. Firefox and LibreOffice are not packaged yet; they appear as launcher entries only. The layout is in [`layouts/org.kde.plasma.desktop-layout.js`](lookandfeel/org.alpbahos.solid.desktop/contents/layouts/org.kde.plasma.desktop-layout.js). It is a static draft and has **not been run in a real Plasma session**.
 
-Açık teknik seçim — **test edilmedi**:
+Notes on the design:
 
-| Seçenek | Artı | Eksi |
+- Only one Kickoff launcher is added. Plasma's Meta-key handler opens the first `launchermenu` applet only (`shellcorona.cpp`); a second launcher would make the Win key behaviour unclear.
+- The mockup's "Applications" item at the end of the dock is not used; the Start menu replaces it.
+- The taskbar is opaque, as the Solid profile requires (MASTER_PLAN §7.2). Translucency is left to the Glass option.
+
+Earlier M08 layout (26 September 2026, historical): a 34 px opaque top panel (Kickoff + window list, clock centre, tray right) and a floating centre dock. It was replaced by the D115 layout above. The earlier layout was also not run in a real Plasma session.
+
+Mockup contents from §4.1, not yet implemented: left, small alpbahOS symbol + active app name; centre, date/time; right, network, sound, battery/power, quick settings. Mockup dock order: Terminal, Files, Browser, Settings, App Center, Applications. App Center will be added once the `alp` store UI is ready (PKG-02; Discover with the alp backend, D124).
+
+## 5.1 Appearance profiles: Solid / Glass / Liquid
+
+- **Solid (default):** opaque panels, KWin blur/contrast effect off (`xdg/kwinrc`; the layout script sets `opacity = "opaque"`).
+- **Glass (option):** the [`bin/alpbah-gorunum`](bin/alpbah-gorunum) `glass` command turns on blur/contrast in the user's `kwinrc` (`BlurStrength=8`, `NoiseStrength=0`), loads the effects over KWin D-Bus and makes the panels `translucent`. `solid` reverts; `durum` (status) shows the renderer and profile. If KWin reports a software rasterizer (softpipe/LLVMpipe) or non-OpenGL compositing in `supportInformation`, Glass is refused (`--zorla` overrides this). The values are mapped to `tokens.json` → `profiles.*.kde` in the test. Not run in a real session; performance not measured. The current Gen2 test image uses softpipe/VGEM, so Glass is expected to be refused there.
+- **Liquid:** not in the first release (D116). Not implemented; the plan and criteria are in [`liquid-prototype.md`](liquid-prototype.md). It is removed from `tokens.json`.
+
+## 6. GTK/Qt mapping
+
+- For GTK2/3/4 sync, use **kde-gtk-config** (a ready-made KDE component).
+- For Qt5/Qt6 apps outside Plasma, use **qt5ct / qt6ct** + the **Kvantum** theme, generated from the same colour tokens.
+- Caveat from CLAUDE.md / MASTER_PLAN: one theme package is not assumed to look identical in GTK, Qt and third-party apps. The table below limits the test scope.
+
+### 6.1 Verification status
+
+| Component | Status | Note |
 |---|---|---|
-| Plasma yerel yüzen panel (icons-only task manager) | Ek bağımlılık yok, düşük RAM (P08 önceliği) | Mockup'taki tam görsel yoğunluğu native araçlarla sınırlı olabilir |
-| Latte Dock | Mockup'a daha yakın görsel sonuç, hazır ve yaygın kullanılan açık kaynak proje | Ayrı süreç/RAM ek yükü; eski PC hedefiyle ölçülmeli |
+| Plasma global theme package | Package written, static test passed; not loaded in Plasma | `lookandfeel/org.alpbahos.solid.desktop/` |
+| Color scheme (.colors) | Linked to the package default; import not tested | `colorscheme/alpbah-dark.colors` |
+| Icon theme | `breeze-dark` selected (adds no dependency); Breeze icons missing on the Gen2 image (M07 finding) | Papirus deferred until after measurement |
+| Window decoration | `org.kde.breeze` selected; Breeze decoration installed on the image not verified | No custom colour setting; colours come from the colour scheme |
+| Panel / taskbar | Single bottom taskbar written (D115); not run | Earlier top panel + dock replaced; Latte Dock not used |
+| Atatürk wallpaper | Package built, safe-area test passed; not shown in Plasma | `branding/ataturk-theme/wallpaper/`. Selectable theme (D114) |
+| alpbahOS brand wallpaper (default) | Package in the repo; look-and-feel defaults use `alpbahOS-Brand`; not yet seen in Plasma | `branding/alpbahos-brand/` (D114) |
+| Lock screen | Default wallpaper set; KScreenLocker not built, so it does not run. Planned (D133) | SCREENLOCK-01 |
+| Glass profile | `alpbah-gorunum` written, unit tests passed; not run in a session | Liquid not in first release (D116) |
+| Welcome app (theme, layout, appearance) | Planned, not started (D121) | First boot |
+| Xwayland (X11 apps) | Planned (D132); not in the image | BLFS input, §7 |
+| GTK mapping | Draft, not tested | kde-gtk-config plan exists, not run |
+| Qt (outside Plasma) mapping | Draft, not tested | qt5ct/qt6ct + Kvantum plan exists |
 
-Öneri: düşük kaynak profilinde (P08) yerel panel, genel/güçlü profilde Latte Dock değerlendirmesi — ölçüm sonrası PERF-01'de karara bağlanır.
+## 7. Packages the BLFS build must add (BLFS integration input)
 
-**M08 uygulaması (26 Eylül 2026):** varsayılan düzen Plasma'nın yerel panelleriyle yazıldı, ek bağımlılık yok. Üst panel 34 px, opak (Solid): Kickoff (alpbahOS sembolü) + `org.kde.plasma.windowlist` (etkin pencere adı), ortada saat, sağda sistem tepsisi. Dock: alt ortada yüzen, içeriğe göre genişleyen `icontasks` paneli; başlatıcılar Konsole, `preferred://filemanager`, `preferred://browser`, System Settings. Mockup'tan bilinçli farklar: (1) dock sonundaki "Uygulamalar" yerine uygulama menüsü üst paneldeki alpbahOS sembolündedir — iki başlatıcı olursa tek başına Win tuşu yalnız ilkini açar (`shellcorona.cpp`); (2) App Center, `alp` mağaza arayüzü hazır olunca (PKG-02) eklenecek; (3) mockup üst paneli yarı saydam gösterir, Solid profili opak yüzey ister (MASTER_PLAN §7.2) — yarı saydamlık Glass profiline bırakıldı.
-
-Panel içeriği (mockup §4.1'den):
-- Sol: küçük alpbahOS sembolü + aktif uygulama adı.
-- Orta: tarih/saat.
-- Sağ: ağ, ses, pil/güç, hızlı ayarlar.
-- Dock sırası: Terminal, Dosyalar, Tarayıcı, Ayarlar, App Center, Uygulamalar.
-
-## 5.1 Görünüm profilleri: Solid / Glass / Liquid
-
-- **Solid (varsayılan):** opak paneller, KWin blur/kontrast efekti kapalı (`xdg/kwinrc`, düzen betiğinde `opacity = "opaque"`).
-- **Glass (seçenek):** [`bin/alpbah-gorunum`](bin/alpbah-gorunum) `glass` komutu kullanıcının `kwinrc` dosyasında blur/kontrastı açar (`BlurStrength=8`, `NoiseStrength=0`), efektleri KWin D-Bus ile yükler ve panelleri `translucent` yapar; `solid` geri alır, `durum` renderer ve profil bilgisini gösterir. KWin `supportInformation` yazılım rasterleştirici (softpipe/LLVMpipe) ya da OpenGL olmayan compositing bildirirse Glass reddedilir (`--zorla` ile aşılır). Değerler `tokens.json` → `profiles.*.kde` ile testte eşlenir. Gerçek oturumda çalıştırılmadı; performans ölçülmedi. Mevcut Gen2 test imajı softpipe/VGEM kullandığı için orada Glass'ın reddedilmesi beklenir.
-- **Liquid (deneysel):** uygulanmadı; plan ve ölçüt [`liquid-prototype.md`](liquid-prototype.md).
-
-## 6. GTK/Qt eşleme
-
-- GTK2/3/4 senkronizasyonu için **kde-gtk-config** (hazır KDE bileşeni) kullanılır.
-- Plasma dışı Qt5/Qt6 uygulamaları için **qt5ct / qt6ct** + **Kvantum** teması, aynı renk token'larından üretilir.
-- CLAUDE.md/MASTER_PLAN uyarısı korunur: tek tema paketinin GTK/Qt/üçüncü taraf uygulamaların tamamını birebir aynı gösterileceği varsayılmaz. Aşağıdaki tablo test kapsamını sınırlar.
-
-### 6.1 Doğrulama durumu
-
-| Bileşen | Durum | Not |
-|---|---|---|
-| Plasma global tema paketi | Paket yazıldı, statik test geçti; Plasma'da yüklenmedi | `lookandfeel/org.alpbahos.solid.desktop/` |
-| Renk şeması (.colors) | Paket varsayılanına bağlandı; içe aktarma test edilmedi | `colorscheme/alpbah-dark.colors` |
-| İkon teması | `breeze-dark` seçildi (bağımlılık eklemez); Breeze ikonları Gen2 imajında eksik (M07 bulgusu) | Papirus ölçüm sonrasına bırakıldı |
-| Pencere dekorasyonu | `org.kde.breeze` seçildi; imajda Breeze dekorasyonunun kurulu olduğu doğrulanmadı | Özel renk ayarı yok, renk şemasından gelir |
-| Panel/dock | Yerel Plasma panelleriyle düzen yazıldı; çalıştırılmadı | Latte Dock kullanılmadı |
-| Atatürk duvar kâğıdı | Paket üretildi, güvenli alan testi geçti; Plasma'da gösterilmedi | `branding/ataturk-theme/wallpaper/` |
-| Kilit ekranı | Duvar kâğıdı varsayılanı hazır; KScreenLocker derlenmediği için çalışmaz | SCREENLOCK-01 |
-| Glass profili | `alpbah-gorunum` yazıldı, birim testleri geçti; oturumda çalıştırılmadı | Liquid yalnız plan |
-| GTK eşleme | Taslak, test edilmedi | kde-gtk-config planı var, çalıştırılmadı |
-| Qt (Plasma dışı) eşleme | Taslak, test edilmedi | qt5ct/qt6ct + Kvantum planı var |
-
-## 7. BLFS'e eklenmesi gereken paketler (BLFS/entegrasyon girdisi)
-
-Aşağıdaki liste bir talep listesidir, kurulum komutu değildir; kaynak/checksum doğrulaması CLAUDE.md kuralına göre BLFS tarafında yapılmalıdır:
+The list below is a request list, not an install command. Source and checksum verification must be done on the BLFS side, as CLAUDE.md requires.
 
 - `plasma-desktop`, `plasma-workspace`, `kwin`, `breeze`, `breeze-gtk`
-- M08 düzeni için: `breeze-icons` (panel/başlatıcıda ikon yok bulgusu), `kirigami-addons` (Kickoff açılmıyor), Türkçe karakterli font paketi (Noto/DejaVu/Liberation; imajda font yoktu), `konsole`, `dolphin`, `systemsettings`, bir tarayıcı (dock başlatıcıları), `spectacle` ve `plasma-systemmonitor` (kısayollar)
+- For the M08 layout: `breeze-icons` (finding: no icons in panel/launcher), `kirigami-addons` (finding: Kickoff did not open), a font package with Turkish characters (Noto/DejaVu/Liberation; the image had no fonts), `konsole`, `dolphin`, `systemsettings`, a browser (dock launchers), `spectacle` and `plasma-systemmonitor` (shortcuts)
+- Preinstalled apps (D127): Kate/KWrite, Okular, Gwenview, Ark, LibreOffice, VLC, Firefox. Dolphin and Konsole are listed above. KDE Edu is not preinstalled.
+- Xwayland, so X11 apps run inside the Wayland session (D132)
+- KScreenLocker, the screen locker (D133)
+- Mesa with real GPU drivers (Intel/AMD/NVIDIA open) plus llvmpipe, which needs LLVM (D134). The NVIDIA proprietary driver is a separate package (D128)
+- Discover with the alp PackageKit backend (D124): needs `alp` first
 - `kde-gtk-config`
-- `qt5ct` veya `qt6ct`, `kvantum`
-- (Açık karar) `papirus-icon-theme` — yalnızca ikon kararı Papirus yönünde netleşirse
-- (Açık karar) `latte-dock` — yalnızca dock kararı Latte yönünde netleşirse
+- `qt5ct` or `qt6ct`, `kvantum`
+- (Open decision) `papirus-icon-theme` — only if the icon decision goes to Papirus
+- (Open decision) `latte-dock` — not needed by the current single-taskbar design (D115); listed only in case the layout decision changes
 
-## 8. Entegrasyon notu
+Not BLFS packages: Steam is supported natively through multilib (D129). Bottles (Flatpak) provides Wine (D130). Flathub is on by default (D125). Microsoft Office is not a target (D131).
 
-UI-01 taslağı `claude/desktop-bootstrap` dalında hazırlanıp main'e alındı ([001](../../docs/handoffs/claude/001-desktop-bootstrap.md)). M08 ilk dilimi `claude/m08-lookandfeel-shortcuts` dalındadır; Gen2 doğrulama adımları [015](../../docs/handoffs/claude/015-m08-lookandfeel-wallpaper-shortcuts.md) içindedir.
+## 8. Integration note
+
+UI-01 draft was prepared on branch `claude/desktop-bootstrap` and merged to main ([001](../../docs/handoffs/claude/001-desktop-bootstrap.md)). The M08 first slice is on branch `claude/m08-lookandfeel-shortcuts`; the Gen2 verification steps are in [015](../../docs/handoffs/claude/015-m08-lookandfeel-wallpaper-shortcuts.md).
