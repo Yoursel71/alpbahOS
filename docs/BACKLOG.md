@@ -1,46 +1,83 @@
-# alpbahOS — Uygulanabilir görev sırası
+# alpbahOS — Backlog (v2, 2026-11-06)
 
-Plan sürümü 1.0. Roller: Codex altyapı/entegrasyon; Claude Code masaüstü/UX. `Sırada` fiilen çalıştırıldığı anlamına gelmez. Göreve başlayan ajan kendi devir kaydını günceller; ortak tabloyu entegratör birleştirir.
+Single agent: Claude (D100), so there is no owner column. Decisions are cited by ID from [DECISIONS.md](DECISIONS.md). The v1 task table is kept in [archive/BACKLOG-v1.md](archive/BACKLOG-v1.md).
 
-| ID | Sahip | Önkoşul | İş / teslim | Kabul ölçütü | Durum |
+Statuses: **Not started**, **In progress**, **Partial**, **Done**, **Blocked**. "Done" needs the acceptance test to be run and recorded. "Partial" means some of the acceptance is proven and the rest is listed in the task.
+
+## Open tasks
+
+| ID | Task | Depends on | Acceptance | Status | Decision |
 |---|---|---|---|---|---|
-| PLAN-01 | Codex | Kullanıcı cevapları | Ana plan, kararlar, AGENTS/CLAUDE | Yanıtlar kapsanmış; açık teknik kapılar belli | Tamamlandı |
-| REPO-01 | Codex | Git/GitHub erişimi | Private repo, main ve iki ayrı dal/worktree | Gizlilik ve uzak commit doğrulanır | Bu tur |
-| HOST-01 | Codex | Hyper-V yönetim yetkisi | Salt okunur host raporu, kaynak bütçesi | Hyper-V etkinliği, alan, ağ ve Linux ISO checksum | Tamamlandı (builder VM/SSH doğrulandı) |
-| HOST-02 | Codex | HOST-01 ve kurulum görevi | Gen2 builder + host-check | SSH/locale/toolchain gereksinimleri geçer | Tamamlandı (Ubuntu 24.04 builder, SSH ve LFS build kökü) |
-| VM-SSH-01 | Codex | Gen2 test imajı | OpenSSH server ve anahtar tabanlı erişimi imaja ekle | `sshd` enabled/active; kullanıcı public key’i ile dış hosttan login doğrulanır | **Gen2 test akışı geçti:** rootfs’de PAM OpenSSH/key-only policy ve `sa` authorized key var; v3 rootfs imajı boot etti, dış hosttan SSH public-key ile `sa` girişi doğrulandı. Release kapsamı değildir; dağıtım imajında gömülü anahtar/parola bulunmamalı. |
-| ABI-01 | Codex | Kaynak araştırması | Eşleşen LFS/multilib revizyon ve lib32 planı | Kaynaklar sabit; ELF32/64 test tasarımı | D32/P01 kullanıcı kararıyla kapsam dışı; hiçbir 32-bit kod/build yapılmadı |
-| PKG-01 | Claude | — (D31 ile motor değişti) | `alp` recipe+Flatpak+core motoru | Kur/kaldır/güncelle, bağımlılık ön kontrolü, güvenli dosya merge ve checksum | **Kod `e8b0376` main’de; rootfs’ye kuruldu.** Live Gen2 `/usr/lib/alp/alp.py` SHA-256 `7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132` beklenenle eşleşti. Htop install/remove e2e daha önce Claude’un Gen2 test imajında geçti; bu rootfs’ten üretilen v3’te yeniden çalıştırılmadı. Upgrade, bağımlılık, concurrency ve rollback testleri açık. |
-| PKG-02 | Claude | PKG-01 | `alp` ve mağaza işlem sözleşmesi | CLI/GUI aynı veritabanı ve kilit; güvenli güncelleme | D31 ile Discover/PackageKit alpm yolu terk edildi; gerçek `alp` GUI işlem yolu ve rootfs GUI testi doğrulanmadı. |
-| BUILD-01 | Codex | ABI-01, HOST-02 | Kaynak manifesti, indir/doğrula/tarif runner | Temiz yeniden deneme ve loglar | LFS 12.4-systemd akışıyla ilerletildi |
-| BUILD-02 | Codex | BUILD-01 | Geçici toolchain | Kitap sırası ve ELF/linker testleri | Tamamlandı (geçici araçlar ve final toolchain) |
-| BUILD-03 | Codex | BUILD-02, PKG-01 | Chroot/temel LFS | Paket dosya sahipliği ve kritik testler | LFS 12.4-systemd rootfs ve boot doğrulamaları mevcut; M04’ün temel paket→dosya sahipliği kaydı yok. `alp` DB tabanı boş; kurulu dosyalardan paket sahipliği çıkarsamak kanıtlanmadı. M04 kapanışından önce temel kurulum için güvenilir paket envanteri yöntemi belirlenip kayıt üretilecek. |
-| BOOT-01 | Codex | BUILD-03 | BIOS/UEFI boot | BIOS ve UEFI giriş/ağ/reboot kanıtı | **Tamamlandı (M05):** BIOS/Gen1 ile UEFI/Gen2 boot, DHCP, SSH ve kontrollü reboot kanıtları kaydedildi. Gen1 test VM'i sonradan silindi; bu sonuçlar tarihsel kanıttır. Güncel VM testleri Gen2'de sürüyor. |
-| BLFS-01 | Codex | BOOT-01 | Ağ/ses/grafik/oturum bağımlılıkları | TLS/ses/renderer testleri | Ağ/TLS, PAM/logind, pkexec e2e, Mesa softpipe EGL readback, ALSA loopback ve PipeWire null-sink PCM kanıtı var. Gen2’de getty/resolved ve KWin user unit/drop-in görünürlüğü doğrulandı. Gerçek grafik oturumu ve fiziksel ses aygıtı yok; BLFS-01 kısmi. |
-| UI-01 | Claude | Belgeler | Tema token'ları ve mevcut mockup eşlemesi | Türkçe, Solid varsayılan, profil farkları | Statik taslak tamamlandı (`001-desktop-bootstrap.md`). M08 ilk dilim: `org.alpbahos.solid.desktop` look-and-feel paketi ve kurulum betiği hazır, statik testler geçti; Gen2 Plasma'da yüklenip görüntülenmedi (`015-m08-lookandfeel-wallpaper-shortcuts.md`). |
-| UI-02 | Claude | UI-01 | Kısayol tanımları ve kullanıcı yardımı | Çakışma listesi; Alt+Tab/Win+D dahil | Statik analiz ve yardım taslağı (`002-ui02-ui03.md`). M08: eylem kimlikleri/upstream varsayılanları Plasma 6.4.4 kaynağından doğrulandı, `kglobalshortcutsrc` tek kaynaktan üretiliyor, canlı doğrulayıcı hazır; KWin kısayol kaydı ve Hyper-V tuş aktarımı gerçek oturumda doğrulanmadı (`015-m08-lookandfeel-wallpaper-shortcuts.md`). |
-| SHELL-01 | Claude | Belgeler | Zsh/Konsole profil taslağı | Öneri kabul/çalıştır ayrımı, düzeltme, Türkçe | Statik taslak tamamlandı (`001-desktop-bootstrap.md`); Zsh paketi ve oturum senaryosu test edilmedi. |
-| UI-03 | Claude | UI-01 | Atatürk tema varlık planı ve kaynak kaydı | Lisans/kaynak, kırpım/kontrast, logo korunması | Kaynak fotoğraf (PD-Turkey) eklendi; M08'de büyütmesiz, güvenli alan denetimli duvar kâğıdı paketi üretildi (`015-m08-lookandfeel-wallpaper-shortcuts.md`). Plasma'da gösterim, ölçek örnekleri, kilit ekranı ve kompozisyon lisansı açık. |
-| DESKTOP-01 | Codex | BLFS-01, UI/SHELL girdileri | LFS içinde Plasma oturumu | Temiz kullanıcı, PAM/logind, DRM-seat ve KWin başlangıç yolu | **KWin P0 unit gate geçti; Plasma henüz başlatılmadı.** Rootfs PAM/Shadow/login/sa ve key-only SSH mevcut. Gen2 v3’de `systemctl --user cat/show plasma-kwin_wayland.service` etkin ExecStart’ın `--xwayland` olmadan çalışacağını gösterdi. tty1’de admin login ve `loginctl` seat0/PAM kanıtı kullanıcıdan bekleniyor; gerçek DRM-seat Plasma testi bundan sonra. |
-| APPS-01 | Codex + Claude inceleme | DESKTOP-01 | Hazır temel uygulama profili | Dosya ilişkileri ve günlük senaryolar | Claude profili hazır: `profiles/apps/apps.json` → `/etc/xdg/mimeapps.list`, MIME'ler upstream masaüstü dosyalarıyla karşılaştırıldı; uygulamalar derlenmedi, ilişkiler test edilmedi (`016-glass-uygulama-perf-office.md`). |
-| COMPAT-01 | Codex | D35 + grafik | Wine (WoW64) doğrulaması | Windows 32/64-bit test programı ve seçili Office sürümü, 32-bit Unix kütüphanesi olmadan | **Karar verildi (D35, 26 Eylül 2026): yalnız 64-bit.** Steam istemcisi kapsam dışı; Wine yalnız yeni WoW64 moduyla derlenip test edilecek. Derleme/test yok; X11 uyumluluk kararı (DECISIONS) ayrı açık. |
-| SCREENLOCK-01 | Codex | P0 masaüstü zinciri + kullanıcı build tercihi | KScreenLocker'ı Wayland oturumuna geri getir | Ekran kilitleme/geri açma, Atatürk varsayılan kilit teması | `KWIN_BUILD_SCREENLOCKER=OFF`; Qt XCB/X11 greeter bağımlılıkları ve gerçek test henüz yok. D09 ile uyumsuz; DECISIONS'ta seçenek/maliyet açık. |
-| IMAGE-01 | Codex | M09 dağıtım imajı | Dağıtım hijyeni/provisioning | İlk boot'ta benzersiz machine-id ve SSH host keys; gömülü public key/parola yok | Açık. Şimdiki `fa29d476…` yalnız geliştirme/test imajı olarak işaretlenmeli; M09+ dağıtım kapsamı. |
-| OFFICE-01 | Claude plan / Codex test | Wine + lisanslı medya | Office sürüm bazlı rapor | Kur/aç/kaydet/yazdır; bilinen sorunlar | Plan ve test belgesi üreticisi hazır (`profiles/apps/office/`); LibreOffice senaryoları uygulanabilir, Word/Wine bölümü D22/D32 kararını bekliyor. alpbahOS'ta test yok. |
-| PERF-01 | Claude + Codex | DESKTOP-01 | RAM/frametime/efekt karşılaştırması | Solid bütçesi; Glass ölçümü; Liquid deney raporu | Yöntem ve araçlar hazır (`profiles/perf/`: KWin `KWIN_LOG_PERFORMANCE_DATA` CSV çözümleyici, bellek toplayıcı); Glass geçişi `alpbah-gorunum`; Liquid yalnız plan. Ölçüm yapılmadı. |
-| LIVE-01 | Codex | BOOT/APPS/PERF | Hybrid canlı ISO | Gen1/Gen2, ağ ve kurulumsuz oturum | Başlamadı |
-| ALPHA-01 | Codex + Claude inceleme | LIVE-01 | 0.2-alpha yerel paket | Test raporu/checksum/eksikler | Başlamadı |
-| INSTALL-01 | Codex | ALPHA-01 | Calamares ve offline paketler | Boş sanal disk, BIOS/UEFI kurulumu | Başlamadı |
-| INSTALL-02 | Codex | INSTALL-01 | Windows yanında kurulum/kurtarma | Sanal disklerde Windows korunur | Başlamadı |
-| BETA-01 | Codex + kullanıcı | INSTALL-02 | Gerçek donanım beta | Cihaz listesi ve yetkili kurulum testleri | Başlamadı |
+| OPEN-1 | Installed-system root device: choose (a) small dracut initramfs without the live hook, or (b) `root=PARTUUID=…` with GPT and `CONFIG_EFI_PARTITION=y` | User | User picks an option; choice written to DECISIONS.md; M11 acceptance can then proceed | Blocked | OPEN-1 |
+| M11-FIX-01 | Calamares follow-ups from handoff 024 items 1, 2, 4, 5: add `grubcfg` to settings.conf; `kernelSearchPath` = `/boot`; unpackfs must fail (not return 0) when squashfs is missing; `rsync` and `unsquashfs` present on the live ISO | M11 BIOS run | Each item changed in `scripts/lfs-blfs/calamares/`; runner run on a new target image shows the fixes; ISO tool check passes | Not started | D138 |
+| M11-FIX-02 | `systemd-oomd` and `systemd-resolved` namespace errors (handoff 024 item 6), root cause unknown | M11 BIOS boot | Cause found and written to a verification note; `systemctl --failed` is empty on the installed test target | Not started | D138 |
+| M11-UEFI-01 | Install and boot with OVMF on a virtual disk with an ESP | OPEN-1, M11-FIX-01 | UEFI install on a new image completes; boots to a login prompt; log saved under docs/verification/ | Not started | D136, D138 |
+| INSTALL-DUALBOOT-01 | Install alongside Windows on virtual disks, Windows partitions kept | M11-UEFI-01 | Test disk with a Windows-like partition set survives install; boot menu lists both; no real disk written | Not started | D137, D138 |
+| INSTALL-LUKS-01 | LUKS encryption as an installer option | M11-FIX-01, OPEN-1 | Install with LUKS on a new test image; boot asks for passphrase; passphrase never stored in repo | Not started | D139 |
+| REBUILD-R1 | Pin the newest stable LFS book version with multilib (lib32) | — | Exact book version, URLs and checksums recorded in docs; choice logged in DECISIONS.md | Not started | D140, D111 |
+| REBUILD-R2 | Build the toolchain for the pinned version | REBUILD-R1 | Toolchain build logs and test results recorded; critical test failures not hidden | Not started | D140 |
+| REBUILD-R3 | Install every base package through `alp` so the file-ownership ledger is created | REBUILD-R2 | Every base package has an `alp` database record; ownership check passes; no unowned base files | Not started | D141, D122 |
+| REBUILD-R4 | BLFS/KDE rebuild with features that were disabled in the test image re-enabled; trust-on-first-use hashes checked again | REBUILD-R3 | Feature list diff against test image recorded; every source hash verified against upstream | Not started | D142, D140 |
+| REBUILD-R5 | Parity boot of the rebuilt base on BIOS and UEFI | REBUILD-R4, M11-UEFI-01 | Both boot modes reach login and network on a new image; logs saved | Not started | D136, D140 |
+| XWAYLAND-01 | Xwayland so X11 apps run in the Plasma Wayland session | REBUILD-R4 or current base | X11 test app starts in the Wayland session in QEMU; `--xwayland` is present in the session command line (see WORKLOG, Plasma section) | Not started | D132 |
+| SCREENLOCK-01 | Bring back KScreenLocker (`KWIN_BUILD_SCREENLOCKER` is OFF in the current build) | Qt/X11 greeter dependencies decided | Lock and unlock work in the Wayland session in QEMU; lock screen uses the brand default (THEME-01) | Not started | D133, D114 |
+| MESA-01 | Mesa with real drivers (Intel, AMD, NVIDIA open) plus llvmpipe (needs LLVM) | REBUILD-R2 | Driver list and build options recorded; llvmpipe renders in QEMU; no hardware support claimed without a test | Not started | D134, D128 |
+| NVIDIA-PKG-01 | NVIDIA proprietary driver as a separate `alp` package, one-command install | ALP-TR-01 (alp CLI), REBUILD-R3 | Package installs and removes through `alp` on a test image; GPU test not run unless done on real hardware | Not started | D128 |
+| LAYOUT-01 | Windows-style single bottom taskbar with Start menu; old top panel and dock dropped | — | Screenshot in QEMU shows bottom taskbar and Start menu; screenshot saved in docs/verification/ | Not started | D115 |
+| WELCOME-01 | alpbah Welcome app on first boot: theme, layout, appearance choices | LAYOUT-01 | First boot shows the app; choices are applied in Plasma; tested in QEMU | Not started | D121, D114, D116 |
+| THEME-01 | Atatürk theme selectable; brand default wallpaper and lock screen (mountain/terminal logo, navy/cyan/orange) | WELCOME-01 | Theme switch works; default wallpaper and lock screen show brand assets; asset source and licence recorded | Partial | D114, D113 |
+| GLASS-01 | Solid default, Glass as option; Liquid glass removed from first release | PERF-01 (for any Glass claim) | Solid is default in profile; Glass switch works; no Liquid profile in release files; Glass claims only with measured data | Partial | D116 |
+| STORE-01 | Discover with an alp PackageKit backend; start from `scripts/legacy/wip-2026-09-30` | ALP-TR-01 | Install and remove a package from Discover in QEMU; same database and lock as the CLI | Partial | D124, D122 |
+| FLATHUB-01 | Flathub remote enabled by default | STORE-01 | Fresh test image lists Flathub; one Flatpak installs from the Discover view; source shown to user | Not started | D125 |
+| ALP-TR-01 | Turkish help and error messages in alp; `apt install` prints a hint that points to alp | — | `alp` help and errors are Turkish in a test run; `apt install …` prints the alp hint; test output saved | Not started | D123, D120 |
+| APPS-01 | Preinstall LibreOffice, VLC and Firefox (default browser) with the six apps already built | ALP-TR-01 for installs | Each app installs on the test image; default browser and media MIME set; open test per app recorded | Partial | D127, D131 |
+| STEAM-01 | Steam client supported natively through multilib | REBUILD-R1 to REBUILD-R3 | Steam client starts on the rebuilt multilib image; run recorded | Not started | D129, D111 |
+| BOTTLES-01 | Wine through Bottles (Flatpak), not a system Wine | FLATHUB-01 | Bottles installs from Flathub; one Windows test program runs; no Word compatibility claimed | Not started | D130, D131 |
+| LIVE-01 | Hybrid live ISO that boots BIOS and UEFI | M11-UEFI-01, APPS-01 | BIOS and UEFI both boot the ISO to a live session with network; logs saved | Partial | D137, D136 |
+| ALPHA-01 | First alpha: test report, checksums, GitHub Release; repo public only with user approval | LIVE-01, INSTALL-DUALBOOT-01 | Test report, SHA-256 list and release notes written; user approves release and visibility change | Not started | D107, D108 |
+| BETA-01 | Real-PC USB tests before each release | ALPHA-01 | Device list and results from a real PC recorded; run by the user with Claude's checklist | Not started | D106 |
+| DOCS-EN-01 | Translate component READMEs in `profiles/` and `docs/handoffs/claude/alp-prototype/` to English | — | Every listed README in English; no Turkish-only live docs left in those folders | Not started | D102 |
+| PERF-01 | RAM and frametime measurement against the 4 GiB target (idle at or below 1 GiB design target) | LAYOUT-01 or current base | Measurement run with the tools in `profiles/perf/`; results recorded; target stated as a requirement only if measured | Partial | D135, D116 |
+| IMAGE-01 | Release image hygiene: unique machine-id, SSH host keys made on first boot, no test accounts, keys or test fonts | M09 image rules | Scan of the release image finds no test account, embedded key or password; first-boot check passes | Not started | D135, D108 |
 
-## Eşzamanlı çalışma sözleşmesi
+## Suggested order
 
-`F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen1.vhdx` (SHA-256 `fa29d47608a4444e043a3cbfa26753fd32a3c7e0b2078179dbcd852eab322c78`) eskidir; Claude'un karşılaştırmasına göre rootfs'de bulunan PAM `login`/Shadow ve Plasma başlatma düzeltmelerini içermez. Bu turda salt okunur disk karşılaştırması için Hyper-V izni alınamadı. Bu yalnız geliştirme/test VHDX'idir; yeni imaj yalnız doğrulanmış `/mnt/lfs` rootfs'sinden üretilir.
+1. Installer track: OPEN-1 (user) -> M11-FIX-01 -> M11-FIX-02 -> M11-UEFI-01 -> INSTALL-DUALBOOT-01 -> INSTALL-LUKS-01.
+2. Base track: REBUILD-R1 -> R2 -> R3 -> R4 -> R5. STEAM-01 and NVIDIA-PKG-01 wait for the multilib rebuild.
+3. Desktop track (can run beside 1 and 2): LAYOUT-01 -> WELCOME-01 -> THEME-01, SCREENLOCK-01, XWAYLAND-01, MESA-01.
+4. Store track: ALP-TR-01 -> STORE-01 -> FLATHUB-01 -> BOTTLES-01; APPS-01 uses the same alp path.
+5. Release track: LIVE-01 -> ALPHA-01 -> BETA-01, with IMAGE-01 checked before any release image is built.
 
-- Codex: `recipes/` (LFS/BLFS build tarifleri — `alp`'in kendi tarifleriyle karıştırılmaz), `manifests/`, `scripts/`, `packaging/`, `live/`, kernel/ISO ve Linux ortamı.
-- Claude: `profiles/desktop/`, `profiles/shortcuts/`, `profiles/shell/`, `branding/`, `docs/handoffs/claude/`, **paket motoru (`alp` — bu repoda `docs/handoffs/claude/alp-prototype/`, gerçek recipes/index/core içeriği ayrı repoda: [alpbahOS-alp](https://github.com/Yoursel71/alpbahOS-alp))**.
-- Ana plan/kararlar/görev tablosu: entegratör sahipliğinde; Claude değişikliği kendi dalından önerir. **İstisna (21 Eylül 2026, D31):** paket motoru pivotu kullanıcının doğrudan talimatıyla main'e işlendi.
-- `alp` CLI semantiği (eski ad `pkg`) artık Claude'un sahipliğinde; Codex'in görevi `alp`'i (saf Python, stdlib-only) LFS temel sistemine yerleştirmek ve BLFS grafik/oturum zincirini ilerletmek.
-- Linux rootfs ve paket deposu tek yazıcı. Ayrı Git worktree bu kilidi ortadan kaldırmaz. `alp`'in recipes/index/core içeriği ayrı repoda olduğu için ana repodaki `recipes/`/`packaging/` (Codex) ile dosya çakışması yok.
-- Mevcut konu plan/başlangıç paketi hazırlığıdır. Ajan süreçleri ve Linux kurulumları henüz başlatılmadı.
+## Blocked on the user
+
+- OPEN-1: root device option for the installed system (blocks M11 acceptance and everything after it in the installer track).
+- ALPHA-01: release and repository visibility change need explicit approval (D107, D108).
+- BETA-01: needs a real PC and the user's own USB test.
+- Any write to a real disk, partition or boot entry: per action, with explicit permission (D138). These are not tracked as tasks.
+
+## Rules for this file
+
+- A status moves to Done only when the acceptance test was run and its log is linked from the Done section or from the task.
+- Partial rows list what is still missing in the Task or Acceptance column.
+- New tasks take the next free ID in their group and cite a decision ID. If no decision exists, add an OPEN item instead.
+- Test results are recorded with environment (host, chroot, QEMU VM, target), command, result and log path (CLAUDE.md section 7).
+
+## Done (selected)
+
+Status is taken from the evidence named. Nothing here is "Done" unless the row says so.
+
+| Item | Status | Evidence |
+|---|---|---|
+| LFS 12.4 base boots, BIOS and UEFI (M05) | Partial | Boot evidence in [M1_BOOT_VERIFICATION.md](M1_BOOT_VERIFICATION.md) and [WORKLOG.md](WORKLOG.md) (M05 entries); package-ownership ledger now comes from the rebuild (D141, was v1 D34) |
+| BLFS / Plasma 6.4.4 Wayland session | Partial | [handoffs/claude/023-devir-m11-m09-2026-11-06.md](handoffs/claude/023-devir-m11-m09-2026-11-06.md); session gap noted in WORKLOG (`--xwayland` not in session command) |
+| T2 shortcuts, 19 of 20 pass in VM | Partial | Commit `8e674a4`; handoff 023 |
+| T3 Zsh with suggestions, acceptance, Ctrl+C, typo fix | Done (chroot and VM) | [verification/t3-zsh-chroot-2026-11-05.md](verification/t3-zsh-chroot-2026-11-05.md); commits `29cfab9`, `350d623`; handoff 023 |
+| T5 `alp` install, run and remove htop in chroot and VM | Done (chroot and VM) | [verification/t5-alp-htop-chroot-2026-11-05.md](verification/t5-alp-htop-chroot-2026-11-05.md); commits `fa3d908`, `ebb6624` |
+| T6 apps: MIME defaults; Dolphin, Okular, KWrite open | Partial | [verification/t6-apps-deps-2026-11-05.md](verification/t6-apps-deps-2026-11-05.md); `gio open` path partial (D55, commit `b30b443`) |
+| M09 live ISO opens with BIOS; `alplive` overlay and installer source visible | Partial | [verification/m09-live-iso-2026-11-05.md](verification/m09-live-iso-2026-11-05.md); commit `38bf6a9`; UEFI not run |
+| M11 BIOS install on a virtual disk, serial login prompt reached | Partial | [verification/m11-module-runner-2026-11-06.md](verification/m11-module-runner-2026-11-06.md); [handoffs/claude/024-devir-m11-modul-kosucu-2026-11-06.md](handoffs/claude/024-devir-m11-modul-kosucu-2026-11-06.md); commits `86d113a`, `9539a5e`; OPEN-1 still open |
+| Calamares 3.3.14 chain built in chroot | Done (build only) | Commit `35dfa87` (D56); [verification/m11-calamares-chain-2026-11-05.md](verification/m11-calamares-chain-2026-11-05.md) |
+| Tag `v0.1.0-alpha.1` | Partial | Tag exists; it has no ISO, so it is not the first alpha (ALPHA-01) |
+| LICENSE (GPL-3.0) | Done | [LICENSE](../LICENSE), standard FSF text (D109) |
+| Single-agent restructure, decision review v2, English core docs | Done (2026-11-06) | [DECISIONS.md](DECISIONS.md), [handoffs/claude/025-karar-gozden-gecirme-2026-11-06.md](handoffs/claude/025-karar-gozden-gecirme-2026-11-06.md) (D100–D104) |
+</content>

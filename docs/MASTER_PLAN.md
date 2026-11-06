@@ -1,460 +1,322 @@
-# alpbahOS — LFS ana geliştirme planı
+# alpbahOS — Master plan (v2, 2026-11-06)
 
-Sürüm: 1.0 — uygulamaya hazırlık ana planı, 21 Eylül 2026.
+alpbahOS is a Linux desktop for schools and for people moving from Windows. It is built from source on a Linux From Scratch (LFS) base with BLFS, uses KDE Plasma on Wayland, and ships with its own package command (`alp`), a Windows-style taskbar, Turkish defaults and a graphical installer. The product name, target users, brand and build approach are set in D110–D113. This v2 plan follows the user's 50-question decision review of 2026-11-06 and replaces the v1 plan. The decisions are listed in [DECISIONS.md](DECISIONS.md) (v1 IDs are in [DECISIONS-v1.md](archive/DECISIONS-v1.md)). The old plan is kept as [archive/MASTER_PLAN-v1.md](archive/MASTER_PLAN-v1.md) and is history only.
 
-Bu belge kullanıcının cevaplarına göre ürün hedeflerini, seçilen başlangıç mimarisini, aşamaları ve tamamlanma ölçütlerini tanımlar. Çalışan bir sistemin raporu değildir. Kullanıcı tercihleri ve teknik seçimler [karar kaydında](DECISIONS.md), işlerin gerçek durumu [iş kaydında](WORKLOG.md) tutulur. Teknik prototip gerektiren seçimler ölçüm kapılarıyla sınırlandırılmıştır.
+Status values in this file come from the handoffs, verification records and commits. Anything not recorded is marked "not verified" or "not started".
 
-## 1. Ürün hedefi ve ilk sürüm sınırı
+## 1. Product goal and first release
 
-alpbahOS, Windows'tan geçen insanların günlük kullanabileceği, x86_64 mimarisinde, LFS tabanı kaynak koddan üretilen bir Linux masaüstüdür. Masaüstü ve uygulamalar hazır açık kaynak projelerden seçilip özelleştirilir.
+### 1.1 Goal
 
-Kullanıcının kabul ettiği deneyim:
+A PC that works out of the box for daily tasks: documents, web, files, media, school software and simple app installs, with a Windows-familiar layout and shortcuts. Target hardware is an older x86_64 PC with about 4 GiB RAM (D135). Both Legacy BIOS and UEFI boot are required (D136). Turkish UI, Turkish Q keyboard and the Europe/Istanbul time zone are defaults that the user can change (D120).
 
-- Yazarken terminalde soluk komut tahminleri, tamamlama ve yazım düzeltme yardımı.
-- `pkg install`, `pkg remove`, `pkg update` etrafında basit komut ailesi ve grafik uygulama mağazası.
-- Alt+Tab ve Win+D dahil Windows'a tanıdık kısayollar.
-- Varsayılan masaüstü ve kilit ekranında Atatürk teması.
-- alpbahOS dağ/terminal logosu ve koyu lacivert, cyan, turuncu marka renkleri.
-- Uygun cihazlarda cam ve liquid glass görsel seçenekleri.
-- İlk dağıtılabilir sürümde çalışan sanal makine masaüstü ve USB'den denenebilir canlı sistem.
-- Diske grafik kurucu sonraki aşamada.
-- Düşük RAM tüketimi ve eski x86_64 bilgisayarları kapsayan test matrisi.
-- Türkçe arayüz, Türkçe Q klavye; mevcut mockup yerleşimi korunur.
-- Premium, minimalist, opak temel profil; kişiselleştirilebilir akıcı animasyonlar.
-- Wine (yalnız 64-bit sistemde WoW64, D35); Office 2016/2019/2021 ailesi için sürüm bazlı uyumluluk testleri. Steam istemcisi D35 ile kapsam dışı.
-- Legacy BIOS ve UEFI; daha sonraki kurucuda internetsiz kurulum ve Windows yanında kurulum.
-- Yerel Hyper-V geliştirme, 300 GB depolama bütçesi; bulut derleme/depolama kullanılmaz. C: NVMe çalışma alanı, F: SATA HDD artifact/build-VM alanıdır.
-- Günde 1–2 saat kullanıcı katkısı; Claude Code ve Codex için özel Git deposunda ayrı çalışma alanları.
+Audiences (D112):
 
-Önceki canlı USB/VM tercihi ilk alfayı tanımlar. Sonraki “hepsi olsun” yanıtı grafik, çevrimdışı ve Windows yanında kurulum özelliklerini genel yol haritasına ekler; ilk alfa ile kurulabilir beta ayrı teslimlerdir.
+- Schools and education: shared lab machines, several accounts, lock screen, LibreOffice documents.
+- People moving from Windows: taskbar, Start menu, Alt+Tab, Win+D, Win+E, file manager, simple app installs.
 
-İlk aşamanın kapsamına kendiliğinden girmeyenler: yeni kernel yazımı, yeni masaüstü compositor'ü, yeni tarayıcı, sıfırdan bağımlılık çözücü, tam Windows uygulama uyumluluğu ve tüm Windows kısayollarının her uygulamada birebir kopyalanması. Windows alışkanlıkları için ölçülebilir bir uyum listesi hazırlanır; uygulama ve güvenlik modeli kaynaklı farklar açıklanır.
+### 1.2 First release (v0.2-alpha target)
 
-## 2. Mevcut durum ve kaynaklar
+The first release is a **live USB image plus a graphical disk installer** (D137, D138):
 
-Mevcut Windows bilgisayarı: Ryzen 7 5700, yaklaşık 24 GiB RAM, RTX 5060. Kullanıcının 23 Eylül 2026 tarihli disk düzeni bilgisine göre C: NVMe SSD, F: SATA HDD'dir. Bu oturumda `Get-Volume` ile C: 117,789,728,768 byte (~109.7 GiB), F: 182,085,091,328 byte (~169.5 GiB) boş okundu; değerler zamanla değişebilir. Kullanıcı 300 GB proje bütçesi ayırdı; fiziksel bölüm oluşturulmadı. F: üzerindeki HDD erişim süresi özellikle çok küçük dosyalı build'leri etkileyebilir; ölçüme göre iş sayısı ayarlanacak.
+- Live USB/ISO boots on BIOS and UEFI and starts the desktop without touching internal disks.
+- Calamares installer, offline, can install next to Windows (dual boot). Every real-disk write needs the user's explicit permission for that action (D138).
+- LUKS disk encryption is an installer option (D139).
+- Preinstalled apps and drivers as in sections 5, 10 and 11.
 
-Hyper-V PowerShell modülü mevcut. Normal yerel PowerShell oturumu VM envanter yetkisine sahip değil; Windows hostun yerel OpenSSH yönetici hesabına public-key erişim sağlandı ve salt okunur `Get-VM` envanteri bu yoldan doğrulanabiliyor. Hyper-V değişiklik komutları yine yalnız görev gerektirip açıkça yetkilendirildiğinde kullanılmalı. Rootlu, SSH erişimli Mi 9 telefonu yardımcı cihaz olarak mevcut; x86_64 ana derleme hostu veya uyumluluk kanıtı olarak kullanılmayacak.
+Not in the first release:
 
-Mevcut dosyalar tasarım belgeleri ve logo varlıklarıdır. Linux host, rootfs, paket deposu, boot eden imaj veya ISO henüz yoktur. Tasarım mockup'ındaki sürümler, eski paket yöneticisi örnekleri, paket sayıları ve CPU/RAM değerleri örnek metindir.
-
-Mevcut build tabanı [LFS 12.4-systemd](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/) ve eşleşen [BLFS 12.4-systemd](https://www.linuxfromscratch.org/blfs/view/12.4-systemd/) olarak D33 ile sabitlendi. Bu, önceki 13.1+multilib taslak tercihinin yerine geçti. D32 saf 64-bit kararı ile D22 Steam hedefi arasındaki çelişki kullanıcı kararıyla yalnız 64-bit lehine kapandı (D35).
-
-## 3. Seçilen başlangıç mimarisi
-
-Kullanıcı teknik seçimleri devrettiği için aşağıdaki başlangıç mimarisi seçildi. Her seçim, belirtilen entegrasyon testinden geçmek zorundadır; başarısız deneyde alternatif ve gerekçesi karar kaydına işlenir.
-
-| Katman | Aday / yaklaşım | Doğrulama |
+| Item | Decision | Note |
 |---|---|---|
-| Temel sistem | LFS 12.4-systemd + eşleşen BLFS 12.4-systemd (D33). Yalnız 64-bit (D32, D35). | Mevcut rootfs/build kayıtları; multilib/Steam çıkış koşulu yok (D35) |
-| Ek sistem bileşenleri | BLFS 12.4-systemd; ağ, TLS sertifikaları, ses, grafik, oturum | Gerçek işlev testleri |
-| Masaüstü | KDE Plasma / KWin | İlk sanal masaüstü oturumu ve donanım testi |
-| Görüntü protokolü | Wayland öncelikli. X11/Xwayland build tercihi açık kullanıcı kararı; Qt XCB ve Xwayland şu an kapalı. | P02 uyumluluk yolu kullanıcı yanıtı ve build sonrası test bekliyor |
-| Terminal | Konsole + etkileşimli Zsh | Öneri, düzeltme, Unicode ve kısayol testleri |
-| Paket deneyimi | `alp`: recipe/kaynaktan derleme, Flatpak sarmalayıcı ve alpbahOS core arşivi (D31/P13) | Kod `docs/handoffs/claude/alp-prototype/`; rootfs motoru commit ve SHA-256 ile eşleşmeli |
-| Uygulama mağazası | `alp` PackageKit backend taslağı; Discover/GUI entegrasyonu doğrulanmış değil | Ortak veritabanı, işlem kilidi ve paket işlemleri uçtan uca test edilmeden hazır sayılmaz |
-| Ses/ağ | PipeWire + WirePlumber; NetworkManager; Bluetooth için BlueZ | Ses, ağ geçişi ve cihaz testleri |
-| Kurucu | Sonraki sürümde Calamares özelleştirmesi | Offline, BIOS/UEFI, boş disk ve dual-boot sanal disk senaryoları |
-| Marka/tema | alpbahOS görünüm ve varsayılan ayar paketleri | Temiz kullanıcı hesabında görünüm doğrulaması |
-| Dağıtım çıktısı | Sanal disk imajı ve canlı ISO | Boot, ağ, oturum, yeniden başlatma |
+| Liquid glass effect | D116 | Glass (blur, opaque fallback) is the only appearance option. Liquid may come later after a prototype and measurements. |
+| Microsoft Office | D131 | Not a target. LibreOffice handles Word-format files; no Word compatibility is promised. |
+| Secure Boot | D139 | Users disable Secure Boot for now. Signing is later work. |
+| KDE Edu apps | D127 | Not preinstalled. |
 
-Plasma, tema ve efekt altyapısı nedeniyle uygun adaydır. BLFS'de [Plasma derleme bölümü](https://www.linuxfromscratch.org/blfs/view/12.4-systemd/kde/plasma-all.html) vardır; bu bölümün bulunması tek başına tüm alpbahOS entegrasyonlarının hazır olduğu anlamına gelmez.
+Steam (D129) and Bottles for Windows apps (D130) are in the plan but have no passing test yet. They are not promised for the first release until they are tested (see section 11).
 
-Grafik uygulamalarda önce mevcut dosya yöneticisi, ayarlar, terminal, ağ ve ses bileşenleri kullanılır. GTK/Qt/Flatpak uygulamalarında tema kapsamı ayrı ayrı test edilir; tek tema paketinin tüm arayüzleri aynı şekilde değiştireceği varsayılmaz.
+## 2. Architecture
 
-### 3.1 Steam/Wine ve x86_64 kapsam kararı
-
-[Standart LFS x86_64](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/prologue/architecture.html) saf 64-bit sistem üretir. Kullanıcı 26 Eylül 2026'da D22/D32 çatışmasını "sadece 64 bit" diyerek D32 lehine çözdü (D35): host sisteme multilib, lib32 veya 32-bit glibc/grafik yığını eklenmez. Valve'ın Linux Steam istemcisi 32-bit kullanıcı alanı istediği için desteklenmez ve vaat edilmez. Wine yalnız 32-bit Unix kütüphanesi gerektirmeyen yeni WoW64 moduyla (Wine 11) kurulur; 32-bit Windows programlarının bu modda çalışması COMPAT-01 testinden önce vaat edilmez.
-
-M03'teki 32-bit/multilib ve ELF32 kabul ölçütleri D32 ile kapsam dışıdır; bu kapsam için toolchain derlemesi yapılmaz. Kendi 32-bit çalışma zamanını kapsayıcı içinde getiren dağıtımlar (ör. Flatpak Steam) D35'te değerlendirilmedi; kullanıcı ayrıca istemeden eklenmez.
-
-### 3.2 Eski PC ve RAM bütçesi
-
-Test hedefleri garanti edilmiş minimumlar değildir; ölçümden sonra yayımlanır:
-
-| Profil | Test makinesi | Ölçülecek hedef |
-|---|---|---|
-| Düşük kaynak | 2 CPU, 4 GiB RAM, eski x86_64, Solid | Oturum açılışından 2 dk sonra `MemTotal - MemAvailable` <= 1 GiB hedefi; swap thrashing yok |
-| Genel masaüstü | 4 CPU, 8 GiB RAM, iGPU | Günlük uygulamalar + Glass; düşük giriş gecikmesi |
-| Güçlü cihaz | Mevcut Ryzen/RTX masaüstü | NVIDIA ve deneysel Liquid |
-| 2 GiB deneysel | 2 CPU, 2 GiB RAM | Masaüstü açılışı incelenir; başlangıç destek garantisi yok |
-
-Tarayıcı, Wine, dosya indeksleme ve mağaza arka planda otomatik başlatılmaz. Çok uygulamanın kurulu olması hepsinin RAM'de çalışması anlamına gelmez. Gereksiz sürekli servisler kapalı, erişilebilirlik bileşenleri talebe göre etkin olur. Kullanılan RAM/CPU, süreçlerin PSS toplamı ve bellek baskısı aynı yöntemle raporlanır. Solid bütçesi geçmezse önce servis/tema optimizasyonu yapılır; bu yetmezse ayrı hafif masaüstü profili ölçülmüş alternatif olarak ele alınır.
-
-Genel taban için `-march=native` kullanılmaz; x86_64 uyumluluk tabanı korunur. Chrome gibi uygulamaların ek CPU talimat gereksinimleri ayrı kontrol edilir. Yalnız 32-bit çalışan CPU desteği D32/P01 kapsamında dışıdır; Mi 9 gibi ARM cihazlar ve desteği kesilmiş GPU'lar hedef dışı/ayrı test sınıfıdır; “hepsinde” isteği geniş x86_64 uyumluluk matrisi olarak uygulanır.
-
-## 4. Terminal deneyimi
-
-### 4.1 Kullanıcı davranışı
-
-Kullanıcı yazarken önerilen devam metni imlecin arkasında soluk renkte görünür. Bu görünüm terminalin arka plan saydamlığından bağımsızdır; sade profilde de çalışır.
-
-- Yerel geçmiş ve tamamlama bilgileri öneri kaynağıdır.
-- Sağ ok veya End öneriyi komut satırına alır; ayrı Enter komutu çalıştırır.
-- Tab komut, dosya ve desteklenen paket adlarını tamamlar.
-- Ctrl+R geçmiş aramasına gider; ayrıntılı görünüm seçilen mevcut eklentiye bağlıdır.
-- Tanınmayan komut için anlaşılır geri bildirim verilir.
-- Yazım düzeltme kullanıcının kabul edeceği öneri olarak sunulur.
-- Dosya adı ve tüm argümanları sessizce değiştiren davranış varsayılan yapılmaz.
-- İnternet veya AI hesabı olmadan çalışır. Bulut tabanlı tahmin bu gereksinimin parçası değildir.
-
-Teknik adaylar: [zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions), [zsh-syntax-highlighting](https://github.com/zsh-users/zsh-syntax-highlighting), Zsh tamamlama sistemi ve komut düzeltme seçenekleri. Zsh'nin komut düzeltmesi ile tüm argüman düzeltmesi farklı seçeneklerdir; yapılandırma [resmî seçenek belgesine](https://zsh.sourceforge.io/Doc/Release/Options.html) göre sınanır.
-
-### 4.2 Sistem shell'inden ayrım
-
-Etkileşimli Zsh kullanımı build scriptlerinin yorumlayıcısını veya `/bin/sh` bağlantısını değiştirmez. Build tarifleri Bash/POSIX gereksinimlerini açıkça belirtir; kullanıcı eklentilerinden etkilenmeyen ortamda yürür.
-
-### 4.3 Tamamlanma koşulları
-
-1. Temiz kullanıcıda yazarken öneri görünür; ağ bağlantısı gerekmez.
-2. Öneriyi kabul etme komutu çalıştırmaz; Enter gerekir.
-3. Hatalı komut düzeltmesi açıklanır ve reddedilebilir.
-4. Paket adı tamamlama seçilen paket indeksiyle çalışır; yazarken gereksiz root/ağ işlemi yapılmaz.
-5. Terminalde Ctrl+C işlem kesme davranışını korur; kopyalama/yapıştırma görünür şekilde anlatılır.
-6. Logo çıktısı gerçek terminalde doğru renklerle çizilir. Mevcut Python/ANSI önizleme varlıkları ayrıca doğrulanır; PNG önizlemesi çalışan terminal kanıtı sayılmaz.
-
-## 5. Paket ve mağaza deneyimi
-
-> **21 Eylül 2026 güncellemesi (D31/P13):** pacman/libalpm + Discover/PackageKit alpm altyapısı terk edildi ve `alp` motoru seçildi; sahipliği Claude'a geçti. Motor kodu bu repodaki `docs/handoffs/claude/alp-prototype/alp.py` ve yardımcı dosyalardadır. Ayrı [alpbahOS-alp tarif deposu](https://github.com/Yoursel71/alpbahOS-alp) tarif/index içeriğini taşır. Rootfs'ye kurulu motor, kaynak commit blob SHA-256'sı ile aynı değilse güncel kabul edilmez. Discover/PackageKit hazır entegrasyon gibi sunulmaz.
-
-### 5.1 Kullanıcıya sunulacak komut ailesi (tarihsel — bkz. yukarıdaki güncelleme)
-
-Aşağıdakiler planlanan arayüzdür; henüz çalışan komutlar değildir. `pkg` adı, D31 pivotundan sonra `alp` ile değiştirildi; tablo eski adla korunuyor.
-
-| Komut (eski ad `pkg`, güncel ad `alp`) | Önerilen anlam |
-|---|---|
-| `pkg search <ad>` | Paketleri arar; kurulum yapmaz. |
-| `pkg info <ad>` | Sürüm, kaynak, boyut, bağımlılık ve açıklamayı gösterir. |
-| `pkg install <ad>` | İşlem planını gösterir, yetkilendirmeden sonra kurar. |
-| `pkg remove <ad>` | Etkilenen paketleri gösterip kaldırır; kullanıcı belgelerini silmez. |
-| `pkg update` | Depo indekslerini yeniler ve mevcut güncellemeleri listeler. |
-| `pkg upgrade` | Güncelleme planını gösterip onaylanan paketleri günceller. |
-| `pkg list` | Kurulu paketleri ve sürümlerini gösterir. |
-| `pkg help` | Kısa, örnekli yardım sunar. |
-
-`update` ile `upgrade` farkı yardımda ve mağazada açık olmalıdır. Kullanıcı bunların farklı anlamda birleşmesini isterse semantik karar kaydı güncellenir.
-
-### 5.2 Altyapı seçimi (tarihsel — bkz. §5 başındaki 21 Eylül 2026 güncellemesi, D31/P13)
-
-LFS belirli bir paket yöneticisi sağlamaz. [LFS 12.4 paket yönetimi bölümü](https://www.linuxfromscratch.org/lfs/view/12.4-systemd/chapter08/pkgmgt.html) temel yöntemleri açıklar. Sistem dosyaları ilk kurulduğunda sahiplik ve sürüm bilgisi yakalanmalıdır; bu yüzden motor/manifest yaklaşımı nihai LFS sistem kurulumundan önce seçilir.
-
-Güncel paket motoru `alp`'tir (D31/P13). Kaynak motorun commit ve SHA-256 değeri rootfs'deki dosyayla eşleşmelidir. `alp` GUI yolu, veri tabanı, işlem kilidi ve güvenli kurulum/kaldırma testleri tamamlanmadan hazır sayılmaz.
-
-- LFS üzerinde bootstrap ve paket üretim zorluğu.
-- Bağımlılık çözümü, dosya sahipliği, yapılandırma korunması, imza ve transaction kilidi.
-- Kendi depomuzu üretme ve sürümleme maliyeti.
-- Kullanıcıya anlaşılır hata/ilerleme iletme yeteneği.
-- Seçilecek hazır mağazayla gerçek entegrasyon yolu.
-- Yarım kalan işlem, disk dolması ve eşzamanlı istemcilerde davranış.
-
-`pkg` komutları motorun üzerine ince, testli bir arayüz olur; ikinci bir paket veri tabanı veya sıfırdan bağımlılık çözücü oluşturmaz. Debian/Ubuntu/Arch taban depoları alpbahOS sistem paketlerine doğrudan karıştırılmaz. APT gibi bir araç seçilmesi yabancı dağıtım paketleriyle otomatik uyumluluk sağlamaz.
-
-Tek native paket motoru `alp`'tir; ikinci bir bağımsız sistem paket veritabanı eklenmez. Kolay kullanıcı arayüzü `pkg`/mağaza için tasarlanır, ancak gerçek GUI entegrasyonu ayrıca kanıtlanmalıdır.
-
-İlk depo yerel `file://` kaynağı ve canlı/kurulum medyasındaki paket deposudur. İnternetten kendiliğinden güncellenen genel bir alpbahOS sunucusu varsayılmaz. Kullanıcı bulut depolama istemediğinden ISO/paketler yerelde tutulur; özel GitHub deposu yalnız kaynak/belge eşgüdümü içindir.
-
-Sistem güncellemeleri kütüphane geçişlerini kısmi bırakmamalıdır. `alp update` ve kur/upgrade işlemlerinin güvenli, tutarlı işlem planı üretmesi ayrıca test edilmelidir; AppStream metadata ve paket manifestleri aynı sürüm kümesine bağlanır.
-
-### 5.3 Mağaza sözleşmesi
-
-- CLI ve mağaza aynı motoru, aynı veri tabanını ve aynı işlem kilidini kullanır.
-- Root yetkisi tüm mağazaya verilmez; ayrı yetkili işlem mekanizması kullanılır.
-- Kurulumdan önce toplam indirme, disk ihtiyacı, kaynak ve etkilenmiş paketler gösterilir.
-- Uydurma puan, güvenlik rozeti veya indirme sayısı gösterilmez.
-- Birden fazla paket kaynağı varsa kaynak ve kapsam kullanıcıya görünürdür.
-- Flatpak gibi ek uygulama kanalları ayrıca seçilir; taban sistemin paket yönetiminin yerine geçmez.
-- Discover/PackageKit alpm seçimi D31 ile terk edildi; mevcut mağaza entegrasyonu doğrulanmış değildir.
-
-## 6. Windows'a tanıdık kısayol profili
-
-`Win`, Linux üzerinde genellikle `Meta` adıyla görünen tuştur. Aşağıdaki tablo önerilen alpbahOS profilidir; upstream varsayılanları olduğu iddia edilmez. Alt+Tab ve Win+D kullanıcı tarafından açıkça istenmiştir.
-
-| Tuş | Hedef davranış | Test kapsamı |
-|---|---|---|
-| Alt+Tab / Alt+Shift+Tab | Pencereler arasında ileri/geri geçiş | Çoklu pencere ve çoklu ekran |
-| Win+D | Masaüstünü göster / geri dön | Minimize durumlarının korunması |
-| Win+E | Dosya yöneticisi | Tekrarlı çağrı davranışı |
-| Win+L | Oturumu kilitle | Kilit ekranından güvenli dönüş |
-| Win+R | Komut/uygulama başlatıcı | Arama alanına doğru odak |
-| Win | Uygulama menüsü | Diğer Win kombinasyonlarıyla çakışmama |
-| Win+I | Ayarlar | Doğru ayarlar uygulaması |
-| Win+Sol / Sağ | Pencereyi ekran kenarına yerleştir | Çoklu ekran ve ölçekleme |
-| Win+Yukarı / Aşağı | Büyüt / geri yükle / küçült | Tutarlı durum sırası |
-| Win+Tab | Pencere/masaüstü genel görünümü | Seçilen masaüstü eylemiyle eşleşme |
-| Alt+F4 | Aktif pencereyi kapat | Kaydedilmemiş belge uyarısı |
-| Ctrl+Shift+Esc | Sistem izleyicisi | Kısayol çakışması olmaması |
-| Win+Shift+S | Bölge ekran görüntüsü | Wayland izin ve seçim akışı |
-| Ctrl+C / V / X / Z | GUI uygulamasının kopyala/yapıştır/kes/geri al davranışı | Uygulama bağlamı; terminal istisnası |
-
-Kısayollar tek tanım dosyasından üretilir; ayarlarda düzenlenebilir ve varsayılana dönebilir. VM hostunun yakaladığı Win kısayolları ile misafir sistemin davranışı ayrı kaydedilir. “Tüm Windows kısayolları çalışıyor” ifadesi ancak tanımlı kapsam ve test listesiyle kullanılabilir.
-
-## 7. Marka, Atatürk teması ve cam profilleri
-
-### 7.1 Varsayılan görsel kimlik
-
-Atatürk görselleri masaüstü ve kilit ekranının varsayılanında yer alır. alpbahOS dağ/terminal logosu ürün kimliğini korur. Boot ekranının Atatürk temalı olması henüz istenmiş bir karar değildir.
-
-Tema üretiminde:
-
-- Kaynağı belli Atatürk görseli seçilir; dağıtım için kullanım bilgisi kaydedilir.
-- Görsele uydurma imza veya söz eklenmez.
-- 16:9, 16:10 ve ultrawide kırpımlarda yüz, logo ve metin güvenli alanda kalır.
-- Kilit ekranında şifre alanı ve kullanıcı adı okunaklıdır.
-- Masaüstü ikonları için düşük detaylı alan bırakılır.
-- Kullanıcı arka planı ve temayı değiştirebilir.
-
-Mevcut [tasarım dokümanı](alpbahOS-design-mockups.md) renk ve bileşen referansıdır. Önceki genel dağ duvar kâğıdı konsepti, yeni varsayılan Atatürk kararına göre revize edilecek; alternatif olarak korunabilir.
-
-Kullanıcı mevcut mockup yerleşiminin tamamını sevdiğini belirtti: üst panel, dock ve pencere düzeni korunur. Windows kısayolları eklemek için düzen zorla Windows görev çubuğuna çevrilmez. Varsayılan ad `alpbah-solid`; arayüz dili `tr_TR.UTF-8`, klavye Türkçe Q, varsayılan saat dilimi mevcut kullanıcı bağlamıyla `Europe/Istanbul` seçildi ve değiştirilebilir.
-
-### 7.2 Görünüm profilleri
-
-| Profil | Görünüm | Hedef |
-|---|---|---|
-| Solid (varsayılan) | Premium minimalist opak yüzeyler, ölçülü animasyon | VM, eski PC ve genel kullanım |
-| Glass | Kontrollü saydamlık, arka plan bulanıklığı, okunaklı yüzeyler | Donanım hızlandırmalı standart masaüstü |
-| Liquid | Cam kenarı, ışık ve mümkünse kırılma davranışı | Güçlü cihazlarda ölçülmüş deneysel seçenek |
-
-KWin'in [tema/efekt altyapısı](https://develop.kde.org/docs/plasma/) normal cam yaklaşımının ve özel efekt araştırmasının adayıdır. [KWin efekt belgeleri](https://develop.kde.org/docs/plasma/kwineffect/) özelleştirme altyapısını tarif eder; hazır, sorunsuz bir liquid glass çözümünü garanti etmez.
-
-Liquid için önce küçük bir prototip hazırlanır. Ekran örnekleme/kırılma yöntemi, shader ihtiyacı ve seçilen KWin sürümündeki uygulanabilirlik değerlendirilir. Yalnız blur uygulanmışsa özellik Glass olarak adlandırılır. İlk sürümde normal cam kabul edilebilir; gerçek liquid etkisi prototip sonuçlarına bağlıdır.
-
-### 7.3 Performans ve erişilebilirlik
-
-- Profil yalnız GPU adına bakılarak seçilmez; renderer, sürücü, ekran ölçeği ve gerçek frame süreleri ölçülür.
-- Yazılım rendering veya grafik hatasında sade görünüm kullanılabilir.
-- 1080p/60 Hz için 16,7 ms kare süresi tasarım hedefidir; hedef donanım ve ölçüm yöntemi belirlenmeden başarı ilan edilmez.
-- Efekt açık/kapalı karşılaştırmasında gecikme, GPU/bellek tüketimi ve okunabilirlik kaydedilir.
-- Kullanıcı manuel profil seçebilir; azaltılmış hareket ve düşük saydamlık tercihi korunur.
-- Metin için kontrast, klavye odağı ve hata durumlarının renkten bağımsız anlatımı kontrol edilir.
-
-## 8. Derleme ortamı ve tekrar üretilebilirlik
-
-Seçilen ortam Hyper-V'dir. Ubuntu 24.04 LTS amd64 Gen2 Builder ile Gen2/UEFI test hedefi kuruldu. Gen1/Legacy boot yolu tarihsel testlerle doğrulandı; kullanılan Gen1 alpbahOS VM kaydı silinmiştir. İleride canlı Gen1 tekrarı gerekirse yeni VM tanımı ve test diski gerekir. [Hyper-V Gen1/Gen2 ayrımı](https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/plan/should-i-create-a-generation-1-or-2-virtual-machine-in-hyper-v) iki boot yolunun ayrı testini gerektirir. WSL bu planın ana ortamı değildir.
-
-Linux build ağacı Linux dosya sisteminde tutulur. Windows'taki `C:\alpbahOS` belgeleri ve repo kopyası doğrudan Linux rootfs kurulum hedefi değildir. VM disk dosyası NTFS üzerinde bulunabilir; VM içindeki rootfs yine Linux dosya sisteminde olur.
-
-Builder'ın gerçek ayarı 4 vCPU, 3 GiB başlangıç/en az ve 6 GiB en çok RAM'dir (23 Eylül 2026 gözlemi; eski 6 vCPU/12 GiB planı geçersizdir). Build paralelliği RAM ve ölçüme göre belirlenir. Test VMs: 2 vCPU ve 4 GiB RAM, sırayla çalışır. Ağ için mevcut uygun Hyper-V sanal anahtarı seçilir; Windows ağını bozacak yeni köprü otomatik kurulmaz. Hostta editör/ajanlar için RAM bırakılır. Hyper-V framebuffer ile fiziksel NVIDIA GPU performansı eşit sayılmaz; GPU passthrough ilk kurulumun önkoşulu değildir.
-
-Depolama kökü planı: `F:\alpbahOS-build`. Kullanıcının 300 GB sınırı decimal bütçe olarak ele alınır (yaklaşık 279 GiB). Plan: builder VHDX üst sınırı 210 GB; sırayla kullanılan test diskleri toplam 40 GB; ISO/çıktı 20 GB; checkpoint ve büyüme payı 30 GB. Kaynak cache'i builder alanına dahildir. Checkpoint'ler bu payı aşabilir; gerçek tüketim izlenir ve bütçeyi aşacak işlem durur. Sürekli snapshot biriktirilmez. NTFS üzerinde symlink/izin gerektiren Linux rootfs açılmaz.
-
-Derleme girdileri:
-
-- Kitap sürümü ve erişim tarihi.
-- Host araç sürümleri ve LFS host kontrolü sonucu.
-- Kaynak URL, checksum, upstream imza bilgisi varsa doğrulaması.
-- Yama seti, tarif sürümü, bağımlılıklar ve derleyici seçenekleri.
-- Locale, umask, kullanıcı, çalışma dizini ve job sınırı.
-- Başlama/bitme zamanı, çıkış kodu, test raporu ve çıktı kimliği.
-
-Tarif değişince bağımlı sonuçlar geçersiz sayılabilir; eski stamp dosyası tek başına devam etmek için yeterli değildir. Kaynak arşivleri ile build/staging/artifact dizinleri ayrı tutulur. Kesilen paket için temiz yeniden derleme yolu bulunur.
-
-Bit düzeyinde yeniden üretilebilirlik ayrı hedef olarak ölçülür. Kaynakları ve tarifleri sabitlemek tek başına byte-for-byte aynı ISO çıktısını garanti etmez.
-
-## 9. Önerilen repo düzeni
-
-Aşağıdaki yeni dizinlerin çoğu henüz oluşturulmadı; görevler geldikçe eklenir.
-
-```text
-alpbahOS/
-  AGENTS.md
-  CLAUDE.md
-  docs/
-    MASTER_PLAN.md
-    DECISIONS.md
-    WORKLOG.md
-    alpbahOS-design-mockups.md
-    assets/
-  manifests/           # kaynak, sürüm, checksum, bağımlılık
-  recipes/
-    bootstrap/
-    base/
-    desktop/
-    applications/
-  scripts/
-    host-check/
-    build/
-    image/
-    test/
-  profiles/
-    system/
-    shell/
-    shortcuts/
-    desktop/
-  branding/
-    logo/
-    wallpapers/
-    themes/
-  packaging/
-    backend/
-    pkg-cli/
-    repository/
-  live/
-  tests/
-  reports/
-```
-
-Kaynak cache'i, rootfs, derleme dizinleri, sanal diskler ve büyük ISO'lar Git dışında tutulur. Manifest, tarif, küçük test kanıtı ve yapılandırmalar sürümlenir. Özel anahtar, erişim token'ı veya kullanıcı parolası repoya girmez.
-
-## 10. Aşamalar, bağımlılıklar ve çıkış koşulları
-
-Aşamalar oturum planına bağlanır; gerçek derleme ölçümleri olmadan takvim günü taahhüt edilmez. Günlük kullanıcı zamanı 1–2 saattir.
-
-| Aşama | İş ve çıktı | Önkoşul | Tamamlandı kanıtı |
+| Layer | Choice | Decision | State (2026-11-06) |
 |---|---|---|---|
-| M00 | Gereksinimler, teknik seçimler, özel repo ve görev paylaşımı | Kullanıcı cevapları | Bu plan + ajan dosyaları + repo doğrulaması |
-| M01 | Linux host, disk alanı, ağ, LFS araç kontrolü, log düzeni | Ortam ve alan tercihi | Host kontrolü geçer; kontrollü dosya sistemi ve build kökü |
-| M02 | Kaynak manifesti, tarif şablonu, paket motoru/mağaza prototipi | M01 | Kısmi: `alp` başlangıç motoru; Windows Python 3.14.7 TTY test koşusunda 82 geçti, 10 POSIX-özelliği testi atlandı. htop install/list/run/remove bir Gen2 test imajında geçti. `update`, gerçek rootfs upgrade/rollback ve GUI yolu açık. Repo prototipine `adopt-base` eklendi (commit `7b2c657`, hash `0475ea324b16895d3acbf3aebdab01d5d3a36900570f2562ca514008b11c2fc3`); Windows suite 170 passed/13 skipped. Bu sürüm Builder rootfs içine kurulmadı, base ownership import henüz denenmedi. Kanıt: `docs/verification/m02-alp-tests-2026-09-24.md`. |
-| M03 | ABI ve geçici araçlar | M01, M02 ABI kararı, sabit kaynaklar | Saf x86_64 kapsamı D32 ile sabit; 32-bit/multilib ve ELF32 ölçütleri kapsam dışı |
-| M04 | Chroot ve nihai LFS temel sistemi | M02 kararları, M03 | Kısmi: 40/79 Chapter 8 paketinin stage manifesti var (15,824 kayıtlı yol). Man-pages 6.15 3,029/3,029 exact match; Expect 5.45.4 PTY and 29/29 tests passed, 51/51 matched; DejaGNU 1.6.3 `make check` had 604 expected passes, with 118/121 paths matching and only three shared `/usr/share/doc`, `/usr/share/info`, `/usr/share/info/dir` differences (staged-only, no ownership claim); Tcl 8.6.16 43,930 PASS/3,175 SKIP/0 counted FAIL, optional tdbcpostgres errored without libpq.so.5 and 1,179/1,688 matched; Flex 2.6.4 114 testi geçti, 47/99 eşleşti; Bc 7.0.3 testleri ve smoke geçti, 11/64 eşleşti; Iana-Etc 20250807'de paket dosyaları eşleşiyor, `/etc` dizin uid'si farklı; Pkgconf 2.5.1 LFS MD5 ve Fossies SHA-256 cross-check ile stage edildi, smoke geçti, 33/37 match (3 executable/library files differ by 8 bytes each, plus shared `/usr/share/doc` ownership; stage-only); Binutils 2.45 `make -k check` exit 0 (5,667 expected passes, 60 expected failures, 5 untested, 32 unsupported), LFS FAIL diagnostic empty, 302/423 matched (stage-only); GMP 6.3.0 `make check` 199 PASS/1 SKIP/0 FAIL, stage smoke passed, 171/171 stage-manifest match, 164/171 rootfs match (stage-only); MPFR 4.2.2 staged-GMP preload rerun 198/198 PASS, loader trace confirms GMP stage path/hash, 81/81 stage-manifest match, 76/81 rootfs match (stage-only); MPC 1.3.1 `make check` 74/74 PASS, loader trace confirms staged MPC/MPFR/GMP runtime hashes, 42/42 stage-manifest and 37/42 rootfs matches. MPC link commands name `/usr/lib` MPFR/GMP, so evidence verifies staged runtime only, not staged linker inputs. Attr 2.5.2 `make check` 1 PASS/1 root-only SKIP/0 FAIL, staged smoke confirms staged libattr, 75/75 stage-manifest and 46/75 rootfs matches. ACL 2.3.2 stage manifest matched 100/100; tests classified 8 PASS/4 root-only SKIP/2 upstream NFS XFAIL/1 known LFS `test/cp.test` FAIL; staged ACL and Attr library runtime smoke passed; rootfs matched 74/100, so it remains stage-only. Libcap 2.76 matched the LFS MD5 and kernel.org signed SHA-256; `make test` exited 0, while privileged `sudotest` was not run; staged `cap_get_proc()` smoke loaded the captured `libcap.so.2`; 110/110 stage and 107/110 rootfs matches (missing `pam_cap.so` plus two shared-directory metadata differences), stage-only. Libxcrypt 4.4.38: 43 test, 32 PASS/11 SKIP/0 hata; stage 25/25, rootfs 24/25 (`libcrypt.so.2.0.0` içeriği farklı), stage-only. Shadow 4.18.0 BLFS PAM rebuild: configure PAM support yes; staged `login`/`su` link and reference `pam_start`; 166/166 stage-manifest match, 62/166 rootfs match; test suite yok, DESTDIR-only, no merge. Ncurses 6.5-20250809: stage 4,202/4,202, rootfs 3,950/4,202; 251 optional documentation paths are missing and shared `/usr/share/doc` metadata differs; staged smoke and loader trace passed, upstream test programs were not run, stage-only. Stage manifestlerinin çoğunda mevcut rootfs ile fark var; aşama envanteri tam değil ve bunlar tarihsel sahiplik kanıtı sayılmaz. Grep 3.12 `make check`: 368 PASS/73 SKIP/2 XFAIL/0 FAIL; smoke geçti, 52/147 match. Bash 5.3 LFS Expect `make tests` exited 0 with environment-sensitive output differences; 119/261 match. Libtool 2.5.4 `make check`: 144 expected/32 SKIP, gnulib 4 PASS/2 SKIP; 75/79 match. GDBM 1.26 `make check`: all 38 tests successful; 38/78 matches. Gperf 3.3 `make check` exited 0; 7/12 matches. Expat 2.7.1 `make check`: 2 PASS; `xmlwf` smoke passed; 25/31 matches. Inetutils 2.6 `make check`: 9 PASS/3 SKIP/0 FAIL; `ftp` smoke passed; 16/30 matches. Less 679 `make check`: 17 tests, 0 errors; `less --version` smoke passed; 8/11 matches. Perl 5.42.0 `TEST_JOBS=2 make test_harness`: 2,915 test files/1,350,925 tests PASS; staged thread smoke passed; 2,164/3,181 matches. Official LFS 12.4-systemd Chapter 8 has 79 package entries; exact per-package coverage is [here](verification/m04-lfs-12.4-package-coverage-2026-09-24.md). Expat version follows the pinned LFS 12.4 book; update to the version identified by current LFS advisories before release. Rootfs `/var/lib/alp/db.json` is empty and base-package removal safety is not verified; no mismatching stage was merged. **M04 status: D34 kısmi kabul. 79 paketin tarihsel kurulum olayı/nihai dosya sahipliği defteri bu eski rootfs için üretilmedi; bu ertelenmiş borç M09 temiz, tekrarlanabilir imajında kapanacak. Yeni M04 stage/yakalama işi başlatılmıyor.** [Değerlendirme](verification/m04-base-ownership-assessment-2026-09-23.md). |
-| M05 | Kernel, init, bootloader ve ilk VM açılışı | M04 kısmi kabul (D34) | Tamamlandı: BIOS/Gen1 ve UEFI/Gen2 boot, ağ/reboot, key-only SSH, tty1 admin PAM/logind oturumu kanıtlandı. M05 artık 79 paketlik geçmiş sahiplik defterini beklemez; bu defter M09 borcudur. 24 Eyl 14:02 UTC canlı Gen2/UEFI kontrolü: `6.16.1-alpbahOS`, PARTUUID+`rootwait`, `/dev/sda2`, routable DHCP `172.28.164.164/20`, `resolvectl` DNS, zorunlu SSH-only public-key bağlantısı, etkin getty/resolved/sshd, 0 failed unit, host ping 4/4. 16:35 UTC recheck: admin tty1/seat0 `Service=login`, `Type=tty`, `Active=yes`; getty/resolved/sshd active and no failed units. 17:15 UTC güncel salt-okunur recheck: admin login/PAM/logind tty1/seat0 oturumu etkin; getty/resolved/sshd enabled+active; 0 failed unit. [Canlı konsol oturumu kanıtı](verification/m05-gen2-console-session-2026-09-24.log). D34 uyarınca M05 kapanışı artık M04 kısmi kabulüne dayanır; tam sahiplik defteri M09’da kapanacak. |
-| M06 | BLFS altyapısı: grafik, ses, oturum, ağ ve sertifikalar | M05 | Kısmi: DNS/TLS, D-Bus user bus, iki yönlü ALSA `snd-aloop`, ayrıca açık `pro-audio` uçlarıyla 48 kHz sanal PipeWire playback→capture roundtrip'i geçti. Fiziksel audio ve grafik test oturumu açık. Kanıt: `docs/verification/m06-gen2-audio-2026-09-24.md` ve `docs/verification/m06-pipewire-proaudio-retest-2026-09-24.log`. |
-| M07 | Hazır masaüstü ve temel uygulama profili | M06 | P0 KWin unit/Wayland-only kapısı geçti. 25 Eyl 2026'da Builder `/mnt/lfs` chroot'unda `CONFIG_DRM_VGEM=y` ile kernel derlendi ve son Gen2 test imajı bu kernelle açıldı; guest `/dev/dri/renderD128` görüyor. Yeni açılıştaki `getty@tty1` aktif, ancak `loginctl` henüz admin tty1/seat0 oturumu göstermedi. Seat-bound KWin context açılışı ve gerçek Plasma oturumu bekliyor. [VGEM/kernel ve imaj kanıtı](verification/m07-gen2-vgem-kernel-build-test-2026-09-25.log), [önceki preflight](verification/m07-gen2-login-wayland-preflight-2026-09-24.log), [D-Bus teşhisi](verification/m07-gen2-dbus-launch-diagnosis-2026-09-24.log). |
-| M08 | Terminal yardımı, pkg+mağaza, kısayollar ve Atatürk/Glass temaları | M02, M07 | İstenen özelliklerin kullanıcı senaryoları geçer |
-| M09 | Canlı rootfs, initramfs, canlı ISO ve VM imajı paketleme | M08 | Temiz, tekrarlanabilir imaj; 79 LFS taban paketi için tam paket→dosya sahiplik defteri ve son rootfs sahiplik uzlaştırması (D34 ertelenmiş borcu); canlı medyadan açılış ve oturum, kurulumsuz kullanım |
-| M10 | Alfa doğrulaması, yayın adayının hazırlanması | M09 | Test matrisi, bilinen sorunlar, checksum ve kullanım yönergesi |
-| M11 | Calamares grafik/offline kurucu, BIOS+UEFI ve Windows yanında kurulum | Canlı alfa M10 | Önce sanal disk kurulum/kurtarma testleri; sonra yetkilendirilmiş gerçek disk |
-| M12 | Kurulabilir beta, bakım ve sürüm paketi | M11 | Donanım matrisi, güncelleme/kurtarma ve kullanıcı kabul testleri |
+| Base system | LFS 12.4-systemd test base, with BLFS 12.4 packages. The base is rebuilt once on the newest stable LFS book with multilib (lib32). | D140, D111, D33 (v1) | Test base is LFS 12.4, 64-bit only. Rebuild not started (section 8). |
+| Init | systemd | D33 (v1) | In use. |
+| Kernel | Linux 6.16.1 (current test base), with squashfs and overlay for the live image | D143, handoff 023 | In use in QEMU. Final kernel version for the rebuild not chosen. |
+| Boot | Legacy BIOS and UEFI through GRUB | D136 | BIOS: installer test and live ISO boot checked in QEMU. UEFI: see M09, M11. |
+| Desktop | KDE Plasma 6.4.4, Wayland session, Xwayland | D132, D143 | Plasma Wayland session runs in QEMU. Xwayland process seen. X11 app run not tested. |
+| Screen locker | KScreenLocker | D133 | Not verified. |
+| Graphics | Mesa with real drivers (Intel/AMD/NVIDIA open) and llvmpipe (needs LLVM) | D134, D128 | Build script enables LLVM for llvmpipe. Runtime not verified. |
+| NVIDIA | Separate proprietary package, one command or click | D128 | Not started. |
+| Package engine | `alp` (command set in section 5) | D122, D123 | Prototype. Install, run and remove of htop verified in chroot and in VM. |
+| Store | KDE Discover with an alp PackageKit backend | D124 | Draft and one run on 2026-09-30. Not passing (section 5). |
+| Software source | Flathub enabled by default | D125 | Not started. |
+| Updates | Stable channel; the user starts updates | D126 | `alp update` not verified. |
+| Terminal | Konsole + Zsh + zsh-autosuggestions + zsh-syntax-highlighting | D119 | Suggestions, accept, Ctrl+C and spelling help verified in VM. Konsole test pending (section 4). |
+| Shortcuts | Windows-familiar profile from one source file | D118 | 19 of 20 checks passed in a QEMU run (commit 8e674a4). |
+| Settings and first run | KDE System Settings plus an alpbah Welcome app | D121 | Welcome app not started. |
+| Look | Solid default, Glass option, Atatürk theme selectable | D114, D116 | Atatürk wallpaper seen in QEMU (low resolution). Theme selector not started. |
+| Layout | Windows-style bottom taskbar with a Start menu | D115 | Not started (current test image uses the v1 layout). |
+| Installer | Calamares, graphical, offline, LUKS option, dual boot | D137–D139 | Partial. Runner installs to a virtual disk; GUI test and dual boot not done (M11). |
+| Apps | Dolphin, Konsole, Kate/KWrite, Okular, Gwenview, Ark, LibreOffice, VLC, Firefox | D127 | Okular and KWrite open in VM. Others built or not verified (section 10). |
+| Compatibility | Steam native (multilib); Wine via Bottles (Flatpak) | D129, D130 | Not tested. |
+| Brand | alpbahOS logo, dark navy + cyan + orange | D113 | Logo in use. Logo check in terminal is open (section 4). |
 
-Bağımlılık zinciri korunur. Tasarım, terminal yapılandırma taslağı ve kısayol listesi M03 derlemesi sürerken ayrı ortamda geliştirilebilir. İki ajan aynı rootfs'ye eşzamanlı paket kuramaz. Masaüstü prototipinin başka dağıtımda çalışması LFS entegrasyon testinin yerine geçmez.
+## 3. Scope boundaries
 
-### 10.1 M03–M05 kritik kontrol noktaları
+- Do not write a kernel, compositor, browser or dependency solver from scratch. Build from source and customise open-source projects (v1 D04, D14, carried into v2 by D143).
+- Do not promise driver, hardware or application support without a test (v1 D21, carried over).
+- The Windows-host VM path of v1 is history only (see archive/MASTER_PLAN-v1.md and archive/DECISIONS-v1.md). Test environment is Fedora with QEMU/KVM (D106).
 
-- Kitapta açıklanan cross-toolchain/temporary tools/chroot sınırları korunur.
-- Host kütüphanelerine istenmeyen bağlantılar denetlenir.
-- Geçici sistem tamamlandığında geri yüklenebilir kontrol noktası alınır.
-- D34 kısmi kabulüyle M03–M05 için 79 paketlik tarihsel sahiplik defteri önkoşulu ertelenmiştir; M09’un temiz, tekrarlanabilir rootfs üretimi bu defteri gerçek kurulum olaylarıyla yakalayıp son durumla uzlaştırır. Geçici DESTDIR manifestleri tarihsel kurulum kanıtı sayılmaz.
-- Kernel, rootfs sürücüsü, initramfs ihtiyacı ve bootloader yapılandırması birlikte test edilir.
-- Boot testi host kernel altında chroot açmayı değil hedef kernel ile yeniden açılışı kapsar.
+## 4. Terminal experience
 
-### 10.2 M09 canlı sistem davranışı
+### 4.1 User behaviour
 
-- Salt okunur sistem katmanı ve geçici yazılabilir katman için uygulama yöntemi seçilir; örneğin sıkıştırılmış rootfs + overlay.
-- Legacy BIOS ve UEFI ikisi de kabul koşuludur. GRUB'un BIOS/EFI bileşenleri ve aynı ISO'nun iki boot yolu hazırlanır. Secure Boot ayrı imzalama işidir; ilk sürüm koşulu değildir.
-- Secure Boot kapalı test edilen imaj destekliyormuş gibi etiketlenmez.
-- İlk sürüm grafik kurucu içermez; USB'den deneme ile diske kurulum karıştırılmaz.
-- Varsayılan canlı oturumun kimlik/yetki modeli açıkça belgelenir.
-- Kalıcı veri bölümü/persistence ayrı seçimdir; var olduğu söylenmez.
-- İç Windows disklerine otomatik yazma yapılmaz. Canlı oturumun açılması disk bölümleme tetiklemez.
-- Her cihazın kimlikleri/anahtarları gerekiyorsa ilk açılışta oluşturulur; build makinesinin kimlikleri dağıtılmaz.
+While typing, a suggested continuation appears in faint text after the cursor. It does not depend on window transparency and works in the plain profile. It needs no network and no AI service (D119 and v1 §4.1). Cloud prediction is not part of the requirement.
 
-## 11. Uygulamalar, sürücüler ve Windows uyumluluğu
+- Suggestions come from local history and completion data.
+- Right arrow or End accepts the suggestion onto the command line. Enter is still needed to run it. Accepting never runs a command.
+- Tab completes commands, file names and package names from the local `alp` index.
+- Ctrl+R opens history search.
+- An unknown command gives clear feedback.
+- A spelling correction is offered as a suggestion the user may reject. Arguments and file names are never changed silently.
+- Interactive shell settings do not change `/bin/sh` or build scripts. Build scripts choose their own interpreter (v1 §4.2).
 
-| İhtiyaç | Başlangıç seçimi | Kabul senaryosu |
+### 4.2 Completion conditions and state
+
+| # | Condition (v1 §4.3, translated) | State | Evidence |
+|---|---|---|---|
+| 1 | Suggestion shows while typing on a clean user account, no network | Passed in VM (not in Konsole) | [vm-session-2-2026-11-05.md](verification/vm-session-2-2026-11-05.md) (`zt.py`: `suggestion_visible`) |
+| 2 | Accepting a suggestion does not run it | Passed in VM (not in Konsole) | same |
+| 3 | A spelling correction is explained and can be rejected | Passed in VM (not in Konsole) | same; also [t3-zsh-chroot-2026-11-05.md](verification/t3-zsh-chroot-2026-11-05.md) |
+| 4 | Package-name completion uses the selected local index, no root or network needed | Passed in chroot pty only | [t3-alp-completion-2026-11-05.md](verification/t3-alp-completion-2026-11-05.md) (`alp install ht<TAB>` gives `alp install htop`) |
+| 5 | Ctrl+C keeps its interrupt behaviour; copy and paste are explained to the user | Ctrl+C passed in VM. Copy/paste explanation not verified. | same as row 1 |
+| 6 | The logo prints with correct colours in a real terminal | Open. A PNG preview is not terminal proof. | — |
+
+Row 1–3 and 5 must be re-run in Konsole inside the Plasma Wayland session before this section is called done. Konsole 25.08.3 and Zsh 5.9 run in the Plasma session (QEMU). The Zsh profile file is `profiles/shell/zshrc.alpbah`.
+
+## 5. Packages and store
+
+### 5.1 `alp` command set
+
+Engine: `alp`, a stdlib-only Python program (D122). Commands and Turkish messages follow D123. The help and error text is Turkish in the prototype; full coverage is not checked.
+
+| Command | Meaning | State |
 |---|---|---|
-| Dosyalar | Dolphin | Kopyala, geri al, arşiv aç, USB çıkar |
-| Terminal | Konsole + Zsh | Öneri/düzeltme ve pkg tamamlama |
-| Not Defteri | KWrite | Türkçe UTF-8 ve Windows satır sonlu dosya |
-| PDF | Okular | PDF aç, ara, yazdır |
-| Görseller | Gwenview | Yaygın biçimler, döndürme |
-| Arşivler | Ark | ZIP/tar açma ve oluşturma |
-| Ekran görüntüsü | Spectacle | Bölge/pencere/ekran, kısayol |
-| Medya | VLC | Ses/video ve ses çıkışı seçimi |
-| Hesap makinesi | KCalc | Günlük işlemler |
-| Sistem ve disk | Plasma System Monitor, disk kullanım aracı | Süreç/bellek/disk bilgisi |
-| Tarayıcı | Firefox hazır; Chrome için doğrulanmış kurulum seçeneği | İnternet/TLS, indirme, varsayılan ilişki |
-| Ofis | LibreOffice Writer/Calc/Impress | DOCX/XLSX/PPTX örnekleri; birebir Word garantisi yok |
-| Mağaza | `alp` ile bütünleşecek grafik arayüz | Kendi depomuzdan uygulama işlemi; GUI yolu doğrulanmalı |
-| Windows uygulamaları | Wine (yalnız WoW64, D35) + ayarlardan prefix/uyumluluk erişimi | 32/64-bit Windows test programı; seçili Office sürümü |
-| Oyun | Steam istemcisi D35 ile kapsam dışı | — |
+| `alp install <name>` | Show the plan, ask for approval, install | Works for htop in chroot and VM |
+| `alp remove <name>` | Show affected packages, remove, keep user documents | Works for htop in chroot and VM |
+| `alp update` | Refresh indexes and list updates | Not verified |
+| `alp upgrade` | Show upgrade plan and apply after approval | Not verified. Whether `update` and `upgrade` stay separate is not decided. |
+| `alp search`, `alp info`, `alp list`, `alp help` | Search, details, installed list, help | Part of the prototype; not fully tested |
 
-“Google” isteği Chrome erişimi olarak yorumlandı; Chrome açık kaynak projesi değildir ve LFS resmî destek listesinde varsayılmaz. [Chrome gereksinimleri](https://support.google.com/chrome/answer/95346?co=GENIE.Platform%3DDesktop&hl=en) ve dağıtım koşulları doğrulanarak resmî kaynaktan kurulabilir; çevrimdışı varsayılan tarayıcı Firefox olur. Chrome'un ISO'ya gömülmesi doğrulanmadan vaat edilmez.
+- Typing `apt install …` prints a hint that points to `alp` (D123). The hint is not implemented yet.
+- `alp` writes one package database and uses one lock. The CLI and the store use the same engine, database and lock (v1 §5.3).
+- Root access is never given to the whole store. Install and remove go through a separate authorised action (v1 §5.3).
+- Before an install, the plan shows the download size, disk needs, source and affected packages (v1 §5.3).
 
-Wine kurulu gelir. Kullanıcı Office 2016/2019/2021 ailesini belirtti; tam sürüm, lisanslı kurulum medyası ve Click-to-Run/MSI ayrımı uyumluluk testi sırasında kaydedilecek. Her sürüm temiz ayrı Wine prefix'inde açma/kaydetme/yazdırma senaryolarıyla denenir. Hiçbiri çalıştırılmadan “Word çalışıyor” denmez. Microsoft Office ISO'ya gömülmez; kullanıcı lisanslı medyasıyla kurar. LibreOffice günlük belge işlerini ilk günden sağlar; Microsoft Word ile aynı uygulama diye sunulmaz.
+### 5.2 Store (Discover)
 
-Steam istemcisi D35 (yalnız 64-bit) ile kapsam dışıdır: Valve'ın Linux istemcisi 32-bit glibc ve grafik sürücüsü ister ve bunlar sisteme eklenmez. Steam/Proton ya da oyun uyumluluğu vaat edilmez.
+D124 chooses KDE Discover with an alp PackageKit backend. Two drafts exist:
 
-### 11.1 Sürücü matrisi
+- `scripts/legacy/wip-2026-09-30/scripts/packagekit/alpBackend.py` with the helper scripts and PolicyKit rules next to it (2026-09-30 candidate). The README there calls it a starting point for D124.
+- `docs/handoffs/claude/alp-prototype/alp_packagekit_backend.py`, a Python wrapper that calls `alp.py` as a subprocess. Its wrapper functions are tested against `alp.py` without PackageKit. The `AlpPackageKitBackend` class has never run on a PackageKit daemon. Design notes: [packagekit-integration.md](handoffs/claude/alp-prototype/design/packagekit-integration.md).
 
-- Kernel'in Intel/AMD depolama, USB, HID, Ethernet, ses ve grafik modülleri + gerekli firmware sınıfları.
-- Intel/AMD grafik için Mesa; NVIDIA için donanım ve kernel ile uyumlu vendor sürücü dalı, fallback ve kullanıcı alanı araçları.
-- RTX 5060 gerçek donanım testi; Hyper-V sonucu bu testin yerine geçmez.
-- Yaygın Wi-Fi/Bluetooth firmware, yazıcı için CUPS ve ihtiyaç varsa tarama entegrasyonu.
-- `hv_vmbus`, depolama/ağ ve uygun Hyper-V framebuffer desteği; Gen1/Gen2 için gerekli boot sürücüleri.
-- Eski GPU'larda vendor legacy sürücü ile yeni kernel çatışmaları ayrı uyumluluk satırlarıdır; bütün sürücü dalları aynı anda kurulmaz.
+Both drafts are untested on the current 12.4 base. On 2026-09-30 a different candidate rootfs (never merged into the test base) gave these results: Discover search for `htop` returned the catalog item; a `pkcon` install of `htop` completed with a `PATH` fix; removal finished but printed a "not installed" error afterwards. That run is **not a pass** ([m08-live-packagekit-auth-runtime-2026-09-30.md](verification/m08-live-packagekit-auth-runtime-2026-09-30.md), [m08-packagekit-path-and-auth-retest-2026-09-30.md](verification/m08-packagekit-path-and-auth-retest-2026-09-30.md)). The store is not ready until install, launch and remove pass cleanly on the new base, and catalog signature checks are tested.
 
-Sürücü seçimi, mevcut sürüm ve güncelleme durumu Ayarlar'dan erişilir. Başlangıçta mevcut sistem bileşenlerine bağlantı veren ince bir karşılama/ayar kısayolu tercih edilir. “Tüm sürücüler” donanım algılama + yaygın sürücü/firmware kapsamı + eksik cihaz raporu olarak uygulanır; her cihaz için evrensel destek garantisi değildir.
+### 5.3 Flathub and updates
 
-## 12. Güncelleme, bakım ve yayın
+- Flathub is enabled by default (D125). It is an extra channel; it does not replace the base package system.
+- Stable channel only. No automatic background install. The user starts every update. No update pop-ups (D126).
+- A system update must not leave libraries half-updated. The update plan is tested before release (v1 §5.2).
+- Removing a package keeps user documents and settings (v1 §5.1).
 
-Seçim: sabitlenmiş stable paket kümesi + yerel testing kanalı. Sürekli rolling yerine test edilmiş sürümler ve güvenlik güncellemeleri. Otomatik arka plan kurulum yok; Ayarlar/mağazadan güncelleme bildirimi ve kullanıcı başlatmalı işlem. Geri dönüş için önce eski kernel ve kurtarma USB'si; atomik sistem güncellemesi sonraki araştırma konusu.
+## 6. Windows-familiar shortcuts
 
-- D34 ertelenmiş borcu: temiz, tekrarlanabilir M09 rootfs üretiminde 79 LFS 12.4 taban paketinin gerçek sahiplik olayları kaydedilir, paylaşılan/üretilen/yapılandırma yolları sınıflandırılır ve nihai dosya sahipliği uzlaştırılır. Her yeni `alp` kurulumu kendi sahiplik DB kaydını üretmeye devam eder.
-- Sistem paketi ve yapılandırma sürümleri birlikte izlenir.
-- Paylaşılan kütüphane değişince etkilenen bağımlı paketler yeniden değerlendirilir.
-- Paket kaldırma kullanıcı ayarlarını/belgelerini gelişigüzel silmez.
-- Eski kernel veya kurtarma ortamı gibi geri dönüş yolları değerlendirilir.
-- Snapshot/atomik geri dönüş vaat edilmeden önce dosya sistemi ve güncelleme mimarisi seçilir.
-- ISO ve depo yayınında doğrulanabilir checksum/imza, kaynak manifesti ve bilinen sorunlar sağlanır.
-- Dağıtılan yazılımlar ve görseller için kaynak/lisans kayıtları tutulur; seçilen lisansların gerektirdiği kaynak teslimi yayın kontrolüne dahil edilir.
-- Bulut paket/ISO depolama ve ücretli sunucu yok. Kod/belgeler özel GitHub deposunda, build/ISO/paketler yerelde. Dış kullanıcılara güncelleme sunucusu kurmak gelecekte ayrı kapsam olur.
+`Win` is the Meta key on Linux. The profile is defined in one file and generated into the Plasma configuration; users can edit or reset it (D118). Only the listed keys are promised. "All Windows shortcuts" is not a claim.
 
-Gizlilik/sürücü/uyumluluk seçenekleri Ayarlar'dan erişilebilir. Telemetri ve bulut hesap zorunluluğu varsayılan kapalıdır; bu proje tercihi üçüncü taraf uygulamalarının kendi veri işleyişini değiştirmez. Şifreleme kurucu fazında seçenek olarak incelenir; Secure Boot kapalı test, Secure Boot desteği sayılmaz.
-
-## 13. Kullanıcı senaryoları ve test matrisi
-
-| Alan | Senaryo | Başarı kanıtı |
+| Keys | Target behaviour | Test scope |
 |---|---|---|
-| Boot | ISO'dan başla, masaüstüne gir, yeniden başlat | Boot logu, oturum görüntüsü, kernel bilgisi |
-| Ağ | Bağlan, HTTPS sayfası aç, bağlantıyı kes/geri getir | DNS/TLS ve masaüstü ağ durumu |
-| Paket | CLI'den kur, mağazada gör, mağazadan kaldır | Aynı paket veri tabanı, log, dosya sahipliği |
-| Paket hatası | Ağ kesintisi, disk dolması, ikinci işlem isteği | Anlaşılır hata ve kurtarılabilir işlem durumu |
-| Terminal | Öneri göster, kabul et, ayrı çalıştır, düzeltmeyi reddet | Tekrarlanabilir etkileşim kaydı |
-| Kısayol | Listedeki her tuş ve çakışma | Profil tablosunda tek tek geçti/kaldı |
-| Görsel | Atatürk masaüstü/kilit; marka/kontrast; farklı ölçekler | 100/125/150/200% örnekleri ve bulgu listesi |
-| Efekt | Sade/Glass/Liquid geçişi | Donanım ve sürücüyle birlikte performans ölçümü |
-| Günlük kullanım | Dosya aç/kopyala/sil/geri al, ses çal, tarayıcı kullan | Kullanıcı senaryosu sonucu |
-| Donanım | NVIDIA masaüstü; sonra seçilen diğer cihazlar | Ayrı cihaz listesi; denenmeyenler açıkça belirtilir |
-| Canlı oturum | İç disklere kurmadan dene; yeniden başlat | Oturumun kalıcılık ve disk davranışı açıklaması |
+| Alt+Tab / Alt+Shift+Tab | Switch windows forward and back | Several windows, several screens |
+| Win+D | Show desktop and restore | Minimised windows are kept |
+| Win+E | Open file manager (Dolphin) | Repeated calls |
+| Win+L | Lock the session (KScreenLocker) | Return from the lock screen |
+| Win+R | Run / launcher, focus on the search field | Focus |
+| Win | Open the Start menu | Does not conflict with other Win combinations |
+| Win+I | Open Settings | Correct settings app |
+| Win+Left / Right | Snap window to the screen edge | Several screens and scales |
+| Win+Up / Down | Maximise, restore, minimise | Consistent state order |
+| Win+Tab | Overview of windows and desktops | Matches the chosen desktop action |
+| Alt+F4 | Close the active window | Unsaved-document prompt |
+| Ctrl+Shift+Esc | System monitor | No conflict |
+| Win+Shift+S | Region screenshot (Spectacle) | Wayland permission and selection flow |
+| Ctrl+C / V / X / Z | Copy, paste, cut, undo in GUI apps | Terminal is the exception (Ctrl+C is interrupt) |
 
-Çıkış koşulları ilk sürüm kapsamına göre daraltılır; örneğin Liquid prototipi başarısızsa Glass ile alfa çıkışı mümkün olabilir. Bu durum bilinen sınırlama olarak yazılır, tamamlanmış Liquid özelliği gibi sunulmaz.
+State: the 2026-11-05 QEMU run passed 19 of 20 checks (commit 8e674a4; see [handoff 022](handoffs/claude/022-t2-kisayol-2026-11-05.md)). A Dolphin shortcut could not be checked because Dolphin was not in that test image. Two implementation rules come from the 2026-11-05 work:
 
-## 14. Codex ve Claude iş bölümü
+- The session preparation step must run before KWin starts. Otherwise KGlobalAccel loads the old shortcut file and writes the old state back on exit (handoff 022).
+- Shortcut file path and reload follow v1 D41 and D43, carried into v2 by D143.
 
-Kullanıcının devrettiği rol seçimi: Codex build sistemi, LFS, ABI kapsamı, Hyper-V/ISO ve entegrasyon sahibi; Claude Code masaüstü profilleri, terminal kullanıcı deneyimi, kısayollar, tema, **paket motoru (`alp`, bkz. D31/P13, 21 Eylül 2026)** ve ikinci göz inceleme sahibi. Bu sahiplik planıdır.
+Ctrl+C in a terminal stays "interrupt". Shortcut conflicts are listed in [profiles/shortcuts/conflicts.md](../profiles/shortcuts/conflicts.md).
 
-**Not (21 Eylül 2026):** Önceki sürümde "paket entegrasyonu" Codex'in sahiplik alanındaydı (pacman/libalpm + PackageKit backend'i, PKG-01/PKG-02). Kullanıcı D31 ile bu kararı değiştirdi: motor artık `alp`, sahibi Claude. Codex'in rolü bu noktadan sonra LFS temel sistemine `alp`'i (saf Python, stdlib-only bir script; ek bağımlılık gerektirmez) yerleştirmek ve BLFS grafik/oturum zincirini ilerletmekle sınırlı; PackageKit/Discover backend'i artık bu planın kapsamında değildir (`alp`'in kendi GUI entegrasyon yolu ayrıca ele alınacak, proposal §6'da "Yok" olarak işaretli açık eksiklik).
+## 7. Brand, themes and appearance
 
-Ana kaynak kökü `C:\alpbahOS`; Claude için ayrı Git worktree `C:\alpbahOS-claude`. Ortak `main` üzerinde eşzamanlı yazılmaz. Kod, küçük varlıklar ve Markdown dosyaları özel repoda; büyük çıktılar F: üzerinde. Claude aynı makinede değilse kendi clone/branch'inde aynı kuralları izler. İlk devir belgesi [CLAUDE_START.md](CLAUDE_START.md), görev listesi [BACKLOG.md](BACKLOG.md).
+### 7.1 Brand and default look
 
-Her görevde: ID, sahip, dosya sınırı, girdi/çıktı, bağımlılık, test yöntemi ve devir notu bulunur. Ortak dosya veya rootfs için tek yazıcı olur. Aynı anda iki build motoru tek paket veri tabanını değiştirmez.
+- Mountain/terminal logo, dark navy, cyan and orange (D113). Every asset's source and licence is recorded.
+- The default wallpaper and lock screen use the alpbahOS brand (D114). The Atatürk theme is a selectable theme in the Welcome app and in Settings (D114). It is not the forced default.
+- Windows-style single bottom taskbar with a Start menu (D115). The older top-panel-and-dock mockup is dropped. See [alpbahOS-design-mockups.md](alpbahOS-design-mockups.md) for colours and components only.
+- Wallpaper crop rule: scale only (D143, v1 D50). The Atatürk source image is small for 1080p (732×987 in the v1 notes). Resolution choice is not recorded as closed.
+- Keep safe areas for name, password field and logo in 16:9, 16:10 and ultrawide crops. Keep a plain area for desktop icons.
+- No invented quotes, signatures or text added to the images.
 
-Önceden anlaşılacak entegrasyon sözleşmeleri:
+### 7.2 Appearance profiles
 
-- Tema token'ları, profil adları ve kurulum hedefleri.
-- `alp` CLI semantiği (eski ad `pkg`), hata kodları ve mağaza erişim yöntemi.
-- Kısayol tanımlarının tek kaynağı.
-- Paket manifesti ve build artifact yolları.
-- Test raporu, log ve görev devri biçimi.
+| Profile | Look | Use |
+|---|---|---|
+| Solid (default) | Opaque, calm surfaces; short, smooth animations | Old PCs, VMs, daily use |
+| Glass | Blur and transparency with readable surfaces | Standard PCs with GPU acceleration |
 
-Ortak kurallar [AGENTS.md](../AGENTS.md), Claude başlangıç talimatları [CLAUDE.md](../CLAUDE.md) içindedir. Bağlantı veya ortak repo kurulmadan Claude'a iş gönderildiği varsayılmaz.
+Liquid glass is not in the first release (D116). Glass is named Glass only when it blurs; it is not sold as liquid. A Glass claim needs a measured result on the target hardware.
 
-## 15. Zaman ve kaynak tahmini yöntemi
+### 7.3 Animations, accessibility and performance
 
-Önceki konuşmadaki gün/token tahminleri teslim taahhüdü değildir. Plan şu ölçümlerle takvime çevrilir:
+- Animations are smooth, fast and customisable (D117). Reduced-motion and low-transparency settings stay usable.
+- Text contrast is checked. Keyboard focus is visible. Errors are not shown by colour alone.
+- Effects can be turned off; the Solid profile must work with effects off (v1 §7.3).
+- Performance budget (D135): idle use at or below 1 GiB of RAM on a 4 GiB machine is the design target. It is not a published requirement until measured. Measure with the same method each time: `MemTotal - MemAvailable` two minutes after login, and the sum of PSS for processes.
 
-1. Host hazırlama ve ilk referans derleme süresi.
-2. Kullanılabilir RAM altında güvenilir paralellik seviyesi.
-3. Temel sistem, grafik yığını ve masaüstünün ayrı süreleri.
-4. Kaynak indirme, test ve yeniden derleme payı.
-5. Günlük makine erişimi ve insan test zamanı.
+| Profile | Test machine | Measure |
+|---|---|---|
+| Low | 2 CPU, 4 GiB RAM, older x86_64, Solid | Idle use ≤ 1 GiB target; no swap thrashing |
+| General | 4 CPU, 8 GiB RAM, integrated GPU, Glass | Input latency; daily apps open |
+| 2 GiB (experimental) | 2 CPU, 2 GiB RAM | Shows whether the desktop starts; no support promise |
 
-Token miktarı derleyicinin çalışma süresini azaltmaz. İki ajan tasarım, tarif hazırlama ve incelemede paralel ilerleyebilir; bağımlı toolchain adımları ve tek rootfs işlemleri sıralı kalır. Başarı için ilk odak M05 boot, sonra M07 masaüstü, ardından M09 canlı ISO'dur.
+No browser, Wine, file indexing or store starts in the background by default. If the Solid profile misses the target, the next step is reducing services and theme cost before any other profile is considered.
 
-## 16. Günlük çalışma planı ve açık teknik kapılar
+## 8. Build environment and reproducibility
 
-Her 1–2 saatlik kullanıcı oturumu: 10 dk devir/log inceleme, 40–75 dk tek görev veya entegrasyon, 15–25 dk test, 5–10 dk kayıt/sonraki adım. Derleyicinin makine zamanı ayrı ölçülür; bilgisayarın gece açık kalması henüz belirtilmediğinden gece derlemesi zorunlu varsayılmaz.
+### 8.1 Environment
 
-İlk beş oturumun hedef sırası:
+- Host: Fedora with QEMU/KVM for daily work (D106). Before each release, a USB test on a real PC (D106).
+- LFS chroot at `/mnt/lfs`. Scripts live in `scripts/lfs-blfs/`. Source tarballs and disk images are not in Git.
+- Long builds and tests may run for hours in the background, overnight included. Results are summarised afterwards (D105). The user spends about 1–2 hours a day.
+- Builds are local. Small CI tests run on GitHub Actions ([alp-tests.yml](../.github/workflows/alp-tests.yml)). Release ISOs go to GitHub Releases (D107).
+- Safety rules from [CLAUDE.md](../CLAUDE.md) apply: installer and disk tests only on new image files; one writer on `/mnt/lfs` and on any loop or nbd device; mount scripts clean up with an ERR/EXIT trap.
 
-1. Plan/repo/devir düzeni ve Hyper-V yetki kontrolü.
-2. Builder hazırlığı, ağ/SSH ve LFS host-check.
-3. Kaynak/kitap sabitleme, ABI kapsamı ve paket motoru küçük deneyleri.
-4. Geçici toolchain başlatma; Claude tarafında tema/kısayol dosyalarının hazırlanması.
-5. Sonuçları doğrulama ve ölçümlerle sonraki oturumları planlama.
+### 8.2 Reproducibility inputs
 
-Bu sıra bir günde bir aşamanın kesin biteceği anlamına gelmez. Uzun derleme/test adımları birden fazla oturuma yayılabilir.
+Each build records:
 
-Teknik kapılar: Hyper-V yönetim yetkisi; eşleşen multilib kaynak revizyonu; PackageKit/libalpm/Discover uyumu; Plasma düşük RAM hedefi; Hyper-V grafik oturumu; NVIDIA gerçek donanım; Office sürüm testleri. Bunlar genel planı bloke eden cevap bekleyen sorular değil, ilgili aşama başlamadan/bitmeden kanıtlanacak işlerdir.
+- LFS and BLFS book version and access date.
+- Host tool versions and the LFS host check result.
+- Source URL, checksum and signature check (where upstream publishes one). Where upstream has no checksum, the hash is marked as computed locally.
+- Patch set, recipe version, dependencies and compiler options.
+- Locale, umask, user, working directory and job limit.
+- Start and end time, exit code, test report and output ID.
 
-İlk sürümler: `0.1-dev` boot eden taban, `0.2-alpha` VM masaüstü + BIOS/UEFI canlı ISO, `0.3-beta` grafik/offline/dual-boot kurucu, `1.0` uyumluluk ve güncelleme testleri tamamlanmış günlük kullanım adayı. İlk sürümün sistem sürüm numarası ile plan belgesinin 1.0 sürümü karıştırılmamalı.
+A recipe change makes dependent results stale. An old stamp file is not enough to continue. Source archives, build trees, staging and artifacts are kept apart. Bit-for-bit identical ISOs are a separate goal and are not claimed yet.
+
+## 9. Rebuild track (D140–D142)
+
+The current LFS 12.4 system is the working test base. The rebuild replaces it once. The 12.4 base stays the test base until step R5 passes.
+
+| Step | Work | Exit criteria |
+|---|---|---|
+| R1 | Pick the newest stable LFS book that supports multilib (lib32). Check and pin the exact version when the work starts. Write the source manifest (URLs, checksums, patch sets). | Pinned version and manifest committed. Choice recorded in DECISIONS.md. |
+| R2 | Build the cross toolchain and temporary tools with multilib. | Toolchain builds; test results recorded per package; no host library leaks (checked). |
+| R3 | Build the final base system with every package installed through `alp`, so the file-ownership ledger is produced automatically (D141). This closes the v1 D34 debt. | Ledger covers every base file with an owner; no unowned system path; removal safety tested on a sample. |
+| R4 | BLFS and KDE rebuild: Xwayland, KScreenLocker, Mesa with llvmpipe, features disabled in the test image turned back on (v1 D39, D53, D54, see [archive/DECISIONS-v1.md](archive/DECISIONS-v1.md)), trust-on-first-use hashes checked again (v1 D52, D56, D142), lib32 libraries needed by Steam. | Plasma Wayland session starts; the checks in section 13 pass for the desktop; each re-enabled feature has a test. |
+| R5 | Parity: the rebuilt image boots on BIOS and UEFI in QEMU and passes the same checks as the current 12.4 image. | Both boot modes boot; same check list passes; result recorded. Only then does the rebuilt base replace the 12.4 test base. |
+
+Note: the 2026-09-30 event-derived ledger for an earlier candidate ([m10-alpha-test-matrix-2026-09-29.md](verification/m10-alpha-test-matrix-2026-09-29.md), D34 addendum) was not merged into the test base. R3 is the planned way to close the debt on the new base.
+
+## 10. Milestones
+
+Status is as of 2026-11-06. "Not started" means no record was found. "Not verified" means work exists but no passing test was recorded.
+
+| ID | Scope | Status (2026-11-06) | Exit criteria |
+|---|---|---|---|
+| M00 | Requirements, decisions, repo rules | Done. Decision review recorded as D100–D143. | DECISIONS.md and this plan agree; rule file CLAUDE.md is the only rule file. |
+| M01 | Host, disk space, network, LFS host check, log layout | Not verified on the current Fedora host. The v1 record covers the earlier Windows-host setup only. | Host check passes on the current machine. |
+| M02 | `alp` engine, catalogue, first store contract | Partial. Install/remove of htop verified in chroot and VM. `alp update`, real upgrade, rollback and store path open. | `alp install/remove/update/upgrade` pass on the test base with logs; rollback tested. |
+| M03 | ABI and temporary tools; **multilib added** (D111) | Reopened. The 12.4 base is 64-bit only. Multilib not built. | R1–R2 pass (section 9). |
+| M04 | Final LFS base system | Partial. 79-package Chapter 8 test run recorded. Ownership ledger for the current base not produced. | R3 passes: ledger complete on the new base. |
+| M05 | Kernel, init, bootloader, first boot | Partial. Boots in QEMU. UEFI boot of the current base not verified. | Both BIOS and UEFI boot in QEMU; reboot and network checked. |
+| M06 | Graphics, audio, session, network, certificates | Partial. DNS, TLS, D-Bus and ALSA loopback audio passed on the earlier host (v1 record). Real audio and graphics on hardware open. | Audio and network checked on real hardware in M12. |
+| M07 | Desktop: Plasma Wayland session, Konsole, Zsh | Partial. Session, Konsole and Zsh run in QEMU. Kickoff menu, volume applet, keyboard layout list (tr, us) loaded. 30-minute stability run passed. Key-based layout switch not tested. | Key layout switch, Xwayland app run and the Plasma checks in section 13 pass on the rebuilt base. |
+| M08 | Terminal help, store, shortcuts, Atatürk and Glass themes, **Windows taskbar, Welcome app, Discover** | Partial. Shortcuts 19/20 in VM; Atatürk wallpaper and Konsole profile seen; PDF/text/folder default apps pass. Taskbar, Welcome app and Discover not started or not passing. | Every row in section 6 tested; taskbar and Start menu in place; Welcome app runs on first boot; Discover install, launch and remove pass cleanly. |
+| M09 | Live rootfs, initramfs, live ISO (BIOS + UEFI), VM image | Partial. Live ISO boots in QEMU to a login prompt, root overlay works, installer and unpackfs source visible (2026-11-05). Firmware mode of that ISO not recorded. Clean repeatable image not made. | Repeatable ISO builds on BIOS and UEFI; boots to desktop; no internal disk touched; default account and secrets rules met. |
+| M10 | Alpha: test matrix, known issues, GitHub Releases, public repo | Not started on the current base. Draft test matrix from 2026-09-29 exists. Pre-release `v0.1.0-alpha.1` exists with no ISO. | Section 13 matrix run; checksums; known issues; repo public (D108); user approval. |
+| M11 | Calamares installer: BIOS and UEFI, LUKS, dual boot with Windows | Partial. BIOS install to a virtual disk through the module runner reached a login prompt (2026-11-06). Acceptance blocked by OPEN-1 (section 14). UEFI, GUI click test, LUKS and dual boot not done. | Install to virtual disk on BIOS and UEFI passes; LUKS install passes; dual boot test on a virtual disk passes; real disk only with the user's permission. |
+| M12 | Beta: installable build, maintenance, real-PC USB tests | Not started. Depends on M11. | USB test on real PCs (matrix in section 13); update and recovery test; user approval. |
+
+## 11. Apps, drivers and compatibility
+
+### 11.1 Preinstalled apps (D127)
+
+| App | Use | State |
+|---|---|---|
+| Dolphin | Files: copy, undo, archives, eject | Built. Win+E check pending (Dolphin not in the 2026-11-05 shortcut test). |
+| Konsole + Zsh | Terminal | Runs in QEMU session (section 4). |
+| Kate / KWrite | Text, UTF-8, Windows line endings | KWrite opened in VM. Kate built. |
+| Okular | PDF | Opened in VM. PDF default app passed. `gio open` path partial ([vm-session-3-t6-2026-11-05.md](verification/vm-session-3-t6-2026-11-05.md)). Several non-PDF formats are not built in the test image. |
+| Gwenview | Images | Built. MIME check not run. |
+| Ark | Archives | Built. MIME check not run. |
+| LibreOffice | Writer, Calc, Impress; Word and Excel files | Not started. No Word-compatibility claim (D131). |
+| VLC | Media | Not started. |
+| Firefox | Default browser | Not started. |
+
+### 11.2 Graphics drivers
+
+- Open drivers preinstalled: Mesa with real GPU drivers and llvmpipe (D128, D134).
+- NVIDIA proprietary driver: separate package, installed with one command or click (D128). Not started.
+- Kernel modules and firmware for storage, USB, HID, Ethernet, audio and graphics.
+- Wi-Fi and Bluetooth firmware common to the target PCs.
+- Driver support is claimed only per device that passed a real-PC test (section 13). Devices not tested are listed as untested in the release notes.
+
+### 11.3 Compatibility
+
+- **Steam** is supported natively thanks to multilib (D129). Requires R4 (lib32 libraries). Not tested.
+- **Wine** comes through **Bottles** (Flatpak), not as a system Wine (D130). Not tested.
+- **Microsoft Office** is not a target (D131).
+- **Printing** (CUPS) and scanning are not in the decision list. Not decided; not promised.
+
+## 12. Updates, maintenance and release
+
+- Stable channel, user-started updates (D126). No update notifications.
+- Old kernel or recovery media as a fallback is still to be decided. Atomic system updates are not planned for the first release.
+- Licence: GPL-3.0 for project code, with a LICENSE file (D109). Third-party components keep their own licences. A licence and source record is kept for every shipped package and image.
+- Release gate:
+  - User approval for every release (D108).
+  - No test accounts, test passwords, embedded keys or test fonts in release images (safety rules in [CLAUDE.md](../CLAUDE.md)). Check this before each release.
+  - Checksums for every ISO, published with the release notes and known issues.
+  - Test matrix (section 13) run and recorded; failures listed.
+- Repository: private until the first alpha ISO is ready, then public (D108).
+- Releases are uploaded to GitHub Releases (D107). Source is in the repository, ISOs and packages are not.
+
+## 13. Test matrix
+
+| Area | Test | Passed when |
+|---|---|---|
+| Boot, BIOS | QEMU, Legacy BIOS, live ISO and installed disk | Boots to login and desktop; reboot works |
+| Boot, UEFI | QEMU with OVMF, live ISO and installed disk | Same as BIOS |
+| Real PC | USB from the release ISO on at least one real PC per boot mode | Boots and runs the daily checklist; hardware results listed per device |
+| Low RAM | 4 GiB VM and a real 4 GiB PC | Idle use ≤ 1 GiB target measured (section 7.3); no swap thrashing |
+| Install | Virtual disk install with LUKS on and off; dual boot on a virtual disk | Installed system boots; the Windows test partition is untouched |
+| School lab | Several user accounts; lock screen (Win+L); LibreOffice files opened and saved; print-free daily tasks | Accounts separate; lock and unlock work; files open in LibreOffice |
+| Ex-Windows user | Shortcuts (section 6); Dolphin; install an app from Discover or Flathub; Steam start; Bottles start | Each step passes or is listed as failed |
+| Terminal | Suggest, accept, run, reject correction (section 4) in Konsole | Logged interaction; no command runs without Enter |
+| Store | `alp` and Discover install, launch, remove | Clean remove with no error after finish |
+| Desktop | Plasma checks: Kickoff, layout switch, volume, 30-minute stability, Xwayland app start | Each check logged with a screenshot or command output |
+
+Tests not run are reported as "not run". A test with a log but no pass is "failed" until fixed.
+
+## 14. Open decisions
+
+### OPEN-1 — installed system root device
+
+`grub-mkconfig` writes `root=UUID=…` for the installed system. The installed system has no initramfs, so the kernel cannot find the root file system and panics. Options:
+
+- (a) Build a small dracut initramfs without the live hook.
+- (b) Set `root=PARTUUID=…` (used in the M11 evidence; needs GPT and `CONFIG_EFI_PARTITION=y`).
+
+M11 acceptance depends on this choice. Details: [handoffs/claude/024-devir-m11-modul-kosucu-2026-11-06.md](handoffs/claude/024-devir-m11-modul-kosucu-2026-11-06.md), item 3. The choice is the user's and must be written into DECISIONS.md when made.

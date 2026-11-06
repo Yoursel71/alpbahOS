@@ -1,27 +1,35 @@
 # alpbahOS
 
-![alpbahOS logosu](docs/assets/alpbahOS-logo.png)
+![alpbahOS logo](docs/assets/alpbahOS-logo.png)
 
-Windows'tan geçenler için kolay, Türkçe, kişiselleştirilebilir ve kaynak kullanımına dikkat eden LFS tabanlı x86_64 masaüstü projesi.
+alpbahOS is a desktop Linux system built from Linux From Scratch (LFS) for x86_64 PCs with 32-bit multilib user space. It is for schools and for people moving from Windows. The default language is Turkish. The desktop is KDE Plasma with a Windows-style bottom taskbar and Start menu. Software comes from the `alp` package manager, KDE Discover, and Flathub.
 
-**Durum:** M1 temel sistem tamamlandı. LFS 12.4-systemd tabanı BIOS/UEFI emülasyonunda ve Hyper-V Gen2 üzerinde gerçek kernel, giriş istemi, DHCP ağı ve kontrollü yeniden başlatmayla doğrulandı. alpbahOS Gen1 test VM'i silindi; Gen1 sonuçları tarihsel kanıttır. Güncel test hedefi Gen2'dir. Grafik masaüstü ve canlı ISO sonraki aşamalardadır.
+## Status
 
-Özel kaynak deposu: [Yoursel71/alpbahOS](https://github.com/Yoursel71/alpbahOS).
+- In development. There is no usable release yet, and no release ISO has been published.
+- Test base: LFS 12.4 system with BLFS KDE Plasma 6.4.4 (Wayland session), tested in QEMU/KVM.
+- Live ISO boots with BIOS in the test. The installer has been run on a virtual BIOS disk only. UEFI is not tested yet.
+- The first alpha is not released. The planned rebuild on the newest stable LFS with multilib is not started (D140).
+- Current state and evidence: [CURRENT.md](CURRENT.md). Open work: [docs/BACKLOG.md](docs/BACKLOG.md).
 
-## Belgeler
+## Documents
 
-- [Ana plan](docs/MASTER_PLAN.md)
-- [Kullanıcı kararları ve teknik seçimler](docs/DECISIONS.md)
-- [Görev sırası ve sahiplik](docs/BACKLOG.md)
-- [Hyper-V ortam planı](docs/HYPERV_PLAN.md)
-- [Ortak ajan kuralları](AGENTS.md)
-- [Claude talimatları](CLAUDE.md) ve [ilk görev](docs/CLAUDE_START.md)
-- [İş kaydı](docs/WORKLOG.md)
-- [M01 önyükleme doğrulaması](docs/M1_BOOT_VERIFICATION.md)
-- [Tasarım referansı](docs/alpbahOS-design-mockups.md)
+- [CLAUDE.md](CLAUDE.md): working rules for the agent (rules)
+- [CURRENT.md](CURRENT.md): current state
+- [docs/DECISIONS.md](docs/DECISIONS.md): decisions with IDs
+- [docs/MASTER_PLAN.md](docs/MASTER_PLAN.md): plan and milestones
+- [docs/BACKLOG.md](docs/BACKLOG.md): tasks, acceptance criteria, status
+- [docs/WORKLOG.md](docs/WORKLOG.md): history (not rewritten)
+- [docs/handoffs/claude/](docs/handoffs/claude/): session notes
+- [docs/verification/](docs/verification/): test evidence and logs
+- [docs/archive/](docs/archive/): old versions of the documents above
 
-Başlangıç seçimleri: LFS/BLFS, KDE Plasma/KWin, Konsole/Zsh, `alp` paket motoru, grafik mağaza, Solid/Glass profilleri, Atatürk masaüstü/kilit ekranı, Türkçe Q. Sistem yalnız 64-bit'tir (D32, D35): 32-bit kullanıcı alanı/multilib kapsam dışı, Steam istemcisi desteklenmez, Wine yalnız WoW64 moduyla değerlendirilir.
+## Build and release
 
-Önce Hyper-V masaüstü ve Legacy+UEFI canlı ISO; sonra Calamares ile grafik/offline/Windows yanında kurulum. Düşük RAM bütçesi ve sürücü uyumluluğu test kapılarıdır.
+- Builds run locally. Release ISOs will be published on GitHub Releases (D107).
+- The repository stays private until the first alpha ISO is ready, then it becomes public (D108). Each release needs the user's approval.
 
-Kaynak ve belgeler Git'te; ISO, VHDX, rootfs ve build cache'i yerelde tutulur. Bulut build/depolama kullanılmaz. Üçüncü taraf bileşenler kendi lisanslarını korur; proje özgün kodunun yayın lisansı genel dağıtım öncesinde belirlenecek.
+## License
+
+- Project code: GPL-3.0, see [LICENSE](LICENSE) (D109).
+- Third-party components keep their own licenses (D109).
