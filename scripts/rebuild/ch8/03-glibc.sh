@@ -186,6 +186,11 @@ cp -a DESTDIR/usr/lib32/* /usr/lib32/
 install -vm644 DESTDIR/usr/include/gnu/{lib-names,stubs}-32.h \
     /usr/include/gnu/
 
+# Book (8.5.3): add the 32-bit library directory to the dynamic loader config. Missing in the first
+# build; the same step is applied to the existing build root by 00-glibc-lib32-conf.sh.
+echo "/usr/lib32" > /etc/ld.so.conf.d/lib32.conf
+ldconfig
+
 # Caution step from the book: a basic 32-bit compile and link check.
 cd /sources/$DIR/build
 echo 'int main(){}' > dummy.c

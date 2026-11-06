@@ -27,16 +27,12 @@ rm /usr/lib/libelf.a
 
 # 8.51.2 Installation of Libelf - 32-bit
 make distclean
-# --disable-demangler: the 32-bit C++ demangler test fails to link because ld -m32 does not search
-# /usr/lib32 for DT_NEEDED libraries (binutils --with-lib-path=/usr/lib; BACKLOG item). Only libelf is
-# installed from this build, so the demangler is not part of the installed files.
 CC="gcc -m32" CXX="g++ -m32" \
 ./configure --prefix=/usr \
             --libdir=/usr/lib32 \
             --host=i686-pc-linux-gnu \
             --disable-debuginfod \
-            --enable-libdebuginfod=dummy \
-            --disable-demangler
+            --enable-libdebuginfod=dummy
 make -C lib
 make -C libelf
 make DESTDIR=$PWD/DESTDIR -C libelf install
