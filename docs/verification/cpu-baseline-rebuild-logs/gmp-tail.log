@@ -1,0 +1,60 @@
+ /usr/bin/mkdir -p '/usr/lib'
+ /usr/bin/mkdir -p '/usr/include'
+ /usr/bin/mkdir -p '/usr/include'
+ /usr/bin/mkdir -p '/usr/lib/pkgconfig'
+ /bin/sh ./libtool   --mode=install /usr/bin/install -c   libgmp.la libgmpxx.la '/usr/lib'
+ /usr/bin/install -c -m 644 gmpxx.h '/usr/include'
+ /usr/bin/install -c -m 644 gmp.h '/usr/include'
+ /usr/bin/install -c -m 644 gmp.pc gmpxx.pc '/usr/lib/pkgconfig'
+make  install-data-hook
+
++-------------------------------------------------------------+
+| CAUTION:                                                    |
+|                                                             |
+| If you have not already run "make check", then we strongly  |
+| recommend you do so.                                        |
+|                                                             |
+| GMP has been carefully tested by its authors, but compilers |
+| are all too often released with serious bugs.  GMP tends to |
+| explore interesting corners in compilers and has hit bugs   |
+| on quite a few occasions.                                   |
+|                                                             |
++-------------------------------------------------------------+
+
+libtool: install: /usr/bin/install -c .libs/libgmp.so.10.5.0 /usr/lib/libgmp.so.10.5.0
+libtool: install: (cd /usr/lib && { ln -s -f libgmp.so.10.5.0 libgmp.so.10 || { rm -f libgmp.so.10 && ln -s libgmp.so.10.5.0 libgmp.so.10; }; })
+libtool: install: (cd /usr/lib && { ln -s -f libgmp.so.10.5.0 libgmp.so || { rm -f libgmp.so && ln -s libgmp.so.10.5.0 libgmp.so; }; })
+libtool: install: /usr/bin/install -c .libs/libgmp.lai /usr/lib/libgmp.la
+libtool: warning: relinking 'libgmpxx.la'
+libtool: install: (cd /sources/cpu-baseline-build/gmp-6.3.0-20261106-154634; /bin/sh "/sources/cpu-baseline-build/gmp-6.3.0-20261106-154634/libtool"  --tag CXX --mode=relink g++ -O2 -march=x86-64 -mtune=generic -version-info 11:0:7 -o libgmpxx.la -rpath /usr/lib cxx/dummy.lo cxx/isfuns.lo cxx/ismpf.lo cxx/ismpq.lo cxx/ismpz.lo cxx/ismpznw.lo cxx/limits.lo cxx/osdoprnti.lo cxx/osfuns.lo cxx/osmpf.lo cxx/osmpq.lo cxx/osmpz.lo libgmp.la )
+libtool: relink: g++  -fPIC -DPIC -shared -nostdlib /usr/lib/gcc/x86_64-pc-linux-gnu/15.2.0/../../../../lib/crti.o /usr/lib/gcc/x86_64-pc-linux-gnu/15.2.0/crtbeginS.o  cxx/.libs/dummy.o cxx/.libs/isfuns.o cxx/.libs/ismpf.o cxx/.libs/ismpq.o cxx/.libs/ismpz.o cxx/.libs/ismpznw.o cxx/.libs/limits.o cxx/.libs/osdoprnti.o cxx/.libs/osfuns.o cxx/.libs/osmpf.o cxx/.libs/osmpq.o cxx/.libs/osmpz.o   -Wl,-rpath -Wl,/usr/lib/../lib -L/usr/lib -lgmp -L/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.0 -L/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.0/../../../../lib -L/lib/../lib -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.0/../../.. -L/lib -lstdc++ -lm -lc -lgcc_s /usr/lib/gcc/x86_64-pc-linux-gnu/15.2.0/crtendS.o /usr/lib/gcc/x86_64-pc-linux-gnu/15.2.0/../../../../lib/crtn.o  -O2 -march=x86-64 -mtune=generic   -Wl,-soname -Wl,libgmpxx.so.4 -o .libs/libgmpxx.so.4.7.0
+libtool: install: /usr/bin/install -c .libs/libgmpxx.so.4.7.0T /usr/lib/libgmpxx.so.4.7.0
+libtool: install: (cd /usr/lib && { ln -s -f libgmpxx.so.4.7.0 libgmpxx.so.4 || { rm -f libgmpxx.so.4 && ln -s libgmpxx.so.4.7.0 libgmpxx.so.4; }; })
+libtool: install: (cd /usr/lib && { ln -s -f libgmpxx.so.4.7.0 libgmpxx.so || { rm -f libgmpxx.so && ln -s libgmpxx.so.4.7.0 libgmpxx.so; }; })
+libtool: install: /usr/bin/install -c .libs/libgmpxx.lai /usr/lib/libgmpxx.la
+libtool: finish: PATH="/usr/bin:/usr/sbin:/sbin" ldconfig -n /usr/lib
+----------------------------------------------------------------------
+Libraries have been installed in:
+   /usr/lib
+
+If you ever happen to want to link against installed libraries
+in a given directory, LIBDIR, you must either use libtool, and
+specify the full pathname of the library, or use the '-LLIBDIR'
+flag during linking and do at least one of the following:
+   - add LIBDIR to the 'LD_LIBRARY_PATH' environment variable
+     during execution
+   - add LIBDIR to the 'LD_RUN_PATH' environment variable
+     during linking
+   - use the '-Wl,-rpath -Wl,LIBDIR' linker flag
+   - have your system administrator add LIBDIR to '/etc/ld.so.conf'
+
+See any operating system documentation about shared libraries for
+more information, such as the ld(1) and ld.so(8) manual pages.
+----------------------------------------------------------------------
+lrwxrwxrwx 1 root root     16 Nov  6 15:47 /usr/lib/libgmp.so -> libgmp.so.10.5.0
+lrwxrwxrwx 1 root root     16 Nov  6 15:47 /usr/lib/libgmp.so.10 -> libgmp.so.10.5.0
+-rwxr-xr-x 1 root root 728184 Nov  6 15:47 /usr/lib/libgmp.so.10.5.0
+lrwxrwxrwx 1 root root     17 Nov  6 15:47 /usr/lib/libgmpxx.so -> libgmpxx.so.4.7.0
+lrwxrwxrwx 1 root root     17 Nov  6 15:47 /usr/lib/libgmpxx.so.4 -> libgmpxx.so.4.7.0
+-rwxr-xr-x 1 root root  43672 Nov  6 15:47 /usr/lib/libgmpxx.so.4.7.0
+[15:47:09] DONE gmp 6.3.0 rebuilt (generic, --enable-fat). Next: rebuild-mpfr.sh, then audit-isa.sh on the host.

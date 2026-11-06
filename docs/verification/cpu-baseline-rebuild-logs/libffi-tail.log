@@ -1,0 +1,60 @@
+
+		=== libffi Summary ===
+
+# of expected passes		2460
+Making check in man
+make[2]: Nothing to be done for 'check'.
+Making check in doc
+make[2]: Nothing to be done for 'check'.
+# of expected passes		2460
+[15:46:26] saved previous libffi files to /sources/cpu-baseline-build/libffi-installed-before-20261106-154247 (4 entries)
+[15:46:26] make install
+MAKE x86_64-pc-linux-gnu : 0 * install
+Making install in include
+make[3]: Nothing to be done for 'install-exec-am'.
+ /usr/bin/mkdir -p '/usr/include'
+ /usr/bin/install -c -m 644 ffi.h ffitarget.h '/usr/include'
+Making install in testsuite
+make[3]: Nothing to be done for 'install-exec-am'.
+make[3]: Nothing to be done for 'install-data-am'.
+Making install in man
+make[3]: Nothing to be done for 'install-exec-am'.
+ /usr/bin/mkdir -p '/usr/share/man/man3'
+ /usr/bin/install -c -m 644 ../../man/ffi.3 ../../man/ffi_call.3 ../../man/ffi_prep_cif.3 ../../man/ffi_prep_cif_var.3 '/usr/share/man/man3'
+Making install in doc
+make[3]: Nothing to be done for 'install-exec-am'.
+ /usr/bin/mkdir -p '/usr/share/info'
+ /usr/bin/install -c -m 644 ../../doc/libffi.info '/usr/share/info'
+ install-info --info-dir='/usr/share/info' '/usr/share/info/libffi.info'
+ /usr/bin/mkdir -p '/usr/lib/pkgconfig'
+ /usr/bin/mkdir -p '/usr/lib/../lib'
+ /bin/sh ./libtool   --mode=install /usr/bin/install -c   libffi.la '/usr/lib/../lib'
+ /usr/bin/install -c -m 644 libffi.pc '/usr/lib/pkgconfig'
+libtool: install: /usr/bin/install -c .libs/libffi.so.8.2.0 /usr/lib/../lib/libffi.so.8.2.0
+libtool: install: (cd /usr/lib/../lib && { ln -s -f libffi.so.8.2.0 libffi.so.8 || { rm -f libffi.so.8 && ln -s libffi.so.8.2.0 libffi.so.8; }; })
+libtool: install: (cd /usr/lib/../lib && { ln -s -f libffi.so.8.2.0 libffi.so || { rm -f libffi.so && ln -s libffi.so.8.2.0 libffi.so; }; })
+libtool: install: /usr/bin/install -c .libs/libffi.lai /usr/lib/../lib/libffi.la
+libtool: finish: PATH="/usr/bin:/usr/sbin:/sbin" ldconfig -n /usr/lib/../lib
+----------------------------------------------------------------------
+Libraries have been installed in:
+   /usr/lib/../lib
+
+If you ever happen to want to link against installed libraries
+in a given directory, LIBDIR, you must either use libtool, and
+specify the full pathname of the library, or use the '-LLIBDIR'
+flag during linking and do at least one of the following:
+   - add LIBDIR to the 'LD_LIBRARY_PATH' environment variable
+     during execution
+   - add LIBDIR to the 'LD_RUN_PATH' environment variable
+     during linking
+   - use the '-Wl,-rpath -Wl,LIBDIR' linker flag
+   - have your system administrator add LIBDIR to '/etc/ld.so.conf'
+
+See any operating system documentation about shared libraries for
+more information, such as the ld(1) and ld.so(8) manual pages.
+----------------------------------------------------------------------
+lrwxrwxrwx 1 root root    15 Nov  6 15:46 /usr/lib/libffi.so -> libffi.so.8.2.0
+lrwxrwxrwx 1 root root    15 Nov  6 15:46 /usr/lib/libffi.so.8 -> libffi.so.8.2.0
+-rwxr-xr-x 1 root root 73720 Nov  6 15:46 /usr/lib/libffi.so.8.2.0
+28b70739fe951ae35957ec47d01c321eda02a9281ca99dda942ceb66f6c40947  /usr/lib/libffi.so.8.2.0
+[15:46:26] DONE libffi 3.5.2 rebuilt (generic x86-64). Run audit-isa.sh on the host (see README.md).
