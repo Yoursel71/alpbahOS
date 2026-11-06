@@ -1,27 +1,27 @@
-# Kısayol kullanıcı yardımı — UI-02
+# Shortcut help for users — UI-02
 
-Durum: **tasarım planı**, gerçek bir arayüz bileşeni değil; hiçbir parçası uygulanmadı.
+Status (updated 2026-11-06): **design plan.** No help UI component (card, grouping, overlay) is built. The shortcut profile itself is installed and was checked in the QEMU test image on 5 Nov 2026: **19 pass, 1 out of scope** (`clipboard-ops`, an application-layer shortcut). The profile source is [`shortcuts.json`](shortcuts.json); the conflict analysis is in [conflicts.md](conflicts.md).
 
-Amaç: D08 kararını ("Windows'a tanıdık kısayollar hedeflenecek") somut bir keşif/yardım yüzeyine bağlamak. Kaynak: [docs/DECISIONS.md](../../docs/DECISIONS.md) D08, [docs/MASTER_PLAN.md](../../docs/MASTER_PLAN.md) §6.
+Purpose: connect the decision that alpbahOS uses Windows-familiar shortcuts (D118) to a concrete help and discovery surface. Sources: [docs/DECISIONS.md](../../docs/DECISIONS.md) D118 (replaces the v1 D08) and [docs/MASTER_PLAN.md](../../docs/MASTER_PLAN.md) §6.
 
-## 1. İlk oturum kısa referans kartı
+## 1. First-session quick reference card
 
-İlk girişte, yalnızca ilk oturumda gösterilen, kapatılabilir bir bildirim/kart: en sık kullanılan 5 kısayolu listeler (`Win+D`, `Win+E`, `Win+L`, `Alt+Tab`, `Win+I`). Tek seferlik; her açılışta tekrar gösterilmez. Kalıcı bir "tekrar göster" seçeneği Ayarlar'da bulunur.
+On first login, a dismissable notice or card lists the five most-used shortcuts: `Win+D`, `Win+E`, `Win+L`, `Alt+Tab`, `Win+I`. It appears once and is not shown again at each login. A permanent "show again" option is in Settings.
 
-## 2. Kalıcı erişim
+## 2. Permanent access
 
-System Settings → Kısayollar ekranında ayrı bir "Windows kullanıcıları için" filtre/grup etiketi; `shortcuts.json`'daki her satır bu gruba işaretlenir. Yeni bir ayarlar sayfası **yazılmaz** — Plasma'nın yerleşik Kısayollar modülü kullanılır, yalnızca gruplama/etiketleme eklenir.
+In System Settings → Shortcuts, a separate "For Windows users" filter or group label marks each row from `shortcuts.json`. No new settings page is written; the built-in Plasma Shortcuts module is used and only grouping and labels are added.
 
-## 3. Sıfırlama
+## 3. Reset
 
-Her kısayol satırı, Plasma'nın System Settings → Shortcuts ekranının **yerleşik** "Varsayılana Sıfırla" özelliğiyle geri alınabilir olmalı (MASTER_PLAN §6: *"ayarlarda düzenlenebilir ve varsayılana dönebilir"*). Yeni bir sıfırlama mekanizması icat edilmez.
+Each shortcut row must be reversible with the built-in "Reset to default" feature of System Settings → Shortcuts (MASTER_PLAN §6: "can be edited in settings and can return to the default"). No new reset mechanism is invented.
 
-> M08 bulgusu (Plasma 6.4.4 kaynağı): yerleşik "Varsayılanlar" düğmesi, eylemi kaydeden uygulamanın bildirdiği **KDE** varsayılanına döner; alpbahOS profili `/etc/xdg/kglobalshortcutsrc` katmanındadır. alpbahOS profiline dönüş için kullanıcının `~/.config/kglobalshortcutsrc` içindeki ilgili girdinin silinmesi gerekir. Bu fark açık karar olarak [conflicts.md](conflicts.md) §4'te.
+> M08 finding (Plasma 6.4.4 source): the built-in "Defaults" button returns an action to the **KDE** default declared by the application that registers it. The alpbahOS profile lives in the `/etc/xdg/kglobalshortcutsrc` layer. Returning to the alpbahOS profile requires deleting the related entry in the user's `~/.config/kglobalshortcutsrc`. This difference is an open decision in [conflicts.md](conflicts.md) §4.
 
-## 4. Kapsam dışı bırakılan fikir
+## 4. Idea left out of scope
 
-Meta tuşuna basılı tutunca kısayol overlay'i gösterme fikri (bazı masaüstü ortamlarında var) — yalnızca seçilen Plasma sürümünde **hazır** bir özellik olarak mevcutsa değerlendirilir; bunun için özel bir bileşen yazılmaz (CLAUDE.md: hazır bileşenleri özelleştir, yeni compositor/kabuk parçası icat etme).
+An overlay that shows shortcuts while the Meta key is held (present in some desktop environments) is only considered if the chosen Plasma version has it **ready-made**. No custom component is written for it (CLAUDE.md: customise ready-made components; do not invent a new compositor or shell part).
 
-## Doğrulanmamış / test edilmedi
+## Not verified / not tested
 
-Bu belgedeki her madde tasarım seviyesinde bir plandır. Gerçek bildirim/kart/gruplama mekanizması hiçbir Plasma oturumunda uygulanmadı veya test edilmedi.
+Every item in this document is a design-level plan. The notice, card and grouping mechanisms were not implemented or tested in any Plasma session.

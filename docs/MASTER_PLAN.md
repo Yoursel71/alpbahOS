@@ -39,7 +39,7 @@ Steam (D129) and Bottles for Windows apps (D130) are in the plan but have no pas
 
 | Layer | Choice | Decision | State (2026-11-06) |
 |---|---|---|---|
-| Base system | LFS 12.4-systemd test base, with BLFS 12.4 packages. The base is rebuilt once on the newest stable LFS book with multilib (lib32). | D140, D111, D33 (v1) | Test base is LFS 12.4, 64-bit only. Rebuild not started (section 8). |
+| Base system | LFS 12.4-systemd test base, with BLFS 12.4 packages. The base is rebuilt once on the newest stable LFS book with multilib (lib32), pinned to LFS 13.1-systemd, Multilib LFS 13.1 and BLFS 13.1-systemd. | D140, D145, D111, D33 (v1) | Test base is LFS 12.4, 64-bit only. Rebuild pinned to LFS 13.1 (D145); rebuild not started (section 9). |
 | Init | systemd | D33 (v1) | In use. |
 | Kernel | Linux 6.16.1 (current test base), with squashfs and overlay for the live image | D143, handoff 023 | In use in QEMU. Final kernel version for the rebuild not chosen. |
 | Boot | Legacy BIOS and UEFI through GRUB | D136 | BIOS: installer test and live ISO boot checked in QEMU. UEFI: see M09, M11. |
@@ -221,7 +221,7 @@ The current LFS 12.4 system is the working test base. The rebuild replaces it on
 
 | Step | Work | Exit criteria |
 |---|---|---|
-| R1 | Pick the newest stable LFS book that supports multilib (lib32). Check and pin the exact version when the work starts. Write the source manifest (URLs, checksums, patch sets). | Pinned version and manifest committed. Choice recorded in DECISIONS.md. |
+| R1 | Pinned (D145): LFS 13.1-systemd, Multilib LFS 13.1 and BLFS 13.1-systemd ([research record](verification/rebuild-r1-lfs-version-2026-11-06.md)). Still to write: the source manifest (URLs, checksums, patch sets). | Pinned version recorded in DECISIONS.md (done). Manifest committed (open). |
 | R2 | Build the cross toolchain and temporary tools with multilib. | Toolchain builds; test results recorded per package; no host library leaks (checked). |
 | R3 | Build the final base system with every package installed through `alp`, so the file-ownership ledger is produced automatically (D141). This closes the v1 D34 debt. | Ledger covers every base file with an owner; no unowned system path; removal safety tested on a sample. |
 | R4 | BLFS and KDE rebuild: Xwayland, KScreenLocker, Mesa with llvmpipe, features disabled in the test image turned back on (v1 D39, D53, D54, see [archive/DECISIONS-v1.md](archive/DECISIONS-v1.md)), trust-on-first-use hashes checked again (v1 D52, D56, D142), lib32 libraries needed by Steam. | Plasma Wayland session starts; the checks in section 13 pass for the desktop; each re-enabled feature has a test. |
@@ -246,7 +246,7 @@ Status is as of 2026-11-06. "Not started" means no record was found. "Not verifi
 | M08 | Terminal help, store, shortcuts, Atatürk and Glass themes, **Windows taskbar, Welcome app, Discover** | Partial. Shortcuts 19/20 in VM; Atatürk wallpaper and Konsole profile seen; PDF/text/folder default apps pass. Taskbar, Welcome app and Discover not started or not passing. | Every row in section 6 tested; taskbar and Start menu in place; Welcome app runs on first boot; Discover install, launch and remove pass cleanly. |
 | M09 | Live rootfs, initramfs, live ISO (BIOS + UEFI), VM image | Partial. Live ISO boots in QEMU to a login prompt, root overlay works, installer and unpackfs source visible (2026-11-05). Firmware mode of that ISO not recorded. Clean repeatable image not made. | Repeatable ISO builds on BIOS and UEFI; boots to desktop; no internal disk touched; default account and secrets rules met. |
 | M10 | Alpha: test matrix, known issues, GitHub Releases, public repo | Not started on the current base. Draft test matrix from 2026-09-29 exists. Pre-release `v0.1.0-alpha.1` exists with no ISO. | Section 13 matrix run; checksums; known issues; repo public (D108); user approval. |
-| M11 | Calamares installer: BIOS and UEFI, LUKS, dual boot with Windows | Partial. BIOS install to a virtual disk through the module runner reached a login prompt (2026-11-06). Acceptance blocked by OPEN-1 (section 14). UEFI, GUI click test, LUKS and dual boot not done. | Install to virtual disk on BIOS and UEFI passes; LUKS install passes; dual boot test on a virtual disk passes; real disk only with the user's permission. |
+| M11 | Calamares installer: BIOS and UEFI, LUKS, dual boot with Windows | Partial. BIOS install to a virtual disk through the product grubcfg path reached a login prompt (2026-11-06, D144; [record](verification/m11-d144-partuuid-2026-11-06.md)). OPEN-1 is resolved (section 14). UEFI, GUI click test, LUKS and dual boot not done. | Install to virtual disk on BIOS and UEFI passes; LUKS install passes; dual boot test on a virtual disk passes; real disk only with the user's permission. |
 | M12 | Beta: installable build, maintenance, real-PC USB tests | Not started. Depends on M11. | USB test on real PCs (matrix in section 13); update and recovery test; user approval. |
 
 ## 11. Apps, drivers and compatibility
@@ -312,11 +312,8 @@ Tests not run are reported as "not run". A test with a log but no pass is "faile
 
 ## 14. Open decisions
 
-### OPEN-1 — installed system root device
+### OPEN-1 — resolved by D144 (2026-11-06)
 
-`grub-mkconfig` writes `root=UUID=…` for the installed system. The installed system has no initramfs, so the kernel cannot find the root file system and panics. Options:
+Option (b) was chosen: the installed system boots with `root=PARTUUID=…` and no initramfs. It needs GPT and `CONFIG_EFI_PARTITION=y`. Implemented in `scripts/lfs-blfs/calamares/modules/grubcfg.conf`; proven on a BIOS virtual disk ([record](verification/m11-d144-partuuid-2026-11-06.md)).
 
-- (a) Build a small dracut initramfs without the live hook.
-- (b) Set `root=PARTUUID=…` (used in the M11 evidence; needs GPT and `CONFIG_EFI_PARTITION=y`).
-
-M11 acceptance depends on this choice. Details: [handoffs/claude/024-devir-m11-modul-kosucu-2026-11-06.md](handoffs/claude/024-devir-m11-modul-kosucu-2026-11-06.md), item 3. The choice is the user's and must be written into DECISIONS.md when made.
+History: `grub-mkconfig` wrote `root=UUID=…` for the installed system; with no initramfs the kernel panicked ([handoff 024](handoffs/claude/024-devir-m11-modul-kosucu-2026-11-06.md), item 3). No other open user decisions are recorded as of 2026-11-06.

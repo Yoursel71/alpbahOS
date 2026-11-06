@@ -1,78 +1,80 @@
-# alpbahOS Tasarım Mockup Spesifikasyonu
+# alpbahOS Design Mockup Specification
 
-**Sürüm:** 0.1<br>
-**Tarih:** 21 Eylül 2026<br>
+**Version:** 0.1<br>
+**Date:** 21 September 2026<br>
 **Platform:** alpbahOS 64-bit<br>
-**Durum:** Konsept tasarım / uygulama öncesi tasarım sistemi
+**Status:** Concept design / design system before implementation
 
-> 21 Eylül 2026 güncellemesi: Güncel ürün kararları [ana plandadır](MASTER_PLAN.md). Mevcut ekran yerleşimleri korunur; varsayılan tema premium minimalist `alpbah-solid`, masaüstü/kilit arka planı Atatürk, dil Türkçe ve klavye Türkçe Q'dur. Glass/Liquid seçenek olarak kalır. Bu belgede geçen kernel, paket sayısı ve sistem bilgileri mockup örnekleridir; uygulanmış sistem bilgisi değildir. Terminal logo/ANSI varlıkları üretim öncesi gerçek terminalde yeniden doğrulanacaktır.
+> **Status (2026-11-06).** Design reference from September 2026. The layout part is superseded: alpbahOS now uses a Windows-style bottom taskbar with a Start menu (D115), the Atatürk theme is selectable with the alpbahOS brand as default (D114), and Liquid glass is not in the first release (D116). Colours, logo and component styling remain valid (D113).
 
-## 1. Tasarım özeti
+> 21 September 2026 update: current product decisions are in the [master plan](MASTER_PLAN.md). Existing screen layouts are kept; the default theme is the premium minimalist `alpbah-solid`, the desktop and lock-screen background is Atatürk, the language is Turkish and the keyboard is Turkish Q. Glass/Liquid remains as an option (superseded by D116: Liquid is not in the first release). Kernel, package count and system information in this document are mockup examples; they are not information about an installed system. Terminal logo/ANSI assets will be checked again in a real terminal before production.
 
-### Kabul edilen yerleşim referansı
+## 1. Design summary
 
-![alpbahOS masaüstü ve uygulama konsept panosu](assets/alpbahOS-ui-reference.png)
+### Accepted layout reference
 
-Bu görsel yerleşim ve renk referansıdır. Metinleri, donanım bilgileri ve uygulama yetenekleri uygulama sırasında gerçek sistem bilgileriyle değiştirilir. Varsayılan Atatürk arka planı ve Türkçe arayüz kararı ana plandadır.
+![alpbahOS desktop and application concept board](assets/alpbahOS-ui-reference.png)
 
-alpbahOS; dağ silüeti, terminal imgesi ve `alpbahOS` kelime işaretini merkeze alan, koyu temalı ve teknik bir Linux masaüstü deneyimidir.
+This image is the layout and colour reference. Texts, hardware information and application capabilities are replaced with real system information during implementation. The Atatürk default background and the Turkish interface decision are in the master plan.
 
-Tasarımın ana hedefleri:
+alpbahOS is a dark, technical Linux desktop experience centred on a mountain silhouette, a terminal image and the `alpbahOS` wordmark.
 
-- İlk bakışta Linux ve geliştirici odaklı bir sistem hissi vermek.
-- Masaüstü, terminal ve sistem uygulamalarında aynı görsel dili korumak.
-- Koyu yüzeyleri elektrik mavisi ve kontrollü turuncu vurgularla okunabilir hale getirmek.
-- Arayüzü gösterişli ama günlük kullanımda sade ve hızlı tutmak.
-- 64-bit ürün kimliğini teknik bir detay olarak göstermek, arayüzü bununla doldurmamak.
+Main design goals:
 
-Ana marka fikri:
+- Give a first impression of a Linux and developer-oriented system.
+- Keep the same visual language across desktop, terminal and system applications.
+- Make dark surfaces readable with electric blue and controlled orange accents.
+- Keep the interface attractive but simple and fast for daily use.
+- Show the 64-bit product identity as a technical detail, without filling the interface with it.
 
-> **alpbahOS — Higher Ground for What’s Next.**
+Main brand idea:
 
-Bu slogan mockuplarda yardımcı metin olarak kullanılabilir; ürün arayüzünde zorunlu değildir.
+> **alpbahOS — Higher Ground for What's Next.**
 
-## 2. Logo ve marka kullanımı
+This slogan may be used as supporting text in mockups; it is not required in the product interface.
 
-### 2.0 Referans logo
+## 2. Logo and brand use
+
+### 2.0 Reference logo
 
 ![alpbahOS logo](assets/alpbahOS-logo.png)
 
-Kaynak görsel: [alpbahOS-logo.png](assets/alpbahOS-logo.png)
+Source file: [alpbahOS-logo.png](assets/alpbahOS-logo.png)
 
-### 2.1 Logo yapısı
+### 2.1 Logo structure
 
-Logo üç ana parçadan oluşur:
+The logo has three main parts:
 
-1. Koyu lacivert dağ silüeti.
-2. Elektrik mavisi zirve/ışık formu.
-3. Terminal komutu işareti ve turuncu imleç çizgisi.
+1. Dark navy mountain silhouette.
+2. Electric blue peak/light shape.
+3. Terminal command mark and orange cursor line.
 
-Kelime işareti `alpbahOS` biçiminde, küçük harfli marka adı ve büyük `OS` son ekiyle kullanılmalıdır.
+The wordmark is written as `alpbahOS`: lowercase brand name with a capital `OS` suffix.
 
-### 2.2 Logo varyantları
+### 2.2 Logo variants
 
-| Varyant | Kullanım alanı |
+| Variant | Use |
 |---|---|
-| Tam renkli logo | Masaüstü duvar kâğıdı, giriş ekranı, App Center banner’ı |
-| Tek renk açık logo | Koyu arka planlarda küçük boyut |
-| Sembol-only logo | Dock, pencere başlığı, sistem tepsisi, favicon |
-| 64-bit rozetli logo | Sistem bilgileri, yükleyici ve About ekranı |
+| Full-colour logo | Desktop wallpaper, login screen, App Center banner |
+| Single-colour light logo | Small sizes on dark backgrounds |
+| Symbol-only logo | Dock (superseded by D115), window title, system tray, favicon |
+| Logo with 64-bit badge | System information, installer and About screen |
 
-### 2.3 Koruma alanı
+### 2.3 Clear space
 
-Logo çevresinde, sembol yüksekliğinin en az `0.25x` değeri kadar boşluk bırakılmalıdır. Logo; pencere kenarına, butona veya başka bir ikona yapıştırılmamalıdır.
+Leave clear space around the logo of at least `0.25x` the symbol height. The logo must not touch a window edge, a button or another icon.
 
-### 2.4 Kaçınılacak kullanımlar
+### 2.4 Usage to avoid
 
-- Dağ formunu yatay olarak sıkıştırmak.
-- Elektrik mavisini mor veya yeşile çevirmek.
-- Terminal imgesini kaldırıp marka oranlarını bozmak.
-- Logoya gölge, parlama veya ağır 3D efekt eklemek.
-- `alpbahos`, `AlpbahOS` veya `ALPBAHOS` biçimlerini ana marka adı olarak kullanmak.
+- Compressing the mountain shape horizontally.
+- Turning the electric blue into purple or green.
+- Removing the terminal image or breaking the brand proportions.
+- Adding shadow, glow or heavy 3D effects to the logo.
+- Using `alpbahos`, `AlpbahOS` or `ALPBAHOS` as the main brand name.
 
-### 2.5 Neofetch ASCII logosu
+### 2.5 Neofetch ASCII logo
 
-Neofetch gibi terminal bilgi araçlarında kullanılabilecek sade ASCII karşılığı:
+A simple ASCII version for terminal information tools such as Neofetch:
 
 ```text
                  ${c1}                 /\\
@@ -97,7 +99,7 @@ Neofetch gibi terminal bilgi araçlarında kullanılabilecek sade ASCII karşıl
                  ${c4}        6 4 - b i t  •  L i n u x
 ```
 
-Neofetch yapılandırmasında renk değişkenleri şu şekilde önerilir:
+For the Neofetch configuration, these colour variables are suggested:
 
 ```bash
 # ~/.config/neofetch/config.conf
@@ -106,26 +108,26 @@ ascii_bold="on"
 colors=(4 6 7 3 4 6)
 ```
 
-Renk eşlemesi:
+Colour mapping:
 
-- `${c1}`: koyu lacivert / dağ silüeti.
-- `${c2}`: elektrik mavisi / terminal ve `OS`.
-- `${c3}`: turuncu / imleç ve küçük vurgu.
-- `${c4}`: açık cyan veya beyaz / marka alt bilgisi ve ışık katmanı.
+- `${c1}`: dark navy / mountain silhouette.
+- `${c2}`: electric blue / terminal and `OS`.
+- `${c3}`: orange / cursor and small accent.
+- `${c4}`: light cyan or white / brand subtitle and light layer.
 
-ASCII logo, dar terminal pencerelerinde kırpılmaması için 24 karakteri aşmayacak şekilde tasarlanmıştır. Daha iyi sonuç için terminal fontu monospace ve pencere genişliği en az 80 sütun olmalıdır.
+The ASCII logo is designed not to exceed 24 characters, so it is not cut off in narrow terminal windows. For a better result, use a monospace terminal font and a window at least 80 columns wide.
 
-### 2.6 Gerçek logo üzerinden üretilen renkli ASCII
+### 2.6 Coloured ASCII from the real logo
 
-Elle çizilmiş fallback sürümüne ek olarak, gerçek alpbahOS PNG logosunu piksellerinden okuyup ANSI truecolor half-block karakterlerine dönüştüren Python aracı da bulunmaktadır.
+In addition to the hand-drawn fallback, there is a Python tool that reads the real alpbahOS PNG logo pixel by pixel and converts it to ANSI truecolor half-block characters.
 
-Dosyalar:
+Files:
 
-- [Üretici Python aracı](assets/generate_neofetch_ascii.py)
-- [Renkli ANSI logo çıktısı](assets/alpbahOS-neofetch-ansi.txt)
-- [ASCII terminal önizlemesi](assets/alpbahOS-neofetch-preview.png)
+- [Generator Python tool](assets/generate_neofetch_ascii.py)
+- [Coloured ANSI logo output](assets/alpbahOS-neofetch-ansi.txt)
+- [ASCII terminal preview](assets/alpbahOS-neofetch-preview.png)
 
-Üretmek için:
+To generate:
 
 ```bash
 python assets/generate_neofetch_ascii.py \
@@ -134,17 +136,17 @@ python assets/generate_neofetch_ascii.py \
   --width 48
 ```
 
-Terminalde görüntülemek için:
+To display it in a terminal:
 
 ```bash
 cat assets/alpbahOS-neofetch-ansi.txt
 ```
 
-Bu sürüm, logo görselindeki dağ silüetini, cyan zirveyi, terminal sembolünü, turuncu imleci ve `alpbahOS` yazısını renkleriyle birlikte korur. `--width 48` normal terminal kullanımı için, `--width 64` daha geniş ekranlar için önerilir.
+This version keeps the mountain silhouette, cyan peak, terminal symbol, orange cursor and `alpbahOS` text of the logo image with their colours. `--width 48` is recommended for normal terminal use; `--width 64` for wider screens.
 
-## 3. Görsel dil
+## 3. Visual language
 
-### 3.1 Renk token’ları
+### 3.1 Colour tokens
 
 ```css
 :root {
@@ -173,143 +175,143 @@ Bu sürüm, logo görselindeki dağ silüetini, cyan zirveyi, terminal sembolün
 }
 ```
 
-Renk kullanım oranı:
+Colour usage ratio:
 
-- `%60` grafit/koyu arka plan.
-- `%25` lacivert yüzeyler.
-- `%10` elektrik mavisi.
-- `%5` turuncu vurgu.
+- `60%` graphite / dark background.
+- `25%` navy surfaces.
+- `10%` electric blue.
+- `5%` orange accent.
 
-Turuncu yalnızca aktif imleç, birincil eylem, uyarı veya dikkat çekmesi gereken küçük noktalar için kullanılmalıdır.
+Orange should be used only for the active cursor, the primary action, warnings, or small points that need attention.
 
-### 3.2 Tipografi
+### 3.2 Typography
 
-- Birincil font: **Inter** veya sistemdeki eşdeğer sans-serif.
-- Terminal fontu: **JetBrains Mono** veya **Cascadia Code**.
-- Başlık ağırlıkları: 600–700.
-- Gövde metni: 400–500.
-- Teknik değerler: monospace, 400–600.
+- Primary font: **Inter** or an equivalent sans-serif on the system.
+- Terminal font: **JetBrains Mono** or **Cascadia Code**.
+- Heading weights: 600–700.
+- Body text: 400–500.
+- Technical values: monospace, 400–600.
 
-Önerilen ölçüler:
+Suggested sizes:
 
-| Token | Boyut | Kullanım |
+| Token | Size | Use |
 |---|---:|---|
-| `display` | 32 px | Giriş ekranı veya büyük banner |
-| `title` | 22 px | Uygulama başlığı |
-| `heading` | 16 px | Bölüm başlığı |
-| `body` | 14 px | Standart metin |
-| `label` | 12 px | Yardımcı bilgi, rozet |
-| `caption` | 11 px | İkincil bilgi |
-| `terminal` | 14 px | Terminal satırları |
+| `display` | 32 px | Login screen or large banner |
+| `title` | 22 px | Application title |
+| `heading` | 16 px | Section heading |
+| `body` | 14 px | Standard text |
+| `label` | 12 px | Supporting information, badge |
+| `caption` | 11 px | Secondary information |
+| `terminal` | 14 px | Terminal lines |
 
-### 3.3 Şekil ve boşluklar
+### 3.3 Shape and spacing
 
-- Genel köşe yarıçapı: `10 px`.
-- Kart köşesi: `12 px`.
-- Büyük modal köşesi: `16 px`.
-- Küçük rozet ve durum noktası: `999 px`.
-- Temel aralık birimi: `4 px`.
-- Standart iç boşluk: `16 px`.
-- Büyük panel iç boşluğu: `24 px`.
+- General corner radius: `10 px`.
+- Card corner: `12 px`.
+- Large modal corner: `16 px`.
+- Small badge and status dot: `999 px`.
+- Base spacing unit: `4 px`.
+- Standard inner padding: `16 px`.
+- Large panel inner padding: `24 px`.
 
-Yüzeyler birbirinden yalnızca çizgiyle değil, ton farkıyla da ayrılmalıdır. İnce `1 px` cyan border yalnızca seçili veya odaklanmış bileşenlerde kullanılmalıdır.
+Surfaces must be separated by a tone difference, not only by a line. A thin `1 px` cyan border is used only for selected or focused components.
 
-## 4. Genel sistem teması
+## 4. Overall system theme
 
-### 4.1 Masaüstü düzeni
+### 4.1 Desktop layout (top panel and dock superseded by D115)
 
-Masaüstü; üst panel, sol tarafta temel sistem ikonları ve alt/merkez dock yapısından oluşur.
+The desktop consists of a top panel (superseded by D115), basic system icons on the left, and a bottom/centre dock (superseded by D115). The current layout is the Windows-style bottom taskbar with a Start menu (D115).
 
-Üst panel:
+Top panel (superseded by D115):
 
-- Sol: küçük alpbahOS sembolü ve aktif uygulama adı.
-- Orta: tarih ve saat.
-- Sağ: ağ, ses, pil/güç ve hızlı ayarlar.
-- Panel yüksekliği: `32–36 px`.
-- Arka plan: yarı saydam `--ab-bg-950`.
+- Left: small alpbahOS symbol and the active application name.
+- Centre: date and time.
+- Right: network, sound, battery/power and quick settings.
+- Panel height: `32–36 px`.
+- Background: semi-transparent `--ab-bg-950`.
 
-Masaüstü:
+Desktop:
 
-- Koyu dağ ve göl temalı duvar kâğıdı.
-- Duvar kâğıdında logo büyük ama düşük kontrastlı kullanılabilir.
-- Masaüstü ikonları sade, cyan çizgili ve etiketleri açık gri olmalıdır.
+- Dark mountain and lake themed wallpaper.
+- The logo on the wallpaper is large but low-contrast and usable.
+- Desktop icons are simple, with a cyan outline; their labels are light grey.
 
-Dock:
+Dock (superseded by D115):
 
-- Ortalanmış veya kullanıcının seçimine göre sola yaslı olabilir.
-- Terminal, Dosyalar, Web, Ayarlar, App Center ve uygulama menüsü ikonları.
-- Aktif uygulama altında küçük cyan çizgi.
-- App Center için turuncu çanta sembolü.
+- Centred, or left-aligned depending on the user's choice.
+- Icons for Terminal, Files, Web, Settings, App Center and the application menu.
+- Small cyan line under the active application.
+- Orange bag symbol for App Center.
 
-### 4.2 Pencere davranışı
+### 4.2 Window behaviour
 
-- Başlık çubuğu koyu lacivert/siyah yüzey.
-- Pencere kontrol ikonları sağ üstte.
-- Aktif pencere border’ı `--ab-cyan` ile 1 px.
-- Pasif pencere border’ı `--ab-border`.
-- Pencereler hafif gölgeli; ağır blur ve aşırı cam efekti kullanılmamalı.
+- Title bar: dark navy/black surface.
+- Window control icons at the top right.
+- Active window border: `--ab-cyan`, 1 px.
+- Inactive window border: `--ab-border`.
+- Windows have a light shadow; heavy blur and strong glass effects must not be used.
 
-### 4.3 Sistem menüsü
+### 4.3 System menu
 
-Hızlı sistem menüsü şu grupları içermelidir:
+The quick system menu must contain these groups:
 
 - Wi-Fi / Ethernet.
-- Ses seviyesi.
-- Ekran parlaklığı.
-- Gece ışığı.
+- Volume.
+- Screen brightness.
+- Night light.
 - Bluetooth.
-- Güç ve oturum seçenekleri.
+- Power and session options.
 
-Menü kartları `--ab-surface-800` üzerinde görünür. Seçili durum cyan, dikkat durumu turuncudur.
+Menu cards are visible on `--ab-surface-800`. Selected state is cyan; attention state is orange.
 
-## 5. Mockup 01 — Masaüstü ana ekranı
+## 5. Mockup 01 — Desktop home screen
 
-### Amaç
+### Purpose
 
-Kullanıcının sisteme giriş yaptıktan sonra gördüğü ana çalışma alanını tanımlamak.
+Define the main work area the user sees after signing in.
 
-### Kompozisyon
+### Composition
 
-- 16:9 ekran.
-- Duvar kâğıdı: gece dağları, göl ve hafif mavi gökyüzü.
-- Orta/sağ alanda hafif büyük alpbahOS sembolü.
-- Sol üstte `Home`, `Trash`, `Documents` ikonları.
-- Alt merkezde dock.
+- 16:9 screen.
+- Wallpaper: night mountains, a lake and a light blue sky.
+- Middle/right area: a slightly large alpbahOS symbol.
+- Top left: `Home`, `Trash`, `Documents` icons.
+- Centre bottom: dock (superseded by D115).
 
-### İçerik
+### Content
 
-- Üst panelde `Mon Apr 28 10:24` biçiminde saat gösterimi.
-- Dock sırası: Terminal, Files, Browser, Settings, App Center, Applications.
-- Aktif uygulama için cyan alt çizgi.
-- Sağ üstte bağlantı ve ses ikonları.
+- Clock display in the top panel (superseded by D115) in the format `Mon Apr 28 10:24`.
+- Dock order (superseded by D115): Terminal, Files, Browser, Settings, App Center, Applications.
+- Cyan underline for the active application.
+- Connection and sound icons at the top right.
 
-### Etkileşim
+### Interaction
 
-- Dock ikonu üzerine gelince küçük tooltip.
-- Uygulama açılırken ikon kısa süreli turuncu vurgu alır.
-- Sağ üst sistem alanına tıklanınca hızlı ayarlar paneli açılır.
-- Masaüstüne sağ tıklanınca `Yeni klasör`, `Duvar kâğıdını değiştir`, `Ekran ayarları` seçenekleri gösterilir.
+- Small tooltip when the mouse is over a dock icon (superseded by D115).
+- The icon gets a short orange highlight while an application is opening.
+- Clicking the system area at the top right opens the quick settings panel.
+- Right-clicking the desktop shows `New folder`, `Change wallpaper` and `Display settings`.
 
-### Kabul kriterleri
+### Acceptance criteria
 
-- Logo duvar kâğıdında okunabilir ama çalışma alanını kaplamaz.
-- Dock açık ve koyu duvar kâğıtlarında görünür.
-- Masaüstü ikonları seçiliyken cyan, silme gibi kritik eylemlerde orange uyarı verir.
+- The logo is readable on the wallpaper but does not cover the work area.
+- The dock is visible on both light and dark wallpapers (superseded by D115).
+- Desktop icons turn cyan when selected; critical actions such as deleting show an orange warning.
 
 ## 6. Mockup 02 — Terminal
 
-### Amaç
+### Purpose
 
-Geliştirici ve ileri seviye kullanıcıların temel çalışma alanını göstermek.
+Show the basic work area for developers and advanced users.
 
-### Kompozisyon
+### Composition
 
-- Koyu lacivert/siyah terminal yüzeyi.
-- Sol üstte terminal sembolü ve `Terminal` başlığı.
-- Üstte standart pencere kontrol düğmeleri.
-- Terminal içinde monospace metin.
+- Dark navy/black terminal surface.
+- Terminal symbol and `Terminal` title at the top left.
+- Standard window control buttons at the top.
+- Monospace text inside the terminal.
 
-### Örnek içerik
+### Example content
 
 ```text
 user@alpbahos:~$ neofetch
@@ -317,7 +319,7 @@ user@alpbahos:~$ neofetch
 OS:       alpbahOS x86_64
 Kernel:   6.8.7-alpbah
 Uptime:   2 hours, 14 mins
-Packages: 1287 (pacman)
+Packages: 1287 (alp)
 Shell:    bash 5.2.26
 DE:       alpbah
 WM:       alba
@@ -326,36 +328,38 @@ Theme:    alpbah-dark
 user@alpbahos:~$ _
 ```
 
-### Renkler
+The values above are mockup examples, not the output of an installed system.
 
-- Prompt kullanıcı adı: cyan.
-- Komut satırı: açık gri.
-- Başarılı çıktı: cyan veya yeşil.
-- Uyarı: turuncu.
-- Hata: kırmızı.
-- İmleç: turuncu dikdörtgen.
+### Colours
 
-### Etkileşim
+- Prompt user name: cyan.
+- Command line: light grey.
+- Successful output: cyan or green.
+- Warning: orange.
+- Error: red.
+- Cursor: orange rectangle.
 
-- Sekmeler ayrı cyan çizgiyle ayrılır.
-- Aktif sekme cyan, pasif sekme muted text.
-- Arama ve kopyalama araçları başlık çubuğunda bulunabilir.
-- Terminal seçimi sistem vurgusunu kullanır; metin rengi koyu lacivert olabilir.
+### Interaction
 
-## 7. Mockup 03 — Dosyalar
+- Tabs are separated by a cyan line.
+- Active tab is cyan; inactive tab is muted text.
+- Search and copy tools can be found in the title bar.
+- Terminal selection uses the system highlight; the text colour may be dark navy.
 
-### Amaç
+## 7. Mockup 03 — Files
 
-Dosya yönetimini günlük kullanıcı için sade ve güçlü hale getirmek.
+### Purpose
 
-### Kompozisyon
+Make file management simple and capable for everyday users.
 
-- Sol navigasyon sütunu.
-- Üstte geri/ileri, konum alanı ve arama.
-- Sağda görünüm değiştirme ikonları.
-- Orta alanda büyük klasör kartları.
+### Composition
 
-### Navigasyon
+- Left navigation column.
+- At the top: back/forward, location field and search.
+- View switch icons on the right.
+- Large folder cards in the middle area.
+
+### Navigation
 
 - Home
 - Desktop
@@ -367,27 +371,27 @@ Dosya yönetimini günlük kullanıcı için sade ve güçlü hale getirmek.
 - Trash
 - Other Locations
 
-### Görsel davranış
+### Visual behaviour
 
-- Klasör ikonları cyan/mavi.
-- Seçili klasör cyan border ve koyu mavi arka plan.
-- Silme ve çöp kutusu eylemleri turuncu veya kırmızı durum rengiyle gösterilir.
-- Dosya önizlemeleri sade, kart yüzeyleri `--ab-surface-800`.
+- Folder icons are cyan/blue.
+- Selected folder: cyan border and dark blue background.
+- Delete and trash actions are shown with an orange or red status colour.
+- File previews are simple; card surfaces use `--ab-surface-800`.
 
-### Etkileşim
+### Interaction
 
-- Tek tıklama seçim, çift tıklama açma.
-- Sürükleyip bırakmada hedef klasör cyan parlamayla işaretlenir.
-- Büyük dosya kopyalamada alt bilgi alanında progress bar.
-- Koyu arayüzde ikonlar yeterli kontrasta sahip olmalıdır.
+- Single click selects, double click opens.
+- When dragging and dropping, the target folder is marked with a cyan glow.
+- For large file copies, a progress bar in the bottom information area.
+- On the dark interface, icons must have sufficient contrast.
 
-## 8. Mockup 04 — Ayarlar / Control Center
+## 8. Mockup 04 — Settings / Control Center
 
-### Amaç
+### Purpose
 
-Sistemin kişiselleştirme ve yönetim ekranlarını tek bir tutarlı yapıda sunmak.
+Present the system personalisation and management screens in one consistent structure.
 
-### Sol menü
+### Left menu
 
 - System
 - Network
@@ -399,49 +403,49 @@ Sistemin kişiselleştirme ve yönetim ekranlarını tek bir tutarlı yapıda su
 - Privacy
 - About
 
-### System ekranı
+### System screen
 
-Ana kartlarda:
+Main cards:
 
-- Cihaz adı: `alpbahos`.
-- İşletim sistemi: `alpbahOS 64-bit`.
-- Kernel sürümü.
-- CPU bilgisi.
-- Bellek kapasitesi.
-- Grafik işlemcisi.
+- Device name: `alpbahos`.
+- Operating system: `alpbahOS 64-bit`.
+- Kernel version.
+- CPU information.
+- Memory capacity.
+- Graphics processor.
 
-### Appearance ekranı
+### Appearance screen
 
-Kontroller:
+Controls:
 
-- Açık/koyu tema, varsayılan koyu.
-- Cyan vurgu yoğunluğu.
-- Turuncu vurgu kullanımı.
-- Dock konumu.
-- Duvar kâğıdı.
-- Pencere yuvarlaklığı.
-- Animasyonları azalt.
+- Light/dark theme, default dark.
+- Cyan accent intensity.
+- Orange accent usage.
+- Dock position (superseded by D115).
+- Wallpaper.
+- Window corner rounding.
+- Reduce animations.
 
-### Etkileşim
+### Interaction
 
-- Sol menüde aktif öğe cyan border ile belirtilir.
-- Değişiklikler mümkünse anında önizlenir.
-- Riskli sistem değişikliklerinde açıklayıcı onay modalı kullanılır.
+- The active item in the left menu is marked with a cyan border.
+- Changes are previewed immediately where possible.
+- For risky system changes, a clear confirmation dialog is used.
 
 ## 9. Mockup 05 — App Center
 
-### Amaç
+### Purpose
 
-Uygulama keşfi, kurulumu ve güncellemelerini marka diliyle birleştirmek.
+Combine application discovery, installation and updates with the brand language.
 
-### Kompozisyon
+### Composition
 
-- Sol kategori menüsü.
-- Üstte geniş arama alanı.
-- Öne çıkan uygulamalar için alpbahOS banner’ı.
-- Alt bölümde uygulama kartları.
+- Left category menu.
+- Wide search field at the top.
+- alpbahOS banner for featured applications.
+- Application cards in the lower section.
 
-### Kategoriler
+### Categories
 
 - Featured
 - Categories
@@ -453,193 +457,193 @@ Uygulama keşfi, kurulumu ve güncellemelerini marka diliyle birleştirmek.
 - System
 - All Apps
 
-### Uygulama kartı
+### Application card
 
-Her kart şunları içerir:
+Each card contains:
 
-- Uygulama ikonu.
-- Uygulama adı.
-- Kısa açıklama.
-- Puan.
-- Boyut veya kaynak bilgisi.
-- `Install`, `Update` veya `Open` butonu.
+- Application icon.
+- Application name.
+- Short description.
+- Rating.
+- Size or source information.
+- `Install`, `Update` or `Open` button.
 
-### Renk davranışı
+### Colour behaviour
 
-- Install: cyan border veya cyan dolgu.
-- Update: turuncu vurgu.
-- Open: yeşil veya cyan.
-- Güvenlik uyarısı: turuncu ikon ve açıklama.
+- Install: cyan border or cyan fill.
+- Update: orange accent.
+- Open: green or cyan.
+- Security warning: orange icon and description.
 
-### Öne çıkan banner
+### Featured banner
 
-Banner’da logo ve şu tür bir mesaj kullanılabilir:
+The banner may use the logo and a message such as:
 
 > Open tools for higher ground.
 
-Alt bilgi: `64-bit · Fast · Secure · Open`.
+Footer: `64-bit · Fast · Secure · Open`.
 
-## 10. Mockup 06 — Giriş ve açılış ekranı
+## 10. Mockup 06 — Login and start screen
 
-### Amaç
+### Purpose
 
-Sistemin ilk saniyesinde güçlü ve sakin bir marka deneyimi oluşturmak.
+Create a strong and calm brand experience in the first seconds of the system.
 
-### Kompozisyon
+### Composition
 
-- Tam ekran dağ/göl duvar kâğıdı.
-- Ortada alpbahOS tam logosu.
-- Logo altında `64-bit` bilgisi.
-- Kullanıcı seçim alanı.
-- Şifre alanı ve turuncu ok butonu.
-- Alt bölümde `Shut Down` ve `Restart` seçenekleri.
+- Full-screen mountain and lake wallpaper.
+- Full alpbahOS logo in the centre.
+- `64-bit` information below the logo.
+- User selection area.
+- Password field and orange arrow button.
+- `Shut Down` and `Restart` options at the bottom.
 
-### Etkileşim
+### Interaction
 
-- Şifre alanına odaklanınca cyan border.
-- Giriş gönderme butonu turuncu.
-- Hatalı girişte kısa kırmızı uyarı ve açıklayıcı metin.
-- Başarılı girişte logo hafif küçülerek masaüstüne geçiş yapılır.
+- Cyan border when the password field is focused.
+- Orange login submit button.
+- On a wrong login, a short red warning and explanatory text.
+- On a successful login, the logo shrinks slightly and the screen transitions to the desktop.
 
-## 11. Ortak bileşen kütüphanesi
+## 11. Shared component library
 
-### Butonlar
+### Buttons
 
-| Tür | Görünüm | Kullanım |
+| Type | Appearance | Use |
 |---|---|---|
-| Primary | Cyan dolgu, koyu metin | Kur, Kaydet, Aç |
-| Secondary | Koyu yüzey, cyan border | İkincil işlem |
-| Accent | Turuncu dolgu | Giriş, önemli eylem |
-| Ghost | Arka plansız | İptal, yardımcı eylem |
-| Danger | Kırmızı vurgu | Silme, geri dönüşsüz işlem |
+| Primary | Cyan fill, dark text | Install, Save, Open |
+| Secondary | Dark surface, cyan border | Secondary action |
+| Accent | Orange fill | Sign in, important action |
+| Ghost | No background | Cancel, helper action |
+| Danger | Red accent | Delete, irreversible action |
 
-### Form alanları
+### Form fields
 
-- Normal: `--ab-surface-700` arka plan, `--ab-border` çizgi.
-- Odak: cyan border ve hafif cyan glow.
-- Hatalı: danger border ve alan altı açıklaması.
-- Devre dışı: düşük kontrast, metin açıklaması korunur.
+- Normal: `--ab-surface-700` background, `--ab-border` line.
+- Focused: cyan border and a light cyan glow.
+- Error: danger border and a description below the field.
+- Disabled: low contrast, text description kept.
 
-### Bildirimler
+### Notifications
 
-- Başarı: yeşil nokta/ikon.
-- Bilgi: cyan.
-- Uyarı: turuncu.
-- Hata: kırmızı.
+- Success: green dot/icon.
+- Information: cyan.
+- Warning: orange.
+- Error: red.
 
-Bildirimler ekranda uzun süre kalmamalı; önemli uyarılar kalıcı ve kapatılabilir olmalıdır.
+Notifications must not stay on screen for long; important warnings must be persistent and dismissible.
 
-## 12. Responsive ve ölçekleme
+## 12. Responsive design and scaling
 
-### Masaüstü
+### Desktop
 
-- Minimum hedef: `1280 × 720`.
-- Önerilen: `1920 × 1080`.
-- Yüksek yoğunluk: 2x ekranlarda ikon ve metinler bulanıklaşmamalı.
+- Minimum target: `1280 × 720`.
+- Recommended: `1920 × 1080`.
+- High density: on 2x screens, icons and text must not look blurred.
 
-### Küçük ekran
+### Small screen
 
-- Sol menüler daraltılabilir.
-- Dock ikonları küçülür fakat dokunma hedefi `40 px` altına inmez.
-- App Center kartları tek sütuna düşer.
-- Dosyalar görünümü liste moduna geçebilir.
+- Left menus can be collapsed.
+- Dock icons become smaller, but the touch target does not go below `40 px` (superseded by D115).
+- App Center cards fall back to a single column.
+- The Files view can switch to list mode.
 
-### Erişilebilirlik
+### Accessibility
 
-- Normal metin için en az WCAG AA kontrastı.
-- Durumlar yalnızca renkle anlatılmamalı; ikon veya metin eklenmeli.
-- Klavye odağı her zaman görünür olmalı.
-- Animasyon azaltma ayarı desteklenmeli.
-- Terminal ve dosya yönetimi tamamen klavye ile kullanılabilmeli.
+- At least WCAG AA contrast for normal text.
+- States must not be described by colour alone; an icon or text must be added.
+- Keyboard focus must always be visible.
+- The reduce-animation setting must be supported.
+- The terminal and file management must be fully usable with the keyboard.
 
-## 13. Animasyon prensipleri
+## 13. Animation principles
 
-- Pencere açılışı: `120–160 ms`, ease-out.
-- Menü açılışı: `100–140 ms`.
-- Dock hover: `100 ms`.
-- App Center yükleme durumu: yumuşak progress animasyonu.
-- Giriş ekranından masaüstüne geçiş: `250–350 ms`.
+- Window opening: `120–160 ms`, ease-out.
+- Menu opening: `100–140 ms`.
+- Dock hover: `100 ms` (superseded by D115).
+- App Center loading state: smooth progress animation.
+- Transition from login screen to desktop: `250–350 ms`.
 
-Animasyonlar arayüzü anlatmalı; dikkat dağıtacak sürekli parlamalar ve döngüler kullanılmamalıdır.
+Animations should explain the interface; continuous flashing and loops that distract must not be used.
 
-## 14. Duvar kâğıdı yönü
+## 14. Wallpaper direction
 
-Ana duvar kâğıdı:
+Main wallpaper:
 
-- Gece dağları ve göl.
-- Lacivert ağırlıklı tonlar.
-- Dağ zirvesinde cyan ışık.
-- Ufukta çok az turuncu sıcaklık.
-- Merkezde ikonların arkasında düşük detaylı boş alan.
+- Night mountains and a lake.
+- Mostly navy tones.
+- Cyan light on the mountain peak.
+- Very little orange warmth on the horizon.
+- A low-detail empty area in the centre behind the icons.
 
-Alternatifler:
+Alternatives:
 
-1. Sade koyu lacivert degrade.
-2. Geometrik dağ çizgileri.
-3. Terminal karakterleriyle oluşturulmuş soyut dağ.
-4. Yüksek kontrastlı erişilebilir duvar kâğıdı.
+1. Simple dark navy gradient.
+2. Geometric mountain lines.
+3. Abstract mountain made from terminal characters.
+4. High-contrast accessible wallpaper.
 
-## 15. Uygulama teması yönergeleri
+## 15. Application theme guidelines
 
-Her alpbahOS uygulaması şu ortak kuralları izlemelidir:
+Every alpbahOS application must follow these shared rules:
 
-- Başlık çubuğu ve pencere kontrolü ortak olmalı.
-- Arama alanı, sekme, buton ve bildirim stilleri aynı token’lardan gelmeli.
-- Uygulama ikonu cyan/mavi tabanlı, turuncu küçük detaylı olabilir.
-- Her uygulamanın kendine özgü rengi varsa, vurgu rengi alpbahOS cyan’ını tamamen bastırmamalıdır.
-- Sistem ayarları ve uygulama mağazası daha fazla cyan kullanabilir; terminal daha sade kalmalıdır.
+- Title bar and window controls must be common.
+- Search field, tab, button and notification styles must come from the same tokens.
+- The application icon is based on cyan/blue, and may have small orange details.
+- If an application has its own colour, the accent must not completely suppress the alpbahOS cyan.
+- System settings and the application store may use more cyan; the terminal should stay plainer.
 
-Önerilen uygulama tema adları:
+Suggested application theme names:
 
-- `alpbah-dark` — varsayılan koyu tema.
-- `alpbah-midnight` — daha koyu ve düşük parlaklıklı tema.
-- `alpbah-contrast` — yüksek kontrastlı erişilebilir tema.
-- `alpbah-light` — ileride eklenecek açık tema; lacivert metin, açık gri yüzey ve cyan vurgu.
+- `alpbah-dark` — default dark theme.
+- `alpbah-midnight` — darker theme with lower brightness.
+- `alpbah-contrast` — high-contrast accessible theme.
+- `alpbah-light` — light theme to be added later; navy text, light grey surfaces and cyan accent.
 
-## 16. Teknik uygulama notları
+## 16. Technical implementation notes
 
-- Renk ve boşluk token’ları tek bir merkezi tema dosyasından yönetilmelidir.
-- Sistem ikonları SVG veya eşdeğer ölçeklenebilir formatta tutulmalıdır.
-- Logo raster olarak değil, üretim aşamasında vektör tabanlı kaynakla kullanılmalıdır.
-- App Center ve Settings bileşenleri ortak bir UI kütüphanesinden beslenmelidir.
-- Pencere teması, uygulamaların kendi stilinden önce sistem token’larını yüklemelidir.
-- Terminal renkleri ANSI renk paletiyle uyumlu hale getirilmelidir.
-- Koyu temada gölge yerine yüzey tonu farkı tercih edilmelidir.
+- Colour and spacing tokens must be managed from a single central theme file.
+- System icons are kept as SVG or an equivalent scalable format.
+- The logo must be used from a vector source at production time, not as a raster.
+- App Center and Settings components must be fed from a common UI library.
+- The window theme must load the system tokens before an application's own style.
+- Terminal colours must match the ANSI colour palette.
+- On a dark theme, a surface tone difference is preferred over shadow.
 
-## 17. Tasarım teslim listesi
+## 17. Design delivery list
 
-Üretim öncesi hazırlanacak dosyalar:
+Files to prepare before production:
 
-- Logo SVG: tam renk, tek renk, sembol-only.
+- Logo SVG: full colour, single colour, symbol-only.
 - Logo PNG: 16, 24, 32, 48, 64, 128, 256, 512 px.
-- App Center banner’ı.
-- Giriş ekranı arka planı.
-- Varsayılan masaüstü duvar kâğıdı.
-- Sistem ikon seti.
-- Uygulama ikon şablonu.
-- Renk ve tipografi token dosyası.
-- Masaüstü mockup’ı.
-- Terminal mockup’ı.
-- Dosyalar mockup’ı.
-- Ayarlar mockup’ı.
-- App Center mockup’ı.
-- Giriş ekranı mockup’ı.
+- App Center banner.
+- Login screen background.
+- Default desktop wallpaper.
+- System icon set.
+- Application icon template.
+- Colour and typography token file.
+- Desktop mockup.
+- Terminal mockup.
+- Files mockup.
+- Settings mockup.
+- App Center mockup.
+- Login screen mockup.
 
-## 18. Son kabul kriterleri
+## 18. Final acceptance criteria
 
-Tasarım seti tamamlandığında:
+When the design set is complete:
 
-- Tüm ekranlar ilk bakışta aynı alpbahOS ürününe ait görünmelidir.
-- `alpbahOS` kelime işareti her yerde doğru yazılmalıdır.
-- Cyan ve turuncu vurgu renklerinin görevleri karıştırılmamalıdır.
-- Terminal, Dosyalar, Ayarlar ve App Center arasında ortak bileşen davranışı korunmalıdır.
-- 64-bit bilgisi görünür fakat baskın olmayan bir detay olmalıdır.
-- Koyu tema hem estetik hem de okunabilir olmalıdır.
-- Klavye odağı, kontrast, hata mesajları ve renk dışı durum işaretleri uygulanmalıdır.
-- Mockuplar gerçek uygulama bileşenlerine dönüştürülebilecek kadar açık ölçü ve davranış bilgisi içermelidir.
+- All screens must look like they belong to the same alpbahOS product at first glance.
+- The `alpbahOS` wordmark must be spelled correctly everywhere.
+- The roles of the cyan and orange accent colours must not be mixed up.
+- Shared component behaviour must be kept across Terminal, Files, Settings and App Center.
+- The 64-bit information must be visible but must not be a dominant detail.
+- The dark theme must be both attractive and readable.
+- Keyboard focus, contrast, error messages and non-colour status markers must be implemented.
+- Mockups must contain enough size and behaviour detail to be turned into real application components.
 
 ---
 
-## Kısa karar özeti
+## Short decision summary
 
-alpbahOS’un varsayılan görsel kimliği; **koyu grafit yüzey + lacivert dağ + elektrik mavisi vurgu + küçük turuncu etkileşim işareti** üzerine kurulmalıdır. Masaüstü, terminal, Dosyalar, Ayarlar, App Center ve giriş ekranı aynı tasarım token’larını kullanmalı; farklılaşma yalnızca uygulamanın işlevinden gelmelidir.
+alpbahOS's default visual identity should be built on **dark graphite surfaces + navy mountain + electric blue accent + a small orange interaction mark**. The desktop, terminal, Files, Settings, App Center and login screen must use the same design tokens; differences should come only from the application's function.

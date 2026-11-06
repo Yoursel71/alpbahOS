@@ -1,34 +1,36 @@
-# PERF-01 — RAM, kare süresi ve efekt ölçüm yöntemi
+# PERF-01 — RAM, frame time and effect measurement method
 
-Durum (26 Eylül 2026): **yöntem ve araçlar hazır, hiçbir ölçüm yapılmadı.** PERF-01 sahibi Claude; önkoşul DESKTOP-01 (çalışan Plasma oturumu). Araçların kendisi Windows'ta sahte verilerle test edildi (`tests/test_m08_desktop_profile.py`); gerçek Gen2 ya da çıplak donanım verisi yok.
+Status (26 September 2026): **method and tools ready; no measurements taken.** Updated 2026-11-06: the targets now follow D135. Owner: Claude (D100; Claude is the only agent, so there is no owner split). Prerequisite: DESKTOP-01 (a running Plasma session). The tools themselves were tested on Windows with fake data (`tests/test_m08_desktop_profile.py`). There is no real Gen2 or bare-metal data yet.
 
-## Hedefler (ölçülmeden karşılandı denmez)
+Liquid is not in the first release (D116). Its plan is in [liquid-prototype.md](../desktop/liquid-prototype.md); this document only covers the Liquid measurement criteria that depend on it.
 
-| Ölçüt | Hedef | Kaynak |
+## Targets (not met until measured)
+
+| Metric | Target | Source |
 |---|---|---|
-| Boşta kullanılan bellek (MemTotal − MemAvailable) | ≤ 1024 MiB, 4 GiB x86_64 sınıfında | DECISIONS P08 |
-| Kare süresi (medyan, 1080p/60 Hz, hareketli sahne) | ≤ 16,7 ms | MASTER_PLAN §7.3 |
-| Glass − Solid farkı | Bellek, medyan ve p95 kare süresi ayrı ayrı kaydedilir | MASTER_PLAN §7.3 |
-| Liquid | Glass'a göre p95 artışı ≤ 2 ms, KWin PSS ≤ +30 MiB (öneri) | [liquid-prototype.md](../desktop/liquid-prototype.md) |
+| Idle memory used (MemTotal − MemAvailable) | ≤ 1024 MiB (1 GiB), on the 4 GiB x86_64 class | D135 (v1 P08). Design target; measured before it is published as a requirement |
+| Frame time (median, 1080p/60 Hz, moving scene) | ≤ 16.7 ms | MASTER_PLAN §7.3 |
+| Glass − Solid difference | Memory, median and p95 frame time recorded separately | MASTER_PLAN §7.3 |
+| Liquid (later prototype) | p95 increase versus Glass ≤ 2 ms; KWin PSS ≤ +30 MiB (proposed) | [liquid-prototype.md](../desktop/liquid-prototype.md) |
 
-Hyper-V sonucu gerçek donanım sonucunun yerine geçmez (MASTER_PLAN §11.1). Mevcut Gen2 imajı softpipe/VGEM ile çizer; oradaki kare süreleri "sanal/yazılım renderer" satırı olarak kaydedilir, eski PC hedefi için kanıt sayılmaz.
+The earlier Windows-host VM results do not replace real hardware results (MASTER_PLAN §11.1). The current Gen2 image draws with softpipe/VGEM, so frame times from it are recorded as a "virtual/software renderer" row. They are not evidence for the old-PC target.
 
-## Araçlar
+## Tools
 
-- [`collect_session_metrics.py`](collect_session_metrics.py): salt okunur anlık görüntü; `/proc/meminfo`, izlenen masaüstü süreçlerinin PSS/RSS değerleri, kullanıcının toplam PSS'i, KWin compositing türü/renderer/sürücü, etkin efektler ve `alpbah-gorunum` profili. JSON yazar.
-- [`analyze_kwin_perf_csv.py`](analyze_kwin_perf_csv.py): KWin 6.4.4'ün `KWIN_LOG_PERFORMANCE_DATA=1` ile yazdığı `kwin perf statistics <çıkış>.csv` dosyasından kare süresi (ardışık pageflip farkı), render süresi, geç kare ve bütçe aşımı oranı üretir. Kaynak: kwin `src/core/renderloop.cpp`.
+- [`collect_session_metrics.py`](collect_session_metrics.py): read-only snapshot. Covers `/proc/meminfo`, the PSS/RSS values of the monitored desktop processes, the user's total PSS, the KWin compositing type, renderer and driver, active effects and the `alpbah-gorunum` profile. Writes JSON.
+- [`analyze_kwin_perf_csv.py`](analyze_kwin_perf_csv.py): reads the `kwin perf statistics <output>.csv` file that KWin 6.4.4 writes with `KWIN_LOG_PERFORMANCE_DATA=1`. Produces frame time (difference between successive pageflips), render time, late-frame count and budget-overrun ratio. Source: kwin `src/core/renderloop.cpp`.
 
-## Yöntem (Gen2 test VM ya da çıplak donanım)
+## Method (Gen2 test VM or bare metal)
 
-1. **Ortam kaydı:** CPU/RAM/GPU, çözünürlük/yenileme, kernel, renderer (`collect_session_metrics.py` çıktısındaki `kwin`), profil.
-2. **KWin ölçümünü aç (yalnız test oturumu):** `~/.config/systemd/user/plasma-kwin_wayland.service.d/perf.conf` içine `[Service]` + `Environment=KWIN_LOG_PERFORMANCE_DATA=1`; oturumu yeniden başlat. CSV, KWin sürecinin çalışma dizinine yazılır (`/proc/$(pidof kwin_wayland)/cwd` ile bul). Ölçümden sonra drop-in'i kaldır; dosya sürekli büyür.
-3. **Boşta bellek:** girişten sonra 5 dakika bekle, `collect_session_metrics.py --label <profil>-idle`.
-4. **Hareketli sahneler (her biri 60 sn, aynı sırayla):** (a) bir pencereyi sürükleme, (b) Win+Tab ile Overview aç/kapa, (c) Konsole'da sürekli çıktı. Her sahneden önce CSV'yi sıfırla (dosyayı taşı), sonra `analyze_kwin_perf_csv.py <csv> --json --budget-ms 16.7`.
-5. **Profiller:** her sahne `alpbah-gorunum solid` ve `alpbah-gorunum glass` altında tekrarlanır. Glass yazılım renderer'da reddedilir; `--zorla` ile alınan sonuç ayrı işaretlenir.
-6. **Kayıt:** JSON ve özetler `docs/verification/perf01-<ortam>-<tarih>/` altına; tablo PERF-01 satırına bağlanır. Başarısız ölçüm de kaydedilir.
+1. **Environment record:** CPU/RAM/GPU, resolution/refresh rate, kernel, renderer (the `kwin` field of `collect_session_metrics.py` output), profile.
+2. **Turn on KWin measurement (test session only):** add `[Service]` and `Environment=KWIN_LOG_PERFORMANCE_DATA=1` to `~/.config/systemd/user/plasma-kwin_wayland.service.d/perf.conf`, then restart the session. The CSV is written to the KWin process working directory (find it with `/proc/$(pidof kwin_wayland)/cwd`). Remove the drop-in after measuring; the file keeps growing.
+3. **Idle memory:** after login, wait 5 minutes, then run `collect_session_metrics.py --label <profile>-idle`.
+4. **Moving scenes (each 60 s, same order):** (a) drag a window, (b) open and close Overview with Win+Tab, (c) continuous output in Konsole. Before each scene, reset the CSV (move the file away), then run `analyze_kwin_perf_csv.py <csv> --json --budget-ms 16.7`.
+5. **Profiles:** each scene is repeated under `alpbah-gorunum solid` and `alpbah-gorunum glass`. Glass is refused on a software renderer; a result obtained with `--zorla` is marked separately.
+6. **Record:** JSON and summaries go to `docs/verification/perf01-<environment>-<date>/`; the table is linked from the PERF-01 row. Failed measurements are recorded too.
 
-## Bilinen sınırlar
+## Known limits
 
-- KWin CSV'si yalnız çizilen kareleri kaydeder; boştaki masaüstünde kare yoktur, kare süresi hareketli sahnede ölçülür.
-- Uygulama içi (istemci) kare süresi ölçülmez; compositor tarafı ölçülür.
-- PSS paylaşılan belleği süreçlere böler; tek bir sürecin "kendi" belleği değildir. Karşılaştırma aynı ölçütle yapılır.
+- KWin's CSV records only drawn frames. An empty desktop has no frames; frame time is measured during moving scenes.
+- Client-side (application) frame time is not measured; only the compositor side is.
+- PSS splits shared memory between processes; it is not one process's "own" memory. Comparisons use the same metric throughout.
