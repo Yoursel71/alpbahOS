@@ -3,7 +3,7 @@
 # Multilib LFS 13.1, chapter 8, section 8.25.1: MPC-1.4.1.
 set -euo pipefail
 
-PKG=mpc-1.4.1.tar.gz
+PKG=mpc-1.4.1.tar.xz
 DIR=mpc-1.4.1
 TESTS=/root/ch8-tests
 mkdir -p "$TESTS"
