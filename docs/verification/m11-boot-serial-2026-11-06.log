@@ -1,0 +1,14 @@
+[!p]104[    1.156964] (emd-oomd)[109]: Failed to mount /run/systemd/unit-private-tmp/tmp to /run/systemd/mount-rootfs/tmp: No such file or directory
+[    1.159615] (emd-oomd)[109]: systemd-oomd.service: Failed to set up mount namespacing: /tmp: No such file or directory
+[    1.161750] (emd-oomd)[109]: systemd-oomd.service: Failed at step NAMESPACE spawning /usr/lib/systemd/systemd-oomd: No such file or directory
+[    1.164252] (resolved)[124]: Failed to mount /run/systemd/unit-private-tmp/tmp to /run/systemd/mount-rootfs/tmp: No such file or directory
+[    1.166781] (resolved)[124]: systemd-resolved.service: Failed to set up mount namespacing: /tmp: No such file or directory
+[    1.169096] (resolved)[124]: systemd-resolved.service: Failed at step NAMESPACE spawning /usr/lib/systemd/systemd-resolved: No such file or directory
+[FAILED] Failed to start Userspace Out-Of-Memory (OOM) Killer.
+[FAILED] Failed to start Network Name Resolution.
+[FAILED] Failed to start Network Name Resolution.
+[!p]104[!p]104
+Linux
+Kernel 6.16.1 on an x86_64 (ttyS0)
+
+alpbahos login: [!p]104[   40.973261] reboot: Power down
