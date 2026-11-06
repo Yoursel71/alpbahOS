@@ -16,7 +16,7 @@ presence of `DESTDIR` on a main `make install` command is not enough.
 ## Package-specific capture actions
 
 The implementation now has an integrity-only verifier at
-[`scripts/verify-m04-evidence-bundle.py`](../../scripts/verify-m04-evidence-bundle.py)
+[`scripts/verify-m04-evidence-bundle.py`](../../scripts/legacy/verify-m04-evidence-bundle.py)
 and an ordered 79-package identity list at
 [`m04-expected-chapter8-packages-12.4.json`](manifests/lfs-base/m04-expected-chapter8-packages-12.4.json).
 The list matches all 79 rows in the coverage matrix. The verifier checks the

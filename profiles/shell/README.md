@@ -2,7 +2,7 @@
 
 Durum: **taslak**. Bu oturumda Linux/Zsh çalışma ortamı yok; aşağıdaki dosyalar statik olarak hazırlandı, gerçek bir terminalde **çalıştırılmadı**. Kabul kriterleri MASTER_PLAN.md §4.3'teki altı maddeye göre yazıldı; bunların hepsi "test edilmedi" durumundadır.
 
-Kapsam: yalnızca `profiles/shell/`. Kullanıcı shell tercihi için `/bin/sh` hedefi değiştirilmez; build scriptlerinin yorumlayıcısı bu profilden etkilenmez (AGENTS.md).
+Kapsam: yalnızca `profiles/shell/`. Kullanıcı shell tercihi için `/bin/sh` hedefi değiştirilmez; build scriptlerinin yorumlayıcısı bu profilden etkilenmez (CLAUDE.md).
 
 Kaynak: [docs/MASTER_PLAN.md](../../docs/MASTER_PLAN.md) §4, [docs/DECISIONS.md](../../docs/DECISIONS.md) D06.
 
@@ -15,7 +15,7 @@ Hazır bileşenler özelleştirilir, yeni bir shell veya tamamlama motoru yazıl
 - **[zsh-syntax-highlighting](https://github.com/zsh-users/zsh-syntax-highlighting)** — sözdizimi renklendirme
 - **Konsole** — renk şeması ve profil dosyası
 
-Kaynak paketlerin sürüm/checksum doğrulaması ve LFS/BLFS zincirine eklenmesi Codex tarafında yapılır (AGENTS.md: "Kaynağı doğrulamadan derleme yapma").
+Kaynak paketlerin sürüm/checksum doğrulaması ve LFS/BLFS zincirine eklenmesi BLFS derleme zinciri tarafında yapılır (CLAUDE.md: "Kaynağı doğrulamadan derleme yapma").
 
 ## Dosyalar
 
@@ -29,7 +29,7 @@ Kaynak paketlerin sürüm/checksum doğrulaması ve LFS/BLFS zincirine eklenmesi
 
 ## Yazım düzeltme (MASTER_PLAN §4.1)
 
-`setopt CORRECT` açık, `CORRECT_ALL` kapalı tutulur: yalnızca **komut adı** düzeltmesi önerilir, argümanlar/dosya adları sessizce değiştirilmez (AGENTS.md: "Yazım yardımı argümanları/dosya adlarını sessizce yeniden yazmaz"). Zsh bu öneriyi `y/n/a/e` istemiyle sunar; kullanıcı reddedebilir.
+`setopt CORRECT` açık, `CORRECT_ALL` kapalı tutulur: yalnızca **komut adı** düzeltmesi önerilir, argümanlar/dosya adları sessizce değiştirilmez (CLAUDE.md: "Yazım yardımı argümanları/dosya adlarını sessizce yeniden yazmaz"). Zsh bu öneriyi `y/n/a/e` istemiyle sunar; kullanıcı reddedebilir.
 
 ## Ctrl+C / Ctrl+R
 
@@ -55,4 +55,4 @@ Güncel durum (5 Kasım 2026): [docs/verification/t3-zsh-chroot-2026-11-05.md](.
 
 ## Entegrasyon notu
 
-Gerçek doğrulama Codex tarafında BLFS terminal/oturum zinciri kurulduktan sonra yapılabilir. Bkz. [docs/handoffs/claude/001-desktop-bootstrap.md](../../docs/handoffs/claude/001-desktop-bootstrap.md).
+Gerçek doğrulama BLFS terminal/oturum zinciri kurulduktan sonra yapılabilir. Bkz. [docs/handoffs/claude/001-desktop-bootstrap.md](../../docs/handoffs/claude/001-desktop-bootstrap.md).

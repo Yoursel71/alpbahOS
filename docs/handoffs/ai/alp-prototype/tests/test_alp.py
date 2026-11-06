@@ -749,7 +749,7 @@ def _posix_mode_bits_supported(tmp_path: Path) -> bool:
 
 def test_copy_entry_preserves_executable_mode(tmp_path: Path):
     """Regression test for the real bug found testing htop 3.3.0 in the
-    LFS chroot (Codex, alpbah-builder VM): _merge_destdir installed
+    LFS chroot (alpbah-builder VM): _merge_destdir installed
     /usr/bin/htop at mode 0644 (not executable) because shutil.copyfile()
     copies file content only, never permission bits. shutil.copymode()
     must be applied after every regular-file copy."""

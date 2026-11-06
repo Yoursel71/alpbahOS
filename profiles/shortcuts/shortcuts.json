@@ -85,7 +85,7 @@
           "upstream_kaynak": "dolphin v25.08.1 src/org.kde.dolphin.desktop X-KDE-Shortcuts"
         }
       ],
-      "bagimlilik": "Dolphin Gen2 test imajında yok (M08 uygulama derlemesi, Codex).",
+      "bagimlilik": "Dolphin Gen2 test imajında yok (M08 uygulama derlemesi, BLFS).",
       "test_kapsami": "Tekrarlı çağrı davranışı (yeni pencere mi, mevcut mu?)"
     },
     {
@@ -161,7 +161,7 @@
           "upstream_kaynak": "systemsettings v6.4.4 app/systemsettings.desktop X-KDE-Shortcuts"
         }
       ],
-      "bagimlilik": "systemsettings Gen2 test imajında yok (M08 uygulama derlemesi, Codex).",
+      "bagimlilik": "systemsettings Gen2 test imajında yok (M08 uygulama derlemesi, BLFS).",
       "test_kapsami": "Doğru ayarlar uygulaması açılıyor mu"
     },
     {

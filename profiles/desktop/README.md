@@ -15,11 +15,11 @@ Durum: **M08 ilk dilim — kurulabilir paket hazır, gerçek Plasma oturumunda t
 | `../shortcuts/generated/kglobalshortcutsrc` | `/etc/skel/.config/kglobalshortcutsrc` + her `--user-home` için `<ev>/.config/kglobalshortcutsrc` | Windows'a tanıdık kısayollar ([conflicts.md](../shortcuts/conflicts.md)). kglobalacceld `/etc/xdg` okumaz (D43) |
 | `bin/alpbah-gorunum` | `/usr/bin/alpbah-gorunum` (0755) | Solid/Glass geçiş aracı (§5.1) |
 
-Kurulum: `profiles/desktop/install-desktop-profile.sh --destdir <kök> [--datadir /usr/share] [--user-home /home/kullanici ...] [--manifest dosya]`. Betik hedef kökü zorunlu ister, `/` için ayrıca `--allow-live-root` ister, farklı içerikli dosyanın üzerine `--force` olmadan yazmaz ve kurduğu her dosyayı SHA-256 ile manifest'e yazar. Builder `/mnt/lfs` rootfs'ine kurulum entegratörün (Codex) işidir. Plasma `/opt/kf6` önekiyle kurulu olduğundan `XDG_DATA_DIRS` içinde `/usr/share` bulunmalı (ayrı `--datadir` de verilebilir).
+Kurulum: `profiles/desktop/install-desktop-profile.sh --destdir <kök> [--datadir /usr/share] [--user-home /home/kullanici ...] [--manifest dosya]`. Betik hedef kökü zorunlu ister, `/` için ayrıca `--allow-live-root` ister, farklı içerikli dosyanın üzerine `--force` olmadan yazmaz ve kurduğu her dosyayı SHA-256 ile manifest'e yazar. Builder `/mnt/lfs` rootfs'ine kurulum BLFS derleme zincirinin işidir. Plasma `/opt/kf6` önekiyle kurulu olduğundan `XDG_DATA_DIRS` içinde `/usr/share` bulunmalı (ayrı `--datadir` de verilebilir).
 
 Mekanizma (Plasma 6.4.4 kaynağından): `startplasma` ilk oturumda `kdeglobals [KDE] LookAndFeelPackage` paketinin `contents/defaults` dosyasını `~/.config/kdedefaults/` altına uygular; varsayılan duvar kâğıdı `libkworkspace` `DefaultWallpaper` ile aynı dosyanın `[Wallpaper] Image` anahtarından bulunur (kilit ekranı da aynı varsayılanı kullanır); `contents/layouts/...-layout.js` yalnız düzeni olmayan yeni kullanıcıda ya da `plasma-apply-lookandfeel -a org.alpbahos.solid.desktop --resetLayout` ile çalışır.
 
-Kapsam: yalnızca `profiles/desktop/`. `pkg` backend'i, toolchain, kernel, rootfs ve Hyper-V ayarlarına dokunulmadı ([AGENTS.md](../../AGENTS.md), [CLAUDE_START.md](../../docs/CLAUDE_START.md)). Hazır KDE/Qt/GTK bileşenleri özelleştirilir; yeni compositor veya masaüstü kabuğu önerilmez.
+Kapsam: yalnızca `profiles/desktop/`. `pkg` backend'i, toolchain, kernel, rootfs ve Hyper-V ayarlarına dokunulmadı ([CLAUDE.md](../../CLAUDE.md), [CLAUDE_START.md](../../docs/archive/CLAUDE_START.md)). Hazır KDE/Qt/GTK bileşenleri özelleştirilir; yeni compositor veya masaüstü kabuğu önerilmez.
 
 Kaynaklar: [docs/MASTER_PLAN.md](../../docs/MASTER_PLAN.md) §6–7, [docs/alpbahOS-design-mockups.md](../../docs/alpbahOS-design-mockups.md), [docs/assets/alpbahOS-logo.png](../../docs/assets/alpbahOS-logo.png).
 
@@ -47,7 +47,7 @@ Taslak KDE renk şeması dosyası: [`colorscheme/alpbah-dark.colors`](colorschem
 
 Açık teknik seçim — **test edilmedi**, iki aday var:
 
-1. **Papirus-Dark + `papirus-folders` accent** — klasör rengini cyan'a çevirmek kolay (hazır araç), geniş uygulama kapsamı. Kaynak: ayrı upstream proje; Codex tarafında kaynak/checksum doğrulaması ABI-01/BUILD-01 kapsamında yapılmalı.
+1. **Papirus-Dark + `papirus-folders` accent** — klasör rengini cyan'a çevirmek kolay (hazır araç), geniş uygulama kapsamı. Kaynak: ayrı upstream proje; kaynak/checksum doğrulaması BLFS tarafında ABI-01/BUILD-01 kapsamında yapılmalı.
 2. **Breeze-Dark (tint edilmiş)** — ek bağımlılık yok, LFS/BLFS zincirine zaten dahil olması muhtemel, düşük RAM hedefine (P08) daha uygun.
 
 Öneri: önce Breeze-Dark tint ile başla (bağımlılık eklemez), Papirus'u P08 ölçümlerinden sonra görsel zenginlik için değerlendir. Karar DECISIONS.md'ye işlenmeli.
@@ -91,7 +91,7 @@ Panel içeriği (mockup §4.1'den):
 
 - GTK2/3/4 senkronizasyonu için **kde-gtk-config** (hazır KDE bileşeni) kullanılır.
 - Plasma dışı Qt5/Qt6 uygulamaları için **qt5ct / qt6ct** + **Kvantum** teması, aynı renk token'larından üretilir.
-- AGENTS.md/MASTER_PLAN uyarısı korunur: tek tema paketinin GTK/Qt/üçüncü taraf uygulamaların tamamını birebir aynı gösterileceği varsayılmaz. Aşağıdaki tablo test kapsamını sınırlar.
+- CLAUDE.md/MASTER_PLAN uyarısı korunur: tek tema paketinin GTK/Qt/üçüncü taraf uygulamaların tamamını birebir aynı gösterileceği varsayılmaz. Aşağıdaki tablo test kapsamını sınırlar.
 
 ### 6.1 Doğrulama durumu
 
@@ -108,9 +108,9 @@ Panel içeriği (mockup §4.1'den):
 | GTK eşleme | Taslak, test edilmedi | kde-gtk-config planı var, çalıştırılmadı |
 | Qt (Plasma dışı) eşleme | Taslak, test edilmedi | qt5ct/qt6ct + Kvantum planı var |
 
-## 7. Codex için gereken paketler (BLFS/entegrasyon girdisi)
+## 7. BLFS'e eklenmesi gereken paketler (BLFS/entegrasyon girdisi)
 
-Aşağıdaki liste bir talep listesidir, kurulum komutu değildir; kaynak/checksum doğrulaması AGENTS.md kuralına göre Codex tarafında yapılmalıdır:
+Aşağıdaki liste bir talep listesidir, kurulum komutu değildir; kaynak/checksum doğrulaması CLAUDE.md kuralına göre BLFS tarafında yapılmalıdır:
 
 - `plasma-desktop`, `plasma-workspace`, `kwin`, `breeze`, `breeze-gtk`
 - M08 düzeni için: `breeze-icons` (panel/başlatıcıda ikon yok bulgusu), `kirigami-addons` (Kickoff açılmıyor), Türkçe karakterli font paketi (Noto/DejaVu/Liberation; imajda font yoktu), `konsole`, `dolphin`, `systemsettings`, bir tarayıcı (dock başlatıcıları), `spectacle` ve `plasma-systemmonitor` (kısayollar)

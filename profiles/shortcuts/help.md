@@ -20,7 +20,7 @@ Her kısayol satırı, Plasma'nın System Settings → Shortcuts ekranının **y
 
 ## 4. Kapsam dışı bırakılan fikir
 
-Meta tuşuna basılı tutunca kısayol overlay'i gösterme fikri (bazı masaüstü ortamlarında var) — yalnızca seçilen Plasma sürümünde **hazır** bir özellik olarak mevcutsa değerlendirilir; bunun için özel bir bileşen yazılmaz (AGENTS.md: hazır bileşenleri özelleştir, yeni compositor/kabuk parçası icat etme).
+Meta tuşuna basılı tutunca kısayol overlay'i gösterme fikri (bazı masaüstü ortamlarında var) — yalnızca seçilen Plasma sürümünde **hazır** bir özellik olarak mevcutsa değerlendirilir; bunun için özel bir bileşen yazılmaz (CLAUDE.md: hazır bileşenleri özelleştir, yeni compositor/kabuk parçası icat etme).
 
 ## Doğrulanmamış / test edilmedi
 

@@ -1,0 +1,21 @@
+// The alpha ISO runs as a disposable live system: package writes land in its
+// volatile overlay and disappear at shutdown. Permit only its active local
+// desktop account to drive the normal catalog PackageKit package flows without
+// asking for a root password that the live image intentionally does not set.
+// Do not ship this rule in an installed/persistent system or enable untrusted
+// local-package installation here.
+polkit.addRule(function(action, subject) {
+    var packageActions = [
+        "org.freedesktop.packagekit.package-install",
+        "org.freedesktop.packagekit.package-reinstall",
+        "org.freedesktop.packagekit.package-downgrade",
+        "org.freedesktop.packagekit.package-remove",
+        "org.freedesktop.packagekit.system-update"
+    ];
+
+    if (subject.user === "alpbahos" &&
+        subject.active === true && subject.local === true &&
+        packageActions.indexOf(action.id) !== -1) {
+        return polkit.Result.YES;
+    }
+});

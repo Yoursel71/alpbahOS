@@ -119,7 +119,7 @@ def _emit(paths: Paths, event: str, **fields) -> None:
 
 # --------------------------------------------------------------------------
 # Single-writer lock.
-# AGENTS.md: "Tek paket veri tabanı ve tek yazıcı/işlem kilidi kullan."
+# CLAUDE.md: "Tek paket veri tabanı ve tek yazıcı/işlem kilidi kullan."
 # --------------------------------------------------------------------------
 
 def _pid_namespace() -> str:
@@ -478,7 +478,7 @@ def load_index(index_path: Path) -> dict:
 
 # --------------------------------------------------------------------------
 # Download + mandatory checksum verification.
-# AGENTS.md: "Kaynağı doğrulamadan derleme yapma."
+# CLAUDE.md: "Kaynağı doğrulamadan derleme yapma."
 # --------------------------------------------------------------------------
 
 def sha256_of(path: Path) -> str:
@@ -576,7 +576,7 @@ def _copy_entry(src: Path, dst: Path) -> None:
     symlink itself (not its target's content) is the only correct action.
 
     Also found via real end-to-end testing on Ubuntu (htop 3.3.0, LFS
-    chroot, Codex): shutil.copyfile() copies file *content* only, never
+    chroot, alpbah-builder VM): shutil.copyfile() copies file *content* only, never
     permission bits -- the installed /usr/bin/htop ELF came out mode 0644
     (not executable) even though the staged binary was 0755. Every regular
     file must have its mode explicitly carried over with shutil.copymode().

@@ -24,6 +24,6 @@ KWin 6.4.4'teki `blur` efekti (`src/plugins/blur/`) pencere arkasındaki alanı 
 
 ## Açık konular
 
-- Efekt C++ olarak derlenir; derleme ve paketleme Codex'in BLFS zincirindedir. Claude kaynak ve shader'ı hazırlar, Codex derler.
+- Efekt C++ olarak derlenir; derleme ve paketleme BLFS derleme zincirindedir. Claude kaynak ve shader'ı hazırlar, derleme BLFS zincirinde yapılır.
 - Hedef donanım (RTX sınıfı) Hyper-V'de yok; ölçüm çıplak donanım gerektirir (BETA-01'e kadar ertelenebilir).
 - Başarısız olursa alfa Glass ile çıkar ve Liquid "bilinen sınırlama" olarak yazılır (MASTER_PLAN §13).

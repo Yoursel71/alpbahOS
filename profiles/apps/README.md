@@ -1,6 +1,6 @@
 # Varsayılan uygulama profili — APPS-01 (Claude tarafı)
 
-Durum (26 Eylül 2026): **dosya düzeyinde hazır, test edilmedi.** Listedeki uygulamaların hiçbiri Gen2 test imajında kurulu değil; derleme ve kurulum Codex'in BLFS işidir (APPS-01 sahibi Codex, Claude inceleme + profil). Kaynak: [MASTER_PLAN §11](../../docs/MASTER_PLAN.md), [DECISIONS P09](../../docs/DECISIONS.md).
+Durum (26 Eylül 2026): **dosya düzeyinde hazır, test edilmedi.** Listedeki uygulamaların hiçbiri Gen2 test imajında kurulu değil; derleme ve kurulum BLFS derleme zincirinin işidir (APPS-01: Claude dosya ve profil tarafı, inceleme Claude). Kaynak: [MASTER_PLAN §11](../../docs/MASTER_PLAN.md), [DECISIONS P09](../../docs/DECISIONS.md).
 
 - Tek kaynak: [`apps.json`](apps.json) — ihtiyaç → uygulama → masaüstü dosyası → varsayılan MIME türleri → MASTER_PLAN kabul senaryosu.
 - Üretici: [`generate_mimeapps.py`](generate_mimeapps.py) → [`generated/mimeapps.list`](generated/mimeapps.list), kurulum hedefi `/etc/xdg/mimeapps.list` (`profiles/desktop/install-desktop-profile.sh` kurar). Kullanıcının kendi seçimi `~/.config/mimeapps.list` içinde her zaman önce gelir.

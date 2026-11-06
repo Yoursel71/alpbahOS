@@ -25,13 +25,13 @@ setopt HIST_IGNORE_SPACE
 bindkey '^R' history-incremental-search-backward
 
 # --- Yazım düzeltme: yalnızca komut adı, tüm argümanlar DEĞİL ---
-# AGENTS.md: "Yazım yardımı argümanları/dosya adlarını sessizce yeniden yazmaz."
+# CLAUDE.md: "Yazım yardımı argümanları/dosya adlarını sessizce yeniden yazmaz."
 setopt CORRECT
 unsetopt CORRECT_ALL
 
 # --- zsh-autosuggestions (soluk öneri) ---
 # Kaynak: https://github.com/zsh-users/zsh-autosuggestions
-# Paket/kurulum yolu Codex tarafında BUILD/BLFS entegrasyonunda sabitlenir.
+# Paket/kurulum yolu BUILD/BLFS entegrasyonunda sabitlenir.
 #
 # NOT: Eklentinin VARSAYILAN davranışı zaten "kabul != çalıştır" ayrımını
 # sağlar (sağ ok / End önericiyi satıra alır, Enter ayrı adımdır). Bu profil

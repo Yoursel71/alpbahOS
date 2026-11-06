@@ -1,0 +1,715 @@
+diff --git a/docs/patches/plasma-workspace-6.4.4-wayland-no-x11.patch b/docs/patches/plasma-workspace-6.4.4-wayland-no-x11.patch
+index 3425aeb..93d62bb 100644
+--- a/docs/patches/plasma-workspace-6.4.4-wayland-no-x11.patch
++++ b/docs/patches/plasma-workspace-6.4.4-wayland-no-x11.patch
+@@ -59,15 +59,14 @@ index 44be1f3..7e2dc51 100644
+          }
+      } else if (event->type() == QEvent::Show) {
+          updateTheme();
+-@@ -146,9 +154,11 @@ bool DashboardWindow::event(QEvent *event)
++@@ -146,9 +154,7 @@ bool DashboardWindow::event(QEvent *event)
+          if (m_mainItem) {
+              m_mainItem->setVisible(false);
+          }
+-+#if HAVE_X11
+-     } else if (event->type() == QEvent::FocusOut && KWindowSystem::isPlatformX11() && isVisible()) {
+-         KX11Extras::forceActiveWindow(winId());
+-     }
+-+#endif
++-    } else if (event->type() == QEvent::FocusOut && KWindowSystem::isPlatformX11() && isVisible()) {
++-        KX11Extras::forceActiveWindow(winId());
++-    }
+++    }
+  
+      return QQuickWindow::event(event);
+  }
+diff --git a/scripts/build-m2-gen2-test-image.sh b/scripts/build-m2-gen2-test-image.sh
+index 8cf2785..8f74a56 100644
+--- a/scripts/build-m2-gen2-test-image.sh
++++ b/scripts/build-m2-gen2-test-image.sh
+@@ -13,6 +13,7 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+ SIZE=24G
+ WORK=$(mktemp -d /tmp/alpbahos-gen2-image.XXXXXX)
+ RAW=${RAW:-${OUT}.raw}
++GRUB_INSTALL=$(command -v grub-install || command -v grub2-install || true)
+ LOOP=
+ MOUNT=$WORK/root
+ LOOP_ATTACHED=0
+@@ -53,7 +54,7 @@ trap 'printf "FAILED line %s: %s\n" "$LINENO" "$BASH_COMMAND" >&2' ERR
+ [[ ! -e $RAW ]] || { echo "Refusing to overwrite existing raw image: $RAW" >&2; exit 1; }
+ test -f "$SCRIPT_DIR/apply-m2-rootfs-fixes.sh"
+ [[ -x /usr/bin/qemu-img && -x /usr/sbin/sgdisk && -x /usr/sbin/losetup ]] || { echo 'Required image tools are missing.' >&2; exit 1; }
+-[[ -x /usr/sbin/mkfs.vfat && -x /usr/sbin/mkfs.ext4 && -x /usr/sbin/grub-install ]] || { echo 'Required filesystem/UEFI tools are missing.' >&2; exit 1; }
++[[ -x /usr/sbin/mkfs.vfat && -x /usr/sbin/mkfs.ext4 && -n $GRUB_INSTALL && -x $GRUB_INSTALL ]] || { echo 'Required filesystem/UEFI tools are missing.' >&2; exit 1; }
+ test -f "$ROOTFS/etc/shadow"
+ test -f "$ROOTFS/etc/pam.d/login"
+ grep -q 'pam_systemd.so' "$ROOTFS/etc/pam.d/system-session"
+@@ -177,7 +178,7 @@ chroot "$MOUNT" /usr/bin/id -nG sa | tr ' ' '\n' | grep -qx audio
+ chroot "$MOUNT" /usr/bin/id -nG admin | tr ' ' '\n' | grep -qx audio
+ grep -q '^AllowUsers sa$' "$MOUNT/etc/ssh/sshd_config"
+ 
+-grub-install --target=x86_64-efi --efi-directory="$MOUNT/boot/efi" \
++"$GRUB_INSTALL" --target=x86_64-efi --efi-directory="$MOUNT/boot/efi" \
+     --boot-directory="$MOUNT/boot" --bootloader-id=alpbahOS \
+     --removable --no-nvram --recheck --root-directory="$MOUNT"
+ mkdir -p "$MOUNT/boot/grub"
+diff --git a/scripts/capture-m04-install-event.py b/scripts/capture-m04-install-event.py
+index 2be34cd..d36765d 100644
+--- a/scripts/capture-m04-install-event.py
++++ b/scripts/capture-m04-install-event.py
+@@ -3,9 +3,10 @@
+ 
+ This is deliberately not a Builder/rootfs installer. It requires a fixture
+ marked with .m04-fixture-root, strace, and bubblewrap. It configures bubblewrap
+-to expose the host filesystem read-only and only the fixture writable. Linux
+-integration must still verify those mount restrictions and trace coverage before
+-using the data as ownership evidence.
++to expose the host filesystem read-only and only the fixture writable. Fedora
++fixture integration exercises those boundaries, but this tool remains
++fixture-only and cannot be used as production ownership evidence or authorize
++candidate-rootfs replay.
+ """
+ 
+ from __future__ import annotations
+@@ -71,7 +72,16 @@ FD_WRITE_ARGUMENTS = {
+     "copy_file_range": (2,), "splice": (2,), "mmap": (4,),
+ }
+ SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+-SYSCALL_RE = re.compile(r"^\s*(?:\[pid\s+\d+\]\s*)?([a-zA-Z_][a-zA-Z0-9_]*)\((.*)")
++# strace -f prefixes child and leader calls with either `[pid N]` or a bare
++# numeric PID depending on the strace build/options. Accept both forms; without
++# this, every write record on Fedora's default format could be silently skipped.
++SYSCALL_RE = re.compile(
++    r"^\s*(?:(?:\[pid\s+\d+\]|\d+)\s+)?([a-zA-Z_][a-zA-Z0-9_]*)\((.*)"
++)
++MOUNT_SYSCALLS = {
++    "mount", "umount", "umount2", "pivot_root", "move_mount", "open_tree",
++    "fsopen", "fsconfig", "fsmount", "mount_setattr",
++}
+ 
+ 
+ class CaptureError(RuntimeError):
+@@ -361,6 +371,16 @@ def _trace_mmap_writes(args: Sequence[str]) -> bool:
+     return len(args) > 4 and "MAP_SHARED" in args[3] and "PROT_WRITE" in args[2]
+ 
+ 
++def _trace_dirfd_path(argument: str, cwd: Path) -> Path | None:
++    if argument == "AT_FDCWD":
++        return cwd
++    at_cwd = re.fullmatch(r"AT_FDCWD<([^>]+)>", argument)
++    if at_cwd:
++        return Path(at_cwd.group(1))
++    descriptor = re.fullmatch(r"-?\d+<([^>]+)>", argument)
++    return Path(descriptor.group(1)) if descriptor else None
++
++
+ def _trace_outside_writes(trace_path: Path, root: Path, cwd: Path) -> list[str]:
+     violations: list[str] = []
+     for line_no, line in enumerate(trace_path.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
+@@ -382,7 +402,7 @@ def _trace_outside_writes(trace_path: Path, root: Path, cwd: Path) -> list[str]:
+                     violations.append(f"line {line_no}: cannot resolve descriptor for {syscall}")
+                     continue
+                 fd_path = fd_match.group(1)
+-                if fd_path.startswith(("pipe:[", "socket:[", "anon_inode:")):
++                if fd_path.startswith(("pipe:[", "socket:[", "anon_inode:", "/memfd:")):
+                     continue
+                 candidate = Path(fd_path)
+                 if not candidate.is_absolute():
+@@ -400,17 +420,23 @@ def _trace_outside_writes(trace_path: Path, root: Path, cwd: Path) -> list[str]:
+                 continue
+             dirfd_index = DIRFD_ARGUMENTS.get(syscall, {}).get(path_index)
+             dirfd_arg = args[dirfd_index] if dirfd_index is not None and dirfd_index < len(args) else "AT_FDCWD"
+-            dirfd_match = re.fullmatch(r"\d+<([^>]+)>", dirfd_arg)
+-            if not os.path.isabs(raw) and dirfd_arg != "AT_FDCWD" and not dirfd_match:
++            dirfd_path = _trace_dirfd_path(dirfd_arg, cwd)
++            if not os.path.isabs(raw) and dirfd_path is None:
+                 violations.append(f"line {line_no}: cannot resolve relative {syscall} dirfd {dirfd_arg!r}")
+                 continue
+-            dirfd_path = Path(dirfd_match.group(1)) if dirfd_match else cwd
+             candidate = Path(raw) if os.path.isabs(raw) else dirfd_path / raw
+             candidate = Path(os.path.abspath(os.fspath(candidate)))
++            # Treat symlink traversal out of the fixture as an escape attempt,
++            # even if Bubblewrap's read-only host bind makes the kernel deny it.
++            resolved_candidate = Path(os.path.realpath(candidate))
++            resolved_root = Path(os.path.realpath(root))
+             try:
+-                candidate.relative_to(root)
++                resolved_candidate.relative_to(resolved_root)
+             except ValueError:
+-                violations.append(f"line {line_no}: {syscall} path outside fixture: {candidate}")
++                violations.append(
++                    f"line {line_no}: {syscall} path outside fixture after symlink resolution: "
++                    f"{candidate} -> {resolved_candidate}"
++                )
+     return violations
+ 
+ 
+@@ -423,6 +449,10 @@ def _trace_observation_violations(trace_path: Path) -> list[str]:
+             violations.append(
+                 f"line {line_no}: io_uring_setup observed; fixture event invalid because io_uring operations are not fully observed"
+             )
++        elif match and match.group(1) in MOUNT_SYSCALLS:
++            violations.append(
++                f"line {line_no}: {match.group(1)} observed; fixture event invalid because mount topology changes are not captured"
++            )
+     return violations
+ 
+ 
+@@ -449,10 +479,9 @@ def _trace_root_id_write_attempts(trace_path: Path, root_id_path: Path, cwd: Pat
+                     continue
+                 dirfd_index = DIRFD_ARGUMENTS.get(syscall, {}).get(path_index)
+                 dirfd_arg = args[dirfd_index] if dirfd_index is not None and dirfd_index < len(args) else "AT_FDCWD"
+-                dirfd_match = re.fullmatch(r"\d+<([^>]+)>", dirfd_arg)
+-                if not os.path.isabs(raw) and dirfd_arg != "AT_FDCWD" and not dirfd_match:
++                dirfd_path = _trace_dirfd_path(dirfd_arg, cwd)
++                if not os.path.isabs(raw) and dirfd_path is None:
+                     continue
+-                dirfd_path = Path(dirfd_match.group(1)) if dirfd_match else cwd
+                 candidate = Path(os.path.abspath(os.fspath(Path(raw) if os.path.isabs(raw) else dirfd_path / raw)))
+                 if candidate == target:
+                     matched = True
+@@ -469,6 +498,50 @@ def _trace_root_id_write_attempts(trace_path: Path, root_id_path: Path, cwd: Pat
+     return attempts
+ 
+ 
++def _trace_evidence_store_write_attempts(trace_path: Path, evidence_store: Path,
++                                         cwd: Path) -> list[str]:
++    """Reject writes aimed at the read-only evidence tree, including denied attempts."""
++    target = Path(os.path.abspath(os.fspath(evidence_store)))
++    attempts: list[str] = []
++    for line_no, line in enumerate(trace_path.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
++        match = SYSCALL_RE.match(line)
++        if not match or match.group(1) not in WRITE_SYSCALLS:
++            continue
++        syscall, body = match.groups()
++        args = _split_strace_arguments(body)
++        if syscall in {"open", "openat", "openat2"} and not _trace_open_writes(syscall, args):
++            continue
++        if syscall == "mmap" and not _trace_mmap_writes(args):
++            continue
++        candidates: list[Path] = []
++        path_indices = PATH_ARGUMENTS.get(syscall)
++        if path_indices is not None:
++            for path_index in path_indices:
++                raw = _decode_trace_path(args, path_index)
++                if raw is None:
++                    continue
++                dirfd_index = DIRFD_ARGUMENTS.get(syscall, {}).get(path_index)
++                dirfd_arg = args[dirfd_index] if dirfd_index is not None and dirfd_index < len(args) else "AT_FDCWD"
++                dirfd_path = _trace_dirfd_path(dirfd_arg, cwd)
++                if os.path.isabs(raw):
++                    candidates.append(Path(os.path.abspath(raw)))
++                elif dirfd_path is not None:
++                    candidates.append(Path(os.path.abspath(os.fspath(dirfd_path / raw))))
++        else:
++            for fd_index in FD_WRITE_ARGUMENTS.get(syscall, ()):
++                fd_arg = args[fd_index] if fd_index < len(args) else ""
++                fd_match = re.search(r"\d+<([^>]+)>", fd_arg)
++                if fd_match:
++                    fd_path = fd_match.group(1)
++                    if not fd_path.startswith(("pipe:[", "socket:[", "anon_inode:", "/memfd:")):
++                        candidate = Path(fd_path)
++                        if candidate.is_absolute():
++                            candidates.append(candidate)
++        if any(candidate == target or target in candidate.parents for candidate in candidates):
++            attempts.append(f"line {line_no}: evidence-store write/mutation attempt: {line.strip()}")
++    return attempts
++
++
+ def _run_with_parent_logs(argv: Sequence[str], cwd: Path, env: Mapping[str, str],
+                           stdout_path: Path, stderr_path: Path,
+                           pass_fds: Sequence[int] = ()) -> int:
+@@ -493,6 +566,7 @@ def _run_with_parent_logs(argv: Sequence[str], cwd: Path, env: Mapping[str, str]
+                     output.write(block)
+         except BaseException as exc:
+             failures.append(exc)
++        finally:
+             try:
+                 source.close()
+             except OSError:
+@@ -516,6 +590,135 @@ def _run_with_parent_logs(argv: Sequence[str], cwd: Path, env: Mapping[str, str]
+     return status
+ 
+ 
++PROCESS_CREATION_SYSCALLS = {"clone", "clone3", "fork", "vfork"}
++PIDNS_HOST_PID_RE = re.compile(r"/\*\s*(\d+)\s+in strace's PID NS\s*\*/")
++TRACE_FILE_RE = re.compile(r"^(\d+)$")
++EXEC_SYSCALLS = {"execve", "execveat"}
++
++
++def _process_child_pids(trace_path: Path, trace_lines: Sequence[str] | None = None) -> list[int]:
++    """Read host PID/TID children from one strace -ff PID-namespace trace.
++
++    With --decode-pids=pidns, successful parent-side process-creation calls
++    include the tracee's host PID in a comment. A positive result without that
++    comment cannot be mapped to a trace filename and invalidates the capture.
++    """
++    children: list[int] = []
++    pending: set[str] = set()
++    lines = trace_lines if trace_lines is not None else trace_path.read_text(
++        encoding="utf-8", errors="replace").splitlines()
++    for line_no, line in enumerate(lines, 1):
++        match = SYSCALL_RE.match(line)
++        resumed = re.match(r"^\s*<\.\.\.\s+(clone3?|fork|vfork)\s+resumed>", line)
++        syscall = match.group(1) if match else (resumed.group(1) if resumed else None)
++        if syscall not in PROCESS_CREATION_SYSCALLS:
++            continue
++        if "<unfinished ...>" in line:
++            pending.add(syscall)
++            continue
++        if resumed:
++            if syscall not in pending:
++                raise CaptureError(f"unmatched resumed {syscall} in {trace_path}:{line_no}")
++            pending.remove(syscall)
++        result = re.search(r"\)\s+=\s+(-?\d+)(.*)$", line)
++        if not result:
++            raise CaptureError(f"cannot parse {syscall} result in {trace_path}:{line_no}: {line.strip()}")
++        returned = int(result.group(1))
++        if returned <= 0:
++            continue
++        mapped = PIDNS_HOST_PID_RE.search(result.group(2))
++        if not mapped:
++            raise CaptureError(
++                f"successful {syscall} lacks a PID-namespace host PID in {trace_path}:{line_no}"
++            )
++        children.append(int(mapped.group(1)))
++    if pending:
++        raise CaptureError(f"unfinished process-creation syscall in {trace_path}: {sorted(pending)}")
++    return children
++
++
++def _collect_process_trace_tree(trace_dir: Path, trace_prefix: Path, status_path: Path,
++                                aggregate_path: Path, status: int) -> dict[str, Any]:
++    """Keep raw strace files, but aggregate only the Bubblewrap child tree.
++
++    Bubblewrap's outer namespace setup is traced too, but is outside the
++    installer process tree. Its raw files remain preserved and are explicitly
++    listed as unselected; none are silently mixed into installer write checks.
++    """
++    try:
++        status_records = [json.loads(line) for line in status_path.read_text(encoding="utf-8").splitlines()
++                          if line.strip()]
++    except (OSError, json.JSONDecodeError) as exc:
++        raise CaptureError(f"cannot parse Bubblewrap JSON status: {exc}") from exc
++    if len(status_records) < 2 or not isinstance(status_records[0], dict) or not isinstance(status_records[-1], dict):
++        raise CaptureError("Bubblewrap status is incomplete; expected child and exit records")
++    root_pid = status_records[0].get("child-pid")
++    child_exit = status_records[-1].get("exit-code")
++    if type(root_pid) is not int or root_pid <= 0:
++        raise CaptureError("Bubblewrap status has no valid child-pid")
++    if type(child_exit) is not int or child_exit != status:
++        raise CaptureError("Bubblewrap status exit code does not match the traced command")
++
++    files: dict[int, Path] = {}
++    for path in trace_dir.glob(trace_prefix.name + ".*"):
++        match = TRACE_FILE_RE.fullmatch(path.name.removeprefix(trace_prefix.name + "."))
++        if not match or not path.is_file():
++            raise CaptureError(f"unexpected strace -ff output entry: {path}")
++        pid = int(match.group(1))
++        if pid in files:
++            raise CaptureError(f"duplicate strace output for host PID/TID {pid}")
++        files[pid] = path
++
++    selected: list[int] = []
++    pending = [root_pid]
++    seen: set[int] = set()
++    aggregate: list[str] = []
++    command_start_lines: dict[int, int] = {}
++    while pending:
++        pid = pending.pop(0)
++        if pid in seen:
++            continue
++        path = files.get(pid)
++        if path is None:
++            raise CaptureError(f"missing strace -ff trace file for installer descendant {pid}")
++        seen.add(pid)
++        selected.append(pid)
++        aggregate.append(f"# installer-process host-pid={pid}\n")
++        lines = path.read_text(encoding="utf-8", errors="replace").splitlines(keepends=True)
++        start_at = 0
++        if pid == root_pid:
++            for line_no, line in enumerate(lines):
++                match = SYSCALL_RE.match(line)
++                if (match and match.group(1) in EXEC_SYSCALLS
++                        and re.search(r"\)\s+=\s+0(?:\s|$)", line)):
++                    start_at = line_no
++                    command_start_lines[pid] = line_no + 1
++                    break
++            else:
++                raise CaptureError("Bubblewrap child trace has no successful installer execve boundary")
++        aggregate.extend(line if line.endswith("\n") else line + "\n" for line in lines[start_at:])
++        # Only the root PID's pre-exec Bubblewrap setup is excluded; every
++        # process creation after the installer exec boundary remains followed.
++        pending.extend(_process_child_pids(path, lines[start_at:]))
++
++    aggregate_path.write_text("".join(aggregate), encoding="utf-8")
++    all_pids = sorted(files)
++    return {
++        "schema": "alpbahOS.m04-process-trace-tree/v1",
++        "root_host_pid": root_pid,
++        "exit_status": child_exit,
++        "command_start_line_by_host_pid": command_start_lines,
++        "installer_tree_host_pids": selected,
++        "unselected_host_pids": [pid for pid in all_pids if pid not in seen],
++        "files": [
++            {"path": path.relative_to(trace_dir.parents[3]).as_posix(),
++             "host_pid": pid, "selected": pid in seen,
++             "size": path.stat().st_size, "sha256": _sha256(path)}
++            for pid, path in sorted(files.items())
++        ],
++    }
++
++
+ def _seccomp_deny_io_uring_program() -> bytes:
+     """Return native cBPF for seccomp(2), denying io_uring_setup with EPERM.
+ 
+@@ -539,24 +742,35 @@ def _seccomp_deny_io_uring_program() -> bytes:
+ 
+ def _execute(argv: Sequence[str], cwd: Path, env: Mapping[str, str], root: Path,
+              trace_path: Path, seccomp_path: Path, strace: str, bwrap: str,
+-             stdout_path: Path, stderr_path: Path) -> int:
++             stdout_path: Path, stderr_path: Path, status_path: Path,
++             trace_dir: Path, trace_tree_path: Path) -> int:
+     # Request a read-only host and evidence store with only the fixture writable.
+-    # Effective isolation has not been verified by a real Linux integration run.
++    # Linux fixture tests validate these options, not production rootfs replay.
+     # io_uring_setup is denied by the seccomp policy and any traced attempt invalidates the event.
+     event_store = root / CAPTURE_DIR / "events"
+     root_id_path = root / CAPTURE_DIR / "root-id"
+-    # Bubblewrap consumes and closes the seccomp FD while setting up its child.
+-    # strace inherits it only to pass through exec; it is not an installer log FD.
++    # Bubblewrap consumes and closes both inherited policy/status FDs during
++    # setup. The installer never receives either descriptor.
+     with seccomp_path.open("rb") as policy:
+         seccomp_fd = policy.fileno()
+-        traced = [strace, "-f", "-qq", "-yy", "-e", "trace=%file,%desc,mmap,io_uring_setup", "-o", str(trace_path),
+-                  "--", bwrap, "--die-with-parent", "--unshare-all", "--seccomp", str(seccomp_fd),
+-                  "--ro-bind", "/", "/", "--bind", str(root), str(root),
+-                  "--ro-bind", str(event_store), str(event_store),
+-                  "--ro-bind", str(root_id_path), str(root_id_path),
+-                  "--chdir", str(cwd), "--", *argv]
+-        return _run_with_parent_logs(traced, cwd, env, stdout_path, stderr_path,
+-                                     pass_fds=(seccomp_fd,))
++        with status_path.open("wb") as status_stream:
++            status_fd = status_stream.fileno()
++            trace_prefix = trace_dir / "trace"
++            traced = [strace, "-ff", "-qq", "-yy", "--decode-pids=pidns",
++                      "-e", "trace=%file,%desc,%process,mmap,io_uring_setup," + ",".join(sorted(MOUNT_SYSCALLS)),
++                      "-o", str(trace_prefix), "--", bwrap, "--die-with-parent",
++                      "--unshare-all", "--as-pid-1", "--json-status-fd", str(status_fd),
++                      "--seccomp", str(seccomp_fd), "--ro-bind", "/", "/",
++                      "--bind", str(root), str(root),
++                      "--ro-bind", str(event_store), str(event_store),
++                      "--ro-bind", str(root_id_path), str(root_id_path),
++                      "--proc", "/proc", "--dev", "/dev",
++                      "--chdir", str(cwd), "--", *argv]
++            status = _run_with_parent_logs(traced, cwd, env, stdout_path, stderr_path,
++                                           pass_fds=(seccomp_fd, status_fd))
++        tree = _collect_process_trace_tree(trace_dir, trace_prefix, status_path, trace_path, status)
++        _write_json(trace_tree_path, tree)
++        return status
+ 
+ 
+ def capture_install(root: Path, argv: Sequence[str], *, cwd: Path | None = None,
+@@ -606,11 +820,15 @@ def capture_install(root: Path, argv: Sequence[str], *, cwd: Path | None = None,
+     seccomp_path = event_dir / "seccomp-deny-io-uring.bpf"
+     seccomp_path.write_bytes(_seccomp_deny_io_uring_program())
+     trace_path = event_dir / "strace-file-writes.log"
++    trace_dir = event_dir / "strace-pids"
++    trace_dir.mkdir(mode=0o700)
++    status_path = event_dir / "bubblewrap-status.json"
++    trace_tree_path = event_dir / "strace-process-tree.json"
+     stdout_path, stderr_path = event_dir / "stdout.log", event_dir / "stderr.log"
+     start_ns = time.time_ns()
+     try:
+         exit_status = _execute(argv, workdir, allowed, root, trace_path, seccomp_path, strace, bwrap,
+-                               stdout_path, stderr_path)
++                               stdout_path, stderr_path, status_path, trace_dir, trace_tree_path)
+     except OSError as exc:
+         shutil.rmtree(work_dir, ignore_errors=True)
+         raise CaptureError(f"could not start confined install command: {exc}") from exc
+@@ -623,10 +841,13 @@ def capture_install(root: Path, argv: Sequence[str], *, cwd: Path | None = None,
+         capture_root / "root-id", root_id_signature, root_id)
+     if not trace_path.is_file():
+         raise CaptureError("strace did not produce its trace; event is incomplete")
++    if not status_path.is_file() or not trace_tree_path.is_file():
++        raise CaptureError("Bubblewrap process-tree evidence is incomplete")
+     violations = _trace_outside_writes(trace_path, root, workdir)
+     root_id_attempts = _trace_root_id_write_attempts(trace_path, capture_root / "root-id", workdir)
++    evidence_attempts = _trace_evidence_store_write_attempts(trace_path, event_root, workdir)
+     observation_violations = (_trace_observation_violations(trace_path) + root_id_violations
+-                              + root_id_attempts)
++                              + root_id_attempts + evidence_attempts)
+     after = _snapshot(root, root_id)
+     after_path = event_dir / "after.json"
+     _write_json(after_path, after)
+@@ -634,7 +855,8 @@ def capture_install(root: Path, argv: Sequence[str], *, cwd: Path | None = None,
+                      if before["entries"].get(path) != after["entries"].get(path))
+     files = {"before_snapshot": before_path, "after_snapshot": after_path,
+              "stdout": stdout_path, "stderr": stderr_path, "strace": trace_path,
+-             "seccomp_policy": seccomp_path}
++             "seccomp_policy": seccomp_path, "bubblewrap_status": status_path,
++             "strace_process_tree": trace_tree_path}
+     event: dict[str, Any] = {
+         "schema": SCHEMA, "event_id": event_id, "root_id": root_id,
+         "seccomp_architecture": platform.machine().lower(),
+@@ -645,6 +867,7 @@ def capture_install(root: Path, argv: Sequence[str], *, cwd: Path | None = None,
+         "changed_paths": changed, "outside_root_write_attempts": violations,
+         "observation_violations": observation_violations,
+         "root_id_write_attempts": root_id_attempts,
++        "evidence_store_write_attempts": evidence_attempts,
+         "inputs": hashed_inputs, "artifacts": {
+             name: {"path": str(path.relative_to(root)), "size": path.stat().st_size,
+                    "sha256": _sha256(path)} for name, path in files.items()
+diff --git a/tests/test_m04_install_event_capture.py b/tests/test_m04_install_event_capture.py
+index 10d8c7f..7e4ed61 100644
+--- a/tests/test_m04_install_event_capture.py
++++ b/tests/test_m04_install_event_capture.py
+@@ -58,12 +58,16 @@ class InstallEventCaptureTests(unittest.TestCase):
+         mock.patch.stopall()
+         self.fx.close()
+ 
+-    def fake_execute(self, argv, cwd, env, root, trace_path, seccomp_path, strace, bwrap, stdout_path, stderr_path):
++    def fake_execute(self, argv, cwd, env, root, trace_path, seccomp_path, strace, bwrap,
++                     stdout_path, stderr_path, status_path, trace_dir, trace_tree_path):
+         action = argv[-1]
+         (root / "usr/bin").mkdir(parents=True, exist_ok=True)
++        trace_dir.mkdir(parents=True, exist_ok=True)
+         trace_path.write_text("", encoding="utf-8")
+         stdout_path.write_bytes(b"install stdout\n")
+         stderr_path.write_bytes(b"install stderr\n")
++        status_path.write_text('{"child-pid": 1}\n{"exit-code": 0}\n', encoding="utf-8")
++        trace_tree_path.write_text('{"installer_tree_host_pids": [1], "files": []}\n', encoding="utf-8")
+         if action == "write":
+             (root / "usr/bin/new-tool").write_bytes(b"new payload")
+             trace_path.write_text(f'openat(AT_FDCWD, {json.dumps(str(root / "usr/bin/new-tool"))}, O_WRONLY|O_CREAT, 0644) = 3\n', encoding="utf-8")
+@@ -293,19 +297,26 @@ class InstallEventCaptureTests(unittest.TestCase):
+         root_id_path.write_text("0" * 32 + "\n", encoding="ascii")
+         trace = self.fx.root / "trace.log"
+         stdout, stderr = self.fx.root / "stdout.log", self.fx.root / "stderr.log"
++        status_file = self.fx.root / "bwrap-status.json"
++        trace_dir = self.fx.root / "trace-pids"
++        trace_dir.mkdir()
++        trace_tree = self.fx.root / "trace-tree.json"
+         fake_proc = SimpleNamespace(stdout=io.BytesIO(), stderr=io.BytesIO(),
+                                     poll=lambda: 0, wait=lambda: 0)
+         with mock.patch.object(capture.subprocess, "Popen", return_value=fake_proc) as run:
+             policy = self.fx.root / "policy.bpf"
+             policy.write_bytes(capture._seccomp_deny_io_uring_program())
+-            status = capture._execute(["installer"], self.fx.root, {}, self.fx.root,
+-                                      trace, policy, "/usr/bin/strace", "/usr/bin/bwrap", stdout, stderr)
++            with mock.patch.object(capture, "_collect_process_trace_tree", return_value={}) as collect:
++                status = capture._execute(["installer"], self.fx.root, {}, self.fx.root,
++                                          trace, policy, "/usr/bin/strace", "/usr/bin/bwrap",
++                                          stdout, stderr, status_file, trace_dir, trace_tree)
+         self.assertEqual(status, 0)
++        collect.assert_called_once()
+         argv = run.call_args.args[0]
+         self.assertEqual(run.call_args.kwargs["stdout"], subprocess.PIPE)
+         self.assertEqual(run.call_args.kwargs["stderr"], subprocess.PIPE)
+         self.assertTrue(run.call_args.kwargs["close_fds"])
+-        self.assertEqual(len(run.call_args.kwargs["pass_fds"]), 1)
++        self.assertEqual(len(run.call_args.kwargs["pass_fds"]), 2)
+         self.assertIn("--seccomp", argv)
+         self.assertLess(argv.index("--ro-bind"), argv.index("--bind"))
+         read_only = [index for index, arg in enumerate(argv) if arg == "--ro-bind"]
+@@ -314,6 +325,8 @@ class InstallEventCaptureTests(unittest.TestCase):
+         self.assertIn(str(root_id_path), argv)
+         self.assertEqual(argv.count("--ro-bind"), 3)
+         self.assertEqual(argv.count("--bind"), 1)
++        self.assertIn("--proc", argv)
++        self.assertIn("--dev", argv)
+         trace_arg = argv[argv.index("-e") + 1]
+         self.assertIn("io_uring_setup", trace_arg)
+ 
+diff --git a/tests/test_m04_linux_seccomp_integration.py b/tests/test_m04_linux_seccomp_integration.py
+index b6903a2..adb8866 100644
+--- a/tests/test_m04_linux_seccomp_integration.py
++++ b/tests/test_m04_linux_seccomp_integration.py
+@@ -8,6 +8,7 @@ from __future__ import annotations
+ 
+ import hashlib
+ import importlib.util
++import errno
+ import json
+ import os
+ import platform
+@@ -58,7 +59,7 @@ class LinuxSeccompIntegrationTests(unittest.TestCase):
+                 root, [sys.executable, "-B", "-c", install_code], cwd=root,
+                 package="m04-seccomp-fixture", version="1",
+             )
+-            installed_event_path = root / installed["event_manifest"]["path"]
++            installed_event_path = root / installed["event_dir"] / "event.json"
+             self._assert_persisted_event(root, installed, installed_event_path)
+             self.assertEqual(installed["exit_status"], 0)
+             self.assertEqual(installed["observation_violations"], [])
+@@ -149,6 +150,153 @@ class LinuxSeccompIntegrationTests(unittest.TestCase):
+             stdout = (root / event["artifacts"]["stdout"]["path"]).read_text(encoding="utf-8")
+             self.assertRegex(stdout, r'"errno"\s*:\s*30\b')
+ 
++    def test_failed_partial_install_is_persisted_with_complete_delta(self):
++        with tempfile.TemporaryDirectory(prefix="m04-failed-install-") as temp:
++            root = Path(temp).resolve()
++            (root / capture.MARKER).write_text(capture.MARKER_TEXT, encoding="utf-8")
++            code = "from pathlib import Path; Path('partial-install').write_text('partial\\n'); raise SystemExit(23)"
++            with self.assertRaises(capture.InstallCommandFailed) as caught:
++                capture.capture_install(root, [sys.executable, "-B", "-c", code], cwd=root,
++                                        package="m04-partial-failure", version="1")
++            event = caught.exception.event
++            event_path = root / event["event_dir"] / "event.json"
++            self._assert_persisted_event(root, event, event_path)
++            self.assertEqual(event["exit_status"], 23)
++            self.assertIn("/partial-install", event["changed_paths"])
++            self.assertEqual((root / "partial-install").read_text(encoding="utf-8"), "partial\n")
++
++    def test_symlink_escape_attempt_is_denied_and_invalidates_event(self):
++        with tempfile.TemporaryDirectory(prefix="m04-symlink-escape-") as temp:
++            base = Path(temp).resolve()
++            root = base / "fixture"
++            root.mkdir()
++            sentinel = base / "host-sentinel"
++            sentinel.write_text("unchanged\n", encoding="utf-8")
++            (root / capture.MARKER).write_text(capture.MARKER_TEXT, encoding="utf-8")
++            (root / "escape").symlink_to(sentinel)
++            code = """import errno, json, pathlib
++p = pathlib.Path('escape')
++try:
++    p.write_text('changed\\n')
++except OSError as exc:
++    print(json.dumps({'errno': exc.errno}))
++    raise SystemExit(0 if exc.errno == errno.EROFS else 42)
++else:
++    raise SystemExit(43)
++"""
++            with self.assertRaises(capture.CaptureError) as caught:
++                capture.capture_install(root, [sys.executable, "-B", "-c", code], cwd=root,
++                                        package="m04-symlink-escape-probe", version="1")
++            self.assertIn("outside the fixture", str(caught.exception))
++            event_dirs = [p for p in (root / capture.CAPTURE_DIR / "events").iterdir() if p.is_dir()]
++            self.assertEqual(len(event_dirs), 1)
++            event_path = event_dirs[0] / "event.json"
++            event = json.loads(event_path.read_text(encoding="utf-8"))
++            self._assert_persisted_event(root, event, event_path)
++            self.assertEqual(event["exit_status"], 0)
++            self.assertTrue(event["outside_root_write_attempts"])
++            self.assertEqual(sentinel.read_text(encoding="utf-8"), "unchanged\n")
++
++    def test_absolute_parent_and_dirfd_sentinel_writes_are_denied_and_recorded(self):
++        with tempfile.TemporaryDirectory(prefix="m04-path-escape-") as temp:
++            base = Path(temp).resolve()
++            root = base / "fixture"
++            root.mkdir()
++            sentinel = base / "host-sentinel"
++            sentinel.write_text("unchanged\n", encoding="utf-8")
++            (root / capture.MARKER).write_text(capture.MARKER_TEXT, encoding="utf-8")
++            code = f"""import errno, json, os
++path = {str(sentinel)!r}
++attempts = []
++for name in (path, '../host-sentinel'):
++    try:
++        fd = os.open(name, os.O_WRONLY | os.O_TRUNC)
++    except OSError as exc:
++        attempts.append(exc.errno)
++    else:
++        os.close(fd)
++        raise SystemExit(43)
++parent = os.open('..', os.O_RDONLY | os.O_DIRECTORY)
++try:
++    try:
++        fd = os.open('host-sentinel', os.O_WRONLY | os.O_TRUNC, dir_fd=parent)
++    except OSError as exc:
++        attempts.append(exc.errno)
++    else:
++        os.close(fd)
++        raise SystemExit(43)
++finally:
++    os.close(parent)
++print(json.dumps(attempts))
++raise SystemExit(0 if attempts == [errno.EROFS] * 3 else 42)
++"""
++            with self.assertRaises(capture.CaptureError) as caught:
++                capture.capture_install(root, [sys.executable, "-B", "-c", code], cwd=root,
++                                        package="m04-path-escape-probe", version="1")
++            self.assertIn("outside the fixture", str(caught.exception))
++            event_dirs = [p for p in (root / capture.CAPTURE_DIR / "events").iterdir() if p.is_dir()]
++            self.assertEqual(len(event_dirs), 1)
++            event_path = event_dirs[0] / "event.json"
++            event = json.loads(event_path.read_text(encoding="utf-8"))
++            self._assert_persisted_event(root, event, event_path)
++            self.assertEqual(event["exit_status"], 0)
++            self.assertGreaterEqual(len(event["outside_root_write_attempts"]), 3)
++            self.assertEqual(sentinel.read_text(encoding="utf-8"), "unchanged\n")
++
++    def test_evidence_store_write_attempt_is_denied_and_recorded(self):
++        with tempfile.TemporaryDirectory(prefix="m04-evidence-store-") as temp:
++            root = Path(temp).resolve()
++            (root / capture.MARKER).write_text(capture.MARKER_TEXT, encoding="utf-8")
++            code = """import errno, json, pathlib
++event_dir = next(pathlib.Path('.m04-capture/events').iterdir())
++status = event_dir / 'bubblewrap-status.json'
++before = status.read_bytes()
++try:
++    status.write_bytes(before + b'changed')
++except OSError as exc:
++    print(json.dumps({'errno': exc.errno}))
++    raise SystemExit(0 if exc.errno == errno.EROFS else 42)
++else:
++    raise SystemExit(43)
++"""
++            with self.assertRaisesRegex(capture.CaptureError, "observation/integrity violations") as caught:
++                capture.capture_install(root, [sys.executable, "-B", "-c", code], cwd=root,
++                                        package="m04-evidence-write-probe", version="1")
++            event_dirs = [p for p in (root / capture.CAPTURE_DIR / "events").iterdir() if p.is_dir()]
++            self.assertEqual(len(event_dirs), 1, str(caught.exception))
++            event_path = event_dirs[0] / "event.json"
++            event = json.loads(event_path.read_text(encoding="utf-8"))
++            self._assert_persisted_event(root, event, event_path)
++            self.assertEqual(event["exit_status"], 0)
++            self.assertTrue(any("evidence-store write/mutation attempt" in item
++                                for item in event["observation_violations"]))
++            status_path = root / event["artifacts"]["bubblewrap_status"]["path"]
++            self.assertNotIn(b"changed", status_path.read_bytes())
++
++    def test_nested_mount_attempt_is_observed_and_invalidates_event(self):
++        with tempfile.TemporaryDirectory(prefix="m04-nested-mount-") as temp:
++            root = Path(temp).resolve()
++            (root / capture.MARKER).write_text(capture.MARKER_TEXT, encoding="utf-8")
++            (root / "mnt").mkdir()
++            code = (
++                "import ctypes, errno, json; libc=ctypes.CDLL(None, use_errno=True); "
++                "rc=libc.mount(b'tmpfs', b'mnt', b'tmpfs', 0, b'size=4096'); "
++                "err=ctypes.get_errno() if rc != 0 else 0; "
++                "print(json.dumps({'rc':rc,'errno':err})); "
++                "raise SystemExit(0 if rc != 0 and err in (errno.EPERM, errno.EACCES) else 42)"
++            )
++            with self.assertRaises(capture.CaptureError) as caught:
++                capture.capture_install(root, [sys.executable, "-B", "-c", code], cwd=root,
++                                        package="m04-nested-mount-probe", version="1")
++            self.assertIn("observation/integrity violations", str(caught.exception))
++            event_dirs = [p for p in (root / capture.CAPTURE_DIR / "events").iterdir() if p.is_dir()]
++            self.assertEqual(len(event_dirs), 1)
++            event_path = event_dirs[0] / "event.json"
++            event = json.loads(event_path.read_text(encoding="utf-8"))
++            self._assert_persisted_event(root, event, event_path)
++            self.assertEqual(event["exit_status"], 0)
++            self.assertTrue(any("mount" in item for item in event["observation_violations"]))
++
+     def _assert_persisted_event(self, root: Path, event: dict, event_path: Path) -> None:
+         self.assertTrue(event_path.is_file())
+         on_disk = json.loads(event_path.read_text(encoding="utf-8"))
+@@ -170,6 +318,15 @@ class LinuxSeccompIntegrationTests(unittest.TestCase):
+             data = path.read_bytes()
+             self.assertEqual(len(data), artifact["size"], artifact["path"])
+             self.assertEqual(hashlib.sha256(data).hexdigest(), artifact["sha256"], artifact["path"])
++        tree_path = root / event["artifacts"]["strace_process_tree"]["path"]
++        tree = json.loads(tree_path.read_text(encoding="utf-8"))
++        self.assertGreater(len(tree["installer_tree_host_pids"]), 0)
++        for traced_file in tree["files"]:
++            path = root / traced_file["path"]
++            self.assertTrue(path.is_file(), traced_file["path"])
++            data = path.read_bytes()
++            self.assertEqual(len(data), traced_file["size"], traced_file["path"])
++            self.assertEqual(hashlib.sha256(data).hexdigest(), traced_file["sha256"], traced_file["path"])
+ 
+ 
+ if __name__ == "__main__":

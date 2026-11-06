@@ -36,7 +36,7 @@ python3 alp.py --root /tmp/alp-test --index demo/index.json remove alpbah-theme-
 - PackageKit/Discover entegrasyonu — hiç yazılmadı, kapsam dışı.
 - Gerçek bir alpbahOS rootfs üzerinde `--root /` ile üretim testi — hiç denenmedi, denenmemeli (bu bir prototip, gerçek sisteme yazma yolu hiç egzersiz edilmedi).
 
-Bu ayrımın nedeni AGENTS.md'nin "Yapılmamış derleme, test, donanım doğrulaması ... yapılmış gibi raporlanamaz" kuralı — recipe ve flatpak yollarının kod yolu doğru yazılmıştır ama gerçek dış araçlarla hiç koşulmamıştır.
+Bu ayrımın nedeni CLAUDE.md'nin "Yapılmamış derleme, test, donanım doğrulaması ... yapılmış gibi raporlanamaz" kuralı — recipe ve flatpak yollarının kod yolu doğru yazılmıştır ama gerçek dış araçlarla hiç koşulmamıştır.
 
 ## Bağımsız inceleme sonrası düzeltmeler (21 Eylül 2026)
 
@@ -65,7 +65,7 @@ python3 -m pytest tests/ -v
 
 ## Gerçek Linux'ta ilk uçtan uca test (22 Eylül 2026)
 
-`alp` ilk kez **gerçek bir Linux ortamında** (Codex'in `alpbah-builder` Ubuntu 24.04.5 VM'i, SSH ile, `sa@172.28.174.11`) test edildi — bkz. [006-alp-real-linux-test.md](../006-alp-real-linux-test.md) tam ayrıntı için. Özet:
+`alp` ilk kez **gerçek bir Linux ortamında** (eski Ubuntu derleme VM'i `alpbah-builder`, Ubuntu 24.04.5, SSH ile, `sa@172.28.174.11`) test edildi — bkz. [006-alp-real-linux-test.md](../006-alp-real-linux-test.md) tam ayrıntı için. Özet:
 
 - **Gerçek bug bulundu ve düzeltildi:** `recipe` yönteminde `./configure` gerçekte var ve çalıştırılabilir olduğu hâlde "bulunamadı" hatası veriyordu. Sebep: `shutil.which("./configure")` yolu, adım `cwd=src_dir` ile çalıştırılsa bile, `alp.py`'nin kendi çalıştığı dizine göre arıyordu. `_tool_available()` yeni yardımcı fonksiyonu bunu doğru dizine (`src_dir`) göre çözüyor. Bu hata **yalnızca gerçek bir Linux'ta configure gerçekten mevcutken** ortaya çıkabilirdi — Windows'ta zaten `make` yoktu, hata her iki nedenden de aynı görünüyordu.
 - Düzeltmeden sonra `htop` tarifi gerçekten `./configure`'ı çalıştırdı, gerçek bir bağımlılık hatasıyla (`libncursesw` eksik) durdu — bu, prototipin kendi dürüst eksiklik listesindeki "bağımlılık çözümü yok" ile tam tutarlı, `alp`'in hatası değil.

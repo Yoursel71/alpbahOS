@@ -123,7 +123,7 @@ def test_alp_backend_error_detects_lock_contention(env):
 def test_packagekit_glue_class_not_importable_here():
     """Documents, rather than hides, the real limitation: this environment
     has no `packagekit` module, so AlpPackageKitBackend is never defined.
-    A real Linux/PackageKit environment (Codex's) must verify that class
+    A real Linux/PackageKit environment must verify that class
     directly -- see alp_packagekit_backend.py's module docstring."""
     assert pkb.PACKAGEKIT_AVAILABLE is False
     assert not hasattr(pkb, "AlpPackageKitBackend")
