@@ -120,7 +120,7 @@ D124 chooses KDE Discover with an alp PackageKit backend. Two drafts exist:
 - `scripts/legacy/wip-2026-09-30/scripts/packagekit/alpBackend.py` with the helper scripts and PolicyKit rules next to it (2026-09-30 candidate). The README there calls it a starting point for D124.
 - `docs/handoffs/claude/alp-prototype/alp_packagekit_backend.py`, a Python wrapper that calls `alp.py` as a subprocess. Its wrapper functions are tested against `alp.py` without PackageKit. The `AlpPackageKitBackend` class has never run on a PackageKit daemon. Design notes: [packagekit-integration.md](handoffs/claude/alp-prototype/design/packagekit-integration.md).
 
-Both drafts are untested on the current 12.4 base. On 2026-09-30 a different candidate rootfs (never merged into the test base) gave these results: Discover search for `htop` returned the catalog item; a `pkcon` install of `htop` completed with a `PATH` fix; removal finished but printed a "not installed" error afterwards. That run is **not a pass** ([m08-live-packagekit-auth-runtime-2026-09-30.md](verification/m08-live-packagekit-auth-runtime-2026-09-30.md), [m08-packagekit-path-and-auth-retest-2026-09-30.md](verification/m08-packagekit-path-and-auth-retest-2026-09-30.md)). The store is not ready until install, launch and remove pass cleanly on the new base, and catalog signature checks are tested.
+Both drafts are untested on the current 12.4 base. On 2026-09-30 a different candidate rootfs (never merged into the test base) gave these results: Discover search for `htop` returned the catalog item; a `pkcon` install of `htop` completed with a `PATH` fix; removal finished but printed a "not installed" error afterwards. That run is **not a pass** ([m08-live-packagekit-auth-runtime-2026-09-30.md](../scripts/legacy/wip-2026-09-30/docs/verification/m08-live-packagekit-auth-runtime-2026-09-30.md), [m08-packagekit-path-and-auth-retest-2026-09-30.md](../scripts/legacy/wip-2026-09-30/docs/verification/m08-packagekit-path-and-auth-retest-2026-09-30.md)). The store is not ready until install, launch and remove pass cleanly on the new base, and catalog signature checks are tested.
 
 ### 5.3 Flathub and updates
 
@@ -227,7 +227,7 @@ The current LFS 12.4 system is the working test base. The rebuild replaces it on
 | R4 | BLFS and KDE rebuild: Xwayland, KScreenLocker, Mesa with llvmpipe, features disabled in the test image turned back on (v1 D39, D53, D54, see [archive/DECISIONS-v1.md](archive/DECISIONS-v1.md)), trust-on-first-use hashes checked again (v1 D52, D56, D142), lib32 libraries needed by Steam. | Plasma Wayland session starts; the checks in section 13 pass for the desktop; each re-enabled feature has a test. |
 | R5 | Parity: the rebuilt image boots on BIOS and UEFI in QEMU and passes the same checks as the current 12.4 image. | Both boot modes boot; same check list passes; result recorded. Only then does the rebuilt base replace the 12.4 test base. |
 
-Note: the 2026-09-30 event-derived ledger for an earlier candidate ([m10-alpha-test-matrix-2026-09-29.md](verification/m10-alpha-test-matrix-2026-09-29.md), D34 addendum) was not merged into the test base. R3 is the planned way to close the debt on the new base.
+Note: the 2026-09-30 event-derived ledger for an earlier candidate ([m10-alpha-test-matrix-2026-09-29.md](../scripts/legacy/wip-2026-09-30/docs/verification/m10-alpha-test-matrix-2026-09-29.md), D34 addendum) was not merged into the test base. R3 is the planned way to close the debt on the new base.
 
 ## 10. Milestones
 

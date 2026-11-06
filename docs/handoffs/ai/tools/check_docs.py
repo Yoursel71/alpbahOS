@@ -9,13 +9,13 @@ Catches living documents that fall behind the project. Rules:
                (D104), AGENTS.md (D101), pacman/libalpm (D122). A line carrying
                historical or superseded context ("historical", "removed", "v1",
                "no longer", "instead of", ...) is not reported. Lines inside
-               fenced code blocks are skipped. Files under docs/archive/ are
+               fenced code blocks are skipped. Files under docs/archive/ and scripts/legacy/ are
                frozen snapshots and are not checked for stale terms.
   commit-ref   Git object hashes (7-12 or 40 hex digits) in backticks must exist
                in this repository (`git cat-file`). Lines that mention
                alpbahOS-alp are skipped (other repository).
   broken-link  Relative Markdown link targets must exist. Not checked for files
-               under docs/archive/ (moved snapshots, links point to the old layout).
+               under docs/archive/ or scripts/legacy/ (frozen copies, links point to the old layout).
   decision-ref Decision IDs (D01..D143, P01..P13, 2 or 3 digits) must be defined
                in docs/DECISIONS.md or docs/archive/DECISIONS-v1.md. The two
                decision files themselves are not checked for this rule.
@@ -52,7 +52,8 @@ LIVING_DOCS = {"CLAUDE.md", "CURRENT.md", "README.md", "docs/MASTER_PLAN.md", "d
 DECISION_FILES = ("docs/DECISIONS.md", "docs/archive/DECISIONS-v1.md")
 
 # Frozen snapshots: skipped by the broken-link and stale-term rules.
-ARCHIVE_PREFIX = "docs/archive/"
+# Frozen copies (moved snapshots and imported legacy work): links point to the old layout.
+ARCHIVE_PREFIX = ("docs/archive/", "scripts/legacy/")
 
 STALE_TERMS = [
     (re.compile(r"\bcodex\b", re.I), "Codex was removed from the project (D100)"),
@@ -66,7 +67,7 @@ STALE_TERMS = [
 HISTORICAL_MARKERS = re.compile(
     r"tarihsel|terk edildi|bırakıldı|~~|kapsam dışı|uygulanmayacak|olmayacak|vaat edilmez"
     r"|yerine|eskiden|artık|değil|doccheck: ok"
-    r"|historical|archive|archived|removed|dropped|superseded|replaced|formerly|no longer|instead of|not a target"
+    r"|historical|archive|archived|removed|dropped|superseded|replaced|formerly|no longer|instead of|not a target|merged"
     r"|\bv1\b",
     re.I,
 )
