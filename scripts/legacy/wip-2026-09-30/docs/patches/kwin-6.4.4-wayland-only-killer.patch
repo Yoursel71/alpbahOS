@@ -1,0 +1,68 @@
+--- a/src/helpers/killer/killer.cpp
++++ b/src/helpers/killer/killer.cpp
+@@ -31,8 +31,6 @@
+ 
+ #include <qpa/qplatformwindow_p.h>
+ 
+-#include <private/qtx11extras_p.h>
+-#include <xcb/xcb.h>
+ 
+ #include <cerrno>
+ #include <csignal>
+@@ -186,28 +184,15 @@
+ 
+     parser.process(app);
+ 
+-    const bool isX11 = app.platformName() == QLatin1String("xcb");
+-
+     QString hostname = parser.value(hostNameOption);
+     bool pid_ok = false;
+     pid_t pid = parser.value(pidOption).toULong(&pid_ok);
+     QString caption = parser.value(windowNameOption);
+     QString appname = parser.value(applicationNameOption);
+-    bool id_ok = false;
+-    xcb_window_t wid = XCB_WINDOW_NONE;
+-    QString windowHandle;
+-    if (isX11) {
+-        wid = parser.value(widOption).toULong(&id_ok);
+-    } else {
+-        windowHandle = parser.value(widOption);
+-    }
++    const QString windowHandle = parser.value(widOption);
+ 
+     // on Wayland XDG_ACTIVATION_TOKEN is set in the environment.
+-    bool time_ok = false;
+-    xcb_timestamp_t timestamp = parser.value(timestampOption).toULong(&time_ok);
+-
+-    if (!pid_ok || pid == 0 || ((!id_ok || wid == XCB_WINDOW_NONE) && windowHandle.isEmpty())
+-        || (isX11 && (!time_ok || timestamp == XCB_CURRENT_TIME))
++    if (!pid_ok || pid == 0 || windowHandle.isEmpty()
+         || hostname.isEmpty() || caption.isEmpty() || appname.isEmpty()) {
+         fprintf(stdout, "%s\n", qPrintable(i18n("This helper utility is not supposed to be called directly.")));
+         parser.showHelp(1);
+@@ -244,10 +229,6 @@
+     KGuiItem continueButton = KGuiItem(i18nc("@action:button Terminate app", "&Terminate %1", appname), QStringLiteral("application-exit"));
+     KGuiItem cancelButton = KGuiItem(i18nc("@action:button Wait for frozen app to maybe respond again", "&Wait Longer"), QStringLiteral("chronometer"));
+ 
+-    if (isX11) {
+-        QX11Info::setAppUserTime(timestamp);
+-    }
+-
+     auto *dialog = new KMessageDialog(KMessageDialog::WarningContinueCancel, question);
+     dialog->setAttribute(Qt::WA_DeleteOnClose);
+     dialog->setCaption(i18nc("@title:window", "Not Responding"));
+@@ -276,13 +257,7 @@
+     std::unique_ptr<XdgImporter> xdgImporter;
+     std::unique_ptr<XdgImported> importedParent;
+ 
+-    if (isX11) {
+-        if (QWindow *foreignParent = QWindow::fromWinId(wid)) {
+-            dialog->windowHandle()->setTransientParent(foreignParent);
+-        }
+-    } else {
+-        xdgImporter = std::make_unique<XdgImporter>();
+-    }
++    xdgImporter = std::make_unique<XdgImporter>();
+ 
+     QObject::connect(dialog, &QDialog::finished, &app, [pid, hostname, isLocal](int result) {
+         if (result == KMessageBox::PrimaryAction) {

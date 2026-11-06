@@ -1,6 +1,6 @@
 # Kısayol çakışma listesi — UI-02 / M08
 
-Durum (26 Eylül 2026): **eylem kimlikleri ve upstream varsayılanları KDE Plasma 6.4.4 kaynak kodundan doğrulandı; gerçek Plasma oturumunda hiçbir kısayol test edilmedi.** Tek kaynak [`shortcuts.json`](shortcuts.json); sistem dosyası [`generated/kglobalshortcutsrc`](generated/kglobalshortcutsrc) ondan [`generate_kglobalshortcutsrc.py`](generate_kglobalshortcutsrc.py) ile üretilir. Kaynak plan: [docs/MASTER_PLAN.md](../../docs/MASTER_PLAN.md) §6, [docs/HYPERV_PLAN.md](../../docs/HYPERV_PLAN.md).
+Durum (26 Eylül 2026): **eylem kimlikleri ve upstream varsayılanları KDE Plasma 6.4.4 kaynak kodundan doğrulandı; gerçek Plasma oturumunda hiçbir kısayol test edilmedi.** Tek kaynak [`shortcuts.json`](shortcuts.json); sistem dosyası [`generated/kglobalshortcutsrc`](generated/kglobalshortcutsrc) ondan [`generate_kglobalshortcutsrc.py`](generate_kglobalshortcutsrc.py) ile üretilir. Kaynak plan: [docs/MASTER_PLAN.md](../../docs/MASTER_PLAN.md) §6, [docs/HYPERV_PLAN.md](../../docs/archive/HYPERV_PLAN.md).
 
 ## 1. Profil içi tutarlılık (otomatik)
 

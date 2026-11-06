@@ -13,7 +13,7 @@ Bu dosya iki farklı güven seviyesinde koddan oluşur, kasıtlı olarak ayrılm
    **Bu kısım bu ortamda (Windows, PackageKit yok) hiç import edilemedi,
    hiç çalıştırılamadı.** design/packagekit-integration.md'deki yöntem
    eşlemesinin somut kod hâlidir; gerçek bir PackageKit daemon'una
-   yüklenip test edilmeden "çalışıyor" sayılamaz (AGENTS.md kuralı).
+   yüklenip test edilmeden "çalışıyor" sayılamaz (CLAUDE.md kuralı).
 
 Kaynak: design/packagekit-integration.md.
 """
@@ -134,7 +134,7 @@ def alp_updates(alp_path: Path, root: Path, index: Path) -> list[dict]:
 # `packagekit.backend`'in tam metod imzaları (PkBitField, INFO_*/ERROR_*
 # sabitleri) gerçek bir PackageKit kurulumunda doğrulanmalı -- burada genel
 # bilinen backend iskeleti sözleşmesine göre yazıldı, birebir API garantisi
-# verilmez. Codex'in gerçek bir PackageKit daemon'unda test etmesi gerekiyor.
+# verilmez. Gerçek bir PackageKit daemon'unda test edilmesi gerekiyor.
 # --------------------------------------------------------------------------
 
 try:
@@ -151,7 +151,7 @@ if PACKAGEKIT_AVAILABLE:
     class AlpPackageKitBackend(PackageKitBaseBackend):
         """design/packagekit-integration.md §3'teki yöntem eşlemesinin
         birebir kodu. Üretim yolları (ALP_PATH/ROOT/INDEX) yer tutucudur;
-        gerçek alpbahOS kurulumunda paket kurulumu (Codex) tarafından
+        gerçek alpbahOS kurulumunda paket kurulumu BLFS derleme zinciri tarafından
         sabitlenmelidir."""
 
         ALP_PATH = Path("/usr/lib/alp/alp.py")

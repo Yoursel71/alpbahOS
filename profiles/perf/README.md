@@ -1,6 +1,6 @@
 # PERF-01 — RAM, kare süresi ve efekt ölçüm yöntemi
 
-Durum (26 Eylül 2026): **yöntem ve araçlar hazır, hiçbir ölçüm yapılmadı.** PERF-01 sahibi Claude + Codex; önkoşul DESKTOP-01 (çalışan Plasma oturumu). Araçların kendisi Windows'ta sahte verilerle test edildi (`tests/test_m08_desktop_profile.py`); gerçek Gen2 ya da çıplak donanım verisi yok.
+Durum (26 Eylül 2026): **yöntem ve araçlar hazır, hiçbir ölçüm yapılmadı.** PERF-01 sahibi Claude; önkoşul DESKTOP-01 (çalışan Plasma oturumu). Araçların kendisi Windows'ta sahte verilerle test edildi (`tests/test_m08_desktop_profile.py`); gerçek Gen2 ya da çıplak donanım verisi yok.
 
 ## Hedefler (ölçülmeden karşılandı denmez)
 

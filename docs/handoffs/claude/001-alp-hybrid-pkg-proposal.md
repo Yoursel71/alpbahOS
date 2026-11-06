@@ -16,7 +16,7 @@ Kullanıcı, GitHub'da barındırılan depoyu küçük tutmak için üç kurulum
 | [DECISIONS.md D11](../../DECISIONS.md) | `pkg install/remove/update` komut ailesi kabul edildi; **motor seçilmedi** (açıkça not edilmiş) | `alp` motoru zaten seçiyor; D11'in "motor açık" durumunu kapatıyor |
 | [DECISIONS.md P05](../../DECISIONS.md) | Teknik seçim: pacman/libalpm + ince `pkg` arayüzü + Discover/PackageKit alpm backend; M02 entegrasyon testi şart | `alp` bambaşka bir motor; P05'in yerini almayı önerir |
 | [MASTER_PLAN.md §5.2](../../MASTER_PLAN.md) | "`pkg` komutları motorun üzerine ince, testli bir arayüz olur; ikinci bir paket veri tabanı veya sıfırdan bağımlılık çözücü oluşturmaz." M02 başarısızsa öngörülen alternatif **dpkg/APT + PackageKit**'tir, sıfırdan yazılmış bir motor değil | `alp`, ikinci bir paket veri tabanı ve sıfırdan yazılmış bir motordur — planın öngördüğü M02 başarısızlık yolu bu değil |
-| [AGENTS.md:50](../../../AGENTS.md) | "Başka native paket motorunu aynı rootfs'de bağımsız kurma." | `alp`, pacman'ın yanında ikinci, bağımsız bir native motordur |
+| [AGENTS.md:50](../../archive/AGENTS-v1.md) | "Başka native paket motorunu aynı rootfs'de bağımsız kurma." | `alp`, pacman'ın yanında ikinci, bağımsız bir native motordur |
 | [CLAUDE.md](../../../CLAUDE.md) (bu oturumun kendi talimatı) | "Paket motorunun API'si netleşmeden mağaza işlem mantığı yazma. Önce entegrasyon sözleşmesini belirle." | Bu belge tam olarak bu uyarının kapsadığı işi yapıyor — bilerek, öneri olarak işaretlenmiş biçimde |
 | [BACKLOG.md](../../BACKLOG.md) | `PKG-01`/`PKG-02` Codex'e ait; eşzamanlı çalışma sözleşmesinde `recipes/`, `manifests/`, `packaging/` Codex'in dosya sınırı | `alp` bu dizinlere gerçek bir uygulama olarak yerleşseydi, Claude bu sınırın dışına çıkardı |
 

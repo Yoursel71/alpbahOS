@@ -6,8 +6,8 @@ Kapsam: MASTER_PLAN §4.3 etkileşim maddeleri. Test ortamı: LFS rootfs (`/mnt/
 
 | Paket | Etiket | Commit (tam SHA) | Kurulum yolu |
 |---|---|---|---|
-| zsh-autosuggestions | v0.7.1 | `e52ee8ca55bcc56a17c828767a3f98f22a68d4eb` | `/usr/share/zsh-autosuggestions/` |
-| zsh-syntax-highlighting | 0.8.0 | `db085e4661f6aafd24e5acb5b2e17e4dd5dddf3e` | `/usr/share/zsh-syntax-highlighting/` |
+| zsh-autosuggestions | v0.7.1 | `e52ee8ca55bcc56a17c828767a3f98f22a68d4eb` | `/usr/share/zsh-autosuggestions/` | <!-- doccheck: ok (upstream plugin commit) -->
+| zsh-syntax-highlighting | 0.8.0 | `db085e4661f6aafd24e5acb5b2e17e4dd5dddf3e` | `/usr/share/zsh-syntax-highlighting/` | <!-- doccheck: ok (upstream plugin commit) -->
 
 Etiket commit'leri GitHub API'deki değerlerle eşleşti. Dosyalar `git archive HEAD` ile, `.github` ve `tests` hariç kuruldu.
 

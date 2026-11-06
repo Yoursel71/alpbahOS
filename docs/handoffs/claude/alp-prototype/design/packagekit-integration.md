@@ -52,7 +52,7 @@ PackageKit, `InstallPackages` sırasında `Percentage`/`Status` sinyalleri bekle
 
 ## 5. Yetkilendirme (polkit)
 
-MASTER_PLAN §5.3: *"Root yetkisi tüm mağazaya verilmez; ayrı yetkili işlem mekanizması kullanılır."* AGENTS.md: *"Gerekli root işlemlerini açıkça sınırla; bütün akışı root yapma."*
+MASTER_PLAN §5.3: *"Root yetkisi tüm mağazaya verilmez; ayrı yetkili işlem mekanizması kullanılır."* CLAUDE.md: *"Gerekli root işlemlerini açıkça sınırla; bütün akışı root yapma."*
 
 Tasarım: `org.alpbahos.alp.pkgkit.policy` adında bir PolicyKit action dosyası:
 
@@ -67,7 +67,7 @@ Tasarım: `org.alpbahos.alp.pkgkit.policy` adında bir PolicyKit action dosyası
 </action>
 ```
 
-`search`/`list`/`info`/`get-files` için **yetkilendirme istenmez** (salt okunur, `--root /` ile bile herkesin `db.json`'u okuyabilmesi gerekir — dosya izinleri `0644` olmalı, `alp.lock`/yazma işlemleri `0600`+root). Yalnızca `install`/`remove` (ve gelecekteki `upgrade`) `auth_admin` ister — bu, `install_recipe`'in zaten root gerektiren tek adımının (`_merge_staged`'in `/` altına kopyalama) kapsamıyla örtüşür (AGENTS.md: "yalnız dosya kopyalama/DESTDIR-merge adımı `/` yazma yetkisi ister — tüm `alp` sürecinin root çalışması gerekmez").
+`search`/`list`/`info`/`get-files` için **yetkilendirme istenmez** (salt okunur, `--root /` ile bile herkesin `db.json`'u okuyabilmesi gerekir — dosya izinleri `0644` olmalı, `alp.lock`/yazma işlemleri `0600`+root). Yalnızca `install`/`remove` (ve gelecekteki `upgrade`) `auth_admin` ister — bu, `install_recipe`'in zaten root gerektiren tek adımının (`_merge_staged`'in `/` altına kopyalama) kapsamıyla örtüşür (CLAUDE.md: "yalnız dosya kopyalama/DESTDIR-merge adımı `/` yazma yetkisi ister — tüm `alp` sürecinin root çalışması gerekmez").
 
 ## 6. Kilit/eşzamanlılık ile etkileşim
 
@@ -85,4 +85,4 @@ Bu tasarım "kabul edilmiş" sayılmadan önce (proposal §6'daki PKG-02 kabul �
 
 **28 Eylül 2026 (PKG-02 sözleşmesi):** Madde 3'ün `alp` tarafı tamam: `--progress-fd` olay kanalı ve onay öncesi makine-okunur plan (`--json --dry-run install|upgrade|remove`: adımlar, `problems`, catalog `size` alanından `download_size`; boyut bilinmiyorsa `null`, tahmin edilmez). Backend sarmalayıcıları `alp_plan` ve `alp_updates` eklendi ve test edildi; `AlpPackageKitBackend.get_updates` yazıldı ama gerçek PackageKit'te denenmedi. Madde 2 ve 4 (daemon ve polkit testi) hâlâ açık.
 
-**21 Eylül 2026 durumu:** Madde 1 (`--json`) ve madde 2'nin ilk yarısı (`alp_*` sarmalayıcılar) tamamlandı+test edildi. 2, 3, 4 tam olarak gerçekleşmedi — `AlpPackageKitBackend` yazıldı ama gerçek bir PackageKit daemon'una hiç yüklenmedi. MASTER_PLAN §5.3 M02 kriterinin "entegrasyon testi" kısmını **hâlâ karşılamıyor**; bunun için Codex'in gerçek BLFS/PackageKit ortamı gerekiyor.
+**21 Eylül 2026 durumu:** Madde 1 (`--json`) ve madde 2'nin ilk yarısı (`alp_*` sarmalayıcılar) tamamlandı+test edildi. 2, 3, 4 tam olarak gerçekleşmedi — `AlpPackageKitBackend` yazıldı ama gerçek bir PackageKit daemon'una hiç yüklenmedi. MASTER_PLAN §5.3 M02 kriterinin "entegrasyon testi" kısmını **hâlâ karşılamıyor**; bunun için gerçek BLFS/PackageKit ortamı gerekiyor.

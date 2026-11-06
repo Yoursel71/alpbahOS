@@ -1,6 +1,6 @@
 # OFFICE-01 — ofis uyumluluk test planı
 
-Durum (26 Eylül 2026): **plan ve test belgesi üreticisi hazır; alpbahOS üzerinde hiçbir ofis testi yapılmadı.** OFFICE-01: Claude plan, Codex test. Kaynak: [MASTER_PLAN §11](../../../docs/MASTER_PLAN.md) ("LibreOffice günlük belge işlerini ilk günden sağlar; Microsoft Word ile aynı uygulama diye sunulmaz"; Word 2016/2019/2021 Wine'da ayrı prefix'lerde denenir).
+Durum (26 Eylül 2026): **plan ve test belgesi üreticisi hazır; alpbahOS üzerinde hiçbir ofis testi yapılmadı.** OFFICE-01: plan ve test belgesi Claude tarafında; gerçek uygulama testi BLFS kurulumundan sonra. Kaynak: [MASTER_PLAN §11](../../../docs/MASTER_PLAN.md) ("LibreOffice günlük belge işlerini ilk günden sağlar; Microsoft Word ile aynı uygulama diye sunulmaz"; Word 2016/2019/2021 Wine'da ayrı prefix'lerde denenir).
 
 ## 1. Test belgeleri
 
@@ -22,7 +22,7 @@ Durum (26 Eylül 2026): **plan ve test belgesi üreticisi hazır; alpbahOS üzer
 | L8 | PPTX | Impress'te sunu oluştur → PPTX kaydet → yeniden aç | Metin ve slayt sayısı korunur (üretici PPTX yazmaz; Impress ile oluşturulur) |
 | L9 | Varsayılan ilişki | Dolphin'de .docx/.xlsx/.pptx çift tık | `profiles/apps/generated/mimeapps.list`'teki LibreOffice uygulaması açılır |
 
-Gerekli paketler (Codex BLFS): LibreOffice, Carlito ve Caladea fontları (Calibri/Cambria metrik uyumu), Liberation fontları, hunspell + Türkçe sözlük, CUPS (yazdırma).
+Gerekli paketler (BLFS): LibreOffice, Carlito ve Caladea fontları (Calibri/Cambria metrik uyumu), Liberation fontları, hunspell + Türkçe sözlük, CUPS (yazdırma).
 
 ## 3. Microsoft Office / Wine — yalnız 64-bit (D35)
 
