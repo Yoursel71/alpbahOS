@@ -80,6 +80,35 @@ _alp() {
 }
 compdef _alp alp
 
+# --- Başka dağıtımların paket yöneticisi komutları (D123) ---
+# apt/dnf/pacman/... yazılırsa komut ÇALIŞTIRILMAZ; yalnızca alp karşılığı
+# ipucu yazılır. İpucu hiçbir şeyi kendi başına çalıştırmaz.
+# Diğer bilinmeyen komutlar zsh'nin normal davranışıyla aynı kalır (127).
+command_not_found_handler() {
+  local cmd=$1 sub
+  shift
+  case $cmd in
+    apt|apt-get|dnf|yum|zypper|pacman|snap)
+      sub=$1
+      [[ $# -gt 0 ]] && shift
+      local -a suggest
+      case $sub in
+        install)                suggest=(alp install "$@") ;;
+        remove|purge|uninstall) suggest=(alp remove "$@") ;;
+        update|upgrade|refresh) suggest=(alp update) ;;
+        search)                 suggest=(alp search "$@") ;;
+        show|info)              suggest=(alp info "$@") ;;
+        *)                      suggest=(alp help) ;;
+      esac
+      print -r -u2 -- "alpbahOS'ta '$cmd' yok. Bunun yerine: ${(j: :)suggest}"
+      ;;
+    *)
+      print -r -u2 -- "zsh: komut bulunamadı: $cmd"
+      ;;
+  esac
+  return 127
+}
+
 # --- Ctrl+C ---
 # Zsh'nin varsayılan SIGINT/iş kesme davranışı KORUNUR; bu profil tarafından
 # yeniden bağlanmaz veya "kopyala" gibi başka bir anlama getirilmez.

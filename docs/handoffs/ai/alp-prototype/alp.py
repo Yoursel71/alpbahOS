@@ -2819,6 +2819,12 @@ def _translate_argparse_error(message: str) -> str:
     m = re.match(r"argument (\S+): expected one argument", message)
     if m:
         return f"{m.group(1)} bir değer bekliyor"
+    m = re.match(r"argument (\S+): invalid int value: '([^']*)'", message)
+    if m:
+        return f"{m.group(1)} bir tam sayı bekliyor: '{m.group(2)}'"
+    m = re.match(r"argument (\S+): ignored explicit argument '([^']*)'", message)
+    if m:
+        return f"{m.group(1)} bir değer almaz: '{m.group(2)}'"
     return message
 
 
