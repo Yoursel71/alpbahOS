@@ -85,6 +85,7 @@ Facts below come from the handoff files and the repo as read on 2026-11-06. Item
 ## 5. Build rules
 
 - Verify every source (checksum or signature) before building. Never pipe a downloaded script into a shell.
+- No host-specific CPU flags: never build with `-march=native` or host-detected CPU names. Follow D146 (generic x86-64 baseline, newer instructions only with runtime dispatch), run `scripts/lfs-blfs/cpu-baseline/audit-isa.sh` after every build, and use the default `qemu64` CPU model as the QEMU gate.
 - Record per package: book version, URL, checksum, patches, configuration, dependencies, log path and status.
 - Separate clean build/staging directory, log and status file for each package.
 - Resume from verified inputs and outputs, not from stamp files.

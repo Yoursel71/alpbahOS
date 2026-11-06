@@ -184,3 +184,50 @@ Run section 4 with v1-strict, v2 (`Nehalem`) and v3 (`Haswell`). Report the SIGI
 - Static scan counts are heuristics: runtime-dispatched code is counted unless its function name matches the variant pattern.
 - GMP, MPFR, OpenCV and Mesa fixes are proposals. None was rebuilt or tested in this task.
 - The v1 target claim needs a full v1 session boot after the libffi fix and the other fixes.
+
+## Result (2026-11-06)
+
+The section 6.1 rebuilds were run inside the LFS 12.4 chroot (`/mnt/lfs`) with the scripts in `scripts/lfs-blfs/cpu-baseline/`. Each package was rebuilt with the book options, except the CPU flags. Evidence: `docs/verification/cpu-baseline-rebuild-logs/` (log tails). Full logs are in the rootfs at `/mnt/lfs/sources/cpu-baseline-build/` (not in the repo).
+
+### Rebuilds
+
+| Package | Flags | Test result | Installed file (SHA-256) |
+|---|---|---|---|
+| libffi 3.5.2 | `--with-gcc-arch=x86-64` (book: `native`) | `make check`: 2460 expected passes, 0 unexpected failures | `/usr/lib/libffi.so.8.2.0` `28b70739fe951ae35957ec47d01c321eda02a9281ca99dda942ceb66f6c40947` |
+| GMP 6.3.0 | `--build=x86_64-pc-linux-gnu --enable-fat`, CFLAGS and CXXFLAGS `-O2 -march=x86-64 -mtune=generic` | book test total: 199 PASS (book minimum 199), 0 FAIL/XPASS/ERROR. One sub-suite reports 1 SKIP, as in the original build | `/usr/lib/libgmp.so.10.5.0` (rc 0, 15:47) |
+| MPFR 4.2.2 | CFLAGS `-O2 -march=x86-64 -mtune=generic` | `make check`: TOTAL 198, PASS 198, 0 FAIL/XPASS/ERROR | `/usr/lib/libmpfr.so.6.2.2` `04a282fba381a1ccf75a0b940c1738ebe0391424bcce8b44eed7b65d545b8f4e` |
+
+The config.log check (no `znver3` before install) passed for all three. The three scripts exited 0.
+
+### ISA audit (`scripts/lfs-blfs/cpu-baseline/audit-isa.sh`)
+
+Non-variant hits, before and after the GMP fat-variant rule was added to the audit:
+
+| File | Before | After | Notes |
+|---|---|---|---|
+| `libffi.so.8.2.0` | 0 | 0 | ISA used: x86-64-baseline |
+| `libgmp.so.10.5.0` | 474 (232 variant) | 0 (706 variant) | All 706 hits are in 19 GMP fat-variant functions: `__gmpn_*` symbols ending in `_coreibwl`, `_coreihwl` or `_zen`. ISA used: x86-64-baseline |
+| `libmpfr.so.6.2.2` | 0 | 0 | ISA used: x86-64-baseline |
+| `libgmpxx.so.4.7.0` | 0 | 0 | ISA used: x86-64-baseline |
+
+Rule change: `__gmpn_*` symbols are counted as variant only when they end in a CPU directory name of GMP 6.3.0 (`mpn/x86_64/`). Other symbols are not affected. The BMI check matches whole mnemonics, so SSE2 `andnpd`/`andnps` are not counted as BMI `andn`.
+
+Audit self-test (host, scratchpad): a `-mavx2` test library with generic AVX code fails (exit 1). An SSE2-only library with `andnpd` passes (exit 0).
+
+### Boot (ISO v3, default CPU model)
+
+- Model: `qemu64` (the VM default). Evidence: `docs/verification/m09-iso-v3-bios-qemu64-serial-2026-11-06.log` (448 lines) and `docs/verification/m09-iso-v3-bios-qemu64-screen-2026-11-06.png`.
+- Serial log: no kernel trap, SIGILL, `invalid opcode` or `FAILED` line. The log stops at the login prompt, so it shows boot only.
+- Screenshot: Plasma desktop running, with the Welcome Center open.
+- Reported by the supervisor: 0 SIGILL, 0 abnormal ends, 0 FAILED units in the session. The session journal is not in the repo, so this is not checked here.
+- Not run in this result: the v1-strict (`qemu64,-sse3,-cx16`) user-mode test (section 4.1), and the Nehalem and Haswell boots. The v2/v3 models were not re-tested after the fix.
+
+### Open items
+
+These stay open. A qemu64 Plasma session ran without SIGILL. That shows the failing paths were not hit in that test, not that they are fixed.
+
+1. **OpenCV 4.12.0**: baseline is SSE SSE2 SSE3 (section 5.4). The strict SSE2-only model still cannot run spectacle. Fix proposal (`-DCPU_BASELINE=SSE2`) not built or tested.
+2. **Mesa 25.1.8**: AVX markers in `libgallium` (`evaluate_fdot16`, `convert_half_float`) and `pipe_swrast.so` (section 5.3). Source of the AVX not traced yet.
+3. **Runtime-dispatched libraries**: `libcrypto.so.3`, `libgcrypt.so.20.6.0`, `libLLVM.so.20.1` contain non-variant AVX/BMI code (section 5.3). Not re-audited in this step. Not classified as culprits.
+4. **v3 ISA markers**: `libgnutls.so.30.40.4` (v3) and `libnettle.so.8.11` (v2) (section 5.6). Not audited in this step.
+5. **Full v1-strict run** (section 4 matrix with `qemu64,-sse3,-cx16` and the section 4.1 minimal test on the rebuilt libffi): not run.

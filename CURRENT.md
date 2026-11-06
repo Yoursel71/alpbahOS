@@ -18,9 +18,12 @@ Each item says how far the evidence goes. "Chroot only" means the work ran in th
 - **T6 apps:** in QEMU, MIME defaults for PDF (Okular), text (KWrite) and folders (Dolphin) pass, and Okular and KWrite open under Wayland ([VM session 3](docs/verification/vm-session-3-t6-2026-11-05.md)). Ark and Gwenview are built (chroot, signature check passed); their VM run is not done ([T6 deps](docs/verification/t6-apps-deps-2026-11-05.md)).
 - **SDDM autologin:** fixed for the test image; the `alpbah` session opens without a password ([fix record](docs/verification/sddm-autologin-fix-2026-11-05.md)).
 - **M09 live ISO first boot in VM:** the ISO boots, the `alplive` dracut hook builds the root overlay, and the Calamares binary and the squashfs source are visible in the live system ([M09 evidence](docs/verification/m09-live-iso-2026-11-05.md)). The installer has not yet installed from the live ISO.
-- **Live ISO built by script (2026-11-06):** `scripts/lfs-blfs/live-iso/build-iso.sh` builds `alpbahos-live-<date>.iso` (2.6 GB hybrid, label `ALPBAH_LIVE`, BIOS and EFI El Torito entries) from the 12.4 rootfs. The ISO itself is not booted yet. ([record](docs/verification/m11-fix02-root-cause-2026-11-06.md))
+- **Live ISO built by script (2026-11-06):** `scripts/lfs-blfs/live-iso/build-iso.sh` builds `alpbahos-live-<date>.iso` (2.6 GB hybrid, label `ALPBAH_LIVE`, BIOS and EFI El Torito entries) from the 12.4 rootfs. ([record](docs/verification/m11-fix02-root-cause-2026-11-06.md))
+- **Live ISO boots (2026-11-06):** BIOS boot of the rebuilt ISO (v3) with the default `qemu64` CPU reaches the Plasma session with 0 SIGILL and 0 FAILED ([serial log](docs/verification/m09-iso-v3-bios-qemu64-serial-2026-11-06.log), [screen](docs/verification/m09-iso-v3-bios-qemu64-screen-2026-11-06.png)). UEFI boot (OVMF, host CPU) on the earlier ISO v2 reached a usable Plasma session ([M09 record](docs/verification/m09-iso-v2-boot-2026-11-06.md)). The live desktop is still stock KDE with English SDDM; the alpbahOS profile is not in the rootfs yet (LIVE-PROFILE-01).
+- **UEFI install to a virtual disk (M11-UEFI-01, 2026-11-06):** the runner (`M11_FIRMWARE=uefi`) makes GPT with a 512 MiB ESP and installs in 2 min 10 s, rc 0. OVMF boots the installed image to `alpbahos login:` with 0 `FAILED`; root is `PARTUUID` (D144). Host NVRAM is unchanged. NVRAM registration on a real UEFI PC is not tested ([install record](docs/verification/m11-uefi-install-2026-11-06.md), [boot log](docs/verification/m11-uefi-boot-2026-11-06.log)).
+- **CPU baseline fix for the 12.4 test base (D146, 2026-11-06):** libffi 3.5.2 was built with `-march=native` (AVX in `ffi_prep_cif`), which caused the SIGILL in `kwin_wayland` and `wireplumber` on CPUs without AVX. libffi, GMP and MPFR are rebuilt with generic x86-64 flags: libffi 2460 expected passes, GMP 199/199, MPFR 198/198. The `qemu64` boot above is the proof. The `audit-isa.sh` run on the rebuilt files is not recorded yet (CPU-BASELINE-02). ([sigill report](docs/verification/sigill-cpu-baseline-2026-11-06.md), [rebuild logs](docs/verification/cpu-baseline-rebuild-logs/))
 - **M11 installer chain:** yaml-cpp 0.9.0, parted 3.6, kpmcore 25.08.3 and Calamares 3.3.14 built in the chroot ([chain record](docs/verification/m11-calamares-chain-2026-11-05.md)).
-- **M11 install to a virtual disk (BIOS), partial:** the product path (`scripts/lfs-blfs/calamares/modules/grubcfg.conf`, no test override) writes `root=PARTUUID=` for the installed system. One boot reaches the `alpbahos login:` prompt in about 12 s (2026-11-06, D144; [D144 record](docs/verification/m11-d144-partuuid-2026-11-06.md)). The earlier `root=UUID=` kernel panic is the reason for D144 ([module runner record](docs/verification/m11-module-runner-2026-11-06.md)). The GUI installer click-through and UEFI install are not done.
+- **M11 install to a virtual disk (BIOS), partial:** the product path (`scripts/lfs-blfs/calamares/modules/grubcfg.conf`, no test override) writes `root=PARTUUID=` for the installed system. One boot reaches the `alpbahos login:` prompt in about 12 s (2026-11-06, D144; [D144 record](docs/verification/m11-d144-partuuid-2026-11-06.md)). The earlier `root=UUID=` kernel panic is the reason for D144 ([module runner record](docs/verification/m11-module-runner-2026-11-06.md)). The GUI installer click-through is not done. The UEFI install is done (see below).
 - **M11-FIX-02 first boot (BIOS, 2026-11-06):** the installed target booted once with 0 `FAILED` units on the serial console; `systemd-resolved` and `systemd-oomd` start. The cause was a squashfs without `/tmp` ([root cause](docs/verification/m11-fix02-root-cause-2026-11-06.md)).
 
 ## Milestone status
@@ -38,9 +41,9 @@ Status words: done / partial / not started / unknown. Details are in the linked 
 | M06 | partial | Virtual audio round-trip (ALSA loopback + PipeWire) passed. Physical audio and graphics checks are open ([archive M06 row](docs/archive/MASTER_PLAN-v1.md)). |
 | M07 | partial | Plasma Wayland session, Kickoff, volume applet and 30-minute stability pass in QEMU. Key-switched layout change not tested. |
 | M08 | partial | Wallpaper (functional, no screenshot), Konsole profile, Zsh, shortcuts (19 pass, 1 out of scope) and Meta+E in QEMU. Ark/Gwenview not checked in VM. Liquid glass is out of the first release; Solid is the default and Glass stays an option (D116). |
-| M09 | partial | ISO built by script (2026-11-06), not yet booted. The 2026-11-05 ISO booted in VM. Installing from the booted ISO and the live-user policy are open. |
+| M09 | partial | Live ISO built by script (2026-11-06). BIOS boot with `qemu64` reaches Plasma with 0 SIGILL and 0 FAILED after the CPU fix (D146); UEFI boot reached Plasma on the earlier ISO. Stock KDE and English SDDM until LIVE-PROFILE-01. Installing from the booted ISO and the live-user policy are open. |
 | M10 | not started | Alpha test matrix and release candidate do not exist yet. |
-| M11 | partial | BIOS virtual-disk install with the product grubcfg path; first boot clean (0 failed units, 2026-11-06; D144, D138). UEFI install pending (M11-UEFI-01). GUI click-through, LUKS and dual boot are open. |
+| M11 | partial | BIOS and UEFI installs to virtual disks through the product grubcfg path (D144). First boots clean: BIOS (0 failed units, 2026-11-06, M11-FIX-02), UEFI (0 `FAILED`, 2026-11-06, M11-UEFI-01). GUI click-through, LUKS, dual boot and real UEFI NVRAM are open. |
 | M12 | not started | Beta release. Needs the user's approval for publication (D108). |
 
 ## What changed on 2026-11-06
@@ -56,6 +59,7 @@ Status words: done / partial / not started / unknown. Details are in the linked 
   - LUKS disk encryption is an installer option; Secure Boot later (D139).
   - English live docs (D102) and GPL-3.0 project license (D109).
 - **Installed root device (D144).** The installed system boots with `root=PARTUUID=…` and no initramfs. This closes OPEN-1. Needs GPT.
+- **Generic x86-64 build baseline (D146).** No package is built with `-march=native` or host CPU flags. Every build is audited with `audit-isa.sh`. QEMU tests use the default `qemu64` CPU model.
 - **Rebuild base pinned (D145).** LFS 13.1-systemd, Multilib LFS 13.1 and BLFS 13.1-systemd. The desktop profiles must be re-checked after the rebuild (BLFS 13.1 brings newer KDE and Qt).
 - **Claude-only project (D100).** The second agent is removed from the project: no role split, no ownership tables, no integrator. Its remote branches are archived and deleted (D104).
 - **Repository restructure (D104).** Old second-agent-era scripts and tests move to `scripts/legacy/` and `tests/legacy/`. Old core docs move to `docs/archive/`. Useful uncommitted work from 2026-09-30 is imported to `scripts/legacy/wip-2026-09-30/`.
@@ -64,17 +68,18 @@ Status words: done / partial / not started / unknown. Details are in the linked 
 
 ## Next actions
 
-1. **UEFI install test** (M11-UEFI-01, in progress): needs dosfstools, popt, efivar and efibootmgr in the chroot, and a UEFI mode in the runner. OVMF with an ESP on a new virtual disk.
-2. **Boot the new ISO in QEMU** (LIVE-01): BIOS first, then UEFI.
-3. **REBUILD-R2** on LFS/MLFS 13.1 (D145): build the toolchain. Record source checksums first.
-4. **Run LAYOUT-01 and THEME-01 in a Plasma session** (D115, D114): screenshots into docs/verification/.
-5. **Discover with an alp backend** (D124): PackageKit backend that calls `alp`. Start after the `alp` command contract is fixed.
-6. **Small VM checks:** key-switched keyboard layout (M07), Ark and Gwenview MIME/open test (M08).
+1. **REBUILD-R2** on LFS/MLFS 13.1 (D145) with the D146 flags: build the toolchain, record source checksums first, run `audit-isa.sh` on each package.
+2. **LIVE-PROFILE-01:** install the alpbahOS desktop profile into the rootfs (D114, D115, D120, D121). Then run LAYOUT-01 and THEME-01 in a Plasma session with screenshots in docs/verification/.
+3. **Store track (STORE contract):** ALP-TR-01, then STORE-01 (Discover with an alp PackageKit backend, D124), FLATHUB-01, BOTTLES-01.
+4. **Small VM checks:** key-switched keyboard layout (M07), Ark and Gwenview MIME/open test (M08).
+5. **Installer track (kept separate):** INSTALL-DUALBOOT-01, then INSTALL-LUKS-01. Real-disk writes need per-action permission (D138).
 
 ## Known issues
 
 From [handoff 024](docs/handoffs/claude/024-devir-m11-modul-kosucu-2026-11-06.md) and [handoff 023](docs/handoffs/claude/023-devir-m11-m09-2026-11-06.md):
 
+- **Stock KDE live desktop and English SDDM (2026-11-06):** the live session shows the Breeze wallpaper, the default KDE panel, English UI, and the KDE Welcome Center text "Linux From Scratch". The SDDM greeter is English with the `us` layout. Fix: LIVE-PROFILE-01.
+- **CPU baseline, open items (CPU-BASELINE-02):** `audit-isa.sh` on the rebuilt libffi, GMP and MPFR is not recorded yet. OpenCV 4.12.0 needs an SSE3 baseline, so spectacle may fail on a strict SSE2-only CPU. Mesa `libgallium` / `pipe_swrast`, gnutls and nettle carry AVX or v3 "ISA used" markers (not triggered in the `qemu64` Plasma test). The v1-strict run on the rebuilt base is not recorded.
 - **Root device (resolved by D144):** `grub-mkconfig` writes `root=UUID=…`, which panics without an initramfs. The product grubcfg module writes `root=PARTUUID=…`.
 - **Fixed on 2026-11-06 (M11-FIX-01):** `grubcfg` is in the installer sequence, `kernelSearchPath` is `/boot`, and `unpackfs` fails hard when squashfs is missing. `rsync` 3.4.1 and `squashfs-tools` 4.7.5 are built in the chroot; `check-live-tools.sh` exits 0.
 - **`/blfs-work` in the installed root:** the squashfs source left a build directory in the target (seen 2026-11-06). `build-iso.sh` excludes it; the live ISO is not yet checked in a boot. Release images still need IMAGE-01 (test accounts, machine-id, SSH keys, fonts).

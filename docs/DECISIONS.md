@@ -72,6 +72,7 @@ Status labels:
 | D143 | Carried over | Still valid technical facts from v1: D37 (Konsole 25.08.3), D38 (Zsh 5.9), D41 (kglobalaccel reload), D43 (shortcut file path via install-desktop-profile.sh), D49 (Dolphin), D50 (wallpaper scale-only crop), D51 (VM session record), D55 (open: `gio open` DBus env issue). See [archive/DECISIONS-v1.md](archive/DECISIONS-v1.md). | — | — |
 | D144 | Accepted (user) | The installed system boots with `root=PARTUUID=…` and no initramfs. Implemented by [`scripts/lfs-blfs/calamares/modules/grubcfg.conf`](../scripts/lfs-blfs/calamares/modules/grubcfg.conf): `GRUB_DISABLE_LINUX_UUID=true`, `GRUB_DISABLE_LINUX_PARTUUID=false`. Needs GPT (and `CONFIG_EFI_PARTITION=y`). Proven on a BIOS virtual disk on 2026-11-06: one boot to the login prompt, no override ([verification](verification/m11-d144-partuuid-2026-11-06.md)). | OPEN-1 | — |
 | D145 | Accepted (user) | Rebuild pinned to LFS 13.1-systemd, Multilib LFS 13.1 (https://linuxfromscratch.org/mlfs/view/13.1/, systemd edition) and BLFS 13.1-systemd. Key versions: glibc 2.44, GCC 16.2.0, binutils 2.47, Linux 7.1.8, systemd 261.2, Python 3.14.7 ([research](verification/rebuild-r1-lfs-version-2026-11-06.md)). BLFS 13.1 brings newer KDE and Qt than the 12.4 test base, so the desktop profiles must be re-checked after the rebuild. | refines D140 | — |
+| D146 | Technical choice | Binary baseline is generic x86-64 (v1). Packages must not be built with `-march=native` or host-detected CPU flags. libffi uses `--with-gcc-arch=x86-64`; GMP uses `--build=x86_64-pc-linux-gnu --enable-fat` with generic CFLAGS; MPFR uses generic CFLAGS. Newer instructions only with runtime dispatch. Every build is audited with `scripts/lfs-blfs/cpu-baseline/audit-isa.sh`. QEMU tests use the default `qemu64` CPU model as the gate. Reason: the old-PC target (D135) cannot run AVX code. The SIGILL on non-AVX CPU models came from libffi built with `-march=native` and GMP/MPFR built for znver3 ([sigill report](verification/sigill-cpu-baseline-2026-11-06.md); fixed boot: [m09-iso-v3 serial log](verification/m09-iso-v3-bios-qemu64-serial-2026-11-06.log); rebuild logs: [cpu-baseline-rebuild-logs](verification/cpu-baseline-rebuild-logs/)). | — | — |
 
 ## Open — needs a user decision
 
@@ -90,7 +91,7 @@ There are no other open user decisions as of 2026-11-06.
 ## How to change a decision
 
 1. The user's explicit new choice wins. Claude does not overturn a decision on its own.
-2. Add a new row with the next free ID (D146, …). "Replaces (v1)" names the row it supersedes.
+2. Add a new row with the next free ID (D147, …). "Replaces (v1)" names the row it supersedes.
 3. Mark the old row's status "Superseded by Dxxx". Do not delete it.
 4. Update the other live docs (CLAUDE.md, CURRENT.md, README.md, docs/MASTER_PLAN.md, docs/BACKLOG.md) in the same commit.
 5. Run `python3 docs/handoffs/claude/tools/check_docs.py` before committing.
