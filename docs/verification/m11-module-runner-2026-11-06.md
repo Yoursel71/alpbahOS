@@ -33,7 +33,7 @@ Tüm modüller rc=0 ve günlük denetimi temiz:
 | Oturum | Açılış | Sonuç |
 |---|---|---|
 | A | 10:49 | QEMU hedef dosyayı açamadı (`Permission denied`; dosya root sahipli). Önyükleme olmadı. Dosya sahibi düzeltildi. |
-| B | 10:51 | Kernel panic: `VFS: Unable to mount root fs on unknown-block(0,0)`. Sebep: `root=UUID=` initramfs olmadan çözülmez. Ekran görüntüsü alındı, VM kapatıldı (QEMU çıkış 0). |
+| B | 10:51 | Kernel panic: `VFS: Unable to mount root fs on unknown-block(0,0)`. Sebep: `root=UUID=` initramfs olmadan çözülmez. Ekran görüntüsü alındı ve okundu, ama saklanmadı (yeni oturum öncesi dizin silindi). Kayıt: panik satırı ve yukarıdaki açıklama. VM kapatıldı (QEMU çıkış 0). Eski VM'in `session.log` dosyası kurtarılamadı (kopya 0 bayt). |
 | C | 10:58 | **Giriş istemi:** `alpbahos login:` (seri, ttyS0). Kernel 6.16.1 x86_64. Başarısız birimler: `systemd-oomd`, `systemd-resolved` (namespace hatası, `/tmp`). ACPI ile kapatıldı (`reboot: Power down`). |
 
 **Not (sapma):** Oturum B ile C arasında bir kez daha açılış yapıldı. Kural "oturum başına 1 açılış" idi. Kullanıcı bunu bilmeli ve onaylamalıdır. Oturum C 45 dakikalık sınırın içinde kaldı (yaklaşık bir dakika çalıştı, giriş istemi görülünce kapatıldı).
@@ -61,9 +61,9 @@ Tüm modüller rc=0 ve günlük denetimi temiz:
 
 ## Ürün açıkları (Codex alanı; bu oturumda değiştirilmedi)
 
-1. `scripts/lfs-blfs/calamares/settings.conf` sekansında `grubcfg` yok. Bu olmadan GRUB kök aygıtını host yolu olarak yazar. Ekle: `grubcfg` (bootloader'dan önce).
+1. `scripts/lfs-blfs/calamares/settings.conf` sekansında `grubcfg` yok. Bu bir kök aygıt düzeltmesi değil: `grubcfg` yalnız `/etc/default/grub` içindeki dağıtıcı adı ve varsayılanları yazar (`branding.bootloaderEntryName`). Kök aygıtı `grub-mkconfig` belirler. Denemede 9 numara bunu gösterdi: `grubcfg` çalıştı, `GRUB_DISTRIBUTOR='alpbahOS'` yazıldı, ama `root=/dev/loop0p2` kaldı. Eklenmesi önerilir; sorunu çözmez.
 2. `bootloader.conf` (kaynak varsayılanı) `kernelSearchPath: /usr/lib/modules` kullanıyor. Kernel bu rootfs'te `/boot` altında. Değer `/boot` olmalı.
-3. Kurulu sistem initramfs'siz. Bootloader `root=UUID=` yazıyor ve çekirdek bunu çözemiyor. Seçenekler: `root=PARTUUID=` (bu kanıtta kullanıldı) ya da alplive hook'u olmayan bir initramfs (dracut).
+3. **Engelleyici:** kurulu sistem initramfs'siz. Gerçek diskte udev `/dev/disk/by-uuid/<uuid>` bağlantısını üretir; `grub-mkconfig` (`/usr/sbin/grub-mkconfig` satır 136) `GRUB_DEVICE_UUID`'yi grub-probe ile doldurur ve `10_linux` (satır 54-65) `root=UUID=…` yazar. Çekirdek fs UUID'sini initramfs olmadan çözemez; oturum B'deki panik aynı sebep. BIOS GRUB'da `root=` `grub-mkconfig`'den gelir, bootloader modülünün `kernelParams`'ı değil (o yalnız systemd-boot/kernel-install yolunda kullanılır). Seçenekler: (a) alplive hook'u olmayan bir initramfs (dracut), (b) `GRUB_DEVICE`/`GRUB_DEVICE_UUID` ile `root=PARTUUID=` (bu kanıtta kullanıldı, yalnız GPT ve çekirdek GPT desteği şart). Karar kullanıcıdan gerekli.
 4. `unpackfs` squashfs desteği yoksa sessizce rc=0 dönüyor. Bu yanıltıcı; hata vermeli.
 5. Canlı ISO'da `rsync` ve `unsquashfs` (squashfs-tools) olmalı. ISO içinde doğrulanmadı.
 6. Kurulu sistemde `systemd-oomd` ve `systemd-resolved` başarısız. Namespace hatası (`/tmp` bağlama, `/usr/lib/systemd/...` "No such file"). Kök neden doğrulanmadı. Bu, ağ çözümlemesini (DNS) etkiliyor.

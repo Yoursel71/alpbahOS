@@ -59,6 +59,11 @@ trap 'echo "M11 koşucu HATA: satır $LINENO" >&2' ERR
 [ ! -e "$LFS/usr/lib/live" ] || { echo "$LFS/usr/lib/live zaten var; durduruldu"; exit 1; }
 [ ! -e "$TGT" ] || { echo "$TGT zaten var; durduruldu"; exit 1; }
 mountpoint -q "$LFS/proc" && mountpoint -q "$LFS/dev" || { echo "chroot sanal bağlar eksik (mount_lfs.sh)"; exit 1; }
+# Ön koşullar (yeniden üretim: devir notu 024).
+grep -qw squashfs /proc/filesystems || { echo "ön koşul: çekirdekte squashfs yok (sudo modprobe squashfs)"; exit 1; }
+[ -x "$LFS$CAL" ] || { echo "ön koşul: $LFS$CAL yok (BUILD_TESTING=ON ile loadmodule derlemesi, devir 024)"; exit 1; }
+[ -x "$TOOLS/bin/rsync" ] && [ -x "$TOOLS/bin/unsquashfs" ] || { echo "ön koşul: $TOOLS eksik (devir 024)"; exit 1; }
+[ -f "$SQ" ] || { echo "ön koşul: squashfs yok: $SQ"; exit 1; }
 mkdir -p "$LOGD"
 
 # Modül günlüğü kontrolü: loadmodule çıkış kodu 0 dönse de iş (job) hatası
