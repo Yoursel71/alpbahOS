@@ -5,7 +5,7 @@
 Uncommitted work found in an old clone on 2026-11-06. The files date from about 2026-09-26 to 2026-09-30 and were imported as-is (work tree of the old clone). They were NOT reviewed and NOT tested in the current Fedora + QEMU setup. They may contain paths for an older build host (`/mnt/lfs`, `/mnt/alpbahOS-data`, and similar). Do not run them as-is.
 
 - Full copy of the old clone: `~/saklanan/alpbahOS-codex-klonu-20261106.tar.gz` (includes doc changes that are not imported here).
-- Verification records: `docs/verification/` (35 files, same names as the old clone).
+- Verification records: `docs/verification/` inside this folder (35 files, same names as the old clone). They cite evidence on a disk that was wiped later and files that were never committed, so many of their links are dead.
 - Everything else: this folder, 290 files, same relative paths as in the old clone.
 - `tracked-code-changes.patch`: `git diff` of tracked code (`scripts`, `tests`, `docs/patches`) from the old clone at import time.
 
@@ -23,7 +23,7 @@ Uncommitted work found in an old clone on 2026-11-06. The files date from about 
 
 **`tracked-code-changes.patch`**: the tracked-code diff described above. Apply only to a matching base, and only after review.
 
-## Verification records (`docs/verification/`, imported by name)
+## Verification records (`docs/verification/` in this folder, imported by name)
 
 - D34 BLFS replays: `d34-blfs-alsa-lib`, `-audio-stack`, `-ca-trust-stack`, `-hwdata`, `-libdisplay-info`, `-libdrm`, `-libnl`, `-libpciaccess`, `-libsndfile`, `-libyaml`, `-mesa-python-tools`, `-network-stack`, `-networkmanager-stack`, `-nss-trust`, `-polkit`, `-qt-wayland`, `-wayland-protocols`, `-wayland`, `-wpa-supplicant`, all with `-replay-2026-09-30.md` or `-2026-09-30.md`
 - D34 other: `d34-kf6-framework-replay-2026-09-30.md`, `d34-ownership-ledger-recheck-2026-09-30.md`, `d34-plasma-replay-sprint-2026-09-30.md`, `d34-replay-runner-host-integration-audit-2026-09-29.md`
