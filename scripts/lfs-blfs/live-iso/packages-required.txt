@@ -1,0 +1,6 @@
+# Tools the alpbahOS live ISO root must contain (format: <binary-path> <package>).
+# Checked by check-live-tools.sh. Needed by unpackfs/rsync and the ISO build (mksquashfs).
+# Source of truth for the package set: none yet (no ISO build script in the repo, 2026-11-06).
+/usr/bin/rsync          rsync
+/usr/bin/unsquashfs     squashfs-tools
+/usr/bin/mksquashfs     squashfs-tools
