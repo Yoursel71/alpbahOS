@@ -1,15 +1,28 @@
-# `alp` prototipi — çalıştırma ve test notları
+# `alp` prototype — run and test notes
 
-Bu dizin, [../001-alp-hybrid-pkg-proposal.md](../001-alp-hybrid-pkg-proposal.md) önerisinin çalışan kanıtıdır. `alp`, D31/P13 kararıyla alpbahOS'un kabul edilen başlangıç motorudur; prototip ve sistem entegrasyonu bitmiş/üretime hazır değildir.
+This directory is the working evidence for the proposal in [../001-alp-hybrid-pkg-proposal.md](../001-alp-hybrid-pkg-proposal.md). `alp` is the package engine of alpbahOS (D122, which replaces v1 D31 and P13). The prototype and its system integration are not finished and not production-ready.
 
-## Dosyalar
+## Product decisions that apply here (v2, 2026-11-06)
 
-- `alp.py` — prototip CLI (Python 3.10+; test 3.14.7 ile yapıldı).
-- `demo/index.json` — örnek katalog: bir `recipe` (htop), bir `flatpak` (firefox), bir `core` (alpbah-theme-solid) girdisi.
-- `demo/recipes/htop.recipe.json` — örnek derleme tarifi. **`sha256` alanı kasıtlı olarak yer tutucudur** (`REPLACE_WITH_REAL_UPSTREAM_SHA256_BEFORE_USE`); gerçek htop sürüm doğrulaması yapılmadı.
-- `demo/core/alpbah-theme-solid-1.0.0.tar.gz` — birkaç yüz baytlık, gerçek test amaçlı üretilmiş sahte tema arşivi (gerçek bir alpbahOS teması değildir).
+Full list: [docs/DECISIONS.md](../../../DECISIONS.md). Live plan: [docs/MASTER_PLAN.md](../../../MASTER_PLAN.md) §5.
 
-## Çalıştırma
+| ID | Decision (accepted by the user) | What it means for `alp` |
+|---|---|---|
+| D122 | Package engine is `alp`. | The CLI, the store and the base build share one engine, one database and one lock. |
+| D123 | Commands `alp install`, `alp remove`, `alp update`; Turkish help and error messages; typing `apt install …` prints a hint that points to alp. | The apt hint is not implemented yet. |
+| D124 | GUI store: KDE Discover through an alp PackageKit backend. | Design and draft status: [design/packagekit-integration.md](design/packagekit-integration.md). No working backend is tested yet. |
+| D125 | Flathub is enabled by default. | Flatpak is an extra channel. It does not replace the base package system. |
+| D126 | Stable channel; the user starts updates (no update notifications). | Upgrades run only when the user starts them. |
+| D141 | During the rebuild, every base package is installed through `alp`, so the file-ownership ledger is created automatically. Replaces v1 D34. | The current test base uses the M04 adoption path below. The rebuild uses the D141 path. |
+
+## Files
+
+- `alp.py` — prototype CLI (Python 3.10+; tested with 3.14.7).
+- `demo/index.json` — sample catalog: one `recipe` entry (htop), one `flatpak` entry (firefox), one `core` entry (alpbah-theme-solid).
+- `demo/recipes/htop.recipe.json` — sample build recipe. **The `sha256` field is a deliberate placeholder** (`REPLACE_WITH_REAL_UPSTREAM_SHA256_BEFORE_USE`); real htop version verification was not done.
+- `demo/core/alpbah-theme-solid-1.0.0.tar.gz` — a few-hundred-byte fake theme archive made for testing only. It is not a real alpbahOS theme.
+
+## Running
 
 ```bash
 cd docs/handoffs/claude/alp-prototype
@@ -20,108 +33,111 @@ python3 alp.py --root /tmp/alp-test --index demo/index.json info alpbah-theme-so
 python3 alp.py --root /tmp/alp-test --index demo/index.json remove alpbah-theme-solid
 ```
 
-`--root` gerçek `/` yerine bir DESTROOT verir; alpbahOS'ta bu bayrak olmadan çalıştırılır.
+`--root` replaces the real `/` with a DESTROOT. On alpbahOS the flag is omitted.
 
-## Bu ortamda gerçekten test edilenler (win32, Python 3.14.7)
+## Tested in the first prototype environment (win32, Python 3.14.7, historical)
 
-- `search` / `list` / `info` — çalıştı.
-- `core` yöntemi tam döngü: indirme (yerel dosya, `file://` çözümlemesiyle), sha256 doğrulama, güvenli arşiv açma, `--root` altına kopyalama, `db.json`'a kayıt, `list`/`info` ile doğrulama, `remove` ile temiz geri alma. Tüm adımlar gerçekten çalıştı, çıktılar `001-alp-hybrid-pkg-proposal.md` bölüm 8'de.
-- Tek-yazıcı kilidi: sahte kilit dosyasıyla ikinci yazıcının reddedildiği doğrulandı.
-- Checksum reddi: `htop` tarifi gerçek ağdan indirildi (bu host internete çıkabiliyor), yer tutucu sha256 ile karşılaştırıldı, uyuşmadı, işlem güvenle durduruldu.
+The original entry has no date. This was the Windows host, which is historical.
 
-## Bu ortamda test edilemeyenler — açıkça "çalıştırılmadı"
+- `search` / `list` / `info` — worked.
+- `core` method, full cycle: download (local file, resolved through `file://`), sha256 check, safe archive extraction, copy under `--root`, record in `db.json`, check with `list`/`info`, clean rollback with `remove`. All steps ran; the output is in section 8 of `001-alp-hybrid-pkg-proposal.md`.
+- Single-writer lock: a second writer was rejected with a fake lock file.
+- Checksum rejection: the `htop` recipe was downloaded from the real network (this host could reach the internet), compared with the placeholder sha256, did not match, and the run stopped safely.
 
-- Gerçek `./configure && make && make install` — bu hostta `make`/`configure` toolchain'i yok (`which make` boş döndü).
-- Gerçek `flatpak install`/`uninstall` — bu hostta `flatpak` kurulu değil.
-- PackageKit/Discover entegrasyonu — hiç yazılmadı, kapsam dışı.
-- Gerçek bir alpbahOS rootfs üzerinde `--root /` ile üretim testi — hiç denenmedi, denenmemeli (bu bir prototip, gerçek sisteme yazma yolu hiç egzersiz edilmedi).
+## Not run in that environment
 
-Bu ayrımın nedeni CLAUDE.md'nin "Yapılmamış derleme, test, donanım doğrulaması ... yapılmış gibi raporlanamaz" kuralı — recipe ve flatpak yollarının kod yolu doğru yazılmıştır ama gerçek dış araçlarla hiç koşulmamıştır.
+- Real `./configure && make && make install` — the host had no `make`/`configure` toolchain (`which make` returned nothing).
+- Real `flatpak install`/`uninstall` — flatpak was not installed on that host.
+- PackageKit/Discover integration — not written at that point; out of scope.
+- Production run on a real alpbahOS rootfs with `--root /` — never tried, and should not be tried on the prototype (the real-system write path was never exercised).
 
-## Bağımsız inceleme sonrası düzeltmeler (21 Eylül 2026)
+This split follows the CLAUDE.md rule: untested builds, tests or hardware checks cannot be reported as done. The recipe and flatpak code paths are written correctly, but they had not been run with the real external tools at that point.
 
-Claude tarafından yapılan bağımsız kod incelemesinde bulunan 3 sorun düzeltildi (bkz. [../003-alp-review-fixes.md](../003-alp-review-fixes.md)):
+## Fixes after an independent review (2026-09-21)
 
-1. **`--dry-run` artık gerçekten ağa çıkmıyor/diske yazmıyor.** Önceki sürümde `recipe`/`core` kurulumlarında `fetch()` (indirme+checksum) `dry_run` kontrolünden ÖNCE, koşulsuz çalışıyordu — CLI'nin kendi "touch nothing persistent" sözünü çiğniyordu. Artık dry-run erken çıkıyor, hiçbir ağ isteği veya kalıcı dosya yazımı yapmıyor. Yeniden test edildi: `--dry-run install htop/firefox/alpbah-theme-solid` sonrası `var/lib/alp/cache/` boş kalıyor.
-2. **`recipe` yöntemiyle kurulan paketler artık `remove` ile tam temizleniyor.** `_merge_destdir` artık dizinleri de `files[]`'e kaydediyor (öncesinde yalnız dosyalar kaydediliyordu, `make install`'ün oluşturduğu dizinler kalıcı olarak öksüz kalıyordu).
-3. **İndirmelerde 30 saniyelik zaman aşımı eklendi** (`urllib.request.urlopen(..., timeout=...)`), yanıt vermeyen bir kaynağın `alp install`'ı sonsuza kadar askıda bırakmasını önlemek için.
+Claude's independent code review found 3 problems, which were fixed (see [../003-alp-review-fixes.md](../003-alp-review-fixes.md)):
 
-Checksum reddi testi artık gerçek (dry-run olmayan) bir `install htop` çağrısıyla yeniden doğrulandı — davranış aynı: gerçek ağdan indirilen dosya checksum uyuşmazlığında silinip işlem durduruluyor.
+1. **`--dry-run` no longer touches the network or the disk.** In the earlier version, `fetch()` (download and checksum) ran unconditionally for `recipe`/`core` installs, before the `dry_run` check. That broke the CLI's own "touch nothing persistent" rule. Now dry-run returns early with no network request and no persistent file write. Retested: after `--dry-run install htop/firefox/alpbah-theme-solid`, `var/lib/alp/cache/` stays empty.
+2. **Packages installed by the `recipe` method are now fully removed by `remove`.** `_merge_destdir` now records directories in `files[]` as well (before, only files were recorded, so directories created by `make install` stayed behind as orphans).
+3. **A 30-second timeout was added to downloads** (`urllib.request.urlopen(..., timeout=...)`), so an unresponsive source cannot hang `alp install` forever.
 
-## `upgrade` komutu ve `--json` çıktı modu (21 Eylül 2026)
+The checksum-rejection test was rerun as a real (non-dry-run) `install htop` call. The behaviour is the same: a file that fails the checksum is deleted and the run stops.
 
-- **`alp upgrade <ad>`** eklendi — kurulu bir `recipe`/`core` paketi yeni sürüme yükseltir, config dosyalarını pacman'ın `pacnew`/`pacsave`'i gibi korur (`.alpnew`/`.alpsave`). Tasarım ve durum: [design/config-protection.md](design/config-protection.md). `flatpak` yöntemi için `upgrade` reddedilir (flatpak kendi güncellemesini yönetir).
-- **`--json`** bayrağı eklendi (`search`/`list` için; `info` zaten JSON basıyordu) — bir PackageKit backend'inin veya başka bir aracın metin ayrıştırmadan güvenilir okuyabilmesi için. Tasarım: [design/packagekit-integration.md](design/packagekit-integration.md).
-- **`alp_packagekit_backend.py`** eklendi — `alp_*` sarmalayıcı fonksiyonları (gerçek `alp.py`'yi subprocess ile çağırıp JSON ayrıştırır) **gerçekten test edildi**; `AlpPackageKitBackend` sınıfının kendisi gerçek `packagekit` modülü olmadığı için **hiç import/test edilemedi** — modülün kendi docstring'inde bu ayrım açıkça yazılı.
+## `upgrade` command and `--json` output mode (2026-09-21)
 
-## Otomatik test seti (22 Eylül 2026, güncellendi)
+- **`alp upgrade <name>`** was added. It upgrades an installed `recipe`/`core` package to a new version and keeps config files like the `.pacnew`/`.pacsave` convention of Arch-family package managers (`.alpnew`/`.alpsave`). Design and status: [design/config-protection.md](design/config-protection.md). `upgrade` is refused for the `flatpak` method, because flatpak manages its own updates.
+- **`--json`** was added for `search`/`list` (`info` already printed JSON), so a PackageKit backend or another tool can read the output without parsing text. Design: [design/packagekit-integration.md](design/packagekit-integration.md).
+- **`alp_packagekit_backend.py`** was added. Its `alp_*` wrapper functions (they run the real `alp.py` as a subprocess and parse the JSON) **were really tested**. The `AlpPackageKitBackend` class itself could **not be imported or tested**, because the real `packagekit` module was not available on that host. The module docstring says so.
 
-`tests/test_alp.py` + `tests/test_packagekit_backend.py` — pytest, gerçek ağa hiç çıkmaz. 24 Eylül 2026'da Windows Python 3.14.7 üzerinde, TTY'li PowerShell oturumunda **82 test geçti, 10 POSIX-özelliği testi atlandı**. Ayrıntı: [`docs/verification/m02-alp-tests-2026-09-24.md`](../../../verification/m02-alp-tests-2026-09-24.md).
+## Automated test set (2026-09-22, updated)
+
+`tests/test_alp.py` and `tests/test_packagekit_backend.py` — pytest. They never reach the real network. On 2026-09-24, on Windows with Python 3.14.7 in a TTY PowerShell session, **82 tests passed and 10 POSIX-only tests were skipped**. Details: [`docs/verification/m02-alp-tests-2026-09-24.md`](../../../verification/m02-alp-tests-2026-09-24.md).
 
 ```bash
 cd docs/handoffs/claude/alp-prototype
 python3 -m pytest tests/ -v
 ```
 
-## Gerçek Linux'ta ilk uçtan uca test (22 Eylül 2026)
+## First real end-to-end test on Linux (2026-09-22)
 
-`alp` ilk kez **gerçek bir Linux ortamında** (eski Ubuntu derleme VM'i `alpbah-builder`, Ubuntu 24.04.5, SSH ile, `sa@172.28.174.11`) test edildi — bkz. [006-alp-real-linux-test.md](../006-alp-real-linux-test.md) tam ayrıntı için. Özet:
+`alp` was tested for the first time on a **real Linux environment**: the former Ubuntu build VM `alpbah-builder` (Ubuntu 24.04.5, over SSH, `sa@172.28.174.11`). Full details: [006-alp-real-linux-test.md](../006-alp-real-linux-test.md). Summary:
 
-- **Gerçek bug bulundu ve düzeltildi:** `recipe` yönteminde `./configure` gerçekte var ve çalıştırılabilir olduğu hâlde "bulunamadı" hatası veriyordu. Sebep: `shutil.which("./configure")` yolu, adım `cwd=src_dir` ile çalıştırılsa bile, `alp.py`'nin kendi çalıştığı dizine göre arıyordu. `_tool_available()` yeni yardımcı fonksiyonu bunu doğru dizine (`src_dir`) göre çözüyor. Bu hata **yalnızca gerçek bir Linux'ta configure gerçekten mevcutken** ortaya çıkabilirdi — Windows'ta zaten `make` yoktu, hata her iki nedenden de aynı görünüyordu.
-- Düzeltmeden sonra `htop` tarifi gerçekten `./configure`'ı çalıştırdı, gerçek bir bağımlılık hatasıyla (`libncursesw` eksik) durdu — bu, prototipin kendi dürüst eksiklik listesindeki "bağımlılık çözümü yok" ile tam tutarlı, `alp`'in hatası değil.
-- `core` yöntemiyle **tam bir yaşam döngüsü** (kurulum → değiştirilmemiş config'in sessizce yükseltilmesi → değiştirilmiş config'in `.alpnew` üretmesi, kullanıcı dosyasına dokunmadan → `remove`'un değiştirilmiş config'i `.alpsave` olarak koruması) gerçek Linux'ta uçtan uca doğrulandı, tasarıma birebir uydu.
+- **A real bug was found and fixed.** In the `recipe` method, `./configure` existed and was executable, but the run reported it as "not found". The cause: `shutil.which("./configure")` searched relative to the directory where `alp.py` ran, even though the step ran with `cwd=src_dir`. The new helper `_tool_available()` resolves the path against `src_dir`. This bug could only show up on a real Linux host where configure exists. On Windows `make` was missing anyway, so both causes gave the same message.
+- After the fix, the `htop` recipe really ran `./configure`, and stopped on a real dependency error (`libncursesw` missing). This matches the prototype's own list of known gaps ("no dependency resolution"); it is not an `alp` bug.
+- A **full `core` life cycle** (install → an unchanged config is silently upgraded → a changed config produces `.alpnew` without touching the user's file → `remove` keeps the changed config as `.alpsave`) was verified end to end on real Linux and matched the design.
 
-Testlerin gerçekten anlamlı olduğu (yalnızca "her zaman geçen" testler olmadığı) şöyle doğrulandı: bu testler, düzeltmeden ÖNCEKİ `alp.py` sürümüne (`51f93b9`) karşı çalıştırıldı ve **tam olarak 3 düzeltmeye karşılık gelen 7 test başarısız oldu** (dry-run'ın gerçekten fetch çağırmadığını doğrulayan 3 test, `_merge_destdir`'in dizinleri kaydettiğini doğrulayan 2 test, indirme timeout'unu doğrulayan 2 test); diğer 22 test zaten geçiyordu. Bu, testlerin gerçek regresyon koruması sağladığının kanıtıdır — kozmetik/anlamsız testler değil.
+The tests were checked for real regression value (not "always pass"). They were run against the `alp.py` version from before the fixes (`51f93b9`). **Exactly 7 tests failed, matching the 3 fixes**: 3 tests that check dry-run never calls fetch, 2 tests that check `_merge_destdir` records directories, and 2 tests that check the download timeout. The other 22 tests already passed.
 
-Kapsanmayan (bu hostta hâlâ test edilemeyen, testlerde de öyle işaretli): gerçek `configure/make/make install` çalıştırma, gerçek `flatpak install/uninstall`, gerçek internet üzerinden `htop`/`jq`/`zsh`/`tmux` indirme (o testler `alpbahOS-alp` reposunda elle doğrulandı, bu test setinde değil — burada network tamamen mock'lu tutuluyor, hız ve tekrarlanabilirlik için).
+Not covered (not run on that host, and marked in the tests): real `configure/make/make install`, real `flatpak install/uninstall`, and real downloads of `htop`/`jq`/`zsh`/`tmux` over the internet. Those were checked by hand in the `alpbahOS-alp` repository, not in this test set. This test set keeps the network mocked for speed and repeatability.
 
-## Seviye 3 bağımlılık denetimi (23 Eylül 2026)
+## Level 3 dependency checks (2026-09-23)
 
-Ayrıntı: [../013-alp-seviye3-deps.md](../013-alp-seviye3-deps.md). Kısaca:
+Details: [../013-alp-seviye3-deps.md](../013-alp-seviye3-deps.md). Summary:
 
-- `index.json` girdilerinde `depends` artık sürüm kısıtı alıyor: `"libfoo>=2.0"`, `"libfoo>=2.0,<3"` (virgül = VE). İsteğe bağlı yeni `conflicts` alanı var.
-- Kurulum, yükseltme ve kaldırma önce bir **işlem planı** gösteriyor. Etkileşimli terminalde `[E/h]` onayı soruyor; betikler ve PackageKit backend'i için `-y/--yes` var.
-- **Mağaza sözleşmesi (PKG-02, 28 Eylül 2026):** `--json --dry-run install|upgrade|remove` planı tek JSON nesnesi olarak verir (adımlar, `problems`, `download_size`; reddedilecek işlemde çıkış 1). `--progress-fd N` satır başına JSON ilerleme olayları yazar (`plan`, `step`, `phase`, `error`, `done`). Sarmalayıcılar: `alp_plan`, `alp_updates`. Testler: `tests/test_store_contract.py`. Ayrıntı: [design/packagekit-integration.md](design/packagekit-integration.md) §4.
-- Plan sonunda bir kısıt veya çakışma bozulacaksa işlem **tek bayt yazılmadan** reddediliyor.
-- Yeni komutlar ve seçenekler:
-  - `alp remove --cascade <ad>`: bağımlı paketlerle birlikte kaldırır. `--cascade` olmadan, başka paketin ihtiyaç duyduğu bir paket kaldırılamaz.
-  - `alp autoremove`: bağımlılık olarak gelip artık kimsenin ihtiyaç duymadığı paketleri kaldırır.
-  - `alp upgrade` (ad vermeden): bütün eski paketleri yükseltir. Takılan bir paketi nedeniyle "geri tutuldu" diye bildirir, diğerlerini yükseltir.
-  - `alp check`: kurulu sistemdeki bozuk kısıtları, çakışmaları, güncellemeleri ve sahipsiz bağımlılıkları listeler.
-- `info`, kurulu paketin `required_by` listesini, `list` ise "(bağımlılık)" işaretini gösteriyor.
-- Sınır: katalogda her paketin tek bir sürümü var. Bu yüzden bu bir SAT çözücü değil, deterministik bir kısıt denetleyicisi. Katalog dışındaki sistem kütüphaneleri hâlâ Seviye 1'de (`requires_commands` / `requires_libraries`).
+- `depends` in `index.json` entries now takes version constraints: `"libfoo>=2.0"`, `"libfoo>=2.0,<3"` (a comma means AND). There is a new optional `conflicts` field.
+- Install, upgrade and remove first show an **action plan**. In an interactive terminal they ask `[E/h]`; scripts and the PackageKit backend use `-y/--yes`.
+- **Store contract (PKG-02, 2026-09-28):** `--json --dry-run install|upgrade|remove` gives the plan as one JSON object (steps, `problems`, `download_size`; exit code 1 when the operation would be refused). `--progress-fd N` writes one JSON progress event per line (`plan`, `step`, `phase`, `error`, `done`). Wrappers: `alp_plan`, `alp_updates`. Tests: `tests/test_store_contract.py`. Details: [design/packagekit-integration.md](design/packagekit-integration.md) §4.
+- If a constraint or conflict would break in the plan, the operation is refused **before a single byte is written**.
+- New commands and options:
+  - `alp remove --cascade <name>`: removes the dependent packages too. Without `--cascade`, a package that another package needs cannot be removed.
+  - `alp autoremove`: removes packages that were installed only as dependencies and are no longer needed by anyone.
+  - `alp upgrade` (no name): upgrades all old packages. A pinned package is reported as "held back", and the others are upgraded.
+  - `alp check`: lists broken constraints, conflicts, updates and orphaned dependencies in the installed system.
+- `info` shows the installed package's `required_by` list, and `list` shows a "(dependency)" mark.
+- Limit: each package has exactly one version in the catalog. So this is not a SAT solver; it is a deterministic constraint checker. System libraries outside the catalog are still Level 1 (`requires_commands` / `requires_libraries`).
 
-Test: Windows'ta **126 geçti, 10 atlandı**. Builder'da (Ubuntu 24.04.5) **136 geçti, 0 atlandı**.
+Test results: on Windows **126 passed, 10 skipped**. On the builder (Ubuntu 24.04.5) **136 passed, 0 skipped**.
 
-## M02 kapanışı: geri alma, recover, korumalı paket, update (24 Eylül 2026)
+## M02 closure: rollback, recover, protected packages, update (2026-09-24)
 
-- **İşlemsel geri alma.** Her paket kurulumu, yükseltmesi ve kaldırması bir işlem (transaction) içinde çalışır: dosya değişiklikleri **yazılmadan önce** `var/lib/alp/rollback/` altındaki günlüğe (write-ahead) ve yedeğe (sabit bağlantı, gerekirse kopya) kaydedilir. Dosya kopyalanırken hata (disk dolu, G/Ç hatası, Ctrl-C) ya da veritabanı yazma hatası olursa her dosya eski hâline döner. Değişmez kural: alp dosyaları hiç yerinde yazmaz (geçici dosya + `os.replace`), bu yüzden yedek eski inode'u korur.
-- **`alp recover`.** `kill -9` ya da elektrik kesintisiyle yarım kalan işlemi günlükten geri alır. Yarım işlem varken `install/upgrade/remove/autoremove/update` reddedilir, `alp check` sorunu gösterir. Veritabanı kaydedildikten sonra yazılan `commit` işareti olan günlük geri alınmaz.
-- **`alp protect NAME` / `alp unprotect NAME`** ve katalog girişinde `"protected": true`. Korumalı paket `remove`, `--cascade` ve `autoremove` ile kaldırılamaz; sıradan korumalı paketler yükseltilebilir. `method: "lfs-base"` kayıtları ayrıca upgrade, reinstall, remove ve unprotect işleminden korunur. `list --json` yalnız korumalıysa `"protected": true` yazar (JSON sözleşmesi değişmez).
-- **`alp update [--source URL|YOL] [--sha256 HEX]`.** Kaynak `index.json` ya da tepesinde `index.json` olan `.tar.gz` katalog paketidir; `index.json`'daki `"source"` alanı varsayılan kaynaktır. `http://` reddedilir. Yeni katalog doğrulanır (tarif dosyaları katalog içinde ve okunur mu), yerel katalog değiştirilmeden önce fark (yeni/değişti/kalktı ve `güncelleme var`) gösterilir; `--dry-run` hiçbir şeyi değiştirmez. Önceki `index.json` `index.json.prev` olarak, değişen paket dosyaları `.alp-catalog-prev/` altında kalır. **Katalog imzalı değil**: güven https + isteğe bağlı `--sha256` ile sağlanır; paket arşivleri kurulumda yine sha256 ile doğrulanır.
-- **Build temizliği.** Başarılı recipe kurulumundan sonra `build-*`/`destdir-*` (ve upgrade eşdeğerleri) silinir; başarısız build'de hata ayıklama için kalır. `--keep-build` hepsini saklar.
+- **Transactional rollback.** Each package install, upgrade and remove runs as one transaction. Before any file changes are **written**, the change is logged in `var/lib/alp/rollback/` (write-ahead) and backed up (hard link, or a copy when needed). If a file copy fails (disk full, I/O error, Ctrl-C) or a database write fails, every file goes back to its old state. Fixed rule: alp never writes files in place (temporary file + `os.replace`), so the backup keeps the old inode.
+- **`alp recover`.** Rolls back a transaction that was cut short by `kill -9` or a power cut, using the log. While an unfinished transaction exists, `install/upgrade/remove/autoremove/update` are refused, and `alp check` shows the problem. A log that has the `commit` marker, written after the database was saved, is not rolled back.
+- **`alp protect NAME` / `alp unprotect NAME`**, and `"protected": true` in a catalog entry. A protected package cannot be removed with `remove`, `--cascade` or `autoremove`. Ordinary protected packages can be upgraded. `method: "lfs-base"` records are also protected from upgrade, reinstall, remove and unprotect. `list --json` writes `"protected": true` only when the package is protected (the JSON contract does not change).
+- **`alp update [--source URL|PATH] [--sha256 HEX]`.** The source is an `index.json` or a `.tar.gz` catalog package with `index.json` at its top. The `"source"` field in `index.json` is the default source. `http://` is refused. The new catalog is validated (recipe files must be inside the catalog and readable). Before the local catalog is replaced, the difference is shown (new / changed / removed, and `güncelleme var` for an update). `--dry-run` changes nothing. The previous `index.json` is kept as `index.json.prev`, and changed package files are kept under `.alp-catalog-prev/`. **The catalog is not signed.** Trust comes from https plus the optional `--sha256`. Package archives are still checked with sha256 at install time.
+- **Build cleanup.** After a successful recipe install, `build-*`/`destdir-*` (and their upgrade equivalents) are deleted. After a failed build they stay for debugging. `--keep-build` keeps all of them.
 
-Claude 014 doğrulaması: Windows 153 geçti/12 atlandı; Linux (Ubuntu 24.04, Python 3.12.3, kullanıcı `sa`, gerçek izinler) 165 geçti/0 atlandı; 12 mutasyonun 12'si testlerce yakalandı; gerçek `kill -9` denemesi (aşağıda devir belgesi 014).
+Claude 014 verification: Windows **153 passed / 12 skipped**; Linux (Ubuntu 24.04, Python 3.12.3, user `sa`, real permissions) **165 passed / 0 skipped**; 12 of 12 mutations were caught by the tests; a real `kill -9` attempt (see handoff 014).
 
-## M04: kurulu LFS paketlerini güvenle içeri alma (24 Eylül 2026)
+## M04: safely adopting installed LFS packages (2026-09-24)
 
-`alp adopt-base --manifest FILE --name NAME --version VERSION --source-sha256 HEX [--manifest-sha256 HEX]`, önceden kurulmuş dosyaları canlı root ile karşılaştırdıktan sonra sahiplik kaydı yapar. Çağıran, kaynak arşivin ve manifestin beklenen checksum'ını ayrıca doğrulamalıdır; manifest JSON'u tek başına kaynak kimliğini doğrulamaz. Komut dosya/symlink türünü, içeriğini/hedefini, boyutunu, modu, uid/gid'yi doğrular; çakışan yolları reddeder ve ortak dizinleri sahiplenmez. `method: "lfs-base"` ve `protected: true` kaydı oluşturur; Alp bu kayıtları remove, unprotect, upgrade ve reinstall'dan korur. `--dry-run` önerilen kaydı yazmadan gösterir.
+`alp adopt-base --manifest FILE --name NAME --version VERSION --source-sha256 HEX [--manifest-sha256 HEX]` records ownership of files that were already installed, after comparing them with the live root. The caller must check the expected checksums of the source archive and the manifest. The manifest JSON alone does not prove the source identity. The command checks file or symlink type, content or target, size, mode and uid/gid; it refuses conflicting paths and does not take ownership of shared directories. It creates a record with `method: "lfs-base"` and `protected: true`. alp keeps these records from remove, unprotect, upgrade and reinstall. `--dry-run` shows the proposed record without writing it.
 
-Uygulama Claude 014 sonrasındaki `7b2c657` commit'inde eklendi; `alp.py` SHA-256 `0475ea324b16895d3acbf3aebdab01d5d3a36900570f2562ca514008b11c2fc3`. Windows tam test paketi **170 geçti, 13 atlandı**; `py_compile`, `check_docs.py` (0 bulgu) ve `git diff --check` geçti. Builder Linux üzerinde adoption testi yapılmadı; özellik `/mnt/lfs`'e kurulmadı ve canlı paket DB hâlâ boş. Sınırlamalar ve gereken doğrulama [`m02-alp-base-adoption-2026-09-24.md`](../../../verification/m02-alp-base-adoption-2026-09-24.md) belgesinde.
-## `--relocate` ve `@PREFIX@` (26 Eylül 2026)
+The feature was added in commit `7b2c657`, after Claude 014. `alp.py` SHA-256 `0475ea324b16895d3acbf3aebdab01d5d3a36900570f2562ca514008b11c2fc3`. Full Windows test suite: **170 passed, 13 skipped**; `py_compile`, `check_docs.py` (0 findings) and `git diff --check` passed. The adoption was not tested on the Linux builder. The feature was not installed into `/mnt/lfs`, and the live package DB is still empty. Limits and the checks still needed are in [`m02-alp-base-adoption-2026-09-24.md`](../../../verification/m02-alp-base-adoption-2026-09-24.md).
 
-Tarifler kurulum önekini sabit `/usr` yerine `@PREFIX@` ile yazar. alp bunu varsayılan olarak `/usr` yapar; alpbahOS'taki davranış değişmez. `--relocate` verildiğinde ve `--root` `/` değilse önek `<root>/usr` olur: paket kök dizininin kendisi için derlenir, `make install DESTDIR=...` çıktısının `DESTDIR/<root>` alt ağacı köke kopyalanır. Kök dışına dosya kuran (ör. sabit `/etc`) paket reddedilir. Amaç, başka bir dağıtımda (ör. Fedora'da `~/.local/share/alp/root`) kurulan programların veri dosyalarını çalışma anında bulabilmesidir; `--relocate` olmadan figlet `Unable to open font file` hatası veriyordu.
+## `--relocate` and `@PREFIX@` (2026-09-26)
 
-Doğrulama (Fedora 44, Python 3.14.7, GCC 16.2.1, glibc 2.43): `python3 -m pytest tests/ -q` → 189 geçti, 0 atlandı (yeni `tests/test_relocate.py`: 6 test, 3'ü gerçek `make` ile). `alpbahOS-alp` kataloğuyla `--relocate` kurulumu: figlet, units, jq, bc kuruldu ve çalıştı; socat glibc 2.43'ün const `strchr` değişikliği nedeniyle derlenmedi; tmux (`libevent`), zsh/htop/less (`ncursesw`) sistem geliştirme kütüphaneleri eksik olduğu için durdu. alpbahOS rootfs'inde bu değişiklik çalıştırılmadı.
+Recipes write the install prefix as `@PREFIX@` instead of a fixed `/usr`. By default alp sets it to `/usr`, so the alpbahOS behaviour does not change. With `--relocate`, and when `--root` is not `/`, the prefix becomes `<root>/usr`: the package is built for the root directory itself, and the `DESTDIR/<root>` subtree of the `make install DESTDIR=...` output is copied into the root. A package that installs files outside the root (for example, a fixed `/etc`) is refused. The purpose is that programs installed under another distribution (for example, `~/.local/share/alp/root` on Fedora) can find their data files at run time. Without `--relocate`, figlet gave the error `Unable to open font file`.
 
-## Türkçe yardım ekranı (26 Eylül 2026)
+Verification (Fedora 44, Python 3.14.7, GCC 16.2.1, glibc 2.43): `python3 -m pytest tests/ -q` → 189 passed, 0 skipped (new `tests/test_relocate.py`: 6 tests, 3 of them with a real `make`). Installing the `alpbahOS-alp` catalog with `--relocate`: figlet, units, jq and bc installed and ran. socat did not compile because glibc 2.43 changed `strchr` to const. tmux (`libevent`) and zsh/htop/less (`ncursesw`) stopped because development libraries were missing on the host. This change was not run on the alpbahOS rootfs.
 
-`alp`, `alp help` ve `alp --help` komutları gruplu, örnekli bir Türkçe ekran gösterir (terminalde renkli, `NO_COLOR` desteklenir). `alp <komut> --help` de Türkçedir. Yanlış yazılan komut için öneri verilir (`alp instal` → `alp install`). Genel seçenekler (`--dry-run`, `--json`, `--root` …) artık komuttan önce veya sonra yazılabilir. Geliştirici seçenekleri: `alp help gelistirici`. Test: `tests/test_cli_help.py`; Fedora 44'te tam paket 198 geçti.
+## Turkish help screen (2026-09-26)
 
-## Katalog büyütme için: açıklamalı arama, `@DESTDIR@`, Flatpak sürümü (26 Eylül 2026)
+`alp`, `alp help` and `alp --help` show a grouped help screen with examples, in Turkish (coloured in a terminal; `NO_COLOR` is respected). `alp <command> --help` is also in Turkish. A mistyped command gets a suggestion (`alp instal` → `alp install`). Global options (`--dry-run`, `--json`, `--root`, …) can now be written before or after the command. Developer options: `alp help gelistirici`. Test: `tests/test_cli_help.py`; the full package had 198 passing tests on Fedora 44.
 
-- Katalog girdileri isteğe bağlı `description` alır. `alp search` artık ad ve açıklamada arar, sonucu hizalı tablo olarak açıklamasıyla gösterir. Türkçe `İ` doğru eşleşir (`DÜZENLEYİCİ` → `düzenleyici`). `--json` çıktısına varsa `description` eklenir (ek alan, sözleşme bozulmaz).
-- Tarifte `@DESTDIR@` yer tutucusu: `make_install` bunu içerirse alp sona `DESTDIR=` eklemez, yer tutucuyu hazırlık dizinine çevirir. DESTDIR'ı standart dışı kullanan Makefile'lar için (ör. tree: `DESTDIR=@DESTDIR@@PREFIX@/bin`).
-- Flatpak girdisinde `version` yoksa plan sürüm yazmaz ("unknown" gösterilmez). Kurulumdan sonra gerçek sürüm `flatpak list --columns=application,version` ile okunup kaydedilir.
+## Catalog growth: searchable descriptions, `@DESTDIR@`, Flatpak version (2026-09-26)
 
-Doğrulama: Fedora 44, 209 test geçti. Gerçek Flatpak kurulum/kaldırma: `alp install -y flatseal` → `flatseal (flatpak) -> 2.4.1 kuruldu`, `alp remove -y flatseal` temiz.
+- Catalog entries accept an optional `description`. `alp search` now searches names and descriptions, and shows the result as an aligned table with the description. Turkish dotted `İ` matches correctly (`DÜZENLEYİCİ` matches `düzenleyici`). `--json` output adds `description` when it exists (an extra field; the contract does not break).
+- Recipe placeholder `@DESTDIR@`: if `make_install` contains it, alp does not append `DESTDIR=` at the end; it replaces the placeholder with the staging directory. Used for Makefiles that use DESTDIR in a non-standard way (for example, tree: `DESTDIR=@DESTDIR@@PREFIX@/bin`).
+- A Flatpak entry without `version` no longer shows a version in the plan (it does not print "unknown"). After installation, the real version is read with `flatpak list --columns=application,version` and saved.
+
+Verification: Fedora 44, 209 tests passed. Real Flatpak install and remove: `alp install -y flatseal` → `flatseal (flatpak) -> 2.4.1 kuruldu` (installed), then `alp remove -y flatseal` removed it cleanly.

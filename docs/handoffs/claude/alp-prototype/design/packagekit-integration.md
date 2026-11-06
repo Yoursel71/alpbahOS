@@ -1,64 +1,71 @@
-# `alp` — PackageKit/Discover entegrasyon tasarımı
+# `alp` — PackageKit/Discover integration design
 
-Durum: **kısmen koda döküldü (21 Eylül 2026).** §2'deki `--json` bayrağı ve `alp_packagekit_backend.py`'deki `alp_*` sarmalayıcı fonksiyonları gerçekten yazıldı ve **gerçekten test edildi** (`tests/test_packagekit_backend.py`, alp.py'ye karşı subprocess ile, mock yok). `AlpPackageKitBackend` sınıfının kendisi (gerçek `packagekit.backend` importu gerektiren kısım) **hâlâ hiç çalıştırılamadı/import edilemedi** — bu Windows host'ta `packagekit` modülü yok. Ayrıntı: `alp_packagekit_backend.py`'nin modül docstring'i.
+Status: **partly implemented (2026-09-21).** The `--json` flag and the `alp_*` wrapper functions in `alp_packagekit_backend.py` were written and **really tested** (`tests/test_packagekit_backend.py`, against `alp.py` through a subprocess, no mocks). The `AlpPackageKitBackend` class itself (the part that imports `packagekit.backend`) **has still never been run or imported**: the packagekit module was not available on the Windows host (historical). Details: the module docstring of `alp_packagekit_backend.py`.
 
-Bu, proposal belgesinin (§6) kendi dürüst eksiklik listesindeki "Mağaza (Discover) entegrasyon yolu: Yok" maddesini kapatmak için yazıldı. Aşağıdaki orijinal tasarım metni (§1-7) hâlâ geçerli sözleşmedir; §2 ve §3'ün "sarmalayıcı fonksiyon" kısmı artık kod olarak var, geri kalanı (gerçek PackageKit daemon testi) hâlâ yapılmadı.
+**v2 decision (D124, 2026-11-06):** the GUI store is **KDE Discover through an alp PackageKit backend**. An earlier path through another package manager's library was dropped (v1 D31). Discover is the store UI; `alp` remains the only engine and database (D122). Two untested drafts from 2026-09-30 exist in `scripts/legacy/wip-2026-09-30/scripts/packagekit/`:
 
-## 1. Neden bu yaklaşım
+- `alpBackend.py` — a Python backend that imports `packagekit.backend` and reads the catalog and runs `alp` operations.
+- `pk-backend-alp.c` — a C backend that uses PackageKit's spawn helper to run `alp`.
 
-MASTER_PLAN §5.3 zaten sözleşmeyi tanımlıyor: *"CLI ve mağaza aynı motoru, aynı veri tabanını ve aynı işlem kilidini kullanır."* `alp` bunu zaten `db.json` + `DbLock` ile sağlıyor (D31/P13). Eksik olan tek şey: Discover'ın konuştuğu protokolü (`org.freedesktop.PackageKit` D-Bus arayüzü) `alp`'e bağlayan katman.
+Neither draft has been proven to work as a PackageKit backend. The docs do not record which one will be the D124 path; that choice is open. The original 2026-09-30 candidate run is recorded in [docs/MASTER_PLAN.md](../../../../MASTER_PLAN.md) §5.2 and is **not a pass**.
 
-İki gerçekçi seçenek var:
+The original design text below (§1–7) is still the valid contract. Its §2 and §3 wrapper part now exists as code. Everything else (the real PackageKit daemon test) is still not done.
 
-| Seçenek | Artı | Eksi |
+## 1. Why this approach
+
+The live plan (MASTER_PLAN §5, v1 §5.3 for the original rule) already defines the contract: *"The CLI and the store use the same engine, database and lock."* `alp` already provides this with `db.json` + `DbLock` (D122). What is missing is the layer that connects Discover's protocol (the `org.freedesktop.PackageKit` D-Bus interface) to `alp`.
+
+Two realistic options:
+
+| Option | Pros | Cons |
 |---|---|---|
-| **A. Python PackageKit backend'i** (`packagekit.backend` modülü, CLI'yı sarmalar) | Az kod, `alp`'in kendi süreç/kilit modeli korunur, C yazmaya gerek yok | Python backend'ler PackageKit ekosisteminde daha az yaygın/bakımlı; performans CLI spawn maliyetine bağlı |
-| **B. C backend (libalpm örneğindeki gibi)** | PackageKit'in native beklediği yol, en olgun | `alp`'in Python mantığını C'ye taşımak/köprülemek gerekir — büyük ek iş, `alp`'in "basit, stdlib-only" tasarım hedefiyle çelişir |
+| **A. Python PackageKit backend** (`packagekit.backend` module, wraps the CLI) | Little code; `alp`'s own process and lock model is kept; no C needed | Python backends are less common and less maintained in the PackageKit ecosystem; performance depends on the CLI spawn cost |
+| **B. C backend (modelled on an existing native C backend)** | The native path PackageKit expects; most mature | Requires moving or bridging `alp`'s Python logic to C — a large extra job, and it conflicts with `alp`'s "simple, stdlib-only" design goal |
 
-**Öneri: A.** `alp`'in kendisi zaten "basit, hızlı" hedefiyle tasarlandı (D31 kararının gerekçesi); CLI spawn maliyeti kurulum/kaldırma gibi seyrek işlemler için kabul edilebilir. B, `alp`'in tüm felsefesini (basitlik) feda eder.
+**Recommendation: A.** `alp` was already designed for simplicity and speed (the reason for D31 in v1). The CLI spawn cost is acceptable for rare operations like install and remove. B would give up the whole philosophy (simplicity). The 2026-09-30 drafts include both A and B; the choice between them is still open (see the status section at the top).
 
-## 2. Zorunlu ön koşul: `alp`'e yapılandırılmış çıktı modu
+## 2. Required prerequisite: a structured output mode for `alp`
 
-**Şu an `alp search`/`alp list` insan-okunur düz metin basıyor.** Bir backend'in bunu güvenilir şekilde ayrıştırması kırılgan olur (proposal §7'nin "Yazım yardımı argümanları/dosya adlarını sessizce yeniden yazmaz" ruhuyla aynı: kırılgan metin ayrıştırma yerine sözleşmeli biçim). Bu yüzden backend yazılmadan önce `alp`'e `--json` bayrağı eklenmeli:
+**Originally, `alp search`/`alp list` printed human-readable plain text.** A backend parsing that text would be fragile (the same idea as the proposal §7 principle "spelling help never silently rewrites arguments or file names": a contract format instead of fragile text parsing). That is why the `--json` flag had to be added to `alp` before the backend was written:
 
 ```
-alp --json search <terim>   -> JSON dizi: [{"name":..., "method":...}, ...]
-alp --json info <ad>        -> zaten JSON basıyor (cmd_info), --json bayrağı olmadan da
-alp --json list             -> JSON dizi: [{"name":..., "version":..., "method":...}, ...]
+alp --json search <term>    -> JSON array: [{"name":..., "method":...}, ...]
+alp --json info <name>      -> already prints JSON (cmd_info), even without --json
+alp --json list             -> JSON array: [{"name":..., "version":..., "method":...}, ...]
 ```
 
-Bu, `alp.py`'ye eklenmesi gereken küçük, izole bir değişikliktir (mevcut `cmd_search`/`cmd_list`'in çıktı biçimini dallamak) — bu belge bunu kod olarak yazmıyor, yalnızca ön koşul olarak kayda geçiriyor.
+This is a small, isolated change to `alp.py` (branching the output format of `cmd_search`/`cmd_list`). This document only records it as a prerequisite; it does not write the code.
 
-## 3. PackageKit yöntem eşlemesi
+## 3. PackageKit method mapping
 
-| PackageKit yöntemi | `alp` karşılığı | Not |
+| PackageKit method | `alp` equivalent | Note |
 |---|---|---|
-| `SearchNames` / `SearchDetails` | `alp --json search <terim>` | Doğrudan eşleşir |
-| `Resolve` | `alp --json info <ad>` | Kurulu/kurulu değil ayrımı zaten `cmd_info`'da var |
-| `GetDetails` | `alp --json info <ad>` | `source`, `version` alanları zaten var |
-| `GetFiles` | `db.json`'daki `files[]` | `alp --json info` çıktısına zaten dahil |
-| `InstallPackages` | `alp install --yes <ad>`; onaydan önce `alp --json --dry-run install <ad>` | İlerleme: `--progress-fd`, bkz. §4 |
-| `RemovePackages` | `alp remove <ad>` | Aynı |
-| `GetUpdates` / `UpdatePackages` | `alp --json --dry-run upgrade` (`alp_updates`) / `alp upgrade --yes <ad>` | 28 Eylül 2026: `alp upgrade` gerçek; `alp_updates` bağımlılık yükseltmeleri dahil planı okur, geri tutulanlar `kept_back` alanında. |
-| `GetRepoList` | `demo/index.json`'un (gerçek sistemde `alpbahOS-alp` reposunun) tek girişi | `alp`'te çoklu depo kavramı yok; MASTER_PLAN §5.3 "birden fazla kaynak varsa görünür olsun" ilkesi tek depoyla otomatik sağlanıyor |
+| `SearchNames` / `SearchDetails` | `alp --json search <term>` | Direct match |
+| `Resolve` | `alp --json info <name>` | Installed / not-installed status already in `cmd_info` |
+| `GetDetails` | `alp --json info <name>` | `source` and `version` fields already exist |
+| `GetFiles` | `files[]` in `db.json` | Already included in `alp --json info` output |
+| `InstallPackages` | `alp install --yes <name>`; before approval, `alp --json --dry-run install <name>` | Progress: `--progress-fd`, see §4 |
+| `RemovePackages` | `alp remove <name>` | Same |
+| `GetUpdates` / `UpdatePackages` | `alp --json --dry-run upgrade` (`alp_updates`) / `alp upgrade --yes <name>` | 2026-09-28: `alp upgrade` is real; `alp_updates` reads the plan, including dependency upgrades; held-back packages are in the `kept_back` field. Under D126 updates start only when the user starts them. |
+| `GetRepoList` | The one entry of `demo/index.json` (on a real system, the `alpbahOS-alp` repository) | `alp` has no multi-repo concept. MASTER_PLAN's rule "if there are several sources, they must be visible" is met automatically with one repository. Flathub (D125) is a separate flatpak channel and is not part of this list. |
 
-## 4. İlerleme raporlama (eksik, tasarım gerekli)
+## 4. Progress reporting (missing; design needed)
 
-PackageKit, `InstallPackages` sırasında `Percentage`/`Status` sinyalleri bekler; Discover bunu bir ilerleme çubuğunda gösterir. `alp` şu an tek seferlik bir komut, ilerleme akışı yok.
+PackageKit expects `Percentage`/`Status` signals during `InstallPackages`, and Discover shows them in a progress bar. `alp` was a single one-shot command with no progress stream.
 
-Önerilen protokol: `alp install <ad> --progress-fd <N>`, ilerlemeyi `N` numaralı dosya tanıtıcısına tek satırlık JSON olarak yazar (`{"phase":"download","pct":42}`, `{"phase":"build"}`, `{"phase":"done"}`). Backend bu FD'yi okuyup PackageKit sinyallerine çevirir. Bu, `alp`'in stdout'unu (insan tarafından okunan mesajlar) FD ayrımıyla kirletmez — Unix araçlarının standart "makine-okunur ek kanal" deseni.
+Proposed protocol: `alp install <name> --progress-fd <N>` writes one JSON line per event to file descriptor `N` (for example `{"phase":"download","pct":42}`, `{"phase":"build"}`, `{"phase":"done"}`). The backend reads this FD and turns it into PackageKit signals. This keeps `alp`'s stdout (the messages for humans) free of machine output. It is the standard Unix "extra machine-readable channel" pattern.
 
-**28 Eylül 2026: uygulandı ve test edildi** (`tests/test_store_contract.py`). Olaylar satır başına bir JSON nesnesidir: `plan` (adımlar), her paket için `step` `start`/`done` (`index`, `total`, `percentage`), aşama olarak `phase` (`download`, `build` + `step`=configure/make/make_install, `merge`), hata durumunda `error` (`message`, `completed`) ve sonda `done`. Kaldırma da aynı `step`/`done` olaylarını verir. Okuyucu kapanırsa işlem bozulmaz, olaylar kesilir. PackageKit sınıfının bu kanalı `Percentage`/`Status` sinyallerine çevirmesi yazılmadı; gerçek daemon'da test gerektirir.
+**2026-09-28: implemented and tested** (`tests/test_store_contract.py`). Events are one JSON object per line: `plan` (steps); for each package `step` `start`/`done` (`index`, `total`, `percentage`); the `phase` event (`download`, `build` with `step` = configure/make/make_install, `merge`); on error `error` (`message`, `completed`); and `done` at the end. Removal sends the same `step`/`done` events. If the reader closes, the operation is not broken; the events are simply dropped. Writing the PackageKit class that turns this channel into `Percentage`/`Status` signals is not done; it needs a test on a real daemon.
 
-## 5. Yetkilendirme (polkit)
+## 5. Authorisation (polkit)
 
-MASTER_PLAN §5.3: *"Root yetkisi tüm mağazaya verilmez; ayrı yetkili işlem mekanizması kullanılır."* CLAUDE.md: *"Gerekli root işlemlerini açıkça sınırla; bütün akışı root yapma."*
+MASTER_PLAN (v1 §5.3, live §5.1): *"Root access is never given to the whole store. Install and remove go through a separate authorised action."* CLAUDE.md: *"Limit root operations to the steps that need them; do not run the whole flow as root."*
 
-Tasarım: `org.alpbahos.alp.pkgkit.policy` adında bir PolicyKit action dosyası:
+Design: a PolicyKit action file named `org.alpbahos.alp.pkgkit.policy`:
 
 ```xml
 <action id="org.alpbahos.alp.pkgkit.install-remove">
-  <description>alp ile paket kur/kaldır</description>
+  <description>Install/remove packages with alp</description>
   <defaults>
     <allow_any>auth_admin</allow_any>
     <allow_inactive>auth_admin</allow_inactive>
@@ -67,22 +74,22 @@ Tasarım: `org.alpbahos.alp.pkgkit.policy` adında bir PolicyKit action dosyası
 </action>
 ```
 
-`search`/`list`/`info`/`get-files` için **yetkilendirme istenmez** (salt okunur, `--root /` ile bile herkesin `db.json`'u okuyabilmesi gerekir — dosya izinleri `0644` olmalı, `alp.lock`/yazma işlemleri `0600`+root). Yalnızca `install`/`remove` (ve gelecekteki `upgrade`) `auth_admin` ister — bu, `install_recipe`'in zaten root gerektiren tek adımının (`_merge_staged`'in `/` altına kopyalama) kapsamıyla örtüşür (CLAUDE.md: "yalnız dosya kopyalama/DESTDIR-merge adımı `/` yazma yetkisi ister — tüm `alp` sürecinin root çalışması gerekmez").
+`search`/`list`/`info`/`get-files` **do not ask for authorisation** (they are read-only, so everyone must be able to read `db.json` even with `--root /`; file permissions must be `0644`, and `alp.lock`/write operations `0600` and root-owned). Only `install`/`remove` (and the future `upgrade`) require `auth_admin`. This matches the only step of `install_recipe` that needs root (copying into `/` in `_merge_staged`). CLAUDE.md: "only the file copy / DESTDIR merge step needs write access to `/`; the whole `alp` process does not have to run as root."
 
-## 6. Kilit/eşzamanlılık ile etkileşim
+## 6. Interaction with the lock
 
-Backend, `alp install`'i spawn ettiğinde `alp`'in kendi `DbLock`'u zaten tek-yazıcı garantisini sağlıyor. Eğer CLI'dan biri elle `alp install` çalıştırıyorsa ve aynı anda Discover da bir kurulum başlatırsa, ikinci çağrı `AlpError: "Veritabanı kilitli..."` ile döner (mevcut, test edilmiş davranış — bkz. `tests/test_alp.py::test_db_lock_blocks_second_writer`). Backend bu spesifik hata metnini (`stderr`'de `alp: hata: ... kilitli ...`) yakalayıp PackageKit'in `PK_ERROR_ENUM_LOCK_REQUIRED` kodunu döndürmeli — Discover kullanıcıya "başka bir işlem sürüyor" diye anlaşılır gösterir, ham hata metni değil.
+When the backend spawns `alp install`, `alp`'s own `DbLock` already gives the single-writer guarantee. If someone runs `alp install` by hand while Discover also starts an install, the second call returns `AlpError: "Veritabanı kilitli..."` (the current, tested behaviour; see `tests/test_alp.py::test_db_lock_blocks_second_writer`). The backend should catch that exact error text (`alp: hata: ... kilitli ...` on stderr) and return the PackageKit code `PK_ERROR_ENUM_LOCK_REQUIRED`, so Discover shows "another operation is running" and not the raw error text.
 
-## 7. Kabul kriterleri (MASTER_PLAN §5.2/§5.3'e göre)
+## 7. Acceptance criteria (per MASTER_PLAN §5 and the M02 criterion)
 
-Bu tasarım "kabul edilmiş" sayılmadan önce (proposal §6'daki PKG-02 kabul ölçütüyle aynı):
+This design counts as "accepted" only after the following (the same as acceptance criterion PKG-02 in the proposal §6):
 
-1. `alp --json` çıktı modu uygulanmalı ve test edilmeli (bu tasarımın §2'si).
-2. Python PackageKit backend'i yazılmalı, gerçek bir PackageKit daemon'una (bir Linux/BLFS ortamında) yüklenip `pkcon`/Discover ile uçtan uca test edilmeli.
-3. §4'teki ilerleme protokolü uygulanmalı.
-4. §5'teki polkit action dosyası gerçek bir polkit kurulumunda test edilmeli.
-5. `GetUpdates`/`UpdatePackages` ancak [config-protection.md](config-protection.md)'deki `alp upgrade` tasarımı koda dönüştükten sonra eklenebilir.
+1. The `alp --json` output mode is implemented and tested (§2 of this design).
+2. A Python PackageKit backend is written, loaded into a real PackageKit daemon on Linux (a BLFS environment), and tested end to end with `pkcon` / Discover.
+3. The progress protocol in §4 is implemented.
+4. The polkit action file in §5 is tested on a real polkit installation.
+5. `GetUpdates`/`UpdatePackages` can be added only after the `alp upgrade` design in [config-protection.md](config-protection.md) is in code (it now is; see that file's status).
 
-**28 Eylül 2026 (PKG-02 sözleşmesi):** Madde 3'ün `alp` tarafı tamam: `--progress-fd` olay kanalı ve onay öncesi makine-okunur plan (`--json --dry-run install|upgrade|remove`: adımlar, `problems`, catalog `size` alanından `download_size`; boyut bilinmiyorsa `null`, tahmin edilmez). Backend sarmalayıcıları `alp_plan` ve `alp_updates` eklendi ve test edildi; `AlpPackageKitBackend.get_updates` yazıldı ama gerçek PackageKit'te denenmedi. Madde 2 ve 4 (daemon ve polkit testi) hâlâ açık.
+**2026-09-28 (PKG-02 contract):** item 3's `alp` side is done: the `--progress-fd` event channel and the machine-readable plan before approval (`--json --dry-run install|upgrade|remove`: steps, `problems`, `download_size` taken from the catalog `size` field; `null` when the size is unknown, not estimated). The backend wrappers `alp_plan` and `alp_updates` were added and tested. `AlpPackageKitBackend.get_updates` was written but has not been tried on a real PackageKit. Items 2 and 4 (daemon and polkit tests) are still open.
 
-**21 Eylül 2026 durumu:** Madde 1 (`--json`) ve madde 2'nin ilk yarısı (`alp_*` sarmalayıcılar) tamamlandı+test edildi. 2, 3, 4 tam olarak gerçekleşmedi — `AlpPackageKitBackend` yazıldı ama gerçek bir PackageKit daemon'una hiç yüklenmedi. MASTER_PLAN §5.3 M02 kriterinin "entegrasyon testi" kısmını **hâlâ karşılamıyor**; bunun için gerçek BLFS/PackageKit ortamı gerekiyor.
+**2026-09-21 status:** item 1 (`--json`) and the first half of item 2 (the `alp_*` wrappers) are complete and tested. Items 2, 3 and 4 were not fully done: `AlpPackageKitBackend` was written but never loaded into a real PackageKit daemon. The M02 criterion for the "integration test" part is **still not met**; a real BLFS/PackageKit environment is needed.

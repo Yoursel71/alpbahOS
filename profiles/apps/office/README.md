@@ -1,35 +1,57 @@
-# OFFICE-01 — ofis uyumluluk test planı
+# OFFICE-01 — LibreOffice compatibility test plan
 
-Durum (26 Eylül 2026): **plan ve test belgesi üreticisi hazır; alpbahOS üzerinde hiçbir ofis testi yapılmadı.** OFFICE-01: plan ve test belgesi Claude tarafında; gerçek uygulama testi BLFS kurulumundan sonra. Kaynak: [MASTER_PLAN §11](../../../docs/MASTER_PLAN.md) ("LibreOffice günlük belge işlerini ilk günden sağlar; Microsoft Word ile aynı uygulama diye sunulmaz"; Word 2016/2019/2021 Wine'da ayrı prefix'lerde denenir).
+Status (updated 2026-11-06): **planned; no office test has been run on alpbahOS.** LibreOffice is not built yet (see [../README.md](../README.md)). The tests below run after the LibreOffice build (BLFS step).
 
-## 1. Test belgeleri
+Decisions:
 
-[`office_fixtures.py`](office_fixtures.py) (stdlib) yalnız bu projenin yazdığı içerikle `alpbah-test.docx` ve `alpbah-test.xlsx` üretir: Türkçe karakterler (ğüşıöç ĞÜŞİÖÇ, İ/ı ayrımı), sekme, € ₺ ve akıllı tırnaklar, 3x2 tablo, `B4 = SUM(B2:B3)` formülü. `check` alt komutu kaydedilmiş dosyadaki metni ve hücre değerlerini beklenenle karşılaştırır; paylaşılan dizgi tablosu (sharedStrings) ve satır içi dizgiler desteklenir. Biçim/sayfa düzeni bu betikle değil, PDF çıktısı ve gözle değerlendirilir.
+- **D131:** Microsoft Office is not a target. LibreOffice handles Word, Excel and PowerPoint files. No Word compatibility is promised without tests on alpbahOS.
+- **D127:** LibreOffice is one of the preinstalled applications.
+- **D120:** Turkish UI and Turkish Q keyboard.
 
-**Referans doğrulama (26 Eylül 2026, bu depoyu hazırlayan Windows makinesi):** Microsoft Word 16.0 ve Excel 16.0 üretilen dosyaları hatasız açtı; Excel `B4` için `=SUM(B2:B3)` = 42 hesapladı. Word/Excel ile yeniden kaydedilen dosyalar `check` ile GEÇTİ. Bu, belgelerin geçerli OOXML olduğunu gösterir; alpbahOS/LibreOffice sonucu değildir. Office çıktıları yazar bilgisi taşıdığı için repoya eklenmedi.
+## 1. Test documents
 
-## 2. LibreOffice (P09 — önce bu)
+[`office_fixtures.py`](office_fixtures.py) (stdlib only) writes `alpbah-test.docx` and `alpbah-test.xlsx`. They contain only content written for this project (no third-party sample documents):
 
-| # | Senaryo | Adım | Geçti ölçütü |
-|---|---|---|---|
-| L1 | DOCX aç/kaydet | `alpbah-test.docx` → Writer → DOCX kaydet | `check` GEÇTİ; Türkçe karakterler ve tablo bozulmadan |
-| L2 | XLSX aç/kaydet | `alpbah-test.xlsx` → Calc → XLSX kaydet | `check` GEÇTİ; formül korunur, değer 42 |
-| L3 | Başsız dönüşüm | `soffice --headless --convert-to docx --outdir out alpbah-test.docx` (ve xlsx) | `check` GEÇTİ |
-| L4 | PDF | Writer → PDF dışa aktar; CUPS varsa PDF yazıcıya yazdır | PDF'te Türkçe glifler doğru (kare yok), metin seçilebilir |
-| L5 | Yazı tipi eşleme | Calibri/Cambria/Arial/Times içeren belge (kendi ürettiğimiz) | Carlito/Caladea/Liberation ile metrik uyumlu eşleme; satır kayması kaydedilir |
-| L6 | Türkçe yazım denetimi | Writer'da Türkçe metin | tr_TR sözlüğü (hunspell) etkin; yanlış kelime işaretlenir |
-| L7 | Türkçe Q klavye | Writer'da ğüşıöçİ yazma | Tüm karakterler doğru girer |
-| L8 | PPTX | Impress'te sunu oluştur → PPTX kaydet → yeniden aç | Metin ve slayt sayısı korunur (üretici PPTX yazmaz; Impress ile oluşturulur) |
-| L9 | Varsayılan ilişki | Dolphin'de .docx/.xlsx/.pptx çift tık | `profiles/apps/generated/mimeapps.list`'teki LibreOffice uygulaması açılır |
+- Turkish characters (ğüşıöç ĞÜŞİÖÇ, the İ/ı distinction).
+- A tab, `€ ₺`, smart quotes.
+- A 3×2 table.
+- The formula `B4 = SUM(B2:B3)` (expected value 42).
 
-Gerekli paketler (BLFS): LibreOffice, Carlito ve Caladea fontları (Calibri/Cambria metrik uyumu), Liberation fontları, hunspell + Türkçe sözlük, CUPS (yazdırma).
+Commands (run from the repo root):
 
-## 3. Microsoft Office / Wine — yalnız 64-bit (D35)
+```text
+python3 -B profiles/apps/office/office_fixtures.py make --out <DIR>
+python3 -B profiles/apps/office/office_fixtures.py check <DIR>/alpbah-test.docx <DIR>/alpbah-test.xlsx
+```
 
-Kullanıcı 26 Eylül 2026'da yalnız 64-bit sistemi seçti (D35): 32-bit Unix kütüphanesi/multilib yok, Wine yalnız yeni WoW64 moduyla kurulur. Wine derlenip COMPAT-01 testi geçene kadar `.exe` ilişkisi `mimeapps.list`'e yazılmaz (`profiles/apps/apps.json` → `dahil_degil`) ve Office sonucu vaat edilmez.
+`check` compares the text and cell values in a saved file with the expected content. It supports shared strings and inline strings. It does not check layout or formatting; those are checked by eye and from PDF output.
 
-Plan (MASTER_PLAN §11): Office 2016, 2019 ve 2021 için ayrı temiz Wine prefix'i; kullanıcının lisanslı kurulum medyası (ISO'ya gömülmez); Click-to-Run/MSI ayrımı ve tam sürüm kaydı; her sürümde W1 kurulum, W2 Word'de `alpbah-test.docx` aç/kaydet (`check`), W3 Excel'de `alpbah-test.xlsx` (formül 42), W4 PDF/yazdır, W5 Türkçe Q giriş, W6 kapat/yeniden aç. WoW64 modu 32-bit Windows programlarını da 32-bit Unix kütüphanesi olmadan çalıştırmayı hedefler; 32-bit ve 64-bit Office kurucularının bu yolda çalıştığı doğrulanmadı, ikisi ayrı satır olarak kaydedilir.
+Headless round trip (after LibreOffice is built):
 
-## 4. Kayıt
+```text
+soffice --headless --convert-to docx:"MS Word 2007 XML" --outdir <OUT> <DIR>/alpbah-test.docx
+soffice --headless --convert-to xlsx --outdir <OUT> <DIR>/alpbah-test.xlsx
+python3 -B profiles/apps/office/office_fixtures.py check <OUT>/alpbah-test.docx <OUT>/alpbah-test.xlsx
+```
 
-Her senaryo sürüm, prefix, komut ve sonuçla `docs/verification/office01-<tarih>.md` altına geçti/kaldı olarak yazılır. Hiçbiri çalıştırılmadan "Word çalışıyor" ya da "LibreOffice DOCX uyumlu" denmez.
+Reference point, not an alpbahOS result: on 26 Sep 2026 the fixtures were opened by Microsoft Word 16.0 and Excel 16.0 on a Windows machine, and `B4` computed 42. This only shows the files are valid OOXML. The Office output files were not added to the repo.
+
+## 2. LibreOffice scenarios
+
+| # | Scenario | Steps | Pass criterion | Result |
+|---|---|---|---|---|
+| L1 | DOCX open and save | Open `alpbah-test.docx` in Writer, save as DOCX | `check` passes; Turkish characters and the table survive | not run |
+| L2 | XLSX open and save | Open `alpbah-test.xlsx` in Calc, save as XLSX | `check` passes; formula kept, value 42 | not run |
+| L3 | Headless conversion | The `soffice --headless` commands above, for DOCX and XLSX | `check` passes on both converted files | not run |
+| L4 | PDF and printing | Export Writer to PDF; print to a CUPS printer or a PDF printer | Turkish glyphs render (no boxes); text is selectable | not run |
+| L5 | Font substitution | Open a document that uses Calibri, Cambria, Arial and Times New Roman | Carlito, Caladea and Liberation are used as metric-compatible substitutes; any line shift is recorded | not run |
+| L6 | Turkish spell check | Type Turkish text in Writer | tr_TR dictionary (hunspell) is active; a wrong word is flagged | not run |
+| L7 | Turkish Q keyboard | Type ğüşıöçİ in Writer | All characters enter correctly | not run |
+| L8 | PPTX | Create a deck in Impress, save as PPTX, reopen | Text and slide count survive (the fixtures do not write PPTX; Impress creates the file) | not run |
+| L9 | Default association | Double-click `.docx`, `.xlsx`, `.pptx` in Dolphin | The LibreOffice application listed in [`generated/mimeapps.list`](../generated/mimeapps.list) opens | not run |
+
+Required packages (BLFS): LibreOffice; Carlito and Caladea (metric-compatible with Calibri and Cambria); Liberation fonts; hunspell with a Turkish dictionary; CUPS for printing.
+
+## 3. Recording results
+
+Each run is recorded as `docs/verification/office01-<date>.md` with the environment (host, chroot, QEMU VM or target), the LibreOffice version, the command, the result and the log path. Replace "not run" with the result. Do not write "Word works" or "LibreOffice is DOCX-compatible" until these scenarios have passed on a recorded run.

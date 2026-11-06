@@ -66,16 +66,20 @@ Status labels:
 
 | ID | Status | Decision | Replaces (v1) | Q# |
 |---|---|---|---|---|
-| D140 | Accepted (user) | Rebuild the base once on the newest stable LFS with multilib (the exact book version is checked and pinned when the work starts; not chosen yet). The current LFS 12.4 system stays as the working test base until the rebuild boots. | D33 | Q46 |
+| D140 | Accepted (user) | Rebuild the base once on the newest stable LFS with multilib (the exact book version is pinned by D145). The current LFS 12.4 system stays as the working test base until the rebuild boots. | D33 | Q46 |
 | D141 | Accepted (user) | During the rebuild every base package is installed through `alp`, so the file-ownership ledger is created automatically. This closes the v1 D34 debt. | D34 | Q47 |
 | D142 | Accepted (user) | Test-image deviations (v1 D39, D40, D53, D54, D56) are closed in the rebuild: disabled features are enabled again and trust-on-first-use hashes (v1 D52, D56) are checked again. | D39, D40, D52–D54, D56 | Q48 |
 | D143 | Carried over | Still valid technical facts from v1: D37 (Konsole 25.08.3), D38 (Zsh 5.9), D41 (kglobalaccel reload), D43 (shortcut file path via install-desktop-profile.sh), D49 (Dolphin), D50 (wallpaper scale-only crop), D51 (VM session record), D55 (open: `gio open` DBus env issue). See [archive/DECISIONS-v1.md](archive/DECISIONS-v1.md). | — | — |
+| D144 | Accepted (user) | The installed system boots with `root=PARTUUID=…` and no initramfs. Implemented by [`scripts/lfs-blfs/calamares/modules/grubcfg.conf`](../scripts/lfs-blfs/calamares/modules/grubcfg.conf): `GRUB_DISABLE_LINUX_UUID=true`, `GRUB_DISABLE_LINUX_PARTUUID=false`. Needs GPT (and `CONFIG_EFI_PARTITION=y`). Proven on a BIOS virtual disk on 2026-11-06: one boot to the login prompt, no override ([verification](verification/m11-d144-partuuid-2026-11-06.md)). | OPEN-1 | — |
+| D145 | Accepted (user) | Rebuild pinned to LFS 13.1-systemd, Multilib LFS 13.1 (https://linuxfromscratch.org/mlfs/view/13.1/, systemd edition) and BLFS 13.1-systemd. Key versions: glibc 2.44, GCC 16.2.0, binutils 2.47, Linux 7.1.8, systemd 261.2, Python 3.14.7 ([research](verification/rebuild-r1-lfs-version-2026-11-06.md)). BLFS 13.1 brings newer KDE and Qt than the 12.4 test base, so the desktop profiles must be re-checked after the rebuild. | refines D140 | — |
 
 ## Open — needs a user decision
 
 | ID | Topic | Options | Source |
 |---|---|---|---|
-| OPEN-1 | Installed system root device: `grub-mkconfig` writes `root=UUID=…`, but the installed system has no initramfs, so the kernel panics. | (a) build a small dracut initramfs without the live hook; (b) set `root=PARTUUID=…` (used in the M11 evidence; needs GPT and `CONFIG_EFI_PARTITION=y`). M11 acceptance depends on this. | [handoffs/claude/024-devir-m11-modul-kosucu-2026-11-06.md](handoffs/claude/024-devir-m11-modul-kosucu-2026-11-06.md), item 3 |
+| OPEN-1 (Resolved by D144, 2026-11-06) | Installed system root device: `grub-mkconfig` writes `root=UUID=…`, but the installed system has no initramfs, so the kernel panics. | (a) build a small dracut initramfs without the live hook; (b) set `root=PARTUUID=…` (used in the M11 evidence; needs GPT and `CONFIG_EFI_PARTITION=y`). M11 acceptance depends on this. | [handoffs/claude/024-devir-m11-modul-kosucu-2026-11-06.md](handoffs/claude/024-devir-m11-modul-kosucu-2026-11-06.md), item 3 |
+
+There are no other open user decisions as of 2026-11-06.
 
 ## Principles kept from v1 (not re-asked, still valid)
 
@@ -86,7 +90,7 @@ Status labels:
 ## How to change a decision
 
 1. The user's explicit new choice wins. Claude does not overturn a decision on its own.
-2. Add a new row with the next free ID (D144, D145, …). "Replaces (v1)" names the row it supersedes.
+2. Add a new row with the next free ID (D146, …). "Replaces (v1)" names the row it supersedes.
 3. Mark the old row's status "Superseded by Dxxx". Do not delete it.
 4. Update the other live docs (CLAUDE.md, CURRENT.md, README.md, docs/MASTER_PLAN.md, docs/BACKLOG.md) in the same commit.
 5. Run `python3 docs/handoffs/claude/tools/check_docs.py` before committing.

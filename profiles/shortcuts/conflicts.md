@@ -1,55 +1,63 @@
-# Kısayol çakışma listesi — UI-02 / M08
+# Shortcut conflict list — UI-02 / M08
 
-Durum (26 Eylül 2026): **eylem kimlikleri ve upstream varsayılanları KDE Plasma 6.4.4 kaynak kodundan doğrulandı; gerçek Plasma oturumunda hiçbir kısayol test edilmedi.** Tek kaynak [`shortcuts.json`](shortcuts.json); sistem dosyası [`generated/kglobalshortcutsrc`](generated/kglobalshortcutsrc) ondan [`generate_kglobalshortcutsrc.py`](generate_kglobalshortcutsrc.py) ile üretilir. Kaynak plan: [docs/MASTER_PLAN.md](../../docs/MASTER_PLAN.md) §6, [docs/HYPERV_PLAN.md](../../docs/archive/HYPERV_PLAN.md).
+Status (updated 2026-11-06):
 
-## 1. Profil içi tutarlılık (otomatik)
+- **Action IDs and upstream defaults** were checked against the KDE Plasma 6.4.4 source code (26 Sep 2026). No shortcut was tested in a real Plasma session at that time.
+- **Live check in the QEMU LFS test image (5 Nov 2026):** `verify_shortcuts_live.py` returned **19 pass, 1 out of scope, RC=0**. The out-of-scope row is `clipboard-ops` (application layer). Evidence: [vm-session-2-2026-11-05.md](../../docs/verification/vm-session-2-2026-11-05.md). An earlier run on the same day, before the profile was installed correctly, gave 7 pass, 11 not active, 1 out of scope and 1 unrecorded (see [m07-m08-qemu-evidence-2026-11-05.md](../../docs/verification/m07-m08-qemu-evidence-2026-11-05.md)). That run is kept as history.
+- **Single source:** [`shortcuts.json`](shortcuts.json). The system file [`generated/kglobalshortcutsrc`](generated/kglobalshortcutsrc) is generated from it by [`generate_kglobalshortcutsrc.py`](generate_kglobalshortcutsrc.py).
+- **Decision:** D118 (Windows-familiar profile, generated from one source). Plan: [docs/MASTER_PLAN.md](../../docs/MASTER_PLAN.md) §6. The earlier Windows-host test plan is archived at [docs/archive/HYPERV_PLAN.md](../../docs/archive/HYPERV_PLAN.md).
 
-Üretici her çalışmada profili doğrular ve hata varsa dosya yazmaz: bilinmeyen tuş adı, aynı eylemin iki kez tanımlanması, aynı tuşun iki eyleme bağlanması, satırın vaat ettiği tuşun bağlamada olmaması ve upstream'den gerekçesiz kaldırılan tuş hatadır. `tests/test_m08_desktop_profile.py` bu kuralları ve MASTER_PLAN §6 tablosunun tamamının profilde olduğunu denetler (Windows'ta 19/19 geçti). Bu, gerçek `kglobalaccel` kaydının yerine geçmez.
+## 1. Consistency within the profile (automatic)
 
-## 2. Plasma 6.4.4 upstream varsayılanlarıyla çakışmalar (kaynak koddan)
+The generator checks the profile on every run and writes no file if there is an error. Errors are: an unknown key name; the same action defined twice; the same key bound to two actions; a row whose promised key is not bound; and an upstream key removed without a reason. [`tests/test_m08_desktop_profile.py`](../../tests/test_m08_desktop_profile.py) checks these rules and that every row of the MASTER_PLAN §6 table is in the profile. The test count was 19/19 on 26 Sep 2026 (Windows, historical). This does not replace a real `kglobalaccel` registration, which is checked by the live script.
 
-Kaynaklar `v6.4.4` etiketindeki dosyalardır (GitHub KDE aynası). Dolphin Plasma değil KDE Gear bileşenidir; `v25.08.1` referans alındı ve hedef imajda henüz derlenmedi.
+## 2. Conflicts with Plasma 6.4.4 upstream defaults (from source code)
 
-| Kısayol | Upstream 6.4.4 durumu | alpbahOS kararı | Kaynak |
+Sources are the files at tag `v6.4.4` (GitHub KDE mirror). Dolphin is a KDE Gear component, not part of Plasma; `v25.08.1` was used as the reference, and it was not yet built in the target image at that time.
+
+| Shortcut | Upstream 6.4.4 status | alpbahOS decision | Source |
 |---|---|---|---|
-| Alt+Tab / Alt+Shift+Tab | `Walk Through Windows` = **Meta+Tab, Alt+Tab**; ters yön Meta+Shift+Tab, Alt+Shift+Tab | Alt+Tab korunur; Meta+Tab ve Meta+Shift+Tab pencere geçişinden **çıkarılır** | kwin `src/tabbox/tabbox.cpp` |
-| Win+D | `Show Desktop` = Meta+D (aç/kapa) | Değişmez | kwin `src/useractions.cpp` |
-| Win+E | Dolphin `_launch` = Meta+E | Değişmez (Dolphin kurulu değil) | dolphin `src/org.kde.dolphin.desktop` |
-| Win+L | `ksmserver/Lock Session` = Meta+L, Screensaver; eski Ctrl+Alt+L 6.4.4'te yok | Değişmez; **KScreenLocker derlenmediği için çalışmaz** (SCREENLOCK-01) | kscreenlocker `ksldapp.cpp`, `settings/kscreensaversettings.cpp` |
-| Win+R | KRunner = Alt+Space, Alt+F2, Search; **Spectacle `RecordRegion` = Meta+Shift+R, Meta+R** | Meta+R KRunner'a eklenir, Spectacle'dan çıkarılır (Meta+Shift+R kalır) | plasma-workspace `krunner/org.kde.krunner.desktop.cmake`; spectacle `desktop/org.kde.spectacle.desktop.cmake` |
-| Win (tek başına) | plasmashell `activate application launcher` = Meta, Alt+F1 | Değişmez. Plasma 6'da tek başına Meta normal global kısayoldur | plasma-workspace `shell/shellcorona.cpp` |
-| Win+I | System Settings = Tools | Meta+I eklenir; upstream'de başka Meta+I yok (KWin yalnız Meta+Ctrl+I invert) | systemsettings `app/systemsettings.desktop`; kwin `src/plugins/invert/invert.cpp` |
-| Win+Sol / Sağ | `Window Quick Tile Left/Right` = Meta+Left/Right | Değişmez | kwin `src/useractions.cpp` |
-| Win+Yukarı | `Window Maximize` = Meta+PgUp; **Meta+Up = `Window Quick Tile Top`** | Meta+Up büyütmeye verilir, üste döşeme kısayolsuz kalır. Büyütme aç/kapa çalışır (büyütülmüşse geri yükler) | kwin `src/useractions.cpp` (`MaximizeOp`) |
-| Win+Aşağı | `Window Minimize` = Meta+PgDown; **Meta+Down = `Window Quick Tile Bottom`** | Meta+Down küçültmeye verilir, alta döşeme kısayolsuz kalır | kwin `src/useractions.cpp` |
-| Win+Tab | `Overview` = Meta+W; **Meta+Tab pencere geçişinde** | Meta+Tab Overview'a verilir, Meta+W da kalır | kwin `src/plugins/overview/overvieweffect.cpp` |
-| Alt+F4 | `Window Close` = Alt+F4 | Değişmez | kwin `src/useractions.cpp` |
-| Ctrl+Shift+Esc | System Monitor = Meta+Esc; KWin `Kill Window` = Meta+Ctrl+Esc (farklı tuş) | Ctrl+Shift+Esc eklenir | plasma-systemmonitor `org.kde.plasma-systemmonitor.desktop` |
-| Win+Shift+S | Spectacle `_launch` = **Print, Meta+Shift+S** (uygulamayı varsayılan modda açar); bölge yakalama = Meta+Shift+Print | Meta+Shift+S doğrudan `RectangularRegionScreenShot`'a taşınır; Print uygulamayı açmaya devam eder | spectacle `desktop/org.kde.spectacle.desktop.cmake` |
-| Ctrl+C/V/X/Z | Sistem kısayolu değil | Uygulama katmanı; terminal istisnası `profiles/shell/README.md` | — |
+| Alt+Tab / Alt+Shift+Tab | `Walk Through Windows` = **Meta+Tab, Alt+Tab**; reverse direction Meta+Shift+Tab, Alt+Shift+Tab | Alt+Tab is kept; Meta+Tab and Meta+Shift+Tab are **removed** from window switching | kwin `src/tabbox/tabbox.cpp` |
+| Win+D | `Show Desktop` = Meta+D (toggle) | Unchanged | kwin `src/useractions.cpp` |
+| Win+E | Dolphin `_launch` = Meta+E | Unchanged. Confirmed working in QEMU on 5 Nov 2026 | dolphin `src/org.kde.dolphin.desktop` |
+| Win+L | `ksmserver/Lock Session` = Meta+L, Screensaver; old Ctrl+Alt+L is not in 6.4.4 | Unchanged. KScreenLocker is not built yet, so this does not work yet (D133 brings it back; SCREENLOCK-01) | kscreenlocker `ksldapp.cpp`, `settings/kscreensaversettings.cpp` |
+| Win+R | KRunner = Alt+Space, Alt+F2, Search; **Spectacle `RecordRegion` = Meta+Shift+R, Meta+R** | Meta+R is added to KRunner; removed from Spectacle (Meta+Shift+R stays) | plasma-workspace `krunner/org.kde.krunner.desktop.cmake`; spectacle `desktop/org.kde.spectacle.desktop.cmake` |
+| Win (alone) | plasmashell `activate application launcher` = Meta, Alt+F1 | Unchanged. In Plasma 6 a lone Meta is a normal global shortcut | plasma-workspace `shell/shellcorona.cpp` |
+| Win+I | System Settings = Tools | Meta+I is added; upstream has no other Meta+I (KWin only has Meta+Ctrl+I for invert) | systemsettings `app/systemsettings.desktop`; kwin `src/plugins/invert/invert.cpp` |
+| Win+Left / Right | `Window Quick Tile Left/Right` = Meta+Left/Right | Unchanged | kwin `src/useractions.cpp` |
+| Win+Up | `Window Maximize` = Meta+PgUp; **Meta+Up = `Window Quick Tile Top`** | Meta+Up goes to maximise; quick tile to top has no shortcut. Maximise toggles (restores if already maximised) | kwin `src/useractions.cpp` (`MaximizeOp`) |
+| Win+Down | `Window Minimize` = Meta+PgDown; **Meta+Down = `Window Quick Tile Bottom`** | Meta+Down goes to minimise; quick tile to bottom has no shortcut | kwin `src/useractions.cpp` |
+| Win+Tab | `Overview` = Meta+W; **Meta+Tab is window switching** | Meta+Tab goes to Overview; Meta+W stays | kwin `src/plugins/overview/overvieweffect.cpp` |
+| Alt+F4 | `Window Close` = Alt+F4 | Unchanged | kwin `src/useractions.cpp` |
+| Ctrl+Shift+Esc | System Monitor = Meta+Esc; KWin `Kill Window` = Meta+Ctrl+Esc (different key) | Ctrl+Shift+Esc is added | plasma-systemmonitor `org.kde.plasma-systemmonitor.desktop` |
+| Win+Shift+S | Spectacle `_launch` = **Print, Meta+Shift+S** (opens the app in default mode); region capture = Meta+Shift+Print | Meta+Shift+S goes directly to `RectangularRegionScreenShot`; Print still opens the app | spectacle `desktop/org.kde.spectacle.desktop.cmake` |
+| Ctrl+C/V/X/Z | Not system shortcuts | Application layer; terminal exception in `profiles/shell/README.md` | — |
 
-KWin eklentilerinin tamamı (`src/plugins/*.cpp`, 161 dosya) Meta içeren varsayılanlar için tarandı; profil tuşlarıyla başka çakışma bulunmadı (Meta+W/G, Meta+T, Meta+Ctrl+T, Meta+=/−/0, Meta+F5/F6, Meta+Ctrl+I/U, Meta+Shift+F11/F12, Meta+Shift+Esc, Meta+* profil dışı kalır). Plasma bileşenlerinin tamamı değil yalnız ilgili dosyalar okundu; kurulu sistemdeki gerçek durum `verify_shortcuts_live.py` ile ölçülecek.
+All KWin plugins (`src/plugins/*.cpp`, 161 files) were scanned for default bindings that include Meta. No other conflict with the profile keys was found. Only the relevant files of the Plasma components were read, not all of them. The real state on an installed system is measured by `verify_shortcuts_live.py`.
 
-### 2.1 Upstream'e göre davranış farkları (bilerek kabul edilen)
+### 2.1 Accepted differences from upstream (deliberate)
 
-- Windows'ta Win+Aşağı büyütülmüş pencereyi önce geri yükler, ikinci basışta küçültür. KWin'de bu sıralı davranış yerleşik değil; bu profilde Win+Aşağı doğrudan küçültür, geri yükleme Win+Yukarı (aç/kapa) iledir.
-- Üste/alta hızlı döşeme (Meta+Up/Down) kısayolsuz kalır; System Settings'ten yeniden atanabilir.
-- Win+Shift+Tab hiçbir eyleme bağlı değildir (Windows'ta da karşılığı yok).
+- On Windows, Win+Down first restores a maximised window and a second press minimises it. KWin has no built-in sequence like this. In this profile Win+Down minimises directly; restoring uses Win+Up (toggle).
+- Quick tile to top and bottom (Meta+Up/Down) has no shortcut. System Settings can assign one.
+- Win+Shift+Tab is not bound to any action (Windows has no equivalent either).
 
-## 3. VM/Windows host seviyesinde yakalama riski
+## 3. Capture risk at the VM and host level
 
-Proje Hyper-V üzerinde geliştiriliyor; test VM'leri Windows hostta çalışıyor:
+The project is developed on Fedora with test VMs under QEMU/KVM (D106).
 
-- **Hyper-V Basic Session** (`vmconnect.exe`): `Win+L`, `Win+D`, `Win+Tab` gibi kombinasyonların çoğu **host Windows tarafından yakalanır**, VM'e ulaşmaz — `Win+L` host oturumunu kilitler.
-- **Enhanced Session Mode** (RDP): daha fazla kombinasyon geçebilir ama garanti değildir; `Win+L` neredeyse her zaman host tarafından yakalanır.
-- **Sonuç:** Win kısayollarının *kayıt* doğrulaması (`verify_shortcuts_live.py`, D-Bus üzerinden salt okunur) Hyper-V'den bağımsızdır ve SSH ile yapılabilir. Tuşa basınca eylemin *tetiklendiği* ise VMConnect üzerinden güvenilir sınanamaz; çıplak donanım, VNC/SPICE benzeri Win tuşunu host'a kaptırmayan erişim ya da BETA-01 gerekir. Sonuçlar bu iki düzeyde ayrı kaydedilir (MASTER_PLAN §6).
+- **Host capture is not verified.** When a key combination is sent to a QEMU window, the host desktop may handle it instead of the VM (Meta+L, Meta+D and Meta+Tab are the likely cases). This has not been tested on this host.
+- **Registration check:** `verify_shortcuts_live.py` reads the registration over D-Bus (read-only). It does not depend on how keys reach the VM, so it can be run over SSH.
+- **Trigger check:** whether pressing a key actually runs the action can be tested with a monitor-sent key (the QEMU monitor `sendkey` was used for Meta+E on 5 Nov 2026), and by hand. Real hardware testing is needed before release (D106: USB test on a real PC; BETA-01).
+- Results are recorded at both levels separately (MASTER_PLAN §6).
 
-## 4. Açık kararlar
+## 4. Open decisions
 
-1. Win+Aşağı: Windows'taki "önce geri yükle, sonra küçült" sırası gerekli mi? Gerekirse küçük bir KWin betiği gerekir (hazır bileşen değil; ayrı onay).
-2. Ayarlar'daki "Varsayılanlar" düğmesi upstream KDE varsayılanına döner, alpbahOS profiline değil (varsayılanı eylemi kaydeden uygulama bildirir). alpbahOS profiline dönüş şimdilik kullanıcının `~/.config/kglobalshortcutsrc` içindeki ilgili girdiyi silmesidir; kullanıcıya dönük bir "alpbahOS kısayollarına dön" eylemi gerekip gerekmediği açık (MASTER_PLAN §6 "varsayılana dönebilir").
-3. Win+L, SCREENLOCK-01 (KScreenLocker'ın Wayland oturumuna geri getirilmesi) kararına bağlı.
+1. Win+Down: is the Windows "restore first, then minimise" sequence needed? If yes, a small KWin script is needed. That is not a ready-made component, and it needs a separate approval.
+2. The "Defaults" button in Settings returns to the upstream KDE default, not to the alpbahOS profile. The default is declared by the application that registers the action. For now, going back to the alpbahOS profile means deleting the related entry in the user's `~/.config/kglobalshortcutsrc`. Whether a user-facing "restore alpbahOS shortcuts" action is needed is open (MASTER_PLAN §6: "can be edited and return to the default").
+3. Win+L depends on the decision to build KScreenLocker again (D133; SCREENLOCK-01).
 
-## Sonraki adım
+## Next step
 
-Gen2 Plasma oturumunda (admin, seat0) `verify_shortcuts_live.py --dump` çalıştırılıp çıktısı `docs/verification/` altına kaydedilecek; ardından tuşlar elle denenecek. Adımlar: [docs/handoffs/claude/015-m08-lookandfeel-wallpaper-shortcuts.md](../../docs/handoffs/claude/015-m08-lookandfeel-wallpaper-shortcuts.md).
+- Run the live check on an installed system with the profile in place, not only in the QEMU test image. The 5 Nov 2026 pass (19/20) is on the test image, which had the profile installed by hand (see [022-t2-kisayol-2026-11-05.md](../../docs/handoffs/claude/022-t2-kisayol-2026-11-05.md)).
+- Test each key by hand in the VM and record the result.
+- Repeat on a real PC before release (D106).

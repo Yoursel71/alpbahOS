@@ -1,6 +1,6 @@
 {
   "$schema": "alpbahOS/apps/v1",
-  "durum": "Varsayılan uygulama profili (APPS-01'in Claude tarafı). Hiçbir uygulama Gen2 test imajında kurulu değil; ilişkiler upstream masaüstü dosyalarına göre yazıldı, gerçek oturumda test edilmedi.",
+  "durum": "Default application profile (D127). Built and tested in the QEMU LFS test image on 2026-11-05 (see docs/verification/vm-session-3-t6-2026-11-05.md): Dolphin, Okular, KWrite, Gwenview, Ark. LibreOffice, VLC and Firefox are planned and not built yet; their entries are written from upstream desktop files and are not tested on alpbahOS.",
   "kaynak": "docs/MASTER_PLAN.md §11, docs/DECISIONS.md P09",
   "kurulum_hedefi": "/etc/xdg/mimeapps.list",
   "tek_kaynak_notu": "mimeapps.list bu dosyadan profiles/apps/generate_mimeapps.py ile üretilir; üretilmiş dosya elle düzenlenmez.",
@@ -101,6 +101,7 @@
       "kaynak": "VideoLAN vlc 3.0.21 (share/vlc.desktop.mimetypes)",
       "mime": ["video/mp4", "video/x-matroska", "video/webm", "video/x-msvideo", "video/mpeg", "video/quicktime", "video/ogg", "video/x-ms-wmv", "audio/mpeg", "audio/ogg", "audio/x-vorbis+ogg", "audio/flac", "audio/x-flac", "audio/x-wav", "audio/wav", "audio/mp4", "audio/x-m4a", "audio/aac", "audio/x-ms-wma"],
       "dogrulama": "upstream",
+      "not": "Planned (D127), not built yet.",
       "kabul": "Ses/video ve ses çıkışı seçimi"
     },
     {
@@ -131,7 +132,7 @@
       "kaynak": "Mozilla Firefox (BLFS kurulumu masaüstü dosyasını elle oluşturur)",
       "mime": ["text/html", "application/xhtml+xml", "x-scheme-handler/http", "x-scheme-handler/https"],
       "dogrulama": "blfs_adi",
-      "not": "Dock'taki preferred://browser bu ilişkiden çözülür. Chrome ayrı, doğrulanmış kurulum seçeneğidir; varsayılan değildir.",
+      "not": "Planned (D127), not built yet. Launchers that use preferred://browser resolve through this association. Chrome is a separate, verified install option and is not the default.",
       "kabul": "İnternet/TLS, indirme, varsayılan ilişki"
     },
     {
@@ -142,6 +143,7 @@
       "kaynak": "LibreOffice; MIME listesi upstream core libreoffice-25-8 sysui/desktop/menus/writer.desktop ile doğrulandı, dosya adı BLFS kurulumunun libreoffice-*.desktop bağlarından",
       "mime": ["application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/msword", "application/vnd.oasis.opendocument.text", "application/rtf"],
       "dogrulama": "blfs_adi",
+      "not": "Planned (D127), not built yet. LibreOffice handles Word files (D131); no Word compatibility is promised without tests.",
       "kabul": "DOCX örnekleri; birebir Word garantisi yok"
     },
     {
@@ -152,6 +154,7 @@
       "kaynak": "LibreOffice; MIME listesi upstream calc.desktop (libreoffice-25-8) ile doğrulandı, dosya adı BLFS",
       "mime": ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/vnd.ms-excel", "application/vnd.oasis.opendocument.spreadsheet", "text/csv"],
       "dogrulama": "blfs_adi",
+      "not": "Planned (D127), not built yet.",
       "kabul": "XLSX örnekleri"
     },
     {
@@ -162,6 +165,7 @@
       "kaynak": "LibreOffice; MIME listesi upstream impress.desktop (libreoffice-25-8) ile doğrulandı, dosya adı BLFS",
       "mime": ["application/vnd.openxmlformats-officedocument.presentationml.presentation", "application/vnd.ms-powerpoint", "application/vnd.oasis.opendocument.presentation"],
       "dogrulama": "blfs_adi",
+      "not": "Planned (D127), not built yet.",
       "kabul": "PPTX örnekleri"
     }
   ],
@@ -172,7 +176,7 @@
       "uygulama": "Wine",
       "desktop": "wine.desktop",
       "mime": ["application/x-ms-dos-executable", "application/x-msdownload"],
-      "neden": "D35 (yalnız 64-bit): Wine yalnız yeni WoW64 moduyla kurulacak; derlenip 32/64-bit Windows test programıyla doğrulanana kadar (COMPAT-01) .exe ilişkisi yazılmaz."
+      "neden": "D130: Wine is provided through Bottles (Flatpak), not a system Wine build. No .exe association is written until Bottles is tested (COMPAT-01)."
     },
     {
       "id": "games",
@@ -180,7 +184,7 @@
       "uygulama": "Steam + Proton",
       "desktop": "steam.desktop",
       "mime": [],
-      "neden": "D35 (yalnız 64-bit): Valve'ın Linux Steam istemcisi 32-bit kullanıcı alanı ister; host'a eklenmez, kapsam dışı."
+      "neden": "D129: Steam is supported natively through multilib (D111). Not built yet, and it has no MIME association, so no mimeapps entry is written."
     },
     {
       "id": "store",

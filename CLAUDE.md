@@ -44,7 +44,7 @@ Each item cites the decision it comes from. Changing one needs a new user decisi
 - Xwayland runs X11 apps inside the Wayland session (D132). KScreenLocker is the screen locker (D133).
 - Target hardware: old x86_64 PC with 4 GiB RAM; idle at or below 1 GiB is a design target, measured before it is published as a requirement (D135).
 - Boot: Legacy BIOS and UEFI (D136). First release = live USB + disk installer (D137). Installer is Calamares, graphical, offline, can install alongside Windows (D138). LUKS is an installer option; Secure Boot comes later (D139).
-- Base: rebuild once on the newest stable LFS with multilib; the exact book version is pinned when that work starts (D140). Every base package is installed through `alp` so the file ownership ledger is automatic (D141). Test-image deviations are closed in the rebuild (D142).
+- Base: rebuild once on the newest stable LFS with multilib (D140), pinned to LFS 13.1-systemd, Multilib LFS 13.1 and BLFS 13.1-systemd (D145). Every base package is installed through `alp` so the file ownership ledger is automatic (D141). Test-image deviations are closed in the rebuild (D142).
 - Kept from v1 (D143 and the v1 rules): build the LFS base from source and customise existing open-source projects. Do not write a kernel, compositor, browser or dependency solver from scratch. Do not promise driver or hardware support without tests.
 - Terminal suggestions never run by themselves: accepting a suggestion is not running it.
 - Spelling help never silently rewrites arguments or file names. Interactive shell settings do not leak into build scripts.
@@ -68,7 +68,7 @@ Facts below come from the handoff files and the repo as read on 2026-11-06. Item
 | Other remote | remote `origin` = `https://github.com/alperenyardim30-hash/alpbahOS.git`. Never push there. Open PR #5 is left untouched (D103). |
 | Legacy | `scripts/legacy/`, `tests/legacy/` and `docs/archive/` hold old tools, tests and Windows-host notes (D104). Do not run or extend them without a reason written in the handoff. |
 | Test base | LFS 12.4 system plus BLFS KDE Plasma 6.4.4 is the working base until the rebuild boots (D140, handoff 023). Kernel 6.16.1 (handoff 023). |
-| Open technical item | OPEN-1: installed root device. `grub-mkconfig` writes `root=UUID=...`, the installed system has no initramfs, so the kernel panics. Options: (a) small dracut initramfs without the live hook, (b) `root=PARTUUID=...` (needs GPT and `CONFIG_EFI_PARTITION=y`). User decision needed; M11 acceptance depends on it (handoff 024). |
+| Installed root device | `root=PARTUUID=…`, no initramfs (D144). Set by `scripts/lfs-blfs/calamares/modules/grubcfg.conf`. Needs GPT and `CONFIG_EFI_PARTITION=y`. |
 
 ## 4. Safety rules
 
@@ -122,7 +122,7 @@ Facts below come from the handoff files and the repo as read on 2026-11-06. Item
 - Exception: physical or administrator steps only. Ask once, with the exact commands.
 - Short Turkish reports: what was done, where the evidence is, what is next. Long logs stay in files.
 - A user decision goes into `docs/DECISIONS.md`. Update every affected doc in the same commit, then run `python3 docs/handoffs/claude/tools/check_docs.py`.
-- Do not re-ask a documented decision. If the user has not decided (for example OPEN-1), keep it open and say what it blocks.
+- Do not re-ask a documented decision. If the user has not decided, keep the item open and say what it blocks. No user decisions are open as of 2026-11-06.
 - External actions need the user's go-ahead unless they were already given: push, release, making the repo public, GitHub changes (D103, D108). Every release needs approval; M12 release is a separate approval (handoff 023).
 - Subagents only when the user asks. Give each one a disjoint set of files. Keep git operations in the main session.
 
