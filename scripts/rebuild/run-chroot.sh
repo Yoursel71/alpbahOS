@@ -1,14 +1,14 @@
 #!/bin/bash
 # REBUILD-R2: run a chroot chapter (MLFS 13.1 chapter 7 and later) as root.
-# Usage: sudo run-chroot.sh <chapter-dir> [first-NN]     e.g. sudo run-chroot.sh ch7 05
+# Usage: sudo run-chroot.sh <chapter-dir> [first-NN [last-NN]]   e.g. sudo run-chroot.sh ch8 03 31
 #
 # Each script declares where it runs in its second line:
 #   # CONTEXT: host    run on the host as root, in a clean environment, LFS=/mnt/lfs13
 #   # CONTEXT: chroot  run inside $LFS with chroot(8); the script text is passed to bash -c,
 #                      so nothing is copied into the build root
-# Mounts: 02-kernfs.sh makes the virtual kernel file systems. This runner unmounts them on
-# exit (success, failure, INT, TERM or HUP) and refuses to start if any mount is already
-# under $LFS. The unmount never uses -R or -l.
+# Mounts: the kernel file systems come from ch7/02-kernfs.sh (dev, pts, proc, sys, run and shm).
+# This runner unmounts them on exit (success, failure, INT, TERM or HUP) and refuses to start if
+# any mount is already under $LFS. The unmount never uses -R or -l.
 #
 # Per script: log in LOGROOT/<chapter-dir>/NN-<pkg>.log (appended on re-runs), with the
 # script's sha256 in the header. Success = rc 0 AND the last line is exactly "OK NN-<pkg>".
@@ -21,17 +21,20 @@ REBUILD_DIR=$(dirname "$(readlink -f "$0")")
 LFS=/mnt/lfs13
 BUILD_USER=yrslf
 LOGROOT=/home/yrslf/alpbahOS/scratch-lfs-bench/lfs13-logs
+KERNFS_SCRIPT_DEFAULT=$REBUILD_DIR/ch7/02-kernfs.sh
 
 usage() {
-    echo "usage: sudo $0 <chapter-dir> [first-NN]   (chapter-dir: ch7, ...)" >&2
+    echo "usage: sudo $0 <chapter-dir> [first-NN [last-NN]]   (chapter-dir: ch7, ch8, ...)" >&2
     exit 2
 }
 
-[ $# -ge 1 ] && [ $# -le 2 ] || usage
+[ $# -ge 1 ] && [ $# -le 3 ] || usage
 chap=$1
 first=${2:-01}
+last=${3:-99}
 [[ $chap =~ ^ch[0-9]+$ ]] || usage
 [[ $first =~ ^[0-9]{2}$ ]] || usage
+[[ $last =~ ^[0-9]{2}$ ]] || usage
 
 if [ "$(id -u)" -ne 0 ]; then
     echo "run-chroot.sh: must run as root (sudo)" >&2
@@ -86,12 +89,12 @@ shopt -s nullglob
 todo=()
 for s in "$CHDIR"/[0-9][0-9]-*.sh; do
     nn=$(basename "$s" | cut -c1-2)
-    if (( 10#$nn >= 10#$first )); then
+    if (( 10#$nn >= 10#$first )) && (( 10#$nn <= 10#$last )); then
         todo+=("$s")
     fi
 done
 if [ "${#todo[@]}" -eq 0 ]; then
-    echo "no scripts with NN >= $first in $CHDIR" >&2
+    echo "no scripts with NN in [$first, $last] in $CHDIR" >&2
     exit 1
 fi
 
@@ -99,20 +102,23 @@ say() { printf '%s\n' "$*" | tee -a "$SUMMARY"; }
 
 # A chroot script needs the kernel file systems (book 7.3). On a resume that starts at a
 # chroot script they are not mounted (the previous run unmounted them), so the kernfs
-# script is run first, as part of this run.
+# script is run first, as part of this run. The kernfs script is ch7/02-kernfs.sh unless the
+# chapter has its own 02-kernfs.sh.
 first_ctx=$(sed -n 's/^# CONTEXT: *//p' "${todo[0]}" | head -n 1)
 if [ "$first_ctx" = chroot ] && ! mountpoint -q "$LFS/proc"; then
-    if [ ! -f "$CHDIR/02-kernfs.sh" ]; then
-        echo "kernfs is not mounted and $CHDIR/02-kernfs.sh does not exist" >&2
+    KERNFS_SCRIPT=$CHDIR/02-kernfs.sh
+    [ -f "$KERNFS_SCRIPT" ] || KERNFS_SCRIPT=$KERNFS_SCRIPT_DEFAULT
+    if [ ! -f "$KERNFS_SCRIPT" ]; then
+        echo "kernfs is not mounted and $KERNFS_SCRIPT does not exist" >&2
         exit 1
     fi
-    echo "kernfs not mounted: $CHDIR/02-kernfs.sh runs first"
-    todo=("$CHDIR/02-kernfs.sh" "${todo[@]}")
+    echo "kernfs not mounted: $KERNFS_SCRIPT runs first"
+    todo=("$KERNFS_SCRIPT" "${todo[@]}")
 fi
 
 RUN_T0=$(date +%s)
-say "=== run $(date '+%F %T') chapter=$chap first=$first user=$(id -un) scripts=${#todo[@]} LFS=$LFS"
-echo "chapter $chap: ${#todo[@]} script(s) from $first; logs in $LOGDIR"
+say "=== run $(date '+%F %T') chapter=$chap first=$first last=$last user=$(id -un) scripts=${#todo[@]} LFS=$LFS"
+echo "chapter $chap: ${#todo[@]} script(s) from $first to $last; logs in $LOGDIR"
 
 for s in "${todo[@]}"; do
     base=$(basename "$s" .sh)
@@ -156,12 +162,12 @@ for s in "${todo[@]}"; do
     esac
     t1=$(date +%s)
     dur=$((t1 - t0))
-    last=$(tail -n 1 "$log" | tr -d '\r')
+    last_line=$(tail -n 1 "$log" | tr -d '\r')
 
     if [ "$rc" -ne 0 ]; then
         status="FAIL(rc=$rc)"
-    elif [ "$last" != "$expect" ]; then
-        status="FAIL(no final OK line; last='$last')"
+    elif [ "$last_line" != "$expect" ]; then
+        status="FAIL(no final OK line; last='$last_line')"
     else
         status=OK
     fi
