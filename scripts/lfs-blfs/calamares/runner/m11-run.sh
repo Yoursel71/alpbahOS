@@ -22,7 +22,10 @@ IMG=${1:?kullanım: m11-run.sh <yeni-hedef.img> <log-dizini>}
 LOGD=${2:?kullanım: m11-run.sh <yeni-hedef.img> <log-dizini>}
 R=$(dirname "$(readlink -f "$0")")
 LFS=/mnt/lfs
-SQ=/home/yrslf/alpbahOS/scratch-lfs-bench/alp-iso/LiveOS/squashfs.img
+# Squashfs source: override with M11_SQUASHFS=<path> (e.g. the output of live-iso/build-iso.sh).
+SQ=${M11_SQUASHFS:-/home/yrslf/alpbahOS/scratch-lfs-bench/alp-iso/LiveOS/squashfs.img}
+# M11_HOSTTOOLS=0: use the chroot's own rsync/unsquashfs (packages 339/340) instead of the Fedora copies.
+HOSTTOOLS=${M11_HOSTTOOLS:-1}
 TOOLS=/home/yrslf/alpbahOS/scratch-lfs-bench/m11-runner/hosttools
 CAL=/sources/blfs-build/calamares-3.3.14/build/loadmodule
 TARGET_IN_CHROOT=/var/tmp/m11-target
@@ -47,6 +50,7 @@ cleanup() {
     if [ "$SQ_BIND" = 1 ]; then umount "$LFS/usr/lib/live/mount/medium/LiveOS/squashfs.img"; fi
     if [ "$MADE_LIVE_DIR" = 1 ]; then rm -rf "$LFS/usr/lib/live"; fi
     if [ "$TOOLS_BIND" = 1 ]; then umount "$LFS/run/m11tools"; fi
+    if [ "${HOSTTOOLS:-1}" != 1 ]; then rm -f "$LFS/run/m11tools/bin/rsync"; fi
     if [ -n "$LOOP" ]; then losetup -d "$LOOP"; fi
     # Boş bağlama noktasını bu koşucu açtı; kalıntı bırakma.
     rmdir "$TGT" 2>/dev/null || true
@@ -65,7 +69,11 @@ grep -qw squashfs /proc/filesystems || { echo "DURDU: çekirdekte squashfs yok (
 [ -f "$R/../modules/grubcfg.conf" ] && [ -f "$R/../modules/bootloader.conf" ] \
     || { echo "DURDU: repo modül yapılandırması eksik: $R/../modules/{grubcfg,bootloader}.conf"; exit 1; }
 [ -x "$LFS$CAL" ] || { echo "ön koşul: $LFS$CAL yok (BUILD_TESTING=ON ile loadmodule derlemesi, devir 024)"; exit 1; }
-[ -x "$TOOLS/bin/rsync" ] && [ -x "$TOOLS/bin/unsquashfs" ] || { echo "ön koşul: $TOOLS eksik (devir 024)"; exit 1; }
+if [ "$HOSTTOOLS" = 1 ]; then
+    [ -x "$TOOLS/bin/rsync" ] && [ -x "$TOOLS/bin/unsquashfs" ] || { echo "ön koşul: $TOOLS eksik (devir 024)"; exit 1; }
+else
+    [ -x "$LFS/usr/bin/rsync" ] && [ -x "$LFS/usr/bin/unsquashfs" ] || { echo "ön koşul: chroot rsync/unsquashfs yok (paket 339/340)"; exit 1; }
+fi
 [ -f "$SQ" ] || { echo "ön koşul: squashfs yok: $SQ"; exit 1; }
 mkdir -p "$LOGD"
 
@@ -100,7 +108,16 @@ echo "root_uuid=$UUID" | tee -a "$LOGD/02-mkfs.log"
 
 # 2) Chroot içi girdiler: araç köprüsü, squashfs (ISO'daki yolla aynı), hedef kök.
 mkdir -p "$LFS/run/m11tools" "$TGT" "$LFS/root/m11-runner"
-mount --bind "$TOOLS" "$LFS/run/m11tools"; TOOLS_BIND=1
+if [ "$HOSTTOOLS" = 1 ]; then mount --bind "$TOOLS" "$LFS/run/m11tools"; TOOLS_BIND=1
+else
+    # Test-host only: Fedora runs SELinux, so the kernel labels every file written to the
+    # loop-mounted target and rsync -X then fails to remove security.selinux (exit 23,
+    # 2026-11-06). The live ISO has no SELinux, so the product rsync call is unchanged; this
+    # wrapper (on $LFS/run, a tmpfs) only adds a filter for that one xattr.
+    mkdir -p "$LFS/run/m11tools/bin"
+    printf '%s\n' '#!/bin/sh' 'exec /usr/bin/rsync --filter="-x security.selinux" "$@"' > "$LFS/run/m11tools/bin/rsync"
+    chmod 755 "$LFS/run/m11tools/bin/rsync"
+fi
 mkdir -p "$LFS/usr/lib/live/mount/medium/LiveOS"; MADE_LIVE_DIR=1
 touch "$LFS/usr/lib/live/mount/medium/LiveOS/squashfs.img"
 mount --bind "$SQ" "$LFS/usr/lib/live/mount/medium/LiveOS/squashfs.img"; SQ_BIND=1
@@ -162,6 +179,11 @@ run_mod unpackfs /etc/calamares/modules/unpackfs.conf
 # unpackfs rc=0 dönse de hedef boş kalabilir (squashfs okunamadı): kök dosyalarını doğrula.
 [ -x "$TGT/usr/bin/bash" ] && [ -d "$TGT/etc" ] && [ -d "$TGT/boot" ] \
     || { echo "DURDU: unpackfs sonrası hedef kökte dosya yok (/usr/bin/bash, /etc, /boot)"; exit 1; }
+# M11-FIX-02: /tmp (1777) and /root must come from the squashfs. Without them the
+# installed system's first boot fails PrivateTmp/ProtectSystem units with 226/NAMESPACE
+# while / is still read-only. The squashfs must be built with build-iso.sh.
+[ -d "$TGT/tmp" ] && [ "$(stat -c %a "$TGT/tmp")" = 1777 ] && [ -d "$TGT/root" ] \
+    || { echo "DURDU: unpackfs sonrası hedef kökte /tmp (1777) veya /root yok (M11-FIX-02). squashfs scripts/lfs-blfs/live-iso/build-iso.sh ile üretilmeli."; exit 1; }
 # Canlı ISO'nun initramfs'i (alplive kancası) kurulu sisteme kopyalandı; disk kökünü
 # canlı medyaya bağlayacağı için grub-mkconfig'in ona yazmaması gerekir.
 rm -f "$TGT"/boot/initramfs-live-*.img

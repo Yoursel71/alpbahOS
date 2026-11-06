@@ -1,0 +1,26 @@
+Bu diskin kimse tarafından kullanılmadığı kontrol ediliyor ... TAMAM
+
+Disk /dev/loop1: 20 GiB, 21474836480 bayt, 41943040 sektör
+Birimler: sektör'i 1 * 512 = 512 baytın 
+Sektör boyutu (montıksal/fiziksel): 512 bayt / 512 bayt
+G/Ç boyutu (en düşük/en uygun): 512 bayt / 512 bayt
+
+>>> Betik başlığı kabul edildi.
+>>> Yeni bir GPT disketiketi oluşturuldu (GUID: 92BC20F0-7EAF-4AEE-AE9C-3AB1C8EE2188).
+/dev/loop1p1: Yeni bir disk bölümü 1, 'BIOS boot' tipinde ve 1 MiB boyutunda oluşturuldu.
+/dev/loop1p2: Yeni bir disk bölümü 2, 'Linux filesystem' tipinde ve 20 GiB boyutunda oluşturuldu.
+/dev/loop1p3: Bitti.
+
+Yeni durum:
+Disketikeri tipi: gpt
+Disk belirleyicisi: 92BC20F0-7EAF-4AEE-AE9C-3AB1C8EE2188
+
+Aygıt        Başlangıç      Son   Sektör Boyut Tür
+/dev/loop1p1      2048     4095     2048    1M BIOS önyükleme
+/dev/loop1p2      4096 41940991 41936896   20G Linux dosya sistemi
+
+Disk bölümü tablosu değiştirildi.
+Disk bölüm tablosunu yeniden okumak için ioctl() çağrılıyor.
+Disk bölümü tablosu yeniden okunamadı.: Geçersiz argüman
+The kernel still uses the old table. The new table will be used at the next reboot or after you run partprobe(8) or partx(8).
+Diskler eşzamanlanıyor.

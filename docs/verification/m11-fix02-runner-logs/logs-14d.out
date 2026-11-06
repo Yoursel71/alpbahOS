@@ -1,0 +1,14 @@
+loop=/dev/loop1 img=/home/yrslf/alpbahOS/scratch-lfs-bench/m11-runner/m11-target-fix02-20261106.img
+partuuid=f4a7c24b-abd7-4b83-aec6-6d72d1d80a60
+root_uuid=472c00d3-2d03-4b76-b7ef-d2bd096109e3
+[unpackfs] rc=0
+[rm-live-initramfs] ok
+[machineid] rc=0
+[localecfg] rc=0
+[fstab] rc=0
+[networkcfg] rc=0
+[hwclock] rc=0
+[grubcfg] rc=0
+[bootloader] rc=0
+[umount] rc=0
+M11 koşucu TAMAM: img=/home/yrslf/alpbahOS/scratch-lfs-bench/m11-runner/m11-target-fix02-20261106.img uuid=472c00d3-2d03-4b76-b7ef-d2bd096109e3

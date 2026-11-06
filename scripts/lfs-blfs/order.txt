@@ -341,3 +341,5 @@
 336 konsole-25.08.3 REQ https://docs.kde.org/stable6/en/konsole/konsole/
 337 zsh-5.9 REQ https://www.zsh.org/
 338 dolphin-25.08.3 REQ https://docs.kde.org/stable6/en/dolphin/dolphin/
+339 rsync-3.4.1 REQ https://www.linuxfromscratch.org/blfs/view/12.4-systemd/basicnet/rsync.html
+340 squashfs-tools-4.7.5 REQ https://github.com/plougher/squashfs-tools/releases/tag/4.7.5
