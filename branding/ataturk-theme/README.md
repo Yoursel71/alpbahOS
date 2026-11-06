@@ -1,85 +1,100 @@
-# Atatürk tema varlık planı — UI-03
+# Atatürk theme — asset plan (UI-03, D114)
 
-Durum (22 Eylül 2026): **kaynak seçildi, indirildi, kullanıcı onayıyla repoya eklendi.**
+Status (updated 2026-11-06):
 
-- Dosya: [`source/Ataturk1930s.jpg`](source/Ataturk1930s.jpg)
-- Kaynak: [Wikimedia Commons — Ataturk1930s.jpg](https://commons.wikimedia.org/wiki/File:Ataturk1930s.jpg) (orijinal kaynağı mustafakemalim.com, 29 Mart 1932 tarihli)
-- Lisans: **PD-Turkey** — Türk telif yasasına göre koruma süresi dolmuş, kamu malı. Ayrıntı için Commons sayfasındaki lisans etiketine bakın.
-- Çözünürlük: 732×987 px
+- **D114 (accepted by the user):** the Atatürk theme is a **selectable theme** (Welcome app and System Settings). The **default** wallpaper and lock screen use the **alpbahOS brand**. The alpbahOS default wallpaper is not produced in this repo yet.
+- **Source and wallpaper package (22 and 26 Sep 2026):** source image selected and added; wallpaper package built (see below). Not shown in a real Plasma session at that time.
+- **QEMU check (5 Nov 2026):** `plasma-apply-wallpaperimage` on the 1920x1080 image reported success (functional check). No visual evidence was captured: the QEMU `screendump` did not write the GL display to a file. See [vm-session-2-2026-11-05.md](../../docs/verification/vm-session-2-2026-11-05.md).
+
+## Source
+
+- File: [`source/Ataturk1930s.jpg`](source/Ataturk1930s.jpg)
+- Source: [Wikimedia Commons — Ataturk1930s.jpg](https://commons.wikimedia.org/wiki/File:Ataturk1930s.jpg) (original source mustafakemalim.com, dated 29 March 1932)
+- Licence: **PD-Turkey** — copyright term under Turkish law has expired; public domain. See the licence tag on the Commons page.
+- Resolution: 732×987 px
 - SHA-256: `f1dad1a903de0d8930b44020fc77e4aea647ddd3cb21d110d447f1fe63694bbf`
-- İndirme onayı: kullanıcı tarafından sohbette açıkça verildi ("evet indir").
+- Download approval: given by the user in chat ("evet indir", 22 Sep 2026).
 
-**Bilinçli olarak seçilmeyen alternatif:** ATAM'ın daha yüksek çözünürlüklü (806×1024/845×1024) portreleri araştırıldı ama "Tüm Hakları Saklıdır" ibaresiyle **telif korumalı** olduğu görüldü — kamu malı değil, kullanılmadı. AI ile görsel üretimi de değerlendirilip **reddedildi**: gerçek bir tarihi/kurucu figürün uydurma tasviri olur, Türkiye'de 5816 sayılı Atatürk'ü Koruma Kanunu'na göre hassas bir alan.
+**Alternatives considered and not used:**
 
-**Güncelleme (26 Eylül 2026, M08):** Varsayılan duvar kâğıdı paketi üretildi: [`wallpaper/alpbahOS-Ataturk/`](wallpaper/alpbahOS-Ataturk/ATTRIBUTION.md), üretici [`tools/build_wallpaper.py`](tools/build_wallpaper.py). Çözünürlük sorunu büyütmeden çözüldü: portre kaynak boyutunun üstüne ölçeklenmez (1080p'de ~%99, 1440p'de %100 ölçek), koyu lacivert zemin ve geometrik dağ silüeti üzerine tonlanarak yerleştirilir; boşluk büyütülmüş fotoğrafla değil zeminle dolar. Fotoğraf kırpılmaz; metin, imza veya söz eklenmez. Üretilen boyutlar: 1366x768, 1920x1080, 1920x1200, 2560x1440, 3440x1440 (+ 400x250 önizleme). Üretici, yüz kutusunun üst panel (36 px) altında, dock bölgesi (alt %15) üstünde ve sol üst simge bölgesi (genişliğin %25'i) dışında kaldığını her boyutta denetler; tutmazsa üretim durur. **Açık:** 4K (3840x2160) ve üstünde portre ekranın küçük bir kısmını kaplar; stilize/vektör sürüm (§2.1 yol 2) ya da daha yüksek çözünürlüklü, lisansı uygun bir kaynak hâlâ değerlendirilebilir. Duvar kâğıdı gerçek Plasma oturumunda gösterilmedi; farklı ölçeklerde (100/125/150/200%) görüntü alınmadı.
+- ATAM's higher-resolution portraits (806×1024 and 845×1024) carry an "All rights reserved" notice, so they are copyrighted, not public domain. Not used.
+- AI-generated portraits were considered and rejected. A fabricated depiction of a real founding figure is not acceptable, and in Turkey Atatürk's image is a sensitive area under Law No. 5816 (Atatürk'ü Koruma Kanunu).
 
-Kapsam: yalnızca `branding/`. Kaynak: [docs/MASTER_PLAN.md](../../docs/MASTER_PLAN.md) §7.1, [docs/DECISIONS.md](../../docs/DECISIONS.md) D09, [docs/alpbahOS-design-mockups.md](../../docs/alpbahOS-design-mockups.md) §2.
+## 1. Requirements (D09 and D114, MASTER_PLAN §7.1)
 
-## 1. Gereksinim özeti (D09, MASTER_PLAN §7.1)
+- The Atatürk theme is selectable. The default desktop and lock screen use the alpbahOS brand (D114).
+- Use a source with a known licence; record the usage and licence information.
+- Add no invented signature or quote to the image.
+- In 16:9, 16:10 and ultrawide crops, the face, logo and text stay inside a safe area.
+- The lock screen password field and username stay readable.
+- Leave a low-detail area for desktop icons.
 
-- Varsayılan masaüstü ve kilit ekranı Atatürk temalı (açılış/boot ekranı **kapsam dışı**, ayrıca karara bağlanmamış).
-- Kaynağı belli görsel seçilir; dağıtım için kullanım/izin bilgisi kayıt altına alınır.
-- Görsele uydurma imza veya söz eklenmez.
-- 16:9, 16:10 ve ultrawide kırpımlarda yüz, logo ve metin güvenli alanda kalır.
-- Kilit ekranında şifre alanı ve kullanıcı adı okunaklı olmalı.
-- Masaüstü ikonları için düşük detaylı alan bırakılmalı.
+## 2. Source candidates (not downloaded, record only)
 
-## 2. Araştırılan kaynak adayları (indirilmedi — yalnızca kayıt)
+Found by web search. **None of these except the chosen source was downloaded or added to the repo.** Choosing a final source and downloading it requires the user's approval.
 
-Web araması ile bulundu; **hiçbiri indirilmedi/repoya eklenmedi**. Nihai seçim ve indirme kullanıcı onayı gerektirir.
-
-| Aday | Kaynak | Lisans/durum | Çözünürlük | Uygunluk notu |
+| Candidate | Source | Licence / status | Resolution | Note |
 |---|---|---|---|---|
-| [Mustafa Kemal Ataturk – golden portrait](https://commons.wikimedia.org/wiki/File:Mustafa_Kemal_Ataturk_-_golden_portrait.png) | Wikimedia Commons | Public Domain Mark 1.0 | 210×275 px | **Çok düşük çözünürlük** — 1080p/4K duvar kâğıdı için doğrudan kullanılamaz. |
-| [Ataturk1930s.jpg (1932)](https://commons.wikimedia.org/wiki/File:Ataturk1930s.jpg) | Wikimedia Commons, kaynağı mustafakemalim.com | PD-Turkey (Türk telif yasasına göre koruma süresi dolmuş) | 732×987 px | Düşük-orta çözünürlük; tam ekran değil, portre öğesi olarak kullanılabilir. |
-| [Mustafa Kemal Atatürk 1921](https://commons.wikimedia.org/wiki/File:Mustafa_Kemal_Atat%C3%BCrk_1921.jpg) | Wikimedia Commons | **CC BY-SA 4.0** (public domain değil — atıf + aynı lisans şartı var) | Doğrulanmadı | Lisans şartı diğerlerinden farklı; kullanılırsa atıf zorunlu. |
-| [Mustafa Kemal Ataturk.png (Jean Weinberg, 1927)](https://commons.wikimedia.org/wiki/File:Mustafa_Kemal_Ataturk.png) | Wikimedia Commons | Doğrulanmadı (sayfa okunmadı) | Doğrulanmadı | Çözünürlük/lisans bu turda kontrol edilmedi. |
-| ATAM (Atatürk Araştırma Merkezi) portre galerisi | [atam.gov.tr/galeri/ataturk-portreleri](https://atam.gov.tr/galeri/ataturk-portreleri/) | Doğrulanmadı — resmi devlet kurumu, muhtemelen daha yüksek çözünürlük | Doğrulanmadı | **En umut verici aday**; her görsel için ayrı kullanım şartı kontrolü gerekir. |
-| TCCB (Cumhurbaşkanlığı) fotoğraf arşivi | [tccb.gov.tr/ata_ozel/fotograf](https://www.tccb.gov.tr/ata_ozel/fotograf/) | Doğrulanmadı | Doğrulanmadı | Resmi kaynak; kullanım şartı sayfa bazında kontrol edilmeli. |
-| TTK (Türk Tarih Kurumu) fotoğraf koleksiyonu | [ttk.gov.tr/ataturk-fotograflari-koleksiyonu](https://ttk.gov.tr/ataturk-fotograflari-koleksiyonu/) | Doğrulanmadı | Doğrulanmadı | Resmi kaynak; kullanım şartı sayfa bazında kontrol edilmeli. |
+| [Mustafa Kemal Ataturk – golden portrait](https://commons.wikimedia.org/wiki/File:Mustafa_Kemal_Ataturk_-_golden_portrait.png) | Wikimedia Commons | Public Domain Mark 1.0 | 210×275 px | **Very low resolution.** Cannot be used directly for 1080p or 4K. |
+| [Ataturk1930s.jpg (1932)](https://commons.wikimedia.org/wiki/File:Ataturk1930s.jpg) | Wikimedia Commons, source mustafakemalim.com | PD-Turkey | 732×987 px | Low to medium resolution. Usable as a portrait element, not full screen. **Chosen source.** |
+| [Mustafa Kemal Atatürk 1921](https://commons.wikimedia.org/wiki/File:Mustafa_Kemal_Atat%C3%BCrk_1921.jpg) | Wikimedia Commons | **CC BY-SA 4.0** (not public domain: attribution and share-alike apply) | Not verified | Different licence terms; attribution is required if used. |
+| [Mustafa Kemal Ataturk.png (Jean Weinberg, 1927)](https://commons.wikimedia.org/wiki/File:Mustafa_Kemal_Ataturk.png) | Wikimedia Commons | Not verified (page not read) | Not verified | Resolution and licence not checked. |
+| ATAM portrait gallery | [atam.gov.tr/galeri/ataturk-portreleri](https://atam.gov.tr/galeri/ataturk-portreleri/) | Not verified; official institution, probably higher resolution | Not verified | Most promising candidate. Each image needs its own usage check. |
+| TCCB photo archive | [tccb.gov.tr/ata_ozel/fotograf](https://www.tccb.gov.tr/ata_ozel/fotograf/) | Not verified | Not verified | Official source; check usage terms per page. |
+| TTK photo collection | [ttk.gov.tr/ataturk-fotograflari-koleksiyonu](https://ttk.gov.tr/ataturk-fotograflari-koleksiyonu/) | Not verified | Not verified | Official source; check usage terms per page. |
 
-### 2.1 Önemli teknik uyarı
+### 2.1 Technical warning
 
-Wikimedia Commons'ta kolayca bulunan, net biçimde kamu malı işaretli adayların çözünürlüğü (**210×275** ve **732×987**) modern bir 1920×1080/4K duvar kâğıdı için **yetersizdir**; doğrudan büyütmek bulanıklaşmaya/piksel bozulmasına yol açar. İki gerçekçi yol var:
+The public-domain candidates that are easy to find on Wikimedia Commons (**210×275** and **732×987**) are too small for a modern 1920×1080 or 4K wallpaper. Enlarging them makes them blurry. Two realistic options:
 
-1. **Daha yüksek çözünürlüklü resmi arşiv taraması** — ATAM/TCCB/TTK üzerinden, her görsel için ayrı ayrı lisans/kullanım şartı kontrolü yapılarak.
-2. **Stilize/vektör işleme** — düşük çözünürlüklü kaynak fotoğraftan, çizgi sanatı veya siluet tarzında yeniden çizilmiş bir versiyon üretmek (tasarım dokümanındaki `alpbahOS` logosunun "terminal + dağ silüeti" diline yakın bir yaklaşım); bu durumda çözünürlük sorunu ortadan kalkar ama üretim (illüstrasyon) ayrı bir iş kalemidir.
+1. **A higher-resolution scan from an official archive** (ATAM, TCCB or TTK), with the usage terms checked for each image.
+2. **A stylised or vector version**: redraw the low-resolution source as line art or a silhouette in the style of the alpbahOS logo ("terminal + mountain silhouette"). This removes the resolution problem, but the illustration is a separate work item.
 
-Bu karar kullanıcıya/entegratöre bırakılmıştır; bu belge yalnızca seçenekleri ve kısıtları kayda geçirir.
+The choice is left to the user. This document only records the options and constraints.
 
-## 3. Kırpım ve güvenli alan planı (16:9 / 16:10 / ultrawide)
+## 3. Crop and safe-area plan (16:9, 16:10, ultrawide)
 
-| Oran | Hedef çözünürlük örneği | Kural |
+| Ratio | Example target | Rule |
 |---|---|---|
-| 16:9 | 1920×1080 | Yüz/portre dikey eksende ortadan sağa kaydırılabilir (mockup'taki logo yerleşimiyle çakışmasın); alt %15 dock için düşük detaylı bırakılır. |
-| 16:10 | 1920×1200 | 16:9 kırpımına göre üstte/altta ek `120px` güvenli boşluk; yüz konumu değişmez. |
-| Ultrawide (21:9) | 3440×1440 | Portre yatayda ortalanır; sol/sağ kenarlara doğru düşük detaylı/gradyan alan genişletilir, yüz asla kenara yapışmaz. |
+| 16:9 | 1920×1080 | The portrait can shift horizontally from centre to avoid the logo area. Keep the bottom 15% low-detail for the taskbar (D115). |
+| 16:10 | 1920×1200 | Add 120 px of safe margin at top and bottom compared with 16:9. The face position does not change. |
+| Ultrawide (21:9) | 3440×1440 | Centre the portrait horizontally. Extend low-detail or gradient areas to the left and right. The face never touches an edge. |
 
-Genel kural: yüz ve logo, tasarım dokümanındaki logo koruma alanı kuralına benzer şekilde (§2.3: sembol yüksekliğinin en az `0.25x`'i kadar boşluk) hiçbir kırpımda kadraj dışına taşmaz veya kenara yapışmaz.
+General rule: the face and logo keep a clear margin (at least 0.25× the symbol height, from the logo protection rule in [alpbahOS-design-mockups.md](../../docs/alpbahOS-design-mockups.md) §2.3) and never run off the frame or touch an edge in any crop.
 
-## 4. Kilit ekranı okunabilirlik kuralı
+**Note on the layout change (D115):** the generator (`tools/build_wallpaper.py`) still reserves a 36 px band at the top, which came from the top panel in the dropped mockup, and a bottom 15% band for the old dock. Both values are from the old layout. Changing them is outside this folder's current work; the next wallpaper build should use the Windows-style bottom taskbar values.
 
-> M08 durumu: kilit ekranı, varsayılan duvar kâğıdını look-and-feel paketinden alır (ayrı yapılandırma gerekmez). Aşağıdaki yarı saydam okunabilirlik paneli için özel bir kilit ekranı QML'i gerekir; KScreenLocker bu build'de derlenmediğinden (SCREENLOCK-01) yazılmadı ve test edilmedi.
+## 4. Lock screen readability
 
-- Şifre alanı ve kullanıcı adı metninin arkasında, `--ab-bg-950` tonunda yarı saydam bir panel (`rgba(11,16,20,0.55)` öneri, ölçülmedi) kullanılır — portre fotoğrafının kontrastından bağımsız okunabilirlik sağlamak için.
-- Metin rengi `--ab-text-strong` (`#f4f8fb`); WCAG AA kontrast hedefi (planlandı, ölçülmedi).
-- Hatalı giriş mesajı `--ab-danger` (`#ff6575`) — mockup §10 ile tutarlı.
+> Status: the lock screen takes its wallpaper from the look-and-feel package; no separate lock-screen configuration exists. The translucent readability panel below needs a custom lock-screen QML. KScreenLocker is not built yet (D133 brings it back; SCREENLOCK-01). So the panel was not written or tested.
 
-## 5. Masaüstü ikon alanı
+- A semi-transparent panel in `--ab-bg-950` sits behind the password field and username, so readability does not depend on the portrait contrast. Suggested value `rgba(11,16,20,0.55)` (not measured).
+- Text colour `--ab-text-strong` (`#f4f8fb`). WCAG AA contrast target: planned, not measured.
+- Error message colour `--ab-danger` (`#ff6575`), consistent with mockup §10.
 
-Mockup §5.1 kuralına uyularak, sol üst köşede (`Home`, `Trash`, `Documents` ikonları) düşük detaylı/az kontrastlı bir bölge bırakılır; portrenin yüzü bu köşeyle çakışmaz.
+## 5. Desktop icon area
 
-## 6. Logo korunması
+Following the mockup §5.1 rule, leave a low-detail, low-contrast area in the top-left corner for icons such as Home, Trash and Documents. The portrait's face must not overlap that corner.
 
-Duvar kâğıdına `alpbahOS` logosu eklenirse (mockup §5.1: "Duvar kâğıdında logo büyük ama düşük kontrastlı kullanılabilir"), logo kullanım kuralı (§2.3 koruma alanı, §2.4 yasak kullanımlar) aynen geçerlidir — Atatürk portresiyle logo çakıştırılmaz, logo gölgelendirilmez.
+## 6. Logo use
 
-## 7. Doğrulanmamış / açık kararlar
+If the alpbahOS logo is added to a wallpaper (mockup §5.1: "the logo can be used large but low-contrast on the wallpaper"), the logo rules apply unchanged: clear-space rule (§2.3) and prohibited uses (§2.4). Do not overlap the logo with the Atatürk portrait, and do not add a shadow to the logo.
 
-1. ~~Nihai görsel kaynağı seçilmedi~~ — 22 Eylül'de `Ataturk1930s.jpg` seçildi ve kullanıcı onayıyla eklendi; M08'de bu kaynaktan duvar kâğıdı üretildi.
-2. ATAM/TCCB/TTK sayfalarındaki tam kullanım şartları tek tek okunmadı.
-3. Boot ekranının Atatürk temalı olup olmayacağı MASTER_PLAN §7.1'de "henüz istenmemiş" olarak işaretli — bu belge boot ekranını kapsamıyor.
-4. Stilize/vektör alternatifi yalnızca fikir düzeyinde; üretilmedi.
+## 7. Open items
 
-## Sonraki adım
+1. ~~No final source chosen~~ — `Ataturk1930s.jpg` was chosen on 22 Sep 2026 with the user's approval. On 26 Sep 2026 a wallpaper was built from it (section below).
+2. The full usage terms of the ATAM, TCCB and TTK pages were not read.
+3. Whether the boot screen uses the theme is not decided. MASTER_PLAN §7.1 lists it as not yet requested. This document does not cover the boot screen.
+4. The stylised or vector alternative exists as an idea only; nothing was produced.
+5. The default alpbahOS brand wallpaper and lock screen (D114) are not designed or produced yet.
+6. The top-band value (36 px) and bottom band (15%) in the wallpaper generator are from the old layout (see section 3).
 
-Kullanıcı bir kaynak adayı onaylarsa (ATAM/TCCB/TTK'dan yüksek çözünürlüklü bir tarama önerilir), o görsel açık onayla indirilir, kaynak/lisans bilgisi bu dosyaya işlenir ve kırpım/kontrast planı gerçek dosya üzerinde uygulanır. Bkz. [docs/handoffs/claude/001-desktop-bootstrap.md](../../docs/handoffs/claude/001-desktop-bootstrap.md).
+## Wallpaper package (26 Sep 2026)
+
+- Package: [`wallpaper/alpbahOS-Ataturk/`](wallpaper/alpbahOS-Ataturk/ATTRIBUTION.md). Generator: [`tools/build_wallpaper.py`](tools/build_wallpaper.py).
+- The resolution limit was handled without enlarging the portrait. At 1080p the portrait is scaled to about 99%; at 1440p it is at 100%. It is placed on a dark navy background with a geometric mountain silhouette. The gap is filled with the background, not with an enlarged photo.
+- The photo is not cropped. No text, signature or quote is added.
+- Sizes produced: 1366x768, 1920x1080, 1920x1200, 2560x1440, 3440x1440, plus a 400x250 preview.
+- The generator checks in every size that the face box stays clear of the top band (36 px), the bottom band (15%) and the top-left icon area (25% of the width). The build stops if the check fails.
+- **Open:** at 4K (3840x2160) and above, the portrait fills only a small part of the screen. A stylised or vector version (section 2.1, option 2), or a higher-resolution source with a clear licence, can still be considered.
+- Not checked: the wallpaper was not shown in a real Plasma session in 2026; scaling at 100%, 125%, 150% and 200% was not checked. The 5 Nov 2026 QEMU run was functional only (section status above).

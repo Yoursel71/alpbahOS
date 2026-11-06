@@ -18,6 +18,8 @@ REPO = Path(__file__).resolve().parents[1]
 SHORTCUTS = REPO / "profiles" / "shortcuts"
 LNF = REPO / "profiles" / "desktop" / "lookandfeel" / "org.alpbahos.solid.desktop"
 WALLPAPER = REPO / "branding" / "ataturk-theme" / "wallpaper" / "alpbahOS-Ataturk"
+BRAND_WALLPAPER = REPO / "branding" / "alpbahos-brand" / "wallpaper" / "alpbahOS-Brand"
+BRAND_TOOL = REPO / "branding" / "alpbahos-brand" / "tools" / "build_brand_wallpaper.py"
 
 
 def load(name, path):
@@ -173,20 +175,62 @@ class LookAndFeelPackageTests(unittest.TestCase):
         self.assertTrue(colors.exists(), colors)
         self.assertEqual(ini(colors.read_text(encoding="utf-8"))["General"]["ColorScheme"], scheme)
         image = re.search(r"^\[Wallpaper\]\nImage=(\S+)$", defaults, re.M).group(1)
-        wall_meta = json.loads((WALLPAPER / "metadata.json").read_text(encoding="utf-8"))
-        self.assertEqual(image, wall_meta["KPlugin"]["Id"])
-        self.assertEqual(image, WALLPAPER.name)
+        brand_meta = json.loads((BRAND_WALLPAPER / "metadata.json").read_text(encoding="utf-8"))
+        self.assertEqual(image, brand_meta["KPlugin"]["Id"])
+        self.assertEqual(image, BRAND_WALLPAPER.name)
+        self.assertEqual(image, "alpbahOS-Brand")
+        # Atatürk paketi seçilebilir kalır; varsayılan olarak ayarlanmaz (D114).
+        self.assertNotEqual(image, WALLPAPER.name)
+        self.assertTrue((WALLPAPER / "metadata.json").exists())
 
     def test_layout_script(self):
         layout = (LNF / "contents" / "layouts" / "org.kde.plasma.desktop-layout.js").read_text(encoding="utf-8")
-        for applet in ("org.kde.plasma.kickoff", "org.kde.plasma.windowlist", "org.kde.plasma.digitalclock",
-                       "org.kde.plasma.systemtray", "org.kde.plasma.icontasks"):
+        # D115: tek alt panel; üst panel ve dock yok.
+        self.assertEqual(layout.count("new Panel"), 1, "tek panel olmalı (D115)")
+        self.assertIn('panel.location = "bottom";', layout)
+        self.assertNotIn('"top"', layout)
+        self.assertNotIn("floating = true", layout)
+        code = re.sub(r"//[^\n]*", "", layout)  # yorumlar hariç: ikinci panel/dock kodu yok
+        self.assertNotIn("dock", code.lower())
+        self.assertNotIn("Panel", code.replace("new Panel", ""))
+        self.assertIn('panel.lengthMode = "fill";', layout)
+        self.assertIn("panel.height = 44;", layout)
+        # Uygulama sırası: başlatıcı, görev çubuğu, ayırıcı, tepsi, saat, masaüstünü göster.
+        applets = re.findall(r'panel\.addWidget\("([^"]+)"\)', layout)
+        self.assertEqual(applets, ["org.kde.plasma.kickoff", "org.kde.plasma.icontasks",
+                                   "org.kde.plasma.marginsseparator", "org.kde.plasma.systemtray",
+                                   "org.kde.plasma.digitalclock", "org.kde.plasma.showdesktop"])
+        self.assertNotIn("org.kde.plasma.windowlist", layout)
+        for applet in ("org.kde.plasma.kickoff", "org.kde.plasma.digitalclock",
+                       "org.kde.plasma.systemtray", "org.kde.plasma.icontasks", "org.kde.plasma.showdesktop"):
             self.assertIn(f'"{applet}"', layout)
         self.assertEqual(layout.count("org.kde.plasma.kickoff") + layout.count("org.kde.plasma.kicker"), 1,
                          "tek başlatıcı olmalı (Meta tuşu belirsizleşmesin)")
         icon = re.search(r'writeConfig\("icon", "([^"]+)"\)', layout).group(1)
         self.assertTrue((REPO / "branding" / "icons" / "hicolor" / "48x48" / "apps" / f"{icon}.png").exists())
         self.assertNotIn("/usr/share/wallpapers", layout)
+
+    def test_no_liquid_option_offered(self):
+        # D116: Liquid glass release dışı. Yalnız README.md ve liquid-prototype.md (ve switcher'ın
+        # "Liquid profili yoktur" notu) kalabilir.
+        tokens = json.loads((REPO / "profiles" / "desktop" / "tokens.json").read_text(encoding="utf-8"))
+        self.assertEqual(set(tokens["profiles"]), {"solid", "glass"})
+        self.assertEqual(set(GORUNUM.PROFILES), {"solid", "glass"})
+        self.assertEqual(tokens["profiles"]["solid"]["durum"], "varsayılan")
+        self.assertEqual(tokens["profiles"]["glass"]["durum"], "secenek")
+        excluded = {"README.md", "liquid-prototype.md"}
+        for path in (REPO / "profiles" / "desktop").rglob("*"):
+            if not path.is_file() or path.name in excluded or path.suffix in (".png", ".jpg"):
+                continue
+            text = path.read_text(encoding="utf-8", errors="replace")
+            for line in text.splitlines():
+                if re.search(r"liquid", line, re.I) is None:
+                    continue
+                allowed = path.name == "alpbah-gorunum" and (
+                    "Liquid profili yoktur" in line or "liquid-prototype.md" in line)
+                self.assertTrue(allowed, f"{path.relative_to(REPO)}: {line.strip()}")
+        layout = (LNF / "contents" / "layouts" / "org.kde.plasma.desktop-layout.js").read_text(encoding="utf-8")
+        self.assertNotIn("liquid", layout.lower())
 
     def test_layout_script_syntax(self):
         node = shutil.which("node")
@@ -221,6 +265,83 @@ class WallpaperTests(unittest.TestCase):
             builder.check_safe_area((1920, 1080), (100, 10, 400, 300))
         with Image.open(WALLPAPER / "contents" / "screenshot.png") as preview:
             self.assertEqual(preview.size, builder.SCREENSHOT_SIZE)
+
+
+class BrandWallpaperTests(unittest.TestCase):
+    def setUp(self):
+        try:
+            from PIL import Image  # noqa: F401
+        except ImportError:
+            self.skipTest("Pillow yok")
+        self.builder = load("m08_brand_wallpaper", BRAND_TOOL)
+
+    def test_metadata(self):
+        meta = json.loads((BRAND_WALLPAPER / "metadata.json").read_text(encoding="utf-8"))
+        plugin = meta["KPlugin"]
+        self.assertEqual(plugin["Id"], "alpbahOS-Brand")
+        self.assertEqual(plugin["Id"], BRAND_WALLPAPER.name)
+        self.assertEqual(plugin["Name"], "alpbahOS")
+        self.assertEqual(plugin["License"], "GPL-3.0-or-later")
+        self.assertEqual([a["Name"] for a in plugin["Authors"]], ["alpbahOS"])
+
+    def test_images_exist_at_expected_sizes(self):
+        from PIL import Image
+        shipped = sorted(p.name for p in (BRAND_WALLPAPER / "contents" / "images").iterdir())
+        self.assertEqual(shipped, sorted(f"{w}x{h}.png" for w, h in self.builder.SIZES))
+        for w, h in self.builder.SIZES:
+            with Image.open(BRAND_WALLPAPER / "contents" / "images" / f"{w}x{h}.png") as image:
+                self.assertEqual(image.size, (w, h))
+                self.assertEqual(image.format, "PNG")
+        with Image.open(BRAND_WALLPAPER / "contents" / "screenshot.png") as preview:
+            self.assertEqual(preview.size, self.builder.SCREENSHOT_SIZE)
+
+    def test_resolution_set_matches_atatuerk_package(self):
+        atat = load("m08_ataturk_sizes", REPO / "branding" / "ataturk-theme" / "tools" / "build_wallpaper.py")
+        self.assertEqual(self.builder.SIZES, atat.SIZES)
+
+    def test_check_mode_passes_and_output_is_deterministic(self):
+        self.assertEqual(self.builder.main(["--check"]), 0)
+        # Aynı girdi iki kez aynı baytları verir.
+        self.assertEqual(self.builder.build(), self.builder.build())
+
+    def test_logo_is_not_upscaled(self):
+        from PIL import Image
+        colors = self.builder.load_tokens()
+        small = Image.new("RGBA", (60, 70), (255, 255, 255, 255))
+        # Kaynak logo çok küçükse kendi boyutunda kalır; büyütme yapılmaz.
+        image = self.builder.compose((1920, 1080), colors, small)
+        self.assertEqual(image.size, (1920, 1080))
+        self.assertEqual(self.builder.LOGO_HEIGHT_FRACTION, 0.22)
+
+    def test_png_has_no_metadata_chunks(self):
+        for path in sorted((BRAND_WALLPAPER / "contents").rglob("*.png")):
+            data = path.read_bytes()
+            self.assertTrue(data.startswith(b"\x89PNG\r\n\x1a\n"), path)
+            for marker in (b"tEXt", b"zTXt", b"iTXt", b"tIME"):
+                self.assertNotIn(marker, data, f"{path.name} contains {marker!r}")
+
+    def test_logo_area_has_no_dark_box(self):
+        from PIL import Image
+        image_path = BRAND_WALLPAPER / "contents" / "images" / "1920x1080.png"
+        with Image.open(image_path) as shipped:
+            image = shipped.convert("RGB")
+        keyed = self.builder.key_background(self.builder.load_logo())
+        logo_x, top, logo_w, logo_h, _gap = self.builder.logo_box((1920, 1080), keyed)
+        box = image.crop((logo_x, top, logo_x + logo_w, top + logo_h))
+        total = box.width * box.height
+        raw = box.tobytes()
+        near = 0
+        for i in range(0, len(raw), 3):
+            r, g, b = raw[i], raw[i + 1], raw[i + 2]
+            if ((r - 20) ** 2 + (g - 20) ** 2 + (b - 20) ** 2) ** 0.5 <= 6:
+                near += 1
+        self.assertLess(near / total, 0.01, f"logo alanında #141414 kutusu kaldı: {near}/{total}")
+
+    def test_brand_colours_come_from_tokens(self):
+        tokens = json.loads((REPO / "profiles" / "desktop" / "tokens.json").read_text(encoding="utf-8"))["color"]
+        self.assertEqual(self.builder.hex_to_rgb(tokens["navy"]), self.builder.hex_to_rgb("#062746"))
+        self.assertEqual(self.builder.hex_to_rgb(tokens["cyan"]), self.builder.hex_to_rgb("#00aeef"))
+        self.assertEqual(self.builder.hex_to_rgb(tokens["orange"]), self.builder.hex_to_rgb("#f5a623"))
 
 
 def load_script(name, path):
@@ -519,6 +640,8 @@ class InstallScriptTests(unittest.TestCase):
             self.assertNotIn("/etc/xdg/kglobalshortcutsrc", "\n".join(manifest))
             self.assertTrue((root / "usr/share/plasma/look-and-feel/org.alpbahos.solid.desktop/metadata.json").exists())
             self.assertTrue((root / "usr/share/wallpapers/alpbahOS-Ataturk/contents/images/1920x1080.jpg").exists())
+            self.assertTrue((root / "usr/share/wallpapers/alpbahOS-Brand/contents/images/1920x1080.png").exists())
+            self.assertTrue((root / "usr/share/wallpapers/alpbahOS-Brand/metadata.json").exists())
             second = self.run_install("--destdir", root.as_posix())
             self.assertEqual(second.returncode, 0, second.stderr)
             (root / "etc/xdg/kdeglobals").write_text("[KDE]\n", encoding="utf-8")
@@ -530,6 +653,26 @@ class InstallScriptTests(unittest.TestCase):
     def test_refuses_missing_or_live_root(self):
         self.assertEqual(self.run_install().returncode, 2)
         self.assertEqual(self.run_install("--destdir", "/").returncode, 2)
+
+    def test_dry_run_manifest_lists_both_wallpapers(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            manifest = root / "m.txt"
+            proc = self.run_install("--destdir", root.as_posix(), "--dry-run", "--manifest", manifest.as_posix())
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            self.assertFalse((root / "usr").exists(), "dry-run must not write files")
+            lines = manifest.read_text(encoding="utf-8").splitlines()
+            paths = [line.split("  ", 1)[1] for line in lines]
+            brand = [p for p in paths if p.startswith("/usr/share/wallpapers/alpbahOS-Brand/")]
+            atat = [p for p in paths if p.startswith("/usr/share/wallpapers/alpbahOS-Ataturk/")]
+            self.assertEqual(sorted(brand), sorted(
+                ["/usr/share/wallpapers/alpbahOS-Brand/metadata.json",
+                 "/usr/share/wallpapers/alpbahOS-Brand/contents/screenshot.png"]
+                + [f"/usr/share/wallpapers/alpbahOS-Brand/contents/images/{w}x{h}.png"
+                   for w, h in load("m08_brand_sizes", BRAND_TOOL).SIZES]))
+            self.assertIn("/usr/share/wallpapers/alpbahOS-Ataturk/metadata.json", atat)
+            self.assertIn("/usr/share/wallpapers/alpbahOS-Ataturk/ATTRIBUTION.md", atat)
+            self.assertIn("/usr/share/plasma/look-and-feel/org.alpbahos.solid.desktop/contents/defaults", paths)
 
 
 if __name__ == "__main__":

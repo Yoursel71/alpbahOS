@@ -1,8 +1,8 @@
-# alpbahOS Atatürk duvar kâğıdı — kaynak ve lisans
+# alpbahOS Atatürk wallpaper — source and licence
 
-- Fotoğraf: Mustafa Kemal Atatürk, 29 Mart 1932 tarihli portre.
-- Kaynak dosya: [Wikimedia Commons — File:Ataturk1930s.jpg](https://commons.wikimedia.org/wiki/File:Ataturk1930s.jpg) (Commons'taki özgün kaynak: mustafakemalim.com).
-- Lisans: PD-Turkey — Türk telif hukukuna göre koruma süresi dolmuş, kamu malı. Etiket Commons sayfasındadır.
-- Depodaki kaynak kopya: `branding/ataturk-theme/source/Ataturk1930s.jpg`, SHA-256 `f1dad1a903de0d8930b44020fc77e4aea647ddd3cb21d110d447f1fe63694bbf`.
-- Üretim: `branding/ataturk-theme/tools/build_wallpaper.py` (Pillow). Fotoğraf kırpılmaz ve kaynak çözünürlüğünün üstüne büyütülmez; yalnız ölçeklenir, lacivert tonlanır, kenarları zemine yumuşatılır. Fotoğrafa metin, imza veya söz eklenmemiştir.
-- Zemin, dağ silüeti ve renkler alpbahOS tasarım token'larından (`profiles/desktop/tokens.json`) üretilmiştir. Kompozisyonun dağıtım lisansı, proje özgün içeriğinin lisansı belirlendiğinde bu dosyaya yazılacaktır.
+- Photo: Mustafa Kemal Atatürk, portrait dated 29 March 1932.
+- Source file: [Wikimedia Commons — File:Ataturk1930s.jpg](https://commons.wikimedia.org/wiki/File:Ataturk1930s.jpg) (original source on Commons: mustafakemalim.com).
+- Licence: PD-Turkey — the copyright term under Turkish law has expired; public domain. The label is on the Commons page.
+- Source copy in the repo: `branding/ataturk-theme/source/Ataturk1930s.jpg`, SHA-256 `f1dad1a903de0d8930b44020fc77e4aea647ddd3cb21d110d447f1fe63694bbf`.
+- Production: `branding/ataturk-theme/tools/build_wallpaper.py` (Pillow). The photo is not cropped and is not enlarged beyond its source resolution; it is only scaled, tinted navy, and its edges are softened into the background. No text, signature or quote is added to the photo.
+- The background, mountain silhouette and colours are generated from the alpbahOS design tokens (`profiles/desktop/tokens.json`). The distribution licence for the composition will be written into this file when the licence of the project's original content is decided.
