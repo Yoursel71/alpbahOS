@@ -1,0 +1,33 @@
+15:14:15 [6]: Calamares::Settings::Settings(const QString&, bool)
+    Using Calamares settings file at "settings.conf" 
+15:14:15 [6]: static void Calamares::Python::Job::setInjectedPreScript(const char*)
+    Python pre-script set to string @0x55759437e6a0 length 1354 
+15:14:15 [6]: bool Calamares::initQmlModulesDir()
+    Using Calamares QML directory "/usr/share/calamares/qml" 
+15:14:15 [6]: int main(int, char**)
+    Calamares module-loader testing "unpackfs" 
+    .. Module "unpackfs" job-configuration: "/etc/calamares/modules/unpackfs.conf" 
+    .. got "unpackfs" "job" "python" 
+    .. Module metadata 
+     name :   "unpackfs" 
+     type :   "job" 
+     interface :   "python" 
+15:14:15 [6]: void Calamares::JobThread::finalize()
+    There are 1 jobs, total weight 100 
+    .. Job 1 "unpackfs" +wt 100 tot.wt 100 
+15:14:15 [6]: virtual void Calamares::JobThread::run()
+    Starting job "unpackfs" ( 1 / 1 ) 
+[PYTHON JOB]: "pre-script for testing purposes injected" 
+[PYTHON JOB]: Found gettext "tr_TR" in "/sources/blfs-build/calamares-3.3.14/build/lang/tr_TR" 
+    .. Running QList("mount", "-t", "squashfs", "-o", "loop", "/lib/live/mount/medium/LiveOS/squashfs.img", "/tmp/tmpp46vy5m4/squashfs") 
+    .. Running QList("udevadm", "settle") 
+    .. Finished. Exit code: 0 output:
+Running in chroot, ignoring request.
+    .. Running QList("sync") 
+    .. Running QList("unsquashfs", "-l", "/lib/live/mount/medium/LiveOS/squashfs.img") 
+15:14:16 [2]: Calamares::Python::Object Calamares::Python::GlobalStorageProxy::value(const std::string&) const
+    WARNING: Unknown GS key extraMounts 
+    .. Running QList("rsync", "-aHAXSr", "--filter=-x trusted.overlay.*", "--progress", "/tmp/tmpp46vy5m4/squashfs/", "/var/tmp/m11-target") 
+[PYTHON JOB]: "subprocess.check_call((['umount', '-l', '/tmp/tmpp46vy5m4/squashfs'],),{}) X ignored" 
+15:15:51 [6]: void {anonymous}::PowerManagementInterface::uninhibitSleep()
+    Sleep was never inhibited. 
