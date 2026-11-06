@@ -1,0 +1,32 @@
+15:30:40 [6]: Calamares::Settings::Settings(const QString&, bool)
+    Using Calamares settings file at "settings.conf" 
+15:30:40 [6]: static void Calamares::Python::Job::setInjectedPreScript(const char*)
+    Python pre-script set to string @0x555e700e46a0 length 1354 
+15:30:40 [6]: bool Calamares::initQmlModulesDir()
+    Using Calamares QML directory "/usr/share/calamares/qml" 
+15:30:40 [6]: int main(int, char**)
+    Calamares module-loader testing "localecfg" 
+    .. Module "localecfg" job-configuration: "/usr/lib/calamares/modules/localecfg/localecfg.conf" 
+15:30:40 [2]: void Calamares::Module::loadConfigurationFile(const QString&)
+    WARNING: No config file for "localecfg" found anywhere at 
+     "/usr/lib/calamares/modules/localecfg/localecfg.conf" 
+     "/root/m11-runner/src/modules/localecfg//usr/lib/calamares/modules/localecfg/localecfg.conf" 
+     "/usr/lib/calamares/modules/localecfg/localecfg.conf" 
+     "/etc/calamares/modules//usr/lib/calamares/modules/localecfg/localecfg.conf" 
+     "/usr/share/calamares/modules//usr/lib/calamares/modules/localecfg/localecfg.conf" 
+    .. got "localecfg" "job" "python" 
+    .. Module metadata 
+     name :   "localecfg" 
+     type :   "job" 
+     interface :   "python" 
+15:30:40 [6]: void Calamares::JobThread::finalize()
+    There are 1 jobs, total weight 100 
+    .. Job 1 "localecfg" +wt 100 tot.wt 100 
+15:30:40 [6]: virtual void Calamares::JobThread::run()
+    Starting job "localecfg" ( 1 / 1 ) 
+[PYTHON JOB]: "pre-script for testing purposes injected" 
+[PYTHON JOB]: Found gettext "tr_TR" in "/sources/blfs-build/calamares-3.3.14/build/lang/tr_TR" 
+[PYTHON JOB]: "/var/tmp/m11-target/etc/locale.conf done" 
+[PYTHON JOB]: "/var/tmp/m11-target/etc/default done" 
+15:30:40 [6]: void {anonymous}::PowerManagementInterface::uninhibitSleep()
+    Sleep was never inhibited. 

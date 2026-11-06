@@ -2,20 +2,31 @@
 # M11 modül koşucusu (alpbahOS, Calamares 3.3.14 loadmodule).
 #
 # Ne yapar: yeni bir sanal disk dosyasını (yalnız bu dosya) loop aygıtına bağlar,
-# GPT + BIOS boot + ext4 kök bölümü açar, kök bölümünü /var/tmp/m11-target'a
-# bağlar (sanal dosya sistemleri dahil), sonra kurucu modüllerini LFS chroot'unda
-# (/mnt/lfs) TEK TEK çalıştırır: unpackfs, machineid, localecfg, fstab, networkcfg,
-# hwclock, bootloader, umount.
+# GPT bölümleri açar, kök bölümünü /var/tmp/m11-target'a bağlar (sanal dosya
+# sistemleri dahil), sonra kurucu modüllerini LFS chroot'unda (/mnt/lfs) TEK TEK
+# çalıştırır: unpackfs, machineid, localecfg, fstab, networkcfg, hwclock, grubcfg,
+# bootloader, umount.
+#
+# Önyükleme modu M11_FIRMWARE ile seçilir (varsayılan bios):
+#  - bios: p1 BIOS boot (1 MiB) + p2 ext4 kök. Kanıt: docs/verification/m11-d144-*.
+#  - uefi: p1 EFI System 512 MiB (FAT32, /boot/efi) + p2 ext4 kök. Ayrıntı ve
+#          QEMU/OVMF komutu: runner/README.md.
 #
 # Sınırlar (kanıt belgesinde sapma olarak yazılır):
 #  - Bölümleme, mkfs ve kök bağlama bu betikte yapılır; Calamares'in partition ve
 #    mount modülleri koşmaz (mount modülü kendi geçici kök dizinini açar, gs'i
 #    değiştirir; başsız koşucuda sonraki modüller yanlış kökü görür).
+#  - UEFI: ESP, unpackfs'ten sonra ve bootloader'dan hemen önce bu betikte bağlanır
+#    (gerçek Calamares'te mount modülü bağlar). rsync'in FAT üzerinde izin/sahiplik
+#    hatası vermemesi için bilinçli sapma.
 #  - locale ve keyboard GUI görünüm modülleridir; başsız koşmaz.
 #  - Kurulum canlı ISO içinde değil, ana makinedeki LFS chroot'unda koşar.
 #  - Önyükleme kanıtı ayrı bir VM oturumunda (-cdrom yok) yapılır.
+#  - UEFI NVRAM güvenliği: grub-install --no-nvram sarmalayıcısı (yalnız hedefte,
+#    bootloader adımı süresince), efivarfs bağlı olmaması denetimi, efiBootMgr=/usr/bin/false.
 #
 # Kullanım: sudo bash m11-run.sh <YENİ-hedef.img> <log-dizini>
+#           sudo M11_FIRMWARE=uefi bash m11-run.sh <YENİ-hedef.img> <log-dizini>
 set -eu
 
 IMG=${1:?kullanım: m11-run.sh <yeni-hedef.img> <log-dizini>}
@@ -26,14 +37,23 @@ LFS=/mnt/lfs
 SQ=${M11_SQUASHFS:-/home/yrslf/alpbahOS/scratch-lfs-bench/alp-iso/LiveOS/squashfs.img}
 # M11_HOSTTOOLS=0: use the chroot's own rsync/unsquashfs (packages 339/340) instead of the Fedora copies.
 HOSTTOOLS=${M11_HOSTTOOLS:-1}
+# M11_FIRMWARE=bios|uefi (varsayılan bios). BIOS yolu değişmeden kalır.
+FW=${M11_FIRMWARE:-bios}
 TOOLS=/home/yrslf/alpbahOS/scratch-lfs-bench/m11-runner/hosttools
 CAL=/sources/blfs-build/calamares-3.3.14/build/loadmodule
 TARGET_IN_CHROOT=/var/tmp/m11-target
 TGT="$LFS$TARGET_IN_CHROOT"
+# UEFI: grub-install sarmalayıcısı (yalnız hedefte, bootloader adımı süresince).
+WRAP_REL=/usr/local/sbin/grub-install-no-nvram
+WRAP="$TGT$WRAP_REL"
+# ESP bağlama seçenekleri (Calamares mount.conf örneğindeki efi girişiyle aynı).
+ESP_MOUNT_OPTS="defaults,umask=0077"
 LOOP=""
 SQ_BIND=0
 TOOLS_BIND=0
 MADE_LIVE_DIR=0
+WRAP_MADE=0
+SBIN_MADE=0
 
 target_unmount() {
     if mountpoint -q "$TGT"; then umount -R "$TGT"; fi
@@ -41,6 +61,9 @@ target_unmount() {
 
 cleanup() {
     set +e
+    # Sarmalayıcı hedef hâlâ bağlıyken kaldırılır (hata çıkışında da).
+    if [ "$WRAP_MADE" = 1 ] && [ -e "$WRAP" ]; then rm -f "$WRAP"; fi
+    if [ "$SBIN_MADE" = 1 ]; then rmdir "$TGT/usr/local/sbin" "$TGT/usr/local" 2>/dev/null; fi
     target_unmount
     # unpackfs, squashfs'i kendi geçici dizininde bağlar; hata çıkışında kalabilir.
     for d in "$LFS"/tmp/tmp*/squashfs; do
@@ -58,7 +81,28 @@ cleanup() {
 trap cleanup EXIT
 trap 'echo "M11 koşucu HATA: satır $LINENO" >&2' ERR
 
+# NVRAM koruması (UEFI): efivars dizinleri boş olmalı ve LFS altında efivarfs bağlı olmamalı.
+# Boş efivars = efivarfs bağlı değil; bu durumda grub-install hiçbir değişkeni okuyup yazamaz.
+efi_guard() {
+    local d
+    for d in "$LFS/sys/firmware/efi/efivars" "$TGT/sys/firmware/efi/efivars"; do
+        if [ -d "$d" ] && [ -n "$(ls -A "$d" 2>/dev/null)" ]; then
+            echo "DURDU (NVRAM koruması): $d boş değil; efivarfs bağlı olabilir" >&2
+            return 1
+        fi
+    done
+    if awk -v p="$LFS" '$3 == "efivarfs" && index($2, p) == 1 { f = 1 } END { exit !f }' /proc/self/mounts; then
+        echo "DURDU (NVRAM koruması): $LFS altında efivarfs bağlı" >&2
+        return 1
+    fi
+    return 0
+}
+
 [ "$(id -u)" = 0 ] || { echo "root gerekli"; exit 1; }
+case "$FW" in
+    bios|uefi) ;;
+    *) echo "DURDU: M11_FIRMWARE=bios veya uefi olmalı (verilen: $FW)"; exit 1 ;;
+esac
 [ ! -e "$IMG" ] || { echo "hedef zaten var, yeniden kullanılmaz: $IMG"; exit 1; }
 [ ! -e "$LFS/usr/lib/live" ] || { echo "$LFS/usr/lib/live zaten var; durduruldu"; exit 1; }
 [ ! -e "$TGT" ] || { echo "$TGT zaten var; durduruldu"; exit 1; }
@@ -76,6 +120,14 @@ else
 fi
 [ -f "$SQ" ] || { echo "ön koşul: squashfs yok: $SQ"; exit 1; }
 mkdir -p "$LOGD"
+if [ "$FW" = uefi ]; then
+    # UEFI ön koşulları: dosyalar chroot'taki paketlerden gelir (dosyalar yoksa dur).
+    [ -x "$LFS/usr/sbin/mkfs.vfat" ] && [ -x "$LFS/usr/sbin/fsck.vfat" ] \
+        || { echo "ön koşul: $LFS/usr/sbin/{mkfs,fsck}.vfat yok (dosfstools paketi, UEFI modu)"; exit 1; }
+    [ -x "$LFS/usr/sbin/grub-install" ] && [ -d "$LFS/usr/lib/grub/x86_64-efi" ] \
+        || { echo "ön koşul: GRUB x86_64-efi kurulumu yok ($LFS/usr/lib/grub/x86_64-efi)"; exit 1; }
+    efi_guard || { echo "DURDU: UEFI NVRAM ön denetimi başarısız (yukarıya bakın)"; exit 1; }
+fi
 
 # Modül günlüğü kontrolü: loadmodule çıkış kodu 0 dönse de iş (job) hatası
 # günlükte kalabilir (ör. umount 32, grub-install 127). Bu yüzden günlüğü de denetle.
@@ -94,12 +146,26 @@ check_log() {
 # 1) Hedef: yeni sparse dosya, loop aygıtı, yalnız bu aygıt bölümlenir.
 truncate -s 20G "$IMG"
 LOOP=$(losetup -f --show "$IMG")
-echo "loop=$LOOP img=$IMG" | tee "$LOGD/00-loop.log"
-printf 'label: gpt\nstart=2048, size=2048, type=21686148-6449-6E6F-744E-656564454649, name="bios"\nstart=4096, type=0FC63DAF-8483-4772-8E79-3D69D8477DE4, name="alproot"\n' \
-    | chroot "$LFS" sfdisk --wipe always "$LOOP" > "$LOGD/01-sfdisk.log" 2>&1
+echo "loop=$LOOP img=$IMG fw=$FW" | tee "$LOGD/00-loop.log"
+if [ "$FW" = uefi ]; then
+    # p1: ESP 512 MiB (1048576 sektör), p2: kök (1050624 = 2048'in katı).
+    printf 'label: gpt\nstart=2048, size=1048576, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B, name="esp"\nstart=1050624, type=0FC63DAF-8483-4772-8E79-3D69D8477DE4, name="alproot"\n' \
+        | chroot "$LFS" sfdisk --wipe always "$LOOP" > "$LOGD/01-sfdisk.log" 2>&1
+else
+    printf 'label: gpt\nstart=2048, size=2048, type=21686148-6449-6E6F-744E-656564454649, name="bios"\nstart=4096, type=0FC63DAF-8483-4772-8E79-3D69D8477DE4, name="alproot"\n' \
+        | chroot "$LFS" sfdisk --wipe always "$LOOP" > "$LOGD/01-sfdisk.log" 2>&1
+fi
 partprobe "$LOOP"
 sleep 1
 [ -b "${LOOP}p2" ] || { echo "${LOOP}p2 yok"; exit 1; }
+if [ "$FW" = uefi ]; then
+    [ -b "${LOOP}p1" ] || { echo "${LOOP}p1 yok"; exit 1; }
+    chroot "$LFS" /usr/sbin/mkfs.vfat -F 32 -n ALPESP "${LOOP}p1" > "$LOGD/02-mkfs-esp.log" 2>&1
+    ESP_UUID=$(blkid -s UUID -o value "${LOOP}p1" || true)
+    ESP_PUUID=$(blkid -s PARTUUID -o value "${LOOP}p1" || true)
+    [ -n "$ESP_UUID" ] && [ -n "$ESP_PUUID" ] || { echo "DURDU: ESP UUID/PARTUUID okunamadı (${LOOP}p1)"; exit 1; }
+    echo "esp_uuid=$ESP_UUID esp_partuuid=$ESP_PUUID" | tee -a "$LOGD/02-mkfs-esp.log"
+fi
 chroot "$LFS" mkfs.ext4 -q -F -L alpbah-root "${LOOP}p2" > "$LOGD/02-mkfs.log" 2>&1
 UUID=$(blkid -s UUID -o value "${LOOP}p2")
 PUUID=$(blkid -s PARTUUID -o value "${LOOP}p2")
@@ -128,6 +194,9 @@ mount --bind "$LFS/dev" "$TGT/dev"
 mount -t proc proc "$TGT/proc"
 mount -t sysfs sysfs "$TGT/sys"
 mount --bind "$LFS/run" "$TGT/run"
+if [ "$FW" = uefi ]; then
+    efi_guard || { echo "DURDU: UEFI NVRAM denetimi (hedef sysfs bağlandıktan sonra) başarısız"; exit 1; }
+fi
 
 # 3) Koşucu girdileri (ürün yapılandırmasının kopyası; yalnız çekirdek arama yolu ve test konsolu).
 cp "$R/settings.conf" "$LFS/root/m11-runner/settings.conf"
@@ -137,6 +206,49 @@ install -m 644 "$R/../modules/grubcfg.conf" "$LFS/root/m11-runner/grubcfg.conf"
 # Yalnız test: seri konsol parametresi (ürün kararı değil).
 sed -i 's|^kernelParams:.*|kernelParams: [ "quiet", "console=tty0", "console=ttyS0,115200n8" ]|' \
     "$LFS/root/m11-runner/bootloader.conf"
+if [ "$FW" = uefi ]; then
+    # Yalnız koşucu kopyası: grub-install sarmalayıcıyı çağırır, efibootmgr yerine /usr/bin/false.
+    # Repodaki ürün bootloader.conf'u değişmez.
+    sed -e 's|^grubInstall:.*|grubInstall: "/usr/local/sbin/grub-install-no-nvram"|' \
+        -e 's|^efiBootMgr:.*|efiBootMgr: "/usr/bin/false"|' \
+        "$LFS/root/m11-runner/bootloader.conf" > "$LFS/root/m11-runner/bootloader-uefi.conf"
+    grep -qx 'grubInstall: "/usr/local/sbin/grub-install-no-nvram"' "$LFS/root/m11-runner/bootloader-uefi.conf" \
+        && grep -qx 'efiBootMgr: "/usr/bin/false"' "$LFS/root/m11-runner/bootloader-uefi.conf" \
+        && grep -qx 'efiBootLoader: "grub"' "$LFS/root/m11-runner/bootloader-uefi.conf" \
+        && grep -qx 'installEFIFallback: true' "$LFS/root/m11-runner/bootloader-uefi.conf" \
+        || { echo "DURDU: UEFI bootloader-uefi.conf beklenen anahtarları içermiyor"; exit 1; }
+fi
+if [ "$FW" = uefi ]; then
+cat > "$LFS/root/m11-runner/gs.yaml" <<EOF
+rootMountPoint: "$TARGET_IN_CHROOT"
+partitions:
+  - device: "${LOOP}p2"
+    fs: "ext4"
+    mountPoint: "/"
+    uuid: "$UUID"
+    claimed: true
+  - device: "${LOOP}p1"
+    fs: "fat32"
+    mountPoint: "/boot/efi"
+    uuid: "$ESP_UUID"
+    partuuid: "$ESP_PUUID"
+    claimed: true
+bootLoader:
+  installPath: null
+localeConf:
+  LANG: "tr_TR.UTF-8"
+mountOptionsList:
+  - mountpoint: "/"
+    option_string: "defaults,noatime"
+  - mountpoint: "/boot/efi"
+    option_string: "$ESP_MOUNT_OPTS"
+efiSystemPartition: "/boot/efi"
+firmwareType: "efi"
+branding:
+  bootloaderEntryName: "alpbahOS"
+  productName: "alpbahOS"
+EOF
+else
 cat > "$LFS/root/m11-runner/gs.yaml" <<EOF
 rootMountPoint: "$TARGET_IN_CHROOT"
 partitions:
@@ -157,6 +269,7 @@ branding:
   bootloaderEntryName: "alpbahOS"
   productName: "alpbahOS"
 EOF
+fi
 
 run_mod() {
     local name=$1 conf=${2:-}
@@ -214,15 +327,67 @@ if [ "${M11_GRUB_DEVICE_OVERRIDE:-0}" = 1 ]; then
 fi
 # Yalnız test: seri konsol (VM'de seri günlükle giriş istemini kanıtlamak için).
 sed -i "s|^GRUB_CMDLINE_LINUX_DEFAULT=.*|GRUB_CMDLINE_LINUX_DEFAULT='quiet console=tty0 console=ttyS0,115200n8'|" "$TGT/etc/default/grub"
-run_mod bootloader "/root/m11-runner/bootloader.conf"
+
+if [ "$FW" = uefi ]; then
+    # fstab ESP satırı: fstab modülü ESP'yi gs'deki mountPoint'ten yazar.
+    grep -q "^UUID=$ESP_UUID[[:space:]]\+/boot/efi[[:space:]]\+vfat[[:space:]]" "$TGT/etc/fstab" \
+        || { echo "DURDU: fstab ESP satırı yok (UUID=$ESP_UUID /boot/efi vfat)"; exit 1; }
+    # ESP'yi bootloader'dan önce bağla: grub-install ve EFI dosyaları burada yazılır.
+    # Bağlama noktası boş değilse bağlama onu gizler; bu yüzden dur.
+    if [ -d "$TGT/boot/efi" ] && [ -n "$(ls -A "$TGT/boot/efi")" ]; then
+        echo "DURDU: $TGT/boot/efi boş değil; ESP bağlanırsa içeriği gizlenir"; exit 1
+    fi
+    mkdir -p "$TGT/boot/efi"
+    mount -t vfat -o "$ESP_MOUNT_OPTS" "${LOOP}p1" "$TGT/boot/efi"
+    mountpoint -q "$TGT/boot/efi" || { echo "DURDU: ESP $TGT/boot/efi bağlanamadı"; exit 1; }
+    # grub-install sarmalayıcısı: --no-nvram ekler, host NVRAM'ine dokunmaz.
+    [ -x "$TGT/usr/sbin/grub-install" ] || { echo "DURDU: hedefte /usr/sbin/grub-install yok"; exit 1; }
+    [ ! -e "$WRAP" ] || { echo "DURDU: $WRAP zaten var"; exit 1; }
+    if [ ! -d "$TGT/usr/local/sbin" ]; then mkdir -p "$TGT/usr/local/sbin"; SBIN_MADE=1; fi
+    printf '%s\n' '#!/bin/sh' \
+        '# alpbahOS M11 koşucusu: grub-install host NVRAM değişkenlerine dokunmasın (geçici).' \
+        'exec /usr/sbin/grub-install --no-nvram "$@"' > "$WRAP"
+    chmod 755 "$WRAP"
+    WRAP_MADE=1
+    BL_CONF=/root/m11-runner/bootloader-uefi.conf
+else
+    BL_CONF=/root/m11-runner/bootloader.conf
+fi
+run_mod bootloader "$BL_CONF"
+if [ "$FW" = uefi ]; then
+    # Sarmalayıcı yalnız bootloader adımında var olmalı; şimdi kaldır.
+    rm -f "$WRAP"
+    WRAP_MADE=0
+    [ ! -e "$WRAP" ] || { echo "DURDU: sarmalayıcı kaldırılamadı: $WRAP"; exit 1; }
+    if [ "$SBIN_MADE" = 1 ]; then rmdir "$TGT/usr/local/sbin" "$TGT/usr/local" 2>/dev/null || true; fi
+    efi_guard || { echo "DURDU: UEFI NVRAM denetimi (bootloader sonrası) başarısız"; exit 1; }
+fi
 grep -q "root=PARTUUID=$PUUID" "$TGT/boot/grub/grub.cfg" \
     || { echo "DURDU: grub.cfg root=PARTUUID=$PUUID içermiyor"; exit 1; }
 grep -q "console=ttyS0,115200n8" "$TGT/boot/grub/grub.cfg" \
     || { echo "DURDU: grub.cfg seri konsol parametresi yok"; exit 1; }
+if [ "$FW" = uefi ]; then
+    ESPM="$TGT/boot/efi"
+    mountpoint -q "$ESPM" || { echo "DURDU: ESP bootloader sonrası bağlı değil"; exit 1; }
+    [ -f "$ESPM/EFI/alpbahOS/grubx64.efi" ] \
+        || { echo "DURDU: EFI/alpbahOS/grubx64.efi yok"; exit 1; }
+    # FAT büyük/küçük harf duyarsızdır; Calamares fallback dizinini küçük harfle de açabilir.
+    FB=$(find "$ESPM/EFI" -mindepth 2 -maxdepth 2 -type f -ipath '*/boot/bootx64.efi' | head -1)
+    [ -n "$FB" ] || { echo "DURDU: EFI/BOOT/BOOTX64.EFI yok (fallback)"; exit 1; }
+    cmp -s "$ESPM/EFI/alpbahOS/grubx64.efi" "$FB" \
+        || { echo "DURDU: fallback BOOTX64.EFI, grubx64.efi ile aynı değil"; exit 1; }
+    echo "[uefi-post] esp ok: $FB" | tee "$LOGD/12-uefi-post.log"
+fi
 run_mod umount /etc/calamares/modules/umount.conf
 
 # Son denetim: hedef bağlı kalmamalı; dosya sistemi temiz olmalı.
 target_unmount
 sync
 e2fsck -f -n "${LOOP}p2" > "$LOGD/20-e2fsck.log" 2>&1 || { echo "DURDU: e2fsck hata"; exit 1; }
-echo "M11 koşucu TAMAM: img=$IMG uuid=$UUID"
+if [ "$FW" = uefi ]; then
+    chroot "$LFS" /usr/sbin/fsck.vfat -n "${LOOP}p1" > "$LOGD/21-fsck-vfat.log" 2>&1 \
+        || { echo "DURDU: fsck.vfat hata (ESP)"; exit 1; }
+    echo "M11 koşucu TAMAM (UEFI): img=$IMG uuid=$UUID esp_uuid=$ESP_UUID"
+else
+    echo "M11 koşucu TAMAM: img=$IMG uuid=$UUID"
+fi

@@ -1,0 +1,7 @@
+e2fsck 1.47.3 (8-Jul-2025)
+1. geçiş: düğümler, bloklar ve uzunluklar denetleniyor
+Geçiş 2: Dizin yapısı denetleniyor
+Geçiş 3: Dizin bağlanabilirliği denetleniyor
+Geçiş 4: Başvuru sayısı denetleniyor
+5. Geçiş: grup özet bilgileri denetleniyor
+alpbah-root: 215193/1277952 files (0.2% non-contiguous), 2282309/5111296 blocks
