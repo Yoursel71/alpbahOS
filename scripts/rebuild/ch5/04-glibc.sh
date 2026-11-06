@@ -103,7 +103,11 @@ CXX="$LFS_TGT-g++ -m32"                  \
       libc_cv_slibdir=/usr/lib32         \
       --enable-kernel=5.10
 
-make
+# Serial make here. With -j16 the 32-bit 'others' programs (debug/pcprofiledump,
+# posix/getconf) were linked while build/libc.so was still being written, giving
+# 'undefined reference to printf' (run 2026-11-06 16:45, log 04-glibc.log). The same
+# tree finished with rc 0 under 'make -j1' (retry 2026-11-06 16:54).
+make -j1
 
 make DESTDIR=$PWD/DESTDIR install
 cp -a DESTDIR/usr/lib32 $LFS/usr/
