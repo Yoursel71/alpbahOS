@@ -18,8 +18,10 @@ Each item says how far the evidence goes. "Chroot only" means the work ran in th
 - **T6 apps:** in QEMU, MIME defaults for PDF (Okular), text (KWrite) and folders (Dolphin) pass, and Okular and KWrite open under Wayland ([VM session 3](docs/verification/vm-session-3-t6-2026-11-05.md)). Ark and Gwenview are built (chroot, signature check passed); their VM run is not done ([T6 deps](docs/verification/t6-apps-deps-2026-11-05.md)).
 - **SDDM autologin:** fixed for the test image; the `alpbah` session opens without a password ([fix record](docs/verification/sddm-autologin-fix-2026-11-05.md)).
 - **M09 live ISO first boot in VM:** the ISO boots, the `alplive` dracut hook builds the root overlay, and the Calamares binary and the squashfs source are visible in the live system ([M09 evidence](docs/verification/m09-live-iso-2026-11-05.md)). The installer has not yet installed from the live ISO.
+- **Live ISO built by script (2026-11-06):** `scripts/lfs-blfs/live-iso/build-iso.sh` builds `alpbahos-live-<date>.iso` (2.6 GB hybrid, label `ALPBAH_LIVE`, BIOS and EFI El Torito entries) from the 12.4 rootfs. The ISO itself is not booted yet. ([record](docs/verification/m11-fix02-root-cause-2026-11-06.md))
 - **M11 installer chain:** yaml-cpp 0.9.0, parted 3.6, kpmcore 25.08.3 and Calamares 3.3.14 built in the chroot ([chain record](docs/verification/m11-calamares-chain-2026-11-05.md)).
 - **M11 install to a virtual disk (BIOS), partial:** the product path (`scripts/lfs-blfs/calamares/modules/grubcfg.conf`, no test override) writes `root=PARTUUID=` for the installed system. One boot reaches the `alpbahos login:` prompt in about 12 s (2026-11-06, D144; [D144 record](docs/verification/m11-d144-partuuid-2026-11-06.md)). The earlier `root=UUID=` kernel panic is the reason for D144 ([module runner record](docs/verification/m11-module-runner-2026-11-06.md)). The GUI installer click-through and UEFI install are not done.
+- **M11-FIX-02 first boot (BIOS, 2026-11-06):** the installed target booted once with 0 `FAILED` units on the serial console; `systemd-resolved` and `systemd-oomd` start. The cause was a squashfs without `/tmp` ([root cause](docs/verification/m11-fix02-root-cause-2026-11-06.md)).
 
 ## Milestone status
 
@@ -36,9 +38,9 @@ Status words: done / partial / not started / unknown. Details are in the linked 
 | M06 | partial | Virtual audio round-trip (ALSA loopback + PipeWire) passed. Physical audio and graphics checks are open ([archive M06 row](docs/archive/MASTER_PLAN-v1.md)). |
 | M07 | partial | Plasma Wayland session, Kickoff, volume applet and 30-minute stability pass in QEMU. Key-switched layout change not tested. |
 | M08 | partial | Wallpaper (functional, no screenshot), Konsole profile, Zsh, shortcuts (19 pass, 1 out of scope) and Meta+E in QEMU. Ark/Gwenview not checked in VM. Liquid glass is out of the first release; Solid is the default and Glass stays an option (D116). |
-| M09 | partial | Live ISO boots to the live system in VM. Installing from it and the live-user policy are open. |
+| M09 | partial | ISO built by script (2026-11-06), not yet booted. The 2026-11-05 ISO booted in VM. Installing from the booted ISO and the live-user policy are open. |
 | M10 | not started | Alpha test matrix and release candidate do not exist yet. |
-| M11 | partial | BIOS install to a virtual disk reaches the login prompt with the product grubcfg path (D144; OPEN-1 resolved). UEFI install, GUI click-through, LUKS and dual boot are open. |
+| M11 | partial | BIOS virtual-disk install with the product grubcfg path; first boot clean (0 failed units, 2026-11-06; D144, D138). UEFI install pending (M11-UEFI-01). GUI click-through, LUKS and dual boot are open. |
 | M12 | not started | Beta release. Needs the user's approval for publication (D108). |
 
 ## What changed on 2026-11-06
@@ -62,23 +64,24 @@ Status words: done / partial / not started / unknown. Details are in the linked 
 
 ## Next actions
 
-1. **M11-FIX-02:** find the cause of the `systemd-oomd` and `systemd-resolved` namespace errors. `/tmp` exists in the installed root, so look elsewhere (`systemctl status` in the next VM session).
-2. **Live ISO tools and ISO build script:** `rsync`, `unsquashfs` and `mksquashfs` are not in the chroot (`scripts/lfs-blfs/live-iso/check-live-tools.sh` exits 1). No ISO build script exists yet (M11-FIX-01).
-3. **UEFI install test** (M11-UEFI-01): OVMF with an ESP on a new virtual disk.
-4. **REBUILD-R2** on LFS/MLFS 13.1 (D145): build the toolchain. Record source checksums first.
-5. **Run LAYOUT-01 and THEME-01 in a Plasma session** (D115, D114): screenshots into docs/verification/.
-6. **Discover with an alp backend** (D124): PackageKit backend that calls `alp`. Start after the `alp` command contract is fixed.
-7. **Component READMEs in English** (D102, DOCS-EN-01): done in the working tree on 2026-11-06, not yet committed.
-8. **Small VM checks:** key-switched keyboard layout (M07), Ark and Gwenview MIME/open test (M08).
+1. **UEFI install test** (M11-UEFI-01, in progress): needs dosfstools, popt, efivar and efibootmgr in the chroot, and a UEFI mode in the runner. OVMF with an ESP on a new virtual disk.
+2. **Boot the new ISO in QEMU** (LIVE-01): BIOS first, then UEFI.
+3. **REBUILD-R2** on LFS/MLFS 13.1 (D145): build the toolchain. Record source checksums first.
+4. **Run LAYOUT-01 and THEME-01 in a Plasma session** (D115, D114): screenshots into docs/verification/.
+5. **Discover with an alp backend** (D124): PackageKit backend that calls `alp`. Start after the `alp` command contract is fixed.
+6. **Small VM checks:** key-switched keyboard layout (M07), Ark and Gwenview MIME/open test (M08).
 
 ## Known issues
 
 From [handoff 024](docs/handoffs/claude/024-devir-m11-modul-kosucu-2026-11-06.md) and [handoff 023](docs/handoffs/claude/023-devir-m11-m09-2026-11-06.md):
 
 - **Root device (resolved by D144):** `grub-mkconfig` writes `root=UUID=…`, which panics without an initramfs. The product grubcfg module writes `root=PARTUUID=…`.
-- **Fixed on 2026-11-06 (M11-FIX-01):** `grubcfg` is in the installer sequence, `kernelSearchPath` is `/boot`, and `unpackfs` fails hard when squashfs is missing. The `rsync`/`unsquashfs`/`mksquashfs` tools on the live ISO are still open.
-- **`/blfs-work` in the installed root:** the squashfs source leaves a build directory in the target (seen 2026-11-06). Release images must exclude it (IMAGE-01).
-- **`systemd-oomd` and `systemd-resolved` fail** with namespace errors (`/tmp` mount, missing `/usr/lib/systemd/...`). `/tmp` exists in the installed root, so the cause is elsewhere. Root cause not known (M11-FIX-02).
+- **Fixed on 2026-11-06 (M11-FIX-01):** `grubcfg` is in the installer sequence, `kernelSearchPath` is `/boot`, and `unpackfs` fails hard when squashfs is missing. `rsync` 3.4.1 and `squashfs-tools` 4.7.5 are built in the chroot; `check-live-tools.sh` exits 0.
+- **`/blfs-work` in the installed root:** the squashfs source left a build directory in the target (seen 2026-11-06). `build-iso.sh` excludes it; the live ISO is not yet checked in a boot. Release images still need IMAGE-01 (test accounts, machine-id, SSH keys, fonts).
+- **Fixed 2026-11-06 (M11-FIX-02):** `systemd-oomd` and `systemd-resolved` failed with `226/NAMESPACE` because the hand-made squashfs had no `/tmp`. `build-iso.sh` keeps `/tmp` (1777), `/root`, `/dev`, `/proc`, `/sys`, `/run`.
+- **Locale:** under `tr_TR.UTF-8`, bash `[A-Z]` does not match `I`. Scripts that check labels or names must set `LC_ALL=C` (`build-iso.sh` does).
+- **SELinux test host:** the Fedora host puts `security.selinux` labels on files. The squashfs build drops them. Installing onto the SELinux host with `rsync -X` needs the runner's test-only filter (`M11_HOSTTOOLS=0`). The product rsync call is unchanged, and the live ISO has no SELinux.
+- **Backup:** `/mnt/lfs-12.4-backup-20261106` is a reflink copy of the 12.4 rootfs, taken 2026-11-06 before writing to it.
 - **Two boots in one VM session:** the 2026-11-06 morning session used two boots (kernel panic, then login). Reported to the user on 2026-11-06.
 - **Deviations v1 D39/D40** (test image) are closed in the rebuild (D142); the list is in [DEVIATIONS.md](docs/verification/evidence-2026-11-05/DEVIATIONS.md).
 - **`gio open` does not start Okular under Wayland** (v1 D55): the DBus-activated process does not get `WAYLAND_DISPLAY`. Direct start works. Candidate fix: `dbus-update-activation-environment` or `systemctl --user import-environment` in the Plasma session.
@@ -88,7 +91,7 @@ From [handoff 024](docs/handoffs/claude/024-devir-m11-modul-kosucu-2026-11-06.md
 
 - **Working tree:** `/home/yrslf/alpbahOS/wt-t2-kisayol` (branch `claude/t2-kisayol-2026-11-05`).
 - **LFS chroot:** `/mnt/lfs`. Mount with `sudo bash scripts/lfs-blfs/mount_lfs.sh`; unmount with `scripts/lfs-blfs/umount_lfs.sh`. Run one writer at a time.
-- **Work and scratch dir:** `/home/yrslf/alpbahOS/scratch-lfs-bench` (ISO build in `alp-iso/` and `alp-iso-out/`, installer targets and logs in `m11-runner/`, test passwords in `test-secrets/`, which is outside the repo).
+- **Work and scratch dir:** `/home/yrslf/alpbahOS/scratch-lfs-bench` (ISO build in `alp-iso/` and `alp-iso-out/`, rebuilt live ISO in `alp-iso-v2-20261106/`, installer targets and logs in `m11-runner/`, test passwords in `test-secrets/`, which is outside the repo).
 - **Build scripts:** `scripts/lfs-blfs/` (installer runner: `scripts/lfs-blfs/calamares/runner/m11-run.sh`).
 - **Profiles:** `profiles/` (shortcuts, apps, shell, desktop, perf). Generated shortcut file: `profiles/shortcuts/`.
 - **Evidence:** `docs/verification/`. Handoffs: `docs/handoffs/claude/`.
