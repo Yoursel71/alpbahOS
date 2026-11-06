@@ -60,7 +60,10 @@ trap 'echo "M11 koşucu HATA: satır $LINENO" >&2' ERR
 [ ! -e "$TGT" ] || { echo "$TGT zaten var; durduruldu"; exit 1; }
 mountpoint -q "$LFS/proc" && mountpoint -q "$LFS/dev" || { echo "chroot sanal bağlar eksik (mount_lfs.sh)"; exit 1; }
 # Ön koşullar (yeniden üretim: devir notu 024).
-grep -qw squashfs /proc/filesystems || { echo "ön koşul: çekirdekte squashfs yok (sudo modprobe squashfs)"; exit 1; }
+# unpackfs squashfs'i okuyamazsa sessizce boş dönebilir (devir 024 madde 4): hard fail.
+grep -qw squashfs /proc/filesystems || { echo "DURDU: çekirdekte squashfs yok (/proc/filesystems). Önce: sudo modprobe squashfs"; exit 1; }
+[ -f "$R/../modules/grubcfg.conf" ] && [ -f "$R/../modules/bootloader.conf" ] \
+    || { echo "DURDU: repo modül yapılandırması eksik: $R/../modules/{grubcfg,bootloader}.conf"; exit 1; }
 [ -x "$LFS$CAL" ] || { echo "ön koşul: $LFS$CAL yok (BUILD_TESTING=ON ile loadmodule derlemesi, devir 024)"; exit 1; }
 [ -x "$TOOLS/bin/rsync" ] && [ -x "$TOOLS/bin/unsquashfs" ] || { echo "ön koşul: $TOOLS eksik (devir 024)"; exit 1; }
 [ -f "$SQ" ] || { echo "ön koşul: squashfs yok: $SQ"; exit 1; }
@@ -111,8 +114,11 @@ mount --bind "$LFS/run" "$TGT/run"
 
 # 3) Koşucu girdileri (ürün yapılandırmasının kopyası; yalnız çekirdek arama yolu ve test konsolu).
 cp "$R/settings.conf" "$LFS/root/m11-runner/settings.conf"
-cp "$LFS/etc/calamares/modules/bootloader.conf" "$LFS/root/m11-runner/bootloader.conf"
-sed -i 's|^kernelSearchPath:.*|kernelSearchPath: "/boot"|; s|^kernelParams:.*|kernelParams: [ "quiet", "console=tty0", "console=ttyS0,115200n8" ]|' \
+# Modül yapılandırmaları repodan kopyalanır (chroot'taki /etc kopyası kullanılmaz).
+install -m 644 "$R/../modules/bootloader.conf" "$LFS/root/m11-runner/bootloader.conf"
+install -m 644 "$R/../modules/grubcfg.conf" "$LFS/root/m11-runner/grubcfg.conf"
+# Yalnız test: seri konsol parametresi (ürün kararı değil).
+sed -i 's|^kernelParams:.*|kernelParams: [ "quiet", "console=tty0", "console=ttyS0,115200n8" ]|' \
     "$LFS/root/m11-runner/bootloader.conf"
 cat > "$LFS/root/m11-runner/gs.yaml" <<EOF
 rootMountPoint: "$TARGET_IN_CHROOT"
@@ -153,7 +159,9 @@ run_mod() {
 }
 
 run_mod unpackfs /etc/calamares/modules/unpackfs.conf
-[ -f "$TGT/usr/bin/bash" ] || { echo "DURDU: unpackfs sonrası hedef boş"; exit 1; }
+# unpackfs rc=0 dönse de hedef boş kalabilir (squashfs okunamadı): kök dosyalarını doğrula.
+[ -x "$TGT/usr/bin/bash" ] && [ -d "$TGT/etc" ] && [ -d "$TGT/boot" ] \
+    || { echo "DURDU: unpackfs sonrası hedef kökte dosya yok (/usr/bin/bash, /etc, /boot)"; exit 1; }
 # Canlı ISO'nun initramfs'i (alplive kancası) kurulu sisteme kopyalandı; disk kökünü
 # canlı medyaya bağlayacağı için grub-mkconfig'in ona yazmaması gerekir.
 rm -f "$TGT"/boot/initramfs-live-*.img
@@ -167,12 +175,21 @@ grep -q "^UUID=$UUID[[:space:]]\+/[[:space:]]" "$TGT/etc/fstab" \
     || { echo "DURDU: fstab kök satırı yok (UUID=$UUID)"; exit 1; }
 run_mod networkcfg
 run_mod hwclock
-run_mod grubcfg /etc/calamares/modules/grubcfg.conf
+run_mod grubcfg /root/m11-runner/grubcfg.conf
+[ -f "$TGT/etc/default/grub" ] && grep -q "^GRUB_DISTRIBUTOR='alpbahOS'" "$TGT/etc/default/grub" \
+    || { echo "DURDU: grubcfg /etc/default/grub yazmadı veya GRUB_DISTRIBUTOR='alpbahOS' yok"; exit 1; }
+grep -q "^GRUB_DISABLE_LINUX_PARTUUID='false'" "$TGT/etc/default/grub" \
+    && grep -q "^GRUB_DISABLE_LINUX_UUID='true'" "$TGT/etc/default/grub" \
+    || { echo "DURDU: grubcfg PARTUUID ayarları /etc/default/grub içinde yok"; exit 1; }
 # Kurulu sistemde initramfs yok (canlı ISO'nun alplive initramfs'i kaldırıldı).
 # Çekirdek root=UUID= değerini initramfs olmadan çözemez; bölüm UUID'sini (PARTUUID)
 # çekirdek GPT üzerinden kendisi bulur (CONFIG_EFI_PARTITION=y). grub-mkconfig'in
-# belgeli GRUB_DEVICE yolu bunu root= olarak yazar.
-echo "GRUB_DEVICE='PARTUUID=$PUUID'" >> "$TGT/etc/default/grub"
+# D144: ürün yolu grubcfg.conf içindeki GRUB_DISABLE_LINUX_UUID=true +
+# GRUB_DISABLE_LINUX_PARTUUID=false ayarıdır; 10_linux root=PARTUUID= yazar.
+# Eski zorlama yolu (GRUB_DEVICE) yalnız M11_GRUB_DEVICE_OVERRIDE=1 ile kullanılır.
+if [ "${M11_GRUB_DEVICE_OVERRIDE:-0}" = 1 ]; then
+    echo "GRUB_DEVICE='PARTUUID=$PUUID'" >> "$TGT/etc/default/grub"
+fi
 # Yalnız test: seri konsol (VM'de seri günlükle giriş istemini kanıtlamak için).
 sed -i "s|^GRUB_CMDLINE_LINUX_DEFAULT=.*|GRUB_CMDLINE_LINUX_DEFAULT='quiet console=tty0 console=ttyS0,115200n8'|" "$TGT/etc/default/grub"
 run_mod bootloader "/root/m11-runner/bootloader.conf"

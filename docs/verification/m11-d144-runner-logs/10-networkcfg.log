@@ -1,0 +1,32 @@
+14:26:20 [6]: Calamares::Settings::Settings(const QString&, bool)
+    Using Calamares settings file at "settings.conf" 
+14:26:20 [6]: static void Calamares::Python::Job::setInjectedPreScript(const char*)
+    Python pre-script set to string @0x559a5a7186a0 length 1354 
+14:26:20 [6]: bool Calamares::initQmlModulesDir()
+    Using Calamares QML directory "/usr/share/calamares/qml" 
+14:26:20 [6]: int main(int, char**)
+    Calamares module-loader testing "networkcfg" 
+    .. Module "networkcfg" job-configuration: "/usr/lib/calamares/modules/networkcfg/networkcfg.conf" 
+14:26:20 [2]: void Calamares::Module::loadConfigurationFile(const QString&)
+    WARNING: No config file for "networkcfg" found anywhere at 
+     "/usr/lib/calamares/modules/networkcfg/networkcfg.conf" 
+     "/root/m11-runner/src/modules/networkcfg//usr/lib/calamares/modules/networkcfg/networkcfg.conf" 
+     "/usr/lib/calamares/modules/networkcfg/networkcfg.conf" 
+     "/etc/calamares/modules//usr/lib/calamares/modules/networkcfg/networkcfg.conf" 
+     "/usr/share/calamares/modules//usr/lib/calamares/modules/networkcfg/networkcfg.conf" 
+    .. got "networkcfg" "job" "python" 
+    .. Module metadata 
+     name :   "networkcfg" 
+     type :   "job" 
+     interface :   "python" 
+14:26:20 [6]: void Calamares::JobThread::finalize()
+    There are 1 jobs, total weight 100 
+    .. Job 1 "networkcfg" +wt 100 tot.wt 100 
+14:26:20 [6]: virtual void Calamares::JobThread::run()
+    Starting job "networkcfg" ( 1 / 1 ) 
+[PYTHON JOB]: "pre-script for testing purposes injected" 
+[PYTHON JOB]: Found gettext "tr_TR" in "/sources/blfs-build/calamares-3.3.14/build/lang/tr_TR" 
+14:26:20 [2]: Calamares::Python::Object Calamares::Python::GlobalStorageProxy::value(const std::string&) const
+    WARNING: Unknown GS key username 
+14:26:20 [6]: void {anonymous}::PowerManagementInterface::uninhibitSleep()
+    Sleep was never inhibited. 
