@@ -1,0 +1,12 @@
+# audit-isa.allow -- reviewed exceptions for scripts/lfs-blfs/cpu-baseline/audit-isa.sh.
+# Used only for cases the tool's rules cannot express (variant names, vector-ABI
+# names and call-graph-reached helpers are recognised by the tool itself).
+# Format: one entry per line, four TAB-separated fields:
+#   file <TAB> symbol-glob <TAB> reason <TAB> reviewer and date
+#   file        path suffix of the scanned ELF file, e.g. usr/lib/libitm.so.1.0.0
+#   symbol-glob shell glob matched against the enclosing function name
+#   reason      why baseline (non-AVX) code cannot reach the function
+#   reviewer    who reviewed it, and when
+# Stale entries (file scanned, no hit) are reported as WARN.
+usr/lib/libitm.so.1.0.0	_ITM_*M256	exported transactional-memory entry points compiled for AVX; only AVX-compiled TM code calls them, no caller inside libitm on the baseline path	claude, 2026-11-06 (hand review, docs/verification/rebuild-r2-ch6-2026-11-06.md section 3)
+usr/lib32/libitm.so.1.0.0	_ITM_*M256	same as usr/lib/libitm.so.1.0.0 (32-bit build of the same library)	claude, 2026-11-06 (hand review, docs/verification/rebuild-r2-ch6-2026-11-06.md section 3)
