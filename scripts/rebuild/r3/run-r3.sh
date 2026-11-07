@@ -114,12 +114,12 @@ del_snap "$PREV"
 
 # Chapter 5-7 leftovers: files in the final root that no chapter 8+ step wrote. They get one
 # explicit pseudo package (see r3_ledger.py LEFTOVER_STEP), not a per-package record.
-python3 "$HERE/r3_ledger.py" leftover "$R3ROOT" "$STEPS" "$STEPS/ch05-07-leftover.tsv" | tee -a "$STATUS"
+python3 "$HERE/r3_ledger.py" split-leftover "$R3ROOT" "$STEPS" "$SNAPDIR" "$LEDGER/temptools-stale.txt" | tee -a "$STATUS"
 python3 "$HERE/r3_ledger.py" owners "$STEPS" "$LEDGER/owners.tsv" "$LEDGER/conflicts.tsv" | tee -a "$STATUS"
 rm -rf "$LEDGER/manifests"
 python3 "$HERE/r3_ledger.py" manifests --owners "$LEDGER/owners.tsv" --root "$R3ROOT" --rb "$RB" \
     --sources "$R3ROOT/sources" --md5sums "$FETCH/md5sums" --wget "$FETCH/wget-list-systemd" \
-    --alp "$ALP_PY" --leftover-src "$STEPS/ch05-07-leftover.tsv" --out "$LEDGER/manifests" | tee -a "$STATUS"
+    --alp "$ALP_PY" --steps "$STEPS" --out "$LEDGER/manifests" | tee -a "$STATUS"
 
 # alp records are rebuilt from scratch: the manifests are regenerated on every run, so records
 # from an earlier run would not match (manifest sha256). Only the alp database is removed.
@@ -141,12 +141,14 @@ while IFS=$'\t' read -r name version sha manifest entries msha step; do
 done < "$LEDGER/manifests/index.tsv"
 say "alp adopt-base: $adopted recorded, $failed refused (log $ADOPT_LOG)"
 
-python3 "$ALP_PY" --root "$R3ROOT" list --json > "$LEDGER/alp-list.json" 2>> "$ADOPT_LOG" || true
-say "alp list --json: $(python3 -c 'import json,sys; print(len(json.load(open(sys.argv[1]))))' "$LEDGER/alp-list.json" 2>/dev/null || echo '?') entries"
+INDEX=$WT/docs/handoffs/claude/alp-prototype/demo/index.json
+python3 "$ALP_PY" --root "$R3ROOT" --index "$INDEX" list > "$LEDGER/alp-list.txt" 2>> "$ADOPT_LOG" || true
+say "alp list: $(grep -c 'lfs-base' "$LEDGER/alp-list.txt" || true) lfs-base records"
+python3 "$HERE/r3_ledger.py" dbowned "$R3ROOT" "$LEDGER/dbowned.txt" | tee -a "$STATUS"
 
 # Stage 3.
 set +e
-bash "$HERE/ownership-check.sh" "$R3ROOT" "$LEDGER/manifests/owned.txt" "$HERE/base-generated.txt" \
+bash "$HERE/ownership-check.sh" "$R3ROOT" "$LEDGER/dbowned.txt" "$HERE/base-generated.txt" \
     > "$LEDGER/ownership-check.txt" 2>&1
 own_rc=$?
 set -e
@@ -160,9 +162,10 @@ rsync -rlpgoDnc --itemize-changes \
 say "compare vs /mnt/lfs13 (dry run): $(grep -c '^>' "$LEDGER/compare-vs-lfs13.txt" || true) entries differ, details in $LEDGER/compare-vs-lfs13.txt"
 
 set +e
-bash "$WT/scripts/lfs-blfs/cpu-baseline/audit-isa.sh" "$R3ROOT" > "$LEDGER/audit-isa.txt" 2>&1
+BASEDIRS="$R3ROOT/usr $R3ROOT/bin $R3ROOT/sbin $R3ROOT/lib $R3ROOT/lib32 $R3ROOT/lib64 $R3ROOT/boot"
+bash "$WT/scripts/lfs-blfs/cpu-baseline/audit-isa.sh" $BASEDIRS > "$LEDGER/audit-isa.txt" 2>&1
 audit_rc=$?
-bash "$WT/scripts/lfs-blfs/cpu-baseline/audit-isa.sh" --include-ko "$R3ROOT" > "$LEDGER/audit-isa-ko.txt" 2>&1
+bash "$WT/scripts/lfs-blfs/cpu-baseline/audit-isa.sh" --include-ko $BASEDIRS > "$LEDGER/audit-isa-ko.txt" 2>&1
 audit_ko_rc=$?
 set -e
 say "audit-isa RC=$audit_rc; audit-isa --include-ko RC=$audit_ko_rc"

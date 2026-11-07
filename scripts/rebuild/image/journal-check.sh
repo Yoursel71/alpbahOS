@@ -7,7 +7,7 @@
 set -uo pipefail
 
 TAG=$1
-IMG=/home/yrslf/alpbahOS/scratch-lfs-bench/images/alpbahos-r2-ch11-2026-11-07.raw
+IMG=${BOOT_IMG:-/home/yrslf/alpbahOS/scratch-lfs-bench/images/alpbahos-r2-ch11-2026-11-07.raw}
 LOGDIR=/home/yrslf/alpbahOS/scratch-lfs-bench/lfs13-logs/boot
 RUN=$LOGDIR/$TAG
 M=/mnt/r2-journal-ro

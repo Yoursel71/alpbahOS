@@ -10,7 +10,7 @@
 # Usage: sudo build-image.sh [IMG]     (refuses to overwrite an existing image)
 set -euo pipefail
 
-LFS=/mnt/lfs13
+LFS=${R3_ROOT:-/mnt/lfs13}
 IMG=${1:-/home/yrslf/alpbahOS/scratch-lfs-bench/images/alpbahos-r2-ch11-2026-11-07.raw}
 IMG_SIZE=20G
 MNT=/mnt/r2-image

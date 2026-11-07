@@ -10,7 +10,7 @@ set -uo pipefail
 MODE=$1
 ACCEL=$2
 TAG=$3
-IMG=/home/yrslf/alpbahOS/scratch-lfs-bench/images/alpbahos-r2-ch11-2026-11-07.raw
+IMG=${BOOT_IMG:-/home/yrslf/alpbahOS/scratch-lfs-bench/images/alpbahos-r2-ch11-2026-11-07.raw}
 LOGDIR=/home/yrslf/alpbahOS/scratch-lfs-bench/lfs13-logs/boot
 OVMF_DIR=/usr/share/edk2/ovmf
 TIMEOUT=300

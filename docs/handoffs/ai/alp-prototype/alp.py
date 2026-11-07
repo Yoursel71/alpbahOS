@@ -282,8 +282,15 @@ def save_db(paths: Paths, db: dict) -> None:
 
 
 def _base_manifest_relpath(raw: object) -> str:
-    """Validate a captured absolute POSIX path and return its root-relative form."""
-    if not isinstance(raw, str) or not raw.startswith("/") or "\\" in raw or "\x00" in raw:
+    """Validate a captured absolute POSIX path and return its root-relative form.
+
+    A backslash is an ordinary byte in a POSIX file name (systemd installs escaped unit
+    names such as system-systemd\\x2dmute\\x2dconsole.slice), so it is allowed. NUL and line
+    breaks are refused, and so are relative paths, empty, "." and ".." segments, which are
+    the ways a path could leave the root.
+    """
+    if (not isinstance(raw, str) or not raw.startswith("/")
+            or "\x00" in raw or "\n" in raw or "\r" in raw):
         raise AlpError(f"Geçersiz taban manifest yolu: {raw!r}")
     parts = raw[1:].split("/")
     if not parts or any(part in ("", ".", "..") for part in parts):
