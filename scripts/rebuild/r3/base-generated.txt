@@ -1,0 +1,4 @@
+# REBUILD-R3: base-generated paths (one root-relative path per line, no leading slash).
+# Written by build hooks or by a generator that runs again on every install. They are excluded
+# from the unowned count and listed in the verification note with the reason for each.
+# Filled in after the run from the conflict and unowned lists.

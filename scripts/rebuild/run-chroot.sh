@@ -18,9 +18,9 @@
 set -euo pipefail
 
 REBUILD_DIR=$(dirname "$(readlink -f "$0")")
-LFS=/mnt/lfs13
+LFS=${R3_ROOT:-/mnt/lfs13}
 BUILD_USER=yrslf
-LOGROOT=/home/yrslf/alpbahOS/scratch-lfs-bench/lfs13-logs
+LOGROOT=${R3_LOGROOT:-/home/yrslf/alpbahOS/scratch-lfs-bench/lfs13-logs}
 KERNFS_SCRIPT_DEFAULT=$REBUILD_DIR/ch7/02-kernfs.sh
 
 usage() {
@@ -141,11 +141,15 @@ for s in "${todo[@]}"; do
     case $ctx in
         host)
             env -i HOME=/root TERM="${TERM:-dumb}" LC_ALL=POSIX \
-                LFS="$LFS" PATH=/usr/sbin:/usr/bin:/sbin:/bin \
+                LFS="$LFS" R3_ROOT="${R3_ROOT:-}" PATH=/usr/sbin:/usr/bin:/sbin:/bin \
                 bash --noprofile --norc "$s" >> "$log" 2>&1 < /dev/null || rc=$?
             ;;
         chroot)
-            body=$(cat "$s")
+            body=$(cat "${R3_BODY_FILE:-$s}")
+            if [ "${R3_SKIP_TESTS:-0}" = 1 ] && [[ " ${R3_TEST_KEEP:-} " != *" $base "* ]]; then
+                body="$(cat "$REBUILD_DIR/r3/test-skip-shim.sh")
+$body"
+            fi
             chroot "$LFS" /usr/bin/env -i \
                 HOME=/root \
                 TERM="${TERM:-dumb}" \
