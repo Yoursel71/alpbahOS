@@ -4,7 +4,7 @@
 # Runs on the host as root (run-chroot.sh). Every mount target is under $LFS = /mnt/lfs13.
 # run-chroot.sh unmounts all of them on exit, whatever the result.
 set -euo pipefail
-[[ ${LFS:-} == /mnt/lfs13 ]] || { echo "refusing LFS=${LFS:-unset}" >&2; exit 1; }
+[[ ${LFS:-} == /mnt/lfs13 || ( -n ${R3_ROOT:-} && ${LFS:-} == "${R3_ROOT}" ) ]] || { echo "refusing LFS=${LFS:-unset}" >&2; exit 1; }
 [[ $(id -u) -eq 0 ]] || { echo "must run as root" >&2; exit 1; }
 
 mkdir -pv $LFS/{dev,proc,sys,run}
