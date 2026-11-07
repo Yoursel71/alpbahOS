@@ -1,0 +1,33 @@
+== boots in journal
+iDX BOOT iD                          FiRST ENTRY                 LAST ENTRY
+ -1 1f756902586c4470aadda1b3a329e9b6 Sat 2026-11-07 10:43:55 +03 Sat 2026-11-07 10:44:23 +03
+  0 f20f947fcc0a4be793ae0e36fa86f6e2 Sat 2026-11-07 10:44:59 +03 Sat 2026-11-07 10:45:25 +03
+== journalctl -b -p err (last boot), tail
+Kas 07 10:44:59 alpbahos kernel: virt/tdx: TDX not supported by the host platform
+Kas 07 10:45:05 alpbahos systemd-tmpfiles[582]: Failed to check if symlink source path '/run/host/io.systemd.NamespaceResource' exists: Bağ sadeleştirilmişti
+Kas 07 10:45:05 alpbahos systemd-tmpfiles[582]: Failed to check if symlink source path '/run/host/io.systemd.MountFileSystem' exists: Bağ sadeleştirilmişti
+Kas 07 10:45:05 alpbahos kernel: Error: Driver 'pcspkr' is already registered, aborting...
+== failed units and job failures (last boot)
+== startup finished (last boot)
+Kas 07 10:45:06 alpbahos systemd[1]: Startup finished in 8.715s (kernel) + 8.507s (userspace) = 17.222s.
+== network (last boot)
+Kas 07 10:45:01 alpbahos systemd-networkd[545]: lo: Link UP
+Kas 07 10:45:01 alpbahos systemd-networkd[545]: lo: Gained carrier
+Kas 07 10:45:01 alpbahos systemd[1]: Starting Enable Persistent Storage in systemd-networkd...
+Kas 07 10:45:01 alpbahos systemd[1]: Finished Enable Persistent Storage in systemd-networkd.
+Kas 07 10:45:02 alpbahos kernel: virtio_net virtio0 enp0s2: renamed from eth0
+Kas 07 10:45:02 alpbahos systemd-networkd[545]: eth0: Interface name change detected, renamed to enp0s2.
+Kas 07 10:45:03 alpbahos systemd-networkd[545]: enp0s2: Configuring with /etc/systemd/network/10-eth-dhcp.network.
+Kas 07 10:45:03 alpbahos systemd-networkd[545]: enp0s2: Link UP
+Kas 07 10:45:03 alpbahos systemd-networkd[545]: enp0s2: Gained carrier
+Kas 07 10:45:03 alpbahos systemd-networkd[545]: enp0s2: DHCPv4 address 10.0.2.15/24, gateway 10.0.2.2 acquired from 10.0.2.2
+Kas 07 10:45:06 alpbahos systemd-networkd[545]: enp0s2: Gained IPv6LL
+Kas 07 10:45:24 alpbahos systemd[1]: Stopping Enable Persistent Storage in systemd-networkd...
+Kas 07 10:45:24 alpbahos systemd[1]: systemd-networkd-persistent-storage.service: Deactivated successfully.
+Kas 07 10:45:24 alpbahos systemd[1]: Stopped Enable Persistent Storage in systemd-networkd.
+Kas 07 10:45:24 alpbahos systemd-networkd[545]: enp0s2: DHCP lease lost
+Kas 07 10:45:24 alpbahos systemd[1]: systemd-networkd.service: Deactivated successfully.
+Kas 07 10:45:24 alpbahos systemd[1]: systemd-networkd-resolve-hook.socket: Deactivated successfully.
+Kas 07 10:45:24 alpbahos systemd[1]: systemd-networkd-varlink-metrics.socket: Deactivated successfully.
+Kas 07 10:45:24 alpbahos systemd[1]: systemd-networkd-varlink.socket: Deactivated successfully.
+Kas 07 10:45:24 alpbahos systemd[1]: systemd-networkd.socket: Deactivated successfully.
