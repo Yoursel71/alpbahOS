@@ -119,6 +119,12 @@ build_one() {
     cp "$LEDGER/gen-$nn.13d.sh" "$LEDGER/gen-$nn.13.sh"
     say "DELTA $nn applied: $DELTAS/$nn.pre.sh"
   fi
+  # Whole-script replacement (scripts/rebuild/r4/deltas/NNN.replace.sh): for a package whose 13.1 page
+  # needs another build flow than the generator's (123: monorepo LLVM, no extra tarballs). Applied last.
+  if [ -f "$DELTAS/$nn.replace.sh" ]; then
+    cp "$DELTAS/$nn.replace.sh" "$LEDGER/gen-$nn.13.sh"
+    say "REPLACE $nn applied: $DELTAS/$nn.replace.sh"
+  fi
   # Extra files the 13.1 page needs next to the build tree (scripts/rebuild/r4/deltas/NNN.files): one line
   # "URL MD5|- FILENAME". The file goes to /sources/blfs-build (the parent of the source tree, where
   # the book's "patch -i ../NAME" looks). "-" means the book page gives no md5 (then a note is written).
