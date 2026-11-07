@@ -14,6 +14,7 @@ make olddefconfig
 test "$(make -s kernelrelease)" = "$KVER-alpbahos"
 
 make -j"$(nproc)"
+rm -rf "/lib/modules/$KVER-alpbahos"
 make modules_install
 
 test -f "/lib/modules/$KVER-alpbahos/modules.dep"

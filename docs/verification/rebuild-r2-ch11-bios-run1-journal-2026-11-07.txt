@@ -1,0 +1,45 @@
+== boots in journal
+iDX BOOT iD                          FiRST ENTRY                 LAST ENTRY
+  0 864bf85d87294627955ff560a645c2fe Sat 2026-11-07 10:06:32 +03 Sat 2026-11-07 10:07:00 +03
+== journalctl -b -p err (last boot), tail
+Kas 07 10:06:32 alpbahos kernel: virt/tdx: TDX not supported by the host platform
+Kas 07 10:06:33 alpbahos systemd[1]: Failed to mount Arbitrary Executable File Formats File System.
+Kas 07 10:06:33 alpbahos systemd[1]: Failed to mount Arbitrary Executable File Formats File System.
+Kas 07 10:06:33 alpbahos systemd[1]: Failed to mount Arbitrary Executable File Formats File System.
+Kas 07 10:06:33 alpbahos systemd[1]: Failed to mount Arbitrary Executable File Formats File System.
+Kas 07 10:06:38 alpbahos systemd[1]: Failed to mount Arbitrary Executable File Formats File System.
+Kas 07 10:06:40 alpbahos systemd-tmpfiles[579]: Failed to check if symlink source path '/run/host/io.systemd.NamespaceResource' exists: Bağ sadeleştirilmişti
+Kas 07 10:06:40 alpbahos systemd-tmpfiles[579]: Failed to check if symlink source path '/run/host/io.systemd.MountFileSystem' exists: Bağ sadeleştirilmişti
+Kas 07 10:06:41 alpbahos kernel: Error: Driver 'pcspkr' is already registered, aborting...
+Kas 07 10:06:42 alpbahos systemd[1]: Failed to mount Arbitrary Executable File Formats File System.
+== failed units and job failures (last boot)
+Kas 07 10:06:33 alpbahos systemd[1]: proc-sys-fs-binfmt_misc.mount: Failed with result 'exit-code'.
+Kas 07 10:06:33 alpbahos systemd[1]: proc-sys-fs-binfmt_misc.mount: Failed with result 'exit-code'.
+Kas 07 10:06:33 alpbahos systemd[1]: proc-sys-fs-binfmt_misc.mount: Failed with result 'exit-code'.
+Kas 07 10:06:33 alpbahos systemd[1]: proc-sys-fs-binfmt_misc.mount: Failed with result 'exit-code'.
+Kas 07 10:06:38 alpbahos systemd[1]: proc-sys-fs-binfmt_misc.mount: Failed with result 'exit-code'.
+Kas 07 10:06:42 alpbahos systemd[1]: proc-sys-fs-binfmt_misc.mount: Failed with result 'start-limit-hit'.
+Kas 07 10:06:42 alpbahos systemd[1]: proc-sys-fs-binfmt_misc.automount: Failed with result 'mount-start-limit-hit'.
+== startup finished (last boot)
+Kas 07 10:06:42 alpbahos systemd[1]: Startup finished in 8.063s (kernel) + 12.059s (userspace) = 20.122s.
+== network (last boot)
+Kas 07 10:06:38 alpbahos systemd-networkd[540]: lo: Link UP
+Kas 07 10:06:38 alpbahos systemd-networkd[540]: lo: Gained carrier
+Kas 07 10:06:38 alpbahos systemd[1]: Starting Enable Persistent Storage in systemd-networkd...
+Kas 07 10:06:38 alpbahos systemd[1]: Finished Enable Persistent Storage in systemd-networkd.
+Kas 07 10:06:38 alpbahos kernel: virtio_net virtio0 ens3: renamed from eth0
+Kas 07 10:06:39 alpbahos systemd-networkd[540]: eth0: Interface name change detected, renamed to ens3.
+Kas 07 10:06:40 alpbahos systemd-networkd[540]: ens3: Configuring with /etc/systemd/network/10-eth-dhcp.network.
+Kas 07 10:06:40 alpbahos systemd-networkd[540]: ens3: Link UP
+Kas 07 10:06:40 alpbahos systemd-networkd[540]: ens3: Gained carrier
+Kas 07 10:06:40 alpbahos systemd-networkd[540]: ens3: DHCPv4 address 10.0.2.15/24, gateway 10.0.2.2 acquired from 10.0.2.2
+Kas 07 10:06:43 alpbahos systemd-networkd[540]: ens3: Gained IPv6LL
+Kas 07 10:06:59 alpbahos systemd[1]: Stopping Enable Persistent Storage in systemd-networkd...
+Kas 07 10:07:00 alpbahos systemd[1]: systemd-networkd-persistent-storage.service: Deactivated successfully.
+Kas 07 10:07:00 alpbahos systemd[1]: Stopped Enable Persistent Storage in systemd-networkd.
+Kas 07 10:07:00 alpbahos systemd-networkd[540]: ens3: DHCP lease lost
+Kas 07 10:07:00 alpbahos systemd[1]: systemd-networkd.service: Deactivated successfully.
+Kas 07 10:07:00 alpbahos systemd[1]: systemd-networkd-resolve-hook.socket: Deactivated successfully.
+Kas 07 10:07:00 alpbahos systemd[1]: systemd-networkd-varlink-metrics.socket: Deactivated successfully.
+Kas 07 10:07:00 alpbahos systemd[1]: systemd-networkd-varlink.socket: Deactivated successfully.
+Kas 07 10:07:00 alpbahos systemd[1]: systemd-networkd.socket: Deactivated successfully.

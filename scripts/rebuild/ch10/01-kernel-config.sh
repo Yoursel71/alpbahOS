@@ -59,6 +59,11 @@ scripts/config \
     --enable SECCOMP --enable SECCOMP_FILTER --enable KCMP \
     --enable EFI_PARTITION
 
+# Found in the chapter 11 boot test (2026-11-07): proc-sys-fs-binfmt_misc.mount failed with
+# "unknown filesystem type 'binfmt_misc'" while CONFIG_BINFMT_MISC was a module that was not loaded.
+# Built in, so the systemd binfmt automount works without a module load.
+scripts/config --enable BINFMT_MISC
+
 # Book notes on the kernel page: PCI_MSI, IRQ_REMAP and X86_X2APIC are needed for systemd features;
 # DRM is listed too.
 scripts/config --enable PCI_MSI --enable IRQ_REMAP --enable X86_X2APIC --enable DRM
@@ -115,6 +120,7 @@ need '^CONFIG_PCI_MSI=y$' 'PCI_MSI'
 need '^CONFIG_IRQ_REMAP=y$' 'IRQ_REMAP'
 need '^CONFIG_X86_X2APIC=y$' 'X86_X2APIC'
 need '^CONFIG_EFI_PARTITION=y$' 'EFI_PARTITION'
+need '^CONFIG_BINFMT_MISC=y$' 'BINFMT_MISC'
 need '^CONFIG_EXT4_FS=y$' 'EXT4_FS (built in)'
 need '^CONFIG_BTRFS_FS=y$' 'BTRFS_FS (built in)'
 need '^CONFIG_DM_CRYPT=m$' 'DM_CRYPT (module)'
