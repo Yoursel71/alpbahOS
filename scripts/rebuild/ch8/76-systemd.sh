@@ -46,7 +46,11 @@ ninja
 # Test suite (book): os-release is needed by some tests; keep a copy of the existing file.
 if [ -f /etc/os-release ]; then cp -a /etc/os-release "$TESTS/os-release.before-systemd-test"; fi
 echo 'NAME="Linux From Scratch"' > /etc/os-release
-unshare -m ninja test > "$TESTS/systemd-test.log" 2>&1 || echo "NOTE systemd test exited $? (book: some tests fail in the chroot; see $TESTS/systemd-test.log)"
+# Book command is "unshare -m ninja test" (LFS 13.1-systemd, chapter 8, systemd). Inside the chroot
+# that unshare fails: "unshare: cannot change root filesystem propagation: Invalid argument" (SYSTEMD-CH8-TESTS).
+# The runner is started as "unshare -m --propagation private run-chroot.sh", so the tests already run in a
+# private mount namespace and the inner unshare is dropped here.
+ninja test > "$TESTS/systemd-test.log" 2>&1 || echo "NOTE systemd test exited $? (book: some tests fail in the chroot; see $TESTS/systemd-test.log)"
 tail -n 3 "$TESTS/systemd-test.log"
 if [ -f "$TESTS/os-release.before-systemd-test" ]; then
     cp -a "$TESTS/os-release.before-systemd-test" /etc/os-release
