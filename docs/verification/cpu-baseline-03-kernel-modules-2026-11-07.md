@@ -1,6 +1,6 @@
 # CPU-BASELINE-03: ISA audit of the kernel modules (2026-11-07)
 
-Scope: the 4989 `.ko` files under `/mnt/lfs13/usr/lib/modules/7.1.8-alpbahos` (kernel rebuilt with CONFIG_BINFMT_MISC=y). Tool: `scripts/lfs-blfs/cpu-baseline/audit-isa.sh`, run with the `.ko` paths as file arguments. Logs are outside the repo: `scratch-lfs-bench/lfs13-logs/cpu03-2026-11-07/` (`ko-list.txt`, `audit-ko-before.out`, `audit-ko-after.out`, `audit-main-after.out`).
+Scope: the 4989 `.ko` files under `/mnt/lfs13/usr/lib/modules/7.1.8-alpbahos` (kernel rebuilt with CONFIG_BINFMT_MISC=y). Tool: `scripts/lfs-blfs/cpu-baseline/audit-isa.sh`, run with the `.ko` paths as file arguments. Logs are outside the repo: `scratch-lfs-bench/lfs13-logs/cpu03-2026-11-07/` (`ko-list.txt`, `audit-ko-before.out`, `audit-ko-after.out`, `audit-ko-kvmfix.out`, `audit-ko-final.out`, `audit-main-after.out`, `audit-main-final.out`, and `kvm-fix/` for the patch, build log and checks).
 
 Kernel source used for the gate checks: `/mnt/lfs13/sources/linux-7.1.8`. Its `.config` has `CONFIG_X86_NATIVE_CPU` unset, and `arch/x86/Makefile:171` sets `-march=x86-64 -mtune=generic`.
 
@@ -9,14 +9,15 @@ Kernel source used for the gate checks: `/mnt/lfs13/sources/linux-7.1.8`. Its `.
 | Run | Summary line | RC |
 |---|---|---|
 | Before (rebuilt modules, no new entries) | `audit: 4989 file(s) scanned, 12 with nonvariant AVX/BMI hits (0 hit(s) allowlisted, 15869 unallowed)` | 1 |
-| After (46 exact-symbol entries added) | `audit: 4989 file(s) scanned, 1 with nonvariant AVX/BMI hits (15837 hit(s) allowlisted, 32 unallowed)` | 1 |
-| Main tree after (`/mnt/lfs13/usr/lib lib32 bin sbin boot`) | `audit: 2487 file(s) scanned, 0 with nonvariant AVX/BMI hits (10867 hit(s) allowlisted, 0 unallowed)` | 0 |
+| After 46 exact-symbol entries (no kvm fix yet) | `audit: 4989 file(s) scanned, 1 with nonvariant AVX/BMI hits (15837 hit(s) allowlisted, 32 unallowed)` | 1 |
+| After the local kvm fix, before the two kvm entries | `audit: 4989 file(s) scanned, 1 with nonvariant AVX/BMI hits (15837 hit(s) allowlisted, 32 unallowed)` | 1 |
+| Final module run (46 + 2 entries, with the kvm fix; 48 in total) | `audit: 4989 file(s) scanned, 0 with nonvariant AVX/BMI hits (15869 hit(s) allowlisted, 0 unallowed)` | 0 |
+| Final main tree (`/mnt/lfs13/usr/lib lib32 bin sbin boot`) | `audit: 2487 file(s) scanned, 0 with nonvariant AVX/BMI hits (10867 hit(s) allowlisted, 0 unallowed)` | 0 |
 
 - The count is 4989, not 4990: `fs/binfmt_misc.ko` is built in now, so there is no module file for it. It had no hits.
-- The 32 unallowed hits are all in one module, `arch/x86/kvm/kvm.ko` (section 3). The module-run goal AUDIT_RC=0 is NOT met, on purpose: that path is ungated.
 - The main-tree run prints two `WARN stale allowlist entry` lines for the `_blake2` and `_hmac` `malloc_raw` entries (allowlist lines 15 and 18). They are not new; the ch10 run shows the same two warnings.
 
-## 2. Gate evidence per module (11 modules allowlisted)
+## 2. Gate evidence per module (11 modules, plus the kvm.ko fix)
 
 Each allowlist line names one exact function, and its reason gives the gate as file:line. A function is listed only when a gate covers it.
 
@@ -33,33 +34,48 @@ Each allowlist line names one exact function, and its reason gives the gate as f
 | drivers/ptp/ptp_vmw.ko | 1 | `__pfx_ptp_vmw_adjtime` | same as vmwgfx (`vmware.h:93-96`, `vmware.c:396-397`) | altinstr only |
 | drivers/ptp/ptp_kvm.ko | 1 | `__pfx_kvm_hypercall2.constprop.0` | `KVM_HYPERCALL` ALTERNATIVE, `arch/x86/include/asm/kvm_para.h:21-22`; `X86_FEATURE_VMMCALL` is set only by AMD and Hygon (`arch/x86/kernel/cpu/amd.c:677`, `hygon.c:168`) | altinstr only |
 | lib/crypto/libcurve25519.ko | 110 | `fmul` 20, `fmul2` 40, `fsqr` 14, `fsqr2` 28, `point_double` 4, `point_add_and_double` 4 (all `mulx`) | `lib/crypto/x86/curve25519.h:1593` and `:1602` branch on static key `curve25519_use_bmi2_adx`; the key is enabled only if BMI2 and ADX are boot CPU features (`:1611-1612`) | `curve25519_arch` and `base_arch` only |
+| arch/x86/kvm/kvm.ko | 32 | `writeback` 16, `__decode_register_operand` 16 (`vmovdqa %ymmN`) | Local host gate `arch/x86/kvm/emulate.c:4789-4790` (new, section 3). Guest-side checks: `emulate.c:5133-5135` (orig 5126-5128) and `:5315-5321` (orig 5308-5314) | Emulator path for VEX guest instructions only; see section 3 |
 
 Notes on the crypto gates:
 - The init functions return `-ENODEV` before `crypto_register_*`. A module whose init fails is unloaded, so its code is not reachable on a CPU without the feature. The helpers are reached only from the registered skcipher callbacks. The audit cannot see that, because the callbacks are address-taken.
 - For cast5, cast6, twofish and camellia-avx, the gate tests XSTATE SSE|YMM (`cpu_has_xfeatures`, `arch/x86/kernel/fpu/xstate.c:130`) and does not test `X86_FEATURE_AVX` by name. The YMM state can be enabled in XCR0 only on AVX hardware, so this implies AVX. That is reasoning from the architecture, not a test.
 
-## 3. Finding (not allowlisted): kvm.ko emulator AVX path is ungated
+## 3. kvm.ko: the emulator AVX path, and the local fix
 
-`arch/x86/kvm/kvm.ko` has 32 hits, all `vmovdqa` with `%ymm` registers, 16 in `writeback` and 16 in `__decode_register_operand`. They are real VEX-256 instructions in `.text` (objdump, kvm.ko offsets 0x501de to 0x51080).
+What the code does. `arch/x86/kvm/fpu.h` (`_kvm_read_avx_reg` and `_kvm_write_avx_reg`) runs `vmovdqa %ymmN` on the host. `emulate.c` reaches it from `__decode_register_operand` (OP_YMM operand, `:1084-1088`) and from `writeback` (OP_YMM, `:1803-1804`). The VEX prefix is decoded by `x86_decode_avx()` (`:4779`), called from `x86_decode_insn` at `:4987`. Before the fix, nothing checked host AVX on this path.
 
-Path, from source:
-1. `arch/x86/kvm/fpu.h:20-47` and wrappers `:164-175`: `_kvm_read_avx_reg` and `_kvm_write_avx_reg` run `vmovdqa %ymmN` on the host. The wrappers only call `kvm_fpu_get` and `kvm_fpu_put`. There is no CPU-feature check.
-2. `arch/x86/kvm/emulate.c:4976-4987`: a `0xc4` or `0xc5` prefix goes to `x86_decode_avx()` (`:4779`). That function checks the prefix and VEX fields, not `boot_cpu_has(X86_FEATURE_AVX)`.
-3. `emulate.c:1084-1088` (`__decode_register_operand`, OP_YMM) and `:1803-1804` (`writeback`, OP_YMM) call the AVX register helpers. The only check is the opcode's `Avx` flag (`:5083-5084`).
-4. Trigger: a guest `#UD` is intercepted. VMX has `UD_VECTOR` in the default exception bitmap (`vmx/vmx.c:898`) and routes it to `handle_ud` (`vmx.c:5285`, `x86.c:8055`), which calls `kvm_emulate_instruction`. SVM sets the `#UD` intercept unconditionally (`svm/svm.c:1140`).
+Why the normal guest #UD path is not affected (static analysis, from the source):
+- A guest #UD is intercepted (VMX: `UD_VECTOR` in the default bitmap, `vmx/vmx.c:898`; SVM: `svm.c:1140`) and goes to `handle_ud` (`x86.c:8055`), which calls the emulator with `EMULTYPE_TRAP_UD`.
+- `x86_decode_insn` returns `EMULATION_FAILED` for `EMULTYPE_TRAP_UD` when the opcode lacks `EmulateOnUD` (`emulate.c:5133-5135`, orig 5126-5128). That check runs before `decode_modrm` and `decode_operand`, so `__decode_register_operand` is not reached for VEX opcodes on this path.
 
-Consequence (static analysis, not reproduced): on a host without AVX, for example a Nehalem or Westmere Intel CPU with VMX, or a K10-era AMD CPU with SVM, a guest that executes a VEX instruction with an `Avx`-flagged opcode makes the host run `vmovdqa %ymm` in kernel mode, which raises `#UD` in the host. On AVX hosts the host instructions are valid. Whether the emulator should accept VEX for a guest whose CPUID has no AVX is a separate question (the emulator does not check guest CPUID either). Not verified.
+Paths that do reach the host `ymm` read before the guest XCR0 check (`emulate.c:5315-5321`, orig 5308-5314):
+1. `EMULTYPE_TRAP_UD_FORCED`, used when the `force_emulation_prefix` module parameter is set (`x86.c:178-179`, `:8057`). It defaults to 0 and is a debug option.
+2. Emulation of invalid guest state on VMX CPUs without unrestricted-guest support. Big-real-mode guest code then goes through the full emulator, and `x86_decode_avx` has no host AVX check. Which CPUs lack unrestricted guest was not checked against Intel's feature list; the earlier estimate of Nehalem and older is unverified.
+3. Page-fault and MMIO emulation is not a problem: the guest already executed the VEX instruction in hardware, so the host has AVX.
 
-Proposed fix (not applied; needs a kernel rebuild and a test on a non-AVX VMX host):
-- In `arch/x86/kvm/emulate.c` `x86_decode_avx()`, before the VEX decode, add a host check that takes the existing `ud` path when AVX is absent or OSXSAVE is off:
-  `if (!boot_cpu_has(X86_FEATURE_AVX) || !boot_cpu_has(X86_FEATURE_OSXSAVE)) goto ud;`
-- Follow-up: check the guest's AVX and XCR0 state in the same place.
-- A Kconfig change is not the fix: KVM has to run on these generic x86-64 hosts.
-- After the patch, rebuild `kvm.ko` (`make M=arch/x86/kvm`), re-run the audit, and add allowlist lines for `writeback` and `__decode_register_operand` that cite the new check at `emulate.c:<line>`. The audit cannot see the gate by itself.
+Consequence, with the above paths: on a host without AVX, paths 1 and 2 can run the host `vmovdqa %ymm` and take a host `#UD`. The probability is low (a debug option, or a specific old VMX CPU in real-mode emulation). Not reproduced; no non-AVX host was available.
+
+Local fix (applied to the build tree; patch in `scripts/rebuild/ch10/patches/kvm-emulate-host-avx-gate.patch`):
+
+```
+if (!boot_cpu_has(X86_FEATURE_AVX))
+        goto ud;
+```
+
+at the start of `x86_decode_avx()`. The existing `ud:` label (`emulate.c:4856`) sets the `ud` opcode and returns, so the instruction is treated as #UD. The guest XCR0 check is unchanged. The check tests only `X86_FEATURE_AVX`; it does not test OSXSAVE. This is a local patch and is worth reporting upstream (KVM).
+
+How it is applied: `scripts/rebuild/ch10/02-kernel-build.sh` applies `/sources/kvm-emulate-host-avx-gate.patch` before `.config` is copied. The patch file is staged to `/sources` the same way as `kernel-7.1.8.config`. The step is idempotent: a reverse dry-run detects an applied patch (tested on a scratch copy: first run applied, second run detected). The build script was not re-run in full; the patch was applied by hand to the build tree and the rebuild was incremental.
+
+Build and verification:
+- Incremental rebuild in the chroot (`make -j16 modules`, then `make modules_install`), log `kvm-fix/build.log`, RC=0. Compiled: `arch/x86/kvm/emulate.o`, `kvm.o`, `kvm.ko` only. `kvm-intel.ko` and `kvm-amd.ko` were not rebuilt; `modules_install` reinstalled them.
+- `vmlinuz-7.1.8-alpbahos` and `arch/x86/boot/bzImage` are unchanged (md5 `5cab8f7ced4424dde1007d5f77ad1dfc` before and after). The kernel image needs no rebuild because `kvm` is a module.
+- vermagic: `modinfo -F vermagic kvm.ko` = `7.1.8-alpbahos SMP preempt mod_unload ` (with a trailing space). The pre-fix `kvm.ko` was overwritten and its vermagic was not captured; `kvm-intel.ko`, not rebuilt, has the same string, so the vermagic is unchanged in practice.
+- Initrd `/mnt/lfs13/boot/initrd.img-7.1.8` contains no kvm entry (checked with sudo, zstd, cpio). It was not regenerated.
+- The disk image built earlier from `/mnt/lfs13` still carries the old `kvm.ko`. It is stale and needs a rebuild before any release.
 
 ## 4. Runtime proof: skipped
 
-The proof would need a QEMU boot with `-cpu qemu64` and either a one-shot unit or an explicit `modprobe` in the guest, because the crypto modules load only when requested. That was not done in this pass; the static gate evidence above is the basis. Predicted but unverified: on qemu64 (no AVX), the six crypto modules return `-ENODEV` at init.
+The proof would need a QEMU boot with `-cpu qemu64` and either a one-shot unit or an explicit `modprobe` in the guest, because the crypto modules load only when requested. That was not done. The static gate evidence above is the basis. Predicted but unverified: on qemu64 (no AVX), the six crypto modules return `-ENODEV` at init.
 
 ## 5. Tool change
 
@@ -69,10 +85,11 @@ The tool still does not exclude SVM mnemonics (vmrun, vmload, vmsave, vmmcall). 
 
 ## 6. Unverified
 
-- The gates were checked in the source tree `/mnt/lfs13/sources/linux-7.1.8`, taken to be the tree the module build used. I checked `.config` and the arch Makefile, not the build log flags (no `V=1` log).
+- The gates were checked in the source tree `/mnt/lfs13/sources/linux-7.1.8`, taken to be the tree the module build used. I checked `.config` and the arch Makefile, not the full build log flags.
 - The mapping from each `__pfx_` altinstr label to its call site is inferred from the objdump section scan and the macro definitions. It was not traced per call site.
-- The kvm.ko ungated path is static analysis only.
+- The kvm.ko analysis (section 3) is static only. Neither the original hazard nor the fix was reproduced on a non-AVX host. The fix is compiled but not executed or disassembled.
+- Pre-fix vermagic of kvm.ko was not captured (see section 3).
 
 ## 7. Status
 
-CPU-BASELINE-03 stays OPEN: 11 of 12 modules are closed with gate evidence, and kvm.ko is an open finding. Next: decide on the `emulate.c` patch in section 3, apply and test it on a non-AVX host, then add the two allowlist lines.
+CPU-BASELINE-03: DONE on static evidence, with the local kvm patch. Module run RC=0 and main tree RC=0. Open follow-ups: rebuild the disk image (stale kvm.ko), report the KVM patch upstream, and run the runtime checks in section 4 when a QEMU slot is available.

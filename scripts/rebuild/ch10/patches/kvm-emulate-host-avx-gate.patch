@@ -1,0 +1,16 @@
+--- a/arch/x86/kvm/emulate.c
++++ b/arch/x86/kvm/emulate.c
+@@ -4782,6 +4782,13 @@
+ 	u8 vex_3rd, map, pp, l, v;
+ 	int rc = X86EMUL_CONTINUE;
+ 
++	/*
++	 * The AVX operand helpers (fpu.h) execute VEX instructions on the host.
++	 * Without host AVX, treat the instruction as #UD instead of running them.
++	 */
++	if (!boot_cpu_has(X86_FEATURE_AVX))
++		goto ud;
++
+ 	if (ctxt->rep_prefix || ctxt->op_prefix || ctxt->rex_prefix)
+ 		goto ud;
+ 
