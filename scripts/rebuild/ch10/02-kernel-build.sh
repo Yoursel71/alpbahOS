@@ -8,6 +8,17 @@ set -euo pipefail
 
 KVER=7.1.8
 cd "/sources/linux-$KVER"
+
+# Local patch (CPU-BASELINE-03): KVM AVX emulation only with host AVX. The patch file is staged
+# to /sources like kernel-$KVER.config (source: scripts/rebuild/ch10/patches/). Idempotent.
+PATCH=/sources/kvm-emulate-host-avx-gate.patch
+test -f "$PATCH"
+if patch -R -p1 --dry-run -s -f < "$PATCH" >/dev/null 2>&1; then
+  echo "patch already applied: kvm-emulate-host-avx-gate"
+else
+  patch -p1 < "$PATCH"
+fi
+
 cp /sources/kernel-$KVER.config .config
 make olddefconfig
 
