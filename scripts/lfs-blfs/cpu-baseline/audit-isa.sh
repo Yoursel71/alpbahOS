@@ -3,9 +3,10 @@
 # Method: section 6.3 of docs/verification/sigill-cpu-baseline-2026-11-06.md, extended on
 # 2026-11-06 (REBUILD-R2) with the rules below. Decisions: D146, CLAUDE.md section 5.
 #
-# Usage:  audit-isa.sh [--report-only] [--allowlist FILE] <file-or-dir> [...]
+# Usage:  audit-isa.sh [--report-only] [--include-ko] [--allowlist FILE] <file-or-dir> [...]
 #   A directory is scanned for ELF files (*.so* and executables). Symlinks are
-#   resolved and each file is scanned once.
+#   resolved and each file is scanned once. --include-ko also takes *.ko files
+#   (kernel modules are not executable, so a directory scan skips them by default).
 #   Default allowlist: audit-isa.allow next to this script.
 #
 # What is counted, per function (objdump -d):
@@ -35,11 +36,13 @@ export LC_ALL=C
 
 HERE=$(cd "$(dirname "$0")" && pwd)
 REPORT_ONLY=0
+INCLUDE_KO=0
 ALLOWLIST=$HERE/audit-isa.allow
 ARGS=()
 while [[ $# -gt 0 ]]; do
   case $1 in
     --report-only) REPORT_ONLY=1 ;;
+    --include-ko) INCLUDE_KO=1 ;;
     --allowlist) shift; ALLOWLIST=${1:?--allowlist needs a file} ;;
     -h|--help) sed -n '2,38p' "$0"; exit 0 ;;
     -*) echo "unknown option: $1" >&2; exit 2 ;;
@@ -47,7 +50,7 @@ while [[ $# -gt 0 ]]; do
   esac
   shift
 done
-((${#ARGS[@]})) || { echo "usage: $0 [--report-only] [--allowlist FILE] <file-or-dir> [...]" >&2; exit 2; }
+((${#ARGS[@]})) || { echo "usage: $0 [--report-only] [--include-ko] [--allowlist FILE] <file-or-dir> [...]" >&2; exit 2; }
 command -v objdump >/dev/null || { echo "objdump not found (install binutils)" >&2; exit 2; }
 command -v readelf >/dev/null || { echo "readelf not found (install binutils)" >&2; exit 2; }
 command -v gawk >/dev/null || { echo "gawk not found (needed for strtonum)" >&2; exit 2; }
@@ -81,11 +84,13 @@ add_file() {
   FILES+=("$real")
 }
 
+KO_FIND=()
+if ((INCLUDE_KO)); then KO_FIND=(-o -name '*.ko'); fi
 for a in "${ARGS[@]}"; do
   if [[ -d $a ]]; then
     while IFS= read -r -d '' f; do
       add_file "$f"
-    done < <(find "$a" -type f \( -name '*.so*' -o -perm -u+x \) -print0)
+    done < <(find "$a" -type f \( -name '*.so*' -o -perm -u+x ${KO_FIND[@]+"${KO_FIND[@]}"} \) -print0)
   elif [[ -f $a ]]; then
     add_file "$a"
   else
