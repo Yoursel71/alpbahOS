@@ -132,6 +132,46 @@ def test_adopt_failure_does_not_change_database(paths, tmp_path, failure):
     assert paths.db_file.read_bytes() == before
 
 
+def test_adopt_accepts_backslash_in_systemd_escaped_unit_name(paths, tmp_path):
+    # systemd installs this unit file with literal backslashes in its name (REBUILD-R3).
+    unit = "usr/lib/systemd/system/system-systemd\\x2dmute\\x2dconsole.slice"
+    (paths.root / "usr/lib/systemd/system").mkdir(parents=True)
+    (paths.root / unit).write_bytes(b"[Unit]\n")
+    (paths.root / unit).chmod(0o644)
+    st = (paths.root / unit).lstat()
+    entries = [
+        {"path": "/usr/bin/tool", "type": "file", "mode": 0o755, "size": 18, "uid": st.st_uid, "gid": st.st_gid,
+         "sha256": hashlib.sha256(b"existing LFS tool\n").hexdigest()},
+        {"path": "/" + unit, "type": "file", "mode": 0o644, "size": 7, "uid": st.st_uid, "gid": st.st_gid,
+         "sha256": hashlib.sha256(b"[Unit]\n").hexdigest()},
+    ]
+    manifest = _manifest(paths, tmp_path, entries=entries)
+    assert alp.cmd_adopt_base(_args(manifest), paths) == 0
+    record = alp.load_db(paths)["packages"]["tool"]
+    assert unit in record["files"]
+
+
+@pytest.mark.parametrize("bad", [
+    "/usr/bin/../etc/passwd",
+    "/../etc/passwd",
+    "/usr/./bin/tool",
+    "/usr//bin/tool",
+    "/usr/bin/",
+    "usr/bin/tool",
+    "/usr/bin/tool\nevil",
+    "/usr/bin/tool\rx",
+    "/usr/bin/tool\x00x",
+    "/var/lib/alp/db.json",
+])
+def test_adopt_still_rejects_unsafe_manifest_paths(paths, tmp_path, bad):
+    entries = [{"path": bad, "type": "file", "mode": 0o644, "size": 1, "uid": 0, "gid": 0,
+                "sha256": hashlib.sha256(b"x").hexdigest()}]
+    manifest = _manifest(paths, tmp_path, entries=entries)
+    with pytest.raises(alp.AlpError):
+        alp.cmd_adopt_base(_args(manifest), paths)
+    assert not paths.db_file.exists()
+
+
 def test_adopt_rejects_duplicate_manifest_paths(paths, tmp_path):
     tool_stat = (paths.root / "usr/bin/tool").lstat()
     entries = [

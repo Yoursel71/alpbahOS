@@ -97,12 +97,21 @@ def cmd_diff(pre, cur):
     sys.stdout.write("\n".join(rows) + ("\n" if rows else ""))
 
 
-LEFTOVER_STEP = "ch05-07-leftover"
+# Chapter 5-7 leftovers, split by origin (split-leftover). Step ids start with "ch05-07-".
+LEFT_PREFIX = "ch05-07-"
+LEFT_GROUPS = {
+    "ch05-07-linux-api-headers": ("linux-api-headers", "7.1.8", "linux-7.1.8.tar.xz"),
+    "ch05-07-temptools-stale": ("alpbahos-temptools-stale", "r3", None),
+    "ch05-07-ch05": ("alpbahos-ch05-leftover", "r3", None),
+    "ch05-07-ch06": ("alpbahos-ch06-leftover", "r3", None),
+    "ch05-07-ch07": ("alpbahos-ch07-leftover", "r3", None),
+}
 
 
 def owner_map(stepdir):
     owner = {}
-    steps = sorted(f[:-4] for f in os.listdir(stepdir) if f.endswith(".tsv") and f[:-4] != LEFTOVER_STEP)
+    steps = sorted(f[:-4] for f in os.listdir(stepdir)
+                   if f.endswith(".tsv") and not f.startswith(LEFT_PREFIX))
     for step in steps:
         for row in read_tsv(os.path.join(stepdir, step + ".tsv")):
             if row[0] == "D":
@@ -112,14 +121,56 @@ def owner_map(stepdir):
     return owner
 
 
-def cmd_leftover(root, stepdir, out):
-    """Files in the final root that no chapter 8+ step wrote (the chapter 5-7 leftovers)."""
+def cmd_split_leftover(root, stepdir, snapdir, stale_out):
+    """Files in the final root that no chapter 8+ step wrote, split by the chapter that
+    created them (the first of after-ch5, after-ch6, after-ch7 that holds the path).
+
+    Groups (one step TSV each, see LEFT_GROUPS):
+      linux-api-headers   usr/include/**                          (the linux-7.1.8 tarball)
+      temptools-stale     usr/lib/perl5/<ver>/** whose relative path is not in ch8 perl's set
+                          (ch8 perl is step ch08-45); recorded, not deleted
+      ch05 / ch06 / ch07  everything else, by origin chapter
+    """
+    snaps = {c: set(walk(os.path.join(snapdir, f"after-{c}-2026-11-06")))
+             for c in ("ch5", "ch6", "ch7")}
     owned = owner_map(stepdir)
     unowned = sorted(set(walk(root)) - set(owned))
-    with open(out, "w", encoding="utf-8") as f:
-        for p in unowned:
-            f.write(f"A\t{p}\tfile\t\t\t\t\t\n")
-    print(f"chapter 5-7 leftovers (no chapter 8+ writer): {len(unowned)}")
+    perl_rel = set()
+    for p, s in owned.items():
+        if s == "ch08-45" and p.startswith("usr/lib/perl5/"):
+            perl_rel.add(re.sub(r"^usr/lib/perl5/[^/]+/", "", p))
+    groups = defaultdict(list)
+    counts = defaultdict(lambda: defaultdict(int))
+    for p in unowned:
+        if p in snaps["ch5"]:
+            origin = "ch05"
+        elif p in snaps["ch6"]:
+            origin = "ch06"
+        else:
+            origin = "ch07"
+        if p.startswith("usr/include/"):
+            key = "linux-api-headers"
+        elif p.startswith("usr/lib/perl5/"):
+            key = "temptools-stale" if re.sub(r"^usr/lib/perl5/[^/]+/", "", p) not in perl_rel else origin
+        else:
+            key = origin
+        groups["ch05-07-" + key].append(p)
+        counts[key][origin] += 1
+    for step in glob.glob(os.path.join(stepdir, LEFT_PREFIX + "*.tsv")):
+        os.remove(step)
+    for step, paths in sorted(groups.items()):
+        with open(os.path.join(stepdir, step + ".tsv"), "w", encoding="utf-8") as f:
+            for p in paths:
+                f.write(f"A\t{p}\tfile\t\t\t\t\t\n")
+    with open(stale_out, "w", encoding="utf-8") as f:
+        for p in groups.get("ch05-07-temptools-stale", []):
+            f.write(p + "\n")
+    print(f"chapter 5-7 leftovers: {len(unowned)}")
+    for key in sorted(counts):
+        by = ", ".join(f"{o} {n}" for o, n in sorted(counts[key].items()))
+        print(f"  {key}: {sum(counts[key].values())} ({by})")
+    print(f"  perl5 paths with the same relative path in ch8 perl's set: "
+          f"{sum(1 for p in unowned if p.startswith('usr/lib/perl5/') and re.sub(r'^usr/lib/perl5/[^/]+/', '', p) in perl_rel)}")
 
 
 def cmd_dbowned(root, out):
@@ -211,11 +262,15 @@ def package_for(args, step):
     if step == "zz-alp":
         return {"name": "alp", "version": "r3-prototype", "url": REPO_URL,
                 "sha256": sha256_file(args.alp), "tar": None}
-    if step == LEFTOVER_STEP:
-        # Not a build step: the source identity is the sha256 of the exact path list
-        # (ch05-07-leftover.tsv), generated from the final tree by the `leftover` subcommand.
-        return {"name": "alpbahos-ch05-07-leftover", "version": "r3", "url": REPO_URL,
-                "sha256": sha256_file(args.leftover_src), "tar": None}
+    if step.startswith(LEFT_PREFIX):
+        # Not a build step. A group of chapter 5-7 leftovers (LEFT_GROUPS): with a tarball
+        # (linux-api-headers) it is checked like any other package; otherwise its source
+        # identity is the sha256 of the exact path list (the group's step TSV).
+        name, version, tar = LEFT_GROUPS[step]
+        if tar:
+            return {"name": name, "version": version, "url": None, "sha256": None, "tar": tar}
+        return {"name": name, "version": version, "url": REPO_URL,
+                "sha256": sha256_file(os.path.join(args.steps, step + ".tsv")), "tar": None}
     ch, nn = step.split("-")
     n = int(ch[2:])
     # ch08-31b is the MPFR re-check after GCC: it runs the script of ch08-22 (22-mpfr.sh).
@@ -343,21 +398,22 @@ def main(argv):
     dbo = sub.add_parser("dbowned")
     dbo.add_argument("root")
     dbo.add_argument("out")
-    lo = sub.add_parser("leftover")
+    lo = sub.add_parser("split-leftover")
     lo.add_argument("root")
     lo.add_argument("stepdir")
-    lo.add_argument("out")
+    lo.add_argument("snapdir")
+    lo.add_argument("stale_out")
     m = sub.add_parser("manifests")
     for opt in ("--owners", "--root", "--rb", "--sources", "--md5sums", "--wget", "--alp", "--out",
-                "--leftover-src"):
+                "--steps"):
         m.add_argument(opt, required=True)
     a = ap.parse_args(argv)
     if a.cmd == "diff":
         cmd_diff(a.pre, a.cur)
     elif a.cmd == "owners":
         cmd_owners(a.stepdir, a.owners_out, a.conflicts_out)
-    elif a.cmd == "leftover":
-        cmd_leftover(a.root, a.stepdir, a.out)
+    elif a.cmd == "split-leftover":
+        cmd_split_leftover(a.root, a.stepdir, a.snapdir, a.stale_out)
     elif a.cmd == "dbowned":
         cmd_dbowned(a.root, a.out)
     else:
