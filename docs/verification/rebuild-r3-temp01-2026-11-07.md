@@ -1,67 +1,76 @@
-# REBUILD-R3-TEMP-01: removal of the stale chapter 7 perl files (2026-11-07)
+# REBUILD-R3-TEMP-01: the stale perl files are base perl modules (reclassified, 2026-11-07)
 
-Status: **Blocked. Nothing was removed.** The proof required by the task failed: perl in the R3 base
-loads 756 of the 762 `.pm` modules in the list from the listed paths, so removing the list would remove
-modules the base uses. The R3 note (section 3) called these files "stale"; this check contradicts that.
+Status: **Done (reclassified, not deleted).** The files are not stale. They are perl 5.44.0 core modules
+that the chapter 8 install did not rewrite, because the content was already identical. The 1596 files
+are now in the `perl` record and the `alpbahos-temptools-stale` record is dropped. Nothing on disk was
+removed. This corrects the R3 note (section 3), which called them "stale chapter 7 temporary perl files".
 
-## 1. Snapshot
+## 1. Why the chapter 8 install did not rewrite them
 
-Read-only btrfs snapshot taken before any change to `r3-root`:
-`scratch-lfs-bench/lfs13-snapshots/pre-temp01-2026-11-07` (parent UUID of `r3-root`:
-`392e5b4b-1a38-764f-a734-ee9707e3060c`). `r3-root` is a btrfs subvolume; the snapshot is a separate
-subvolume and costs no copy.
+`installperl` writes each library file only when it differs (`scripts/rebuild/ch8/45-perl.sh` runs
+`make install`, which runs `installperl` without `--force`). Source: perl-5.44.0 (`r3-root/sources/perl-5.44.0.tar.xz`),
+read in `scratch-lfs-bench/temp01-perl/perl-5.44.0/`:
 
-## 2. The record and the list
+- `installperl:708`: `if ($opts{force} || compare($from, $to) || $opts{notify}) { ... copy ... }`.
+  `File::Compare::compare` returns 0 for identical files, so an identical file is not copied.
+- `cpan/ExtUtils-Install/lib/ExtUtils/Install.pm:755`: `my $diff = $always_copy || _compare(...)`,
+  and `:809-810`: `$result->{install_unchanged}{$targetfile} = $sourcefile;` /
+  `print "Skipping $targetfile (unchanged)\n" if $verbose;`. `_compare` is at `:135-142`.
 
-- `alpbahos-temptools-stale` in `r3-root/var/lib/alp/db.json`: 1596 files, `protected: true`,
-  `method: lfs-base`. Its file list equals `scripts/rebuild/r3/temptools-stale.txt` exactly
-  (1596 in both, 0 only in the record, 0 only in the list).
-- `alp remove` refuses `lfs-base` records (`remove_package`: "LFS taban paketi; doğrudan kaldırılması
-  kapalı"), so the alp route would need a database edit. It was not reached because the proof failed.
+So an identical chapter 7 file stays on disk with its chapter 7 change time. The R3 ledger assigned it
+to chapter 7 (`ch05-07-temptools-stale`) because it was the last writer by ctime. The ch8 install log
+(`lfs13-logs/ch8/45-perl.log`) contains no "unchanged" lines because the build ran without verbose output.
 
-## 3. Proof that nothing uses the files (failed)
+## 2. Check against a fresh install
 
-Method: `scripts/rebuild/r3/temp01-proof.sh` mounts `/dev`, `/proc`, `/sys` under `r3-root` for the run
-and unmounts them. It runs `scripts/rebuild/r3/temp01-check.pl` in the chroot. The script requires every
-stale `.pm` module by name and prints the file perl resolves it to (`%INC`). Output:
-`scratch-lfs-bench/r3-ledger/temp01/perl-pre.txt`; tool checks: `tools-pre.txt`.
+`scratch-lfs-bench/temp01-perl/build.sh` built perl 5.44.0 from the same tarball with the flags of
+`scripts/rebuild/ch8/45-perl.sh` (on the host, not in the chroot; `Configure` log `configure.log`, build
+`make.log`, `make install DESTDIR=.../inst`, rc 0). Each of the 1596 listed files was compared with the
+same path in that DESTDIR install (`cmp`):
 
-Results before removal:
+- **same: 1596, different: 0, missing in the fresh install: 0.**
 
-- perl 5.44.0, `@INC`: `/usr/lib/perl5/5.44/site_perl`, `.../vendor_perl`, `.../core_perl`.
-- Smoke test `use strict; use warnings; use Config; use File::Spec; use Data::Dumper; print "ok"`:
-  `smoke: ok`. `Data/Dumper.pm` is one of the listed files and perl loaded it from there.
-- `pm_modules=762 resolved_to_stale=756 failed=6`. The six that do not load standalone are
-  `File::Spec::VMS`, `Pod::Perldoc::ToTk`, `Test2::AsyncSubtest::Formatter`, `if`, `open`, `sort`
-  (their load errors were not examined).
-- Examples of resolution to a listed path: `Archive::Tar` ->
-  `/usr/lib/perl5/5.44/core_perl/Archive/Tar.pm`, `AnyDBM_File` -> `.../core_perl/AnyDBM_File.pm`.
-- Non-`.pm` files in the list: 834.
-- Other perl users: `autoreconf --version` -> `autoconf 2.73`, rc 0; `help2man` is absent from the base;
-  `openssl version` -> `OpenSSL 4.0.1 9 Jun 2026`, rc 0.
+The comparison covers only the listed files. Files that differ between a host build and the chroot
+build (Config_heavy.pl and similar) are not in the list, so they are not affected.
 
-Why this matters for the R3 note: the list was recorded as "not in ch8 perl's set". The files have ch7
-change times (6 Nov 17:55) and are byte-identical to `/mnt/lfs13` copies, but perl still loads them. The
-ch8 perl install log (`lfs13-logs/ch8/45-perl.log`) does not show these modules being installed. The cause
-(an install that skips unchanged files, or a module set that differs) was **not established**. Removing
-the files without that answer would break `use Data::Dumper`, `Archive::Tar` and about 750 more modules.
+## 3. Action (`scripts/rebuild/r3/temp01-reclassify.py`)
 
-## 4. What was not done
+Run as root against `r3-root`, under alp's own database lock and `save_db`:
 
-- No file was removed, no directory was removed, and the alp record was not touched.
-- The post-removal perl check, `alp check` after removal, and the ownership check after removal were not
-  run, since there was no removal.
-- The alp in the R3 root (`/usr/lib/alp/alp.py`) is older than the repo copy
-  (`docs/handoffs/claude/alp-prototype/alp.py`): the repo copy accepts backslashes in manifest paths and
-  the installed copy does not. The R4 driver uses the repo copy. The image's `alp` is not changed here.
+- check: the stale record's file list equals `temptools-stale.txt`; each file byte-matches the fresh install;
+- moved: 1596 files into the `perl` record (`perl` 1285 -> 2881 files); a `reclassified` entry records
+  the method and the date;
+- dropped: the `alpbahos-temptools-stale` record. Unmatched files: 0 (they would have gone to a kept record
+  `alpbahos-temptools-unmatched`);
+- report: `scratch-lfs-bench/r3-ledger/temp01/reclassify.json`.
 
-## 5. Decision needed
+Snapshot before the change: `scratch-lfs-bench/lfs13-snapshots/pre-temp01-reclass-2026-11-07` (read-only).
 
-One of:
+## 4. Checks after the change (r3-root)
 
-1. Reclassify the 1596 files as base perl modules (a new base record or an adoption of the perl core
-   set), and close REBUILD-R3-TEMP-01 as "no stale files": the list is then wrong and must be corrected.
-2. Rebuild ch8 perl so that its install writes every core module (check the install log for skipped
-   files first), then repeat this proof and remove the files that are no longer loaded.
+- `alp check` (repo `alp.py`, `--index demo/index.json`): rc 0, "sorun yok (97 kurulu paket)".
+- Ownership check (`scripts/rebuild/r3/ownership-check.sh`, owned list from the database): files scanned
+  62927, owned 62927, **unowned 0, conflicts 0**. (Same totals as before: the list only moved owner.)
+- Perl proof (`temp01-proof.sh`, post phase): `smoke: ok`, `pm_modules=762 resolved_to_stale=756 failed=6`
+  (the same counts as before the change; "stale" in that output is the name of the check, the paths are
+  the perl-owned files now), `perl rc=0`. `autoreconf (GNU Autoconf) 2.73` rc 0; `help2man` absent;
+  `OpenSSL 4.0.1` rc 0.
 
-The coordinator chooses. Until then TEMP-01 stays Blocked.
+## 5. The alp upgrade in r3-root (same change set)
+
+The installed `/usr/lib/alp/alp.py` was older than the repo copy (it refused backslashes in manifest paths).
+alp's own `upgrade` refuses `lfs-base` records ("LFS taban paketi; alp ile yükseltilmesi kapalı"), and the
+`alp` package is one. So the file was copied (as the R3 zz-alp step did) and the change was recorded with
+`scripts/rebuild/r3/alp-upgrade-record.py`: the record's `upgrades` list gets the previous and new sha256
+and the repo source. The file list is unchanged.
+
+- previous sha256 `e24671e238a6043cbce13ec10f09ab50754b709a02abfbde1de3abc6619d24e8`;
+- new sha256 `f2a8f31dcf3fd55b1512c400c4ba06c8ba541be6411e61695d73475d69caecac` (equal to the repo file);
+- alp test suite (`docs/handoffs/claude/alp-prototype/tests`): 264 passed;
+- `alp check` after the upgrade: rc 0, 97 packages.
+
+## 6. Open
+
+- The `perl` record's `ownership.manifest_sha256` still names the chapter 8 manifest; the file list now
+  holds 2881 entries. The record says so in `reclassified`. A new manifest for perl is not generated.
+- The r3-root alp upgrade used copy plus record, not alp's own path (refused for lfs-base). Recorded here.
