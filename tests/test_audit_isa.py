@@ -199,6 +199,25 @@ class AuditIsaTest(unittest.TestCase):
         self.assertEqual(r.returncode, 2, r.stdout + r.stderr)
         self.assertIn("need 4 TAB-separated fields", r.stderr)
 
+    def test_directory_scan_skips_ko_unless_include_ko(self):
+        # Kernel modules are mode 644, so a plain directory scan must not take them.
+        mod_dir = self.tmp / "modules"
+        mod_dir.mkdir()
+        self.build("mod-vex.ko", [func("mod_vex", VEX)])
+        mod = mod_dir / "mod-vex.ko"
+        shutil.move(str(self.tmp / "mod-vex.ko"), str(mod))
+        mod.chmod(0o644)
+        r = self.audit(mod_dir)
+        self.assertEqual(r.returncode, 2, r.stdout + r.stderr)
+        self.assertIn("no ELF files found", r.stderr)
+        r = subprocess.run(
+            ["bash", str(TOOL), "--include-ko", "--allowlist", str(self.empty_allow), str(mod_dir)],
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        self.assertIn("NONVARIANT  mod_vex", r.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()
