@@ -118,5 +118,16 @@ class PlanTests(unittest.TestCase):
             self.assertIn("gtk-doc", rows[1][9])
 
 
+class AuditGateTests(unittest.TestCase):
+    """The driver must take the audit's own exit code (a pipeline gave audit_rc=0 for a failing audit)."""
+
+    def test_driver_uses_audit_exit_code(self):
+        with open(os.path.join(R4, "run-r4.sh"), encoding="utf-8") as f:
+            src = f.read()
+        self.assertIn('bash "$AUDIT" > "$LEDGER/audit/$nn.txt" 2>&1\n    arc=$?', src)
+        self.assertNotIn("PIPESTATUS", src)
+        self.assertIn('if [ "$arc" -ne 0 ]; then', src)
+
+
 if __name__ == "__main__":
     unittest.main()

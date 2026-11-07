@@ -88,7 +88,7 @@ build_one() {
 
   # Source: the BLFS 13.1 URL, cached in SRC13. The book's md5 is the check (no upstream sha256 here).
   if [ ! -s "$src" ]; then
-    curl -fL --retry 3 -sS -o "$src.part" "$url" && mv "$src.part" "$src" \
+    curl -fL --retry 5 --retry-all-errors -sS -o "$src.part" "$url" && mv "$src.part" "$src" \
       || { rm -f "$src.part"; say "FAIL $nn $nv download $url"; return 1; }
   fi
   got=$(python3 "$LIB" md5 "$src" "$md5") || { say "FAIL $nn $nv source md5 $got, book $md5"; return 1; }
@@ -200,12 +200,21 @@ build_one() {
   elfs=$LEDGER/audit/$nn.elfs
   python3 "$LIB" elfs --root "$post" --diff "$LEDGER/diff/$nn.tsv" > "$elfs"
   if [ -s "$elfs" ]; then
-    summary=$(xargs -d '\n' -a "$elfs" bash "$AUDIT" 2>&1 | tee "$LEDGER/audit/$nn.txt" | grep '^audit:' | tail -1)
-    arc=${PIPESTATUS[0]}
+    # The audit's own exit code (0 = no unallowed hits). The earlier pipeline into tee/grep took the
+    # exit code of a subshell, so a failing audit was recorded as audit_rc=0 (libgcrypt 039, Mesa 128).
+    xargs -d '\n' -a "$elfs" bash "$AUDIT" > "$LEDGER/audit/$nn.txt" 2>&1
+    arc=$?
+    summary=$(grep '^audit:' "$LEDGER/audit/$nn.txt" | tail -1)
   else
     summary="audit: no ELF files"; arc=0
   fi
   btrfs subvolume delete "$pre" "$post" > /dev/null
+  # The ISA gate: a package with unallowed nonvariant hits is a FAIL (the batch stops). It stays installed
+  # and recorded; a rerun from its number rebuilds it (the RETRY step removes its files first).
+  if [ "$arc" -ne 0 ]; then
+    say "FAIL $nn $nv audit rc=$arc $summary (log $LEDGER/audit/$nn.txt)"
+    return 1
+  fi
   say "OK $nn $nv $(( $(date +%s) - start ))s files=$n sha256=$sha(TOFU) md5=BLFS-page-ok alp=adopted audit_rc=$arc $summary"
   return 0
 }
