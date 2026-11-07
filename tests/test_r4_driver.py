@@ -31,6 +31,9 @@ class SplitTests(unittest.TestCase):
         self.assertEqual(lib.split_name_version("libtasn1-4.20.0"), ("libtasn1", "4.20.0"))
         self.assertEqual(lib.split_name_version("docbook-xsl-nons-1.79.2"), ("docbook-xsl-nons", "1.79.2"))
         self.assertEqual(lib.split_name_version("pcre2-10.45"), ("pcre2", "10.45"))
+        self.assertEqual(lib.split_name_version("icu4c-78.3-sources"), ("icu4c", "78.3"))
+        self.assertEqual(lib.split_name_version("openldap-LMDB_1.0.1"), ("openldap", "LMDB_1.0.1"))
+        self.assertEqual(lib.split_name_version("Linux-PAM-1.7.2"), ("Linux-PAM", "1.7.2"))
         with self.assertRaises(ValueError):
             lib.split_name_version("nodigits")
 

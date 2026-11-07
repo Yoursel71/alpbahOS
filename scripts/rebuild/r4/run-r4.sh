@@ -33,8 +33,10 @@ STATUS=$SB/r4-status.txt
 FIRST=${R4_FIRST:-001}
 LAST=${R4_LAST:-030}
 JOBS=${R4_JOBS:-8}
+SRC13=$SB/blfs-src-13.1
+DELTAS=$WT/scripts/rebuild/r4/deltas
 
-mkdir -p "$LEDGER/logs" "$LEDGER/diff" "$LEDGER/manifests" "$LEDGER/adopt" "$LEDGER/audit" "$SNAPS"
+mkdir -p "$LEDGER/logs" "$LEDGER/diff" "$LEDGER/manifests" "$LEDGER/adopt" "$LEDGER/audit" "$SNAPS" "$SRC13"
 rm -f "$LEDGER/DONE" "$LEDGER/FAILED"
 say() { echo "$(date '+%F %T') $*" >> "$STATUS"; }
 
@@ -66,31 +68,89 @@ preflight() {
 
 # One package. Returns 0 for OK or SKIP, 1 for FAIL (the batch stops).
 build_one() {
-  local nn=$1 row nv tb md5 localsrc url name ver src got sha start pre post rc elfs n arc summary man
+  local nn=$1 row nv tb md5 localsrc url old_nv old_tb name ver src got sha start pre post rc elfs n arc summary man
   # Resume: a package with an OK line in the status file is already built and recorded in r4-root.
   if grep -q " OK $nn " "$STATUS" 2>/dev/null; then return 0; fi
+  # Deferred: scripts/rebuild/r4/deltas/NNN.defer names the reason (a dependency that comes later in the list).
+  if [ -f "$DELTAS/$nn.defer" ]; then say "DEFER $nn: $(head -1 "$DELTAS/$nn.defer")"; return 0; fi
   row=$(python3 "$LIB" row --plan "$PLAN" --nn "$nn") || { say "FAIL $nn no plan row"; return 1; }
-  IFS=$'\t' read -r nv tb md5 localsrc _ url <<< "$row"
+  IFS=$'\t' read -r nv tb md5 localsrc _ url old_nv old_tb <<< "$row"
+  for v in tb md5 localsrc url old_nv old_tb; do [ "${!v}" = - ] && printf -v "$v" ''; done
   if [ "$localsrc" != yes ] || [ -z "$tb" ]; then
     say "SKIP $nn $nv no local source (packages.tsv local_source=$localsrc)"; return 0
   fi
   read -r name ver <<< "$(python3 "$LIB" split "$nv")"
-  src="$BLFS/blfs-src/$tb"
+  # A second build of the same package (freetype pass 2, 050) gets its own alp name: alp keeps one record
+  # per name. scripts/rebuild/r4/deltas/NNN.name holds the name.
+  if [ -f "$DELTAS/$nn.name" ]; then name=$(cat "$DELTAS/$nn.name"); fi
+  src="$SRC13/$tb"
   start=$(date +%s)
 
-  got=$(python3 "$LIB" md5 "$src" "$md5") || { say "FAIL $nn $nv source md5 $got, BLFS page $md5"; return 1; }
+  # Source: the BLFS 13.1 URL, cached in SRC13. The book's md5 is the check (no upstream sha256 here).
+  if [ ! -s "$src" ]; then
+    curl -fL --retry 3 -sS -o "$src.part" "$url" && mv "$src.part" "$src" \
+      || { rm -f "$src.part"; say "FAIL $nn $nv download $url"; return 1; }
+  fi
+  got=$(python3 "$LIB" md5 "$src" "$md5") || { say "FAIL $nn $nv source md5 $got, book $md5"; return 1; }
   sha=$(sha256sum "$src" | cut -d' ' -f1)
   cp --reflink=auto "$src" "$R4/sources/blfs-src/$tb"
 
+  # Generator: the 12.4 build commands (same generator as the test image). Then the 12.4 version
+  # strings are replaced by the 13.1 ones (tarball name first, then the directory name). The
+  # per-package deltas beyond the version strings are not made here: a failing build shows them.
   runuser -u yrslf -- python3 "$BLFS/gen_blfs_chroot.py" "$nn" > /dev/null 2>&1 \
     || { say "FAIL $nn $nv generator"; return 1; }
   # The export runs after the login profile, which leaves LANG/LC_CTYPE at tr_TR.UTF-8 (the base
   # locale.conf) even when LC_ALL=C is passed to chroot. The script sets C itself.
-  { echo 'export LANG=C LC_ALL=C'; cat "$BLFS/gen_blfs/$nn.sh"; } > "$R4/sources/.blfs-$nn.sh" || return 1
+  { echo 'export LANG=C LC_ALL=C'; cat "$BLFS/gen_blfs/$nn.sh"; } > "$LEDGER/gen-$nn.12.sh"
+  # Extra version strings of the 13.1 page (scripts/rebuild/r4/deltas/NNN.subst): "OLD<TAB>NEW" lines.
+  extra=()
+  if [ -f "$DELTAS/$nn.subst" ]; then
+    while IFS=$'\t' read -r o n; do [ -n "$o" ] && extra+=(--pair "$o" "$n"); done < "$DELTAS/$nn.subst"
+  fi
+  python3 "$LIB" subst --in "$LEDGER/gen-$nn.12.sh" --out "$LEDGER/gen-$nn.13.sh" \
+    --pair "$old_tb" "$tb" --pair "$old_nv" "$nv" "${extra[@]}" || return 1
+  # Per-package deltas from the 13.1 page (scripts/rebuild/r4/deltas/NNN.pre.sh): inserted before the
+  # first configure/meson/cmake line. A delta with no insertion point fails the package.
+  if [ -f "$DELTAS/$nn.pre.sh" ]; then
+    python3 "$LIB" insert --in "$LEDGER/gen-$nn.13.sh" --out "$LEDGER/gen-$nn.13d.sh" \
+      --before '^(\./configure|meson |cmake |\./Configure)' --file "$DELTAS/$nn.pre.sh" \
+      || { say "FAIL $nn $nv delta insert"; return 1; }
+    cp "$LEDGER/gen-$nn.13d.sh" "$LEDGER/gen-$nn.13.sh"
+    say "DELTA $nn applied: $DELTAS/$nn.pre.sh"
+  fi
+  # Extra files the 13.1 page needs next to the build tree (scripts/rebuild/r4/deltas/NNN.files): one line
+  # "URL MD5|- FILENAME". The file goes to /sources/blfs-build (the parent of the source tree, where
+  # the book's "patch -i ../NAME" looks). "-" means the book page gives no md5 (then a note is written).
+  if [ -f "$DELTAS/$nn.files" ]; then
+    mkdir -p "$R4/sources/blfs-build"
+    while read -r furl fmd5 fdest; do
+      [ -z "$furl" ] && continue
+      fsrc=$SRC13/$fdest
+      if [ ! -s "$fsrc" ]; then
+        curl -fL -sS -o "$fsrc.part" "$furl" && mv "$fsrc.part" "$fsrc" \
+          || { rm -f "$fsrc.part"; say "FAIL $nn $nv download $furl"; return 1; }
+      fi
+      if [ "$fmd5" != - ]; then
+        got=$(python3 "$LIB" md5 "$fsrc" "$fmd5") || { say "FAIL $nn $nv $fdest md5 $got, book $fmd5"; return 1; }
+      else
+        say "NOTE $nn $fdest: no md5 on the book page; sha256 $(sha256sum "$fsrc" | cut -d' ' -f1) (TOFU)"
+      fi
+      cp "$fsrc" "$R4/sources/blfs-build/$fdest" || return 1
+    done < "$DELTAS/$nn.files"
+  fi
+  cp "$LEDGER/gen-$nn.13.sh" "$R4/sources/.blfs-$nn.sh" || return 1
 
   # A build tree left by an earlier failed try keeps its generated files (meson does not regenerate
   # them): start from an empty tree.
   rm -rf "$R4/sources/blfs-build/$nv"
+  # An earlier try that got past its install (then failed at adopt-base) left files behind. Remove the
+  # files it added, so the book's commands (e.g. ln -s) can run again. Changed files are overwritten.
+  if [ -s "$LEDGER/diff/$nn.tsv" ]; then
+    awk -F'\t' '$1=="A" && ($3=="file" || $3=="symlink") {print $2}' "$LEDGER/diff/$nn.tsv" \
+      | while read -r p; do rm -f -- "$R4/$p"; done
+    say "RETRY $nn: removed the files added by the earlier try"
+  fi
   pre=$SNAPS/pre-$nn-$DATE
   post=$SNAPS/post-$nn-$DATE
   btrfs subvolume snapshot -r "$R4" "$pre" > /dev/null || { say "FAIL $nn $nv snapshot pre"; return 1; }
@@ -107,6 +167,8 @@ build_one() {
   btrfs subvolume snapshot -r "$R4" "$post" > /dev/null || { say "FAIL $nn $nv snapshot post"; return 1; }
   if [ $rc -ne 0 ]; then
     say "FAIL $nn $nv build rc=$rc $(( $(date +%s) - start ))s log=$LEDGER/logs/$nn.log"
+    # Keep the diff of a failed try: its added files are removed before the next try (RETRY above).
+    "$R3L" diff "$pre" "$post" > "$LEDGER/diff/$nn.tsv"
     btrfs subvolume delete "$pre" "$post" > /dev/null
     return 1
   fi
@@ -117,6 +179,11 @@ build_one() {
         --url "$url" --sha256 "$sha" --out "$man") \
     || { say "FAIL $nn $nv manifest"; btrfs subvolume delete "$pre" "$post" > /dev/null; return 1; }
 
+  # Last writer owns (the R3 rule): paths this package rewrote are moved from the record that had them.
+  mkdir -p "$LEDGER/transfers"
+  tn=$(python3 "$LIB" transfer --root "$R4" --alp "$ALP" --manifest "$man" --name "$name" --version "$ver" \
+        --log "$LEDGER/transfers/moves.tsv") || { say "FAIL $nn $nv ownership transfer"; btrfs subvolume delete "$pre" "$post" > /dev/null; return 1; }
+  [ "$tn" != 0 ] && say "TRANSFER $nn $name took $tn path(s) from earlier records (see r4-ledger/transfers/moves.tsv)"
   python3 "$ALP" --root "$R4" adopt-base --manifest "$man" --name "$name" --version "$ver" \
     --source-sha256 "$sha" > "$LEDGER/adopt/$nn.log" 2>&1
   if [ $? -ne 0 ]; then

@@ -1,34 +1,33 @@
-# 031: REBUILD-R4 start and REBUILD-R3-TEMP-01 (2026-11-07)
+# 031: REBUILD-R4 start (BLFS 13.1), REBUILD-R3-TEMP-01 reclassified (2026-11-07)
 
-Read first: `docs/verification/rebuild-r3-2026-11-07.md` (section 3 claims the perl files are stale; this
-is now disputed), `docs/verification/rebuild-r3-temp01-2026-11-07.md`, `docs/verification/rebuild-r4-2026-11-07.md`.
+Read first: `docs/verification/rebuild-r3-temp01-2026-11-07.md`, `docs/verification/rebuild-r4-2026-11-07.md`.
 
 ## State
 
-- **REBUILD-R3-TEMP-01: Blocked.** The proof failed: perl loads 756 of the 762 listed `.pm` modules from
-  the listed paths (the smoke test loads `Data/Dumper.pm` from there). Nothing removed. Snapshot of
-  `r3-root` taken first: `scratch-lfs-bench/lfs13-snapshots/pre-temp01-2026-11-07`.
-- **REBUILD-R4: Partial.** `scripts/rebuild/r4/packages.tsv` (344 rows). `r4-root` (writable snapshot of
-  `r3-root`). Packages 001-005 built and recorded through alp (`alp check` rc 0, 103 packages, ownership
-  check 63789 owned, 0 unowned). 006 curl-8.15.0 fails: the base has OpenSSL 4.0.1, the test image used
-  OpenSSL 3.5.2. The driver is stopped (`r4-ledger/FAILED`), not running.
-
-## Decisions needed (in this order)
-
-1. TEMP-01: reclassify the 1596 files as base perl modules, or rebuild ch8 perl and re-check the install.
-2. R4 OpenSSL: rebuild OpenSSL 3.5.2 in `r4-root`, or move curl to a version that builds on OpenSSL 4.
-
-## Method notes that matter
-
-- R4 uses the R3 snapshot-diff method with `alp adopt-base` for every package. Records are `lfs-base` and
-  protected. The BLFS scripts have no DESTDIR.
-- Builds run with `LANG=C LC_ALL=C`: the base locale is tr_TR.UTF-8, and sed ranges break under it.
-- The chroot needs `/run/systemd/resolve` bind-mounted for network steps (make-ca -g).
-- `usr/share/info/dir` and `etc/ld.so.cache` are excluded from manifests (base-owned hook files).
-- 063 libndp has an http URL; alp requires https. Open.
+- **REBUILD-R3-TEMP-01: Done (reclassified).** The 1596 "stale" perl files are perl 5.44.0 core modules
+  that the ch8 install did not rewrite (installperl skips identical files, `installperl:708`). A fresh
+  perl build with the ch8 flags matches all 1596 byte for byte. They are now in the `perl` record; the
+  stale record is dropped. Nothing on disk was removed. The R3 note carries a correction.
+- **alp in r3-root and r4-root:** the repo `alp.py` is in place (sha256 `f2a8f31d...`). alp's own upgrade
+  refuses lfs-base records, so the file was copied and the change recorded (`alp-upgrade-record.py`).
+  The alp tests pass (264).
+- **REBUILD-R4: Partial.** BLFS 13.1 list (`packages.tsv`, 344 rows). Built and recorded: 78 packages
+  (001-122 in order, except the skips and 064). **Stopped at 123 llvm-project-22.1.8** (FAIL). Driver not
+  running; `r4-ledger/FAILED` is present. Status: `scratch-lfs-bench/r4-status.txt`.
 
 ## To resume
 
-`sudo R4_FIRST=001 R4_LAST=030 nohup setsid bash /home/yrslf/alpbahOS/wt-t2-kisayol/scripts/rebuild/r4/run-r4.sh`
-(after the OpenSSL decision). The driver skips packages with an OK line in `scratch-lfs-bench/r4-status.txt`.
-Delete `r4-ledger/FAILED` before the next run if it still exists (the driver removes it at start).
+1. LLVM 22.1.8: write its 13.1 build block (the LLVM page's commands) as a delta, then run 123-127 and Mesa 128.
+2. Xorg 7.x (074-110 and later): the book's Xorg MD5 lists are needed.
+3. After 047 glib: rebuild 040 libical with glib on.
+4. After 183 gnutls: remove `scripts/rebuild/r4/deltas/064.defer` and run 064 alone.
+
+Run: `sudo R4_FIRST=123 R4_LAST=344 setsid nohup bash scripts/rebuild/r4/run-r4.sh` (the driver resumes past
+OK lines; delete `scratch-lfs-bench/r4-ledger/FAILED` only if it blocks the start, the driver removes it).
+
+## Method notes that matter
+
+- Deltas per package live in `scripts/rebuild/r4/deltas/` (`.pre.sh`, `.files`, `.subst`, `.name`, `.defer`).
+- Records are `lfs-base` and protected (no DESTDIR yet). Ownership moves are logged in `r4-ledger/transfers/moves.tsv`.
+- Build locale C; resolver dir bound in the chroot; hook files (`usr/share/info/dir`, `etc/ld.so.cache`,
+  `etc/xml/catalog`) are excluded from manifests.

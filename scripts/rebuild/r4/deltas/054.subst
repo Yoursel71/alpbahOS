@@ -1,0 +1,1 @@
+-D update-mimedb=true	-D update-mimedb=true -D build-tests=false -D build-spec=false
