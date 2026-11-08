@@ -1,1 +1,0 @@
-kinfocenter-6.7.4 needs QVulkanInstance: Qt 6.11.2 (r4-root /opt/qt6) was built with QT_FEATURE_vulkan=-1 because Vulkan-Headers is not in the R4 list. Fixing needs Vulkan-Headers + a Qt rebuild; open for coordinator decision (log logs/289.log).
