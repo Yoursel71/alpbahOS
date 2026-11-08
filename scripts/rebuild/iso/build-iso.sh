@@ -93,7 +93,11 @@ L /usr/bin/chown -R live:live /home/live
 install -m 755 "$LIVE_SRC/alpbahos-install" "$LIVE/usr/bin/alpbahos-install"
 install -d -m 755 "$LIVE/etc/polkit-1/rules.d"
 install -m 644 "$LIVE_SRC/polkit-49-alpbahos-live.rules" "$LIVE/etc/polkit-1/rules.d/49-alpbahos-live.rules"
-install -m 644 "$LIVE_SRC/99-alpbahos-live.sh" "$LIVE/etc/profile.d/99-alpbahos-live.sh"
+# LIBGL_ALWAYS_SOFTWARE=1 only with LIBGL=1 (test setting for QEMU without virgl; the default build has none).
+if [ "${LIBGL:-0}" = 1 ]; then
+    install -m 644 "$LIVE_SRC/99-alpbahos-live.sh" "$LIVE/etc/profile.d/99-alpbahos-live.sh"
+    echo "LIBGL build: LIBGL_ALWAYS_SOFTWARE=1 in the live image" >&2
+fi
 install -d -m 755 "$LIVE/usr/lib/alpbahos"
 install -m 755 "$LIVE_SRC/target-cleanup.sh" "$LIVE/usr/lib/alpbahos/target-cleanup.sh"
 install -m 755 "$LIVE_SRC/target-initramfs.sh" "$LIVE/usr/lib/alpbahos/target-initramfs.sh"

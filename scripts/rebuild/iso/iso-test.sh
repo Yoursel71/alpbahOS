@@ -29,7 +29,15 @@ fi
 # ACCEL=kvm: -enable-kvm with the same generic CPU model (-cpu qemu64). Default: TCG.
 [ "${ACCEL:-tcg}" = kvm ] && ARGS+=(-enable-kvm)
 [ -n "$ISO" ] && ARGS+=(-drive "file=$ISO,media=cdrom,readonly=on,if=ide,index=2")
-[ -n "$DISK" ] && ARGS+=(-drive "file=$DISK,format=raw,if=virtio,cache=unsafe")
+# DISK_BUS: virtio (default), sata (ahci + ide-hd) or nvme. The same raw image in each case.
+if [ -n "$DISK" ]; then
+    case "${DISK_BUS:-virtio}" in
+        virtio) ARGS+=(-drive "file=$DISK,format=raw,if=virtio,cache=unsafe") ;;
+        sata)   ARGS+=(-drive "file=$DISK,format=raw,if=none,id=sata0,cache=unsafe" -device ahci,id=ahci0 -device ide-hd,drive=sata0,bus=ahci0.0) ;;
+        nvme)   ARGS+=(-drive "file=$DISK,format=raw,if=none,id=nvme0,cache=unsafe" -device nvme,drive=nvme0,serial=alpnvme0) ;;
+        *) echo "bad DISK_BUS" >&2; exit 2 ;;
+    esac
+fi
 {
     echo "fw=$FW tcg qemu64 iso=${ISO:-none} disk=${DISK:-none} max_seconds=$MAXT"
     echo "cmd: qemu-system-x86_64 ${ARGS[*]}"
