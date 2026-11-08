@@ -87,16 +87,39 @@ sed -i "/^\[Autologin\]/,/^\[/{s/^Relogin=.*/Relogin=false/}" "$SDDM"
 sed -n "/^\[Autologin\]/,/^\[/p" "$SDDM" | grep -qx "User=$R5_TEST_USER" || die "autologin User not set"
 sed -n "/^\[Autologin\]/,/^\[/p" "$SDDM" | grep -qx "Session=plasma.desktop" || die "autologin Session not set"
 
-# Qt and KF6 paths: Qt is installed in /opt/qt6, KF6 and plasma-integration in /usr, so Qt must be told
-# where the KF6 platform theme plugins (/usr/lib/plugins) and QML modules (/usr/lib/qml) are.
+# Test-only environment. The Qt and KF6 paths are not set here: R4 provides them in /etc/profile.d
+# (qt6.sh, kf6.sh) and /etc/profile, which the sddm Wayland session reads through a login shell.
 touch "$ROOTMNT/etc/environment"
-sed -i "/^QT_PLUGIN_PATH=/d;/^QML_IMPORT_PATH=/d;/^LIBGL_ALWAYS_SOFTWARE=/d" "$ROOTMNT/etc/environment"
-echo "QT_PLUGIN_PATH=/usr/lib/plugins" >> "$ROOTMNT/etc/environment"
-echo "QML_IMPORT_PATH=/usr/lib/qml" >> "$ROOTMNT/etc/environment"
+sed -i "/^LIBGL_ALWAYS_SOFTWARE=/d;/^QT_LOGGING_RULES=/d;/^QML_IMPORT_TRACE=/d;/^QT_DEBUG_PLUGINS=/d" "$ROOTMNT/etc/environment"
 if [ -n "${R5_TEST_GL_SOFTWARE:-}" ]; then
-    # Test image only: the QEMU virtio GPU has no virgl, so Mesa uses software EGL.
+    # The QEMU virtio GPU has no virgl, so Mesa uses software EGL (test image only).
     echo "LIBGL_ALWAYS_SOFTWARE=1" >> "$ROOTMNT/etc/environment"
 fi
+if [ -n "${R5_TEST_DEBUG_ENV:-}" ]; then
+    # Diagnostic logging for plasmashell (goes to the user journal).
+    echo "QT_LOGGING_RULES=*.debug=true" >> "$ROOTMNT/etc/environment"
+    echo "QML_IMPORT_TRACE=1" >> "$ROOTMNT/etc/environment"
+    echo "QT_DEBUG_PLUGINS=1" >> "$ROOTMNT/etc/environment"
+fi
+if [ -n "${R5_DEBUG_LIBPLASMA_DIR:-}" ]; then
+    # Diagnostic: libPlasma built with RelWithDebInfo (same version, installed only into this image).
+    cp "$R5_DEBUG_LIBPLASMA_DIR/libPlasma.so.6.7.4" "$ROOTMNT/usr/lib/libPlasma.so.6.7.4"
+fi
+# Test-only: no idle screen lock and no DPMS or suspend, so the desktop stays on the screen during the test.
+mkdir -p "$ROOTMNT/home/$R5_TEST_USER/.config"
+cat > "$ROOTMNT/home/$R5_TEST_USER/.config/kscreenlockerrc" << CFG
+[Daemon]
+Autolock=false
+LockOnResume=false
+CFG
+cat > "$ROOTMNT/home/$R5_TEST_USER/.config/powermanagementprofilesrc" << CFG
+[AC][DPMSControl]
+idleTime=86400
+
+[AC][SuspendSession]
+idleTime=86400
+CFG
+chroot "$ROOTMNT" /usr/bin/chown -R "$R5_TEST_USER:$R5_TEST_USER" "/home/$R5_TEST_USER/.config"
 umount "$ROOTMNT/sys" "$ROOTMNT/proc" "$ROOTMNT/dev"
 umount "$ROOTMNT"
 assert_loop
