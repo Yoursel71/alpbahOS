@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Install AlpbahOS
+GenericName=System installer
+Comment=Install AlpbahOS BETA to a disk (Calamares)
+Exec=/usr/bin/alpbahos-install
+Icon=system-software-install
+Terminal=false
+Categories=System;
+StartupNotify=true

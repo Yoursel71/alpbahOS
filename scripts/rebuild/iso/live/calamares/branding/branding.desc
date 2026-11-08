@@ -1,0 +1,33 @@
+# AlpbahOS BETA branding for Calamares 3.3.
+---
+componentName: alpbahos
+
+welcomeStyleCalamares: false
+welcomeExpandingLogo: true
+
+strings:
+    productName:         AlpbahOS
+    shortProductName:    AlpbahOS
+    version:             13.1 BETA
+    shortVersion:        BETA
+    versionedName:       AlpbahOS 13.1 BETA
+    shortVersionedName:  AlpbahOS BETA
+    bootloaderEntryName: AlpbahOS
+    productUrl:          https://example.invalid/alpbahos
+    supportUrl:          https://example.invalid/alpbahos/support
+    knownIssuesUrl:      https://example.invalid/alpbahos/issues
+    releaseNotesUrl:     https://example.invalid/alpbahos/release-notes
+
+images:
+    productLogo:         "logo.png"
+    productIcon:         "logo.png"
+    productWelcome:      "logo.png"
+
+slideshow:               "show.qml"
+slideshowAPI:            2
+
+style:
+   sidebarBackground:    "#1d2a3a"
+   sidebarText:          "#ffffff"
+   sidebarTextSelect:    "#4aa3ff"
+   sidebarTextHighlight: "#4aa3ff"
