@@ -11,6 +11,28 @@ export QT6PREFIX=/opt/qt6
 export PATH=/opt/qt6/bin:$PATH
 export PKG_CONFIG_PATH=/opt/qt6/lib/pkgconfig:${PKG_CONFIG_PATH:-}
 as_root() { "$@"; }; export -f as_root
+
+# --- lm-sensors 3.6.2 (13.1 book general/lm-sensors.html): REQUIRED "Sensors" of this package. It is not a
+# row of the R4 list (order.txt lists it as 279a), built here first from the book commands. Tarball: .files line.
+LS=lm-sensors-3-6-2.tar.gz
+[ -f "/sources/blfs-build/$LS" ] || { echo "KAYNAK_YOK $LS"; exit 2; }
+cd /sources/blfs-build && LSD=$(tar -tf "$LS" | sed -n 1p | cut -d/ -f1); rm -rf "$LSD"; tar -xf "$LS"; cd "$LSD"
+# --- lm-sensors blok 1 ---
+make PREFIX=/usr        \
+     BUILD_STATIC_LIB=0 \
+     MANDIR=/usr/share/man
+_rc=$?; [ "$_rc" -eq 0 ] || { echo "BLOK-FAIL LS1 rc=$_rc"; exit 1; }
+# --- lm-sensors blok 2 ---
+as_root make PREFIX=/usr        \
+     BUILD_STATIC_LIB=0 \
+     MANDIR=/usr/share/man install &&
+as_root install -v -m755 -d /usr/share/doc/lm-sensors-3-6-2 &&
+as_root cp -rv README INSTALL doc/* /usr/share/doc/lm-sensors-3-6-2
+_rc=$?; [ "$_rc" -eq 0 ] || { echo "BLOK-FAIL LS2 rc=$_rc"; exit 1; }
+as_root /sbin/ldconfig
+cd /sources/blfs-build && rm -rf "$LSD"
+
+# --- libksysguard-6.7.4 ---
 cd /sources/blfs-build 2>/dev/null || { mkdir -p /sources/blfs-build && cd /sources/blfs-build; }
 TB="/sources/blfs-src/libksysguard-6.7.4.tar.xz"; [ -f "$TB" ] || { echo "KAYNAK_YOK $TB"; exit 2; }
 PKG=$(tar -tf "$TB" | sed -n 1p | cut -d/ -f1); rm -rf "$PKG"; tar -xf "$TB"; cd "$PKG"

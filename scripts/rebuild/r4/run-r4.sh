@@ -32,7 +32,7 @@ SNAPS=$SB/r4-snapshots
 STATUS=$SB/r4-status.txt
 FIRST=${R4_FIRST:-001}
 LAST=${R4_LAST:-030}
-JOBS=${R4_JOBS:-8}
+JOBS=${R4_JOBS:-$(nproc)}
 SRC13=$SB/blfs-src-13.1
 DELTAS=$WT/scripts/rebuild/r4/deltas
 

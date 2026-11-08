@@ -1,0 +1,1 @@
+kwin-6.7.4 needs Vulkan (Vulkan-Headers/Loader not in R4 list) plus KNightTime, lcms2 (279c), libva/libei (279d/e), QAccessibilityClient6; logs/294.log. Coordinator decision (package list gap).

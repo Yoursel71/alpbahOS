@@ -1,0 +1,1 @@
+kwin-x11-6.7.4 needs KNightTime, lcms2 (row 279c), QAccessibilityClient6 (not built); see logs/293.log. Group of missing Plasma 6.7 prerequisites; coordinator decision.
