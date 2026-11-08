@@ -98,8 +98,12 @@ build_one() {
   # Generator: the 12.4 build commands (same generator as the test image). Then the 12.4 version
   # strings are replaced by the 13.1 ones (tarball name first, then the directory name). The
   # per-package deltas beyond the version strings are not made here: a failing build shows them.
-  runuser -u yrslf -- python3 "$BLFS/gen_blfs_chroot.py" "$nn" > /dev/null 2>&1 \
-    || { say "FAIL $nn $nv generator"; return 1; }
+  if ! runuser -u yrslf -- python3 "$BLFS/gen_blfs_chroot.py" "$nn" > /dev/null 2>&1; then
+    # Rows appended after 344 have no generator entry. A whole-script replacement (NNN.replace.sh) needs none:
+    # a placeholder stands in, and the replacement is copied over it below.
+    [ -f "$DELTAS/$nn.replace.sh" ] || { say "FAIL $nn $nv generator"; return 1; }
+    printf 'true\n' > "$BLFS/gen_blfs/$nn.sh"
+  fi
   # The export runs after the login profile, which leaves LANG/LC_CTYPE at tr_TR.UTF-8 (the base
   # locale.conf) even when LC_ALL=C is passed to chroot. The script sets C itself.
   { echo 'export LANG=C LC_ALL=C'; cat "$BLFS/gen_blfs/$nn.sh"; } > "$LEDGER/gen-$nn.12.sh"

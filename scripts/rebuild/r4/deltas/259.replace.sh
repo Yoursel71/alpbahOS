@@ -12,6 +12,21 @@ export PATH=/opt/qt6/bin:$PATH
 export PKG_CONFIG_PATH=/opt/qt6/lib/pkgconfig:${PKG_CONFIG_PATH:-}
 as_root() { "$@"; }; export -f as_root
 cd /sources/blfs-build 2>/dev/null || { mkdir -p /sources/blfs-build && cd /sources/blfs-build; }
+# --- libdmtx 0.7.8 (book kde/libdmtx.html), a prison dependency: not a row of the R4 list, built first ---
+LD=libdmtx-0.7.8.tar.gz
+[ -f "/sources/blfs-build/$LD" ] || { echo "KAYNAK_YOK $LD"; exit 2; }
+rm -rf libdmtx-0.7.8; tar -xf "$LD"; cd libdmtx-0.7.8
+sed -i 's/3.5/3.10/' CMakeLists.txt
+mkdir build &&
+cd    build &&
+cmake -D CMAKE_INSTALL_PREFIX=/usr .. &&
+make
+_rc=$?; [ "$_rc" -eq 0 ] || { echo "BLOK-FAIL 0 libdmtx rc=$_rc"; exit 1; }
+as_root make install &&
+as_root /sbin/ldconfig
+_rc=$?; [ "$_rc" -eq 0 ] || { echo "BLOK-FAIL 0b libdmtx rc=$_rc"; exit 1; }
+cd /sources/blfs-build && rm -rf libdmtx-0.7.8
+
 TB="/sources/blfs-src/prison-6.29.0.tar.xz"; [ -f "$TB" ] || { echo "KAYNAK_YOK $TB"; exit 2; }
 PKG=$(tar -tf "$TB" | sed -n 1p | cut -d/ -f1); rm -rf "$PKG"; tar -xf "$TB"; cd "$PKG"
 # --- blok 1 ---
