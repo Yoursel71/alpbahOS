@@ -29,7 +29,9 @@ WORK=$SB/iso-work
 LIVE=$WORK/live-root
 ISOTREE=$WORK/iso
 OUT_DIR=$SB/images
-OUT=$OUT_DIR/alpbahos-beta-$DATE.iso
+# DEBUG=1: diagnostic build (installer log to the serial console, rd.debug, journal to console). Own file name.
+DEBUG=${DEBUG:-0}
+if [ "$DEBUG" = 1 ]; then OUT=$OUT_DIR/alpbahos-beta-$DATE-debug.iso; else OUT=$OUT_DIR/alpbahos-beta-$DATE.iso; fi
 LOGS=$SB/lfs13-logs/iso-beta/build
 MIN_FREE_GIB=30
 
@@ -94,6 +96,11 @@ install -m 644 "$LIVE_SRC/polkit-49-alpbahos-live.rules" "$LIVE/etc/polkit-1/rul
 install -m 644 "$LIVE_SRC/99-alpbahos-live.sh" "$LIVE/etc/profile.d/99-alpbahos-live.sh"
 install -d -m 755 "$LIVE/usr/lib/alpbahos"
 install -m 755 "$LIVE_SRC/target-cleanup.sh" "$LIVE/usr/lib/alpbahos/target-cleanup.sh"
+install -m 755 "$LIVE_SRC/target-initramfs.sh" "$LIVE/usr/lib/alpbahos/target-initramfs.sh"
+if [ "$DEBUG" = 1 ]; then
+    : > "$LIVE/etc/alpbahos-live-debug"
+    echo "DEBUG build: installer log to serial, rd.debug" >&2
+fi
 
 log "Calamares configuration and branding"
 install -d -m 755 "$LIVE/etc/calamares/modules" "$LIVE/usr/share/calamares/branding/alpbahos"
@@ -182,7 +189,12 @@ log "squashfs OK ($(wc -l < "$LL") entries)"
 
 # ------------------------------------------------------------------ 5. GRUB images (BIOS and UEFI)
 log "GRUB modules and images"
-install -m 644 "$LIVE_SRC/grub-iso.cfg" "$ISOTREE/tree/boot/grub/grub.cfg"
+if [ "$DEBUG" = 1 ]; then
+    sed 's/ console=tty0 / rd.debug systemd.journald.forward_to_console=1 console=tty0 /' "$LIVE_SRC/grub-iso.cfg" > "$ISOTREE/tree/boot/grub/grub.cfg"
+    grep -q 'rd.debug' "$ISOTREE/tree/boot/grub/grub.cfg" || die "debug arguments not added to grub.cfg"
+else
+    install -m 644 "$LIVE_SRC/grub-iso.cfg" "$ISOTREE/tree/boot/grub/grub.cfg"
+fi
 install -m 644 "$LIVE_SRC/grub-embed.cfg" "$ISOTREE/grub-embed.cfg"
 find "$R4/usr/lib/grub/i386-pc" -maxdepth 1 \( -name '*.mod' -o -name '*.lst' \) -exec cp {} "$ISOTREE/tree/boot/grub/i386-pc/" \;
 find "$R4/usr/lib/grub/x86_64-efi" -maxdepth 1 \( -name '*.mod' -o -name '*.lst' \) -exec cp {} "$ISOTREE/tree/boot/grub/x86_64-efi/" \;

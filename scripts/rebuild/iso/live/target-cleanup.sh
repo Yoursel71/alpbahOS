@@ -22,6 +22,8 @@ fi
 
 # The live image has an empty /etc/fstab; the fstab module has written the installed one before this step.
 # Nothing else to remove: the squashfs holds no live-only files outside the list above.
+rm -f /usr/lib/alpbahos/target-initramfs.sh
 rm -f /usr/lib/alpbahos/target-cleanup.sh
+rm -f /etc/alpbahos-live-debug
 rmdir /usr/lib/alpbahos 2>/dev/null || true
 exit 0
