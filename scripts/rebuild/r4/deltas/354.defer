@@ -1,1 +1,0 @@
-corrosion-0.6.1 needs rustc (cmake/FindRust.cmake): the Rust toolchain is not built (Rust bootstrap is not in the R4 list). Needed by kdeplasma-addons 329 and mesa NVK. Blocker for a decision (logs/354.log).

@@ -1,6 +1,6 @@
 #!/bin/bash
-# REBUILD-R4 329 kdeplasma-addons-6.7.4: one Plasma package per script (option b). Block of the 13.1 plasma-all.html
-# per-package loop (cmake with BUILD_QT5=OFF, BUILD_TESTING=OFF); the page builds all in one loop.
+# REBUILD-R4 329 kdeplasma-addons-6.7.4: Plasma block of the 13.1 page (cmake, BUILD_QT5=OFF, BUILD_TESTING=OFF).
+# Needs corrosion (354) and rustc (361) on PATH: the book builds Rust-based parts of the addons.
 export LANG=C LC_ALL=C
 set -eo pipefail
 export XORG_PREFIX=/usr
@@ -8,7 +8,7 @@ export XORG_CONFIG="--prefix=$XORG_PREFIX --sysconfdir=/etc --localstatedir=/var
 export KF6_PREFIX=/usr
 export QT6DIR=/opt/qt6
 export QT6PREFIX=/opt/qt6
-export PATH=/opt/qt6/bin:$PATH
+export PATH=/opt/rustc/bin:/opt/qt6/bin:$PATH
 export PKG_CONFIG_PATH=/opt/qt6/lib/pkgconfig:${PKG_CONFIG_PATH:-}
 as_root() { "$@"; }; export -f as_root
 cd /sources/blfs-build 2>/dev/null || { mkdir -p /sources/blfs-build && cd /sources/blfs-build; }
@@ -29,3 +29,4 @@ _rc=$?; [ "$_rc" -eq 0 ] || { echo "BLOK-FAIL 1 rc=$_rc"; exit 1; }
 as_root make install
 _rc=$?; [ "$_rc" -eq 0 ] || { echo "BLOK-FAIL 2 rc=$_rc"; exit 1; }
 as_root /sbin/ldconfig
+cd /sources/blfs-build && rm -rf "$PKG"
