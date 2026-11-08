@@ -87,6 +87,16 @@ sed -i "/^\[Autologin\]/,/^\[/{s/^Relogin=.*/Relogin=false/}" "$SDDM"
 sed -n "/^\[Autologin\]/,/^\[/p" "$SDDM" | grep -qx "User=$R5_TEST_USER" || die "autologin User not set"
 sed -n "/^\[Autologin\]/,/^\[/p" "$SDDM" | grep -qx "Session=plasma.desktop" || die "autologin Session not set"
 
+# Qt and KF6 paths: Qt is installed in /opt/qt6, KF6 and plasma-integration in /usr, so Qt must be told
+# where the KF6 platform theme plugins (/usr/lib/plugins) and QML modules (/usr/lib/qml) are.
+touch "$ROOTMNT/etc/environment"
+sed -i "/^QT_PLUGIN_PATH=/d;/^QML_IMPORT_PATH=/d;/^LIBGL_ALWAYS_SOFTWARE=/d" "$ROOTMNT/etc/environment"
+echo "QT_PLUGIN_PATH=/usr/lib/plugins" >> "$ROOTMNT/etc/environment"
+echo "QML_IMPORT_PATH=/usr/lib/qml" >> "$ROOTMNT/etc/environment"
+if [ -n "${R5_TEST_GL_SOFTWARE:-}" ]; then
+    # Test image only: the QEMU virtio GPU has no virgl, so Mesa uses software EGL.
+    echo "LIBGL_ALWAYS_SOFTWARE=1" >> "$ROOTMNT/etc/environment"
+fi
 umount "$ROOTMNT/sys" "$ROOTMNT/proc" "$ROOTMNT/dev"
 umount "$ROOTMNT"
 assert_loop
