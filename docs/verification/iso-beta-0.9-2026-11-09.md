@@ -411,7 +411,7 @@ Every matrix row below names this sha. Accelerator: KVM with `-cpu qemu64` (ACCE
 | I2a | GPT disk after install: fstab root and /boot/efi; no `live` account; `grub.cfg` (x86_64-efi); ESP `EFI/alpbahOS`, `EFI/BOOT` | read-only loop mount | **PASS** | disk `inst-uefi-gpt-0.9.raw` |
 | B1 | Installed BIOS, virtio: login, desktop, curl, networkctl, Konsole, Dolphin, System Settings, sound | KVM | **PASS** (sound `Yerleşik Ses` `q1.png`; curl `q2.png` HTTP 200; Dolphin `q3.png`; System Settings `q4.png`) | `inst-bios-boot1/` |
 | B2 | Installed BIOS, AHCI: login, curl, networkctl | KVM | **PASS** (`bios-ahci/ah3.png`; sound not run on this row) | `bios-ahci/` |
-| B3 | Installed BIOS, NVMe | KVM, SeaBIOS (pc) | **OPEN, not a pass.** Round 6 (sha 1686): (a) without `bootindex` the NVMe is missing from the SeaBIOS boot order and the guest prints `No bootable device`; so the missing bootindex is the cause of that message (`r6/b3-nobootindex/debugcon.log`, overlay of the installed disk). (b) With `bootindex=0` SeaBIOS lists the NVMe disk but the read fails: `Boot failed: could not read the boot disk` (`r6/b3-net/debugcon.log`, read-only base with `-snapshot`; `r6/b3-slot/debugcon.log`, NVMe at another PCI slot). The earlier boot to the greeter (`nvme-fw/alp`) is not reproduced by these runs. The network check (curl without `-m`) was not done because the guest did not boot. The earlier `0.0.0.20` error was a typing error (`-m` through the keymap). The "test-firmware limit" wording is withdrawn. | - |
+| B3 | Installed BIOS, NVMe | KVM, SeaBIOS (pc), bootindex=0, -snapshot on the raw base | **PASS at -m 2G and -m 3G; FAIL at -m 4G and -m 6G.** At 2G: login, desktop, Konsole, `curl -I http://ftp.gnu.org` gives HTTP/1.1 200 OK (`r6/nvme-2g-curl/konsole-curl.png`); `ip` is not on the user PATH (10.2). At 4G and 6G SeaBIOS lists the NVMe disk and then prints `Boot failed: could not read the boot disk`. At 6G with a minimal device set (no VGA, xhci, NIC) it fails the same way, so the device set is not the cause. Without `bootindex` the NVMe is absent from the boot order and the guest prints `No bootable device` (`r6/b3-nobootindex/debugcon.log`). The earlier greeter boot (`nvme-fw/alp`) is reported by the coordinator as a 2G run; its command line was not saved. As far as these runs show, this is a SeaBIOS/QEMU setup effect tied to the RAM size, not a product fault. It says nothing about real machines with NVMe firmware. Evidence: `r6/nvme-mem/m2g-full`, `m3g-full`, `m4g-full`, `m6g-min` (debugcon). | - |
 | U1 | Installed UEFI GPT, virtio: login, `hostnamectl` (AlpbahOS 0.9 Beta, kvm, edk2) | KVM | **PASS** | `uefi-virtio-boot/uv1.png` |
 | U2 | Installed UEFI GPT, NVMe + intel-hda: login, sound (`Yerleşik Ses`), curl HTTP 200 | KVM | **PASS** | `uefi-nvme-boot/un1.png`, `un2.png` |
 | S1 | Shutdown with a logged-in session, drop-ins present: 3 cycles (Konsole `systemctl poweroff`, each with 90 s session) | KVM | **3/3 completed**; disk journal: 0 matches for `dumped|ABRT|pending != NULL|core-dump|Failed with result`; no `/var/lib/systemd/coredump` | `inst-bios-boot1` run, `sd-cyc2`, `sd-cyc3`; journal `sd-journal-drop.txt` |
@@ -452,7 +452,7 @@ Open items:
 
 | Item | Result | Evidence |
 |---|---|---|
-| 1 (B3, NVMe boot and network) | (a) done; (b) network NOT run; row corrected (10.3) | `r6/b3-nobootindex/`, `r6/b3-net/`, `r6/b3-slot/` |
+| 1 (B3, NVMe boot and network) | done: boots and curl HTTP 200 at -m 2G and 3G; fails at 4G and 6G (SeaBIOS setup effect); row corrected (10.3) | `r6/b3-nobootindex/`, `r6/b3-net/`, `r6/b3-slot/` |
 | 2 (shutdown coredump, Plasma menu, drop-ins vs baseline) | **NOT RUN.** Not started in round 6. The next step is the Plasma-menu shutdown on overlays of `inst-bios-msdos-0.9.raw` and `inst-bios-nodropin-0.9.raw`, 3 cycles each under KVM, then the disk journal and `/var/lib/systemd/coredump`. | - |
 | 3 (PATH) | done: comparison in 10.2, no change | `r4-root/etc/profile` |
 | 4 (Plasma menu shutdown and reboot, tr_TR, trq, sound on AHCI) | **NOT RUN** on sha 1686 | - |
@@ -461,9 +461,7 @@ Open items:
 | 7 (CURRENT.md) | done | `CURRENT.md` |
 
 Other facts found in round 6:
-- `images/inst-bios-msdos-0.9.raw` has mtime 2026-11-09 15:26:57, after the ISO build (13:45). The earlier `nvme-fw/alp` run appears to have
-  booted that installed file directly, not an overlay (the rule is: no writes to installed disks). Its content was not compared with the
-  section 10.3 journal; this needs checking before the image is used as evidence again.
-- Round 6 NVMe boots used overlays or `-snapshot`; the installed disk file was not written in round 6.
+- `images/inst-bios-msdos-0.9.raw` has mtime 2026-11-09 15:26:57. Per the coordinator (D138) image files may be booted directly, and earlier rows did the same (mtime 14:54), so the mtime only shows the image has run since install. Overlays are used for new runs.
+- Round 6 NVMe boots used `-snapshot` or overlays.
 
 Gate: unchanged, **beta quality NO** (10.5). The real-PC USB test and the publication approval belong to the user.
