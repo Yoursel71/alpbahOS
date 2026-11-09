@@ -600,3 +600,18 @@ not inside the target; the same test has not run in a booted installed VM (round
 
 Evidence (host, not in the repo): `scratch-lfs-bench/s2-alp/` (`catalog/`, `catalog-v2.tar.gz`, `killtest.sh`,
 `killtest.log`, `kill-upgrade-*.out`, `kill-recover-*.out`, `kill-check-*.out`, `clean-*.out`).
+
+### 11.3 Stage 3b: KDE "About this System" (record `kcm-about-r7fix` 0.9-r7fix): files verified, not shown on screen
+
+- Keys, read from the installed KCM binary (`r4-root/usr/lib/plugins/plasma/kcms/kcm_about-distro.so`, strings): the
+  config file is `kcm-about-distrorc`, group `[General]`, keys `LogoPath`, `Name`, `ShowBuild`, `UseOSReleaseVersion`,
+  `Variant`, `Website`. There is **no `Version` key** (the brief named one): with `UseOSReleaseVersion=true` the version
+  comes from `/etc/os-release` (`VERSION="0.9 Beta"`, record branding-r5fix). The record uses that.
+- Record: `scripts/rebuild/r7/kcm-about-r7fix.py` (writes `etc/xdg/kcm-about-distrorc`, `usr/share/pixmaps/alpbahos-logo.png`,
+  `usr/share/icons/hicolor/256x256/apps/alpbahos-logo.png`) and `scripts/rebuild/r7/apply-r7.sh` (the same steps as the R5
+  driver: files, manifest, `r4_lib.py transfer`, `alp adopt-base`). The logo is `scripts/rebuild/iso/live/make-logo.py`
+  output (256x256 RGB PNG, the AlpbahOS logo the installer uses); the hicolor icon cache is not regenerated.
+- Result: `alp adopt-base` recorded "3 dosya, 0 symlink" (3 files); `alp check` **rc 0**, 472 installed packages (was 471).
+  Evidence: `scratch-lfs-bench/r4-ledger/r7/kcm-about-r7fix/` (manifest, adopt.log, alp-check.txt).
+- Not run: the KCM in a session (the "About this System" page with the logo). Deferred to the ISO round (VM check).
+  The colours of the logo are the make-logo colours; the navy/cyan/orange check belongs to the fastfetch item (3a).
