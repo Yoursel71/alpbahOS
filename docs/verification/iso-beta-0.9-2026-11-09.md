@@ -1090,7 +1090,7 @@ Notes: the first lane run for I1 and I2 clicked Install at y=666 (the BIOS summa
 
 ## 17. Round 15 (2026-11-10): SDDM greeter, keyboard file, harness typing, matrix on ISO r15
 
-ISO: `scratch-lfs-bench/images/alpbahos-beta-0.9-2026-11-09-r15.iso`, sha256 **`e2077dcfcd384963fbc1dce981deb663bfbe8c079094121e345a8e6463d1d5ae`**, 4742668288 bytes, `TAG=r15`. Checked read-only in the squashfs: `etc/sddm.conf` (Current=alpbahos, GreeterEnvironment=QML2_IMPORT_PATH=/usr/lib/qml), `usr/lib/alpbahos/target-cleanup.sh` (XkbVariant removal), `Main.qml` (logo layout), `usr/lib/alp/alp.py` equal to the repo file. The first r15 build (sha c0330db1) was discarded before any run because the logo record was missing from r4-root.
+ISO: `scratch-lfs-bench/images/alpbahos-beta-0.9-2026-11-09-r15.iso`, sha256 **`r15 shacd384963fbc1dce981deb663bfbe8c079094121e345a8e6463d1d5ae`**, 4742668288 bytes, `TAG=r15`. Checked read-only in the squashfs: `etc/sddm.conf` (Current=alpbahos, GreeterEnvironment=QML2_IMPORT_PATH=/usr/lib/qml), `usr/lib/alpbahos/target-cleanup.sh` (XkbVariant removal), `Main.qml` (logo layout), `usr/lib/alp/alp.py` equal to the repo file. The first r15 build (sha c0330db1) was discarded before any run because the logo record was missing from r4-root.
 
 ### 17.1 Item 1: SDDM logo (commits 0b4a42c)
 
@@ -1113,7 +1113,7 @@ ISO: `scratch-lfs-bench/images/alpbahos-beta-0.9-2026-11-09-r15.iso`, sha256 **`
 - The double hyphen works with two `equal` keys (`echo a--b` printed `a--b`). The earlier `--` failures came from the mixed round 13/14 typing.
 - Concurrent probe runs typed into one VM and garbled the commands; each run is now started once.
 
-### 17.4 Matrix on sha `e2077dcf...`
+### 17.4 Matrix on sha `r15 sha`
 
 KVM with `-cpu qemu64` for every row (no TCG row was in this round). Evidence under `scratch-lfs-bench/lfs13-logs/iso-beta-0.9/r15/`.
 
@@ -1128,7 +1128,7 @@ KVM with `-cpu qemu64` for every row (no TCG row was in this round). Evidence un
 | FP flatpak install org.gnome.Calculator (in U1) | KVM | **PASS**: `flatpak install -y flathub org.gnome.Calculator` ends with "Kurulum tamamlandı" (org.gnome.Platform 51 and the app, 2.0 GB); `flatpak list` shows org.gnome.Calculator (system); the app window opens. The terminal shows GPU and dbus warnings from the app, not from flatpak | `U1/u1-fp-install.png`, `u1-fp-list.png`, `u1-calc.png` |
 | REC1 BIOS recovery, broken copy (initramfs removed, grub.cfg truncated), live ISO CD first | KVM | **PASS**: `pkexec /usr/local/s*/alpbahos-recover` lists vda1; the six steps end with "recovery done; unmounting; reboot the installed disk"; the repaired disk boots to the alpbahos greeter with the logo | `REC1/rec-step0.png`, `rec-step1.png`, `REC1-boot/rec-disk-greeter.png` |
 
-Not run on sha `e2077dcf`: L2, L3, L4 (TCG and BIOS live), I2 disk check, B2 (AHCI), B3 (NVMe 2G), U2 (NVMe + sound), S1 (shutdown cycles), R1 (reboot through the greeter). The round 14 and round 13 results for these rows do not carry over to this sha.
+Not run on sha `r15 sha`: L2, L3, L4 (TCG and BIOS live), I2 disk check, B2 (AHCI), B3 (NVMe 2G), U2 (NVMe + sound), S1 (shutdown cycles), R1 (reboot through the greeter). The round 14 and round 13 results for these rows do not carry over to this sha.
 
 ### 17.5 Open items
 
