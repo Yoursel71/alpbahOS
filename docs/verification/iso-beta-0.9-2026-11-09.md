@@ -883,10 +883,6 @@ Records: `scripts/rebuild/r8/stage-record-r8.py` through `scripts/rebuild/r7/app
 - Staged: staged files: 84; elf files: 2; audit-isa rc=0.
 - Record: alp libsecret 0.21.7; alp check rc=0; packages 499; packages.tsv row 383.
 
-### 14.15 libsecret-0.21.7: built, recorded (round 12)
-- Version source: BLFS 13.1 gnome/libsecret.html: 0.21.7; files taken over from kwallet 6.29.0; sha256 6b452e4750590a2b5617adc40026f28d2f4903de15f1250e1d1c40bfd68ed55e.
-- Staged: staged files: 84; elf files: 2; audit-isa rc=0.
-- Record: alp libsecret 0.21.7; alp check rc=0; packages 499; packages.tsv row 383.
 
 ### 14.16 libfyaml-0.9.6: built, recorded (round 12)
 - Version source: BLFS 13.1 general/libfyaml.html: 0.9.6 (dependency of appstream, built first); sha256 a59cc3331e2eb903ec36933ad52a45888041cac31e44f553a00511131242c483.
