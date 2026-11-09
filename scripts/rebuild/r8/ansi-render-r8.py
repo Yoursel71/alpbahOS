@@ -50,6 +50,10 @@ for row, ln in enumerate(lines):
                     draw.rectangle([x, y, x + CW - 1, y + CH - 1], fill=bg)
                 if ch == "█":
                     draw.rectangle([x, y, x + CW - 1, y + CH - 1], fill=fg)
+                elif ch == "▀":
+                    draw.rectangle([x, y, x + CW - 1, y + CH // 2 - 1], fill=fg)
+                elif ch == "▄":
+                    draw.rectangle([x, y + CH // 2, x + CW - 1, y + CH - 1], fill=fg)
                 elif ch != " ":
                     draw.text((x, y), ch, font=FONT, fill=fg)
                 col += 1
@@ -70,6 +74,13 @@ for row, ln in enumerate(lines):
                 bg = BASE[c - 40]
             elif 100 <= c <= 107:
                 bg = BASE[c - 100 + 8]
+            elif c in (38, 48) and i + 4 < len(codes) and codes[i + 1] == 2:
+                rgb = (codes[i + 2], codes[i + 3], codes[i + 4])
+                if c == 38:
+                    fg = rgb
+                else:
+                    bg = rgb
+                i += 4
             elif c in (38, 48) and i + 2 < len(codes) and codes[i + 1] == 5:
                 rgb = c256(codes[i + 2])
                 if c == 38:
