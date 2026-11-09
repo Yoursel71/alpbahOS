@@ -803,3 +803,11 @@ Records: `scripts/rebuild/r8/stage-record-r8.py` through `scripts/rebuild/r7/app
 - Tarball `bubblewrap-0.13.1.tar.xz` from the GitHub release, 129472 bytes, **sha256 0e85c8702248b8dd64144f594147553650cdd0e4c951690345faace79c217c4d**.
 - Build: meson, `-Dman=disabled -Dtests=false -Dselinux=disabled`, ninja -j16. Staged: 3 files (`usr/bin/bwrap`, bash and
   zsh completions). ISA audit of the one ELF file: rc 0.
+
+### 14.2 xdg-dbus-proxy 0.1.9: built, ISA audit rc 0, recorded
+
+- Version: newest stable upstream (GitHub release 0.1.9). Not a BLFS 13.1 package in the local copy (no BLFS page in the
+  scratch cache; not checked against linuxfromscratch.org this round).
+- Source: GitHub API tarball of tag 0.1.9, 57492 bytes, **sha256 7b77963c8da63c43d3fa173bae612b5fb306c81ff11f8307de7dc9430c2e92b7**.
+- Build: meson `-Dman=disabled -Dtests=false`, ninja -j16, generic x86-64. Staged: 1 file (ELF), ISA audit rc 0.
+- Record `xdg-dbus-proxy` 0.1.9 (alp). `alp check` rc 0, 488 packages. `packages.tsv` row 375.
