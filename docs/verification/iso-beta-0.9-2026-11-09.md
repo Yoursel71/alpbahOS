@@ -615,3 +615,26 @@ Evidence (host, not in the repo): `scratch-lfs-bench/s2-alp/` (`catalog/`, `cata
   Evidence: `scratch-lfs-bench/r4-ledger/r7/kcm-about-r7fix/` (manifest, adopt.log, alp-check.txt).
 - Not run: the KCM in a session (the "About this System" page with the logo). Deferred to the ISO round (VM check).
   The colours of the logo are the make-logo colours; the navy/cyan/orange check belongs to the fastfetch item (3a).
+
+### 11.4 Stage 3c: SDDM login theme `alpbahos` (record `sddm-alpbahos-r7fix` 0.9-r7fix): recorded, not shown on a greeter
+
+- Record: `scripts/rebuild/r7/sddm-alpbahos-r7fix.py` (run by `apply-r7.sh`). It copies the installed Breeze greeter
+  (`/usr/share/sddm/themes/breeze`) as the starting point, keeps its QML and script files (copyright and SPDX headers
+  unchanged), and replaces `metadata.desktop` (Name=AlpbahOS, Theme-Id=alpbahos), `theme.conf` (background and logo
+  under `/usr/share/sddm/themes/alpbahos/`, `showlogo=shown`), and the images: `background.png` = the brand wallpaper
+  `branding/alpbahos-brand/wallpaper/alpbahOS-Brand/contents/images/1920x1080.png`, `logo.png` = the make-logo PNG.
+  `NOTICE` gives the Breeze licence (LGPL-2.0-or-later for the code).
+- Config: `/etc/sddm.conf.d/alpbahos-theme.conf` with `[Theme] Current=alpbahos`. `/etc/sddm.conf` is not changed (its
+  `[Autologin]` block for the live user stays). The round 4 display-order drop-in is in
+  `/etc/systemd/system/sddm.service.d/` and is not touched.
+- Turkish layout: the Breeze greeter already has the keyboard indicator (`KeyboardButton.qml`, `KeyboardIndicator` from
+  Plasma), which shows the active layout (`trq` on the installed system, round 6 10.3). Nothing new was added for it.
+- Result: `alp adopt-base` recorded 14 files; `alp check` **rc 0**, 473 installed packages (was 472).
+  Evidence: `scratch-lfs-bench/r4-ledger/r7/sddm-alpbahos-r7fix/` (manifest, adopt.log, alp-check.txt).
+- Licence note (open): the Breeze `metadata.desktop` has `License=CC-BY-SA` (copied as it is, the file is kept
+  unchanged); the NOTICE gives LGPL-2.0-or-later for the code. The artwork licence of the Breeze files must be checked
+  before publication.
+- Fallback (not verified): the theme name is in `/etc/sddm.conf.d`; if the theme fails to load, the fallback behaviour
+  was **not tested**. No QML tool (`qmlscene`, `qml`, `sddm-greeter --test-mode`) exists in r4-root, so no offline render
+  was possible. **Deferred to the ISO round (VM check)**: the greeter must show the brand background and logo, and a login
+  must reach the desktop.
