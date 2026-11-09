@@ -16,9 +16,13 @@ cat > /etc/dracut.conf.d/90-alpbahos-storage.conf << 'EOF'
 add_drivers+=" ahci ata_piix nvme sd_mod sr_mod virtio_blk virtio_pci virtio_scsi "
 EOF
 
-dracut --force --no-hostonly --kver "$KVER" \
+DLOG=$(dracut --force --no-hostonly --kver "$KVER" \
     --omit "systemd systemd-initrd dracut-systemd systemd-journald systemd-sysusers systemd-tmpfiles systemd-hwdb systemd-networkd systemd-battery-check plymouth" \
-    "$IMG" "$KVER"
+    "$IMG" "$KVER" 2>&1) || { echo "$DLOG"; echo "dracut failed"; exit 1; }
+echo "$DLOG"
+# dracut exits 0 even when a module cannot be installed ("dracut[E]"). Round 6 (2026-11-09): a plain dracut -f in the
+# chroot, without these options, printed systemd-initrd dependency errors and left an image that cannot boot.
+if echo "$DLOG" | grep -q 'dracut[[]E[]]'; then echo "dracut reported module errors"; exit 1; fi
 test -s "$IMG"
 
 # Checks: each driver is either in the image (lsinitrd lists it) or built into the kernel (modules.builtin).

@@ -115,6 +115,10 @@ fi
 install -d -m 755 "$LIVE/usr/lib/alpbahos"
 install -m 755 "$LIVE_SRC/target-cleanup.sh" "$LIVE/usr/lib/alpbahos/target-cleanup.sh"
 install -m 755 "$LIVE_SRC/target-initramfs.sh" "$LIVE/usr/lib/alpbahos/target-initramfs.sh"
+# Recovery of an installed system (round 7): alpbahos-recover runs target-initramfs.sh and grub-install from the live
+# image; see docs/verification/iso-beta-0.9-2026-11-09.md section 11.
+install -d -m 755 "$LIVE/usr/local/sbin"
+install -m 755 "$LIVE_SRC/alpbahos-recover.sh" "$LIVE/usr/local/sbin/alpbahos-recover"
 if [ "$DEBUG" = 1 ]; then
     : > "$LIVE/etc/alpbahos-live-debug"
     echo "DEBUG build: installer log to serial, rd.debug" >&2
@@ -205,7 +209,7 @@ L /usr/bin/unsquashfs -ll /iso/tree/LiveOS/squashfs.img > "$ISOTREE/squashfs-ll.
 LL=$ISOTREE/squashfs-ll.txt
 check_path() { awk -v p="squashfs-root/$1" '$NF == p {f=1} END {exit !f}' "$LL" || die "squashfs lacks /$1"; }
 check_absent() { if awk -v p="squashfs-root/$1" '$NF == p || index($NF, p "/") == 1 {f=1} END {exit !f}' "$LL"; then die "squashfs still has /$1"; fi; }
-for p in usr/bin/calamares usr/bin/alpbahos-install etc/calamares/settings.conf etc/polkit-1/rules.d/49-alpbahos-live.rules \
+for p in usr/bin/calamares usr/bin/alpbahos-install usr/local/sbin/alpbahos-recover usr/lib/alpbahos/target-initramfs.sh etc/calamares/settings.conf etc/polkit-1/rules.d/49-alpbahos-live.rules \
          home/live/Desktop/alpbahos-install.desktop usr/share/calamares/branding/alpbahos/branding.desc boot/vmlinuz-$KVER; do
     check_path "$p"
 done

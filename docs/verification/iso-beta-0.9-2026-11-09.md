@@ -501,3 +501,54 @@ This is what these runs show: the NVMe read fails once RAM is 4G or more in this
   6. Control (`r6/item6b-control/`): the unchanged installed disk, with no recovery steps, boots to the SDDM greeter and the Plasma desktop. So the disk itself is good; the recovery step (the dracut regeneration in this live setup) broke the boot.
   - Not established: whether a dracut run with the systemd-initrd modules present would fix it. The original initramfs was overwritten in the overlay, so the overlay cannot be reused as a clean control.
   - Overlay: a broken initramfs is in `r6/item6b-recovery/overlay.qcow2` only (not the installed disk).
+
+## 11. Round 7 (2026-11-09, later): recovery, alp on an installed system, cosmetics
+
+Scope of this section: the stages of the round 7 brief, in order. The ISO was **not rebuilt** and the final matrix was **not
+rerun** (later round). Tests on images were host-side or in VMs on overlays of `images/`; no real disk, host `/boot`,
+NVRAM, `/mnt/lfs` or `test-secrets` was touched.
+
+### 11.1 Stage 1: recovery of an installed system (round 6 item 6b FAIL): PASS on both images (host-side recovery)
+
+Root cause (found and reproduced, not guessed):
+- The round 6 step ran `dracut -f /boot/initramfs-7.1.8-alpbahos.img 7.1.8-alpbahos` in the chroot. That call lacks the
+  installer's options from `scripts/rebuild/iso/live/target-initramfs.sh`: `--no-hostonly` and the `--omit` list
+  (systemd, systemd-initrd, dracut-systemd, systemd-journald, systemd-sysusers, ...). Without them dracut pulls in the
+  systemd initrd modules; dependency errors print as `dracut[E]` lines, and dracut still exits **0**, so the step looked
+  successful.
+- Reproduced host-side on an overlay of `images/inst-bios-msdos-0.9.raw` (chroot of the target root, the target's own
+  dracut 112): the manual call gives 3 `dracut[E]` lines (`systemd-journald` depends on `systemd-sysusers`; `systemd-initrd`
+  and `dracut-systemd` follow). The image then has 109 `lsinitrd` lines matching `systemd` or `rescue`; the installer's image has 9
+  lines matching `systemd` (its `lsinitrd` header shows `--no-hostonly --kver ... --omit ...`).
+- Re-running the installer's own script in the same chroot gives rc 0, 0 `dracut[E]` lines, and the installer's image
+  content.
+- Round 6 VM evidence that the broken image fails: `r6/item6b-recovery/` (`disk-desktop.png`, "Unit rescue.service not found").
+  The round 6 open question ("whether dracut with the systemd-initrd modules present would fix it") is answered by the
+  next two rows, not by round 6.
+
+Changes (repo, this commit):
+- `scripts/rebuild/iso/live/target-initramfs.sh`: the dracut output is kept; `dracut[E]` in it now fails the step (dracut
+  itself returns 0 in that case). The options are unchanged. Not yet exercised by an installer run: the next ISO round must.
+- `scripts/rebuild/iso/live/alpbahos-recover.sh` (new): `/usr/local/sbin/alpbahos-recover ROOT_PART [ESP_PART]` on the live
+  image. Mounts root (and ESP for UEFI) at `/mnt/alpbahos-recover`, binds dev, proc, sys, run; runs
+  `target-initramfs.sh` in the chroot (the same initramfs as the installer); runs `grub-install` (BIOS:
+  `--target=i386-pc DISK`; UEFI: `--target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=alpbahOS --removable
+  --no-nvram`, so NVRAM is not written); runs `grub-mkconfig`; checks the kernel, the initramfs and the menu; unmounts on
+  any exit. Without arguments it lists the partitions and changes nothing. Idempotent.
+- `scripts/rebuild/iso/build-iso.sh`: installs the script as `/usr/local/sbin/alpbahos-recover` and checks it and
+  `usr/lib/alpbahos/target-initramfs.sh` in the squashfs. The squashfs is also the installed system, so the script ends up
+  on installed systems too. The ISO has not been rebuilt.
+
+Tests (host-side, state: `scratch-lfs-bench/s1-recovery/`, not in the repo):
+
+| image | steps | result | evidence |
+|---|---|---|---|
+| BIOS (`inst-bios-msdos-0.9.raw`, overlay, root `/dev/nbd0p1`) | manual dracut, then `alpbahos-recover /dev/nbd0p1` | recover rc 0; kernel 7.1.8-alpbahos, initramfs 42.6 MB, 1 menu entry | `s1-recovery/broken/manual-dracut.log`, `s1-recovery/broken/recover-run1.log` |
+| BIOS, repaired overlay booted from disk alone | KVM, `-cpu qemu64`, virtio, 6G, login (test user, as round 6), Plasma desktop | **PASS** | `lfs13-logs/boot/r7/item1-bios-recover/` (`boot-greeter.png`, `desktop.png`) |
+| UEFI (`inst-uefi-gpt-0.9.raw`, overlay, root `/dev/nbd1p2`, ESP `/dev/nbd1p1`) | manual dracut, then `alpbahos-recover /dev/nbd1p2 /dev/nbd1p1` | recover rc 0; `grub-install` x86_64-efi, removable fallback, no NVRAM | `s1-recovery/uefi-broken/manual-dracut.log`, `s1-recovery/uefi-broken/recover-run1.log` |
+| UEFI, repaired overlay booted from disk alone (OVMF, no NVRAM entry: the fallback path boots) | KVM, login, Plasma desktop | **PASS** | `lfs13-logs/boot/r7/item1-uefi-recover/` (`boot-greeter.png`, `desktop.png`) |
+
+Not run: the recovery from the live ISO itself (the script is not in any built ISO yet; the host-side run used the target's
+own dracut and grub tools in a chroot of an overlay, which is the same tool set the live session chroot used in round 6).
+Not run: a VM run of an unrepaired broken overlay (round 6 item6b-recovery already shows that failure). Not run: the
+installer itself (Calamares) with the new `dracut[E]` check.
