@@ -718,3 +718,17 @@ Evidence (host, not in the repo): `scratch-lfs-bench/s2-alp/` (`catalog/`, `cata
 - `alp check` rc 0 after the three records; the package count is 480 (was 477).
 - Not run: the ISO build (the squashfs check now includes the catalog path only if added to build-iso.sh: not added in
   this round); the installer on a real disk. The catalog is a record on r4-root; the ISO round must carry it.
+
+### 12.4 S4: Flatpak and Flathub: NOT STARTED (assessment only; clean stop, nothing recorded)
+
+- Checked on r4-root (alp database): flatpak, bubblewrap, xdg-dbus-proxy, ostree, libxmlb, appstream, glib-networking,
+  json-glib, libsoup, gpgme, libsecret, fuse3, libyaml, libseccomp: **none present**. p11-kit 0.26.5, libarchive 3.8.9
+  and polkit are present.
+- The R4 `packages.tsv` has no flatpak row (only `flatpak-kcm` in the Plasma list, commented out by the book). The
+  scratch BLFS 13.1 source tree has no flatpak tarball. The BLFS plan file mentions it only for `flatpak-kcm`.
+- So the chain is about 14 packages to build, with upstream sources not yet fetched and checked. That does not fit this
+  run, so nothing was built and no record was made. alp check is unchanged (rc 0, 480 packages).
+- Open for the next run: fetch the BLFS 13.1 flatpak page and its dependency list, add rows (with sha256) to
+  `packages.tsv`, build bottom-up through the R4 driver, record each with alp, then `flatpak remote-add --system flathub`
+  (remote file only), `/var/lib/flatpak` and the polkit rules. Verification in a chroot (`flatpak --version`,
+  `flatpak remotes`) and the real `flatpak install` in a VM with network in the ISO round.
