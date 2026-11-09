@@ -1017,3 +1017,73 @@ Notes on the matrix:
 ### 15.6 Gate (QEMU level, sha 03469d29)
 
 **NOT MET.** Passing: live UEFI and BIOS desktops (KVM and TCG); both installs with clean disk checks; installed boots (BIOS virtio, AHCI, NVMe at 2G; UEFI virtio and NVMe); sound on B1 and U2; shutdown 3/3 with no dumps; reboot back to the greeter; tr_TR and trq locale and keymap settings; both recoveries with the repaired disks booting; About this System; fastfetch. Failing: Flatpak (GPG engine missing), alp without --index (old alp.py in r4-root), curl NOT VERIFIED on every installed row, fusermount3 not setuid against the book, SDDM logo not shown. Still open: the keyboard layout result (15.4 item 8), the coredump crash (not reproduced, not proven fixed), the real-PC USB test and the publication approval (the user's).
+
+## 16. Round 14 (2026-11-09, later): fixes for items 1-6, ISO r14, matrix on the new sha
+
+ISO: `scratch-lfs-bench/images/alpbahos-beta-0.9-2026-11-09-r14.iso`, sha256 **`ae1ef2d8f1b91380958f2a9a3055b5c50abbc50a111d9234d39393c93100e4ce`**, 4742668288 bytes. Built with `TAG=r14` (build script unchanged). Contents checked read-only in the squashfs: `usr/bin/fusermount3` mode 4755 (`-rwsr-xr-x`), `etc/xdg/kxkbrc`, `usr/lib/alp/alp.py` identical to the repo file, `usr/share/sddm/themes/alpbahos/Main.qml` with the logo patch, `usr/bin/gpg` and `gpgconf`, `usr/bin/flatpak`, `usr/local/sbin/alpbahos-recover`, `usr/share/alp/index.json`. The r13 snapshot was renamed to `r4-iso-src-2026-11-09-prev-r13` (kept).
+
+### 16.1 Item 1: Flatpak, GnuPG (commit 1fadc0f)
+
+- Recorded through alp with `pkg-url-r11.sh` (BLFS 13.1 stable versions, `postlfs/gnupg.html`): npth 1.8 (sha256 `8bd24b4f...`), libksba 1.8.0 (`296b9db9...`), gnupg 2.5.21 (`e3af2c8c...`). Rows 397, 398, 396 in packages.tsv (two rows first written as 394 and 395 and renumbered, because those numbers were in use). `alp check` rc 0 after each step (509 packages).
+- Evidence in r4-root: `gpg --version` = GnuPG 2.5.21, libgcrypt 1.12.2; `gpgconf --list-dirs` works.
+- Result: **remote configured, PASS.** `flatpak remotes` lists `flathub system`. `pkexec flatpak remote-add flathub ...` answers `Uzak flathub zaten var` (remote already exists), because `/etc/flatpak/remotes.d/flathub.flatpakrepo` configures it. The r13 failure (GPG engine) is gone.
+- Install: NOT RUN correctly (16.6, FP row). The install and list commands were typed with the wrong letter (see 16.7).
+
+### 16.2 Item 2: alp (commit b090ce1)
+
+- The installed `/usr/lib/alp/alp.py` is the repo file (record `alp` 0.9-r13, REPLACE). `cmp` identical.
+- `alp check` with the installed copy (`chroot r4-root /usr/bin/alp check`): rc 0, 512 packages.
+- `alp search fastfetch` and `alp list` without `--index`: rc 0 in the chroot as root, with LANG=C and with LANG=tr_TR.utf8, and as uid 1001 (testuser).
+- In the guest (B1, Konsole), `alp list` printed `'list' diye bir komut yok` (argparse invalid choice). The same command passes in the chroot. Cause not established: the on-screen token could not be read at this size, and a Turkish-Q dotless `ı` typed in place of `i` would produce this message. Open; see 16.7.
+
+### 16.3 Item 3: curl (no commit; answer is a usage error, not a broken binary)
+
+- `curl --version` in the guest and in the chroot: curl 8.21.0, libcurl with OpenSSL.
+- The earlier "silent" runs used `curl -I ftp.gnu.org`. curl treats a host name that starts with `ftp.` as FTP by default. The verbose run (FP14, `curl -v -m 15 -o h3.txt ftp.gnu.org`) connected to ftp.gnu.org port 21 and printed an FTP directory listing (`wc -c h3.txt` = 1382). A HEAD request on FTP prints nothing, which is what the earlier runs showed.
+- The network path works: `curl -sS -m 10 -I -o h1.txt 10.0.2.2` in B1 printed `curl: (7) Failed to connect to 10.0.2.2 port 80 ... Could not connect to server` (the gateway has no web server, which is the expected error).
+- Correct form for the checks: `curl -I http://ftp.gnu.org/` or `https://`. Not run to completion in r14 (the flatpak run took the network time; see 16.6).
+
+### 16.4 Item 4: fusermount3 setuid (commit b090ce1)
+
+- BLFS stable page `https://www.linuxfromscratch.org/blfs/view/stable/postlfs/fuse.html` (Fuse 3.17.4, fetched and quoted): the install command is `chmod u+s /usr/bin/fusermount3 &&`; the short description calls it "a suid root program to mount and unmount Fuse filesystems".
+- Record: `fuse3-3.18.2-leftover` 3.18.2-r13, 16 files, fusermount3 mode 4755 (manifest mode 2541 = 0o4755). The package key of the r7 record was kept.
+- The record tool masked modes with `& 0o777` and dropped setuid; `scripts/rebuild/r8/stage-record-r8.py` now keeps `0o7777`.
+- Verified: r4-root and the r14 installed disk (read-only): `4755`. ISO squashfs: `-rwsr-xr-x`.
+
+### 16.5 Items 5 and 6 (commits b090ce1, be6a7fe, fd54b85)
+
+- Item 5, keyboard: the installer already writes `/etc/X11/xorg.conf.d/00-keyboard.conf` (XkbLayout tr) and `/etc/vconsole.conf` (KEYMAP trq) on the installed disk. What was missing is KDE's own default: record `alpbahos-keyboard` 0.9-r13 adds `/etc/xdg/kxkbrc` (LayoutList=tr, Use=true). Result in B1 r14: the Plasma session types with the Turkish-Q keys (`-` and `/` typed correctly). **Still open:** `localectl status` shows `VC Keymap: trq` and `X11 Layout: (unset)` even with 00-keyboard.conf present (the cause is not analysed). Design note for Q/F detection added to `docs/verification/user-feedback-keyboard-2026-11-09.md` (design only, not built).
+- Item 6, SDDM logo: record `sddm-alpbahos-r13` 0.9-r13 patches Main.qml so the logo Image opacity no longer follows `uiVisible`. **FAIL on screen:** the logo is not visible on the login frame (B1 r14 greeter at 95 s) nor on the disk-boot frame (REC1b at about 110 s). The patch is on the disk (`grep -c "opacity: 1"` = 1); the reason the logo does not render is not found.
+
+### 16.6 Matrix on sha `ae1ef2d8...` (ISO r14)
+
+Accelerator KVM with `-cpu qemu64` unless marked. Evidence under `scratch-lfs-bench/lfs13-logs/iso-beta-0.9/r14/`.
+
+| Row | Accel | Result | Evidence |
+|---|---|---|---|
+| L1 live UEFI, desktop at 130 s, 3 runs | KVM | **PASS 3/3** (taskbar, Install icon, Welcome Center window) | `L1-1/shot-130.png`, `L1-2/`, `L1-3/` |
+| I1 Calamares BIOS MSDOS, erase vda, tr, Turkish-Q, testuser | KVM | **PASS** (completion page "Her şey tamam", AlpbahOS 0.9 Beta) | `I1/i-09-done.png`; `images/inst-bios-msdos-r14.raw` |
+| I1a disk checks (read-only) | none | **PASS**: fstab root UUID e383eacb... = blkid; no live account; testuser; hostname alpbahos-test; VERSION 0.9 Beta; grub.cfg; MBR GRUB; fusermount3 4755; kxkbrc LayoutList=tr; xkb tr; SDDM patch present | this section |
+| I2 Calamares UEFI GPT, same user | KVM | **PASS** (install completed; unmount logged). The final screen is not captured (the screen had idle-locked) | `I2/serial.log`; `images/inst-uefi-gpt-r14.raw` |
+| I2a disk checks (read-only) | none | **PASS**: fstab root 84f8616b... and /boot/efi B5BA-4BFE = blkid; no live; testuser; VERSION; grub.cfg; fusermount3 4755; kxkbrc; ESP EFI/alpbahOS/grubx64.efi and EFI/boot/bootx64.efi | this section |
+| B1 installed BIOS, virtio, login, desktop, fastfetch | KVM | **PASS** login, desktop, fastfetch (logo, "AlpbahOS 0.9 Beta", readable colours); **FAIL** `alp list` in the guest (16.2); **curl** shows the connection error to 10.0.2.2 (network OK); `localectl` X11 unset (16.5); SDDM greeter shows layout `us` | `B1/b1-desktop.png`, `b1-fastfetch.png`, `b1-alp-list.png`, `b1-greeter.png`, `b1-localectl.png`, `b1-curl.png` |
+| U1 installed UEFI, virtio, hostnamectl | KVM | **PASS** hostnamectl (AlpbahOS 0.9 Beta, kvm, edk2). `systemctl --failed` **NOT RUN** (the double hyphen did not type; r13 U1 showed 0 loaded units) | `U1/u1-hostnamectl.png` |
+| FP Flatpak remote, install one app | KVM | **remote PASS** (`flathub system`, 16.1). **Install NOT RUN**: `flatpak install` and `flatpak list` were typed with `ı` for `i`, so flatpak answered "'install' komutu değil" (not a command). Application install and run are open | `FP14/fp-remotes.png`, `FP14/fp-install.png`, `FP14/fp-list.png` |
+| REC1 BIOS recovery, broken copy as /dev/vda, live ISO (CD first) | KVM | **PASS** (REC1b): `pkexec /usr/local/s*/alpbahos-recover` lists vda1; recovery runs to "recovery done; unmounting; reboot the installed disk"; the repaired disk reaches the display-manager frame. An earlier REC1 attempt typed `sb7n` for `sbin` and was rerun | `REC1b/rec1b-step0.png`, `rec1b-step1.png`, `REC1b-boot/rec1b-disk-greeter.png` |
+| curl (file-based) | KVM | **answered** (16.3): FTP default for ftp. hosts; the `http://` form is the check to use | `FP14/fp-curl-v.png`, `fp-curl-wc.png` |
+
+Notes: the first lane run for I1 and I2 clicked Install at y=666 (the BIOS summary button is at about y=652); I1 was confirmed by hand. The orphans described in 16.7 are two live VMs whose run directories were removed during cleanup.
+
+### 16.7 Failures, open items, not run
+
+- Flatpak install: see the FP line (16.6).
+- alp `list` in the guest: not explained (16.2).
+- Double hyphen `--` did not type correctly in the Turkish-Q session (`systemctl --failed` and `pkexec flatpak remote-add --if-not-exists` gave `unrecognized option` / `Bilinmeyen seçenek`). Single-hyphen commands type correctly. Relevant to the keyboard feedback; not analysed.
+- Letter `i`: the harness sends the `i` key (qcode i). In the Turkish-Q session that key gives dotless `ı`, which explains the failing words: `alp list` (B1), `flatpak install` and `flatpak list` (FP14), and the `sbin` typed as `sb7n` in the first REC1 attempt (the glyph looked like `7` at this size). Turkish-Q puts dotted `i` on the apostrophe key, so the harness must send apostrophe for `i`. Most likely cause; not verified by a direct test. The system behaves as Turkish-Q does; this is a harness mapping fault, not a product fault, unless a real user reports the same.
+- SDDM logo not visible on the login or boot frame (16.5).
+- localectl X11 layout unset (16.5).
+- Idle lock: the Plasma screen locks and blanks after about 10 minutes idle, which hides the installer and flatpak screens.
+- Orphan QEMU processes: two live VMs from the round 14 lanes (the L1 live runs) survive because their run directories were removed during a cleanup mistake, so QMP quit cannot reach them. Their processes are not killed here (rule: end VMs with QMP quit only). They need to be closed by the user or the coordinator.
+- Not run: S1 shutdown and R1 reboot on sha r14 (the round 13 results stand for r13); sound on the r14 rows except B1; the full 90 s session; the Plasma menu (Kapat) on r14.
+- ESP check: done for the I2 disk (16.6).
+- Commits in this round (local, not pushed): 1fadc0f (GnuPG), b090ce1 (alp, fuse3 setuid, keyboard record, stage-record mode fix), be6a7fe (SDDM logo), fd54b85 (keyboard design note).
