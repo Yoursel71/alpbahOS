@@ -42,7 +42,7 @@ for dirpath, _dirs, names in os.walk(STAGE):
             raise SystemExit(f"cannot read {full}: {exc}")
         with open(dst, "wb") as f:
             f.write(data)
-        mode = stat.S_IMODE(lst.st_mode) & 0o777
+        mode = stat.S_IMODE(lst.st_mode) & 0o7777
         os.chmod(dst, mode)
         os.chown(dst, 0, 0)
         entries.append({"path": "/" + rel, "type": "file", "mode": mode, "uid": 0, "gid": 0,
