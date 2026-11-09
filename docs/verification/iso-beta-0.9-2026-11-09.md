@@ -924,3 +924,14 @@ Records: `scripts/rebuild/r8/stage-record-r8.py` through `scripts/rebuild/r7/app
 - Options: -Dsystem_bubblewrap=/usr/bin/bwrap -Dsystem_dbus_proxy=/usr/bin/xdg-dbus-proxy -Dsystem_helper=enabled -Dsystem_install_dir=/var/lib/flatpak -Dsystemd=disabled -Ddconf=disabled -Dmalcontent=disabled -Dgir=disabled -Dgtkdoc=disabled -Dxauth=disabled -Dwayland_security_context=disabled -Dselinux_module=disabled -Ddocbook_docs=disabled -Dman=disabled -Dtests=false.
 - Staged: staged files: 84; elf files: 8; audit-isa rc=0. Chroot: flatpak --version prints Flatpak 1.18.4.
 - Record: alp flatpak 1.18.4; alp check rc=0; packages 505; packages.tsv row 393.
+
+### 14.23 flathub remote definition: config only (round 12)
+- Source: https://dl.flathub.org/repo/flathub.flatpakrepo (Url=https://dl.flathub.org/repo/), sha256 3371dd250e61d9e1633630073fefda153cd4426f72f4afa0c3373ae2e8fea03a; installed as /etc/flatpak/remotes.d/flathub.flatpakrepo. No remote-add, no repo summary, no app, no repo data.
+- Staged: 1 file, no ELF. Chroot `flatpak remotes` prints nothing: the remote is not listed until the system repo (/var/lib/flatpak/repo) exists, which was not created here.
+- Record: alp flathub-remote 1 (config only); alp check rc=0; packages 506; packages.tsv row 395.
+
+### 14.24 Flatpak chain status at the end of round 12: flatpak built
+- Built and recorded in this run: lxml 6.1.1 (needed by itstool), itstool 2.0.7, appstream 1.1.6, pyparsing 3.3.2 (needed by the flatpak meson setup), flatpak 1.18.4, and the flathub remote config record. Rows 390-395; rows 385 and 387 stay unused.
+- `flatpak --version`: Flatpak 1.18.4. `flatpak remotes` in the chroot: empty (see 14.23). Package count 506; alp check rc=0.
+- Root size: `sudo du -sx r4-root` 115856704 KiB; 14.17 recorded 115830500 KiB before this run (+26204 KiB).
+- Open items: libfyaml-0.9.6 (14.16) was recorded with audit-isa rc=1 in the earlier run and was not re-audited here. Appstream and flatpak test suites were not run; flatpak runtime (sandbox, remote listing, app install) was not tested, by design. Flatpak is built without systemd, dconf, malcontent, gir, gtkdoc, xauth, Wayland security context, SELinux module, and man pages/docs.
