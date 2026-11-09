@@ -913,3 +913,8 @@ Records: `scripts/rebuild/r8/stage-record-r8.py` through `scripts/rebuild/r7/app
 - Options: BLFS -Dapidocs=false -Dbash-completion=false -Dstemming=false, plus -Dgir=false -Dvapi=false -Dqt=false -Dsystemd=false -Dcompose=false -Dapt-support=false -Ddocs=false -Dman=false (docbook-xsl-ns is not in the root). The -Dtests=false of the failed attempt is not an option in 1.1.6 and was dropped.
 - Staged: staged files: 164; elf files: 2; audit-isa rc=0.
 - Record: alp appstream 1.1.6; alp check rc=0; packages 503; packages.tsv row 392.
+
+### 14.21 pyparsing-3.3.2: built, recorded (round 12)
+- Version source: BLFS 13.1 general/python-modules.html#pyparsing: 3.3.2 (pip3 wheel, pure Python; the flatpak meson setup stops without it). sha256 c777f4d763f140633dcb6d8a3eda953bf7a214dc4eff598413c070bcdc117cbc (md5 ca3bea68cd1a84584b68cd7bed679464, as in BLFS).
+- Staged: staged files: 43; elf files: 0; audit-isa rc=2 (no ELF files, nothing to audit).
+- Record: alp pyparsing 3.3.2; alp check rc=0; packages 504; packages.tsv row 394.
