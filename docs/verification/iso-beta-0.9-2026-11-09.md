@@ -457,7 +457,7 @@ Open items:
 | 3 (PATH) | done: comparison in 10.2, no change | `r4-root/etc/profile` |
 | 4 (Plasma menu shutdown and reboot, tr_TR, trq, sound on AHCI) | done on sha 1686 (KVM): `localectl` gives LANG=tr_TR.utf8 and VC Keymap trq (X11 layout unset, so the Plasma X keymap was not checked); sound on installed AHCI: `Yerleşik Ses` analog stereo sink and source; Plasma menu Yeniden Başlat (reboot) returned to the SDDM greeter (SDDM layout shows `us`). Shutdown from the menu: row 2. Evidence: `r6/item4-ahci-reboot/`. |
 | 5 (section 10 names) | done: `superseded-5ae7e7c9-release.iso` and `inst-bios-nodropin-0.9.raw` fixed. `images/inst-bios-nodropin-0.9.raw` deleted 2026-11-09 after item 2 (no other image deleted). |
-| 6 (M12: alp update/rollback; live-ISO recovery) | **NOT RUN.** | - |
+| 6 (M12: alp update/rollback; live-ISO recovery) | 6a: partly done. `alp` has `update`, `upgrade` and `recover` (10.9); there is **no `rollback` subcommand**. On the installed overlay the catalog is absent (no `index.json`), so `update` and `upgrade` stop with "requires --index PATH"; not run further. 6b: **FAIL.** Live ISO plus overlay: grub config regenerated, but the initramfs regeneration (dracut) reported missing modules and the disk then fails to boot (`rescue.service` not found). Control (unchanged disk) boots to the desktop. Evidence: `r6/item6b-recovery/`, `r6/item6b-control/`. |
 | 7 (CURRENT.md) | done | `CURRENT.md` |
 
 Other facts found in round 6:
@@ -488,3 +488,16 @@ Memory size was the difference, not the device set (`r6/nvme-mem/`, debugcon, bo
 | (earlier) | 6G | full | `could not read the boot disk` (three runs) |
 
 This is what these runs show: the NVMe read fails once RAM is 4G or more in this SeaBIOS/QEMU setup. It is a setup effect, not a product fault, and it says nothing about real machines with NVMe firmware.
+
+### 10.9 Round 6 item 6: M12 checks
+
+- 6a, alp (`docs/handoffs/claude/alp-prototype/alp.py`): commands are `search info install upgrade remove autoremove check list recover protect unprotect adopt-base update help`. There is no `rollback` command. Undo exists only inside a transaction (`FileJournal`, `undo_journal`, `ROLLBACK_DIR`) and `alp recover` replays an interrupted one. On the installed overlay (`r6/item6a-alp/`, Konsole) every command stopped with "--index PATH is required"; the installed system has no catalog `index.json` (checked read-only). So `alp update` and the rollback behaviour were **not run**. What is needed: a catalog on the installed system (or `--index` pointing at one), a harmless package in it, then `alp upgrade` to a newer version and a forced failure to exercise `recover`. No new function was built.
+- 6b, recovery from the live ISO (BIOS, sha 1686; `r6/item6b-recovery/`):
+  1. The live ISO booted with `-boot order=dc` (autologin). The installed overlay appeared as `vda`, root `vda1` (30 GiB).
+  2. `sudo` is not installed in the live image; the live user has `pkexec` (polkit rule `polkit-49-alpbahos-live.rules`), which works without a password. `/usr/sbin/chroot` is needed because pkexec's PATH has no `/usr/sbin`.
+  3. Mount `/dev/vda1` at `/mnt/inst`, bind dev, proc, sys; `grub-mkconfig` in the chroot: PASS (`Found linux image`, `Found initrd image: /boot/initramfs-7.1.8-alpbahos.img`, 6 menu entries).
+  4. `dracut -f /boot/initramfs-7.1.8-alpbahos.img 7.1.8-alpbahos` in the chroot: **errors** `Module 'systemd-journald' depends on module 'systemd-sysusers', which can't be installed` and the same for `systemd-initrd`. The image file was rewritten (new timestamp, 26 MB).
+  5. Quit the live VM and boot the overlay alone: GRUB loads the kernel and the new initramfs, then `systemd[1]: Failed to isolate default target: Unit rescue.service not found`, `Freezing execution` (`disk-boot`, screenshot `disk-desktop.png`). **FAIL.**
+  6. Control (`r6/item6b-control/`): the unchanged installed disk, with no recovery steps, boots to the SDDM greeter and the Plasma desktop. So the disk itself is good; the recovery step (the dracut regeneration in this live setup) broke the boot.
+  - Not established: whether a dracut run with the systemd-initrd modules present would fix it. The original initramfs was overwritten in the overlay, so the overlay cannot be reused as a clean control.
+  - Overlay: a broken initramfs is in `r6/item6b-recovery/overlay.qcow2` only (not the installed disk).

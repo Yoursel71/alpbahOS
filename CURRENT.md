@@ -52,7 +52,7 @@ Status words: done / partial / not started / unknown. Details are in the linked 
 | M09 | partial | Live ISO built by script (2026-11-06). BIOS boot with `qemu64` reaches Plasma with 0 SIGILL and 0 FAILED after the CPU fix (D146); UEFI boot reached Plasma on the earlier ISO. Stock KDE and English SDDM until LIVE-PROFILE-01. Installing from the booted ISO and the live-user policy are open. |
 | M10 | not started | Alpha test matrix and release candidate do not exist yet. |
 | M11 | partial | BIOS and UEFI installs to virtual disks through the product grubcfg path (D144). First boots clean: BIOS (0 failed units, 2026-11-06, M11-FIX-02), UEFI (0 `FAILED`, 2026-11-06, M11-UEFI-01). GUI click-through, LUKS, dual boot and real UEFI NVRAM are open. |
-| M12 | partial | Beta 0.9 gate not met on 2026-11-09 (see the beta record). Open: shutdown coredump, installed BIOS NVMe boot, alp update and rollback, live-ISO recovery. Publication needs the user (D108). |
+| M12 | partial | Beta 0.9 gate not met (2026-11-09). Live-ISO recovery FAILED once (initramfs regeneration with dracut in the live chroot broke the boot; the grub step worked). alp has no rollback command; update needs a catalog that the installed system lacks. Publication needs the user (D108). |
 
 ## What changed on 2026-11-06
 
