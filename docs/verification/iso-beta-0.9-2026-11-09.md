@@ -732,3 +732,57 @@ Evidence (host, not in the repo): `scratch-lfs-bench/s2-alp/` (`catalog/`, `cata
   `packages.tsv`, build bottom-up through the R4 driver, record each with alp, then `flatpak remote-add --system flathub`
   (remote file only), `/var/lib/flatpak` and the polkit rules. Verification in a chroot (`flatpak --version`,
   `flatpak remotes`) and the real `flatpak install` in a VM with network in the ISO round.
+
+## 13. Round 9 (2026-11-09, later): real brand logo (D1), fastfetch colours (D2), Flatpak (F)
+
+### 13.1 D1: the real brand logo replaces the placeholder diamond: PARTLY (fastfetch, KDE About, SDDM, Calamares done)
+
+- Source: `docs/assets/alpbahOS-logo.png` (296x359 RGBA, opaque #141414 box). Keying as in
+  `branding/alpbahos-brand/tools/build_brand_wallpaper.py` (distance <= 18 transparent, ramp to 30). Tool:
+  `scripts/rebuild/r9/brand-logo-r9.py` (PNG at a height, or ANSI art with half-block characters and truecolour codes).
+- **a. fastfetch** (record `fastfetch-logo-r9` 0.9-r9; logo file `usr/share/fastfetch/alpbahos-logo.txt`, 40 columns, 24
+  rows of half-blocks): the mountain, the white prompt, the orange cursor and the two-tone wordmark bar are recognisable
+  (render `scratch-lfs-bench/r9/evidence/fastfetch-logo-r9-render.png`, read and checked). **Honest:** at 40 columns the
+  wordmark letters are not legible, and the navy mountain is low-contrast on a near-black terminal. No nearest-colour
+  256 fallback was made (truecolour only). A 56-column variant would help the wordmark; not made this round.
+- **b. KDE About** (record `kcm-about-r9fix` 0.9-r9): `LogoPath=/usr/share/pixmaps/alpbahos-logo.png` (unchanged key)
+  now points at the brand icon `branding/icons/hicolor/256x256/apps/alpbahos.png`; hicolor sizes 32, 48, 64, 128, 256
+  (`apps/alpbahos.png`) come from `branding/icons/hicolor`. The hicolor cache was regenerated (record
+  `hicolor-icon-cache-r9` 0.9-r9). The KCM reads `LogoPath` as a file (checked in 11.3); the session view is not checked.
+- **c. SDDM** (record `sddm-logo-r9` 0.9-r9): `usr/share/sddm/themes/alpbahos/logo.png` is the transparent brand logo at
+  height 320 (264x320). The background is the brand wallpaper (unchanged). The greeter is not rendered (VM round).
+  NOTICE corrected (record `sddm-notice-r9` 0.9-r9, text `scripts/rebuild/r9/sddm-notice-r9.txt`): the logo source is the
+  real logo now, not `make-logo.py`.
+- **d. Calamares / ISO build**: `scripts/rebuild/iso/build-iso.sh` installs `scripts/rebuild/iso/live/calamares/branding/logo.png`
+  (the transparent brand logo, 320 px) as `/usr/share/calamares/branding/alpbahos/logo.png`; the placeholder generator
+  `scripts/rebuild/iso/live/make-logo.py` is removed. `branding.desc` (productLogo, productIcon, productWelcome) and
+  `show.qml` are unchanged. The ISO is not rebuilt.
+- Where the placeholder was used (all replaced, round 9): fastfetch logo (round 8 diamond), KDE About pixmap and
+  hicolor icon (round 8 diamond), SDDM logo (round 7 diamond), Calamares logo (`make-logo.py`). Remaining mentions of the
+  old generator are in history text only (round 7/8 record scripts, `fastfetch-logo-r8.py` docstring, round 7 doc
+  sections); those records are superseded and not in use.
+- `alp check`: rc 0 after each record; the package count went 480 -> 486 with the six round 9 records of this section
+  and 13.2 (fastfetch-logo-r9, kcm-about-r9fix, sddm-logo-r9, hicolor-icon-cache-r9, sddm-notice-r9, and 13.2's
+  fastfetch-colour-r9).
+
+### 13.2 D2: fastfetch key and separator colours (record `fastfetch-colour-r9` 0.9-r9): PASS on the dark render
+
+- Config: `display.color` keys `1;36` (bold cyan), separator `1;37` (bold white); no navy foreground. Script
+  `scripts/rebuild/r9/fastfetch-colour-r9.py`. Render `scratch-lfs-bench/r9/evidence/fastfetch-colour-r9-render.png`,
+  read: the keys (OS, Kernel, Uptime, Shell, Terminal, CPU, Memory) are cyan and readable on the dark background; values
+  white; the title orange. The renderer ignores bold, so the bold weight is not visible in the PNG. **Not checked:** a light
+  terminal (cyan on white is weaker than on dark); the claim for light terminals is not verified.
+
+### 13.3 F: Flatpak and Flathub: NOT STARTED (section 12.4 stands; next package: bubblewrap)
+
+- Nothing from the 14-package chain was built or recorded in round 9. The dependency check of 12.4 is unchanged.
+- The next package is **bubblewrap** (leaf; upstream source, sha256 to record); then xdg-dbus-proxy, libseccomp, libyaml,
+  fuse3, json-glib, libsoup3, glib-networking, gpgme, libsecret, libxmlb, appstream, ostree, flatpak, in that order.
+- Not done: flathub system remote, /var/lib/flatpak, polkit rules, `flatpak --version`, `flatpak remotes`.
+
+### 13.4 Package count and root size
+
+- `alp check` rc 0, **486 installed packages** (from 480 at the start of round 9). Root size delta: not measured (F is not
+  done, so the round is not complete; the delta is reported when F is done).
+- Untracked files in the worktree that are not from this round (`scripts/rebuild/iso/live/keyboard/`,
+  `alpbahos-keyboard.desktop`, `keyboard-detect.cpp`) were left out of every commit.

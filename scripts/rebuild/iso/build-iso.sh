@@ -24,8 +24,10 @@ R4=$SB/r4-root
 DATE=2026-11-09
 KVER=7.1.8-alpbahos
 LABEL=ALPBAHOS_BETA
-SNAP_SRC=$SB/lfs13-snapshots/r4-iso-src-$DATE
-WORK=$SB/iso-work
+# Test variants use separate snapshots and work directories, preserving existing images.
+TAG=${TAG:-}
+SNAP_SRC=$SB/lfs13-snapshots/r4-iso-src-$DATE${TAG:+-$TAG}
+WORK=$SB/iso-work${TAG:+-$TAG}
 LIVE=$WORK/live-root
 ISOTREE=$WORK/iso
 OUT_DIR=$SB/images
@@ -33,9 +35,8 @@ OUT_DIR=$SB/images
 DEBUG=${DEBUG:-0}
 # TAG (test variants only): file name suffix, e.g. TAG=v1. EXTRA_OVERLAY (test variants only): a directory whose
 # tree is copied over the live root before the squashfs (e.g. a sddm drop-in for an experiment).
-TAG=${TAG:-}
 if [ "$DEBUG" = 1 ]; then OUT=$OUT_DIR/alpbahos-beta-0.9-$DATE-debug${TAG:+-$TAG}.iso; else OUT=$OUT_DIR/alpbahos-beta-0.9-$DATE${TAG:+-$TAG}.iso; fi
-LOGS=$SB/lfs13-logs/iso-beta-0.9/build
+LOGS=$SB/lfs13-logs/iso-beta-0.9/build${TAG:+-$TAG}
 MIN_FREE_GIB=30
 
 die() { echo "build-iso: $*" >&2; exit 1; }
@@ -47,7 +48,7 @@ if findmnt -rn -o TARGET | grep -qE "^($R4|$WORK)(/|\$)"; then die "something is
 [ ! -e "$SNAP_SRC" ] || die "$SNAP_SRC exists (delete it first)"
 [ ! -e "$LIVE" ] || die "$LIVE exists (delete it first)"
 [ ! -e "$OUT" ] || die "$OUT exists"
-for f in "$LIVE_SRC/calamares/settings.conf" "$LIVE_SRC/make-logo.py" "$M11_MOD/bootloader.conf" "$M11_MOD/grubcfg.conf"; do
+for f in "$LIVE_SRC/calamares/settings.conf" "$M11_MOD/bootloader.conf" "$M11_MOD/grubcfg.conf"; do
     [ -f "$f" ] || die "missing input $f"
 done
 for t in dracut mksquashfs unsquashfs xorriso grub-mkimage mkfs.vfat rsync calamares pkexec sddm efibootmgr grub-install; do
@@ -105,6 +106,17 @@ install -d -m 755 "$LIVE/home/live/Desktop"
 install -m 755 "$LIVE_SRC/alpbahos-install.desktop" "$LIVE/home/live/Desktop/alpbahos-install.desktop"
 L /usr/bin/chown -R live:live /home/live
 install -m 755 "$LIVE_SRC/alpbahos-install" "$LIVE/usr/bin/alpbahos-install"
+# The console keymap alone does not configure the graphical session. Set the live default;
+# Calamares' keyboard module writes the user's selected layout to the installed system.
+install -d -m 755 "$LIVE/etc/X11/xorg.conf.d" "$LIVE/usr/share/applications"
+install -m 644 "$LIVE_SRC/keyboard/00-keyboard.conf" "$LIVE/etc/X11/xorg.conf.d/00-keyboard.conf"
+install -m 644 "$LIVE_SRC/alpbahos-keyboard.desktop" "$LIVE/usr/share/applications/alpbahos-keyboard.desktop"
+install -m 644 "$LIVE_SRC/alpbahos-keyboard.desktop" "$LIVE/home/live/Desktop/alpbahos-keyboard.desktop"
+L /usr/bin/chown live:live /home/live/Desktop/alpbahos-keyboard.desktop
+# Build the guided detector inside the target, so it uses the same Qt libraries as the ISO.
+install -m 644 "$LIVE_SRC/keyboard-detect.cpp" "$LIVE/tmp/alpbahos-keyboard.cpp"
+L /bin/sh -c 'export PKG_CONFIG_PATH=/opt/qt6/lib/pkgconfig; g++ -std=c++17 /tmp/alpbahos-keyboard.cpp -o /usr/bin/alpbahos-keyboard $(pkg-config --cflags --libs Qt6Widgets)' || die "keyboard detector build failed"
+rm -f "$LIVE/tmp/alpbahos-keyboard.cpp"
 install -d -m 755 "$LIVE/etc/polkit-1/rules.d"
 install -m 644 "$LIVE_SRC/polkit-49-alpbahos-live.rules" "$LIVE/etc/polkit-1/rules.d/49-alpbahos-live.rules"
 # LIBGL_ALWAYS_SOFTWARE=1 only with LIBGL=1 (test setting for QEMU without virgl; the default build has none).
@@ -131,9 +143,9 @@ for f in "$LIVE_SRC"/calamares/modules/*.conf; do install -m 644 "$f" "$LIVE/etc
 install -m 644 "$M11_MOD/bootloader.conf" "$M11_MOD/grubcfg.conf" "$LIVE/etc/calamares/modules/"
 install -m 644 "$LIVE_SRC/calamares/branding/branding.desc" "$LIVE/usr/share/calamares/branding/alpbahos/"
 install -m 644 "$LIVE_SRC/calamares/branding/show.qml" "$LIVE/usr/share/calamares/branding/alpbahos/"
-install -m 644 "$LIVE_SRC/make-logo.py" "$LIVE/tmp/make-logo.py"
-L /usr/bin/python3 /tmp/make-logo.py /usr/share/calamares/branding/alpbahos/logo.png
-rm -f "$LIVE/tmp/make-logo.py"
+# The Calamares logo is the real brand logo (round 9): a transparent PNG made from docs/assets/alpbahOS-logo.png by
+# scripts/rebuild/r9/brand-logo-r9.py (same keying as the brand wallpaper). The placeholder generator is gone.
+install -m 644 "$LIVE_SRC/calamares/branding/logo.png" "$LIVE/usr/share/calamares/branding/alpbahos/logo.png"
 [ -s "$LIVE/usr/share/calamares/branding/alpbahos/logo.png" ] || die "logo not written"
 if [ "$DEBUG" != 1 ]; then grep -q '^live::' "$LIVE/etc/shadow" || die "live user has a password (expected empty)"; fi
 grep -q '^root:[!*]' "$LIVE/etc/shadow" || die "root is not locked"
