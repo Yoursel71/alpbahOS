@@ -31,7 +31,10 @@ ISOTREE=$WORK/iso
 OUT_DIR=$SB/images
 # DEBUG=1: diagnostic build (installer log to the serial console, rd.debug, journal to console). Own file name.
 DEBUG=${DEBUG:-0}
-if [ "$DEBUG" = 1 ]; then OUT=$OUT_DIR/alpbahos-beta-0.9-$DATE-debug.iso; else OUT=$OUT_DIR/alpbahos-beta-0.9-$DATE.iso; fi
+# TAG (test variants only): file name suffix, e.g. TAG=v1. EXTRA_OVERLAY (test variants only): a directory whose
+# tree is copied over the live root before the squashfs (e.g. a sddm drop-in for an experiment).
+TAG=${TAG:-}
+if [ "$DEBUG" = 1 ]; then OUT=$OUT_DIR/alpbahos-beta-0.9-$DATE-debug${TAG:+-$TAG}.iso; else OUT=$OUT_DIR/alpbahos-beta-0.9-$DATE${TAG:+-$TAG}.iso; fi
 LOGS=$SB/lfs13-logs/iso-beta-0.9/build
 MIN_FREE_GIB=30
 
@@ -148,6 +151,12 @@ L /usr/bin/dracut --force --no-hostonly --kver "$KVER" \
     /boot/initramfs-live.img "$KVER" > "$LOGS/10-dracut.log" 2>&1 || die "dracut failed (log $LOGS/10-dracut.log)"
 [ -s "$LIVE/boot/initramfs-live.img" ] || die "no initramfs"
 
+if [ -n "${EXTRA_OVERLAY:-}" ]; then
+    [ -d "$EXTRA_OVERLAY" ] || die "EXTRA_OVERLAY is not a directory: $EXTRA_OVERLAY"
+    cp -a "$EXTRA_OVERLAY"/. "$LIVE"/
+    echo "EXTRA_OVERLAY applied (test variant): $EXTRA_OVERLAY" >&2
+fi
+
 # ------------------------------------------------------------------ 4. ISO tree and squashfs
 log "ISO tree and squashfs"
 install -d -m 755 "$ISOTREE/tree/boot/grub/i386-pc" "$ISOTREE/tree/boot/grub/x86_64-efi" "$ISOTREE/tree/LiveOS"
@@ -212,6 +221,12 @@ if [ "$DEBUG" = 1 ]; then
     grep -q 'rd.debug' "$ISOTREE/tree/boot/grub/grub.cfg" || die "debug arguments not added to grub.cfg"
 else
     install -m 644 "$LIVE_SRC/grub-iso.cfg" "$ISOTREE/tree/boot/grub/grub.cfg"
+fi
+# EXTRA_KARGS (test variants only): extra kernel arguments on the live kernel line.
+if [ -n "${EXTRA_KARGS:-}" ]; then
+    sed -i "s|^\(    linux /boot/vmlinuz .*\)$|\1 ${EXTRA_KARGS}|" "$ISOTREE/tree/boot/grub/grub.cfg"
+    grep -q "${EXTRA_KARGS}" "$ISOTREE/tree/boot/grub/grub.cfg" || die "EXTRA_KARGS not applied"
+    echo "EXTRA_KARGS applied (test variant): ${EXTRA_KARGS}" >&2
 fi
 install -m 644 "$LIVE_SRC/grub-embed.cfg" "$ISOTREE/grub-embed.cfg"
 find "$R4/usr/lib/grub/i386-pc" -maxdepth 1 \( -name '*.mod' -o -name '*.lst' \) -exec cp {} "$ISOTREE/tree/boot/grub/i386-pc/" \;

@@ -24,7 +24,7 @@ Presentation {
                 anchors.centerIn: parent
                 color: "#ffffff"
                 font.pixelSize: 28
-                text: "AlpbahOS 13.1 BETA\nInstalling the system from the live image."
+                text: "AlpbahOS 0.9 Beta\nInstalling the system from the live image."
             }
         }
     }

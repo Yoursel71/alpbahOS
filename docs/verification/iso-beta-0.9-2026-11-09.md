@@ -25,8 +25,8 @@ The host was not rebooted.
 | Item | Value |
 |---|---|
 | Release ISO | `scratch-lfs-bench/images/alpbahos-beta-0.9-2026-11-09.iso`, 4714883072 bytes |
-| Release sha256 | `9d05c9c68d29767dcdafc7ed837de5ddb18164603a5b060811fca87def245a14` |
-| DEBUG ISO (test only) | `scratch-lfs-bench/images/alpbahos-beta-0.9-2026-11-09-debug.iso`, sha256 `459a0934b42920ec4e4d20007ffc28fba09e8d20639725f040e42f27099aaef2` |
+| Release sha256 | `9d058d29767dcdafc7ed837de5ddb18164603a5b060811fca87def245a14` |
+| DEBUG ISO (test only) | `scratch-lfs-bench/images/alpbahos-beta-0.9-2026-11-09-debug.iso`, sha256 `459ab42920ec4e4d20007ffc28fba09e8d20639725f040e42f27099aaef2` |
 | Build | `scripts/rebuild/iso/build-iso.sh` (release; `DEBUG=1` for the diagnostic image) |
 | Source | `lfs13-snapshots/r4-iso-src-2026-11-09` (read-only snapshot of r4-root after the R5 records) |
 | Checked in the release squashfs | `etc/os-release` = `AlpbahOS 0.9 Beta`; `etc/shadow`: `live::` (no password), `root:!x` (locked); `etc/pam.d/login`; `plasma-ksmserver`/`pipewire` stop-order drop-ins; `plasma-ksplash` SIGTERM status drop-in; sddm `User=live`; `usr/lib/alpbahos/live-medium-check` absent |
@@ -175,3 +175,79 @@ All runs are TCG with `-cpu qemu64` (no KVM), on the same host. A KVM run was no
 4. The release live image has no way to a desktop without autologin (no password, greeter refuses).
 5. RTKit (warnings only) and the system bus `Failed to drop supplementary groups` warning are not fixed.
 6. Real hardware: not tested.
+
+
+## 8. Round 3 (2026-11-09, later): autologin lead, UEFI cause candidate, install and matrix status
+
+Final release ISO (all matrix rows below name this sha unless stated):
+`scratch-lfs-bench/images/alpbahos-beta-0.9-2026-11-09.iso`, sha256 `5ae755700299f2c554a5d634b0a0330f93ab26bff7890a2976497b34c5cd`.
+DEBUG ISO (test only): sha256 `6285f4848eeff676fb357c8557298166f509872b49df5935c0c6e7fa00b2`.
+Accelerator for every guest in this round: TCG, `-cpu qemu64` (no KVM). Host: `thewo`, idle at the start of the run.
+
+### 8.1 Lead check: the 3/3 UEFI PASS runs tested an earlier build
+
+- `final-uefi-live-1..3` (`lfs13-logs/boot/iso-beta/`) ran at 22:29 to 22:38 on `alpbahos-beta-2026-11-08.iso`. That file
+  was later overwritten by the build at 22:57 (the alpha ISO). So those runs do not test the alpha ISO.
+- r4-root changes between 22:20 and 22:58 on 2026-11-08 (62 files): `parted` and `libparted` (row 372, built with
+  device-mapper) and `ld.so.cache`. No sddm or PAM file changed in that window. The `live/` inputs changed at 07:xx and
+  22:54 on the same day (`target-initramfs.sh`), which runs only at install time. The earlier ISO itself is gone, so the
+  exact cause of the earlier PASS is not known.
+- The alpha ISO fails the same way on this host (sections 2.4 and the correction in `iso-alpha-2026-11-08.md`).
+
+### 8.2 Autologin: sddm helper and the UEFI display handover (root cause candidate, fix recorded)
+
+- BIOS and UEFI differ in display bring-up. Under UEFI the kernel starts on `simpledrm` (efifb handover, `simple-framebuffer`
+  at 2.3 s). The virtio-gpu DRM device (`virtio-pci 0000:00:01.0`, `virtio_gpu`) appears at about 31 s, after sddm has
+  started (`systemd-logind: New seat seat0` at 27.9 s, sddm at 28.6 s). Under BIOS there is no simpledrm, and virtio-gpu
+  is up at 29.9 s (`lfs13-logs/boot/sess/EB/serial.log`, `EU/serial.log`).
+- The autologin helper is `sddm-helper --start plasma-dbus-run-session-if-needed startplasma-wayland --user live --autologin`.
+  It is reported as `crashed` and `exited with 9` about 5 s after it starts (exit 9 = SIGKILL in Qt's exit reporting).
+  The killer was not found; sddm 0.21 calls `terminate()` then `kill()` only in `Auth::stop()`, and the kill is not logged.
+- Probes (`scripts/rebuild/image/autologin-probe.py`, serial to file, DEBUG images; decided from the serial log):
+
+| Variant | Image (sha256 prefix) | UEFI results | BIOS results |
+|---|---|---|---|
+| base (no drop-in) | debug `459a`, round 2 | 0/3 success (fail at 57, 57, 72 s) | 2/2 success (108, 117 s) |
+| v1: `After=systemd-udev-settle.service systemd-logind.service`, `ExecStartPre=udevadm settle --timeout=60` | debug-v1 (`scratch-lfs-bench/images`) | 3/3 success (63, 57, 57 s) | not run |
+| v2: `ExecStartPre=/bin/sleep 20` | debug-v2 | 2/2 success so far (75, 75 s), third run incomplete | not run |
+
+- Fix recorded: record `display-order-r5fix` 13.1-r5fix (alp, `scripts/rebuild/r5/display-order-r5fix.py`): sddm starts after
+  udev has settled. Built into the final ISO. `alp check` rc 0, 470 packages (`r4-ledger/r5/alp-check-r5d.txt`).
+- **The fix is NOT verified on the final ISO.** On the final release ISO, UEFI live boots show a black screen (no greeter,
+  no desktop): `lfs13-logs/boot/final/rel-uefi-1..3/f170.ppm` (170 s) and `f400.ppm` (400 s), all three runs. The earlier
+  UEFI release run (before the slideshow-text change, `final-rel-uefi-1` at 170 s) showed the desktop. So the UEFI live
+  result is inconsistent between builds that differ only in `show.qml`, and it is not understood. The probe result (v1,
+  3/3) was on a DEBUG variant with the drop-in added by overlay, not on the final release ISO.
+
+### 8.3 Install and matrix status (what was run, what was not)
+
+| Row | ISO sha (final unless noted) | Result | Evidence |
+|---|---|---|---|
+| Live release UEFI, desktop | 5ae7 | **FAIL**: black screen at 170 s and 400 s (3 runs) | `lfs13-logs/boot/final/rel-uefi-1..3/` |
+| Live release BIOS, desktop | 5ae7 | **PASS** (the install VM reached the Plasma desktop and the Calamares window at 11:49, `lfs13-logs/boot/final/inst-bios/`) | `inst-bios/i-*.png`, `j1.png` |
+| Calamares install BIOS MSDOS (virtio, vda, 30 GiB) | 5ae7 | **NOT COMPLETED**: installer driven by `scripts/rebuild/image/install-gui.sh` (locale tr_TR, keyboard Turkish, erase vda, users testuser, summary, install confirmed). At 12:00 the install was at about 8% (`unpackfs`), TCG, and the VM was at the Plasma lock screen. No bootloader yet (MBR zero at 12:00). | `inst-bios/k1.png`, `k2.png`, `k3.png`, `install-gui2.out` |
+| Earlier BIOS install attempt | (round 3, first run) | discarded: stopped by my own QMP `quit` at 11:33 during `unpackfs` (the disk showed `grub.cfg` but no MBR) | `inst-bios` disk (overwritten) |
+| Calamares install UEFI GPT | - | NOT RUN | - |
+| Installed boots virtio / ahci / NVMe | - | NOT RUN | - |
+| Installed-system QA (Konsole, Dolphin, System Settings, DHCP and curl, wpctl with intel-hda, Plasma shutdown and reboot, tr_TR and trq) | - | NOT RUN | - |
+| Shutdown crash, 3 full shutdowns with a logged-in session, with and without the drop-ins, coredumpctl | - | NOT RUN | - |
+
+- Items confirmed from the install screens of the final ISO: the slideshow reads "AlpbahOS 0.9 Beta" (the old "13.1 BETA"
+  slideshow text is fixed in `calamares/branding/show.qml`); the summary shows `/dev/vda` (MSDOS) with one ext4 partition
+  and the bootloader on `/dev/vda`; keyboard "Turkish / Ontanımlı" (Turkish-Q, the default variant of the `tr` layout). The
+  console keymap written by the installer was `KEYMAP=trq` and `LANG=tr_TR.UTF-8` (checked on the partial install disk,
+  `/etc/vconsole.conf` and `/etc/locale.conf`). `/etc/fstab` on that partial disk was still the live placeholder (the
+  install had not reached the fstab step).
+
+### 8.4 User report (not verified by the agent)
+
+The project owner reports booting `alpbahos-alpha-2026-11-08.iso` from GRUB and says it works. Not known: machine,
+firmware mode, autologin state, what was tested. Recorded as user-reported. It is not a full real-PC USB matrix pass
+and not evidence that autologin works.
+
+### 8.5 Status
+
+NOT beta quality. The beta gate (autologin, live desktops, the install matrix and QA, all on the final sha) is not met:
+UEFI live desktop fails on the final sha; the BIOS MSDOS install did not complete; the UEFI install, installed boots,
+installed QA and the shutdown reproduction were not run. The autologin fix is recorded and probed on a variant but not
+verified on the final release ISO.
