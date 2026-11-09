@@ -20,6 +20,8 @@ if [ "$SRCDIR" = "-" ]; then SRC=$(find "$W/src" -mindepth 1 -maxdepth 1 -type d
 BLD=/tmp/build-$NAME
 rm -rf "$R4$BLD" "$R4/tmp/stage-$NAME" && mkdir -p "$R4$BLD"
 cp -a "$SRC/." "$R4$BLD/"
+# Round 12: optional patch applied first in the build dir (PRE_PATCH=<file>, used by the itstool lxml patch).
+if [ -n "${PRE_PATCH:-}" ]; then cp "$PRE_PATCH" "$R4$BLD/.pre.patch"; fi
 OPTS="$*"
 mount --bind /dev "$R4/dev"; mount -t proc proc "$R4/proc"; mount -t sysfs sys "$R4/sys"; mount -t tmpfs tmpfs "$R4/run"
 cleanup() { umount "$R4/run" "$R4/sys" "$R4/proc" "$R4/dev" 2>/dev/null || true; }
@@ -31,6 +33,12 @@ cmake)
   CMD="cd $BLD && cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_C_FLAGS='-O2 -march=x86-64 -mtune=generic' $OPTS && cmake --build build --parallel 16 && DESTDIR=/tmp/stage-$NAME cmake --install build" ;;
 configure)
   CMD="cd $BLD && ./configure --prefix=/usr CFLAGS='-O2 -march=x86-64 -mtune=generic' $OPTS && make -j16 && make DESTDIR=/tmp/stage-$NAME install" ;;
+autogen)
+  # Round 12: autotools tarball without a configure script (GitHub archive): autogen.sh, then configure/make.
+  CMD="cd $BLD && ${PRE_PATCH:+patch -Np1 -i $BLD/.pre.patch && }PYTHON=/usr/bin/python3 ./autogen.sh --prefix=/usr $OPTS && make -j16 && make DESTDIR=/tmp/stage-$NAME install" ;;
+pip)
+  # Round 12: Python module (BLFS pip3 wheel, then install into a staging root).
+  CMD="cd $BLD && python3 -m pip wheel -w /tmp/wheel-$NAME --no-build-isolation --no-deps --no-cache-dir $OPTS $BLD && python3 -m pip install --no-index --no-deps --no-user --root /tmp/stage-$NAME /tmp/wheel-$NAME/*.whl" ;;
 *) echo "bad kind"; exit 2 ;;
 esac
 set +e

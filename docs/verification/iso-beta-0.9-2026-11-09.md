@@ -896,3 +896,9 @@ Records: `scripts/rebuild/r8/stage-record-r8.py` through `scripts/rebuild/r7/app
 - flatpak 1.18.4: not built (needs appstream). No flathub remote, no /var/lib/flatpak, no polkit rules, `flatpak --version` not run.
 - Root size: `du -sx r4-root` before 115782688 KiB, after 115830500 KiB (+47812 KiB). Package count 500; `alp check` rc 0.
 - Next package: itstool (BLFS 13.1 version to be looked up), then appstream 1.1.6 (with -Dgir=false etc.; the step script passes them), then flatpak 1.18.4 (GitHub release tarball).
+
+### 14.18 lxml-6.1.1: built, recorded (round 12)
+- Version source: BLFS 13.1 general/python-modules.html#lxml: 6.1.1 (pip3 wheel --no-build-isolation --no-deps, installed into a staging root); needed by the itstool 2.0.7 lxml patch. sha256 ba96ae44888e0185281e937633a743ea90d5a196c6000f82565ebb0580012d40 (md5 6bbd3674ecba1340b08c9180afef1829, as in BLFS).
+- Helper: scripts/rebuild/r10/build-pkg-r10.sh gained the kinds autogen and pip and the PRE_PATCH variable (existing kinds unchanged).
+- Staged: staged files: 125; elf files: 7; audit-isa rc=0.
+- Record: alp lxml 6.1.1; alp check rc=0; packages 501; packages.tsv row 390.
