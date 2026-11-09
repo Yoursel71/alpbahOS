@@ -872,3 +872,8 @@ Records: `scripts/rebuild/r8/stage-record-r8.py` through `scripts/rebuild/r7/app
 - Version source: upstream newest stable (not in BLFS 13.1 index): v2026.6; sha256 164b8226aea6a0e6601036de02a5e3b62307bae25890ed557fb4e19020bd5974.
 - Staged: staged files: 52; elf files: 6; audit-isa rc=0.
 - Record: alp ostree 2026.6; alp check rc=0; packages 497; packages.tsv row 386.
+
+### 14.13 fuse3-3.18.2: built, recorded (round 12)
+- Version source: BLFS 13.1 postlfs/fuse.html: fuse-3.18.2; sha256 f01de85717e20adf5f98aff324acd85dd73d61a5ca3834d573dcf0bd6e54a298.
+- Staged: staged files: 18; elf files: 3; audit-isa rc=0.
+- Record: alp fuse3 3.18.2; ; ; packages.tsv row 378.
