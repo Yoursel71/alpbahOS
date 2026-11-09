@@ -837,3 +837,8 @@ Records: `scripts/rebuild/r8/stage-record-r8.py` through `scripts/rebuild/r7/app
 - Note on the first attempt: the record refused `usr/share/info/dir` after writing 7 files; those copies were removed
   (byte-identical to the stage, not the shared info/dir) and the record was repeated with that path excluded. The helper
   `scripts/rebuild/r11/pkg-url-r11.sh` now excludes it.
+
+### 14.6 json-glib-1.10.8: built, recorded (round 12)
+- Version source: BLFS 13.1 general/json-glib.html: 1.10.8; sha256 55c5c141a564245b8f8fbe7698663c87a45a7333c2a2c56f06f811ab73b212dd.
+- Staged: staged files: 82; elf files: 3; audit-isa rc=0.
+- Record: alp json-glib 1.10.8; alp check rc=0; packages 491; packages.tsv row 379.
