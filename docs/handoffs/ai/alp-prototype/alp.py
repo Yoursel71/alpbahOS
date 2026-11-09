@@ -2935,6 +2935,20 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
+# Round 7: the installed system keeps its catalog at <root>/usr/share/alp/index.json; without --index the
+# commands use that file (no config file exists; this is the smallest default that works on an installed system).
+DEFAULT_INDEX_REL = "usr/share/alp/index.json"
+
+
+def resolve_index_path(index_arg: str | None, paths: "Paths") -> Path:
+    if index_arg:
+        return Path(index_arg).resolve()
+    candidate = paths.root / DEFAULT_INDEX_REL
+    if candidate.is_file():
+        return candidate.resolve()
+    raise AlpError("Bu komut için --index PATH gereklidir (varsayılan katalog yok: %s)." % candidate)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
@@ -2953,9 +2967,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if args.command == "adopt-base":
             return cmd_adopt_base(args, paths)
-        if not args.index:
-            raise AlpError("Bu komut için --index PATH gereklidir.")
-        index_path = Path(args.index).resolve()
+        index_path = resolve_index_path(args.index, paths)
         index_dir = index_path.parent
         index = load_index(index_path)
         if args.command == "search":

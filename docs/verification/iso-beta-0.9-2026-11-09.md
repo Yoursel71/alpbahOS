@@ -552,3 +552,51 @@ Not run: the recovery from the live ISO itself (the script is not in any built I
 own dracut and grub tools in a chroot of an overlay, which is the same tool set the live session chroot used in round 6).
 Not run: a VM run of an unrepaired broken overlay (round 6 item6b-recovery already shows that failure). Not run: the
 installer itself (Calamares) with the new `dracut[E]` check.
+
+### 11.2 Stage 2: alp on an installed system: PASS (install, upgrade, remove, update, check, recover after kill -9); no rollback subcommand
+
+Requirement, from the plan (not invented):
+- `docs/MASTER_PLAN.md` M02 acceptance: "`alp install/remove/update/upgrade` pass on the test base with logs; rollback
+  tested." §12: stable channel, user-started updates, "a system update must not leave libraries half-updated", "atomic
+  system updates are not planned for the first release", fallback "still to be decided". §5.3 and §12 name no `alp rollback`
+  command, and `docs/MASTER_PLAN.md` line 108 leaves open whether `update` and `upgrade` stay separate.
+- Decision: the plan requires that rollback is **tested**, not a separate command. The rollback that exists is the journal
+  undo (`FileJournal`, `undo_journal`, `ROLLBACK_DIR`, reached through `alp recover`). No `alp rollback` subcommand was built.
+  The test below is the rollback test of an interrupted upgrade.
+
+(a) Catalog location (decision and change):
+- The installed system keeps its catalog at `<root>/usr/share/alp/index.json`, with the artifacts in `usr/share/alp/core/`
+  (the index's own directory, as for the demo catalog). There was no config file or default lookup, so the smallest change
+  was made: `resolve_index_path()` in `docs/handoffs/claude/alp-prototype/alp.py` uses that file when `--index` is absent
+  (an explicit `--index` still wins; a missing default gives the error with the path). Tests: `tests/test_default_index.py`
+  (3 new); the alp suite gives **267 passed** (264 before, all still pass).
+- Not done: the image does not ship a catalog at that path yet, so an installed ISO still has no catalog. That needs the
+  ISO round and a decision on which index the installed system ships.
+
+(b) Install, upgrade, remove, update and check, on a copy of the BIOS installed disk (`images/inst-bios-msdos-0.9.raw`, an
+overlay; root mounted on the host and used with `alp --root`, not in a booted VM). Test package `alp-r7-probe` (method
+`core`, harmless text files under `usr/share/alp-r7-probe/`): v1.0.0 with 1 file, v1.0.1 with 3000 files.
+- `alp list`, `alp --dry-run install`, `alp install alp-r7-probe`: 1.0.0 installed, rc 0.
+- `alp check` with index v1.0.1: "güncelleme var: 1.0.0 -> 1.0.1", dependencies consistent (472 installed), rc 0.
+- `alp --dry-run upgrade`: plan shown; `alp update` with no source refuses (needs `--source` or a `source` field: correct).
+- `alp update --source catalog-v2.tar.gz` (a local bundle, no network): index replaced, `index.json.prev` kept, rc 0.
+- `alp upgrade alp-r7-probe`: 1.0.1, 3000 files, rc 0. `alp remove alp-r7-probe`: files gone, not listed, rc 0.
+
+(c) Forced failure mid-upgrade (`kill -9` of the `alp upgrade` process, 5 attempts at 0.6, 0.9, 1.2, 1.6, 2.0 s; reset to
+v1.0.0 before each):
+- 0.6 s and 0.9 s: killed while still at v1.0.0 (1 file). `alp recover` rc 0, state v1.0.0, check rc 0.
+- **1.2 s: killed mid-transfer with 1518 of 3000 v1.0.1 files on disk** (`version.txt` still 1.0.0; the journal and
+  `alp.lock` present). `alp recover` rc 0: back to v1.0.0 with exactly the v1 file set (1 file), `alp list` shows 1.0.0,
+  `alp check` rc 0.
+- 1.6 s: killed after all 3000 files and with `db.json.tmp` left: `alp recover` rc 0, back to v1.0.0, check rc 0.
+- 2.0 s: the upgrade had finished before the kill (no process to kill): recover left v1.0.1 as it was, check rc 0.
+- Then a clean `alp upgrade` (1.0.1, 3000 files, rc 0) and `alp remove` (rc 0, 0 files, not listed).
+- Note: the script's label "MID-UPGRADE KILL CAUGHT" was printed after the recover step, so it is wrong for the 1.2 s
+  case; the state before recover is in the `after kill -9` lines of the log.
+
+Result: **PASS** for (a) with the change above, (b), and (c). The rollback requirement of M02 is met by the journal undo
+(c), tested on the host against the overlay. Open items: the image does not ship a catalog; `alp` ran with the host's Python,
+not inside the target; the same test has not run in a booted installed VM (round for the ISO).
+
+Evidence (host, not in the repo): `scratch-lfs-bench/s2-alp/` (`catalog/`, `catalog-v2.tar.gz`, `killtest.sh`,
+`killtest.log`, `kill-upgrade-*.out`, `kill-recover-*.out`, `kill-check-*.out`, `clean-*.out`).
