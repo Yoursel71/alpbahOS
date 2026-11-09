@@ -1087,3 +1087,54 @@ Notes: the first lane run for I1 and I2 clicked Install at y=666 (the BIOS summa
 - Not run: S1 shutdown and R1 reboot on sha r14 (the round 13 results stand for r13); sound on the r14 rows except B1; the full 90 s session; the Plasma menu (Kapat) on r14.
 - ESP check: done for the I2 disk (16.6).
 - Commits in this round (local, not pushed): 1fadc0f (GnuPG), b090ce1 (alp, fuse3 setuid, keyboard record, stage-record mode fix), be6a7fe (SDDM logo), fd54b85 (keyboard design note).
+
+## 17. Round 15 (2026-11-10): SDDM greeter, keyboard file, harness typing, matrix on ISO r15
+
+ISO: `scratch-lfs-bench/images/alpbahos-beta-0.9-2026-11-09-r15.iso`, sha256 **`e2077dcfcd384963fbc1dce981deb663bfbe8c079094121e345a8e6463d1d5ae`**, 4742668288 bytes, `TAG=r15`. Checked read-only in the squashfs: `etc/sddm.conf` (Current=alpbahos, GreeterEnvironment=QML2_IMPORT_PATH=/usr/lib/qml), `usr/lib/alpbahos/target-cleanup.sh` (XkbVariant removal), `Main.qml` (logo layout), `usr/lib/alp/alp.py` equal to the repo file. The first r15 build (sha c0330db1) was discarded before any run because the logo record was missing from r4-root.
+
+### 17.1 Item 1: SDDM logo (commits 0b4a42c)
+
+- Cause, found with the greeter's own test window and the journal: the greeter could not import `org.kde.breeze.components` (its QML import path had no `/usr/lib/qml`), so the theme errored and SDDM showed its fallback layout (top bar `Oturum / Klavye Düzeni`). The main `/etc/sddm.conf` also had an empty `[Theme] Current=`, which wins over the drop-in `/etc/sddm.conf.d/alpbahos-theme.conf`. The logo was never drawn because the theme never loaded.
+- Fix: record `sddm-config-r15` 0.9-r15 (`/etc/sddm.conf`: `Current=alpbahos`, `GreeterEnvironment=QML2_IMPORT_PATH=/usr/lib/qml`); record `sddm-alpbahos-r13` 0.9-r15 (logo at the top centre, 120 px, below the status bar).
+- Evidence: test copy (greeter test before the ISO), `SDT5/g5-greeter.png` (alpbahos logo at the top and centre); ISO r15 disk boot after recovery, `REC1-boot/rec-disk-greeter.png` (logo at the top and centre); B1 greeter `B1/b1-greeter.png`.
+- Result: **PASS** (visible on the greeter frames).
+
+### 17.2 Item 2: keyboard, localectl (commit 5c19748)
+
+- `localectl status` showed `X11 Layout: (unset)` with `00-keyboard.conf` containing `XkbLayout "tr"`. Cause: the empty `Option "XkbVariant" ""` line that Calamares writes; systemd-localed does not parse the file with it. Test: removing that line made `localectl status` show `tr` (`PRB3`, probe frame).
+- Fix: `target-cleanup.sh` (runs in the installed system after the keyboard step) removes that line.
+- Evidence: I1 r15 disk check `XkbVariant lines: 0`; `B1/b1-localectl.png` (`VC Keymap: trq`, `X11 Layout: tr`).
+- Result: **PASS**.
+
+### 17.3 Item 3: harness typing (Turkish-Q)
+
+- In the Turkish-Q session the harness key `i` (qcode i) gives dotless `ı`; dotted `i` is the apostrophe key. Confirmed by `echo ii` (apostrophe) printing `ii`. Earlier failures (`alp list`, `flatpak install`, `sbin`) were this.
+- `:` is shift + the dot key (`combo shift slash`); the first curl run typed `$` for `:`.
+- The double hyphen works with two `equal` keys (`echo a--b` printed `a--b`). The earlier `--` failures came from the mixed round 13/14 typing.
+- Concurrent probe runs typed into one VM and garbled the commands; each run is now started once.
+
+### 17.4 Matrix on sha `e2077dcf...`
+
+KVM with `-cpu qemu64` for every row (no TCG row was in this round). Evidence under `scratch-lfs-bench/lfs13-logs/iso-beta-0.9/r15/`.
+
+| Row | Accel | Result | Evidence |
+|---|---|---|---|
+| L1 live UEFI, desktop at 130 s (1 run) | KVM | **PASS** (desktop, taskbar, Install icon) | `L1-1/shot-130.png` |
+| I1 Calamares BIOS MSDOS, erase vda, tr, Turkish-Q, testuser | KVM | **PASS** ("Her şey tamam"); disk check PASS (fstab UUID = blkid 7f1645da..., no live account, testuser, VERSION 0.9 Beta, fusermount3 4755, kxkbrc tr, no XkbVariant, SDDM Current=alpbahos, import path, logo layout) | `I1/i-09-done.png`; `images/inst-bios-msdos-r15.raw` |
+| I2 Calamares UEFI GPT | KVM | **PASS** ("Her şey tamam"); disk check not repeated this round (r14 check PASS) | `I2/i-09-done.png`; `images/inst-uefi-gpt-r15.raw` |
+| B1 installed BIOS, virtio: login, greeter, desktop, localectl, fastfetch, alp list, systemctl --failed | KVM | **PASS** for greeter with logo, desktop, `localectl` (`X11 Layout: tr`), fastfetch, `alp list` (lists the packages, no `--index`), `systemctl --failed` (0 loaded units). **curl**: the first run typed `:` as `$`, so the URL was wrong (fixed in 17.3) | `B1/b1-greeter.png`, `b1-localectl.png`, `b1-fastfetch.png`, `b1-alp-list.png`, `b1-failed.png` |
+| B1 curl (rerun CURL15, `curl -sS -m 15 -I -o h2.txt http://ftp.gnu.org/`) | KVM | **PASS**: the response headers of ftp.gnu.org are in the file (Content-Security-Policy, X-Frame-Options, Content-Type text/html). The status line is above the captured area | `CURL15/c-result.png`, `c-wc.png` |
+| U1 installed UEFI, virtio: login, hostnamectl, failed units, flatpak | KVM | **PASS**: hostnamectl (AlpbahOS 0.9 Beta, kvm, edk2), `systemctl --failed` (0 loaded units), `flatpak remotes` (`flathub system`) | `U1/u1-hostnamectl.png`, `u1-failed.png`, `u1-fp-remotes.png` |
+| FP flatpak install org.gnome.Calculator (in U1) | KVM | **PASS**: `flatpak install -y flathub org.gnome.Calculator` ends with "Kurulum tamamlandı" (org.gnome.Platform 51 and the app, 2.0 GB); `flatpak list` shows org.gnome.Calculator (system); the app window opens. The terminal shows GPU and dbus warnings from the app, not from flatpak | `U1/u1-fp-install.png`, `u1-fp-list.png`, `u1-calc.png` |
+| REC1 BIOS recovery, broken copy (initramfs removed, grub.cfg truncated), live ISO CD first | KVM | **PASS**: `pkexec /usr/local/s*/alpbahos-recover` lists vda1; the six steps end with "recovery done; unmounting; reboot the installed disk"; the repaired disk boots to the alpbahos greeter with the logo | `REC1/rec-step0.png`, `rec-step1.png`, `REC1-boot/rec-disk-greeter.png` |
+
+Not run on sha `e2077dcf`: L2, L3, L4 (TCG and BIOS live), I2 disk check, B2 (AHCI), B3 (NVMe 2G), U2 (NVMe + sound), S1 (shutdown cycles), R1 (reboot through the greeter). The round 14 and round 13 results for these rows do not carry over to this sha.
+
+### 17.5 Open items
+
+- Gate: **not met.** The rows above pass; the rows listed as not run have no evidence on this sha.
+- Real-PC test and the publication decision: the user's.
+- Coredump crash: not reproduced in this round (S1 was not run on r15); still not proven fixed.
+- Keyboard feedback from the real PC (`docs/verification/user-feedback-keyboard-2026-11-09.md`): still open; this round changes only the installed system's X11 keyboard file and the KDE default.
+- Space: the r13 installs (`inst-*-0.9b.raw`), the r14 installs (`inst-*-r14.raw`) and the broken-copy work files were removed to make room; the r13 and r14 evidence logs stay.
+- Commits this round (local): 0b4a42c (SDDM), 5c19748 (keyboard file), the section and status commit below.
