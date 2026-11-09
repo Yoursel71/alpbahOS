@@ -852,3 +852,8 @@ Records: `scripts/rebuild/r8/stage-record-r8.py` through `scripts/rebuild/r7/app
 - Version source: upstream newest stable (not in BLFS 13.1 index): 2.90.1; sha256 ea95636590098355a05e3027579dba1a9a950b05e456b2488ea03d82e4b6c18a.
 - Staged: staged files: 77; elf files: 1; audit-isa rc=0.
 - Record: alp glib-networking 2.90.1; ; ; packages.tsv row 381.
+
+### 14.9 nghttp2-1.70.0: built, recorded (round 12)
+- Version source: BLFS 13.1 basicnet/nghttp2.html: 1.70.0 (dependency of libsoup3, built first); sha256 e05cb1388eaca3830aded4ccf20044b6e1ac1a61411dcca11b0437c4285c8bc2.
+- Staged: staged files: 13; elf files: 1; audit-isa rc=0.
+- Record: alp nghttp2 1.70.0; alp check rc=0; packages 494; packages.tsv row 388.
