@@ -888,3 +888,11 @@ Records: `scripts/rebuild/r8/stage-record-r8.py` through `scripts/rebuild/r7/app
 - Version source: BLFS 13.1 general/libfyaml.html: 0.9.6 (dependency of appstream, built first); sha256 a59cc3331e2eb903ec36933ad52a45888041cac31e44f553a00511131242c483.
 - Staged: staged files: 37; elf files: 2; audit-isa rc=1.
 - Record: alp libfyaml 0.9.6; alp check rc=0; packages 500; packages.tsv row 389.
+
+### 14.17 Flatpak chain status at the end of round 12: NOT complete (appstream blocked on itstool; flatpak not built)
+
+- Recorded this round (10 packages, rows 378-389 without 387): fuse3 3.18.2, json-glib 1.10.8, libsoup3 3.6.6, glib-networking 2.90.1, gpgme 2.1.2, libsecret 0.21.7 (files taken over from kwallet 6.29.0), libxmlb 0.3.29, nghttp2 1.70.0 (dependency of libsoup3), ostree 2026.6, libfyaml 0.9.6 (dependency of appstream).
+- appstream 1.1.6: build fails: `data/meson.build` needs `itstool` (program not found). itstool is not in r4-root; BLFS 13.1 lists it (not checked this round). Its runtime also needs the libxml2 Python bindings (not checked). This is the blocker; flatpak needs appstream (hard dependency in meson 1.18.4).
+- flatpak 1.18.4: not built (needs appstream). No flathub remote, no /var/lib/flatpak, no polkit rules, `flatpak --version` not run.
+- Root size: `du -sx r4-root` before 115782688 KiB, after 115830500 KiB (+47812 KiB). Package count 500; `alp check` rc 0.
+- Next package: itstool (BLFS 13.1 version to be looked up), then appstream 1.1.6 (with -Dgir=false etc.; the step script passes them), then flatpak 1.18.4 (GitHub release tarball).
