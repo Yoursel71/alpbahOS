@@ -918,3 +918,9 @@ Records: `scripts/rebuild/r8/stage-record-r8.py` through `scripts/rebuild/r7/app
 - Version source: BLFS 13.1 general/python-modules.html#pyparsing: 3.3.2 (pip3 wheel, pure Python; the flatpak meson setup stops without it). sha256 c777f4d763f140633dcb6d8a3eda953bf7a214dc4eff598413c070bcdc117cbc (md5 ca3bea68cd1a84584b68cd7bed679464, as in BLFS).
 - Staged: staged files: 43; elf files: 0; audit-isa rc=2 (no ELF files, nothing to audit).
 - Record: alp pyparsing 3.3.2; alp check rc=0; packages 504; packages.tsv row 394.
+
+### 14.22 flatpak-1.18.4: built, recorded (round 12)
+- Version source: upstream newest stable (not in BLFS 13.1 index): 1.18.4, GitHub release tarball. sha256 b899a7a00c48d2c626cb8ec33fe556720b376c25805d7222430c0fdca4c6ac8d.
+- Options: -Dsystem_bubblewrap=/usr/bin/bwrap -Dsystem_dbus_proxy=/usr/bin/xdg-dbus-proxy -Dsystem_helper=enabled -Dsystem_install_dir=/var/lib/flatpak -Dsystemd=disabled -Ddconf=disabled -Dmalcontent=disabled -Dgir=disabled -Dgtkdoc=disabled -Dxauth=disabled -Dwayland_security_context=disabled -Dselinux_module=disabled -Ddocbook_docs=disabled -Dman=disabled -Dtests=false.
+- Staged: staged files: 84; elf files: 8; audit-isa rc=0. Chroot: flatpak --version prints Flatpak 1.18.4.
+- Record: alp flatpak 1.18.4; alp check rc=0; packages 505; packages.tsv row 393.
