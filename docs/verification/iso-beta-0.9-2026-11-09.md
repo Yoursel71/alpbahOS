@@ -690,3 +690,31 @@ Evidence (host, not in the repo): `scratch-lfs-bench/s2-alp/` (`catalog/`, `cata
 - Deviation: the R4 driver (`run-r4.sh`) builds only the BLFS 13.1 rows of `packages.tsv`. fastfetch is an upstream
   release, so it has a row in `packages.tsv` (`373`, class EXTRA, status r8) for the record, but it is built by its own
   script, not by the driver. No delta file was made.
+
+### 12.3 S3: image catalog, hicolor icon cache, SDDM theme licence note: PASS on r4-root; installer and ISO not run
+
+- **Catalog** (records `alp-catalog` 2026.11.09-r8, `scripts/rebuild/r8/make-catalog-r8.py`): `usr/share/alp/index.json`
+  generated from the installed-package database (`var/lib/alp/db.json`): **470 entries** (status installed), 131779 bytes
+  (about 0.13 MB on the ISO). Entry method is `lfs-base`, the method alp gives the adopted base packages, with version and
+  the upstream source url and sha256 alp recorded. No `core/` directory is shipped (no artifacts: the base packages are
+  files on the image). The catalog package itself is not listed; the database has 480 packages, the 10 others are the
+  records with another status (empty protected records and the round 7/8 records that hold no files).
+  - Checked on r4-root without `--index`: `alp search fastfetch` lists fastfetch and the config records; `alp info
+    fastfetch` shows the record; `alp check` rc 0, 480 packages (`evidence/alp-check-no-index.txt`); `alp install
+    fastfetch` says already installed; `alp install no-such-pkg-r8` is refused with "Bilinmeyen paket" and a hint.
+  - Not done, and a limit: `_validate_catalog` (used by `alp update --source`) accepts only `recipe`, `core` and `flatpak`.
+    So a remote catalog with `lfs-base` entries would be refused by `update`; the shipped catalog is not an update source.
+    The installed packages cannot be installed from this catalog (no artifacts). Open: the catalog for installable
+    packages is the job of the store round.
+- **Hicolor icon cache** (record `hicolor-icon-cache-r8` 0.9-r8, `scripts/rebuild/r8/hicolor-cache-r8.sh`): the cache is
+  regenerated with `gtk-update-icon-cache -f -t` on a copy of `usr/share/icons/hicolor` inside r4-root (chroot), so it
+  includes the round 7 KDE About icon. The cache file (1724 bytes) took over from its base package (REPLACE, alp transfer).
+- **SDDM theme licence** (record `sddm-notice-r8` 0.9-r8, text in `scripts/rebuild/r8/sddm-notice-r8.txt`): the round 7
+  NOTICE said LGPL-2.0-or-later for everything. Read on the installed Breeze files: the QML files carry
+  `SPDX-License-Identifier: LGPL-2.0-or-later` (4 files); `metadata.desktop` says `Author=KDE Visual Design Group`,
+  `Copyright=(c) 2014, David Edmundson`, `License=CC-BY-SA`. No licence text ships on the system and no upstream licence
+  file was found in `/usr/share/doc` or `/usr/share/licenses`. **Unsure** whether CC-BY-SA covers the artwork (faces/,
+  images): the NOTICE says so and does not claim it. The metadata line is kept as Breeze has it.
+- `alp check` rc 0 after the three records; the package count is 480 (was 477).
+- Not run: the ISO build (the squashfs check now includes the catalog path only if added to build-iso.sh: not added in
+  this round); the installer on a real disk. The catalog is a record on r4-root; the ISO round must carry it.

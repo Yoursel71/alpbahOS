@@ -1,0 +1,15 @@
+AlpbahOS login theme 'alpbahos'.
+
+Based on the KDE Breeze SDDM greeter theme (installed as /usr/share/sddm/themes/breeze). Licences as found on the
+installed Breeze files (checked 2026-11-09, round 8):
+
+- Code files (Main.qml, Login.qml, Background.qml, KeyboardButton.qml, SessionButton.qml, Messages.sh): the files carry
+  "SPDX-License-Identifier: LGPL-2.0-or-later" (4 QML files carry the header; the copyright headers are kept unchanged).
+  Licence: GNU Lesser General Public License, version 2 or later (LGPL-2.0-or-later).
+- Theme metadata (metadata.desktop, kept unchanged): Author=KDE Visual Design Group, Copyright=(c) 2014, David
+  Edmundson, License=CC-BY-SA. Whether CC-BY-SA covers the artwork in faces/ and the Breeze images is NOT verified: no
+  licence text ships on the installed system. Unsure: check before publication.
+
+Changed by AlpbahOS: metadata.desktop (Name, Theme-Id, Description), theme.conf (logo, background, showlogo), and
+background.png, logo.png, preview.png (AlpbahOS brand images: branding/alpbahos-brand/wallpaper; logo from
+scripts/rebuild/iso/live/make-logo.py).
