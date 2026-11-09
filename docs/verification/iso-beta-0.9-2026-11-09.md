@@ -820,3 +820,20 @@ Records: `scripts/rebuild/r8/stage-record-r8.py` through `scripts/rebuild/r7/app
   source tarball does not), so the release asset was used.
 - Build: configure, `CFLAGS=-O2 -march=x86-64 -mtune=generic`, make -j16. Staged 45 files, 2 ELF, ISA audit rc 0.
 - Record `libseccomp` 2.6.1 (alp). `alp check` rc 0, 489 packages. `packages.tsv` row 376.
+
+### 14.4 libyaml: already present, not rebuilt
+
+- r4-root already has libyaml 0.2.5 (alp record `yaml` 0.2.5, source `github.com/yaml/libyaml/releases/download/0.2.5/yaml-0.2.5.tar.gz`,
+  sha256 c642ae9b75fee120b2d96c712538bd2cf283228d2337df2cf2988e3c02678ef4). BLFS 13.1 `general/libyaml.html` lists yaml-0.2.5:
+  the same version, so nothing was built. `usr/lib/libyaml-0.so.2.0.9` and `usr/include/yaml.h` are present. No new row.
+
+### 14.5 libassuan 3.0.2: built, ISA audit rc 0, recorded
+
+- Version source: BLFS 13.1 `general/libassuan.html` lists libassuan-3.0.2 (URL `gnupg.org/ftp/gcrypt/libassuan/libassuan-3.0.2.tar.bz2`),
+  593917 bytes, **sha256 d2931cdad266e633510f9970e1a2f346055e351bb19f9b78912475b8074c36f6**.
+- Build: configure, generic x86-64, make -j16. Staged 9 files (8 recorded, `usr/share/info/dir` left out: install-info
+  writes it and it belongs to the shared info index), 1 ELF, ISA audit rc 0.
+- Record `libassuan` 3.0.2 (alp, 8 entries). `alp check` rc 0, 490 packages. `packages.tsv` row 377.
+- Note on the first attempt: the record refused `usr/share/info/dir` after writing 7 files; those copies were removed
+  (byte-identical to the stage, not the shared info/dir) and the record was repeated with that path excluded. The helper
+  `scripts/rebuild/r11/pkg-url-r11.sh` now excludes it.
