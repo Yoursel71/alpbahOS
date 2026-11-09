@@ -857,3 +857,8 @@ Records: `scripts/rebuild/r8/stage-record-r8.py` through `scripts/rebuild/r7/app
 - Version source: BLFS 13.1 basicnet/nghttp2.html: 1.70.0 (dependency of libsoup3, built first); sha256 e05cb1388eaca3830aded4ccf20044b6e1ac1a61411dcca11b0437c4285c8bc2.
 - Staged: staged files: 13; elf files: 1; audit-isa rc=0.
 - Record: alp nghttp2 1.70.0; alp check rc=0; packages 494; packages.tsv row 388.
+
+### 14.10 libsoup3-3.6.6: built, recorded (round 12)
+- Version source: BLFS 13.1 basicnet/libsoup3.html: 3.6.6 (needs libnghttp2, row 388); sha256 51ed0ae06f9d5a40f401ff459e2e5f652f9a510b7730e1359ee66d14d4872740.
+- Staged: staged files: 118; elf files: 1; audit-isa rc=0.
+- Record: alp libsoup3 3.6.6; alp check rc=0; packages 495; packages.tsv row 380.
