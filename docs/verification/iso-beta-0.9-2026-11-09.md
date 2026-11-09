@@ -811,3 +811,12 @@ Records: `scripts/rebuild/r8/stage-record-r8.py` through `scripts/rebuild/r7/app
 - Source: GitHub API tarball of tag 0.1.9, 57492 bytes, **sha256 7b77963c8da63c43d3fa173bae612b5fb306c81ff11f8307de7dc9430c2e92b7**.
 - Build: meson `-Dman=disabled -Dtests=false`, ninja -j16, generic x86-64. Staged: 1 file (ELF), ISA audit rc 0.
 - Record `xdg-dbus-proxy` 0.1.9 (alp). `alp check` rc 0, 488 packages. `packages.tsv` row 375.
+
+### 14.3 libseccomp 2.6.1: built, ISA audit rc 0, recorded
+
+- Version source: BLFS 13.1 `general/libseccomp.html` lists libseccomp-2.6.1. Tarball from the URL the book gives
+  (`github.com/seccomp/libseccomp/releases/download/v2.6.1/libseccomp-2.6.1.tar.gz`), 656231 bytes, **sha256
+  501f66c667225d53791b97e1d7cf85ab764c297d04881f60f38f451c4b0ee1be**. The release tarball carries configure (the API
+  source tarball does not), so the release asset was used.
+- Build: configure, `CFLAGS=-O2 -march=x86-64 -mtune=generic`, make -j16. Staged 45 files, 2 ELF, ISA audit rc 0.
+- Record `libseccomp` 2.6.1 (alp). `alp check` rc 0, 489 packages. `packages.tsv` row 376.
