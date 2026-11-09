@@ -1,4 +1,4 @@
-# AlpbahOS BETA branding for Calamares 3.3.
+# AlpbahOS 0.9 Beta branding for Calamares 3.3.
 ---
 componentName: alpbahos
 
@@ -8,9 +8,9 @@ welcomeExpandingLogo: true
 strings:
     productName:         AlpbahOS
     shortProductName:    AlpbahOS
-    version:             13.1 BETA
+    version:             0.9 Beta
     shortVersion:        BETA
-    versionedName:       AlpbahOS 13.1 BETA
+    versionedName:       AlpbahOS 0.9 Beta
     shortVersionedName:  AlpbahOS BETA
     bootloaderEntryName: AlpbahOS
     productUrl:          https://example.invalid/alpbahos

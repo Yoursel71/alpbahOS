@@ -1,5 +1,5 @@
 #!/bin/bash
-# REBUILD-R4 367 yaml-cpp-0.9.0 (NOT a book package: github.com/jbeder/yaml-cpp release tag; TOFU sha256, see docs/verification/iso-beta-2026-11-08.md). Calamares needs it.
+# REBUILD-R4 367 yaml-cpp-0.9.0 (NOT a book package: github.com/jbeder/yaml-cpp release tag; TOFU sha256, see docs/verification/iso-alpha-2026-11-08.md). Calamares needs it.
 export LANG=C LC_ALL=C
 set -eo pipefail
 as_root() { "$@"; }; export -f as_root

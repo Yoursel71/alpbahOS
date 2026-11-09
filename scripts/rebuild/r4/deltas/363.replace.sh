@@ -1,7 +1,7 @@
 #!/bin/bash
 # REBUILD-R4 363 parted-3.7 (13.1 postlfs/parted.html; docs not built: the page builds them with texinfo, not in R4).
 # DEVIATION: --disable-device-mapper. configure stops without libdevmapper (lvm2 is not in R4). Effect: parted has no
-# device-mapper (LVM/dm-crypt) partitions. Plain GPT/MBR disks are unaffected. Recorded in docs/verification/iso-beta-2026-11-08.md.
+# device-mapper (LVM/dm-crypt) partitions. Plain GPT/MBR disks are unaffected. Recorded in docs/verification/iso-alpha-2026-11-08.md.
 # Row added after 361: Calamares partition backend (kpmcore) needs libparted.
 export LANG=C LC_ALL=C
 set -eo pipefail

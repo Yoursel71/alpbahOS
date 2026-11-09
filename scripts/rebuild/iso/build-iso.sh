@@ -1,7 +1,7 @@
 #!/bin/bash
-# AlpbahOS BETA live ISO (REBUILD-R4 ISO step, 2026-11-08). Usage: sudo build-iso.sh
+# AlpbahOS 0.9 Beta live ISO (REBUILD-R4 ISO step, 2026-11-09). Usage: sudo build-iso.sh
 #
-# Input: r4-root (the finished R4 root, btrfs subvolume). Output: scratch-lfs-bench/images/alpbahos-beta-<DATE>.iso
+# Input: r4-root (the finished R4 root, btrfs subvolume). Output: scratch-lfs-bench/images/alpbahos-beta-0.9-<DATE>.iso
 # and its .sha256. Steps:
 #   1. read-only snapshot of r4-root (lfs13-snapshots/r4-iso-src-<DATE>); writable copy iso-work/live-root.
 #   2. live customization of the copy: user "live" (no password, sddm autologin into the Plasma Wayland session),
@@ -21,7 +21,7 @@ LIVE_SRC=$SELF_DIR/live
 M11_MOD=$SELF_DIR/../../lfs-blfs/calamares/modules   # bootloader.conf and grubcfg.conf (reviewed in M11)
 SB=/home/yrslf/alpbahOS/scratch-lfs-bench
 R4=$SB/r4-root
-DATE=2026-11-08
+DATE=2026-11-09
 KVER=7.1.8-alpbahos
 LABEL=ALPBAHOS_BETA
 SNAP_SRC=$SB/lfs13-snapshots/r4-iso-src-$DATE
@@ -31,8 +31,8 @@ ISOTREE=$WORK/iso
 OUT_DIR=$SB/images
 # DEBUG=1: diagnostic build (installer log to the serial console, rd.debug, journal to console). Own file name.
 DEBUG=${DEBUG:-0}
-if [ "$DEBUG" = 1 ]; then OUT=$OUT_DIR/alpbahos-beta-$DATE-debug.iso; else OUT=$OUT_DIR/alpbahos-beta-$DATE.iso; fi
-LOGS=$SB/lfs13-logs/iso-beta/build
+if [ "$DEBUG" = 1 ]; then OUT=$OUT_DIR/alpbahos-beta-0.9-$DATE-debug.iso; else OUT=$OUT_DIR/alpbahos-beta-0.9-$DATE.iso; fi
+LOGS=$SB/lfs13-logs/iso-beta-0.9/build
 MIN_FREE_GIB=30
 
 die() { echo "build-iso: $*" >&2; exit 1; }
@@ -84,9 +84,20 @@ log "live user, autologin, installer launcher"
 if ! L /usr/bin/id live > /dev/null 2>&1; then
     L /usr/sbin/useradd -m -u 1000 -G wheel,audio,video,input -s /bin/bash live
 fi
-# Live password "live": a BETA test credential of the live image only (the sddm greeter refuses an empty password
-# under PAM here). Removed from the installed system with the user (target-cleanup.sh).
-printf 'live:live\n' | L /usr/sbin/chpasswd
+# Live user: NO password (passwd -d). Login is by sddm autologin only; /etc/pam.d/sddm-autologin allows that
+# stack for the live user on the live medium (rd.live.image on the kernel line, session-r5fix record). pam_unix
+# refuses empty passwords (no nullok), so the greeter cannot log the live user in. Removed from the installed
+# system with the user (target-cleanup.sh).
+if [ "$DEBUG" = 1 ]; then
+    # DEBUG build only (test image, named -debug): the live user gets the password live, so the serial console
+    # login of the session test works. The release build has no password.
+    printf "live:live
+" | L /usr/sbin/chpasswd
+else
+    L /usr/bin/passwd -d live > /dev/null
+fi
+# Root: locked (no login by password in the live or the installed system unless the installer sets one).
+L /usr/sbin/usermod -L root
 install -d -m 755 "$LIVE/home/live/Desktop"
 install -m 755 "$LIVE_SRC/alpbahos-install.desktop" "$LIVE/home/live/Desktop/alpbahos-install.desktop"
 L /usr/bin/chown -R live:live /home/live
@@ -117,6 +128,9 @@ install -m 644 "$LIVE_SRC/make-logo.py" "$LIVE/tmp/make-logo.py"
 L /usr/bin/python3 /tmp/make-logo.py /usr/share/calamares/branding/alpbahos/logo.png
 rm -f "$LIVE/tmp/make-logo.py"
 [ -s "$LIVE/usr/share/calamares/branding/alpbahos/logo.png" ] || die "logo not written"
+if [ "$DEBUG" != 1 ]; then grep -q '^live::' "$LIVE/etc/shadow" || die "live user has a password (expected empty)"; fi
+grep -q '^root:[!*]' "$LIVE/etc/shadow" || die "root is not locked"
+grep -qx 'PRETTY_NAME="AlpbahOS 0.9 Beta"' "$LIVE/etc/os-release" || die "os-release is not AlpbahOS 0.9 Beta"
 
 log "sddm autologin (live only), empty fstab and machine-id"
 sed -i '/^\[Autologin\]/,/^\[/{s/^User=.*/User=live/;s/^Session=.*/Session=plasma.desktop/;s/^Relogin=.*/Relogin=false/}' "$LIVE/etc/sddm.conf"
