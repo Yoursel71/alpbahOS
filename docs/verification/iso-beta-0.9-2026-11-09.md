@@ -656,3 +656,37 @@ Evidence (host, not in the repo): `scratch-lfs-bench/s2-alp/` (`catalog/`, `cata
     `source.url` that `alp adopt-base` requires for provenance. This is not a website value shown to users; left as is.
 - Evidence: `scratch-lfs-bench/r4-ledger/r7/kcm-about-r8fix/` (manifest, adopt.log, alp-check.txt,
   alp-check-after-r7-removed.txt).
+
+### 12.2 S2: fastfetch 2.71.0 with the AlpbahOS logo: PASS on the root (chroot); the greeter-free VM check is in the ISO round
+
+- Source: upstream release **2.71.0** (newest stable on GitHub at the time, published 2026-11-06). Not in BLFS 13.1 (no
+  fastfetch page or source in `blfs-src-13.1`), so the upstream tarball was used. Tarball
+  `scratch-lfs-bench/r8/fastfetch/fastfetch-2.71.0.tar.gz`, size 2009867 bytes, **sha256
+  160bfc7ece86541467a901577ce2fd2cfc2f4a2ad0b39d0d45f89c723dffcc51**.
+- Build: `scripts/rebuild/r8/fastfetch-build.sh`, in a chroot of r4-root (`cmake`, `Unix Makefiles`, Release,
+  `-march=x86-64 -mtune=generic`, `BUILD_TESTS=OFF`, `--parallel 16`: the standing C rule; the brief named -j8, a
+  deviation), DESTDIR install into a staging tree, then the ISA audit of the staged files. Build logs:
+  `scratch-lfs-bench/r8/fastfetch/fastfetch-{cmake,build,install}.log`. The build passed (rc 0).
+- ISA audit: `scripts/lfs-blfs/cpu-baseline/audit-isa.sh` on the staged tree: 2 ELF files (`fastfetch`, `flashfetch`),
+  0 non-variant AVX/BMI hits, rc 0 (`fastfetch/audit-isa.txt`).
+- Records (alp): `fastfetch` 2.71.0 (43 files; `usr/share/fastfetch/presets/neofetch.jsonc` is left out: no neofetch
+  preset) by `scripts/rebuild/r8/stage-record-r8.py` through `scripts/rebuild/r7/apply-r7.sh`; and
+  `fastfetch-config-r8` 0.9-r8 (2 files: `/etc/fastfetch/config.jsonc`, `/usr/share/fastfetch/alpbahos-logo.txt`) by the
+  same script with `REPLACE=1`, which takes over the files of the first config try (`fastfetch-config-r8fix`, empty now,
+  protected base record; its first logo had a raw ESC byte in the JSON and fastfetch refused it, fixed in
+  `scripts/rebuild/r8/fastfetch-logo-r8.py`).
+- Logo and colours (`scripts/rebuild/r8/fastfetch-logo-r8.py`): the brand logo is a lighter diamond on a dark field
+  (`make-logo.py`), so the terminal logo is a cyan (256-colour 51) diamond on a navy field (17, used as a background only),
+  with an orange (208) centre; the title line "AlpbahOS 0.9 Beta" is orange. Navy is never used as text, so it stays
+  readable on a dark terminal.
+- Run: `chroot r4-root fastfetch --config /etc/fastfetch/config.jsonc --pipe false` (TERM=xterm-256color). Raw ANSI:
+  `scratch-lfs-bench/r8/evidence/fastfetch-ansi.txt` (13847 bytes). Render: `evidence/fastfetch-render.png` (made with
+  `scripts/rebuild/r8/ansi-render-r8.py`, PIL; it fills the block cells). Read and checked: diamond cyan, centre orange,
+  navy field, title orange, OS line "AlpbahOS 0.9 Beta x86_64". The "Kernel" line shows the host kernel (the chroot shares
+  it), so it is not the ISO kernel.
+- Linkage: `ldd` in the chroot: libc, libm only.
+- Result: `alp check` **rc 0**, 477 installed packages (was 472 at the start of S2, before S1's extra record and the
+  fastfetch records). Not run: fastfetch on a booted installed system (ISO round, VM).
+- Deviation: the R4 driver (`run-r4.sh`) builds only the BLFS 13.1 rows of `packages.tsv`. fastfetch is an upstream
+  release, so it has a row in `packages.tsv` (`373`, class EXTRA, status r8) for the record, but it is built by its own
+  script, not by the driver. No delta file was made.
