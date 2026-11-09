@@ -902,3 +902,8 @@ Records: `scripts/rebuild/r8/stage-record-r8.py` through `scripts/rebuild/r7/app
 - Helper: scripts/rebuild/r10/build-pkg-r10.sh gained the kinds autogen and pip and the PRE_PATCH variable (existing kinds unchanged).
 - Staged: staged files: 125; elf files: 7; audit-isa rc=0.
 - Record: alp lxml 6.1.1; alp check rc=0; packages 501; packages.tsv row 390.
+
+### 14.19 itstool-2.0.7: built, recorded (round 12)
+- Version source: BLFS 13.1 pst/itstool.html: 2.0.7 with its patch itstool-2.0.7-lxml-1.patch (sha256 035a0d22bd1cf37a00357ebc096454e1eb8594f3ea54f8122e8e76fdced0cbec): lxml replaces the libxml2 Python bindings, which BLFS calls deprecated and which libxml2 2.15.3 leaves disabled by default. sha256 fba78a37dc3535e4686c7f57407b97d03c676e3a57beac5fb2315162b0cc3176 (md5 e759b258617a912acce630de3fa43957, as in BLFS).
+- Staged: staged files: 8; elf files: 0; audit-isa rc=2 (no ELF files, nothing to audit). Chroot check: itstool --version prints 2.0.7 and a test .pot extraction works; the itstool test suite was not run.
+- Record: alp itstool 2.0.7; alp check rc=0; packages 502; packages.tsv row 391.
