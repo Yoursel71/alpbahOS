@@ -638,3 +638,21 @@ Evidence (host, not in the repo): `scratch-lfs-bench/s2-alp/` (`catalog/`, `cata
   was **not tested**. No QML tool (`qmlscene`, `qml`, `sddm-greeter --test-mode`) exists in r4-root, so no offline render
   was possible. **Deferred to the ISO round (VM check)**: the greeter must show the brand background and logo, and a login
   must reach the desktop.
+
+## 12. Round 8 (2026-11-09, later): KDE About fix, fastfetch, image catalog, Flatpak
+
+### 12.1 S1: KDE About Website value (record `kcm-about-r8fix` 0.9-r8fix): PASS
+
+- Round 7 wrote `Website=https://github.com/alperenyardim30-hash/alpbahOS` (the origin repo, not a published page). Round 8
+  removes the key. New record `scripts/rebuild/r8/kcm-about-r8fix.py` (run by `scripts/rebuild/r7/apply-r7.sh`) writes
+  `etc/xdg/kcm-about-distrorc` without `Website`, the same logo, and takes the three paths over from kcm-about-r7fix
+  (alp transfer, last writer owns). `alp check` rc 0, 474 packages. kcm-about-r7fix is now empty and protected as a base
+  record (`alp remove` refuses), so it stays in the database with no files.
+- Other values naming a repo (list, read on r4-root):
+  - `usr/share/sddm/themes/alpbahos/metadata.desktop` `Website=https://github.com/sddm/sddm`: upstream SDDM project, copied
+    from the Breeze metadata; not ours, left as is.
+  - `etc/os-release` and `etc/lsb-release` (record branding-r5fix): no HOME_URL or website key; nothing to change.
+  - `REPO_SRC` in the record scripts (`scripts/rebuild/r5/*.py`, `scripts/rebuild/r7/*.py`, `scripts/rebuild/r8/*.py`): the
+    `source.url` that `alp adopt-base` requires for provenance. This is not a website value shown to users; left as is.
+- Evidence: `scratch-lfs-bench/r4-ledger/r7/kcm-about-r8fix/` (manifest, adopt.log, alp-check.txt,
+  alp-check-after-r7-removed.txt).
