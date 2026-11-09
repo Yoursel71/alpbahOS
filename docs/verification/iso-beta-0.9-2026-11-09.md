@@ -786,3 +786,20 @@ Evidence (host, not in the repo): `scratch-lfs-bench/s2-alp/` (`catalog/`, `cata
   done, so the round is not complete; the delta is reported when F is done).
 - Untracked files in the worktree that are not from this round (`scripts/rebuild/iso/live/keyboard/`,
   `alpbahos-keyboard.desktop`, `keyboard-detect.cpp`) were left out of every commit.
+
+## 14. Round 10 (2026-11-09, later): Flatpak chain (F), leaf first
+
+Rules of this section: one package per row, build, ISA audit, alp record and commit; `alp check` rc 0 at each step;
+generic x86-64 (`-march=x86-64 -mtune=generic`); -j16 for C, -j8 for heavy C++/Rust; downloads are the upstream release
+tarballs (sha256 recorded); BLFS 13.1 versions where BLFS lists the package, otherwise newest stable upstream. Build
+helper: `scripts/rebuild/r10/build-pkg-r10.sh` (chroot of r4-root, meson/cmake/configure, DESTDIR staging, audit-isa).
+Records: `scripts/rebuild/r8/stage-record-r8.py` through `scripts/rebuild/r7/apply-r7.sh`. Evidence: `scratch-lfs-bench/r10/<name>/`
+(tarball download in `r10/dl/`, `build.log`, `audit-isa.txt`).
+
+### 14.1 bubblewrap 0.13.1: built, ISA audit rc 0, recorded
+
+- Version: newest stable upstream (v0.13.1, published 2026-10-14). BLFS 13.1 does not list bubblewrap as a package (it
+  appears only as an optional dependency of fontconfig in the book).
+- Tarball `bubblewrap-0.13.1.tar.xz` from the GitHub release, 129472 bytes, **sha256 0e85c8702248b8dd64144f594147553650cdd0e4c951690345faace79c217c4d**.
+- Build: meson, `-Dman=disabled -Dtests=false -Dselinux=disabled`, ninja -j16. Staged: 3 files (`usr/bin/bwrap`, bash and
+  zsh completions). ISA audit of the one ELF file: rc 0.
