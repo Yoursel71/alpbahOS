@@ -26,4 +26,9 @@ rm -f /usr/lib/alpbahos/target-initramfs.sh
 rm -f /usr/lib/alpbahos/target-cleanup.sh
 rm -f /etc/alpbahos-live-debug
 rmdir /usr/lib/alpbahos 2>/dev/null || true
+# Keyboard (round 15): Calamares writes an empty Option "XkbVariant" "" line, which systemd-localed does not
+# parse (localectl then shows the X11 layout as unset). Remove that line; the layout tr stays.
+if [ -f /etc/X11/xorg.conf.d/00-keyboard.conf ]; then
+    sed -i '/Option "XkbVariant" ""/d' /etc/X11/xorg.conf.d/00-keyboard.conf
+fi
 exit 0
