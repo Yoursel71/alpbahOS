@@ -24,10 +24,11 @@ if [ -n "$DISK" ]; then
     case "$BUS" in
         virtio) ARGS+=(-drive "file=$DISK,format=raw,if=virtio,cache=unsafe") ;;
         sata)   ARGS+=(-drive "file=$DISK,format=raw,if=none,id=sata0,cache=unsafe" -device ahci,id=ahci0 -device ide-hd,drive=sata0,bus=ahci0.0) ;;
-        nvme)   ARGS+=(-drive "file=$DISK,format=raw,if=none,id=nvme0,cache=unsafe" -device nvme,drive=nvme0,serial=alpnvme0) ;;
+        nvme)   ARGS+=(-drive "file=$DISK,format=raw,if=none,id=nvme0,cache=unsafe" -device nvme,drive=nvme0,serial=alpnvme0,bootindex=1) ;;
         *) echo "bad bus $BUS" >&2; exit 2 ;;
     esac
 fi
 printf '%s\n' "fw=$FW iso=${ISO:-none} disk=${DISK:-none} bus=$BUS mem=$MEM accel=${ACCEL:-tcg}" "cmd: qemu-system-x86_64 ${ARGS[*]}" > "$RUN/command.txt"
+[ -n "${EXTRA_ARGS:-}" ] && ARGS+=(${EXTRA_ARGS})
 nohup setsid nice -n 19 ionice -c3 qemu-system-x86_64 "${ARGS[@]}" > "$RUN/qemu.out" 2>&1 &
 echo "started $RUN"

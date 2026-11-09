@@ -80,9 +80,12 @@ def click(x, y):
         {"type": "btn", "data": {"down": False, "button": "left"}}]}})
 
 
-def shot(name):
+def shot(name, head=None):
     ppm = os.path.join(RUN, name + ".ppm")
-    call({"execute": "screendump", "arguments": {"filename": ppm}})
+    args = {"filename": ppm}
+    if head is not None:
+        args["head"] = head
+    call({"execute": "screendump", "arguments": args})
     time.sleep(1)
     png = os.path.join(RUN, name + ".png")
     subprocess.run(["convert", ppm, png], stderr=subprocess.DEVNULL)
@@ -90,9 +93,20 @@ def shot(name):
 
 
 if CMD == "shot":
-    shot(sys.argv[3])
+    shot(sys.argv[3], int(sys.argv[4]) if len(sys.argv) > 4 else None)
 elif CMD == "key":
     keys(sys.argv[3:])
+elif CMD == "trtext":
+    # types on a Turkish-Q guest keyboard: the US - and . keys are not the same keys there (found 2026-11-09:
+    # - is qcode equal, . is qcode slash). Other characters as in text.
+    TRMAP = {"-": ["minus"], ".": ["dot"], "/": ["slash"], " ": ["spc"]}
+    for c in sys.argv[3]:
+        ks = TRMAP.get(c) or char_key(c)
+        call({"execute": "send-key", "arguments": {"keys": [{"type": "qcode", "data": k} for k in ks]}})
+        time.sleep(0.12)
+elif CMD == "combo":
+    # all named keys pressed together, e.g. combo ctrl x
+    call({"execute": "send-key", "arguments": {"keys": [{"type": "qcode", "data": k} for k in sys.argv[3:]]}})
 elif CMD == "text":
     type_text(sys.argv[3])
 elif CMD == "click":

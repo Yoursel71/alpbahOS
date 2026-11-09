@@ -251,3 +251,115 @@ NOT beta quality. The beta gate (autologin, live desktops, the install matrix an
 UEFI live desktop fails on the final sha; the BIOS MSDOS install did not complete; the UEFI install, installed boots,
 installed QA and the shutdown reproduction were not run. The autologin fix is recorded and probed on a variant but not
 verified on the final release ISO.
+
+
+## 9. Final matrix (round 4): release ISO sha256 `5ae7e7c955700299f2c554a5d634b0a0330f93ab26bff7890a2976497b34c5cd`
+
+Every row tests this sha (the release ISO, `scratch-lfs-bench/images/alpbahos-beta-0.9-2026-11-09.iso`) unless the
+row says otherwise. Accelerator: KVM with `-cpu qemu64` (ACCEL=kvm) except the rows marked TCG. The DEBUG ISO and the
+variant ISOs were used only for the autologin probes (section 8) and are not part of the matrix. The ISO did not change
+in round 4: the sha above is the same as in section 8.
+
+### 9.1 Black screen (lead item 1): guest or capture?
+
+- Under TCG, the UEFI release boots on this host (round 3) showed a black screen at 170 s and 400 s
+  (`lfs13-logs/boot/final/rel-uefi-1..3/`). Under KVM the same sha reaches the desktop at 110 s with the welcome window
+  (`lfs13-logs/boot/fix/uefi-kvm-1/g2.png`). Under TCG the same sha reaches the desktop at 300 s
+  (`lfs13-logs/boot/tcg-final/uefi-live/t1.png`). The screen capture is faithful: the frames show the guest's boot text
+  (round 3 `f170` shows the kernel log as it was), so the black frames are guest state during a slow boot, not a
+  capture fault.
+- Journal at the GRUB menu: `systemd.journald.forward_to_console=1` was added at the GRUB editor (no rebuild, the sha
+  is unchanged). The forwarded journal on the serial console stops at `Reached target Graphical Interface` and the login
+  prompt, so it does not show the session. Session state was checked from the desktop instead (taskbar, welcome window).
+- Scanout: the guest logs `[drm] number of scanouts: 1` (one head). A `screendump` with a head index returned no file
+  (not usable here), so the head comparison is inconclusive. The single scanout makes a second-head capture fault unlikely.
+- Timing: the guest's virtio-gpu DRM device appears at 4 s under KVM and at 31 s under TCG (`fbcon: virtio_gpudrmfb is
+  primary device`), after simpledrm. This is the handover described in section 8.2; the TCG black frames come from that
+  slower handover under the 3-VM TCG load of round 3.
+- Conclusion: a timing effect of the TCG guest under load, with the autologin fix (section 8) in place. Not a product
+  fault shown on KVM. Not a capture fault.
+
+### 9.2 Matrix
+
+| # | Row | Accel | Result | Evidence (under `scratch-lfs-bench/lfs13-logs/boot/`) |
+|---|---|---|---|---|
+| M1 | Live UEFI, autologin to desktop (release, screen at 110 s) | KVM | **PASS** | `fix/uefi-kvm-1/g2.png` |
+| M2 | Live UEFI, desktop (release, 300 s) | TCG (generic CPU proof) | **PASS** | `tcg-final/uefi-live/t1.png` |
+| M3 | Live BIOS, autologin to desktop (release, 90 s) | KVM | **PASS** | `kvm/inst-bios/b0.png` |
+| M4 | Live BIOS, desktop (release, 300 s) | TCG (generic CPU proof) | **PASS** | `tcg-final/bios-live/t2.png` |
+| M5 | Calamares install, BIOS MSDOS, target virtio 30 GiB, erase vda, tr_TR, keyboard Turkish-Q, user testuser | KVM | **PASS** (install completed; unmount logged) | `kvm/inst-bios/i-*.png`, `k*.png`, `install-gui.out` |
+| M5a | Installed disk after install: `/etc/fstab` has the root UUID; no `live` account; `grub.cfg` present; MBR has GRUB boot code | read-only loop mount of the disk | **PASS** | `kvm/inst-bios` (disk `scratch-lfs-bench/images/inst-bios-msdos-0.9.raw`), checked 12:44 and 13:02 |
+| M6 | Calamares install, UEFI GPT, target virtio 30 GiB (EFI 512 MiB FAT32 /boot/efi, root ext4) | KVM | **PASS** (install completed; unmount logged) | `kvm/inst-uefi/u1..u4.png`, `serial.log` (unmount at 506 s) |
+| M6a | Installed GPT disk after install: fstab has root and `/boot/efi`; no `live` account; `grub.cfg` (x86_64-efi); ESP `EFI/alpbahOS` and `EFI/BOOT/bootx64.efi` | read-only loop mount | **PASS** | `kvm/inst-uefi` (disk `inst-uefi-gpt-0.9.raw`) |
+| M7 | Installed BIOS disk, boot on virtio, greeter login, desktop | KVM | **PASS** | `kvm/ib-virtio/s1.png` (greeter), `kvm/q-virtio/d1.png` (login), `kvm/q-virtio/qa1..qa5.png` |
+| M8 | Installed BIOS disk, boot on AHCI (sata), login, network | KVM | **PASS** (login, `curl -sI example.org` HTTP/1.1 200, DHCP online 10.0.2.15) | `kvm/bios-ahci/ah2.png` |
+| M9 | Installed BIOS disk, boot on NVMe | KVM | **FAIL**: SeaBIOS 1.17.0-10.fc44 prints `No bootable device` for the NVMe disk (also with `bootindex=1`), so this BIOS disk cannot be booted from NVMe in this QEMU | `kvm/bios-nvme/nv2.png`, `kvm/bios-nvme2/nv3.png` |
+| M10 | Installed UEFI GPT disk, boot on virtio, greeter login, desktop | KVM | **PASS** (`hostnamectl`: AlpbahOS 0.9 Beta, firmware edk2, virtualization kvm; `ls /boot/efi/EFI`: alpbahOS, boot) | `kvm/uefi-disk-virtio/ue1.png`, `ue3.png` |
+| M11 | Installed UEFI GPT disk, boot on NVMe, audio device (`intel-hda` + `hda-duplex`) | KVM | **PASS** for the boot and login; **FAIL** for sound: `wpctl status` lists only the dummy sink (`Temsili Çıkış`), and the Devices list is empty | `kvm/uefi-nvme/nu1.png` |
+| M12 | Installed BIOS disk, boot on virtio, no audio device | KVM | (the sound check was not run on this row) | - |
+
+Notes on the matrix:
+- The BIOS installed disk was booted on AHCI with `sata` (ahci + ide-hd) and on virtio; it was not booted on NVMe (M9).
+- The UEFI installed disk was booted on virtio (M10) and NVMe (M11). UEFI on AHCI was not run.
+- Every installed boot above was run with `-cpu qemu64` under KVM. The two generic-CPU TCG proofs are M2 and M4.
+
+### 9.3 Installed-system QA (BIOS installed disk, virtio, M7; KVM)
+
+| Item | Result | Evidence |
+|---|---|---|
+| Konsole opens | **PASS** | `kvm/q-virtio/qa2.png` |
+| Dolphin opens | **PASS** | `kvm/cyc2/m2.png` (Dolphin window) |
+| System Settings opens | **PASS** | `kvm/q-virtio/qa1.png` |
+| Network (DHCP) | **PASS** (networkctl: routable, online, 10.0.2.15 on ens3, gateway 10.0.2.2, DNS 10.0.2.3) | `kvm/q-virtio/qa4.png`; on AHCI `ah2.png` |
+| `curl -sI` | **PASS** on AHCI (HTTP/1.1 200 OK from example.org). On the virtio disk the typed command was mangled by the keyboard mapping and was not rerun | `kvm/bios-ahci/ah2.png` |
+| `wpctl status` with intel-hda | **FAIL**: only the dummy sink; no hardware sink or source (M11, UEFI NVMe). The BIOS virtio boot had no audio device | `kvm/uefi-nvme/nu1.png` |
+| Plasma menu shutdown | **PASS** (Kickoff, Kapat, Şimdi Kapat; QEMU exited) | `kvm/cyc2/m3.png` |
+| Plasma menu reboot | **PASS** (Kickoff, Yeniden Başlat, Şimdi Yeniden Başlat; QEMU exited, disk shows the next boot) | `kvm/cyc3/r1.png` |
+| Locale tr_TR | **PASS** (`localectl status`: System Locale LANG=tr_TR.utf8) | `kvm/q-virtio/qa3.png` |
+| Keyboard trq | **PASS** (`localectl status`: VC Keymap trq; X11 layout unset) | `kvm/q-virtio/qa3.png`; `/etc/vconsole.conf` KEYMAP=trq on the disk |
+| Installed system identity | **PASS** (`hostnamectl`: AlpbahOS 0.9 Beta, kernel 7.1.8-alpbahos) | `kvm/q-virtio/qa3.png` |
+
+Gap found: `ip` (iproute2) is not installed in the image (`bash: ip: command not found`). `networkctl` and `ifconfig`-type
+checks work. Recorded as an open item.
+
+### 9.4 Shutdown crash reproduction (installed BIOS disk, virtio, KVM, drop-ins present)
+
+| Cycle | Action with a logged-in Plasma session | Result | Evidence |
+|---|---|---|---|
+| 1 | `systemctl poweroff` typed in Konsole (testuser, active session) | QEMU exited (powered off) | `kvm/cyc2` run, then `cyc2` boot |
+| 2 | Kickoff, Kapat, Şimdi Kapat (Plasma menu shutdown) | QEMU exited | `kvm/cyc2/m3.png` |
+| 3 | Kickoff, Yeniden Başlat, Şimdi Yeniden Başlat (Plasma menu restart) | QEMU exited (reset) | `kvm/cyc3/r1.png` |
+
+Check after the cycles, on the disk image read-only as root (loop mount, `journalctl -D`, 5 boots in the journal):
+- `/var/lib/systemd/coredump`: does not exist (no core dump was ever written).
+- Journal lines matching `dumped|ABRT|pending != NULL|core-dump|Failed with result`: 0.
+  The journal is `kvm/cyc3/journal-all.txt`. The `plasma-ksplash` SIGTERM stop is not reported as a failure
+  (`Failed with result` count 0).
+- `coredumpctl list` as `testuser` (the GUI user, not in `systemd-journal`) shows "No coredumps found" with the usual
+  hint (`kvm/cyc3/c3a.png`); that view is limited to the user's own dumps, so the root check above is the real one.
+
+Result: the shutdown crash did not reproduce in 3 full shutdowns with a logged-in session on the installed image with
+the drop-ins. **Not proven as fixed**: the same test without the drop-ins (the baseline) was not run in round 4, so the
+test does not show the drop-ins are what prevents it. The round-2 logout test (section 2.1) is still the only
+comparison.
+
+### 9.5 Gate
+
+**Beta quality: NO.** The gate needs autologin, the live desktops, the install matrix and QA, all on the final sha.
+
+- Live desktops: UEFI and BIOS, KVM and TCG: PASS (M1 to M4).
+- Install matrix: BIOS MSDOS and UEFI GPT installs complete and their disks check out (M5, M5a, M6, M6a): PASS.
+- Installed boots: BIOS virtio and AHCI, UEFI virtio and NVMe: PASS. BIOS NVMe: FAIL (M9, a SeaBIOS limit in this QEMU).
+- QA: sound device not visible to pipewire (FAIL, M11); `ip` missing (gap); the rest PASS.
+- Shutdown crash: 3 cycles, no crash found, not proven as fixed (no baseline without the drop-ins).
+
+Open items:
+1. Sound: the HDA device does not appear to pipewire in the guest. Check the kernel's `snd_hda_intel` module and the
+   pipewire ALSA monitor in the guest with the device present at boot.
+2. BIOS MSDOS disk on NVMe: not bootable under this SeaBIOS. Test NVMe with a UEFI install only (done: M11), or use
+   another firmware build; not a product defect shown yet.
+3. `ip` (iproute2) missing from the image.
+4. Shutdown crash baseline without the drop-ins (3 cycles).
+5. Autologin: the fix (section 8) is in the final ISO, but the UEFI autologin was not repeated 3 times on KVM on the final
+   sha. The KVM run on the final sha reached the desktop once (M1). Repeat before any gate call.
+6. The user-reported run of the alpha ISO (section 8.4) is unverified.

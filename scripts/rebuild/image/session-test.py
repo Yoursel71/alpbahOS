@@ -48,6 +48,8 @@ if FW == "uefi":
             "-drive", f"if=pflash,format=raw,file={os.path.join(RUN, 'OVMF_VARS.fd')}"] + args
 else:
     args = ["-machine", "pc"] + args
+if os.environ.get("ACCEL") == "kvm":
+    args = ["-enable-kvm"] + args   # -cpu qemu64 is kept: the accelerator is KVM, the CPU model is generic
 cmd = ["nice", "-n", "19", "ionice", "-c3", "qemu-system-x86_64"] + args
 with open(os.path.join(RUN, "command.txt"), "w") as f:
     f.write(" ".join(cmd) + "\n")
