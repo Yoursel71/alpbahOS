@@ -950,3 +950,70 @@ Records: `scripts/rebuild/r8/stage-record-r8.py` through `scripts/rebuild/r7/app
 - Calamares logo: the squashfs `logo.png` has sha256 `647ff0e8...ae71`, the same as the repo file `scripts/rebuild/iso/live/calamares/branding/logo.png` and the SDDM theme logo in r4-root. So the Calamares and SDDM logos are the real brand logo (not the placeholder).
 - `alp check` on r4-root: rc 0, 506 installed packages (`scratch-lfs-bench/alp-check-r13.txt`).
 - Stage 1 commit: this section only (no code change).
+
+### 15.2 Matrix on sha `03469d29...` (ISO r13)
+
+All rows name ISO `alpbahos-beta-0.9-2026-11-09-r13.iso`, sha256 `03469d2900c1cc77a28d06fe6b7a22ec83d15df744cc0228cef75842c7e2ba7b`. Evidence paths are under `scratch-lfs-bench/lfs13-logs/iso-beta-0.9/r13/`. Every screenshot named here was opened and read by the agent. Installed-system rows boot the read-only base image with `-snapshot` (QEMU discards its writes); S1 uses a qcow2 overlay and REC1/REC2 use a reflink copy of the installed image (see 15.4 item 10). "NOT VERIFIED" means the row ran but its check did not produce the evidence the brief asks for.
+
+| Row | Run | Accel | Result | Evidence |
+|---|---|---|---|---|
+| L1 | live UEFI, desktop at 130 s, 3 runs | KVM, qemu64 | **PASS 3/3** (taskbar, Install icon, wallpaper, Welcome Center window) | `L1-1/shot-130.png`, `L1-2/`, `L1-3/` |
+| L2 | live UEFI, desktop at 300 s | TCG | **PASS** | `L2/shot-300.png` |
+| L3 | live BIOS, desktop at 130 s with HDA device | KVM | **PASS** (desktop; sound not checked on the live row) | `L3/shot-130.png` |
+| L4 | live BIOS, desktop at 300 s | TCG | **PASS** | `L4/shot-300.png` |
+| I1 | Calamares BIOS MSDOS, 30 GiB raw, erase vda, tr_TR, Turkish-Q, testuser | KVM | **PASS** (completion page: "Her şey tamam", AlpbahOS 0.9 Beta installed) | `I1/i-09-done.png`; image `images/inst-bios-msdos-0.9b.raw` |
+| I1a | BIOS disk, read-only loop mount | none | **PASS**: fstab root UUID 7ff179a0-... equals blkid; no live account; testuser present; grub.cfg present; MBR has GRUB code; VERSION 0.9 Beta | this section (read-only check output) |
+| I2 | Calamares UEFI GPT, 30 GiB raw, erase vda, same user | KVM | **PASS** (completion page) | `I2/i-09-done.png`; image `images/inst-uefi-gpt-0.9b.raw` |
+| I2a | GPT disk, read-only loop mount | none | **PASS**: fstab root ddfaae53-... and /boot/efi 480B-DAFF equal blkid; no live account; grub.cfg; ESP has EFI/alpbahOS/grubx64.efi and EFI/boot/bootx64.efi; hostname alpbahos-test; VERSION 0.9 Beta | this section |
+| B1 | installed BIOS, virtio: login, desktop, Konsole, Dolphin, System Settings, sound | KVM | **PASS** login, desktop, Konsole, Dolphin, System Settings; sound "Yerleşik Ses Analog Stereo" (sink and source) PASS; **curl NOT VERIFIED** (15.4 item 3) | `B1/`, `B1b/`, `B1c/`, `B1d/` |
+| B2 | installed BIOS, AHCI: login, desktop | KVM | **PASS** login and desktop; **curl NOT VERIFIED**; sound not run | `B2/B2-desktop.png`, `B2/B2-curl.png` |
+| B3 | installed BIOS, NVMe, -m 2G, bootindex 0 | KVM, SeaBIOS (pc) | **PASS** login and desktop; **curl NOT VERIFIED** | `B3/B3-desktop.png`, `B3/B3-curl.png` |
+| U1 | installed UEFI, virtio: login, hostnamectl, failed units, fusermount3 | KVM, OVMF | **PASS** login, hostnamectl (AlpbahOS 0.9 Beta, kvm, edk2), systemctl --failed (0 loaded units); **curl NOT VERIFIED**; Flatpak in this run not reached (screen locked, see 15.4 item 1) | `U1/U1-hostnamectl.png`, `U1/U1-failed.png`, `U1/U1-fusermount.png` |
+| U1c | same UEFI image, fresh snapshot: idle lock off, Flatpak remote, install, About | KVM, OVMF | **Flatpak FAIL** (remote-add GPG error; install not run); **About this System PASS** | `U1c/U1c-remote-add.png`, `U1c/U1c-install-done.png`, `U1c/U1c-about.png` |
+| U2 | installed UEFI, NVMe + intel-hda: login, sound, lsblk | KVM, OVMF | **PASS** login, sound, lsblk (nvme0n1: p1 512M /boot/efi, p2 29.5G /); **curl NOT VERIFIED** | `U2/U2-desktop.png`, `U2/U2-wpctl.png`, `U2/U2-lsblk.png` |
+| S1 | 3 shutdown cycles on a qcow2 overlay of the BIOS image; Konsole `systemctl poweroff` (deviation: not the Plasma Kapat menu); session about 60 s | KVM | **PASS 3/3**: each cycle ended with the guest powered off; the overlay's journal has 3 poweroff entries and 0 matches for dumped, ABRT, pending != NULL, core-dump, Failed with result; /var/lib/systemd/coredump is empty | `S1-c1..c3/`, `S1-c*/s1-c*-session.png`; overlay `ov-s1.qcow2` |
+| R1 | reboot from Konsole (deviation: not the Plasma menu) | KVM | **PASS**: the SDDM greeter returns after the reboot | `R1/R1-after-reboot.png` |
+| T1 | locale and keymap | KVM | **PASS** for LANG=tr_TR.utf8 and VC Keymap trq; X11 Layout is unset (15.4 item 8) | `B1d/B1d-localectl.png` |
+| REC1 | BIOS recovery from the live ISO: broken disk copy (initramfs removed, grub.cfg truncated) as /dev/vda | KVM | **PASS**: alpbahos-recover listed the partitions, ran steps 1 to 6 and printed "recovery done; unmounting; reboot the installed disk"; the repaired disk boots to the SDDM greeter | `REC1c/rec1c-step0-list.png`, `REC1c/rec1c-step1.png`, `REC1c-boot/rec1c-disk-greeter.png` |
+| REC2 | UEFI GPT recovery, same procedure | KVM | **PASS**: same six steps (ESP and root); the repaired disk boots to the greeter | `REC2/rec2-step0-list.png`, `REC2/rec2-step1.png`, `REC2-boot/rec2-disk-greeter.png` |
+| FP | Flatpak: remote, install one app, run | KVM | **FAIL** (15.4 item 1) | `U1c/` |
+
+Notes on the matrix:
+- REC1 and U1 first runs failed for test-harness reasons and were rerun. REC1 booted the broken disk before the ISO (fixed with `-boot order=dc`), and the live `alpbahos-recover` is not on the user PATH, so the calls use `/usr/local/sbin/alpbahos-recover`. U1 locked and blanked the screen after about 10 minutes idle, so its flatpak commands were typed into the lock screen; U1c turns the lock off first.
+- Install I1 was driven by `drv-install.sh` and I2 by `drv-install2.sh` (scripts in the r13 directory). The first I1 attempt typed the password and hostname with keys that the installer session does not map as intended, and Next stayed disabled; the fields were retyped by hand and the install then ran. I2 needed a second click on Install because the first click landed above the button. Both final screens show the completion page.
+- The sha 03469d29 is a new build from r4-root (it contains the round 8 to 12 records, including the flatpak chain built after the old snapshot). It differs in bytes from the release sha 1686abfd and from 5ae7e7c9.
+
+### 15.3 New visible checks
+
+- (a) SDDM greeter with the alpbahos theme: **NOT CONFIRMED.** /etc/sddm.conf.d/alpbahos-theme.conf on the installed disk sets Current=alpbahos and the theme directory is present. The greeter shows the theme layout (top bar with session, keyboard and power; blue background; user card; clock). The brand logo was not visible on any login frame. The theme's Main.qml sets the logo opacity to 0 while the login UI is shown (loginScreenRoot.uiVisible), so the logo is expected to be hidden on that frame. Not shown on screen; open.
+- (b) System Settings, About this System (Sistem Hakkında, U1c): **PASS.** It shows "AlpbahOS 0.9 Beta" with the mountain logo, KDE Plasma 6.7.4, Qt 6.11.2, kernel 7.1.8-alpbahos, Wayland, llvmpipe.
+- (c) fastfetch in Konsole (B1): **PASS.** The AlpbahOS logo is drawn; the title line is "AlpbahOS 0.9 Beta" with orange key names and white values; the colours are readable. The screen shows OS AlpbahOS 0.9 Beta x86_64, Kernel linux 7.1.8-alpbahos, Window Manager KWin (Wayland).
+- (d) alp with no --index (B1, screens b1-alp-list.png, b1-alp-search.png, b1-alp-check.png): **FAIL.** alp list, alp search fastfetch and alp check each print "alp: hata: Bu komut için --index PATH gereklidir." (needs --index PATH). No sudo is needed: they fail before reading the catalog. Cause in 15.4 item 2.
+
+### 15.4 Failures, open items and explanations
+
+1. **Flatpak FAIL (first real run).** pkexec flatpak remote-add --if-not-exists flathub /etc/flatpak/remotes.d/flathub.flatpakrepo shows the polkit dialog for testuser (wheel group), accepts the password, then prints `error: GPG: Unable to configure context: gpgme_ctx_set_engine_info: GPGME: Geçersiz kripto işletkisi` (invalid crypto engine). flatpak run org.gnome.Calculator then reports that app/org.gnome.Calculator/x86_64/master is not installed. Best explanation: GnuPG is missing from the image. r4-root has gpgme-config, gpgme-tool, gpgme-json and gpg-error, but no gpg or gpgconf, so gpgme has no engine to use. Not fixed in this round: a fix changes the build inputs, so it needs a new record, a new ISO and a full rerun.
+2. **alp FAIL on the installed system.** The installed /usr/lib/alp/alp.py (r4-root, 3007 lines) is an older copy. The repo file docs/handoffs/claude/alp-prototype/alp.py (3019 lines, commit 711d699, round 7 "alp default catalog path") makes usr/share/alp/index.json the default, and the r4-root copy does not have that code (diff 18 lines). The catalog file itself is on the installed disk (/usr/share/alp/index.json, 131779 bytes). The "alp check rc 0" gate ran the repo copy, so it did not show this. Fix: install the repo alp.py into r4-root through alp (new record), rebuild, and rerun the rows that use alp.
+3. **curl NOT VERIFIED.** In every guest session (B1d, B2, B3, U1, U2) the command `curl -I ftp.gnu.org` was echoed and a new prompt came back with no output, not even an error (also with -sS). The r4-root curl 8.21.0 runs (in the chroot it reports "Could not resolve host", because the chroot has no DNS). The round 6 PASS (HTTP/1.1 200, sha 1686) is not repeated on this sha. Cause not found; it is not claimed as a PASS.
+4. **sudo.** The installed system has no sudo ("bash: sudo: command not found"). pkexec with the testuser password works (the polkit dialog appears). The brief's sudo path was not available.
+5. **fusermount3 mode (review item 1).** The file in r4-root and on the installed disk is -rwxr-xr-x (755), not setuid. The brief says the record has 4755; the r4-ledger record was not compared field by field, so the difference is between the brief and the file. The BLFS stable book (fuse page, postlfs/fuse.html, Fuse 3.17.4) installs fusermount3 and then runs chmod u+s /usr/bin/fusermount3. The text here is from a search summary, not a verbatim quote; the source is https://www.linuxfromscratch.org/blfs/view/stable/postlfs/fuse.html. So the book's setuid bit is missing in this image, and unprivileged FUSE mounts would fail. Not changed in this round.
+6. **Failed units (review item 2).** On the installed UEFI disk (U1), systemctl --failed lists 0 loaded units. dmesg and the journal were not read for flatpak or fuse3 messages beyond that.
+7. **target-initramfs.sh noise.** In REC1 and REC2 step 3 prints "echo: write error: Veri alınamıyor" twice (line 33: echo "$LIST" | grep -q ...). grep -q exits at the first match and closes the pipe, so the echo fails. The checks themselves pass and the recovery continues. Harmless, but noisy. Not changed.
+8. **Keyboard (open; not worked on; see docs/verification/user-feedback-keyboard-2026-11-09.md).** On the installed system localectl shows VC Keymap trq but X11 Layout (unset). The Plasma session types as US (the minus and dot keys need the US mapping there), and the SDDM greeter shows the tr layout on some boots and us on others. The installer chose Turkish, but the desktop the user works in is US. This matches the user's feedback. The cause is not analysed here.
+9. **Shutdown crash.** S1 does not reproduce the coredump crash (3 cycles, 0 dumps). It is still not proven fixed.
+10. **Deviations.** S1 and R1 used Konsole systemctl poweroff/reboot instead of the Plasma Kapat/restart menu; S1 sessions were about 60 s, not 90 s. Installed-system rows used -snapshot on the read-only base instead of overlays. REC1 and REC2 broke a reflink copy of the installed image, not a qcow2 overlay (no qemu-nbd was used). The B3 row used the NVMe device with SeaBIOS at -m 2G, as the brief asks.
+
+### 15.5 Not run
+
+- Flatpak: the Calculator app was never installed or started (remote-add failed).
+- Shutdown and reboot from the Plasma menu (Kapat): not run; Konsole was used.
+- A 90 s logged-in session in each S1 cycle.
+- Sound on B2 and B3 (AHCI and NVMe).
+- The SDDM logo on a login frame: not shown.
+- dmesg and journal review for flatpak and fuse3 messages (only systemctl --failed).
+- A curl PASS on this sha (15.4 item 3).
+- The real-PC USB test and the publication decision: the user's, not part of the QEMU gate.
+
+### 15.6 Gate (QEMU level, sha 03469d29)
+
+**NOT MET.** Passing: live UEFI and BIOS desktops (KVM and TCG); both installs with clean disk checks; installed boots (BIOS virtio, AHCI, NVMe at 2G; UEFI virtio and NVMe); sound on B1 and U2; shutdown 3/3 with no dumps; reboot back to the greeter; tr_TR and trq locale and keymap settings; both recoveries with the repaired disks booting; About this System; fastfetch. Failing: Flatpak (GPG engine missing), alp without --index (old alp.py in r4-root), curl NOT VERIFIED on every installed row, fusermount3 not setuid against the book, SDDM logo not shown. Still open: the keyboard layout result (15.4 item 8), the coredump crash (not reproduced, not proven fixed), the real-PC USB test and the publication approval (the user's).

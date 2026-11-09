@@ -10,6 +10,9 @@ Claude is the only agent on this project (D100). Decisions were re-done on 2026-
 - **Beta 0.9:** ISO `alpbahos-beta-0.9-2026-11-09.iso`, sha256 `1686abfd38dc04fabbb405fdec85307d2a587160d18502a1f5b50f5cfe8d4347`. Gate **not met** (record: [docs/verification/iso-beta-0.9-2026-11-09.md](docs/verification/iso-beta-0.9-2026-11-09.md), sections 10.5 and 10.6).
   - Passing on this sha: live BIOS and UEFI desktops; BIOS MSDOS and UEFI GPT installs complete; installed boots on BIOS virtio, BIOS AHCI, UEFI virtio and UEFI NVMe; sound on BIOS virtio and UEFI NVMe.
   - Open: the shutdown coredump is not reproduced and not fixed (the drop-in stop-order fix is shown only for the at-spi failure); installed BIOS on NVMe does not boot in SeaBIOS in the round 6 runs; the round 6 reruns (shutdown menu, tr_TR, trq, AHCI sound, alp update and rollback, live-ISO recovery) were not run.
+- **Beta 0.9 round 13 (2026-11-09, later):** ISO `alpbahos-beta-0.9-2026-11-09-r13.iso`, sha256 `03469d2900c1cc77a28d06fe6b7a22ec83d15df744cc0228cef75842c7e2ba7b` (built with TAG=r13, the release name is taken). Gate **not met** (section 15 of [docs/verification/iso-beta-0.9-2026-11-09.md](docs/verification/iso-beta-0.9-2026-11-09.md)).
+  - Passing on this sha: live UEFI and BIOS desktops (KVM and TCG); BIOS MSDOS and UEFI GPT installs with clean disk checks; installed boots on BIOS virtio, AHCI, NVMe (2G) and UEFI virtio and NVMe; shutdown 3/3 with no coredump; reboot to the greeter; both recoveries repair the disk; About this System; fastfetch.
+  - Failing or open: Flatpak (remote-add fails: no gpg engine in the image); `alp` without `--index` (r4-root has an older alp.py); curl not verified in the guest; fusermount3 is not setuid (BLFS book says chmod u+s); SDDM logo not seen on the login frame.
 - **Not ours to decide:** the real-PC USB test and the publication approval (D108) belong to the user.
 
 ## What exists and is verified
