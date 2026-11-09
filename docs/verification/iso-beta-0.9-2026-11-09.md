@@ -867,3 +867,8 @@ Records: `scripts/rebuild/r8/stage-record-r8.py` through `scripts/rebuild/r7/app
 - Version source: BLFS 13.1 postlfs/gpgme.html: 2.1.2 (GPG_ERROR_CONFIG=gpgrt-config: libgpg-error 1.61 has no gpg-error-config); sha256 0687a95b299871c4141f507c0f740de6b429c9ac067d0fa4e062e3264df5fb77.
 - Staged: staged files: 17; elf files: 4; audit-isa rc=0.
 - Record: alp gpgme 2.1.2; alp check rc=0; packages 496; packages.tsv row 382.
+
+### 14.12 ostree-2026.6: built, recorded (round 12)
+- Version source: upstream newest stable (not in BLFS 13.1 index): v2026.6; sha256 164b8226aea6a0e6601036de02a5e3b62307bae25890ed557fb4e19020bd5974.
+- Staged: staged files: 52; elf files: 6; audit-isa rc=0.
+- Record: alp ostree 2026.6; alp check rc=0; packages 497; packages.tsv row 386.
