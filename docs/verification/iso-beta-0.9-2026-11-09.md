@@ -884,10 +884,12 @@ Records: `scripts/rebuild/r8/stage-record-r8.py` through `scripts/rebuild/r7/app
 - Record: alp libsecret 0.21.7; alp check rc=0; packages 499; packages.tsv row 383.
 
 
-### 14.16 libfyaml-0.9.6: built, recorded (round 12)
-- Version source: BLFS 13.1 general/libfyaml.html: 0.9.6 (dependency of appstream, built first); sha256 a59cc3331e2eb903ec36933ad52a45888041cac31e44f553a00511131242c483.
-- Staged: staged files: 37; elf files: 2; audit-isa rc=1.
-- Record: alp libfyaml 0.9.6; alp check rc=0; packages 500; packages.tsv row 389.
+### 14.16 libfyaml-0.9.6: built, recorded (round 12); first record failed the audit, re-recorded
+- Version source: BLFS 13.1 general/libfyaml.html: 0.9.6 (dependency of appstream); sha256 a59cc3331e2eb903ec36933ad52a45888041cac31e44f553a00511131242c483.
+- First record (500 packages): audit-isa rc=1, 207 nonvariant AVX/BMI hits, all in blake3_compress_subtree_wide (five static copies, one per blake3 backend: portable, sse2, sse41, avx2, avx512). Not -march=native: the flags were already -O2 -march=x86-64 -mtune=generic. The AVX2 and AVX512 copies come from upstream's per-backend objects (-mavx2, -mavx512f), and the name-based audit cannot see the runtime gate.
+- Fix: upstream SIMD backends kept on (no portable-target switch). One exact entry (file usr/lib/libfyaml.so.0.0.0, symbol blake3_compress_subtree_wide) in scripts/lfs-blfs/cpu-baseline/audit-isa.allow, with the gate evidence: blake3_backend.c detected_backends_x86 sets AVX2 only with CPUID OSXSAVE, XCR0 bits 1-2 and CPUID.7 EBX bit 5, and AVX512 only with XCR0 bits 5-7 and CPUID.7 EBX bits 16 and 31; blake3_host_state.c intersects supported and detected backends. Rebuilt with the same generic flags and replaced the record (REPLACE=1 KEEP_SHARED=0).
+- Result: audit-isa rc=0 (207 hits allowlisted, 0 unallowed; 37 staged files, 2 ELF). Runtime check: a test hashing 100000 bytes with the default, portable, sse2 and avx2 backends gives the same digest natively and under qemu-x86_64 -cpu qemu64 (no AVX), rc 0 both. appstreamcli --version prints 1.1.6 in the chroot.
+- Record: alp libfyaml 0.9.6 (replaced); alp check rc=0; packages 506; packages.tsv row 389 (unchanged).
 
 ### 14.17 Flatpak chain status at the end of round 12: NOT complete (appstream blocked on itstool; flatpak not built)
 
@@ -934,4 +936,4 @@ Records: `scripts/rebuild/r8/stage-record-r8.py` through `scripts/rebuild/r7/app
 - Built and recorded in this run: lxml 6.1.1 (needed by itstool), itstool 2.0.7, appstream 1.1.6, pyparsing 3.3.2 (needed by the flatpak meson setup), flatpak 1.18.4, and the flathub remote config record. Rows 390-395; rows 385 and 387 stay unused.
 - `flatpak --version`: Flatpak 1.18.4. `flatpak remotes` in the chroot: empty (see 14.23). Package count 506; alp check rc=0.
 - Root size: `sudo du -sx r4-root` 115856704 KiB; 14.17 recorded 115830500 KiB before this run (+26204 KiB).
-- Open items: libfyaml-0.9.6 (14.16) was recorded with audit-isa rc=1 in the earlier run and was not re-audited here. Appstream and flatpak test suites were not run; flatpak runtime (sandbox, remote listing, app install) was not tested, by design. Flatpak is built without systemd, dconf, malcontent, gir, gtkdoc, xauth, Wayland security context, SELinux module, and man pages/docs.
+- Open items: libfyaml-0.9.6 was re-recorded with the audit fix (14.16): audit-isa rc=0. Appstream and flatpak test suites were not run; flatpak runtime (sandbox, remote listing, app install) was not tested, by design. Flatpak is built without systemd, dconf, malcontent, gir, gtkdoc, xauth, Wayland security context, SELinux module, and man pages/docs.
