@@ -55,25 +55,7 @@ for u in PIPE_UNITS:
 files["etc/systemd/user/plasma-ksplash.service.d/10-alpbahos-stop-status.conf"] = (
     HDR + "# The session stops the splash with SIGTERM; that is a normal stop.\n[Service]\nSuccessExitStatus=SIGTERM\n",
     0o644)
-files["usr/lib/alpbahos/live-medium-check"] = (
-    "#!/bin/sh\n"
-    "# REBUILD-R5: exit 0 only when booted from the AlpbahOS live medium (kernel argument rd.live.image).\n"
-    "# Used by /etc/pam.d/sddm-autologin. The installed system does not have the argument.\n"
-    "grep -qw 'rd.live.image' /proc/cmdline\n", 0o755)
-
-# /etc/pam.d/sddm-autologin: keep the session lines of the R4 file, replace the auth lines.
-auto = os.path.join(R4, "etc/pam.d/sddm-autologin")
-old = open(auto).read()
-keep = [l for l in old.splitlines() if l.split() and l.split()[0] in ("session", "account", "password")]
-keep_txt = "\n".join(keep) + "\n"
-pam = ("#%PAM-1.0\n"
-       "# REBUILD-R5: autologin is allowed for the live user on the live medium only.\n"
-       "auth     requisite      pam_nologin.so\n"
-       "auth     required       pam_succeed_if.so user = live quiet\n"
-       "auth     required       pam_exec.so quiet /usr/lib/alpbahos/live-medium-check\n"
-       "auth     required       pam_permit.so\n"
-       + keep_txt)
-files["etc/pam.d/sddm-autologin"] = (pam, 0o644)
+# (The sddm-autologin PAM stack is owned by autologin-r5fix; the live-medium helper was removed in R5 round 2.)
 
 # /etc/pam.d/login: missing in the R4 root, so login(1) (the console getty) refused every login without
 # asking for a password. The book's Linux-PAM login stack, with the system stacks of R4.

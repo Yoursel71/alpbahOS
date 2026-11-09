@@ -32,7 +32,7 @@ def tl(msg):
     TL.write(f"{time.strftime('%H:%M:%S')} {msg}\n")
 
 
-args = ["-cpu", "qemu64", "-m", "6G", "-smp", "4", "-no-reboot", "-display", "none", "-vga", "virtio",
+args = ["-cpu", "qemu64", "-m", os.environ.get("MEM", "6G"), "-smp", "4", "-no-reboot", "-display", "none", "-vga", "virtio",
         "-device", "qemu-xhci", "-device", "usb-kbd", "-device", "usb-tablet",
         "-nic", "user,model=virtio-net-pci",
         # An .iso image is the live medium (CD-ROM, IDE); a raw image is the installed disk (virtio).
@@ -56,7 +56,11 @@ tl(f"qemu started pid {qemu.pid} fw={FW} img={os.path.basename(IMG)}")
 
 
 class Serial:
+    """Serial console client. A reader thread drains the socket all the time: if nobody reads, QEMU's
+    chardev backpressure stalls the guest's console writes (the boots were 30 s per unit in that state)."""
+
     def __init__(self):
+        import threading
         for _ in range(300):
             if os.path.exists(SER_SOCK):
                 break
@@ -65,25 +69,37 @@ class Serial:
         self.s.connect(SER_SOCK)
         self.s.settimeout(0.5)
         self.buf = ""
+        self.lock = threading.Lock()
+        self.alive = True
+        self.th = threading.Thread(target=self._reader, daemon=True)
+        self.th.start()
+
+    def _reader(self):
+        while self.alive:
+            try:
+                data = self.s.recv(65536)
+                if not data:
+                    break
+                with self.lock:
+                    self.buf += data.decode("utf-8", "replace")
+            except socket.timeout:
+                continue
+            except OSError:
+                break
 
     def pump(self):
-        try:
-            data = self.s.recv(65536)
-            if not data:
-                return False
-            self.buf += data.decode("utf-8", "replace")
-        except socket.timeout:
-            pass
-        return True
+        time.sleep(0.3)
+        return self.alive
 
     def expect(self, pat, timeout):
         end = time.time() + timeout
         while time.time() < end:
-            m = re.search(pat, self.buf)
-            if m:
-                self.last_before = self.buf[:m.start()]
-                self.buf = self.buf[m.end():]
-                return m
+            with self.lock:
+                m = re.search(pat, self.buf)
+                if m:
+                    self.last_before = self.buf[:m.start()]
+                    self.buf = self.buf[m.end():]
+                    return m
             if not self.pump():
                 break
         return None
