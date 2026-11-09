@@ -29,12 +29,17 @@ for dirpath, _dirs, names in os.walk(STAGE):
         lst = os.lstat(full)
         if stat.S_ISLNK(lst.st_mode):
             target = os.readlink(full)
+            if os.path.lexists(dst):
+                os.remove(dst)  # only reached with REPLACE=1
             os.symlink(target, dst)
             entries.append({"path": "/" + rel, "type": "symlink", "target": target, "mode": 0o777,
                             "uid": 0, "gid": 0})
             continue
-        with open(full, "rb") as f:
-            data = f.read()
+        try:
+            with open(full, "rb") as f:
+                data = f.read()
+        except OSError as exc:
+            raise SystemExit(f"cannot read {full}: {exc}")
         with open(dst, "wb") as f:
             f.write(data)
         mode = stat.S_IMODE(lst.st_mode) & 0o777
