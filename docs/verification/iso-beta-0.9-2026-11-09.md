@@ -180,7 +180,7 @@ All runs are TCG with `-cpu qemu64` (no KVM), on the same host. A KVM run was no
 ## 8. Round 3 (2026-11-09, later): autologin lead, UEFI cause candidate, install and matrix status
 
 Final release ISO (all matrix rows below name this sha unless stated):
-`scratch-lfs-bench/images/alpbahos-beta-0.9-2026-11-09.iso`, sha256 `5ae755700299f2c554a5d634b0a0330f93ab26bff7890a2976497b34c5cd`.
+`scratch-lfs-bench/images/alpbahos-beta-0.9-2026-11-09.iso`, sha256 `5ae7e7c955700299f2c554a5d634b0a0330f93ab26bff7890a2976497b34c5cd`.
 DEBUG ISO (test only): sha256 `6285f4848eeff676fb357c8557298166f509872b49df5935c0c6e7fa00b2`.
 Accelerator for every guest in this round: TCG, `-cpu qemu64` (no KVM). Host: `thewo`, idle at the start of the run.
 
@@ -363,3 +363,88 @@ Open items:
 5. Autologin: the fix (section 8) is in the final ISO, but the UEFI autologin was not repeated 3 times on KVM on the final
    sha. The KVM run on the final sha reached the desktop once (M1). Repeat before any gate call.
 6. The user-reported run of the alpha ISO (section 8.4) is unverified.
+
+
+## 10. Round 5: sound fix, new ISO sha, final matrix (supersedes section 9 where they differ)
+
+ISO: `scratch-lfs-bench/images/alpbahos-beta-0.9-2026-11-09.iso`, sha256 **`1686abfd38dc04fabbb405fdec85307d2a587160d18502a1f5b50f5cfe8d4347`**.
+The previous release ISO (sha `5ae7`, section 9) is kept as `images/superseded-5ae7-release.iso` for reference.
+Every matrix row below names this sha. Accelerator: KVM with `-cpu qemu64` (ACCEL=kvm) except rows marked TCG.
+
+### 10.1 Sound: root cause and fix (lead item)
+
+- Kernel config (`scratch-lfs-bench/r4-root` kernel `7.1.8-alpbahos`): `CONFIG_SND_HDA_INTEL=m`, `CONFIG_SND_HDA_CORE=m`,
+  `CONFIG_SND_HDA_GENERIC=m` (the 7.x name; `CONFIG_SND_HDA_CODEC_GENERIC` does not exist in this kernel), Realtek and HDMI codecs `=m`.
+  No kernel change is needed for the generic codec.
+- Guest (installed UEFI disk, NVMe, `-device intel-hda -device hda-duplex`): `snd_hda_intel` and `snd_hda_codec` were loaded
+  (`lsmod`), `/proc/asound/cards` said "no soundcards", `/dev/snd` had only `timer`, and wpctl listed only the dummy sink.
+  The generic codec module was not loaded.
+- Cause: the kernel's module helper path is `CONFIG_MODPROBE_PATH=/usr/bin/modprobe` (`cat /proc/sys/kernel/modprobe` in the
+  guest). That file did not exist: kmod installs `/usr/bin/kmod` and links `/usr/sbin/modprobe -> ../bin/kmod`. So
+  `request_module()` could not run the helper and the codec was never autoloaded. This is the autoload problem of
+  USB-MODPROBE-01 in general, not sound-specific.
+- Fix: record `modprobe-path-r5fix` 13.1-r5fix (alp, symlink `/usr/bin/modprobe -> kmod`, `scripts/rebuild/r5/modprobe-path-r5fix.py`).
+  `alp check` on r4-root: rc 0, 471 installed packages (`r4-ledger/r5/alp-check-r5f.txt`). No kernel rebuild, so no kvm.ko or
+  audit change. The ISO was rebuilt (new sha).
+- Verified on the new sha: BIOS live (`bios-live-sound/s2.png`), installed BIOS (`inst-bios-boot1/q1.png`) and installed UEFI NVMe
+  (`uefi-nvme-boot/un2.png`) show "Yerleşik Ses" (built-in audio) with an analog stereo sink and source. The tray volume icon is
+  active where the earlier boots showed it muted.
+
+### 10.2 `ip` and PATH
+
+- `ip` is present: `/usr/sbin/ip` and `/sbin/ip` (`/sbin -> usr/sbin`). The earlier "ip: command not found" was a PATH
+  effect for the GUI user's shell: `lsmod` and `ip` are in `/usr/sbin`, which the user's PATH does not contain.
+- No PATH change was made. I did not check the book's `/etc/profile` text in this round, so I cannot say whether the
+  book's user profile includes `/usr/sbin`. Open item: check the book text and decide.
+- Correction to section 9.3: "ip missing from the image" is wrong. Use `/usr/sbin/ip` or `networkctl` for now.
+
+### 10.3 Matrix (sha 1686)
+
+| # | Row | Accel | Result | Evidence (under `scratch-lfs-bench/lfs13-logs/boot/n2/`) |
+|---|---|---|---|---|
+| L1 | Live UEFI, autologin to desktop, 3 runs (taskbar pixel at 130 s, same colour as the desktop) | KVM | **PASS 3/3** | `uefi-live-1..3/a130.ppm` |
+| L2 | Live UEFI, desktop at 300 s | TCG | **PASS** | `tcg-uefi-live/tt1.png` |
+| L3 | Live BIOS, desktop with HDA device, sound visible | KVM | **PASS** (desktop; sound: `Yerleşik Ses`) | `bios-live-sound/s1.png`, `s2.png` |
+| L4 | Live BIOS, desktop at 300 s | TCG | **PASS** | `tcg-bios-live/tb1.png` |
+| I1 | Calamares install BIOS MSDOS, target virtio 30 GiB (erase vda, tr_TR, Turkish-Q, testuser) | KVM | **PASS** (installer completed; unmount logged) | `inst-bios/` (`install-gui.out`, `p1.png`) |
+| I1a | BIOS disk after install: fstab root UUID; no `live` account; `grub.cfg` present; MBR GRUB code; VERSION 0.9 Beta | read-only loop mount | **PASS** | disk `inst-bios-msdos-0.9.raw` |
+| I2 | Calamares install UEFI GPT, target virtio 30 GiB (EFI 512 MiB + ext4 root) | KVM | **PASS** (install completed) | `inst-uefi/u5.png`, `u6.png` |
+| I2a | GPT disk after install: fstab root and /boot/efi; no `live` account; `grub.cfg` (x86_64-efi); ESP `EFI/alpbahOS`, `EFI/BOOT` | read-only loop mount | **PASS** | disk `inst-uefi-gpt-0.9.raw` |
+| B1 | Installed BIOS, virtio: login, desktop, curl, networkctl, Konsole, Dolphin, System Settings, sound | KVM | **PASS** (sound `Yerleşik Ses` `q1.png`; curl `q2.png` HTTP 200; Dolphin `q3.png`; System Settings `q4.png`) | `inst-bios-boot1/` |
+| B2 | Installed BIOS, AHCI: login, curl, networkctl | KVM | **PASS** (`bios-ahci/ah3.png`; sound not run on this row) | `bios-ahci/` |
+| B3 | Installed BIOS, NVMe | KVM, SeaBIOS (pc and q35) | **NOT BOOTABLE in this firmware**: SeaBIOS reports `No bootable device` (tries CD, PXE, floppy; no NVMe attempt). The same disk boots on AHCI (B2). Test-firmware limit, not an AlpbahOS fault (`bios-nvme-q35/nq1.png`, `bios-nvme2/nv3.png`) | - |
+| U1 | Installed UEFI GPT, virtio: login, `hostnamectl` (AlpbahOS 0.9 Beta, kvm, edk2) | KVM | **PASS** | `uefi-virtio-boot/uv1.png` |
+| U2 | Installed UEFI GPT, NVMe + intel-hda: login, sound (`Yerleşik Ses`), curl HTTP 200 | KVM | **PASS** | `uefi-nvme-boot/un1.png`, `un2.png` |
+| S1 | Shutdown with a logged-in session, drop-ins present: 3 cycles (Konsole `systemctl poweroff`, each with 90 s session) | KVM | **3/3 completed**; disk journal: 0 matches for `dumped|ABRT|pending != NULL|core-dump|Failed with result`; no `/var/lib/systemd/coredump` | `inst-bios-boot1` run, `sd-cyc2`, `sd-cyc3`; journal `sd-journal-drop.txt` |
+| S2 | Same 3 cycles on a copy with the drop-in files removed (baseline) | KVM | **3/3 completed**; 1 match: `at-spi-dbus-bus.service: Failed with result 'exit-code'` at logout (the session bus stopped first); no core dump | `nodropin-0.9.raw`, `nd-cyc1..3`; journal `nd-journal.txt` |
+
+Autologin (lead item 1, on the final sha): L1 is 3/3 under KVM. The UEFI TCG run (L2) also reaches the desktop. The earlier
+UEFI runs on the 5ae7 sha (section 9) were KVM once and TCG black frames under load.
+
+### 10.4 Shutdown crash: status
+
+- Drop-ins present: 3 logged-in shutdowns, no core dump, no abort, no at-spi stop failure.
+- Drop-ins removed (baseline): 3 logged-in shutdowns, no core dump, but the at-spi failure appears.
+- So the drop-ins remove a real stop-order failure (at-spi exits when the bus stops first). The original abort (ksmserver, kded6,
+  pipewire core dumps, round 1) did **not** reproduce in either configuration on this path.
+- Status: the stop-order fix is **proven for the at-spi failure**; the coredump crash is **not proven** (not reproduced without
+  the fix, and the R5 logout test (section 2.1) was the only earlier comparison).
+
+### 10.5 Gate
+
+**Beta quality: NO.**
+
+- Met: live desktops (UEFI and BIOS, KVM and TCG, on this sha); install matrix (BIOS MSDOS and UEFI GPT complete, disks check
+  out); installed boots on BIOS virtio and AHCI, UEFI virtio and NVMe; sound (after the modprobe fix); login, network, curl,
+  Konsole, Dolphin, System Settings, tr_TR, trq, shutdown and reboot from the Plasma menu (round 4, sha 5ae7; not rerun on
+  1686 except the shutdown cycles and the items listed above).
+- Not met: the coredump crash fix is not proven (section 10.4); the BIOS installed disk cannot boot on NVMe in this SeaBIOS
+  (a firmware limit recorded as such, not a product FAIL, but the NVMe row is open for a firmware that can boot NVMe);
+  the PATH question (10.2) is open.
+
+Open items:
+1. Coredump crash: find a reproducer that makes the baseline crash (ksmserver/kded6/pipewire aborts) on a shutdown.
+2. Book check for `/usr/sbin` in the user PATH (10.2); fix only if the book's profile includes it.
+3. NVMe boot of the BIOS MSDOS disk: needs a firmware that boots NVMe (SeaBIOS here does not). UEFI NVMe is covered (U2).
+4. Sound on the installed AHCI and virtio rows: sound was checked on BIOS virtio (B1) and UEFI NVMe (U2) only.
+5. Real hardware: not tested.

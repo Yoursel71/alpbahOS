@@ -14,8 +14,8 @@ RUN=$1; MODE=$2; USER_NAME=$3; PASS=$4; HOST=$5
 Q=/home/yrslf/alpbahOS/wt-t2-kisayol/scripts/rebuild/image/qmpctl.py
 q() { python3 "$Q" "$RUN" "$@"; }
 NEXT_X=1007; NEXT_Y=637   # "Sonraki"/"Next" button on the welcome, locale, keyboard, partition and users pages
-INSTALL_Y=652             # "Kur" button on the summary page
-CONFIRM_X=749; CONFIRM_Y=428  # "Şimdi Kur" in the confirmation dialog
+INSTALL_Y=${INSTALL_Y:-652}             # "Kur" button on the summary page
+CONFIRM_X=749; CONFIRM_Y=${CONFIRM_Y:-428}  # "Şimdi Kur" in the confirmation dialog
 
 q click 58 40; sleep 1; q key ret; sleep 40; q shot i-00-installer
 q click $NEXT_X $NEXT_Y; sleep 2; q shot i-01-locale          # welcome -> locale (Türkçe, tr_TR)
