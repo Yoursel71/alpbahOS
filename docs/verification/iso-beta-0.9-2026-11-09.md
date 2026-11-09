@@ -907,3 +907,9 @@ Records: `scripts/rebuild/r8/stage-record-r8.py` through `scripts/rebuild/r7/app
 - Version source: BLFS 13.1 pst/itstool.html: 2.0.7 with its patch itstool-2.0.7-lxml-1.patch (sha256 035a0d22bd1cf37a00357ebc096454e1eb8594f3ea54f8122e8e76fdced0cbec): lxml replaces the libxml2 Python bindings, which BLFS calls deprecated and which libxml2 2.15.3 leaves disabled by default. sha256 fba78a37dc3535e4686c7f57407b97d03c676e3a57beac5fb2315162b0cc3176 (md5 e759b258617a912acce630de3fa43957, as in BLFS).
 - Staged: staged files: 8; elf files: 0; audit-isa rc=2 (no ELF files, nothing to audit). Chroot check: itstool --version prints 2.0.7 and a test .pot extraction works; the itstool test suite was not run.
 - Record: alp itstool 2.0.7; alp check rc=0; packages 502; packages.tsv row 391.
+
+### 14.20 appstream-1.1.6: built, recorded (round 12)
+- Version source: BLFS 13.1 general/appstream.html: 1.1.6. sha256 e298929f39729e84a70f6be6941f3e7f3fc2ee3c83cb3ea1b1b5b280a8fe3a24.
+- Options: BLFS -Dapidocs=false -Dbash-completion=false -Dstemming=false, plus -Dgir=false -Dvapi=false -Dqt=false -Dsystemd=false -Dcompose=false -Dapt-support=false -Ddocs=false -Dman=false (docbook-xsl-ns is not in the root). The -Dtests=false of the failed attempt is not an option in 1.1.6 and was dropped.
+- Staged: staged files: 164; elf files: 2; audit-isa rc=0.
+- Record: alp appstream 1.1.6; alp check rc=0; packages 503; packages.tsv row 392.
