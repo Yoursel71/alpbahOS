@@ -847,3 +847,8 @@ Records: `scripts/rebuild/r8/stage-record-r8.py` through `scripts/rebuild/r7/app
 - Version source: BLFS 13.1 general/libxmlb.html: 0.3.29; sha256 448294be33bfae62f00fa66e506f1cae80237ce71b7ab6530aefa75005eeb08a.
 - Staged: staged files: 28; elf files: 2; audit-isa rc=0.
 - Record: alp libxmlb 0.3.29; alp check rc=0; packages 492; packages.tsv row 384.
+
+### 14.8 glib-networking-2.90.1: built, recorded (round 12)
+- Version source: upstream newest stable (not in BLFS 13.1 index): 2.90.1; sha256 ea95636590098355a05e3027579dba1a9a950b05e456b2488ea03d82e4b6c18a.
+- Staged: staged files: 77; elf files: 1; audit-isa rc=0.
+- Record: alp glib-networking 2.90.1; ; ; packages.tsv row 381.
