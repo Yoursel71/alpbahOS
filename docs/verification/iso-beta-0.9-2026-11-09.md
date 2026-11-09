@@ -937,3 +937,16 @@ Records: `scripts/rebuild/r8/stage-record-r8.py` through `scripts/rebuild/r7/app
 - `flatpak --version`: Flatpak 1.18.4. `flatpak remotes` in the chroot: empty (see 14.23). Package count 506; alp check rc=0.
 - Root size: `sudo du -sx r4-root` 115856704 KiB; 14.17 recorded 115830500 KiB before this run (+26204 KiB).
 - Open items: libfyaml-0.9.6 was re-recorded with the audit fix (14.16): audit-isa rc=0. Appstream and flatpak test suites were not run; flatpak runtime (sandbox, remote listing, app install) was not tested, by design. Flatpak is built without systemd, dconf, malcontent, gir, gtkdoc, xauth, Wayland security context, SELinux module, and man pages/docs.
+
+## 15. Round 13 (2026-11-09, later): ISO r13, full matrix on the new sha, new checks
+
+### 15.1 Stage 1: build and content check
+
+- ISO: `scratch-lfs-bench/images/alpbahos-beta-0.9-2026-11-09-r13.iso`, sha256 **`03469d2900c1cc77a28d06fe6b7a22ec83d15df744cc0228cef75842c7e2ba7b`**, 4738207744 bytes (4.5 GiB). `.sha256` file written by the script. This sha differs from the previous release (`1686abfd...`, section 10) and from `5ae7e7c9...` (section 9).
+- The build used `TAG=r13`: the release name `alpbahos-beta-0.9-2026-11-09.iso` is taken by the previous release (kept, not overwritten; the build script refuses existing names). No DEBUG. The script itself was not changed.
+- Source snapshot: the old `lfs13-snapshots/r4-iso-src-2026-11-09` (taken 17:58, before the flatpak build at 18:35) was renamed to `r4-iso-src-2026-11-09-prev-r12` (kept, not deleted), and the build made a new read-only snapshot of `r4-root`. The writable copy `iso-work/live-root` was removed by the script; the empty `iso-work/` directory was removed after the checks.
+- Build log: `scratch-lfs-bench/lfs13-logs/iso-beta-0.9/build/build-r13.log` (plus `10-dracut.log`, `20-mksquashfs.log`, `40-xorriso.log`, `50-el-torito.log` in the same directory). Squashfs listing (read-only loop mount of the ISO): `scratch-lfs-bench/iso-check-r13.lls` (230094 entries).
+- Required paths, checked in the ISO squashfs: all present: `usr/local/sbin/alpbahos-recover`, `usr/lib/alpbahos/target-initramfs.sh`, `usr/share/alp/index.json`, `usr/bin/fastfetch`, `etc/fastfetch/config.jsonc`, `usr/share/sddm/themes/alpbahos`, `etc/sddm.conf.d/alpbahos-theme.conf`, `etc/xdg/kcm-about-distrorc`, `usr/bin/flatpak`, `etc/flatpak/remotes.d/flathub.flatpakrepo`, `usr/share/calamares/branding/alpbahos/logo.png`. Nothing missing.
+- Calamares logo: the squashfs `logo.png` has sha256 `647ff0e8...ae71`, the same as the repo file `scripts/rebuild/iso/live/calamares/branding/logo.png` and the SDDM theme logo in r4-root. So the Calamares and SDDM logos are the real brand logo (not the placeholder).
+- `alp check` on r4-root: rc 0, 506 installed packages (`scratch-lfs-bench/alp-check-r13.txt`).
+- Stage 1 commit: this section only (no code change).
