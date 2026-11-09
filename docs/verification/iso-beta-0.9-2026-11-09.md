@@ -1138,3 +1138,33 @@ Not run on sha `r15 sha`: L2, L3, L4 (TCG and BIOS live), I2 disk check, B2 (AHC
 - Keyboard feedback from the real PC (`docs/verification/user-feedback-keyboard-2026-11-09.md`): still open; this round changes only the installed system's X11 keyboard file and the KDE default.
 - Space: the r13 installs (`inst-*-0.9b.raw`), the r14 installs (`inst-*-r14.raw`) and the broken-copy work files were removed to make room; the r13 and r14 evidence logs stay.
 - Commits this round (local): 0b4a42c (SDDM), 5c19748 (keyboard file), the section and status commit below.
+
+### 17.6 Round 16 (2026-11-10): remaining rows on ISO r15, no code change
+
+Same ISO as 17 (sha256 `e2077dcfcd384963fbc1dce981deb663bfbe8c079094121e345a8e6463d1d5ae`, the full sha is at the top of section 17). No change was made to the code or the ISO in this round. Evidence under `scratch-lfs-bench/lfs13-logs/iso-beta-0.9/r15/` (run directories `L1-2`, `L1-3`, `L2`, `L3`, `L4`, `B2`, `B3`, `U2`, `S1-c1..c3`, `R1`, `laneA16.log`, `laneB16.log`, `laneC16.log`, `laneT16.log`).
+
+Accelerator per row: KVM with `-cpu qemu64` (L1, L3, B2, B3, U2, S1, R1, I2 disk check is read-only); TCG (`-accel tcg`, default of vm-start.sh) for L2 and L4. The KVM rows ran three at a time (three VMs), the TCG rows after them.
+
+| Row | Accel | Result | Evidence |
+|---|---|---|---|
+| L1 live UEFI, desktop at 130 s, 3 runs (this round: L1-2, L1-3; the first run is in 17.4) | KVM | **PASS 3/3** (taskbar, Install icon, Welcome Center window) | `L1-2/shot-130.png`, `L1-3/shot-130.png` (+ `L1-1` of 17.4) |
+| L2 live UEFI, desktop at 300 s | TCG | **PASS** (desktop, taskbar) | `L2/shot-300.png` |
+| L3 live BIOS, desktop at 130 s with HDA device | KVM | **PASS** (desktop) | `L3/shot-130.png` |
+| L4 live BIOS, desktop at 300 s | TCG | **PASS** (desktop, taskbar) | `L4/shot-300.png` |
+| I2 disk check, UEFI GPT install (read-only loop mount) | none | **PASS**: fstab UUIDs 42A9-804F (ESP) and 898b35df... (root) equal blkid; no live account; testuser; VERSION 0.9 Beta; grub.cfg present; ESP has EFI/alpbahOS/grubx64.efi and EFI/boot/bootx64.efi; fusermount3 4755; kxkbrc tr; no XkbVariant line; SDDM Current=alpbahos | this section (read-only check output) |
+| B2 installed BIOS, AHCI: login, greeter with logo, desktop, curl, localectl | KVM | **PASS**: greeter shows the logo; desktop; `HTTP/1.1 200 OK` from ftp.gnu.org (curl -I http://ftp.gnu.org/); localectl `X11 Layout: tr` | `B2/b2-greeter.png`, `b2-desktop.png`, `b2-curl.png`, `b2-localectl.png` |
+| B3 installed BIOS, NVMe, `-m 2G`, bootindex 0: login, desktop, curl | KVM (SeaBIOS) | **PASS**: greeter with logo, desktop, curl response headers from ftp.gnu.org (status line above the captured area) | `B3/b3-greeter.png`, `b3-desktop.png`, `b3-curl.png` |
+| U2 installed UEFI, NVMe + intel-hda: login, sound, curl | KVM (OVMF) | **PASS**: greeter with logo, desktop, sound sink `Yerleşik Ses Analog Stereo` (wpctl), `HTTP/1.1 200 OK` from ftp.gnu.org | `U2/u2-greeter.png`, `u2-desktop.png`, `u2-wpctl.png`, `u2-curl.png` |
+| S1 three shutdown cycles on a qcow2 overlay of the BIOS r15 install (`ov-s1-r16.qcow2`), Konsole `systemctl poweroff` (deviation: not the Plasma Kapat menu; session about 60 s, not 90 s) | KVM | **PASS 3/3**: each cycle ended with the guest powered off; journal of the overlay (read-only copy, deleted after the check): 3 poweroff entries, 0 matches for dumped, ABRT, pending != NULL, core-dump, Failed with result; `/var/lib/systemd/coredump` empty | `S1-c1/s1-c1-session.png` .. `S1-c3`; `laneB16.log` |
+| R1 reboot from Konsole (deviation: not the Plasma menu), 150 s after the command | KVM | **PASS**: the alpbahos greeter (with logo) is shown after the reboot | `R1/r1-after-reboot.png` |
+
+Earlier rows on r15 (round 15, section 17.4) stay as they were: I1 PASS with disk check, B1 PASS (curl by the CURL15 rerun), U1 PASS with the Flatpak install of org.gnome.Calculator, FP PASS, REC1 PASS (repaired disk boots to the alpbahos greeter). Only the rows that are not in 17.4 are added here.
+
+Open after round 16:
+- Coredump crash: not reproduced in the three S1 cycles on r15; the drop-in stop-order work of round 5 is shown for the at-spi failure only. It is still unproven as a fixed crash.
+- The deviations: S1 and R1 used Konsole, and S1 sessions were about 60 s. A Plasma-menu shutdown and a 90 s session would strengthen S1; not run.
+- Real-PC test and the publication decision: the user's.
+- Keyboard feedback from the real PC: still open; this round only fixed the installed system's X11 keyboard file.
+- Process hygiene: no QEMU running at the end, no loop devices of mine; the old `iso-work-klavye` mount from an earlier round is still present (not mine to remove here).
+
+Beta gate (QEMU level, sha `the r15 sha` = the full sha at the top of section 17): **MET** for the matrix rows listed in 17.4 and 17.6 (L1, L2, L3, L4, I1, I2, B1, B2, B3, U1, U2, FP, REC1, S1, R1), all PASS with no unexplained failure. Caveats: the S1 and R1 Konsole deviation and the 60 s session length; the coredump crash is unproven; the real-PC test and publication are open and belong to the user.
