@@ -368,7 +368,7 @@ Open items:
 ## 10. Round 5: sound fix, new ISO sha, final matrix (supersedes section 9 where they differ)
 
 ISO: `scratch-lfs-bench/images/alpbahos-beta-0.9-2026-11-09.iso`, sha256 **`1686abfd38dc04fabbb405fdec85307d2a587160d18502a1f5b50f5cfe8d4347`**.
-The previous release ISO (sha `5ae7`, section 9) is kept as `images/superseded-5ae7-release.iso` for reference.
+The previous release ISO (sha `5ae7`, section 9) is kept as `images/superseded-5ae7e7c9-release.iso` for reference.
 Every matrix row below names this sha. Accelerator: KVM with `-cpu qemu64` (ACCEL=kvm) except rows marked TCG.
 
 ### 10.1 Sound: root cause and fix (lead item)
@@ -394,8 +394,7 @@ Every matrix row below names this sha. Accelerator: KVM with `-cpu qemu64` (ACCE
 
 - `ip` is present: `/usr/sbin/ip` and `/sbin/ip` (`/sbin -> usr/sbin`). The earlier "ip: command not found" was a PATH
   effect for the GUI user's shell: `lsmod` and `ip` are in `/usr/sbin`, which the user's PATH does not contain.
-- No PATH change was made. I did not check the book's `/etc/profile` text in this round, so I cannot say whether the
-  book's user profile includes `/usr/sbin`. Open item: check the book text and decide.
+- Round 6 comparison (item 3): the BLFS profile page, https://www.linuxfromscratch.org/blfs/view/stable/postlfs/profile.html (read on 2026-11-09 through a text fetch, so the wording is a summary of the page, not a byte copy), puts `pathappend /usr/sbin` only inside `if [ $EUID -eq 0 ]`. It does not add `/usr/sbin` to a normal user's PATH. `scratch-lfs-bench/r4-root/etc/profile` has the same structure: `export PATH=/usr/bin`, `/bin` prepended only if it is not a symlink, `/usr/sbin` and `/sbin` added only for EUID 0 (lines 30-36). So a GUI user's PATH without `/usr/sbin` is what the book's profile gives. No PATH change. Item closed: matches the book as fetched.
 - Correction to section 9.3: "ip missing from the image" is wrong. Use `/usr/sbin/ip` or `networkctl` for now.
 
 ### 10.3 Matrix (sha 1686)
@@ -412,11 +411,11 @@ Every matrix row below names this sha. Accelerator: KVM with `-cpu qemu64` (ACCE
 | I2a | GPT disk after install: fstab root and /boot/efi; no `live` account; `grub.cfg` (x86_64-efi); ESP `EFI/alpbahOS`, `EFI/BOOT` | read-only loop mount | **PASS** | disk `inst-uefi-gpt-0.9.raw` |
 | B1 | Installed BIOS, virtio: login, desktop, curl, networkctl, Konsole, Dolphin, System Settings, sound | KVM | **PASS** (sound `Yerleşik Ses` `q1.png`; curl `q2.png` HTTP 200; Dolphin `q3.png`; System Settings `q4.png`) | `inst-bios-boot1/` |
 | B2 | Installed BIOS, AHCI: login, curl, networkctl | KVM | **PASS** (`bios-ahci/ah3.png`; sound not run on this row) | `bios-ahci/` |
-| B3 | Installed BIOS, NVMe | KVM, SeaBIOS (pc and q35) | **NOT BOOTABLE in this firmware**: SeaBIOS reports `No bootable device` (tries CD, PXE, floppy; no NVMe attempt). The same disk boots on AHCI (B2). Test-firmware limit, not an AlpbahOS fault (`bios-nvme-q35/nq1.png`, `bios-nvme2/nv3.png`) | - |
+| B3 | Installed BIOS, NVMe | KVM, SeaBIOS (pc) | **OPEN, not a pass.** Round 6 (sha 1686): (a) without `bootindex` the NVMe is missing from the SeaBIOS boot order and the guest prints `No bootable device`; so the missing bootindex is the cause of that message (`r6/b3-nobootindex/debugcon.log`, overlay of the installed disk). (b) With `bootindex=0` SeaBIOS lists the NVMe disk but the read fails: `Boot failed: could not read the boot disk` (`r6/b3-net/debugcon.log`, read-only base with `-snapshot`; `r6/b3-slot/debugcon.log`, NVMe at another PCI slot). The earlier boot to the greeter (`nvme-fw/alp`) is not reproduced by these runs. The network check (curl without `-m`) was not done because the guest did not boot. The earlier `0.0.0.20` error was a typing error (`-m` through the keymap). The "test-firmware limit" wording is withdrawn. | - |
 | U1 | Installed UEFI GPT, virtio: login, `hostnamectl` (AlpbahOS 0.9 Beta, kvm, edk2) | KVM | **PASS** | `uefi-virtio-boot/uv1.png` |
 | U2 | Installed UEFI GPT, NVMe + intel-hda: login, sound (`Yerleşik Ses`), curl HTTP 200 | KVM | **PASS** | `uefi-nvme-boot/un1.png`, `un2.png` |
 | S1 | Shutdown with a logged-in session, drop-ins present: 3 cycles (Konsole `systemctl poweroff`, each with 90 s session) | KVM | **3/3 completed**; disk journal: 0 matches for `dumped|ABRT|pending != NULL|core-dump|Failed with result`; no `/var/lib/systemd/coredump` | `inst-bios-boot1` run, `sd-cyc2`, `sd-cyc3`; journal `sd-journal-drop.txt` |
-| S2 | Same 3 cycles on a copy with the drop-in files removed (baseline) | KVM | **3/3 completed**; 1 match: `at-spi-dbus-bus.service: Failed with result 'exit-code'` at logout (the session bus stopped first); no core dump | `nodropin-0.9.raw`, `nd-cyc1..3`; journal `nd-journal.txt` |
+| S2 | Same 3 cycles on a copy with the drop-in files removed (baseline) | KVM | **3/3 completed**; 1 match: `at-spi-dbus-bus.service: Failed with result 'exit-code'` at logout (the session bus stopped first); no core dump | `inst-bios-nodropin-0.9.raw`, `nd-cyc1..3`; journal `nd-journal.txt` |
 
 Autologin (lead item 1, on the final sha): L1 is 3/3 under KVM. The UEFI TCG run (L2) also reaches the desktop. The earlier
 UEFI runs on the 5ae7 sha (section 9) were KVM once and TCG black frames under load.
@@ -444,7 +443,27 @@ UEFI runs on the 5ae7 sha (section 9) were KVM once and TCG black frames under l
 
 Open items:
 1. Coredump crash: find a reproducer that makes the baseline crash (ksmserver/kded6/pipewire aborts) on a shutdown.
-2. Book check for `/usr/sbin` in the user PATH (10.2); fix only if the book's profile includes it.
+2. PATH: closed in 10.2 (the book's profile does not put `/usr/sbin` in a user PATH; no change).
 3. NVMe boot of the BIOS MSDOS disk: needs a firmware that boots NVMe (SeaBIOS here does not). UEFI NVMe is covered (U2).
 4. Sound on the installed AHCI and virtio rows: sound was checked on BIOS virtio (B1) and UEFI NVMe (U2) only.
 5. Real hardware: not tested.
+
+### 10.6 Round 6 (2026-11-09, afternoon), sha 1686, KVM with `-cpu qemu64`
+
+| Item | Result | Evidence |
+|---|---|---|
+| 1 (B3, NVMe boot and network) | (a) done; (b) network NOT run; row corrected (10.3) | `r6/b3-nobootindex/`, `r6/b3-net/`, `r6/b3-slot/` |
+| 2 (shutdown coredump, Plasma menu, drop-ins vs baseline) | **NOT RUN.** Not started in round 6. The next step is the Plasma-menu shutdown on overlays of `inst-bios-msdos-0.9.raw` and `inst-bios-nodropin-0.9.raw`, 3 cycles each under KVM, then the disk journal and `/var/lib/systemd/coredump`. | - |
+| 3 (PATH) | done: comparison in 10.2, no change | `r4-root/etc/profile` |
+| 4 (Plasma menu shutdown and reboot, tr_TR, trq, sound on AHCI) | **NOT RUN** on sha 1686 | - |
+| 5 (section 10 names) | done for the two names. `inst-bios-nodropin-0.9.raw` is **kept**: item 2 is not finished, so it is not deleted. | - |
+| 6 (M12: alp update/rollback; live-ISO recovery) | **NOT RUN.** | - |
+| 7 (CURRENT.md) | done | `CURRENT.md` |
+
+Other facts found in round 6:
+- `images/inst-bios-msdos-0.9.raw` has mtime 2026-11-09 15:26:57, after the ISO build (13:45). The earlier `nvme-fw/alp` run appears to have
+  booted that installed file directly, not an overlay (the rule is: no writes to installed disks). Its content was not compared with the
+  section 10.3 journal; this needs checking before the image is used as evidence again.
+- Round 6 NVMe boots used overlays or `-snapshot`; the installed disk file was not written in round 6.
+
+Gate: unchanged, **beta quality NO** (10.5). The real-PC USB test and the publication approval belong to the user.

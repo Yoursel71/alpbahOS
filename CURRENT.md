@@ -1,8 +1,16 @@
 # alpbahOS — Current state
 
-Last updated: 2026-11-06
+Last updated: 2026-11-09
 
 Claude is the only agent on this project (D100). Decisions were re-done on 2026-11-06 in a 50-question review; see [docs/DECISIONS.md](docs/DECISIONS.md). History is in [docs/WORKLOG.md](docs/WORKLOG.md), [docs/handoffs/claude/](docs/handoffs/claude/) and [docs/archive/](docs/archive/).
+
+## Current state (2026-11-09)
+
+- **Alpha ISO:** `alpbahos-alpha-2026-11-08.iso` in `scratch-lfs-bench/images/` (not in the repo).
+- **Beta 0.9:** ISO `alpbahos-beta-0.9-2026-11-09.iso`, sha256 `1686abfd38dc04fabbb405fdec85307d2a587160d18502a1f5b50f5cfe8d4347`. Gate **not met** (record: [docs/verification/iso-beta-0.9-2026-11-09.md](docs/verification/iso-beta-0.9-2026-11-09.md), sections 10.5 and 10.6).
+  - Passing on this sha: live BIOS and UEFI desktops; BIOS MSDOS and UEFI GPT installs complete; installed boots on BIOS virtio, BIOS AHCI, UEFI virtio and UEFI NVMe; sound on BIOS virtio and UEFI NVMe.
+  - Open: the shutdown coredump is not reproduced and not fixed (the drop-in stop-order fix is shown only for the at-spi failure); installed BIOS on NVMe does not boot in SeaBIOS in the round 6 runs; the round 6 reruns (shutdown menu, tr_TR, trq, AHCI sound, alp update and rollback, live-ISO recovery) were not run.
+- **Not ours to decide:** the real-PC USB test and the publication approval (D108) belong to the user.
 
 ## What exists and is verified
 
@@ -44,7 +52,7 @@ Status words: done / partial / not started / unknown. Details are in the linked 
 | M09 | partial | Live ISO built by script (2026-11-06). BIOS boot with `qemu64` reaches Plasma with 0 SIGILL and 0 FAILED after the CPU fix (D146); UEFI boot reached Plasma on the earlier ISO. Stock KDE and English SDDM until LIVE-PROFILE-01. Installing from the booted ISO and the live-user policy are open. |
 | M10 | not started | Alpha test matrix and release candidate do not exist yet. |
 | M11 | partial | BIOS and UEFI installs to virtual disks through the product grubcfg path (D144). First boots clean: BIOS (0 failed units, 2026-11-06, M11-FIX-02), UEFI (0 `FAILED`, 2026-11-06, M11-UEFI-01). GUI click-through, LUKS, dual boot and real UEFI NVRAM are open. |
-| M12 | not started | Beta release. Needs the user's approval for publication (D108). |
+| M12 | partial | Beta 0.9 gate not met on 2026-11-09 (see the beta record). Open: shutdown coredump, installed BIOS NVMe boot, alp update and rollback, live-ISO recovery. Publication needs the user (D108). |
 
 ## What changed on 2026-11-06
 
