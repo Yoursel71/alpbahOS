@@ -877,3 +877,8 @@ Records: `scripts/rebuild/r8/stage-record-r8.py` through `scripts/rebuild/r7/app
 - Version source: BLFS 13.1 postlfs/fuse.html: fuse-3.18.2; sha256 f01de85717e20adf5f98aff324acd85dd73d61a5ca3834d573dcf0bd6e54a298.
 - Staged: staged files: 18; elf files: 3; audit-isa rc=0.
 - Record: alp fuse3 3.18.2; ; ; packages.tsv row 378.
+
+### 14.14 libsecret-0.21.7: built, recorded (round 12)
+- Version source: BLFS 13.1 gnome/libsecret.html: 0.21.7; files taken over from kwallet 6.29.0; sha256 6b452e4750590a2b5617adc40026f28d2f4903de15f1250e1d1c40bfd68ed55e.
+- Staged: staged files: 84; elf files: 2; audit-isa rc=0.
+- Record: alp libsecret 0.21.7; alp check rc=0; packages 499; packages.tsv row 383.
