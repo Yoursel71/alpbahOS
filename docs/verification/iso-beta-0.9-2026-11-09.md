@@ -453,10 +453,10 @@ Open items:
 | Item | Result | Evidence |
 |---|---|---|
 | 1 (B3, NVMe boot and network) | done: boots and curl HTTP 200 at -m 2G and 3G; fails at 4G and 6G (SeaBIOS setup effect); row corrected (10.3) | `r6/b3-nobootindex/`, `r6/b3-net/`, `r6/b3-slot/` |
-| 2 (shutdown coredump, Plasma menu, drop-ins vs baseline) | **NOT RUN.** Not started in round 6. The next step is the Plasma-menu shutdown on overlays of `inst-bios-msdos-0.9.raw` and `inst-bios-nodropin-0.9.raw`, 3 cycles each under KVM, then the disk journal and `/var/lib/systemd/coredump`. | - |
+| 2 (shutdown coredump, Plasma menu, drop-ins vs baseline) | done: crash NOT reproduced on either set; not fixed (10.7). Six Plasma-menu shutdowns, KVM, 6G, virtio: drop-ins `sd/drop1..3` 3/3 and baseline (nodropin copy) `sd/base1..3` 3/3. No dump, abort, pending or `Failed with result` lines in the shutdown session, no `/var/lib/systemd/coredump`. |
 | 3 (PATH) | done: comparison in 10.2, no change | `r4-root/etc/profile` |
-| 4 (Plasma menu shutdown and reboot, tr_TR, trq, sound on AHCI) | **NOT RUN** on sha 1686 | - |
-| 5 (section 10 names) | done for the two names. `inst-bios-nodropin-0.9.raw` is **kept**: item 2 is not finished, so it is not deleted. | - |
+| 4 (Plasma menu shutdown and reboot, tr_TR, trq, sound on AHCI) | done on sha 1686 (KVM): `localectl` gives LANG=tr_TR.utf8 and VC Keymap trq (X11 layout unset, so the Plasma X keymap was not checked); sound on installed AHCI: `Yerleşik Ses` analog stereo sink and source; Plasma menu Yeniden Başlat (reboot) returned to the SDDM greeter (SDDM layout shows `us`). Shutdown from the menu: row 2. Evidence: `r6/item4-ahci-reboot/`. |
+| 5 (section 10 names) | done: `superseded-5ae7e7c9-release.iso` and `inst-bios-nodropin-0.9.raw` fixed. `images/inst-bios-nodropin-0.9.raw` deleted 2026-11-09 after item 2 (no other image deleted). |
 | 6 (M12: alp update/rollback; live-ISO recovery) | **NOT RUN.** | - |
 | 7 (CURRENT.md) | done | `CURRENT.md` |
 
@@ -465,3 +465,26 @@ Other facts found in round 6:
 - Round 6 NVMe boots used `-snapshot` or overlays.
 
 Gate: unchanged, **beta quality NO** (10.5). The real-PC USB test and the publication approval belong to the user.
+
+### 10.7 Round 6 item 2: shutdown coredump, status
+
+- Method: one overlay per run (`r6/sd/<name>/overlay.qcow2`, backing = the installed BIOS disk or the baseline copy), KVM, `-cpu qemu64`, virtio 6G, the shutdown-cycle flags, Konsole not used. Login on the greeter, 90 s session, Plasma menu (Kapat = Shut down). QEMU exited on its own after the guest powered off (16:02 to 16:22). Each overlay was read with `qemu-nbd -r`, mounted `ro,noload`: `r6/sd/<name>/check.txt` (matches and last lines) and `r6/sd/full-count.txt` (counts for the session boot).
+- Drop-ins (`inst-bios-msdos-0.9.raw`): drop1, drop2, drop3 completed; 0 matches.
+- Baseline (`inst-bios-nodropin-0.9.raw`, drop-ins removed): base1, base2, base3 completed; 0 matches in the session. The round 5 at-spi failure (`Failed with result 'exit-code'`) did not reappear.
+- Not reproduced on either set. The stop-order fix is therefore not shown to matter for the coredump, and the crash fix is **NOT proven**. The drop1 check counted the session boot lines from 15:55 for the session; its dump search covered the whole journal.
+- TCG shutdown runs: not run.
+- Baseline image deleted after these runs (item 5).
+
+### 10.8 Round 6 item 1 (B3) measurements
+
+Memory size was the difference, not the device set (`r6/nvme-mem/`, debugcon, bootindex=0, `-snapshot` on the raw base, KVM):
+
+| Run | RAM | Devices | Result |
+|---|---|---|---|
+| m2g-full | 2G | full (VGA, xhci, usb, NIC) | Boots (`Booting from 0000:7c00`); curl 200 (`nvme-2g-curl`) |
+| m3g-full | 3G | full | Boots |
+| m4g-full | 4G | full | `could not read the boot disk` |
+| m6g-min | 6G | minimal (no VGA, xhci, NIC) | `could not read the boot disk` |
+| (earlier) | 6G | full | `could not read the boot disk` (three runs) |
+
+This is what these runs show: the NVMe read fails once RAM is 4G or more in this SeaBIOS/QEMU setup. It is a setup effect, not a product fault, and it says nothing about real machines with NVMe firmware.
