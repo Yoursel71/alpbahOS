@@ -57,6 +57,9 @@ def _make_archive(tmp_path: Path, name: str, version: str, files: dict[str, str]
 def paths(tmp_path: Path) -> alp.Paths:
     p = alp.Paths.resolve(str(tmp_path / "root"))
     p.ensure()
+    # ALP-TRUST-01: these tests exercise the update mechanics on unsigned
+    # fixtures; the signed paths are covered in test_trust_catalog.py.
+    p.trust = alp.TrustPolicy(allow_unsigned=True)
     return p
 
 

@@ -7,6 +7,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import alp  # noqa: E402
+from trusthelpers import sign_catalog  # noqa: E402
 
 
 def test_corrupt_index_is_alp_error(tmp_path):
@@ -27,6 +28,7 @@ def test_corrupt_db_is_alp_error(tmp_path):
 def test_list_does_not_create_state_dir(tmp_path, capsys):
     idx = tmp_path / "index.json"
     idx.write_text('{"entries": {}}', encoding="utf-8")
+    sign_catalog(idx)  # ALP-TRUST-01: alp.main() only takes a signed catalog
     root = tmp_path / "root"
     root.mkdir()
     assert alp.main(["--root", str(root), "--index", str(idx), "list"]) == 0

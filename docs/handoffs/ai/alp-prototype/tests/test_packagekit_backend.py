@@ -35,6 +35,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import alp  # noqa: E402
 import alp_packagekit_backend as pkb  # noqa: E402
+from trusthelpers import sign_catalog  # noqa: E402
 
 ALP_PY = Path(__file__).resolve().parent.parent / "alp.py"
 
@@ -66,6 +67,7 @@ def env(tmp_path: Path):
         }),
         encoding="utf-8",
     )
+    sign_catalog(index_path)  # ALP-TRUST-01: the store backend only takes a signed catalog
     return {"root": root, "index": index_path}
 
 
@@ -149,6 +151,7 @@ def test_alp_updates_lists_newer_catalog_versions(env, tmp_path):
     catalog = json.loads(env["index"].read_text(encoding="utf-8"))
     catalog["entries"]["theme"].update({"version": "2.0.0", "url": archive.name, "sha256": alp.sha256_of(archive)})
     env["index"].write_text(json.dumps(catalog), encoding="utf-8")
+    sign_catalog(env["index"], catalog_version=2)  # a changed catalog is a new signed version
     updates = pkb.alp_updates(ALP_PY, env["root"], env["index"])
     assert [(u["name"], u["old_version"], u["new_version"]) for u in updates] == [("theme", "1.0.0", "2.0.0")]
 

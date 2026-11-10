@@ -17,6 +17,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import alp  # noqa: E402
+from trusthelpers import sign_catalog  # noqa: E402
 
 
 def _core(tmp_path: Path, name: str, version: str = "1.0.0", depends=None, size=None) -> dict:
@@ -43,6 +44,7 @@ def _core(tmp_path: Path, name: str, version: str = "1.0.0", depends=None, size=
 def _catalog(tmp_path: Path, entries: dict) -> Path:
     index = tmp_path / "index.json"
     index.write_text(json.dumps({"entries": entries}), encoding="utf-8")
+    sign_catalog(index)  # ALP-TRUST-01: alp.main() only takes a signed catalog
     return index
 
 
