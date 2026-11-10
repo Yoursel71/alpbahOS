@@ -27,7 +27,7 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Install test tools
         run: |
-          # Pillow pinned: the brand wallpaper check compares PNG bytes made with Pillow 12.3.0 (host).
+          # Pillow pinned to the host version (12.3.0); the wallpaper check compares pixels when PNG bytes differ.
           pip install pytest "pillow==12.3.0"
           sudo apt-get update
           sudo apt-get install -y zsh

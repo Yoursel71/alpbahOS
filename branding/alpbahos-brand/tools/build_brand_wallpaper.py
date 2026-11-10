@@ -202,6 +202,17 @@ def build() -> dict[Path, bytes]:
     return outputs
 
 
+def _same_pixels(path: Path, data: bytes) -> bool:
+    """PNG bytes also depend on the zlib build (zlib-ng on the host, zlib in the PyPI Pillow wheel), so --check
+    falls back to comparing the decoded images: same size, mode and pixels means the file is up to date."""
+    import io
+    from PIL import Image
+    if path.suffix.lower() != ".png":
+        return False
+    with Image.open(path) as old, Image.open(io.BytesIO(data)) as new:
+        return old.size == new.size and old.mode == new.mode and old.tobytes() == new.tobytes()
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--check", action="store_true", help="yazmadan, depodaki dosyaları yeniden üretimle karşılaştır")
@@ -217,7 +228,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.check:
         stale = []
         for path, data in outputs.items():
-            if not path.exists() or path.read_bytes() != data:
+            if not path.exists() or (path.read_bytes() != data and not _same_pixels(path, data)):
                 stale.append(path.relative_to(REPO).as_posix())
         images_dir = PACKAGE / "contents" / "images"
         expected = {p.name for p in outputs if p.parent == images_dir}
