@@ -2,10 +2,10 @@
 # Round 25: every row of review section D on one ISO, run one after the other as the build user (sudo only inside the
 # called scripts for loop mounts). Evidence: scratch-lfs-bench/lfs13-logs/iso-beta-0.9/r25/. Each step writes its own
 # log; a failed step is logged and the next one runs (the reviewer reads the results; this script judges nothing).
-# Usage: run-r25.sh <iso> [steps...]   steps: installs grub splash live timing welcome (default: all, in this order)
+# Usage: run-r25.sh <iso> [steps...]   steps: installs grub splash live timing welcome dualboot (default: all)
 set -u
 ISO=$(realpath "$1"); shift
-STEPS=${*:-installs grub splash live timing welcome}
+STEPS=${*:-installs grub splash live timing welcome dualboot}
 WT=/home/yrslf/alpbahOS/wt-t2-kisayol
 B=/home/yrslf/alpbahOS/scratch-lfs-bench
 RND=${ROUND:-r25}   # round 26+: ROUND=r26 (evidence directory and install image names)
@@ -89,6 +89,9 @@ welcome)
     G boot bios "$R" second
     G login "$R/second"; sleep 50; Q "$R/second" shot w08-second-login
     G stop "$R" ;;
+dualboot)
+    log "dual boot row (os-prober, stand-in Windows boot manager on a copy)"
+    ROUND=$RND bash scripts/rebuild/r27/dualboot-r27.sh "$IMGU" DB1 > "$L/DB1.out" 2>&1 ;;
 esac
 done
 log "done: $STEPS"

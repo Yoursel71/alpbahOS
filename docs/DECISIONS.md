@@ -87,6 +87,8 @@ Status labels:
 | D158 | Accepted (user) | The installer writes the live display's preferred mode into the installed GRUB: `GRUB_GFXMODE='<WxH>,auto'` (`target-grub-gfxmode.sh`, Calamares `shellprocess@grub-gfxmode` after grubcfg); no connected display found: `auto`. The live ISO menu uses `1024x768,auto` on BIOS and `auto` on UEFI. Reason: GRUB's `auto` falls back to 640x480 without an EDID mode (QEMU, VirtualBox, some old monitors), where the theme's columns overlap (round 22, G1). Same decision basis as D157. | refines D156 | — |
 | D159 | Accepted (user) | The live ISO boot menu uses the same GRUB theme (copied from r4-root by build-iso.sh) with the Turkish entry "alpbahOS 0.9 Beta (canlı)" and GRUB's Turkish texts (`tr.mo` on the ISO). Same decision basis as D157. | — | — |
 | D160 | Accepted (user) | Boot splash: Plymouth 26.134.222 (upstream release, sha1 checked against the upstream .sha1sum; not in BLFS 13.1) as an alp package, script theme `alpbahos` (`branding/plymouth-theme/`), in the installed initramfs (dracut `45plymouth` with `UseSimpledrm=1`, so no GPU driver enters the initramfs; D150 unchanged), `quiet splash` on the installed kernel line. The live ISO and the DEBUG ISO's installs have no splash (evidence stays readable); Esc shows the boot log. Proposed by review (item D2), accepted by user 2026-11-10; started under the same instruction as D157. | — | — |
+| D161 | Accepted (user) | os-prober 1.85 (Debian source, sha256 checked against the .dsc; not in BLFS 13.1) is in the image and `GRUB_DISABLE_OS_PROBER=false` is set by Calamares grubcfg, so the installed GRUB lists Windows and other systems, and Calamares can offer "install alongside" (D138). Found 2026-11-10: GRUB 2.14 disables os-prober by default and the image had none. Decided by Claude under the user's instruction of 2026-11-10 ("/goal: do not stop, finish everything"). | refines D138 | — |
+| D162 | Accepted (user) | Section E layers on Breeze, no own widget style or icon set: Inter (UI) and JetBrains Mono (fixed) are the system fonts (`/etc/xdg/kdeglobals`, fontconfig `60-alpbahos-fonts.conf`); the Breeze Plasma style ("default") follows the alpbah-dark scheme carried in `/etc/xdg/kdeglobals` instead of own panel SVGs; KSplash uses the look of the Plymouth splash (look-and-feel `splash/Splash.qml`); window decoration stays Breeze with the scheme colours; icons stay breeze-dark; the installer starts with the KDE platform theme. Same decision basis as D161 (the master task lists E as "only when the user asks"; the /goal instruction is taken as that request). | — | — |
 
 ## Open — needs a user decision
 
@@ -105,7 +107,7 @@ There are no other open user decisions as of 2026-11-06.
 ## How to change a decision
 
 1. The user's explicit new choice wins. Claude does not overturn a decision on its own.
-2. Add a new row with the next free ID (D161, …). "Replaces (v1)" names the row it supersedes.
+2. Add a new row with the next free ID (D163, …). "Replaces (v1)" names the row it supersedes.
 3. Mark the old row's status "Superseded by Dxxx". Do not delete it.
 4. Update the other live docs (CLAUDE.md, CURRENT.md, README.md, docs/MASTER_PLAN.md, docs/BACKLOG.md) in the same commit.
 5. Run `python3 docs/handoffs/claude/tools/check_docs.py` before committing.

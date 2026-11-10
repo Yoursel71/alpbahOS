@@ -22,11 +22,12 @@ B=/home/yrslf/alpbahOS/scratch-lfs-bench
 WT=/home/yrslf/alpbahOS/wt-t2-kisayol
 W=$WT/scripts/rebuild/image
 S=$WT/scripts/rebuild/r21
-D=${MATRIX_DIR:-$B/lfs13-logs/iso-beta-0.9/r21/matrix}
-ISO=$B/images/alpbahos-beta-0.9-2026-11-09-r21.iso
-IMGB=$B/images/inst-bios-msdos-r21.raw
-IMGU=$B/images/inst-uefi-gpt-r21.raw
-PWF=$B/test-secrets/r21.pw
+MR=${MROUND:-r21}   # round 27+: MROUND=r27 (ISO, installs, password file and evidence directory of that round)
+D=${MATRIX_DIR:-$B/lfs13-logs/iso-beta-0.9/$MR/matrix}
+ISO=$B/images/alpbahos-beta-0.9-2026-11-09-$MR.iso
+IMGB=$B/images/inst-bios-msdos-$MR.raw
+IMGU=$B/images/inst-uefi-gpt-$MR.raw
+PWF=$B/test-secrets/$MR.pw
 mkdir -p "$D"
 
 q() { python3 "$W/qmpctl.py" "$@"; }

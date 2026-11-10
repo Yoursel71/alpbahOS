@@ -9,6 +9,7 @@
 # The test password is generated at run time into scratch-lfs-bench/test-secrets/r20.pw (outside the repo).
 # Keys in the Turkish-Q session: '-' = equal, 'i' = apostrophe, '.' = slash, '/' = shift 7, '*' = minus.
 # Usage: r20-lanes.sh <iso> [lane1|lane2|lane3|all]
+# Round 27: installer click positions for the dark installer (QT_QPA_PLATFORMTHEME=kde, Inter font; measured on r27).
 # Round 21 matrix (defaults unchanged): OUTD (evidence directory), IMGF (forced-failure target image), F1NAME, and
 #   NOCLOBBER=1 (an existing run directory is refused instead of removed), FAILSHOTS (minutes watched in the
 #   forced-failure run, default 10).
@@ -52,15 +53,15 @@ install_run() { # fw image name kur_x kur_y  (KERNEL, INITRD, APPEND from the ca
   local Q="python3 $W/qmpctl.py $R"
   $Q click 58 40; sleep 1; $Q key ret; sleep 40; $Q shot i-00
   for n in 1 2 3 4; do $Q click 1007 637; sleep 2; done; $Q shot i-04-users
-  $Q click 404 180; sleep 1; clr "$Q"; tq "$R" "Test User"
-  $Q click 404 236; sleep 1; clr "$Q"; tq "$R" "testuser"
-  $Q click 404 292; sleep 1; clr "$Q"; tq "$R" "alpbahos-test"
-  $Q click 404 348; sleep 1; clr "$Q"; tq "$R" "$PW"
-  $Q click 610 348; sleep 1; clr "$Q"; tq "$R" "$PW"
+  $Q click 424 181; sleep 1; clr "$Q"; tq "$R" "Test User"
+  $Q click 424 245; sleep 1; clr "$Q"; tq "$R" "testuser"
+  $Q click 424 309; sleep 1; clr "$Q"; tq "$R" "alpbahos-test"
+  $Q click 424 373; sleep 1; clr "$Q"; tq "$R" "$PW"
+  $Q click 629 373; sleep 1; clr "$Q"; tq "$R" "$PW"
   sleep 2; $Q shot i-05-users-filled
   $Q click 1007 637; sleep 3; $Q shot i-06-summary
   $Q click $KX $KY; sleep 4; $Q shot i-07-confirm
-  $Q click 749 435; sleep 5; $Q shot i-08-running
+  $Q click 748 470; sleep 5; $Q shot i-08-running
   if [ "${FAILRUN:-0}" = 1 ]; then
     # Forced-failure run: no "unmounting" line comes. Keep the live session from locking (it cannot be unlocked:
     # the live user has no password) with a Shift press every 30 s, and take a screenshot every minute.
@@ -100,7 +101,7 @@ installed_checks() { # fw image name
 }
 
 lane1() {
-  install_run bios "$IMGB" I1 1000 652
+  install_run bios "$IMGB" I1 1002 709
   disk_check "$IMGB" I1
   [ "$RD" != r20 ] || installed_checks bios "$IMGB" B1
 }
@@ -120,7 +121,7 @@ lane2() {
     sleep 720; $Q shot "l1-idle-12min"; $Q key shift; sleep 3; $Q shot "l1-idle-12min-after-key"
   fi
   $Q quit; waitq "$R"; echo "[$(date +%T)] L1 done"
-  install_run uefi "$IMGU" I2 1005 666
+  install_run uefi "$IMGU" I2 1002 725
   disk_check "$IMGU" I2
   [ "$RD" != r20 ] || installed_checks uefi "$IMGU" U1
 }
@@ -131,7 +132,7 @@ lane3() {
   mkdir -p "$K"
   bsdtar -xf "$ISO" -C "$K" boot/vmlinuz boot/initramfs-live.img
   local ARGS="root=live:CDLABEL=ALPBAHOS_BETA rd.live.image rd.live.dir=LiveOS rd.live.squashimg=squashfs.img rd.live.overlay.overlayfs=1 console=tty0 console=ttyS0,115200 alpbahos.testfail=live-cleanup"
-  FAILRUN=1 KERNEL=$K/boot/vmlinuz INITRD=$K/boot/initramfs-live.img APPEND="$ARGS" install_run bios "$IMGF" "${F1NAME:-F1}" 1000 652
+  FAILRUN=1 KERNEL=$K/boot/vmlinuz INITRD=$K/boot/initramfs-live.img APPEND="$ARGS" install_run bios "$IMGF" "${F1NAME:-F1}" 1002 709
 }
 
 case "$WHICH" in

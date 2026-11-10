@@ -27,7 +27,11 @@ slideshow:               "show.qml"
 slideshowAPI:            2
 
 style:
-   sidebarBackground:    "#1d2a3a"
-   sidebarText:          "#ffffff"
-   sidebarTextSelect:    "#4aa3ff"
-   sidebarTextHighlight: "#4aa3ff"
+   # alpbahOS colours (profiles/desktop/tokens.json). Calamares 3.3 names (…Current) and the 3.2 names both set:
+   # with the dark installer (INSTALLER-THEME-01) the 3.2 names alone left the current step dark on black.
+   sidebarBackground:        "#0b1014"
+   sidebarText:              "#d4e0e8"
+   sidebarTextCurrent:       "#f4f8fb"
+   sidebarBackgroundCurrent: "#062746"
+   sidebarTextSelect:        "#f4f8fb"
+   sidebarTextHighlight:     "#00aeef"
