@@ -220,6 +220,8 @@ class LookAndFeelPackageTests(unittest.TestCase):
         self.assertEqual(tokens["profiles"]["glass"]["durum"], "secenek")
         excluded = {"README.md", "liquid-prototype.md"}
         for path in (REPO / "profiles" / "desktop").rglob("*"):
+            if "__pycache__" in path.parts or path.suffix == ".pyc":
+                continue
             if not path.is_file() or path.name in excluded or path.suffix in (".png", ".jpg"):
                 continue
             text = path.read_text(encoding="utf-8", errors="replace")

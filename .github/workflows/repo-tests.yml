@@ -1,0 +1,60 @@
+# Repo-level tests and shell lint. Legacy tests and scripts are left out on purpose.
+name: repo tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.12", "3.14"]
+    name: pytest (Python ${{ matrix.python }})
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install test tools
+        run: |
+          pip install pytest
+          sudo apt-get update
+          sudo apt-get install -y zsh
+      - name: tests/ (without legacy)
+        run: python -m pytest tests --ignore=tests/legacy -q
+      - name: profile tests
+        run: python -m pytest profiles -q
+
+  shellcheck:
+    runs-on: ubuntu-latest
+    name: shellcheck
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install shellcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+          shellcheck --version
+      - name: List shell files
+        run: |
+          scripts/ci/list-shell-files.sh > shell-files.txt
+          echo "files: $(wc -l < shell-files.txt)"
+      # SC2148 (missing shebang) is off: many build-cmds files are fragments
+      # that are sourced or pasted, not run.
+      - name: Errors only (fails the job)
+        run: xargs -a shell-files.txt -d '\n' shellcheck -S error -e SC2148
+      - name: Warning count (baseline, never fails)
+        run: |
+          xargs -a shell-files.txt -d '\n' shellcheck -S warning -e SC2148 -f gcc > warnings.txt || true
+          echo "warnings: $(grep -c 'warning:' warnings.txt)"
+          echo "Baseline: docs/verification/shellcheck-baseline-2026-11-10.md"

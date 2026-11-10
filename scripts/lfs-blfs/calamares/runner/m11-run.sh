@@ -306,7 +306,7 @@ run_mod localecfg
 run_mod fstab /etc/calamares/modules/fstab.conf
 # Modül yapılandırma hataları (ör. eksik mountOptionsList) rc=0 ile dönebilir ve
 # dosyayı hiç yazmayabilir; bu yüzden sonucu dosyada doğrula.
-grep -q "^UUID=$UUID[[:space:]]\+/[[:space:]]" "$TGT/etc/fstab" \
+grep -q "^UUID=${UUID}[[:space:]]\+/[[:space:]]" "$TGT/etc/fstab" \
     || { echo "DURDU: fstab kök satırı yok (UUID=$UUID)"; exit 1; }
 run_mod networkcfg
 run_mod hwclock
@@ -330,7 +330,7 @@ sed -i "s|^GRUB_CMDLINE_LINUX_DEFAULT=.*|GRUB_CMDLINE_LINUX_DEFAULT='quiet conso
 
 if [ "$FW" = uefi ]; then
     # fstab ESP satırı: fstab modülü ESP'yi gs'deki mountPoint'ten yazar.
-    grep -q "^UUID=$ESP_UUID[[:space:]]\+/boot/efi[[:space:]]\+vfat[[:space:]]" "$TGT/etc/fstab" \
+    grep -q "^UUID=${ESP_UUID}[[:space:]]\+/boot/efi[[:space:]]\+vfat[[:space:]]" "$TGT/etc/fstab" \
         || { echo "DURDU: fstab ESP satırı yok (UUID=$ESP_UUID /boot/efi vfat)"; exit 1; }
     # ESP'yi bootloader'dan önce bağla: grub-install ve EFI dosyaları burada yazılır.
     # Bağlama noktası boş değilse bağlama onu gizler; bu yüzden dur.
