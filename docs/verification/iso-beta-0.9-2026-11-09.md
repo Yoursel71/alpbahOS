@@ -1274,3 +1274,36 @@ Notes: the typed `e` answer under F is qcode `d`; the earlier `ğ` result (KF19)
 - **B1 curl status line: PASS (with a typing deviation).** Run KF20A on the Q image (`inst-bios-msdos-r17.raw`, `-snapshot`), logged in as the test user. Typed command on screen: `curl -sI http://ftp.gnu.org/ ; head -1` (the `|` was typed as `;` by the harness). The screen shows `HTTP/1.1 200 OK` as the first line, followed by Date, Server, Content-Security-Policy, X-Frame-Options DENY, X-Content-Type-Options nosniff and Content-Type text/html;charset=UTF-8. The literal pipe form was not typed. Evidence: `KF20A/kf20a-curl-status.png`.
 - **Greeter under F: PASS (screen seen, not logged in).** Run KF20B on the F image (`inst-bios-msdos-kf17b.raw`, `-snapshot`). After 95 s the boot splash was still up; one click dismissed it and the SDDM greeter appeared: user "Test User", password field, session menu (Plasma Wayland), power buttons. The alpbahOS logo is shown at the top, but it overlaps the clock text (cosmetic, seen in this frame). The greeter was not used to log in in this run. Evidence: `KF20B/kf20b-greeter.png` (identical frame in `kf20b-greeter-2.png`).
 - Nothing pushed; no VM left running.
+
+## 20. Round 18 (2026-11-10): SDDM greeter logo and locale; ISO r18
+
+ISO: `scratch-lfs-bench/images/alpbahos-beta-0.9-2026-11-09-r18.iso`, sha256 **`3e625993551ea2df40ebf9b1686081fa7c3ba18a539eb0cc95b826cfe8c9ba62`**, 4742672384 bytes, `TAG=r18`. Built from r4-root with the record below (the previous build snapshot was kept as `r4-iso-src-2026-11-09-prev-r17`; the superseded r16 ISO, the debug ISO and the r17 UEFI install image were deleted to free space).
+
+### 20.1 What changed
+
+- **Logo position.** `scripts/rebuild/r18/sddm-r18.py` moves the logo block of the alpbahos theme to the top left (`anchors.left: parent.left`, `leftMargin: 40`, `topMargin: 40`), so it no longer overlaps the clock and date at the top centre. Recorded as alp record `sddm-alpbahos-r18` 0.9-r18 (REPLACE=1). Seen on the Q greeter at 1280x800 (not tested at 1920x1080).
+- **Greeter locale.** The same script sets `GreeterEnvironment=QML2_IMPORT_PATH=/usr/lib/qml,LANG=tr_TR.UTF-8` in `/etc/sddm.conf`. The installed system already has `LANG=tr_TR.utf8` (localectl), but the greeter still shows English (see 20.3). **Not effective.**
+
+### 20.2 Matrix on sha `3e625993551ea2df40ebf9b1686081fa7c3ba18a539eb0cc95b826cfe8c9ba62` (ISO r18)
+
+KVM with `-cpu qemu64` for every row. Evidence under `scratch-lfs-bench/lfs13-logs/iso-beta-0.9/r18/`.
+
+| Row | Accel | Result | Evidence |
+|---|---|---|---|
+| L1 live UEFI, desktop at 130 s | KVM | **PASS**: welcome window, desktop launchers (Install, Klavye doğrulama, Klavye düzeni) | `L1-1/shot-130.png` |
+| I1 Calamares BIOS MSDOS install (Turkish Q) | KVM | **PASS** install (serial unmount); basic disk check: fstab 8 lines, os-release `ID=alpbahos`, `VERSION="0.9 Beta"`. Full disk check not repeated this round | `I1/i-09-done.png`; `images/inst-bios-msdos-r18.raw` |
+| B1 installed BIOS (`-snapshot`): greeter, desktop, localectl, curl status | KVM | **PARTIAL**: greeter and desktop PASS; `localectl status` shows `LANG=tr_TR.utf8`, `VC Keymap: trq`, `X11 Layout: tr`; `curl -sI http://ftp.gnu.org/ ; head -1` (typed with `;`) shows `HTTP/1.1 200 OK`. `systemctl --failed` was not captured in this round | `B1/b1-greeter.png`, `b1-desktop.png`, `b1-localectl.png`, `b1-curl.png` |
+| REC1 BIOS recovery (broken copy, live ISO first) | KVM | **NOT PROVEN**: the recovery run was started (`alpbahos-recover`) but the captured frame (`rec-step2`) shows the lock screen, not the recovery result; the boot check frame is still the boot splash at 110 s (no greeter). No recovery text is on disk in the serial log | `REC1/rec-step0..2.png`, `REC1-boot/rec-disk-greeter.png` |
+
+### 20.3 Greeter screenshot (Q image, `-snapshot`)
+
+- `scratch-lfs-bench/lfs13-logs/iso-beta-0.9/r18/B1/b1-greeter.png` (copy kept in the scratch folder): alpbahOS logo at the top left (no overlap with the clock), user "Test User", password field, session menu, power buttons.
+- **Locale: FAIL.** The clock and date still show English (`10:00 PM`, `Monday, November 9, 2026`). The 24-hour format was not reached. Cause not found: the GreeterEnvironment `LANG=tr_TR.UTF-8` did not change the Qt locale of the greeter. Next step: check what environment the SDDM greeter process actually gets (for example `/proc/<pid>/environ` of the greeter in a live run), and whether the theme's Clock uses another locale property.
+
+### 20.4 Open items
+
+1. **Greeter locale** (20.3): not effective; the clock and date are English, 24-hour format not reached.
+2. **REC1** (20.2): not proven in r18; repeat with the recovery output captured on screen.
+3. **B1**: `systemctl --failed` not captured in r18; the curl line was typed with `;` in place of `|`.
+4. **Logo at 1920x1080**: not captured (only 1280x800).
+5. Nothing pushed. Commit is local.
