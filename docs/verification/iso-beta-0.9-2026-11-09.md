@@ -1307,3 +1307,35 @@ KVM with `-cpu qemu64` for every row. Evidence under `scratch-lfs-bench/lfs13-lo
 3. **B1**: `systemctl --failed` not captured in r18; the curl line was typed with `;` in place of `|`.
 4. **Logo at 1920x1080**: not captured (only 1280x800).
 5. Nothing pushed. Commit is local.
+
+## 21. Round 19 (2026-11-10): greeter locale fixed, recovery and failed units on screen; ISO r19
+
+ISO: `scratch-lfs-bench/images/alpbahos-beta-0.9-2026-11-09-r19.iso`, sha256 **`6e8ddae0bc097bf7796841fcae802d62bcf42930c640310f46a323ee1fb58931`**, `TAG=r19`. Record `sddm-alpbahos-r19` 0.9-r19 (REPLACE=1) in r4-root; script `scripts/rebuild/r19/sddm-r19.py`.
+
+### 21.1 Greeter locale: cause and fix
+
+- Cause (measured on the installed r18 image): `/etc/locale.conf` has `LANG=tr_TR.utf8` but `LC_TIME=en_US.utf8` (Calamares wrote the LC_* lines as en_US). The locale is compiled (`tr_TR` is in `/usr/lib/locale/locale-archive`). `GreeterEnvironment` with only `LANG=tr_TR.UTF-8` did not change the greeter clock or date (English, 12-hour).
+- Fix: `GreeterEnvironment=QML2_IMPORT_PATH=/usr/lib/qml,LANG=tr_TR.UTF-8,LC_ALL=tr_TR.UTF-8` in `/etc/sddm.conf`. Tested on a copy of the r18 installed image (`-snapshot`): the greeter shows `22:16` and `9 Kasım 2026 Pazartesi` (`kf21`-style frame `scratch-lfs-bench/lfs13-logs/iso-beta-0.9/r19test/locale-a/greeter.png`).
+- Deviation from the brief: the greeter is always Turkish, also on an installed system where the Calamares choice was different. `/etc/locale.conf` (Calamares choice) is not changed. Making the greeter follow the installed locale is open.
+
+### 21.2 Matrix on sha `6e8ddae0bc097bf7796841fcae802d62bcf42930c640310f46a323ee1fb58931` (ISO r19)
+
+KVM with `-cpu qemu64` for every row. Evidence under `scratch-lfs-bench/lfs13-logs/iso-beta-0.9/r19/`.
+
+| Row | Accel | Result | Evidence |
+|---|---|---|---|
+| L1 live UEFI, desktop at 130 s | KVM | **PASS**: welcome window; launchers Install AlpbahOS, Klavye doğrulama, Klavye düzeni | `L1-1/shot-130.png` |
+| I1 Calamares BIOS MSDOS install (Turkish Q) | KVM | **PASS** install (serial unmount); basic disk check only (fstab, `ID=alpbahos`, `VERSION="0.9 Beta"` on r18; r19 not repeated) | `I1/i-09-done.png` |
+| B1 installed BIOS (`-snapshot`): greeter, desktop, localectl, curl, failed units | KVM | **PASS**: greeter Turkish (22:41, 9 Kasım 2026 Pazartesi) with the logo top left; desktop; `localectl`: `LANG=tr_TR.utf8`, `VC Keymap: trq`, `X11 Layout: tr`; `curl -sI http://ftp.gnu.org/ ; head -1` shows `HTTP/1.1 200 OK` (typed with `;` in place of `|`); `systemctl --failed`: `0 loaded units listed` | `B1/b1-greeter.png`, `b1-localectl.png`, `b1-curl.png`, `b1-failed.png` |
+| REC1 BIOS recovery (broken copy, live ISO first) | KVM | **PASS**: the recovery output is on screen: `== 6 checks`, `kernel 7.1.8-alpbahos`, `recovery done; unmounting; reboot the installed disk`. Note: the step `3 initramfs` printed two `write error` lines from `/tmp/alpbahos-target-initramfs.sh` line 33; the steps after it completed. The repaired disk boots to the Turkish greeter with the logo | `REC1/rec-step1.png`, `REC1/rec-step2.png`, `REC1-boot/rec-disk-greeter.png` |
+
+### 21.3 Logo at 1920x1080
+
+Not captured as a screenshot (no resolution change in the harness). By geometry: the logo block is anchored top-left with a 40 px margin and a fixed height of 120 px; the clock and date are centred. At 1920 px width the clock block stays centred (about 790 to 1130 px), so the logo (about 40 to 180 px) does not overlap it. Not proven by an image.
+
+### 21.4 Open items
+
+1. **Installed greeter follows the Calamares locale?** No: the greeter is fixed to Turkish (21.1).
+2. **Logo at 1920x1080**: argued by geometry only (21.3).
+3. **write error in REC1 step 3** (21.2): the recovery script wrote an initramfs script to `/tmp` with an error; the recovery completed; the cause was not traced.
+4. Nothing pushed; commit is local.
