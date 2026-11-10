@@ -141,6 +141,11 @@ install -m 644 "$LIVE_SRC/calamares/branding/logo.png" "$LIVE/usr/share/calamare
 if [ "$DEBUG" != 1 ]; then grep -q '^live::' "$LIVE/etc/shadow" || die "live user has a password (expected empty)"; fi
 grep -q '^root:[!*]' "$LIVE/etc/shadow" || die "root is not locked"
 grep -qx 'PRETTY_NAME="AlpbahOS 0.9 Beta"' "$LIVE/etc/os-release" || die "os-release is not AlpbahOS 0.9 Beta"
+# NET-FW-01 (D147): NetworkManager (with wpa_supplicant) manages the links; systemd-networkd and its sockets are off.
+[ -L "$LIVE/etc/systemd/system/multi-user.target.wants/NetworkManager.service" ] || die "NetworkManager is not enabled"
+[ -x "$LIVE/usr/sbin/wpa_supplicant" ] || die "wpa_supplicant missing"
+[ -s "$LIVE/usr/lib/firmware/WHENCE" ] || die "linux-firmware missing"
+if find "$LIVE/etc/systemd/system" -name 'systemd-networkd*' | grep -q .; then die "a systemd-networkd unit is still enabled"; fi
 
 log "sddm autologin (live only), empty fstab and machine-id"
 sed -i '/^\[Autologin\]/,/^\[/{s/^User=.*/User=live/;s/^Session=.*/Session=plasma.desktop/;s/^Relogin=.*/Relogin=false/}' "$LIVE/etc/sddm.conf"
