@@ -3,6 +3,7 @@
 # console: -serial file:). Usage: vm-start.sh <uefi|bios> <iso-or-empty> <run-dir> <disk-raw-or-empty> <virtio|sata|nvme> [mem]
 # The guest keeps running until qmpctl.py <run-dir> quit (or powerdown). Accelerator: TCG (-cpu qemu64) unless ACCEL=kvm.
 # NO_REBOOT=0 (round 21 matrix) leaves out -no-reboot, so a guest reboot does not end QEMU (default 1: unchanged).
+# VGA (D1): see below.
 # NVME_BOOTINDEX (round 21 matrix) is the bootindex of the NVMe disk (default 1; SeaBIOS needs 0 and RAM <= 3G).
 set -u
 FW=$1; ISO=$2; RUN=$3; DISK=$4; BUS=${5:-virtio}; MEM=${6:-6G}
@@ -14,6 +15,12 @@ ARGS=(-cpu qemu64 -m "$MEM" -smp 4 -display none -vga virtio
       -nic "${NIC:-user,model=virtio-net-pci}"
       -serial "file:$RUN/serial.log" -qmp "unix:$RUN/qmp.sock,server,nowait")
 [ "${NO_REBOOT:-1}" = 1 ] && ARGS+=(-no-reboot)
+# VGA (D1, GRUB-THEME-01): opt-in display device instead of -vga virtio, e.g. virtio-vga,xres=1920,yres=1080
+# (the EDID preferred mode, used by GRUB gfxmode=auto). Default unchanged: the installer click positions need it.
+if [ -n "${VGA:-}" ]; then
+    for i in "${!ARGS[@]}"; do [ "${ARGS[$i]}" = "-vga" ] && ARGS[$((i+1))]=none; done
+    ARGS+=(-device "$VGA")
+fi
 [ "${ACCEL:-tcg}" = kvm ] && ARGS+=(-enable-kvm)
 if [ "$FW" = uefi ]; then
     cp "$OVMF/OVMF_VARS.fd" "$RUN/OVMF_VARS.fd"

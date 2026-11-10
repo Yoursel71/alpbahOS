@@ -4,12 +4,16 @@ Last updated: 2026-11-10
 
 Claude is the only agent on this project (D100). Decisions were re-done on 2026-11-06 in a 50-question review; see [docs/DECISIONS.md](docs/DECISIONS.md). History is in [docs/WORKLOG.md](docs/WORKLOG.md), [docs/handoffs/claude/](docs/handoffs/claude/) and [docs/archive/](docs/archive/).
 
-## Current state (2026-11-09)
+## Current state (2026-11-10)
 
 - **Alpha ISO:** `alpbahos-alpha-2026-11-08.iso` in `scratch-lfs-bench/images/` (not in the repo).
 - **Beta 0.9:** ISO `alpbahos-beta-0.9-2026-11-09.iso`, sha256 `1686abfd38dc04fabbb405fdec85307d2a587160d18502a1f5b50f5cfe8d4347`. Gate **not met** (record: [docs/verification/iso-beta-0.9-2026-11-09.md](docs/verification/iso-beta-0.9-2026-11-09.md), sections 10.5 and 10.6).
   - Passing on this sha: live BIOS and UEFI desktops; BIOS MSDOS and UEFI GPT installs complete; installed boots on BIOS virtio, BIOS AHCI, UEFI virtio and UEFI NVMe; sound on BIOS virtio and UEFI NVMe.
   - Open: the shutdown coredump is not reproduced and not fixed (the drop-in stop-order fix is shown only for the at-spi failure); installed BIOS on NVMe does not boot in SeaBIOS in the round 6 runs; the round 6 reruns (shutdown menu, tr_TR, trq, AHCI sound, alp update and rollback, live-ISO recovery) were not run.
+- **Round 22 (2026-11-10), review section D, screen D1 (GRUB theme):** ISO `alpbahos-beta-0.9-2026-11-09-r22.iso`, sha256 `04ceb551c3e5d50606959e9b8e41c48f0dc3d63a3082614c69892f5d8c167cd0` (TAG=r22). Record: [docs/verification/d1-grub-theme-2026-11-10.md](docs/verification/d1-grub-theme-2026-11-10.md); handoff [034](docs/handoffs/claude/034-d1-grub-theme-2026-11-10.md).
+  - GRUB-THEME-01 (D155, D156): installed BIOS and UEFI show the alpbahOS GRUB theme (gfxterm, Inter/JetBrains Mono .pf2, mark + live wordmark, countdown and bar); the countdown boots the default entry; shown at the QEMU `auto` modes (640x480 BIOS, 1280x800 UEFI) and on copies at 1280x720 and 1920x1080. B1 and U1 diagnostics pass (0 failed units). New alp packages: `font-inter 4.1`, `font-jetbrains-mono 2.304`, `alpbahos-grub-theme 0.9-d1`.
+  - **Waiting for the user:** approval of the GRUB look, the entry title wording, and whether the live USB menu gets the same theme. D2 (Plymouth) starts only after approval.
+  - Found: NAME-CASE-01 ("AlpbahOS" in os-release, live menu, installer strings; only the GRUB entry name was fixed).
 - **Round 21 (2026-11-10), review sections B and C:** ISO `alpbahos-beta-0.9-2026-11-09-r21.iso`, sha256 `46634e492a2c433dece0d951ff355ff6faf93a1de59f66cd739942884b0e1150` (TAG=r21, 5.64 GB). Record: [docs/verification/review-b-c-2026-11-10.md](docs/verification/review-b-c-2026-11-10.md); handoff [033](docs/handoffs/claude/033-review-b-c-2026-11-10.md).
   - B4 CI-TESTS-01 (tests no longer self-poison; new CI with shellcheck), B5 DOCS-STATUS-01 (README, no fixed test password): in the repo.
   - B6 SUDO-01 (D151), B7 ZRAM-01 (D152), B8 FIREWALL-01 (D153): shown in QEMU on r21. LIVE-LOCK-01 (D154) and LOCALE-DEFAULT-01 (D120) fixed and shown.

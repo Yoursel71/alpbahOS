@@ -12,7 +12,7 @@ strings:
     shortVersion:        BETA
     versionedName:       AlpbahOS 0.9 Beta
     shortVersionedName:  AlpbahOS BETA
-    bootloaderEntryName: AlpbahOS
+    bootloaderEntryName: alpbahOS     # GRUB_DISTRIBUTOR (grubcfg keep_distributor: false); name per D110
     productUrl:          https://example.invalid/alpbahos
     supportUrl:          https://example.invalid/alpbahos/support
     knownIssuesUrl:      https://example.invalid/alpbahos/issues
