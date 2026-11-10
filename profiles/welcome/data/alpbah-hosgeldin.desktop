@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Hoş Geldin
+Name[en]=Welcome
+GenericName=alpbahOS ilk ayarlar
+Comment=Tema, görünüm ve görev çubuğu seçimleri
+Exec=alpbah-hosgeldin
+Icon=alpbahos
+Terminal=false
+Categories=Settings;System;
+StartupNotify=true

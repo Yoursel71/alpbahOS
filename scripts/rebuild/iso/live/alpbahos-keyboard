@@ -1,5 +1,5 @@
 #!/bin/bash
-# AlpbahOS: keyboard layout choice (Turkish Q, Turkish F, US) and a key check. The choice is written to the KDE user setting
+# alpbahOS: keyboard layout choice (Turkish Q, Turkish F, US) and a key check. The choice is written to the KDE user setting
 # ~/.config/kxkbrc. KDE applies kxkbrc when the session starts, so the choice takes effect after logging out and in again.
 #   alpbahos-keyboard          choose the layout (menu); then log out and in
 #   alpbahos-keyboard --check  after logging in: press the top-left letter key and compare the letter with the keyboard

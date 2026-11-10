@@ -1,0 +1,9 @@
+# alpbahOS (WELCOME-01, D121): the KDE Welcome Center launcher is off; the alpbahOS Hoş Geldin app takes its place.
+[Module-plasma-welcome]
+autoload=false
+
+[Module-plasma_welcome]
+autoload=false
+
+[Module-kded_plasma_welcome]
+autoload=false

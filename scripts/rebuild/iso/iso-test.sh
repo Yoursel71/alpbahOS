@@ -1,5 +1,5 @@
 #!/bin/bash
-# AlpbahOS BETA ISO test: QEMU TCG (-cpu qemu64), serial to a file, QMP screendumps every 60 s and at the end.
+# alpbahOS BETA ISO test: QEMU TCG (-cpu qemu64), serial to a file, QMP screendumps every 60 s and at the end.
 # Runs as the build user (no root). UEFI uses a COPY of OVMF_VARS.fd per run (no host NVRAM). Display: virtio VGA.
 # Usage: iso-test.sh <bios|uefi> <run-tag> <max-seconds> <iso-or-empty> [disk-image-or-empty]
 #   iso given  -> the ISO is attached as CD-ROM (live boot test)

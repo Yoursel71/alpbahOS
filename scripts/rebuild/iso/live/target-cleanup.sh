@@ -1,5 +1,5 @@
 #!/bin/sh
-# AlpbahOS BETA: runs in the INSTALLED system (Calamares shellprocess, chroot of the target). Removes what only the
+# alpbahOS BETA: runs in the INSTALLED system (Calamares shellprocess, chroot of the target). Removes what only the
 # live session needs. Each step tolerates "already gone" so a rerun is harmless.
 # INSTALL-CLEANUP-01 (D149): the security-relevant steps (live polkit rule, sddm autologin of the live user,
 # live-only helpers) are followed by post-checks (also: no live user, no passwordless account); a failed post-check

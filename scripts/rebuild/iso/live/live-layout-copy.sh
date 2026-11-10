@@ -1,5 +1,5 @@
 #!/bin/sh
-# AlpbahOS BETA: runs in the LIVE system before the keyboard step (Calamares shellprocess, dontChroot).
+# alpbahOS BETA: runs in the LIVE system before the keyboard step (Calamares shellprocess, dontChroot).
 # Calamares 3.3.14 does not expand @@ROOT@@ in a shellprocess (checked: the placeholder is not in libcalamares), so the target
 # is found by its mount: the mounted directory whose /etc/os-release says ID=alpbahos (Calamares mounts the target under
 # /tmp/calamares-root-*). The live layout choice is the live user's kxkbrc, a run-time file that unpackfs does not copy.

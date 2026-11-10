@@ -1,4 +1,4 @@
-// AlpbahOS BETA live image only: the live user may start the installer (pkexec) without a password.
+// alpbahOS BETA live image only: the live user may start the installer (pkexec) without a password.
 // Removed from the installed system by target-cleanup.sh.
 polkit.addRule(function(action, subject) {
     if (action.id == "org.freedesktop.policykit.exec" &&

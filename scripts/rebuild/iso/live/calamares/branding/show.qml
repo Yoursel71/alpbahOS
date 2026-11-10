@@ -1,4 +1,4 @@
-/* AlpbahOS BETA installer slideshow (Calamares slideshow API 2). */
+/* alpbahOS BETA installer slideshow (Calamares slideshow API 2). */
 import QtQuick 2.0
 import calamares.slideshow 1.0
 
@@ -24,7 +24,7 @@ Presentation {
                 anchors.centerIn: parent
                 color: "#ffffff"
                 font.pixelSize: 28
-                text: "AlpbahOS 0.9 Beta\nInstalling the system from the live image."
+                text: "alpbahOS 0.9 Beta\nSistem canlı görüntüden kuruluyor."
             }
         }
     }

@@ -1,5 +1,5 @@
 #!/bin/sh
-# AlpbahOS BETA: recovery of an INSTALLED system from the live ISO (round 7, stage 1).
+# alpbahOS BETA: recovery of an INSTALLED system from the live ISO (round 7, stage 1).
 # Repairs only the boot path: the initramfs is rebuilt by the installer's own script (target-initramfs.sh, run in
 # the target chroot, so the same dracut options and storage drivers as the install), GRUB is reinstalled and
 # grub.cfg is regenerated. Nothing else in the installed system is changed.
@@ -68,7 +68,7 @@ domount() { # domount TYPE SRC DEST [OPTS]
 say "1 mount root and ESP"
 mkdir -p "$M"
 domount auto "$ROOT" "$M"
-[ -d "$M/boot" ] || die "$ROOT has no /boot: not an installed AlpbahOS root"
+[ -d "$M/boot" ] || die "$ROOT has no /boot: not an installed alpbahOS root"
 ls "$M"/boot/vmlinuz-* >/dev/null 2>&1 || die "no kernel in $ROOT:/boot"
 if [ -n "$ESP" ]; then
     domount auto "$ESP" "$M/boot/efi"

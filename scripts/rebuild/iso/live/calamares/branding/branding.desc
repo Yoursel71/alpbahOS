@@ -1,4 +1,4 @@
-# AlpbahOS 0.9 Beta branding for Calamares 3.3.
+# alpbahOS 0.9 Beta branding for Calamares 3.3.
 ---
 componentName: alpbahos
 
@@ -6,12 +6,12 @@ welcomeStyleCalamares: false
 welcomeExpandingLogo: true
 
 strings:
-    productName:         AlpbahOS
-    shortProductName:    AlpbahOS
+    productName:         alpbahOS
+    shortProductName:    alpbahOS
     version:             0.9 Beta
     shortVersion:        BETA
-    versionedName:       AlpbahOS 0.9 Beta
-    shortVersionedName:  AlpbahOS BETA
+    versionedName:       alpbahOS 0.9 Beta
+    shortVersionedName:  alpbahOS BETA
     bootloaderEntryName: alpbahOS     # GRUB_DISTRIBUTOR (grubcfg keep_distributor: false); name per D110
     productUrl:          https://example.invalid/alpbahos
     supportUrl:          https://example.invalid/alpbahos/support

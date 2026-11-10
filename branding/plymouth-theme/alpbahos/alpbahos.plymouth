@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=alpbahOS
+Description=alpbahOS boot splash: mark, wordmark and a progress bar (PLYMOUTH-01)
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/alpbahos
+ScriptFile=/usr/share/plymouth/themes/alpbahos/alpbahos.script

@@ -17,7 +17,9 @@ echo "tarball $TAR sha256 $(sha256sum "$TAR" | cut -d' ' -f1) size $(stat -c %s 
 tar xf "$TAR" -C "$W/src"
 if [ "$SRCDIR" = "-" ]; then SRC=$(find "$W/src" -mindepth 1 -maxdepth 1 -type d | head -1); else SRC="$W/src/$SRCDIR"; fi
 [ -d "$SRC" ] || { echo "no source dir $SRC"; exit 1; }
-BLD=/tmp/build-$NAME
+# BLD_NAME (round 23): build directory name in the chroot, e.g. plymouth-26.134.222 (Plymouth reads its version
+# from the directory name of a tarball tree). Default unchanged.
+BLD=/tmp/${BLD_NAME:-build-$NAME}
 rm -rf "$R4$BLD" "$R4/tmp/stage-$NAME" && mkdir -p "$R4$BLD"
 cp -a "$SRC/." "$R4$BLD/"
 # Round 12: optional patch applied first in the build dir (PRE_PATCH=<file>, used by the itstool lxml patch).

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Hoş Geldin (ilk oturum)
+Comment=alpbahOS Hoş Geldin uygulaması, kurulu sistemde ilk oturumda bir kez
+Exec=alpbah-hosgeldin --ilk-acilis
+Icon=alpbahos
+Terminal=false
+NoDisplay=true
+OnlyShowIn=KDE;
+X-KDE-autostart-phase=2

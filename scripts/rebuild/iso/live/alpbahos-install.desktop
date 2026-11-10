@@ -1,9 +1,12 @@
 [Desktop Entry]
 Type=Application
 Version=1.0
-Name=Install AlpbahOS
+Name=Install alpbahOS
+Name[tr]=alpbahOS'u Kur
 GenericName=System installer
-Comment=Install AlpbahOS BETA to a disk (Calamares)
+GenericName[tr]=Sistem kurulumu
+Comment=Install alpbahOS BETA to a disk (Calamares)
+Comment[tr]=alpbahOS BETA'yı diske kur (Calamares)
 Exec=/usr/bin/alpbahos-install
 Icon=system-software-install
 Terminal=false

@@ -1,0 +1,193 @@
+#!/usr/bin/env python3
+"""alpbah-hosgeldin-uygula -- alpbahOS Hoş Geldin uygulamasının ayar mantığı (WELCOME-01, D121).
+
+Kullanım:
+    alpbah-hosgeldin-uygula durum                 JSON: Glass kullanılabilir mi, kayıtlı seçimler, önizlemeler
+    alpbah-hosgeldin-uygula uygula --tema alpbahos|ataturk --gorunum solid|glass --cubuk sol|orta
+    alpbah-hosgeldin-uygula gec                   "Şimdilik geç": yalnız ilk açılış işaretini yazar
+    alpbah-hosgeldin-uygula ilk-acilis-mi         çıkış 0: uygulama şimdi açılmalı (işaret yok, canlı oturum değil)
+
+Tema duvar kağıdını değiştirir (D114, plasma-apply-wallpaperimage). Kilit ekranı SCREENLOCK-01'i bekliyor: bu sürümde
+kilit ekranı yok, o yüzden yalnız seçim kaydedilir ve çıktıda söylenir. Görünüm alpbah-gorunum aracını çağırır
+(Glass yazılım çizimde reddedilir). Görev çubuğu: tek alt paneldeki (D115) simgelerin yeri Plasma betiğiyle
+değişir; panel tam genişlik kalır. "Ortada": panelin başına ve görev yöneticisinin sonuna genişleyen boşluk
+eklenir, görev yöneticisi boş alanı doldurmaz (fill=false). Seçimler ~/.config/alpbahrc [Hosgeldin] grubuna yazılır;
+uygula ve gec ilk açılış işaretini (~/.config/alpbah-hosgeldin.tamam) yazar.
+Komutlar PATH üzerinden bulunur; testler sahte komutlarla çalıştırır.
+"""
+import argparse
+import json
+import os
+import shutil
+import subprocess
+import sys
+
+WALLPAPERS = {"alpbahos": "/usr/share/wallpapers/alpbahOS-Brand", "ataturk": "/usr/share/wallpapers/alpbahOS-Ataturk"}
+STATE_FILE = "alpbahrc"
+STATE_GROUP = "Hosgeldin"
+MARKER = "alpbah-hosgeldin.tamam"
+
+PANEL_SCRIPT = r"""
+var center = %(center)s;
+var p = null;
+panels().forEach(function (x) { if (x.location == "bottom" && p == null) p = x; });
+if (p == null) throw "alt panel yok";
+var launchers = null, icon = null;
+p.widgets().forEach(function (w) {
+    if (w.type == "org.kde.plasma.icontasks" || w.type == "org.kde.plasma.taskmanager") {
+        w.currentConfigGroup = ["General"]; launchers = w.readConfig("launchers");
+    }
+    if (w.type == "org.kde.plasma.kickoff") { w.currentConfigGroup = ["General"]; icon = w.readConfig("icon"); }
+});
+p.widgets().forEach(function (w) { w.remove(); });
+function spacer() { var s = p.addWidget("org.kde.plasma.panelspacer"); s.currentConfigGroup = ["General"]; s.writeConfig("expanding", true); }
+if (center) spacer();
+var k = p.addWidget("org.kde.plasma.kickoff");
+k.currentConfigGroup = ["General"]; k.writeConfig("icon", icon ? icon : "alpbahos");
+var t = p.addWidget("org.kde.plasma.icontasks");
+t.currentConfigGroup = ["General"];
+if (launchers) t.writeConfig("launchers", launchers);
+t.writeConfig("fill", !center);
+if (center) spacer();
+p.addWidget("org.kde.plasma.marginsseparator");
+p.addWidget("org.kde.plasma.systemtray");
+p.addWidget("org.kde.plasma.digitalclock");
+p.addWidget("org.kde.plasma.showdesktop");
+"""
+
+
+class Hata(Exception):
+    pass
+
+
+def tool(name):
+    found = shutil.which(name)
+    if not found:
+        raise Hata(f"{name} bulunamadı")
+    return found
+
+
+def run(cmd, check=True):
+    proc = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+    if check and proc.returncode != 0:
+        raise Hata(f"{os.path.basename(cmd[0])} başarısız ({proc.returncode}): {(proc.stderr or proc.stdout).strip()}")
+    return proc
+
+
+def config_dir():
+    return os.environ.get("XDG_CONFIG_HOME") or os.path.join(os.path.expanduser("~"), ".config")
+
+
+def write_state(key, value):
+    run([tool("kwriteconfig6"), "--file", STATE_FILE, "--group", STATE_GROUP, "--key", key, value])
+
+
+def read_state(key, default):
+    try:
+        out = run([tool("kreadconfig6"), "--file", STATE_FILE, "--group", STATE_GROUP, "--key", key,
+                   "--default", default]).stdout.strip()
+    except Hata:
+        return default
+    return out or default
+
+
+def write_marker():
+    os.makedirs(config_dir(), exist_ok=True)
+    with open(os.path.join(config_dir(), MARKER), "w") as f:
+        f.write("1\n")
+
+
+def is_live():
+    try:
+        return "rd.live.image" in open(os.environ.get("ALPBAH_CMDLINE", "/proc/cmdline")).read().split()
+    except OSError:
+        return False
+
+
+def glass_status():
+    """(kullanılabilir, neden). alpbah-gorunum durum çıktısındaki 'glass:' satırına bakar."""
+    try:
+        out = run([tool("alpbah-gorunum"), "durum"]).stdout
+    except Hata as exc:
+        return False, str(exc)
+    for line in out.splitlines():
+        if line.startswith("glass:"):
+            text = line.split(":", 1)[1].strip()
+            if text == "uygun":
+                return True, ""
+            return False, text.replace("önerilmez -- ", "")
+    return False, "durum okunamadı"
+
+
+def apply_theme(tema):
+    run([tool("plasma-apply-wallpaperimage"), WALLPAPERS[tema]])
+    write_state("Tema", tema)
+    return "Kilit ekranı bu sürümde yok (SCREENLOCK-01); seçim kaydedildi."
+
+
+def apply_look(gorunum):
+    proc = run([tool("alpbah-gorunum"), gorunum], check=False)
+    if proc.returncode != 0:
+        raise Hata(f"Görünüm uygulanmadı: {(proc.stderr or proc.stdout).strip()}")
+    write_state("Gorunum", gorunum)
+
+
+def apply_bar(cubuk):
+    script = PANEL_SCRIPT % {"center": "true" if cubuk == "orta" else "false"}
+    run([tool("busctl"), "--user", "call", "org.kde.plasmashell", "/PlasmaShell", "org.kde.PlasmaShell",
+         "evaluateScript", "s", script])
+    write_state("Cubuk", cubuk)
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(prog="alpbah-hosgeldin-uygula")
+    sub = ap.add_subparsers(dest="komut", required=True)
+    sub.add_parser("durum")
+    u = sub.add_parser("uygula")
+    u.add_argument("--tema", choices=sorted(WALLPAPERS), required=True)
+    u.add_argument("--gorunum", choices=["solid", "glass"], required=True)
+    u.add_argument("--cubuk", choices=["sol", "orta"], required=True)
+    sub.add_parser("gec")
+    sub.add_parser("ilk-acilis-mi")
+    a = ap.parse_args(argv)
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8")
+
+    if a.komut == "ilk-acilis-mi":
+        if is_live() or os.path.exists(os.path.join(config_dir(), MARKER)):
+            return 1
+        return 0
+    if a.komut == "gec":
+        write_marker()
+        return 0
+    if a.komut == "durum":
+        ok, why = glass_status()
+        print(json.dumps({
+            "glass_kullanilabilir": ok, "glass_neden": why,
+            "tema": read_state("Tema", "alpbahos"), "gorunum": read_state("Gorunum", "solid"),
+            "cubuk": read_state("Cubuk", "sol"),
+            "onizleme": {k: os.path.join(v, "contents", "screenshot.png") for k, v in WALLPAPERS.items()},
+        }, ensure_ascii=False))
+        return 0
+    notes, errors = [], []
+    for step, value in (("tema", a.tema), ("gorunum", a.gorunum), ("cubuk", a.cubuk)):
+        try:
+            note = {"tema": apply_theme, "gorunum": apply_look, "cubuk": apply_bar}[step](value)
+            if note:
+                notes.append(note)
+        except Hata as exc:
+            errors.append(str(exc))
+    for n in notes:
+        print(n)
+    if errors:
+        for e in errors:
+            print(f"HATA: {e}", file=sys.stderr)
+        return 2
+    write_marker()
+    print("Seçimler uygulandı.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

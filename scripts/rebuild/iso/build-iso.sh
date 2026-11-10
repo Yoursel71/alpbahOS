@@ -1,5 +1,5 @@
 #!/bin/bash
-# AlpbahOS 0.9 Beta live ISO (REBUILD-R4 ISO step, 2026-11-09). Usage: sudo build-iso.sh
+# alpbahOS 0.9 Beta live ISO (REBUILD-R4 ISO step, 2026-11-09). Usage: sudo build-iso.sh
 #
 # Input: r4-root (the finished R4 root, btrfs subvolume). Output: scratch-lfs-bench/images/alpbahos-beta-0.9-<DATE>.iso
 # and its .sha256. Steps:
@@ -128,6 +128,7 @@ install -m 755 "$LIVE_SRC/target-cleanup.sh" "$LIVE/usr/lib/alpbahos/target-clea
 install -m 755 "$LIVE_SRC/target-live-user.sh" "$LIVE/usr/lib/alpbahos/target-live-user.sh"
 install -m 755 "$LIVE_SRC/target-initramfs.sh" "$LIVE/usr/lib/alpbahos/target-initramfs.sh"
 install -m 755 "$LIVE_SRC/live-layout-copy.sh" "$LIVE/usr/lib/alpbahos/live-layout-copy.sh"
+install -m 755 "$LIVE_SRC/target-grub-gfxmode.sh" "$LIVE/usr/lib/alpbahos/target-grub-gfxmode.sh"
 # Recovery of an installed system (round 7): alpbahos-recover runs target-initramfs.sh and grub-install from the live
 # image; see docs/verification/iso-beta-0.9-2026-11-09.md section 11.
 install -d -m 755 "$LIVE/usr/local/sbin"
@@ -142,6 +143,13 @@ install -d -m 755 "$LIVE/etc/calamares/modules" "$LIVE/usr/share/calamares/brand
 install -m 644 "$LIVE_SRC/calamares/settings.conf" "$LIVE/etc/calamares/settings.conf"
 for f in "$LIVE_SRC"/calamares/modules/*.conf; do install -m 644 "$f" "$LIVE/etc/calamares/modules/"; done
 install -m 644 "$M11_MOD/bootloader.conf" "$M11_MOD/grubcfg.conf" "$LIVE/etc/calamares/modules/"
+# PLYMOUTH-01 (D160): the DEBUG build installs systems without "quiet splash", so the boot log stays on screen.
+if [ "$DEBUG" = 1 ]; then
+    sed -i 's/^kernel_params: \[ "quiet", "splash" \]$/kernel_params: [ ]/' "$LIVE/etc/calamares/modules/grubcfg.conf"
+    grep -qx 'kernel_params: \[ \]' "$LIVE/etc/calamares/modules/grubcfg.conf" || die "DEBUG: kernel_params not cleared"
+else
+    grep -qx 'kernel_params: \[ "quiet", "splash" \]' "$LIVE/etc/calamares/modules/grubcfg.conf" || die "grubcfg.conf: no quiet splash"
+fi
 install -m 644 "$LIVE_SRC/calamares/branding/branding.desc" "$LIVE/usr/share/calamares/branding/alpbahos/"
 install -m 644 "$LIVE_SRC/calamares/branding/show.qml" "$LIVE/usr/share/calamares/branding/alpbahos/"
 # The Calamares logo is the real brand logo (round 9): a transparent PNG made from docs/assets/alpbahOS-logo.png by
@@ -150,7 +158,7 @@ install -m 644 "$LIVE_SRC/calamares/branding/logo.png" "$LIVE/usr/share/calamare
 [ -s "$LIVE/usr/share/calamares/branding/alpbahos/logo.png" ] || die "logo not written"
 if [ "$DEBUG" != 1 ]; then grep -q '^live::' "$LIVE/etc/shadow" || die "live user has a password (expected empty)"; fi
 grep -q '^root:[!*]' "$LIVE/etc/shadow" || die "root is not locked"
-grep -qx 'PRETTY_NAME="AlpbahOS 0.9 Beta"' "$LIVE/etc/os-release" || die "os-release is not AlpbahOS 0.9 Beta"
+grep -qx 'PRETTY_NAME="alpbahOS 0.9 Beta"' "$LIVE/etc/os-release" || die "os-release is not alpbahOS 0.9 Beta"
 # NET-FW-01 (D147): NetworkManager (with wpa_supplicant) manages the links; systemd-networkd and its sockets are off.
 [ -L "$LIVE/etc/systemd/system/multi-user.target.wants/NetworkManager.service" ] || die "NetworkManager is not enabled"
 [ -x "$LIVE/usr/sbin/wpa_supplicant" ] || die "wpa_supplicant missing"
@@ -166,7 +174,7 @@ log "sddm autologin (live only), empty fstab and machine-id"
 sed -i '/^\[Autologin\]/,/^\[/{s/^User=.*/User=live/;s/^Session=.*/Session=plasma.desktop/;s/^Relogin=.*/Relogin=false/}' "$LIVE/etc/sddm.conf"
 sed -n '/^\[Autologin\]/,/^\[/p' "$LIVE/etc/sddm.conf" | grep -qx 'User=live' || die "autologin User not set"
 sed -n '/^\[Autologin\]/,/^\[/p' "$LIVE/etc/sddm.conf" | grep -qx 'Session=plasma.desktop' || die "autologin Session not set"
-printf '# AlpbahOS BETA live image: the installer writes /etc/fstab of the installed system.\n' > "$LIVE/etc/fstab"
+printf '# alpbahOS BETA live image: the installer writes /etc/fstab of the installed system.\n' > "$LIVE/etc/fstab"
 : > "$LIVE/etc/machine-id"
 
 # ------------------------------------------------------------------ 3. initramfs (dracut, dmsquash-live)
@@ -264,6 +272,12 @@ if [ -n "${EXTRA_KARGS:-}" ]; then
     grep -q "${EXTRA_KARGS}" "$ISOTREE/tree/boot/grub/grub.cfg" || die "EXTRA_KARGS not applied"
     echo "EXTRA_KARGS applied (test variant): ${EXTRA_KARGS}" >&2
 fi
+# LIVE-GRUB-THEME-01 (D159): the GRUB theme of r4-root (package alpbahos-grub-theme) on the ISO for the live menu.
+[ -f "$R4/boot/grub/themes/alpbahos/theme.txt" ] || die "GRUB theme missing in r4-root"
+install -d -m 755 "$ISOTREE/tree/boot/grub/themes/alpbahos"
+install -m 644 "$R4"/boot/grub/themes/alpbahos/* "$ISOTREE/tree/boot/grub/themes/alpbahos/"
+[ "$(find "$ISOTREE/tree/boot/grub/themes/alpbahos" -name '*.pf2' | wc -l)" = 7 ] || die "GRUB theme fonts missing on the ISO"
+install -D -m 644 "$R4/usr/share/locale/tr/LC_MESSAGES/grub.mo" "$ISOTREE/tree/boot/grub/locale/tr.mo"   # GRUB texts in Turkish
 install -m 644 "$LIVE_SRC/grub-embed.cfg" "$ISOTREE/grub-embed.cfg"
 find "$R4/usr/lib/grub/i386-pc" -maxdepth 1 \( -name '*.mod' -o -name '*.lst' \) -exec cp {} "$ISOTREE/tree/boot/grub/i386-pc/" \;
 find "$R4/usr/lib/grub/x86_64-efi" -maxdepth 1 \( -name '*.mod' -o -name '*.lst' \) -exec cp {} "$ISOTREE/tree/boot/grub/x86_64-efi/" \;
@@ -283,7 +297,7 @@ rm -f "$ISOTREE/bootx64.efi"
 # ------------------------------------------------------------------ 6. ISO (xorriso from libisoburn)
 log "xorriso"
 L xorriso -as mkisofs -iso-level 3 -full-iso9660-filenames -joliet -joliet-long -rational-rock \
-    -volid "$LABEL" -appid AlpbahOS -publisher AlpbahOS \
+    -volid "$LABEL" -appid alpbahOS -publisher alpbahOS \
     -eltorito-boot boot/grub/i386-pc/eltorito.img -no-emul-boot -boot-load-size 4 -boot-info-table \
     --grub2-boot-info --grub2-mbr /usr/lib/grub/i386-pc/boot_hybrid.img \
     -eltorito-alt-boot -e boot/efi.img -no-emul-boot -isohybrid-gpt-basdat \

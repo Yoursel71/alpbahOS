@@ -1,0 +1,97 @@
+# alpbahOS boot splash (PLYMOUTH-01, D160). Script plugin. Images are made by
+# branding/plymouth-theme/tools/build_plymouth_theme.py; this file is written by hand.
+# Layout: background #0b1014; centred column mark, 24 px, wordmark, 48 px, 280x4 progress bar; mode label
+# 56 px above the bottom edge. Esc switches to the boot log (Plymouth's details view).
+
+Window.SetBackgroundTopColor(0.0431, 0.0627, 0.0784);
+Window.SetBackgroundBottomColor(0.0431, 0.0627, 0.0784);
+
+mark = Image("mark.png");
+word = Image("wordmark.png");
+track = Image("track.png");
+fill = Image("fill.png");
+
+screen_x = Window.GetX();
+screen_y = Window.GetY();
+screen_w = Window.GetWidth();
+screen_h = Window.GetHeight();
+
+column_h = mark.GetHeight() + 24 + word.GetHeight() + 48 + track.GetHeight();
+column_top = screen_y + Math.Int((screen_h - column_h) / 2);
+
+mark_sprite = Sprite(mark);
+mark_sprite.SetPosition(screen_x + Math.Int((screen_w - mark.GetWidth()) / 2), column_top, 10);
+
+word_sprite = Sprite(word);
+word_sprite.SetPosition(screen_x + Math.Int((screen_w - word.GetWidth()) / 2), column_top + mark.GetHeight() + 24, 10);
+
+bar_x = screen_x + Math.Int((screen_w - track.GetWidth()) / 2);
+bar_y = column_top + mark.GetHeight() + 24 + word.GetHeight() + 48;
+track_sprite = Sprite(track);
+track_sprite.SetPosition(bar_x, bar_y, 10);
+fill_sprite = Sprite();
+fill_sprite.SetPosition(bar_x, bar_y, 11);
+
+mode = Plymouth.GetMode();
+if (mode == "shutdown")
+  label = Image("label-shutdown.png");
+else if (mode == "reboot")
+  label = Image("label-reboot.png");
+else
+  label = Image("label-boot.png");
+label_sprite = Sprite(label);
+label_sprite.SetPosition(screen_x + Math.Int((screen_w - label.GetWidth()) / 2), screen_y + screen_h - 56 - label.GetHeight(), 10);
+
+# The bar follows boot progress only; on shutdown and reboot there is no progress to follow.
+if (mode != "boot") {
+  track_sprite.SetOpacity(0);
+}
+
+fun progress_callback(duration, progress) {
+  if (progress > 1) progress = 1;
+  w = Math.Int(fill.GetWidth() * progress);
+  if (w < 2) w = 2;
+  if (mode == "boot")
+    fill_sprite.SetImage(fill.Scale(w, fill.GetHeight()));
+}
+Plymouth.SetBootProgressFunction(progress_callback);
+
+# Messages (fsck and similar) above the mode label.
+message_sprite = Sprite();
+fun message_callback(text) {
+  img = Image.Text(text, 0.557, 0.635, 0.686, 1);
+  message_sprite.SetImage(img);
+  message_sprite.SetPosition(screen_x + Math.Int((screen_w - img.GetWidth()) / 2), screen_y + screen_h - 96 - img.GetHeight(), 10);
+}
+Plymouth.SetMessageFunction(message_callback);
+
+# Passphrase prompt (e.g. LUKS, INSTALL-LUKS-01): prompt text and one dot per typed character, under the bar.
+prompt_sprite = Sprite();
+bullets_sprite = Sprite();
+fun password_callback(prompt, bullets) {
+  p = Image.Text(prompt, 0.831, 0.878, 0.910, 1);
+  prompt_sprite.SetImage(p);
+  prompt_sprite.SetPosition(screen_x + Math.Int((screen_w - p.GetWidth()) / 2), bar_y + 32, 12);
+  dots = "";
+  for (i = 0; i < bullets; i++) dots += "●";
+  if (dots == "") dots = " ";
+  b = Image.Text(dots, 0.329, 0.839, 1, 1);
+  bullets_sprite.SetImage(b);
+  bullets_sprite.SetPosition(screen_x + Math.Int((screen_w - b.GetWidth()) / 2), bar_y + 32 + p.GetHeight() + 12, 12);
+  prompt_sprite.SetOpacity(1);
+  bullets_sprite.SetOpacity(1);
+}
+Plymouth.SetDisplayPasswordFunction(password_callback);
+
+fun question_callback(prompt, entry) {
+  password_callback(prompt, 0);
+  e = Image.Text(entry, 0.957, 0.973, 0.984, 1);
+  bullets_sprite.SetImage(e);
+}
+Plymouth.SetDisplayQuestionFunction(question_callback);
+
+fun normal_callback() {
+  prompt_sprite.SetOpacity(0);
+  bullets_sprite.SetOpacity(0);
+}
+Plymouth.SetDisplayNormalFunction(normal_callback);

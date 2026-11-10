@@ -15,7 +15,7 @@ set -euo pipefail
 CMD=$1; FW=$2; IMG=$3; NAME=$4; MODE=${5:-}
 B=/home/yrslf/alpbahOS/scratch-lfs-bench
 W=/home/yrslf/alpbahOS/wt-t2-kisayol/scripts/rebuild/image
-D=$B/lfs13-logs/iso-beta-0.9/r22
+D=$B/lfs13-logs/iso-beta-0.9/${ROUND:-r22}   # ROUND (round 23+): evidence directory
 R=$D/$NAME
 [ ! -e "$R" ] || { echo "$R exists" >&2; exit 2; }
 mkdir -p "$R"
