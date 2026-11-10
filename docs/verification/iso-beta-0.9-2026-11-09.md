@@ -1268,3 +1268,9 @@ Runs KF19b and KF19c on the installed F image (`inst-bios-msdos-kf17b.raw`, `-sn
 | kxkbrc before/after | **NOT captured**: `x` in the typed path failed under F | - |
 
 Notes: the typed `e` answer under F is qcode `d`; the earlier `ğ` result (KF19) came from sending qcode `e`. The `--check` read is unchanged (`f` with F active). The F-layout harness still needs a verified mapping for `x`, `|` and `:` before the status-line and greeter rows can be closed.
+
+### 19.6 Tur 20: B1 curl status line (Q image) and greeter under F
+
+- **B1 curl status line: PASS (with a typing deviation).** Run KF20A on the Q image (`inst-bios-msdos-r17.raw`, `-snapshot`), logged in as the test user. Typed command on screen: `curl -sI http://ftp.gnu.org/ ; head -1` (the `|` was typed as `;` by the harness). The screen shows `HTTP/1.1 200 OK` as the first line, followed by Date, Server, Content-Security-Policy, X-Frame-Options DENY, X-Content-Type-Options nosniff and Content-Type text/html;charset=UTF-8. The literal pipe form was not typed. Evidence: `KF20A/kf20a-curl-status.png`.
+- **Greeter under F: PASS (screen seen, not logged in).** Run KF20B on the F image (`inst-bios-msdos-kf17b.raw`, `-snapshot`). After 95 s the boot splash was still up; one click dismissed it and the SDDM greeter appeared: user "Test User", password field, session menu (Plasma Wayland), power buttons. The alpbahOS logo is shown at the top, but it overlaps the clock text (cosmetic, seen in this frame). The greeter was not used to log in in this run. Evidence: `KF20B/kf20b-greeter.png` (identical frame in `kf20b-greeter-2.png`).
+- Nothing pushed; no VM left running.
