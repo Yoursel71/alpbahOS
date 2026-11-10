@@ -1,0 +1,4 @@
+# alpbahOS (master task E3): the session start screen uses the alpbahOS splash of the look-and-feel package.
+[KSplash]
+Engine=KSplashQML
+Theme=org.alpbahos.solid.desktop

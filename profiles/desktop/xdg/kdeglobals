@@ -6,6 +6,11 @@ contrast=4
 
 [General]
 ColorScheme=alpbah-dark
+font=Inter Variable,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
+menuFont=Inter Variable,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
+toolBarFont=Inter Variable,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
+smallestReadableFont=Inter Variable,8,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
+fixed=JetBrains Mono,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
 
 [Icons]
 Theme=breeze-dark
@@ -105,3 +110,4 @@ activeForeground=244,248,251
 inactiveBackground=17,23,28
 inactiveBlend=142,162,175
 inactiveForeground=142,162,175
+activeFont=Inter Variable,10,-1,5,600,0,0,0,0,0,0,0,0,0,0,1

@@ -1,3 +1,4 @@
-# alpbahOS (LIVE-PROFILE-01): dark Plasma style for the panel and the menus (/etc/xdg/plasmarc).
+# alpbahOS (LIVE-PROFILE-01, E2): the Breeze Plasma style ("default") follows the system colour scheme, so panel and
+# menus use the alpbah-dark navy and cyan from /etc/xdg/kdeglobals (round 26; round 25 used the fixed breeze-dark).
 [Theme]
-name=breeze-dark
+name=default

@@ -4,12 +4,14 @@
 # (pmsfdiskbackendplugin, in /usr/lib/plugins) fails to load without QT_PLUGIN_PATH (found 2026-11-08).
 # Debug builds (file /etc/alpbahos-live-debug, from build-iso.sh --debug): calamares -d output is also written
 # to the serial console (/dev/ttyS0), so the install log can be read from the QEMU serial log.
-ENVS="DISPLAY=${DISPLAY:-} XAUTHORITY=${XAUTHORITY:-} WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-} XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-} QT_PLUGIN_PATH=/usr/lib/plugins:/opt/qt6/plugins QML2_IMPORT_PATH=/usr/lib/qt6/qml:/opt/qt6/qml:/usr/lib/qml"
+# INSTALLER-THEME-01 (round 26): QT_QPA_PLATFORMTHEME=kde, so the installer (root, no user settings) takes the
+# system colours and fonts from /etc/xdg/kdeglobals instead of the light Qt defaults.
+ENVS="DISPLAY=${DISPLAY:-} XAUTHORITY=${XAUTHORITY:-} WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-} XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-} QT_PLUGIN_PATH=/usr/lib/plugins:/opt/qt6/plugins QT_QPA_PLATFORMTHEME=kde QML2_IMPORT_PATH=/usr/lib/qt6/qml:/opt/qt6/qml:/usr/lib/qml"
 if [ -f /etc/alpbahos-live-debug ]; then
     exec pkexec env $ENVS /bin/sh -c '/usr/bin/calamares -d 2>&1 | tee /tmp/calamares-debug.log > /dev/ttyS0'
 fi
 exec pkexec env DISPLAY="${DISPLAY:-}" XAUTHORITY="${XAUTHORITY:-}" WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-}" \
     XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-}" \
-    QT_PLUGIN_PATH=/usr/lib/plugins:/opt/qt6/plugins \
+    QT_PLUGIN_PATH=/usr/lib/plugins:/opt/qt6/plugins QT_QPA_PLATFORMTHEME=kde \
     QML2_IMPORT_PATH=/usr/lib/qt6/qml:/opt/qt6/qml:/usr/lib/qml \
     /usr/bin/calamares "$@"

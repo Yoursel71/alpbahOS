@@ -42,7 +42,7 @@ try:
         cmd({"execute": "screendump", "arguments": {"filename": path}})
         log.write(f"burst-{n:03d} {time.time() - t0:.2f}\n")
         log.flush()
-        time.sleep(0.2)
+        time.sleep(0.03)
 except (EOFError, OSError, ValueError):
     log.write(f"QEMU closed after {time.time() - t0:.2f} s\n")
 print(f"{n} screendumps")

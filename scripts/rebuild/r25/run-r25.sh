@@ -8,9 +8,10 @@ ISO=$(realpath "$1"); shift
 STEPS=${*:-installs grub splash live timing welcome}
 WT=/home/yrslf/alpbahOS/wt-t2-kisayol
 B=/home/yrslf/alpbahOS/scratch-lfs-bench
-L=$B/lfs13-logs/iso-beta-0.9/r25
-IMGB=$B/images/inst-bios-msdos-r25.raw
-IMGU=$B/images/inst-uefi-gpt-r25.raw
+RND=${ROUND:-r25}   # round 26+: ROUND=r26 (evidence directory and install image names)
+L=$B/lfs13-logs/iso-beta-0.9/$RND
+IMGB=$B/images/inst-bios-msdos-$RND.raw
+IMGU=$B/images/inst-uefi-gpt-$RND.raw
 Q() { python3 "$WT/scripts/rebuild/image/qmpctl.py" "$@" > /dev/null 2>&1; }
 G() { bash "$WT/scripts/rebuild/r24/vm-gui.sh" "$@"; }
 log() { echo "[$(date +%T)] $*" | tee -a "$L/run.log"; }
@@ -20,21 +21,21 @@ for step in $STEPS; do
 case $step in
 installs)
     log "installs (I1 BIOS, L1 live UEFI, I2 UEFI)"
-    ROUND=r25 bash scripts/rebuild/r20/r20-lanes.sh "$ISO" installs > "$L/lanes.out" 2>&1 ;;
+    ROUND=$RND bash scripts/rebuild/r20/r20-lanes.sh "$ISO" installs > "$L/lanes.out" 2>&1 ;;
 grub)
     log "GRUB rows"
     for fw in bios uefi; do
         img=$IMGB; [ $fw = uefi ] && img=$IMGU
-        ROUND=r25 bash scripts/rebuild/d1/d1-grub-tests.sh menu $fw "$img" G-$fw-menu > "$L/G-$fw-menu.out" 2>&1
+        ROUND=$RND bash scripts/rebuild/d1/d1-grub-tests.sh menu $fw "$img" G-$fw-menu > "$L/G-$fw-menu.out" 2>&1
         for m in 1280x720 1920x1080; do
-            ROUND=r25 bash scripts/rebuild/d1/d1-grub-tests.sh mode $fw "$img" G-$fw-$m $m > "$L/G-$fw-$m.out" 2>&1
+            ROUND=$RND bash scripts/rebuild/d1/d1-grub-tests.sh mode $fw "$img" G-$fw-$m $m > "$L/G-$fw-$m.out" 2>&1
         done
     done ;;
 splash)
     log "splash rows (boot and shutdown)"
     for fw in bios uefi; do
         img=$IMGB; [ $fw = uefi ] && img=$IMGU
-        ROUND=r25 bash scripts/rebuild/r23/d2-splash-tests.sh splash $fw "$img" P-$fw-boot > "$L/P-$fw-boot.out" 2>&1
+        ROUND=$RND bash scripts/rebuild/r23/d2-splash-tests.sh splash $fw "$img" P-$fw-boot > "$L/P-$fw-boot.out" 2>&1
         R=$L/P-$fw-shutdown; mkdir -p "$R"
         EXTRA_ARGS="-snapshot" ACCEL=kvm bash scripts/rebuild/image/vm-start.sh $fw "" "$R" "$img" virtio 6G > /dev/null
         sleep 60; python3 scripts/rebuild/r24/qmp-burst.py "$R" 60 > "$R/burst.out" 2>&1
@@ -45,8 +46,8 @@ for f in sorted(glob.glob('$R/burst-*.ppm')): Image.open(f).save(f[:-4] + '.png'
     done ;;
 live)
     log "live GRUB menu rows"
-    ROUND=r25 bash scripts/rebuild/r23/d2-splash-tests.sh livemenu bios "$ISO" LM-bios > "$L/LM-bios.out" 2>&1
-    ROUND=r25 bash scripts/rebuild/r23/d2-splash-tests.sh livemenu uefi "$ISO" LM-uefi > "$L/LM-uefi.out" 2>&1 ;;
+    ROUND=$RND bash scripts/rebuild/r23/d2-splash-tests.sh livemenu bios "$ISO" LM-bios > "$L/LM-bios.out" 2>&1
+    ROUND=$RND bash scripts/rebuild/r23/d2-splash-tests.sh livemenu uefi "$ISO" LM-uefi > "$L/LM-uefi.out" 2>&1 ;;
 timing)
     log "B1/U1 diagnostics with the boot timing hook"
     DIAG_HOOK=$WT/scripts/rebuild/r23/hook-boot-r23.sh OUTD=$L bash scripts/rebuild/r21/diag-r21.sh bios "$IMGB" B1D > "$L/diag-B1D.log" 2>&1

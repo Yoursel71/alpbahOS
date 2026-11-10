@@ -11,6 +11,8 @@
 #   SYSCONFDIR/xdg/kwinrc                                     Solid: blur/kontrast kapalı
 #   SYSCONFDIR/xdg/plasmarc                                   koyu Plasma stili (breeze-dark)
 #   SYSCONFDIR/xdg/plasma-welcomerc                           KDE Karşılama Merkezi kendiliğinden açılmaz
+#   SYSCONFDIR/xdg/ksplashrc                                  alpbahOS oturum açılış ekranı (KSplash)
+#   SYSCONFDIR/fonts/conf.d/60-alpbahos-fonts.conf            Inter / JetBrains Mono varsayılan yazı tipleri
 #   SYSCONFDIR/skel/.config/kglobalshortcutsrc                Windows'a tanıdık kısayollar (yeni kullanıcılar)
 #   <ev>/.config/kglobalshortcutsrc                           aynı dosya, her --user-home DIZIN için (mevcut kullanıcılar)
 #   (kglobalacceld /etc/xdg okumaz: D43; bu yüzden kısayollar skel + kullanıcı dosyasıdır)
@@ -110,6 +112,8 @@ PAIRS+=("$REPO/profiles/desktop/xdg/kdeglobals|$SYSCONFDIR/xdg/kdeglobals")
 PAIRS+=("$REPO/profiles/desktop/xdg/kwinrc|$SYSCONFDIR/xdg/kwinrc")
 PAIRS+=("$REPO/profiles/desktop/xdg/plasmarc|$SYSCONFDIR/xdg/plasmarc")
 PAIRS+=("$REPO/profiles/desktop/xdg/plasma-welcomerc|$SYSCONFDIR/xdg/plasma-welcomerc")
+PAIRS+=("$REPO/profiles/desktop/xdg/ksplashrc|$SYSCONFDIR/xdg/ksplashrc")
+PAIRS+=("$REPO/profiles/desktop/fontconfig/60-alpbahos-fonts.conf|$SYSCONFDIR/fonts/conf.d/60-alpbahos-fonts.conf")
 # kglobalacceld /etc/xdg'yi okumaz (D43): kısayol dosyası skel'e ve verilen kullanıcı evlerine kurulur.
 PAIRS+=("$REPO/profiles/shortcuts/generated/kglobalshortcutsrc|$SYSCONFDIR/skel/.config/kglobalshortcutsrc")
 for uh in "${USER_HOMES[@]+"${USER_HOMES[@]}"}"; do

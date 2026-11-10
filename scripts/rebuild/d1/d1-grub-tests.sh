@@ -37,8 +37,9 @@ mode)
     trap cleanup EXIT ERR
     P=$(for p in "$LO"p*; do [ "$(sudo blkid -o value -s TYPE "$p")" = ext4 ] && echo "$p"; done | head -n 1)
     mkdir -p "$M"; sudo mount "$P" "$M"
-    [ "$(grep -c '^  set gfxmode=auto$' "$M/boot/grub/grub.cfg")" = 1 ] || { echo "gfxmode line not found once" >&2; exit 1; }
-    sudo sed -i "s/^  set gfxmode=auto\$/  set gfxmode=$MODE/" "$M/boot/grub/grub.cfg"
+    # The product line is "set gfxmode=auto" (round 22) or "set gfxmode=<WxH>,auto" (round 23+, D158).
+    [ "$(grep -c '^  set gfxmode=' "$M/boot/grub/grub.cfg")" = 1 ] || { echo "gfxmode line not found once" >&2; rm -f "$CP"; exit 1; }
+    sudo sed -i "s/^  set gfxmode=.*\$/  set gfxmode=$MODE/" "$M/boot/grub/grub.cfg"
     grep -n 'gfxmode\|theme\|loadfont\|terminal_output' "$M/boot/grub/grub.cfg" > "$R/grub-cfg-lines.txt"
     cleanup; trap - EXIT ERR
     ACCEL=kvm bash "$W/vm-start.sh" "$FW" "" "$R" "$CP" virtio 6G > /dev/null
