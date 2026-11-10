@@ -1253,3 +1253,18 @@ KVM with `-cpu qemu64` for every row (no TCG row this round). Evidence under `sc
 3. **SDDM greeter layout** after the carry (`XKB_DEFAULT_VARIANT=f`): verified in the apply log only; the greeter screen was not captured under F.
 4. **Real-PC feedback** on Q/F: still the user's test. The default stays Turkish Q.
 5. Nothing is pushed. Round 17 changes are committed locally only.
+
+### 19.5 Addendum (Tur 19): --check e and h branches, greeter, curl status
+
+Runs KF19b and KF19c on the installed F image (`inst-bios-msdos-kf17b.raw`, `-snapshot`), QEMU KVM qemu64, ISO r17 sha `24d631d26711a5d0f1f31498fd88a28e47804f7d232a15d0b188f992c6f842b8`. Evidence under `scratch-lfs-bench/lfs13-logs/iso-beta-0.9/r17/KF19`, `KF19b`, `KF19c`.
+
+| Item | Result | Evidence |
+|---|---|---|
+| Physical key for `e` under F | **PASS**: qcode `d` types `e` (shell echo) | `KF19/kf19-e-under-F.png` |
+| `--check` answer `e` (F stays) | **PASS**: reads `f`, prints `Tamam: aktif düzen klavyenizle uyuşuyor.`, no change | `KF19b/kf19b-chk1-answer-e.png` |
+| `--check` answer `h` (switch to Q) | **PASS** for the tool: `Düzen kaydedildi: tr` and `Düzen değiştirildi`; the switch takes effect at the next login, which was not re-tested | `KF19b/kf19b-chk2-answer-h.png` |
+| Greeter (SDDM) screenshot | **NOT captured**: the boot splash (alpbahOS logo) stays on screen until the first click; no greeter frame was taken after the click | `KF19c/kf19c-greeter.png` (splash) |
+| B1 curl status line | **NOT proven**: the typed command lost characters under the F layout (`x` gives `ö`, `|` and `:` need other key combinations), so the status line was not shown | `KF19c/kf19c-b1-curl-status.png` |
+| kxkbrc before/after | **NOT captured**: `x` in the typed path failed under F | - |
+
+Notes: the typed `e` answer under F is qcode `d`; the earlier `ğ` result (KF19) came from sending qcode `e`. The `--check` read is unchanged (`f` with F active). The F-layout harness still needs a verified mapping for `x`, `|` and `:` before the status-line and greeter rows can be closed.
