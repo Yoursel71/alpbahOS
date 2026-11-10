@@ -109,6 +109,11 @@ install -d -m 755 "$LIVE/home/live/Desktop"
 install -m 755 "$LIVE_SRC/alpbahos-install.desktop" "$LIVE/home/live/Desktop/alpbahos-install.desktop"
 install -m 755 "$LIVE_SRC/alpbahos-keyboard.desktop" "$LIVE/home/live/Desktop/alpbahos-keyboard.desktop"
 install -m 755 "$LIVE_SRC/alpbahos-keyboard-check.desktop" "$LIVE/home/live/Desktop/alpbahos-keyboard-check.desktop"
+# LIVE-LOCK-01 (D154): the live session never locks and never suspends on idle. The live user has no password, so
+# a locked live session could not be unlocked (seen in round 20 while an install was running).
+install -d -m 755 "$LIVE/home/live/.config"
+printf '[Daemon]\nAutolock=false\nLockOnResume=false\n' > "$LIVE/home/live/.config/kscreenlockerrc"
+printf '[AC][SuspendAndShutdown]\nAutoSuspendAction=0\n\n[Battery][SuspendAndShutdown]\nAutoSuspendAction=0\n\n[LowBattery][SuspendAndShutdown]\nAutoSuspendAction=0\n' > "$LIVE/home/live/.config/powerdevilrc"
 L /usr/bin/chown -R live:live /home/live
 install -m 755 "$LIVE_SRC/alpbahos-install" "$LIVE/usr/bin/alpbahos-install"
 install -d -m 755 "$LIVE/etc/polkit-1/rules.d"
