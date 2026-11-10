@@ -1,6 +1,6 @@
 # alpbahOS — Current state
 
-Last updated: 2026-11-09
+Last updated: 2026-11-10
 
 Claude is the only agent on this project (D100). Decisions were re-done on 2026-11-06 in a 50-question review; see [docs/DECISIONS.md](docs/DECISIONS.md). History is in [docs/WORKLOG.md](docs/WORKLOG.md), [docs/handoffs/claude/](docs/handoffs/claude/) and [docs/archive/](docs/archive/).
 
@@ -10,6 +10,12 @@ Claude is the only agent on this project (D100). Decisions were re-done on 2026-
 - **Beta 0.9:** ISO `alpbahos-beta-0.9-2026-11-09.iso`, sha256 `1686abfd38dc04fabbb405fdec85307d2a587160d18502a1f5b50f5cfe8d4347`. Gate **not met** (record: [docs/verification/iso-beta-0.9-2026-11-09.md](docs/verification/iso-beta-0.9-2026-11-09.md), sections 10.5 and 10.6).
   - Passing on this sha: live BIOS and UEFI desktops; BIOS MSDOS and UEFI GPT installs complete; installed boots on BIOS virtio, BIOS AHCI, UEFI virtio and UEFI NVMe; sound on BIOS virtio and UEFI NVMe.
   - Open: the shutdown coredump is not reproduced and not fixed (the drop-in stop-order fix is shown only for the at-spi failure); installed BIOS on NVMe does not boot in SeaBIOS in the round 6 runs; the round 6 reruns (shutdown menu, tr_TR, trq, AHCI sound, alp update and rollback, live-ISO recovery) were not run.
+- **Round 20 (2026-11-10), review section A (blockers for the real-PC USB test):** ISO `alpbahos-beta-0.9-2026-11-09-r20.iso`, sha256 `d21f6e55e3f28b1da677286da4d0a4dedbbb2c1b27996067181519ae7ee3e5f3` (TAG=r20, 5.63 GB). Record: [docs/verification/review-a-blockers-2026-11-10.md](docs/verification/review-a-blockers-2026-11-10.md).
+  - A1 NET-FW-01 (D147, D150): linux-firmware 20261019 (zstd), wpa_supplicant 2.12, NetworkManager replaces systemd-networkd (live and installed). QEMU: NM active, networkd off, DNS through NM, HTTP/HTTPS, plasma-nm popup, 0 failed units. Real Wi-Fi not tested.
+  - A2 INSTALL-UID-01 (D148): first installed user is UID 1000 (BIOS and UEFI). Also fixed: `/` of the r19 image belonged to UID 1000.
+  - A3 INSTALL-CLEANUP-01 (D149): live cleanup fails hard with post-checks; forced failure (`alpbahos.testfail=live-cleanup`) stops the install.
+  - Found, not fixed: LIVE-LOCK-01 (live session locks after 5 idle minutes and cannot be unlocked: blocks the USB test), LOCALE-DEFAULT-01 (installed time zone America/New_York, en_US formats).
+  - Not run on r20: L2-L4, B2, B3, U2, FP, REC1, S1, R1 (the full matrix is the next step). Nothing pushed yet in this round unless the handoff says so.
 - **Beta 0.9 round 19 (2026-11-10):** ISO `alpbahos-beta-0.9-2026-11-09-r19.iso`, sha256 `6e8ddae0bc097bf7796841fcae802d62bcf42930c640310f46a323ee1fb58931` (TAG=r19). Greeter: logo top left, Turkish 24-hour clock and date (fixed by LC_ALL in GreeterEnvironment; installed greeter is Turkish regardless of the Calamares locale). L1, I1, B1 and REC1 PASS (REC1 recovery output and repaired-disk greeter on screen). Logo at 1920x1080 by geometry only. Section 21 of [docs/verification/iso-beta-0.9-2026-11-09.md](docs/verification/iso-beta-0.9-2026-11-09.md) has the rows.
 - **Beta 0.9 round 18 (2026-11-10):** ISO `alpbahos-beta-0.9-2026-11-09-r18.iso`, sha256 `3e625993551ea2df40ebf9b1686081fa7c3ba18a539eb0cc95b826cfe8c9ba62` (TAG=r18). Greeter: logo moved to the top left (no clock overlap, seen on Q). Locale: the greeter still shows English date and 12-hour clock (not fixed). REC1 not proven in r18. Section 20 of [docs/verification/iso-beta-0.9-2026-11-09.md](docs/verification/iso-beta-0.9-2026-11-09.md) has the rows.
 - **Beta 0.9 round 17 (2026-11-10):** ISO `alpbahos-beta-0.9-2026-11-09-r17.iso`, sha256 `24d631d26711a5d0f1f31498fd88a28e47804f7d232a15d0b188f992c6f842b8` (TAG=r17). Keyboard: the live choice (Turkish F) now reaches the installed system (carry, apply and vconsole logs on disk; F active after re-login via QMP). Open: the `--check` answer-e branch and the B1 curl status line. Section 19 of [docs/verification/iso-beta-0.9-2026-11-09.md](docs/verification/iso-beta-0.9-2026-11-09.md) has the rows.
@@ -93,6 +99,7 @@ Status words: done / partial / not started / unknown. Details are in the linked 
 
 ## Next actions
 
+0. **Review plan (2026-11-10 master task):** section A done in QEMU (round 20). Next: fix LIVE-LOCK-01 (and LOCALE-DEFAULT-01 if the user agrees), build one new ISO and run the full matrix; then section B (B4-B8) in a new session, then D (branded screens, one at a time with user approval), then C (alp trust model, design note first). Handoff: [docs/handoffs/claude/032-review-a-blockers-2026-11-10.md](docs/handoffs/claude/032-review-a-blockers-2026-11-10.md).
 1. **REBUILD-R2** on LFS/MLFS 13.1 (D145) with the D146 flags: build the toolchain, record source checksums first, run `audit-isa.sh` on each package.
 2. **LIVE-PROFILE-01:** install the alpbahOS desktop profile into the rootfs (D114, D115, D120, D121). Then run LAYOUT-01 and THEME-01 in a Plasma session with screenshots in docs/verification/.
 3. **Store track (STORE contract):** ALP-TR-01, then STORE-01 (Discover with an alp PackageKit backend, D124), FLATHUB-01, BOTTLES-01.

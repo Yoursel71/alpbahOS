@@ -30,5 +30,7 @@ if [ -n "$DISK" ]; then
 fi
 printf '%s\n' "fw=$FW iso=${ISO:-none} disk=${DISK:-none} bus=$BUS mem=$MEM accel=${ACCEL:-tcg}" "cmd: qemu-system-x86_64 ${ARGS[*]}" > "$RUN/command.txt"
 [ -n "${EXTRA_ARGS:-}" ] && ARGS+=(${EXTRA_ARGS})
+# KERNEL, INITRD, APPEND (round 20): QEMU direct kernel boot, e.g. the ISO's live kernel with an extra test argument.
+[ -n "${KERNEL:-}" ] && ARGS+=(-kernel "$KERNEL" -initrd "$INITRD" -append "$APPEND")
 nohup setsid nice -n 19 ionice -c3 qemu-system-x86_64 "${ARGS[@]}" > "$RUN/qemu.out" 2>&1 &
 echo "started $RUN"

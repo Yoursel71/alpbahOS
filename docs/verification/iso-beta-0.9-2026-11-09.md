@@ -1339,3 +1339,7 @@ Not captured as a screenshot (no resolution change in the harness). By geometry:
 2. **Logo at 1920x1080**: argued by geometry only (21.3).
 3. **write error in REC1 step 3** (21.2): the recovery script wrote an initramfs script to `/tmp` with an error; the recovery completed; the cause was not traced.
 4. Nothing pushed; commit is local.
+
+## 22. Round 20 (2026-11-10): review section A, ISO r20
+
+ISO `alpbahos-beta-0.9-2026-11-09-r20.iso`, sha256 `d21f6e55e3f28b1da677286da4d0a4dedbbb2c1b27996067181519ae7ee3e5f3`. NetworkManager and firmware (A1), first user UID 1000 and root-owned `/` (A2), fail-hard live cleanup (A3). Rows and evidence: [review-a-blockers-2026-11-10.md](review-a-blockers-2026-11-10.md).
