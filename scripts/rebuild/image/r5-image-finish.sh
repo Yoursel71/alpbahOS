@@ -43,7 +43,18 @@ trap cleanup EXIT
 [ -f "$IMG" ] || die "no image $IMG"
 [ -f "$CONF" ] || die "no config $CONF"
 . "$CONF"
-[ -n "${R5_TEST_USER:-}" ] && [ -n "${R5_TEST_PASSWORD:-}" ] || die "config incomplete"
+[ -n "${R5_TEST_USER:-}" ] || die "config incomplete: R5_TEST_USER not set"
+if [ -z "${R5_TEST_PASSWORD:-}" ]; then
+    # No fixed password in the repo. Generate one now; keep it in a root-written 600 file, never print it.
+    SECRET_DIR=/home/yrslf/alpbahOS/scratch-lfs-bench/test-secrets
+    SECRET_FILE=$SECRET_DIR/r5-test-user.pw
+    (umask 077 && mkdir -p "$SECRET_DIR")
+    R5_TEST_PASSWORD=$(head -c 12 /dev/urandom | od -An -tx1 | tr -d ' \n')
+    [ "${#R5_TEST_PASSWORD}" -eq 24 ] || die "password generation failed"
+    (umask 077 && printf '%s\n' "$R5_TEST_PASSWORD" > "$SECRET_FILE")
+    chown --reference="$SECRET_DIR" "$SECRET_DIR" "$SECRET_FILE" 2>/dev/null || true
+    chmod 600 "$SECRET_FILE"
+fi
 
 mkdir -p "$ROOTMNT"
 LOOP=$(losetup --find --show --partscan "$IMG")

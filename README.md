@@ -6,10 +6,10 @@ alpbahOS is a desktop Linux system built from Linux From Scratch (LFS) for x86_6
 
 ## Status
 
-- In development. There is no usable release yet, and no release ISO has been published.
-- Test base: LFS 12.4 system with BLFS KDE Plasma 6.4.4 (Wayland session), tested in QEMU/KVM.
-- Live ISO boots with BIOS in the test. The installer has been run on a virtual BIOS disk only. UEFI is not tested yet.
-- The first alpha is not released. The planned rebuild on the newest stable LFS with multilib is not started (D140).
+- In development. Beta 0.9 test ISOs exist (latest in CURRENT.md: round 20). None is published, and there is no release yet.
+- Base: the rebuilt LFS 13.1 / BLFS 13.1 system with a KDE Plasma Wayland session (D145).
+- The live ISO and the installer pass in QEMU on both BIOS and UEFI.
+- Not tested yet: a real PC (USB boot, real Wi-Fi). The Beta 0.9 gate is not met.
 - Current state and evidence: [CURRENT.md](CURRENT.md). Open work: [docs/BACKLOG.md](docs/BACKLOG.md).
 
 ## Documents
@@ -27,7 +27,8 @@ alpbahOS is a desktop Linux system built from Linux From Scratch (LFS) for x86_6
 ## Build and release
 
 - Builds run locally. Release ISOs will be published on GitHub Releases (D107).
-- The repository stays private until the first alpha ISO is ready, then it becomes public (D108). Each release needs the user's approval.
+- Each release needs the user's approval.
+- Open conflict: D108 says the repository stays private until the first alpha ISO is ready, but the repository is public on GitHub now. This is waiting for the user's decision (see "Blocked on the user" in [docs/BACKLOG.md](docs/BACKLOG.md)).
 
 ## License
 
