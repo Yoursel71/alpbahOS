@@ -41,7 +41,10 @@ Known issues and open decisions:
 - LOCALE-DEFAULT-01: installed time zone America/New_York and en_US LC_* (Calamares defaults), against D120.
 - Harness: first-login Alt+Space `konsole` opened System Settings; installed checks now use `diag-r20.sh` (serial text).
 - `mt7921s` (SDIO) in the live initramfs without firmware (dracut); not a problem for PCIe cards.
-- Push to `yoursel` main: see the final report of this session.
+- Push: the round 20 commits are fast-forwarded to `yoursel` main at the end of the session.
+- The A3 review fixes (no account deletion in the cleanup, installer-chosen autologin kept, `live` forbidden as a login name) are in the repo and shown by the chroot test only; they are not in ISO r20. Rebuild before the full matrix.
+- No-network boot not tested: `NetworkManager-wait-online` is now enabled; add an installed boot with `-nic none` to the full matrix (boot delay or failed unit if something pulls `network-online.target`).
+- Kept for the next session: `images/inst-bios-msdos-r20.raw`, `images/inst-uefi-gpt-r20.raw` (installed r20 disks). Removed: `inst-bios-f1-r20.raw` (forced-failure target).
 
 Next single action: fix LIVE-LOCK-01 in build-iso.sh (live user only), build one ISO, run the full matrix
 (L1-L4, I1, I2, B1-B3, U1, U2, FP, REC1, S1, R1) with the r20 harness, then start section B in a new session.

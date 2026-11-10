@@ -60,6 +60,13 @@ includes (113 firmware entries). Size of `boot/initramfs-live.img`: r19 43,777,3
   failed check: exit 1, the Calamares job fails.
 - Test hooks (kernel command line, read from `/proc/cmdline`, which the mount module provides in the target):
   `alpbahos.testfail=live-user`, `alpbahos.testfail=live-cleanup`. They skip the removal only.
+- After the r20 runs (review of this change, repo only, not in ISO r20): the cleanup no longer runs `userdel` (the
+  live user is removed before `users`, so a late `userdel -r live` could only delete an account the user had just
+  named `live`); the sddm reset touches only an `[Autologin]` section with `User=live`, so an autologin chosen on the
+  installer's users page ("Parolayı sormadan kendiliğinden oturum aç", seen in `I1/i-05-users-filled.png`) is kept;
+  the post-check accepts an autologin user only when it is an existing account other than `live`. Calamares
+  `users.conf`: `user.forbidden_names: [ live ]` (the key is in `libcalamares_viewmodule_users.so`). Shown by the
+  second chroot run (3.1); not yet in an ISO.
 
 ## 3. Checks run
 
@@ -76,6 +83,9 @@ QEMU user network.
 | Check | Environment, command | Result |
 |---|---|---|
 | A3 exit codes | host, `sudo bash scripts/rebuild/r20/a3-chroot-test.sh <r19 BIOS install> ...` (chroot of a CoW copy) | **PASS 7/7**: r19 image (`/` owned by 1000) fails the live-user check with `/` and `/root/libp-dbg` listed; normal removal rc 0; `alpbahos.testfail=live-user` rc 1; cleanup normal rc 0; cleanup rerun ("already gone") rc 0; `alpbahos.testfail=live-cleanup` rc 1 (live user, group, home, polkit rule, helper, polkit rule names live, empty password, sddm autologin `live`); sddm drop-in with `User=live` reset, rc 0 (`r20/a3-chroot-test.log`) |
+| A3 exit codes, after the two fixes | host, same script on a CoW copy of the r20 BIOS install (its `testuser` removed first; `/` set to 1000 for case 1) | **PASS 13/13**: adds early step then cleanup (rc 0), drop-in reset after the early step (rc 0), installer-chosen autologin `User=testuser Session=plasma` kept (rc 0), an account named `live` after the users step is not deleted and the cleanup fails (rc 1, `live:1001` still there) (`r20/a3-chroot-test-2.log`) |
+| alp ledger | host, `alp.py --root r4-root check` | rc 0, `Bağımlılık tutarlılığı: sorun yok (519 kurulu paket)`; `packages.tsv` rows 399 (linux-firmware) and 400 (wpa_supplicant) added (`r20/alp-check.txt`) |
+| Installed initramfs (I1) | host, `lsinitrd` on the read-only I1 disk | `/boot/initramfs-7.1.8-alpbahos.img` 54,128,924 bytes; no GPU driver; Wi-Fi only `mt7921s`, `mt7921-common`, `mt792x-lib` (SDIO path, no firmware); 113 firmware entries (`r20/lsinitrd-installed-I1.txt`) |
 | Firmware coverage, r4-root | host, `fw-coverage-r20.py r4-root 7.1.8-alpbahos` | **PASS**, rc 0, 0 missing (table below) (`r20/fw-coverage-r4root.txt`) |
 | Firmware coverage, squashfs of ISO r20 | host, same script on the squashfs mounted read-only | **PASS**, rc 0, same table (`r20/fw-coverage-squashfs.txt`) |
 | squashfs ownership | host, `stat`, `find -uid 1000 -o -gid 1000` on the mounted squashfs | `/` is `0:0`; 0 entries owned by UID/GID 1000 outside `/home/live` |
