@@ -43,8 +43,10 @@ for dirpath, _dirs, names in os.walk(STAGE):
         with open(dst, "wb") as f:
             f.write(data)
         mode = stat.S_IMODE(lst.st_mode) & 0o7777
-        os.chmod(dst, mode)
+        # chown before chmod: chown() clears the setuid/setgid bits of a file (Linux, also for root), so the other
+        # order lost them (found 2026-11-10 with sudo, B6).
         os.chown(dst, 0, 0)
+        os.chmod(dst, mode)
         entries.append({"path": "/" + rel, "type": "file", "mode": mode, "uid": 0, "gid": 0,
                         "size": len(data), "sha256": hashlib.sha256(data).hexdigest()})
 os.makedirs(LEDGER, exist_ok=True)
