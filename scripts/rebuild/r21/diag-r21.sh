@@ -14,16 +14,24 @@
 #   wrong password) and for a new user outside wheel, and with FLATPAK=1 installs org.gnome.Calculator from Flathub.
 # Usage: diag-r21.sh <bios|uefi> <installed-raw> <run-name>      env: FLATPAK=1, NIC_NONE=1 (no network, no probe),
 #   MEM (guest RAM, default 6G; 4G for the PERF-01 target class)
+# Round 21 matrix additions (defaults unchanged): BUS (virtio|sata|nvme, default virtio), OUTD (output directory;
+#   when set, an existing run directory or result file is refused instead of removed), DIAG_HOOK (host file that is
+#   installed in the copy and run by the diagnostic before the failed-units line; its output comes as
+#   "R21DIAG hook:" lines). EXTRA_ARGS and NVME_BOOTINDEX go to vm-start.sh through the environment.
 set -u
 FW=$1; SRC=$2; NAME=$3
 B=/home/yrslf/alpbahOS/scratch-lfs-bench
 WT=/home/yrslf/alpbahOS/wt-t2-kisayol
 W=$WT/scripts/rebuild/image
-D=$B/lfs13-logs/iso-beta-0.9/r21
+D=${OUTD:-$B/lfs13-logs/iso-beta-0.9/r21}
 R=$D/$NAME; CP=$D/$NAME-copy.raw; M=$D/mnt-$NAME
 PW=$(cat "$B/test-secrets/r21.pw")
 PORT=$((18080 + RANDOM % 1000))
-mkdir -p "$D"; rm -rf "$R"; [ ! -e "$CP" ] || { echo "$CP exists"; exit 2; }
+mkdir -p "$D"
+if [ -n "${OUTD:-}" ]; then
+  for e in "$R" "$M" "$D/diag-$NAME.txt" "$D/probe-$NAME.txt"; do [ ! -e "$e" ] || { echo "$e exists"; exit 2; }; done
+else rm -rf "$R"; fi
+[ ! -e "$CP" ] || { echo "$CP exists"; exit 2; }
 cp --reflink=always "$SRC" "$CP"
 LO=$(sudo losetup -f -P --show "$CP")
 P=""; for p in "$LO"p*; do [ "$(sudo blkid -o value -s TYPE "$p")" = ext4 ] && P=$p; done
@@ -33,6 +41,7 @@ sudo install -m 755 "$WT/profiles/perf/collect_session_metrics.py" "$M/usr/local
 # The password goes into the copy only (deleted at the end); it is never written to the serial log.
 printf '%s\n' "$PW" | sudo tee "$M/root/.r21-pw" > /dev/null; sudo chmod 600 "$M/root/.r21-pw"
 echo "${FLATPAK:-0} ${NIC_NONE:-0}" | sudo tee "$M/root/.r21-mode" > /dev/null
+[ -z "${DIAG_HOOK:-}" ] || sudo install -m 755 "$DIAG_HOOK" "$M/usr/local/sbin/r21-diag-hook"
 sudo tee "$M/usr/local/sbin/r21-diag" > /dev/null << 'EOF'
 #!/bin/sh
 O=/dev/ttyS0
@@ -93,6 +102,7 @@ if [ "$FLATPAK" = 1 ]; then
   say "flatpak install org.gnome.Calculator: rc=$FR; $(tail -1 /tmp/fp.out)"
   say "flatpak list: $(flatpak list --app --columns=application 2>&1 | tr '\n' ' ')"
 fi
+[ -x /usr/local/sbin/r21-diag-hook ] && /usr/local/sbin/r21-diag-hook 2>&1 | while read -r l; do say "hook: $l"; done
 say "failed units: $(systemctl --failed --no-legend | wc -l)"
 systemctl --failed --no-legend 2>&1 | while read -r l; do say "failed: $l"; done
 journalctl -b -p err --no-pager 2>&1 | tail -n 15 | while read -r l; do say "journal err: $l"; done
@@ -117,7 +127,7 @@ sudo ln -sf /etc/systemd/system/r21-diag.service "$M/etc/systemd/system/graphica
 sudo umount "$M"; sudo losetup -d "$LO"; rmdir "$M"
 if [ "${NIC_NONE:-0}" = 1 ]; then NICV=none; else NICV="user,model=virtio-net-pci,hostfwd=tcp:127.0.0.1:$PORT-:8080"; fi
 Q="python3 $W/qmpctl.py $R"
-NIC="$NICV" ACCEL=kvm bash $W/vm-start.sh "$FW" "" "$R" "$CP" virtio "${MEM:-6G}" > /dev/null
+NIC="$NICV" ACCEL=kvm bash $W/vm-start.sh "$FW" "" "$R" "$CP" "${BUS:-virtio}" "${MEM:-6G}" > /dev/null
 sleep 95; $Q shot "$NAME-greeter"; $Q click 766 489; sleep 1; $Q text "$PW"; $Q key ret; sleep 60; $Q shot "$NAME-desktop"
 if [ "${NIC_NONE:-0}" != 1 ]; then
   for n in 1 2; do

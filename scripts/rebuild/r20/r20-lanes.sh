@@ -9,15 +9,18 @@
 # The test password is generated at run time into scratch-lfs-bench/test-secrets/r20.pw (outside the repo).
 # Keys in the Turkish-Q session: '-' = equal, 'i' = apostrophe, '.' = slash, '/' = shift 7, '*' = minus.
 # Usage: r20-lanes.sh <iso> [lane1|lane2|lane3|all]
+# Round 21 matrix (defaults unchanged): OUTD (evidence directory), IMGF (forced-failure target image), F1NAME, and
+#   NOCLOBBER=1 (an existing run directory is refused instead of removed), FAILSHOTS (minutes watched in the
+#   forced-failure run, default 10).
 set -u
 ISO=$1; WHICH=${2:-all}
 B=/home/yrslf/alpbahOS/scratch-lfs-bench
 W=/home/yrslf/alpbahOS/wt-t2-kisayol/scripts/rebuild/image
 RD=${ROUND:-r20}
-D=$B/lfs13-logs/iso-beta-0.9/$RD
+D=${OUTD:-$B/lfs13-logs/iso-beta-0.9/$RD}
 IMGB=$B/images/inst-bios-msdos-$RD.raw
 IMGU=$B/images/inst-uefi-gpt-$RD.raw
-IMGF=$B/images/inst-bios-f1-$RD.raw
+IMGF=${IMGF:-$B/images/inst-bios-f1-$RD.raw}
 mkdir -p "$D" "$B/test-secrets"
 PWF=$B/test-secrets/$RD.pw
 [ -s "$PWF" ] || { umask 077; printf 'T%s9\n' "$(head -c 12 /dev/urandom | od -An -tx1 | tr -d ' \n')" > "$PWF"; }
@@ -41,7 +44,8 @@ run() { local R=$1 cmd=$2 wait=$3 shot=$4; local Q="python3 $W/qmpctl.py $R"
 
 install_run() { # fw image name kur_x kur_y  (KERNEL, INITRD, APPEND from the caller: direct kernel boot)
   local FW=$1 IMG=$2 NAME=$3 KX=$4 KY=$5 R=$D/$3
-  rm -rf "$R"; [ ! -e "$IMG" ] || { echo "$IMG exists"; return 1; }
+  if [ "${NOCLOBBER:-0}" = 1 ]; then [ ! -e "$R" ] || { echo "$R exists"; return 1; }; else rm -rf "$R"; fi
+  [ ! -e "$IMG" ] || { echo "$IMG exists"; return 1; }
   truncate -s 30G "$IMG"
   ACCEL=kvm bash $W/vm-start.sh "$FW" "$ISO" "$R" "$IMG" virtio 6G > /dev/null
   sleep 100
@@ -60,7 +64,7 @@ install_run() { # fw image name kur_x kur_y  (KERNEL, INITRD, APPEND from the ca
   if [ "${FAILRUN:-0}" = 1 ]; then
     # Forced-failure run: no "unmounting" line comes. Keep the live session from locking (it cannot be unlocked:
     # the live user has no password) with a Shift press every 30 s, and take a screenshot every minute.
-    for i in $(seq 1 10); do sleep 30; $Q key shift; sleep 30; $Q key shift; $Q shot "i-fail-$i"; done
+    for i in $(seq 1 "${FAILSHOTS:-10}"); do sleep 30; $Q key shift; sleep 30; $Q key shift; $Q shot "i-fail-$i"; done
   else
     for i in $(seq 1 60); do grep -q "unmounting filesystem" $R/serial.log 2>/dev/null && break; sleep 20; done
   fi
@@ -122,7 +126,9 @@ lane2() {
 }
 
 lane3() {
-  local K=$D/F1-boot; mkdir -p "$K"
+  local K=$D/${F1NAME:-F1}-boot
+  if [ "${NOCLOBBER:-0}" = 1 ] && [ -e "$K" ]; then echo "$K exists"; return 1; fi
+  mkdir -p "$K"
   bsdtar -xf "$ISO" -C "$K" boot/vmlinuz boot/initramfs-live.img
   local ARGS="root=live:CDLABEL=ALPBAHOS_BETA rd.live.image rd.live.dir=LiveOS rd.live.squashimg=squashfs.img rd.live.overlay.overlayfs=1 console=tty0 console=ttyS0,115200 alpbahos.testfail=live-cleanup"
   FAILRUN=1 KERNEL=$K/boot/vmlinuz INITRD=$K/boot/initramfs-live.img APPEND="$ARGS" install_run bios "$IMGF" "${F1NAME:-F1}" 1000 652

@@ -2,15 +2,18 @@
 # Starts one QEMU guest in the background for the install and installed-system tests (no reader on the serial
 # console: -serial file:). Usage: vm-start.sh <uefi|bios> <iso-or-empty> <run-dir> <disk-raw-or-empty> <virtio|sata|nvme> [mem]
 # The guest keeps running until qmpctl.py <run-dir> quit (or powerdown). Accelerator: TCG (-cpu qemu64) unless ACCEL=kvm.
+# NO_REBOOT=0 (round 21 matrix) leaves out -no-reboot, so a guest reboot does not end QEMU (default 1: unchanged).
+# NVME_BOOTINDEX (round 21 matrix) is the bootindex of the NVMe disk (default 1; SeaBIOS needs 0 and RAM <= 3G).
 set -u
 FW=$1; ISO=$2; RUN=$3; DISK=$4; BUS=${5:-virtio}; MEM=${6:-6G}
 OVMF=/usr/share/edk2/ovmf
 mkdir -p "$RUN"
 rm -f "$RUN/qmp.sock"
-ARGS=(-cpu qemu64 -m "$MEM" -smp 4 -no-reboot -display none -vga virtio
+ARGS=(-cpu qemu64 -m "$MEM" -smp 4 -display none -vga virtio
       -device qemu-xhci -device usb-kbd -device usb-tablet
       -nic "${NIC:-user,model=virtio-net-pci}"
       -serial "file:$RUN/serial.log" -qmp "unix:$RUN/qmp.sock,server,nowait")
+[ "${NO_REBOOT:-1}" = 1 ] && ARGS+=(-no-reboot)
 [ "${ACCEL:-tcg}" = kvm ] && ARGS+=(-enable-kvm)
 if [ "$FW" = uefi ]; then
     cp "$OVMF/OVMF_VARS.fd" "$RUN/OVMF_VARS.fd"
@@ -24,12 +27,13 @@ if [ -n "$DISK" ]; then
     case "$BUS" in
         virtio) ARGS+=(-drive "file=$DISK,format=raw,if=virtio,cache=unsafe") ;;
         sata)   ARGS+=(-drive "file=$DISK,format=raw,if=none,id=sata0,cache=unsafe" -device ahci,id=ahci0 -device ide-hd,drive=sata0,bus=ahci0.0) ;;
-        nvme)   ARGS+=(-drive "file=$DISK,format=raw,if=none,id=nvme0,cache=unsafe" -device nvme,drive=nvme0,serial=alpnvme0,bootindex=1) ;;
+        nvme)   ARGS+=(-drive "file=$DISK,format=raw,if=none,id=nvme0,cache=unsafe" -device nvme,drive=nvme0,serial=alpnvme0,bootindex=${NVME_BOOTINDEX:-1}) ;;
         *) echo "bad bus $BUS" >&2; exit 2 ;;
     esac
 fi
 printf '%s\n' "fw=$FW iso=${ISO:-none} disk=${DISK:-none} bus=$BUS mem=$MEM accel=${ACCEL:-tcg}" "cmd: qemu-system-x86_64 ${ARGS[*]}" > "$RUN/command.txt"
-[ -n "${EXTRA_ARGS:-}" ] && ARGS+=(${EXTRA_ARGS})
+[ -n "${EXTRA_ARGS:-}" ] && ARGS+=(${EXTRA_ARGS}) && printf '%s
+' "extra: ${EXTRA_ARGS}" >> "$RUN/command.txt"
 # NIC (round 21): the -nic value, e.g. with a hostfwd rule for an inbound probe, or none (no network).
 # KERNEL, INITRD, APPEND (round 20): QEMU direct kernel boot, e.g. the ISO's live kernel with an extra test argument.
 [ -n "${KERNEL:-}" ] && ARGS+=(-kernel "$KERNEL" -initrd "$INITRD" -append "$APPEND")

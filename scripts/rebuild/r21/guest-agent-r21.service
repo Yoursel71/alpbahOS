@@ -1,0 +1,9 @@
+[Unit]
+Description=Round 21 matrix test shell on ttyS1 (test copy only)
+After=graphical.target
+[Service]
+Type=simple
+ExecStart=/usr/local/sbin/r21m-agent
+TimeoutStopSec=5
+[Install]
+WantedBy=graphical.target
