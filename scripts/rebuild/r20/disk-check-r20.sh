@@ -4,7 +4,7 @@
 # device without udev probing, which broke the first lane version). Usage: disk-check-r20.sh <raw> <name>
 set -u
 IMG=$1; NAME=$2
-D=/home/yrslf/alpbahOS/scratch-lfs-bench/lfs13-logs/iso-beta-0.9/r20
+D=${OUTD:-/home/yrslf/alpbahOS/scratch-lfs-bench/lfs13-logs/iso-beta-0.9/r20}
 M=$D/mnt-$NAME
 mkdir -p "$M"; LO=$(sudo losetup -r -f -P --show "$IMG")
 P=""; for p in "$LO"p*; do [ "$(sudo blkid -o value -s TYPE "$p")" = ext4 ] && P=$p; done
@@ -26,6 +26,9 @@ sudo mount -o ro "$P" "$M"
   echo "NM conf: $(cat "$M"/etc/NetworkManager/conf.d/*.conf | grep -E '^(dhcp|dns)=' | tr '\n' ' ')"
   echo "firmware: WHENCE $(test -s "$M/usr/lib/firmware/WHENCE" && echo yes) files $(find "$M/usr/lib/firmware" -type f | wc -l); wpa_supplicant $(test -x "$M/usr/sbin/wpa_supplicant" && echo yes)"
   echo "installer logs: $(ls "$M/var/log" | grep -i -E 'calamares|installation' | tr '\n' ' ')"
+  echo "sudo: $(test -u "$M/usr/bin/sudo" && echo setuid) sudoers.d: $(sudo ls "$M/etc/sudoers.d" 2>/dev/null | tr '\n' ' ') wheel lines: $(sudo grep -h '^%wheel' "$M"/etc/sudoers.d/* 2>/dev/null | tr '\n' ' ')"
+  echo "localtime: $(readlink "$M/etc/localtime"); $(grep -E '^(LANG|LC_TIME)=' "$M/etc/locale.conf" 2>/dev/null | tr '\n' ' ')"
+  echo "units enabled: firewall $(test -L "$M/etc/systemd/system/multi-user.target.wants/alpbahos-firewall.service" && echo yes) zram $(test -L "$M/etc/systemd/system/swap.target.wants/alpbahos-zram.service" && echo yes)"
 } > "$D/disk-check-$NAME.txt" 2>&1
 sudo umount "$M"; sudo losetup -d "$LO"; rmdir "$M"
 cat "$D/disk-check-$NAME.txt"

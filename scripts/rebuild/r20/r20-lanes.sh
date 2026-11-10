@@ -1,5 +1,6 @@
 #!/bin/bash
-# Round 20 rows on ISO r20 (NET-FW-01, INSTALL-UID-01, INSTALL-CLEANUP-01). Runs as the build user; sudo only for the
+# Round 20/21 rows (NET-FW-01, INSTALL-UID-01, INSTALL-CLEANUP-01; round 21 via ROUND=r21: the same lanes plus
+# the live zram/firewall lines and a 12-minute idle check of the live session, LIVE-LOCK-01). Runs as the build user; sudo only for the
 # read-only loop mounts of the disk checks. KVM with -cpu qemu64 (vm-start.sh), screenshots by QMP.
 #   lane1: I1 (BIOS MSDOS install) -> disk check -> B1 (installed BIOS: id, live user, network, failed units)
 #   lane2: L1 (live UEFI: network, failed units, applet) -> I2 (UEFI GPT install) -> disk check -> U1 (installed UEFI)
@@ -12,12 +13,13 @@ set -u
 ISO=$1; WHICH=${2:-all}
 B=/home/yrslf/alpbahOS/scratch-lfs-bench
 W=/home/yrslf/alpbahOS/wt-t2-kisayol/scripts/rebuild/image
-D=$B/lfs13-logs/iso-beta-0.9/r20
-IMGB=$B/images/inst-bios-msdos-r20.raw
-IMGU=$B/images/inst-uefi-gpt-r20.raw
-IMGF=$B/images/inst-bios-f1-r20.raw
+RD=${ROUND:-r20}
+D=$B/lfs13-logs/iso-beta-0.9/$RD
+IMGB=$B/images/inst-bios-msdos-$RD.raw
+IMGU=$B/images/inst-uefi-gpt-$RD.raw
+IMGF=$B/images/inst-bios-f1-$RD.raw
 mkdir -p "$D" "$B/test-secrets"
-PWF=$B/test-secrets/r20.pw
+PWF=$B/test-secrets/$RD.pw
 [ -s "$PWF" ] || { umask 077; printf 'T%s9\n' "$(head -c 12 /dev/urandom | od -An -tx1 | tr -d ' \n')" > "$PWF"; }
 PW=$(cat "$PWF")
 
@@ -68,7 +70,7 @@ install_run() { # fw image name kur_x kur_y  (KERNEL, INITRD, APPEND from the ca
 
 disk_check() { # image name: read-only disk check (separate script; the first in-line version used lsblk FSTYPE,
   # which is empty for a new loop device, and failed to mount)
-  bash "$(dirname "$W")/r20/disk-check-r20.sh" "$1" "$2"
+  OUTD=$D bash "$(dirname "$W")/r20/disk-check-r20.sh" "$1" "$2"
 }
 
 net_checks() { # run-dir prefix ; Konsole is open
@@ -96,7 +98,7 @@ installed_checks() { # fw image name
 lane1() {
   install_run bios "$IMGB" I1 1000 652
   disk_check "$IMGB" I1
-  installed_checks bios "$IMGB" B1
+  [ "$RD" != r20 ] || installed_checks bios "$IMGB" B1
 }
 
 lane2() {
@@ -107,10 +109,16 @@ lane2() {
   run "$R" "id" 3 "l1-id"
   run "$R" "ls -ldn /" 3 "l1-rootowner"
   net_checks "$R" l1
+  if [ "$RD" != r20 ]; then
+    run "$R" "swapon --show" 3 "l1-swapon"
+    run "$R" "systemctl is-active alpbahos-firewall alpbahos-zram" 3 "l1-fw-zram"
+    # LIVE-LOCK-01: no input for 12 minutes; the session must still be on the desktop (not locked, not suspended).
+    sleep 720; $Q shot "l1-idle-12min"; $Q key shift; sleep 3; $Q shot "l1-idle-12min-after-key"
+  fi
   $Q quit; waitq "$R"; echo "[$(date +%T)] L1 done"
   install_run uefi "$IMGU" I2 1005 666
   disk_check "$IMGU" I2
-  installed_checks uefi "$IMGU" U1
+  [ "$RD" != r20 ] || installed_checks uefi "$IMGU" U1
 }
 
 lane3() {
@@ -123,5 +131,6 @@ lane3() {
 case "$WHICH" in
   lane1) lane1 ;; lane2) lane2 ;; lane3) lane3 ;;
   all) lane1 > "$D/lane1.log" 2>&1 & sleep 5; lane2 > "$D/lane2.log" 2>&1 & wait; lane3 > "$D/lane3.log" 2>&1 ;;
+  installs) lane1 > "$D/lane1.log" 2>&1 & sleep 5; lane2 > "$D/lane2.log" 2>&1 & wait ;;
 esac
 echo ALL_DONE

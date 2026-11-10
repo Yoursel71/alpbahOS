@@ -9,7 +9,7 @@ mkdir -p "$RUN"
 rm -f "$RUN/qmp.sock"
 ARGS=(-cpu qemu64 -m "$MEM" -smp 4 -no-reboot -display none -vga virtio
       -device qemu-xhci -device usb-kbd -device usb-tablet
-      -nic user,model=virtio-net-pci
+      -nic "${NIC:-user,model=virtio-net-pci}"
       -serial "file:$RUN/serial.log" -qmp "unix:$RUN/qmp.sock,server,nowait")
 [ "${ACCEL:-tcg}" = kvm ] && ARGS+=(-enable-kvm)
 if [ "$FW" = uefi ]; then
@@ -30,6 +30,7 @@ if [ -n "$DISK" ]; then
 fi
 printf '%s\n' "fw=$FW iso=${ISO:-none} disk=${DISK:-none} bus=$BUS mem=$MEM accel=${ACCEL:-tcg}" "cmd: qemu-system-x86_64 ${ARGS[*]}" > "$RUN/command.txt"
 [ -n "${EXTRA_ARGS:-}" ] && ARGS+=(${EXTRA_ARGS})
+# NIC (round 21): the -nic value, e.g. with a hostfwd rule for an inbound probe, or none (no network).
 # KERNEL, INITRD, APPEND (round 20): QEMU direct kernel boot, e.g. the ISO's live kernel with an extra test argument.
 [ -n "${KERNEL:-}" ] && ARGS+=(-kernel "$KERNEL" -initrd "$INITRD" -append "$APPEND")
 nohup setsid nice -n 19 ionice -c3 qemu-system-x86_64 "${ARGS[@]}" > "$RUN/qemu.out" 2>&1 &
