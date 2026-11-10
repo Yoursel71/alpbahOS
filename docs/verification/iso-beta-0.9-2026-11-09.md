@@ -1168,3 +1168,49 @@ Open after round 16:
 - Process hygiene: no QEMU running at the end, no loop devices of mine; the old `iso-work-klavye` mount from an earlier round is still present (not mine to remove here).
 
 Beta gate (QEMU level, sha `the r15 sha` = the full sha at the top of section 17): **MET** for the matrix rows listed in 17.4 and 17.6 (L1, L2, L3, L4, I1, I2, B1, B2, B3, U1, U2, FP, REC1, S1, R1), all PASS with no unexplained failure. Caveats: the S1 and R1 Konsole deviation and the 60 s session length; the coredump crash is unproven; the real-PC test and publication are open and belong to the user.
+
+## 18. Round 17 (2026-11-10): keyboard layout choice, check and carry-over; ISO r16
+
+ISO: `scratch-lfs-bench/images/alpbahos-beta-0.9-2026-11-09-r16.iso`, sha256 **`af3190cbff99f0c11c652e383fe81e0f9bbe239053dae3d4e261b830011fbeff`**, 4742672384 bytes, `TAG=r16`. An earlier r16 (sha an earlier r16 sha, carry-over copy without the default-tr fix) and an earlier one (sha an earlier r16 sha) were discarded before the final run; both were unpublished. Commit 06bd141 (keyboard tool, launchers, Calamares step, cleanup) is local, not pushed.
+
+### 18.1 What was built and how it was checked
+
+- **(a) live layout choice.** `/usr/bin/alpbahos-keyboard` (alp record `alpbahos-keyboard-tool` 0.9-r16, in r4-root and the image): menu Turkish Q, Turkish F, US; writes the KDE user setting `~/.config/kxkbrc`. Two live desktop launchers: "Klavye düzeni" (menu) and "Klavye doğrulama" (`--check`). QEMU (KB16): menu shown, choice 2 written (`Düzen kaydedildi: tr f`), `kxkbrc` in the live user's home.
+- **Applying the layout.** A changed `kxkbrc` is not applied to the running session. Probe KB19 in QEMU: after `kwriteconfig6`, KWin `reconfigure` and the keyboard service (`org.kde.keyboard /Layouts`, methods getLayout, getLayoutsList, setLayout, switchToNextLayout; no reload method) still reported the old `tr` without variant, and the top-left key still gave `q`. The tool therefore tells the user to log out and in. Not verified after a re-login with F active (see 18.3).
+- **(c) check.** `alpbahos-keyboard --check`: press the top-left letter key (xkb AD01: `q` in Turkish Q, `f` in Turkish F; the `f` variant's AC04 gives `a`, the Q layout's AC04 gives `f`), compare the letter with the keyboard, switch once only on the user's `h`, always keep the manual menu. Only unit-level logic and the xkb tables were checked; the interactive check was not run in QEMU.
+- **(b) carry-over to the installed system.** Calamares step `shellprocess@live-keyboard` (dontChroot, after `unpackfs`, before `keyboard`) runs `live-layout-copy.sh @@ROOT@@`, which reads the live `kxkbrc` and writes `LAYOUT=`/`VARIANT=` to the target's `/usr/lib/alpbahos/live-layout`; `target-cleanup.sh` (after the keyboard step) applies it to `00-keyboard.conf` and `/etc/xdg/kxkbrc` and removes the file. Unit tests with redirected paths pass for three cases (Turkish F: `XkbVariant "f"`, `VariantList=f`; no choice: installer layout kept; US: `XkbLayout us`).
+- **Root cause found while testing (KB20):** KConfig does not write a key whose value equals the system default (`/etc/xdg/kxkbrc` has `LayoutList=tr` and `Use=true`), so a Turkish Q or F choice leaves only `VariantList=f` in the user file. The copy script now treats a missing `LayoutList` as `tr` (unit-tested).
+
+### 18.2 End-to-end result (KF16, install with Turkish F chosen in the live session)
+
+- Live: choice F written. Install: completed (19 GiB written, serial unmount). Installed disk (read-only): `00-keyboard.conf` has `XkbLayout "tr"` and **no** XkbVariant line; `/etc/xdg/kxkbrc` `VariantList=`.
+- Installed system, login, key `q` in Konsole: `q` (Turkish Q), `grep -c XkbVariant` = 0, `localectl status`: `X11 Layout: tr`.
+- **Result: FAIL (carry-over not proven).** The variant did not reach the installed system in either run (before and after the default-tr fix). The copy step's output file was never found on the installed disk (`/usr/lib/alpbahos` is removed at the end, so the cause is not visible there). Candidates: the `@@ROOT@@` substitution in a dontChroot shellprocess in this Calamares build, or the step not running; no installer log survives on the disk. Next step (not done): make the copy script find the target by `findmnt` (Calamares mounts the target under `/tmp/calamares-root-*`) and write a log to the live `/run`, then repeat KF16.
+
+### 18.3 Matrix on sha `the r16 sha` (ISO r16)
+
+KVM with `-cpu qemu64` for every row (no TCG row this round). Evidence under `scratch-lfs-bench/lfs13-logs/iso-beta-0.9/r16/`.
+
+| Row | Accel | Result | Evidence |
+|---|---|---|---|
+| L1 live UEFI, desktop at 130 s | KVM | **PASS** (desktop, taskbar, Install and Keyboard icons) | `L1-1/shot-130.png` |
+| I1 Calamares BIOS MSDOS install (default layout Turkish Q) | KVM | **PASS** install (serial unmount, 19 GiB written); disk check PASS (fstab UUID = blkid, no live account, testuser, VERSION 0.9 Beta, grub.cfg, fusermount3 4755, kxkbrc tr, no XkbVariant line, SDDM Current=alpbahos). The completion screen was blank (idle blanking), not captured | `I1/`; `images/inst-bios-msdos-r16.raw` |
+| I2 Calamares UEFI GPT install | KVM | **PASS** install and disk check (fstab UUIDs = blkid, ESP, VERSION, grub.cfg, fusermount3 4755, kxkbrc tr, SDDM). Completion screen blank, not captured | `I2/`; `images/inst-uefi-gpt-r16.raw` |
+| B1 installed BIOS virtio: greeter, desktop, localectl, alp list, systemctl --failed | KVM | **PASS**: desktop; `localectl` `X11 Layout: tr`; `alp list` lists the packages (no `--index`); `systemctl --failed` 0 loaded units. The curl line in this run was typed with `http$//` (harness colon), see the next row | `B1/b1-desktop.png`, `b1-localectl.png`, `b1-alp-list.png`, `b1-failed.png` |
+| B1 curl (rerun CURL16, `curl -sS -m 15 -I -o h2.txt http://ftp.gnu.org/`) | KVM | **PASS**: headers from ftp.gnu.org in the file (status line above the captured area) | `CURL16/c-result.png` |
+| U1 installed UEFI virtio: hostnamectl, failed units, flatpak | KVM | **PASS**: hostnamectl (AlpbahOS 0.9 Beta, kvm, edk2); `systemctl --failed` 0 loaded units; disk check PASS (both installs) | `U1/u1-hostnamectl.png`, `u1-failed.png` |
+| FP flatpak install org.gnome.Calculator (in U1) | KVM | **PASS**: installed as system (`flatpak list`: org.gnome.Calculator, system), the app window opens | `U1/u1-fp-list.png`, `u1-calc.png` |
+| REC1 BIOS recovery (broken copy, live ISO CD first) | KVM | **PASS**: the six steps end with "recovery done; unmounting; reboot the installed disk"; the repaired disk's boot frame is captured (the display manager, not re-read in this round) | `REC1/rec-step1.png`, `REC1-boot/rec-disk-greeter.png` |
+| Keyboard end-to-end (KF16, live choice F → installed) | KVM | **FAIL**: installed layout Turkish Q; the top-left key gives `q` after login (18.2) | `KF16-boot/kf-letter-after-login.png`, `kf-localectl.png` |
+
+### 18.4 Open items
+
+1. **Carry-over of the live choice to the installed system (18.2): FAIL.** Next step as stated in 18.2, then a fresh KF run.
+2. **Application at login** of a chosen F layout is not verified; the tool tells the user to log out and in.
+3. **The key check in QEMU** (`--check`) was not run interactively; only its logic and the xkb tables were checked.
+4. **Greeter layout**: the greeter follows the installed `00-keyboard.conf`; with the variant lost, it is Turkish Q.
+5. **Real-PC feedback** on Q/F: still the user's test; this round did not change the default (Turkish Q).
+6. Cosmetic: the completion screens of I1 and I2 were captured blank (idle blanking), so their completion is shown by the serial log and the disk checks only.
+7. Space: round 17 removed the round 16 install images and reflink copies (reproducible), and the superseded unpublished r16 ISOs. The r4 snapshot of the previous build is kept as `r4-iso-src-2026-11-09-prev-r16c`.
+
+Beta gate: the matrix rows listed in 18.3 pass on r16. The keyboard requirement is **not met** (item 1), so the r16 image should not be called keyboard-complete; the QEMU gate status from round 16 (section 17.6) stays as written there, and this round adds the keyboard item as open.
