@@ -1214,3 +1214,42 @@ KVM with `-cpu qemu64` for every row (no TCG row this round). Evidence under `sc
 7. Space: round 17 removed the round 16 install images and reflink copies (reproducible), and the superseded unpublished r16 ISOs. The r4 snapshot of the previous build is kept as `r4-iso-src-2026-11-09-prev-r16c`.
 
 Beta gate: the matrix rows listed in 18.3 pass on r16. The keyboard requirement is **not met** (item 1), so the r16 image should not be called keyboard-complete; the QEMU gate status from round 16 (section 17.6) stays as written there, and this round adds the keyboard item as open.
+
+## 19. Round 17 (2026-11-10): keyboard carry-over proven, ISO r17
+
+ISO: `scratch-lfs-bench/images/alpbahos-beta-0.9-2026-11-09-r17.iso`, sha256 **`24d631d26711a5d0f1f31498fd88a28e47804f7d232a15d0b188f992c6f842b8`**, 4742672384 bytes, `TAG=r17`, built 03:50 from the working tree (the two changed scripts are dated 03:46). Round 18 of the coordinator brief: the live keyboard choice must reach the installed system.
+
+### 19.1 Code changes
+
+- `scripts/rebuild/iso/live/live-layout-copy.sh`: `@@ROOT@@` is not expanded by this Calamares build (3.3.14; the placeholder is not in libcalamares), so the script finds the target itself: the mount under `/tmp/calamares-root-*` whose `/etc/os-release` has `ID=alpbahos`. It reads the live `~/.config/kxkbrc`, defaults the layout to `tr` when `LayoutList` is absent (KConfig omits the system default), and writes `LAYOUT=`/`VARIANT=` to `usr/lib/alpbahos/live-layout`. The log is kept on the target at `/var/log/alpbahos-layout-carry.log` (and in live `/run/alpbahos-layout.log`).
+- `scripts/rebuild/iso/live/target-cleanup.sh`: the apply block reads that file and sets `00-keyboard.conf`, `/etc/xdg/kxkbrc`, `/etc/vconsole.conf` (`KEYMAP=trf` for F, `trq` for Q, `us` for US) and the SDDM `GreeterEnvironment` (`XKB_DEFAULT_VARIANT=f` for F). It logs to `/var/log/alpbahos-layout-apply.log`, which stays on disk.
+
+### 19.2 Keyboard end-to-end (KF17 series, ISO r17)
+
+- **Carry-over: PASS.** The carry log on the installed disk reads `target root: /tmp/calamares-root-Or9jn_r2`, `live choice: LAYOUT=tr VARIANT=f`, `written: .../usr/lib/alpbahos/live-layout`. The apply log reads `00-keyboard.conf: XkbLayout "tr" XkbVariant "f"`, `kxkbrc: LayoutList=tr VariantList=f`, `vconsole.conf: KEYMAP=trf`, `sddm.conf: GreeterEnvironment=QML2_IMPORT_PATH=/usr/lib/qml,XKB_DEFAULT_VARIANT=f`. `/etc/vconsole.conf` shows `KEYMAP=trf` (KF17f). Evidence: `KF17f/kf17f-carry-log.png`, `kf17f-apply-log.png`, `kf17f-vconsole.png`.
+- **F active after re-login: PASS.** Installed system (KF17b install, read-only snapshot base), login with the digits password, top-left key gives `f` (KF17d and KF17f, `f` typed at the shell as `bash: f: command not found`). Earlier round (KF16) gave `q` after login; this is the change.
+- **`--check` interactive in QEMU: PASS for the read, the positive branch NOT run.** `/usr/bin/alpbahos-keyboard --check` printed `Ekranda çıkan harf: f` and `(Okunan harf: 'f'.)`. The answer `e` was sent as the US key position, which under F produces `ğ`, so the tool answered `Belirsiz yanıt; hiçbir şey değiştirilmedi` (the safe no-op path). The answer-`e` branch that switches the layout was not exercised. Evidence: `KF17f/kf17f-check-result.png`.
+- **Known harness limit:** under the F layout the harness must type the F table (`tqf`, from xkb variant `f`). Earlier attempts with US positions produced wrong text (KF17d/KF17e) and one password typing failure (KF16/KF17: `-` and `.` in the password), so the F test uses the digits-only password.
+
+### 19.3 Matrix on sha `24d631d26711a5d0f1f31498fd88a28e47804f7d232a15d0b188f992c6f842b8` (ISO r17)
+
+KVM with `-cpu qemu64` for every row (no TCG row this round). Evidence under `scratch-lfs-bench/lfs13-logs/iso-beta-0.9/r17/`.
+
+| Row | Accel | Result | Evidence |
+|---|---|---|---|
+| L1 live UEFI, desktop at 130 s | KVM | **PASS** | `L1-1/shot-130.png` |
+| I1 Calamares BIOS MSDOS install | KVM | **PASS**: install done, disk check PASS (both r17 installs) | `I1/`; `images/inst-bios-msdos-r17.raw` |
+| I2 Calamares UEFI GPT install | KVM | **PASS**: install done, disk check PASS | `I2/`; `images/inst-uefi-gpt-r17.raw` |
+| B1 installed BIOS: greeter, desktop, localectl, alp list, failed units | KVM | **PASS**: desktop, `localectl` `X11 Layout: tr`, `alp list`, failed units 0 | `B1/b1-desktop.png`, `b1-localectl.png`, `b1-alp-list.png`, `b1-failed.png` |
+| B1 curl (`curl -sS -m 15 -I -o h2.txt http://ftp.gnu.org/`, CURL17) | KVM | **PARTIAL**: response headers captured (Content-Security-Policy, X-Frame-Options DENY, X-Content-Type-Options nosniff, Content-Type text/html; charset=UTF-8), but the HTTP status line scrolled out of the captured area; not proven by the status line | `CURL17/cr.jpg` |
+| U1 installed UEFI: hostnamectl, failed units, flatpak | KVM | **PASS**: hostnamectl, failed units 0, org.gnome.Calculator installed and opened | `U1/u1-hostnamectl.png`, `u1-failed.png`, `u1-calc.png` |
+| REC1 BIOS recovery (broken copy, live ISO first) | KVM | **PASS**: recovery steps complete; repaired disk boots | `REC1/rec-step1.png`, `REC1-boot/` |
+| Keyboard carry-over and F after login (KF17d/KF17f) | KVM | **PASS** (carry, vconsole, F active after login); `--check` read PASS, answer-`e` branch NOT run | `KF17d/`, `KF17f/` |
+
+### 19.4 Open items
+
+1. **B1 curl status line:** the header block is proven, the status line is not on the captured screen. Rerun `curl -sI http://ftp.gnu.org/ | head -1` alone if the status line is required.
+2. **`--check` answer-`e` branch:** not exercised (the harness typed `e` as `ğ` under F). Needs an F-table `d` keystroke test.
+3. **SDDM greeter layout** after the carry (`XKB_DEFAULT_VARIANT=f`): verified in the apply log only; the greeter screen was not captured under F.
+4. **Real-PC feedback** on Q/F: still the user's test. The default stays Turkish Q.
+5. Nothing is pushed. Round 17 changes are committed locally only.
