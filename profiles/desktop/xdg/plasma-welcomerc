@@ -1,0 +1,4 @@
+# alpbahOS (WELCOME-01, D121): the KDE Welcome Center does not open by itself; the alpbahOS Hoş Geldin app takes its
+# place. Its kded launcher opens it when LastSeenVersion is empty or older than Plasma (6.7.4 in this image).
+[General]
+LastSeenVersion=6.7.4

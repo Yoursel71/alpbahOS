@@ -134,7 +134,7 @@ def test_durum_reads_back_choices_and_glass(env):
     d = json.loads(r.stdout)
     assert d["tema"] == "ataturk" and d["cubuk"] == "orta" and d["gorunum"] == "solid"
     assert d["glass_kullanilabilir"] is False
-    assert d["glass_neden"] == "yazılım rasterleştirici (llvmpipe)"
+    assert d["glass_neden"] == "ekran kartı hızlandırması yok"
     assert d["onizleme"]["alpbahos"].endswith("alpbahOS-Brand/contents/screenshot.png")
 
 

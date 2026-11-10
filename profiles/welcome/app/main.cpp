@@ -7,6 +7,8 @@
 #include <QProcess>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QQuickWindow>
+#include <QTimer>
 #include <QVariantMap>
 
 static const char *APPLY_TOOL = "alpbah-hosgeldin-uygula";
@@ -61,6 +63,15 @@ int main(int argc, char *argv[])
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed, &app, [] { QCoreApplication::exit(1); },
                      Qt::QueuedConnection);
     engine.loadFromModule("AlpbahHosgeldin", "Main");
+    // --ekran-goruntusu <png> (tests and docs): save the window as an image after it is drawn, then quit.
+    const int shotArg = app.arguments().indexOf(QStringLiteral("--ekran-goruntusu"));
+    if (shotArg > 0 && shotArg + 1 < app.arguments().size() && !engine.rootObjects().isEmpty()) {
+        const QString path = app.arguments().at(shotArg + 1);
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QTimer::singleShot(1500, &app, [window, path] {
+            QCoreApplication::exit(window && window->grabWindow().save(path) ? 0 : 3);
+        });
+    }
     return app.exec();
 }
 

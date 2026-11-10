@@ -108,14 +108,20 @@ def glass_status():
     """(kullanılabilir, neden). alpbah-gorunum durum çıktısındaki 'glass:' satırına bakar."""
     try:
         out = run([tool("alpbah-gorunum"), "durum"]).stdout
-    except Hata as exc:
-        return False, str(exc)
+    except Hata:
+        return False, "durum okunamadı"   # e.g. no KWin session; the full error is in "alpbah-gorunum durum"
     for line in out.splitlines():
         if line.startswith("glass:"):
             text = line.split(":", 1)[1].strip()
             if text == "uygun":
                 return True, ""
-            return False, text.replace("önerilmez -- ", "")
+            text = text.replace("önerilmez -- ", "")
+            # Short reason for the card text (two lines at most); the full text stays in "alpbah-gorunum durum".
+            if "yazılım" in text:
+                return False, "ekran kartı hızlandırması yok"
+            if "compositing" in text:
+                return False, "masaüstü efektleri kapalı"
+            return False, text
     return False, "durum okunamadı"
 
 

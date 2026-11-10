@@ -143,12 +143,13 @@ install -d -m 755 "$LIVE/etc/calamares/modules" "$LIVE/usr/share/calamares/brand
 install -m 644 "$LIVE_SRC/calamares/settings.conf" "$LIVE/etc/calamares/settings.conf"
 for f in "$LIVE_SRC"/calamares/modules/*.conf; do install -m 644 "$f" "$LIVE/etc/calamares/modules/"; done
 install -m 644 "$M11_MOD/bootloader.conf" "$M11_MOD/grubcfg.conf" "$LIVE/etc/calamares/modules/"
-# PLYMOUTH-01 (D160): the DEBUG build installs systems without "quiet splash", so the boot log stays on screen.
+# PLYMOUTH-01 (D160): the DEBUG build installs systems without the splash and without "quiet" (plymouth.enable=0;
+# Calamares adds "splash" whenever plymouth is in the target), so the boot log stays on screen.
 if [ "$DEBUG" = 1 ]; then
-    sed -i 's/^kernel_params: \[ "quiet", "splash" \]$/kernel_params: [ ]/' "$LIVE/etc/calamares/modules/grubcfg.conf"
-    grep -qx 'kernel_params: \[ \]' "$LIVE/etc/calamares/modules/grubcfg.conf" || die "DEBUG: kernel_params not cleared"
+    sed -i 's/^kernel_params: \[ "quiet" \]$/kernel_params: [ "plymouth.enable=0" ]/' "$LIVE/etc/calamares/modules/grubcfg.conf"
+    grep -qx 'kernel_params: \[ "plymouth.enable=0" \]' "$LIVE/etc/calamares/modules/grubcfg.conf" || die "DEBUG: kernel_params not set"
 else
-    grep -qx 'kernel_params: \[ "quiet", "splash" \]' "$LIVE/etc/calamares/modules/grubcfg.conf" || die "grubcfg.conf: no quiet splash"
+    grep -qx 'kernel_params: \[ "quiet" \]' "$LIVE/etc/calamares/modules/grubcfg.conf" || die "grubcfg.conf: kernel_params changed"
 fi
 install -m 644 "$LIVE_SRC/calamares/branding/branding.desc" "$LIVE/usr/share/calamares/branding/alpbahos/"
 install -m 644 "$LIVE_SRC/calamares/branding/show.qml" "$LIVE/usr/share/calamares/branding/alpbahos/"

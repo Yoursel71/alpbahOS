@@ -70,9 +70,9 @@ Window {
 
         Column {
             id: rows
-            anchors.top: header.bottom; anchors.topMargin: 34
+            anchors.top: header.bottom; anchors.topMargin: 44
             anchors.left: parent.left; anchors.right: parent.right
-            spacing: 22
+            spacing: 30
 
             // ---- Tema
             Row {
@@ -128,7 +128,7 @@ Window {
                     enabled: win.glassOk
                     title: "Glass"
                     text: win.glassOk ? "Saydam ve bulanık. Ekran kartı hızlandırması ister."
-                                      : "Bu bilgisayarda kullanılamaz: " + win.glassWhy
+                                      : "Kullanılamaz: " + win.glassWhy + "."
                     selected: win.gorunum === "glass"
                     onChosen: win.gorunum = "glass"
                     preview: Component {

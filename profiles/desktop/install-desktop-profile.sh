@@ -9,6 +9,8 @@
 #   DATADIR/icons/hicolor/<N>x<N>/apps/alpbahos.png           alpbahOS sembol ikonu
 #   SYSCONFDIR/xdg/kdeglobals                                 LookAndFeelPackage varsayılanı
 #   SYSCONFDIR/xdg/kwinrc                                     Solid: blur/kontrast kapalı
+#   SYSCONFDIR/xdg/plasmarc                                   koyu Plasma stili (breeze-dark)
+#   SYSCONFDIR/xdg/plasma-welcomerc                           KDE Karşılama Merkezi kendiliğinden açılmaz
 #   SYSCONFDIR/skel/.config/kglobalshortcutsrc                Windows'a tanıdık kısayollar (yeni kullanıcılar)
 #   <ev>/.config/kglobalshortcutsrc                           aynı dosya, her --user-home DIZIN için (mevcut kullanıcılar)
 #   (kglobalacceld /etc/xdg okumaz: D43; bu yüzden kısayollar skel + kullanıcı dosyasıdır)
@@ -106,6 +108,8 @@ add_tree "$REPO/branding/icons/hicolor" "$DATADIR/icons/hicolor"
 PAIRS+=("$REPO/profiles/desktop/colorscheme/alpbah-dark.colors|$DATADIR/color-schemes/alpbah-dark.colors")
 PAIRS+=("$REPO/profiles/desktop/xdg/kdeglobals|$SYSCONFDIR/xdg/kdeglobals")
 PAIRS+=("$REPO/profiles/desktop/xdg/kwinrc|$SYSCONFDIR/xdg/kwinrc")
+PAIRS+=("$REPO/profiles/desktop/xdg/plasmarc|$SYSCONFDIR/xdg/plasmarc")
+PAIRS+=("$REPO/profiles/desktop/xdg/plasma-welcomerc|$SYSCONFDIR/xdg/plasma-welcomerc")
 # kglobalacceld /etc/xdg'yi okumaz (D43): kısayol dosyası skel'e ve verilen kullanıcı evlerine kurulur.
 PAIRS+=("$REPO/profiles/shortcuts/generated/kglobalshortcutsrc|$SYSCONFDIR/skel/.config/kglobalshortcutsrc")
 for uh in "${USER_HOMES[@]+"${USER_HOMES[@]}"}"; do
