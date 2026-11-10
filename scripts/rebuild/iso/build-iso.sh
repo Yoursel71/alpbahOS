@@ -151,6 +151,11 @@ grep -qx 'PRETTY_NAME="AlpbahOS 0.9 Beta"' "$LIVE/etc/os-release" || die "os-rel
 [ -x "$LIVE/usr/sbin/wpa_supplicant" ] || die "wpa_supplicant missing"
 [ -s "$LIVE/usr/lib/firmware/WHENCE" ] || die "linux-firmware missing"
 if find "$LIVE/etc/systemd/system" -name 'systemd-networkd*' | grep -q .; then die "a systemd-networkd unit is still enabled"; fi
+# SUDO-01, ZRAM-01, FIREWALL-01 (D151-D153): sudo with the wheel rule, zram swap and the firewall are on.
+[ -u "$LIVE/usr/bin/sudo" ] || die "sudo missing or not setuid"
+[ -f "$LIVE/etc/sudoers.d/10-alpbahos-wheel" ] || die "sudoers wheel rule missing"
+[ -L "$LIVE/etc/systemd/system/swap.target.wants/alpbahos-zram.service" ] || die "zram swap is not enabled"
+[ -L "$LIVE/etc/systemd/system/multi-user.target.wants/alpbahos-firewall.service" ] || die "firewall is not enabled"
 
 log "sddm autologin (live only), empty fstab and machine-id"
 sed -i '/^\[Autologin\]/,/^\[/{s/^User=.*/User=live/;s/^Session=.*/Session=plasma.desktop/;s/^Relogin=.*/Relogin=false/}' "$LIVE/etc/sddm.conf"
