@@ -10,6 +10,12 @@ Claude is the only agent on this project (D100). Decisions were re-done on 2026-
 - **Beta 0.9:** ISO `alpbahos-beta-0.9-2026-11-09.iso`, sha256 `1686abfd38dc04fabbb405fdec85307d2a587160d18502a1f5b50f5cfe8d4347`. Gate **not met** (record: [docs/verification/iso-beta-0.9-2026-11-09.md](docs/verification/iso-beta-0.9-2026-11-09.md), sections 10.5 and 10.6).
   - Passing on this sha: live BIOS and UEFI desktops; BIOS MSDOS and UEFI GPT installs complete; installed boots on BIOS virtio, BIOS AHCI, UEFI virtio and UEFI NVMe; sound on BIOS virtio and UEFI NVMe.
   - Open: the shutdown coredump is not reproduced and not fixed (the drop-in stop-order fix is shown only for the at-spi failure); installed BIOS on NVMe does not boot in SeaBIOS in the round 6 runs; the round 6 reruns (shutdown menu, tr_TR, trq, AHCI sound, alp update and rollback, live-ISO recovery) were not run.
+- **Round 21 (2026-11-10), review sections B and C:** ISO `alpbahos-beta-0.9-2026-11-09-r21.iso`, sha256 `46634e492a2c433dece0d951ff355ff6faf93a1de59f66cd739942884b0e1150` (TAG=r21, 5.64 GB). Record: [docs/verification/review-b-c-2026-11-10.md](docs/verification/review-b-c-2026-11-10.md); handoff [033](docs/handoffs/claude/033-review-b-c-2026-11-10.md).
+  - B4 CI-TESTS-01 (tests no longer self-poison; new CI with shellcheck), B5 DOCS-STATUS-01 (README, no fixed test password): in the repo.
+  - B6 SUDO-01 (D151), B7 ZRAM-01 (D152), B8 FIREWALL-01 (D153): shown in QEMU on r21. LIVE-LOCK-01 (D154) and LOCALE-DEFAULT-01 (D120) fixed and shown.
+  - PERF-01: idle 1120.6 MiB at 4 GiB (above the 1024 MiB design target).
+  - C9 ALP-TRUST-01: design note only, waiting for the user's external review. C10 APPARMOR-01: BACKLOG row only.
+  - Not run on r21: the full beta matrix (L2-L4, B2, B3, U2, REC1, S1, R1).
 - **Round 20 (2026-11-10), review section A (blockers for the real-PC USB test):** ISO `alpbahos-beta-0.9-2026-11-09-r20.iso`, sha256 `d21f6e55e3f28b1da677286da4d0a4dedbbb2c1b27996067181519ae7ee3e5f3` (TAG=r20, 5.63 GB). Record: [docs/verification/review-a-blockers-2026-11-10.md](docs/verification/review-a-blockers-2026-11-10.md).
   - A1 NET-FW-01 (D147, D150): linux-firmware 20261019 (zstd), wpa_supplicant 2.12, NetworkManager replaces systemd-networkd (live and installed). QEMU: NM active, networkd off, DNS through NM, HTTP/HTTPS, plasma-nm popup, 0 failed units. Real Wi-Fi not tested.
   - A2 INSTALL-UID-01 (D148): first installed user is UID 1000 (BIOS and UEFI). Also fixed: `/` of the r19 image belonged to UID 1000.
@@ -99,7 +105,7 @@ Status words: done / partial / not started / unknown. Details are in the linked 
 
 ## Next actions
 
-0. **Review plan (2026-11-10 master task):** section A done in QEMU (round 20). Next: fix LIVE-LOCK-01 (and LOCALE-DEFAULT-01 if the user agrees), build one new ISO and run the full matrix; then section B (B4-B8) in a new session, then D (branded screens, one at a time with user approval), then C (alp trust model, design note first). Handoff: [docs/handoffs/claude/032-review-a-blockers-2026-11-10.md](docs/handoffs/claude/032-review-a-blockers-2026-11-10.md).
+0. **Review plan (2026-11-10 master task):** A done (round 20), B done and C9 design note written (round 21). Next: the user's external review of the C9 note, then C9 code; section D (branded screens, one at a time with user approval) in a new session; the full beta matrix on the next ISO. Handoffs [032](docs/handoffs/claude/032-review-a-blockers-2026-11-10.md), [033](docs/handoffs/claude/033-review-b-c-2026-11-10.md).
 1. **REBUILD-R2** on LFS/MLFS 13.1 (D145) with the D146 flags: build the toolchain, record source checksums first, run `audit-isa.sh` on each package.
 2. **LIVE-PROFILE-01:** install the alpbahOS desktop profile into the rootfs (D114, D115, D120, D121). Then run LAYOUT-01 and THEME-01 in a Plasma session with screenshots in docs/verification/.
 3. **Store track (STORE contract):** ALP-TR-01, then STORE-01 (Discover with an alp PackageKit backend, D124), FLATHUB-01, BOTTLES-01.
