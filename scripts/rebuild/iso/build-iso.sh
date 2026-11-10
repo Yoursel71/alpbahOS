@@ -71,6 +71,10 @@ log "snapshot r4-root (read-only) -> $SNAP_SRC"
 btrfs subvolume snapshot -r "$R4" "$SNAP_SRC" > /dev/null
 log "writable copy -> $LIVE"
 btrfs subvolume snapshot "$SNAP_SRC" "$LIVE" > /dev/null
+# INSTALL-UID-01 (D148): the top directory of r4-root belongs to the build user (UID 1000). mksquashfs takes the
+# owner of / from it, and unpackfs copies it to the installed /, where UID 1000 is the first installed user.
+chown 0:0 "$LIVE"
+chmod 755 "$LIVE"
 
 L() { chroot "$LIVE" "$@"; }
 
@@ -116,6 +120,7 @@ if [ "${LIBGL:-0}" = 1 ]; then
 fi
 install -d -m 755 "$LIVE/usr/lib/alpbahos"
 install -m 755 "$LIVE_SRC/target-cleanup.sh" "$LIVE/usr/lib/alpbahos/target-cleanup.sh"
+install -m 755 "$LIVE_SRC/target-live-user.sh" "$LIVE/usr/lib/alpbahos/target-live-user.sh"
 install -m 755 "$LIVE_SRC/target-initramfs.sh" "$LIVE/usr/lib/alpbahos/target-initramfs.sh"
 install -m 755 "$LIVE_SRC/live-layout-copy.sh" "$LIVE/usr/lib/alpbahos/live-layout-copy.sh"
 # Recovery of an installed system (round 7): alpbahos-recover runs target-initramfs.sh and grub-install from the live
@@ -190,6 +195,8 @@ sources
 tools
 blfs-work
 root/m11-runner
+root/libp-dbg
+root/build-libplasma-dbg.sh
 usr/lib/live
 var/cache/*
 var/tmp/*
@@ -224,6 +231,13 @@ done
 for p in sources tools iso blfs-work; do check_absent "$p"; done
 awk '$NF=="squashfs-root/tmp" {print $1}' "$LL" | grep -qx 'drwxrwxrwt' || die "squashfs /tmp mode"
 awk '$NF=="squashfs-root/root" {print $1}' "$LL" | grep -qx 'drwxr-x---' || die "squashfs /root mode"
+# INSTALL-UID-01 (D148): nothing outside /home/live may belong to UID or GID 1000 (the live user's IDs, which the first
+# installed user gets): not / itself and not a leftover build tree. Field 6 of -lln is the path.
+L /usr/bin/unsquashfs -lln /iso/tree/LiveOS/squashfs.img > "$ISOTREE/squashfs-lln.txt" 2>/dev/null || die "unsquashfs -lln failed"
+U1000=$(awk '{split($2, o, "/")} (o[1] == "1000" || o[2] == "1000") && $6 != "squashfs-root/home/live" && index($6, "squashfs-root/home/live/") != 1 {print $6}' "$ISOTREE/squashfs-lln.txt" | head -n 5)
+[ -z "$U1000" ] || die "squashfs entries owned by UID/GID 1000 outside /home/live: $U1000"
+awk '$6 == "squashfs-root" {print $2}' "$ISOTREE/squashfs-lln.txt" | grep -qx '0/0' || die "squashfs / is not owned by root"
+check_path usr/lib/alpbahos/target-live-user.sh
 log "squashfs OK ($(wc -l < "$LL") entries)"
 
 # ------------------------------------------------------------------ 5. GRUB images (BIOS and UEFI)
