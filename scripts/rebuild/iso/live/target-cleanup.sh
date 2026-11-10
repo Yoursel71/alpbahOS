@@ -3,6 +3,26 @@
 # live session needs. Each step tolerates "already gone" so a rerun is harmless.
 set -u
 
+# Keyboard (round 16): the layout chosen in the live session is copied into /usr/lib/alpbahos/live-layout by the
+# live-keyboard shellprocess (live-layout-copy.sh) before the keyboard step; it is applied here, after that step.
+LF=/usr/lib/alpbahos/live-layout
+if [ -f "$LF" ]; then
+    LL=$(sed -n 's/^LAYOUT=//p' "$LF" | head -n 1)
+    LV=$(sed -n 's/^VARIANT=//p' "$LF" | head -n 1)
+    case "$LL" in
+        tr|us)
+            if [ -f /etc/X11/xorg.conf.d/00-keyboard.conf ]; then
+                sed -i "s/Option \"XkbLayout\" \".*\"/Option \"XkbLayout\" \"$LL\"/; s/Option \"XkbVariant\" \".*\"/Option \"XkbVariant\" \"$LV\"/" /etc/X11/xorg.conf.d/00-keyboard.conf
+            fi
+            if [ -f /etc/xdg/kxkbrc ]; then
+                sed -i "s/^LayoutList=.*/LayoutList=$LL/; s/^VariantList=.*/VariantList=$LV/" /etc/xdg/kxkbrc
+            fi
+            ;;
+    esac
+    rm -f "$LF"
+fi
+rm -f /usr/lib/alpbahos/live-layout-copy.sh
+
 # Live user and its home (desktop launcher included).
 userdel -r live 2>/dev/null || true
 rm -rf /home/live

@@ -1,0 +1,49 @@
+#!/bin/bash
+# AlpbahOS: keyboard layout choice (Turkish Q, Turkish F, US) and a key check. The choice is written to the KDE user setting
+# ~/.config/kxkbrc. KDE applies kxkbrc when the session starts, so the choice takes effect after logging out and in again.
+#   alpbahos-keyboard          choose the layout (menu); then log out and in
+#   alpbahos-keyboard --check  after logging in: press the top-left letter key and compare the letter with the keyboard
+# The top-left letter key (xkb AD01) gives q with Turkish Q and f with Turkish F. --check reads the layout that is active now;
+# it changes nothing unless the user says the letter does not match. The manual menu always applies.
+# Installed system: target-cleanup.sh copies the layout chosen in the live session into the installed system.
+set -u
+KX="${XDG_CONFIG_HOME:-$HOME/.config}/kxkbrc"
+
+set_layout() { # layout variant ('' or f)
+  kwriteconfig6 --file kxkbrc --group Layout --key LayoutList "$1"
+  kwriteconfig6 --file kxkbrc --group Layout --key VariantList "$2"
+  kwriteconfig6 --file kxkbrc --group Layout --key Use true
+  echo "Düzen kaydedildi: $1${2:+ $2}  ($KX)"
+}
+
+if [ "${1:-}" = "--check" ]; then
+  echo "Doğrulama (aktif düzen): klavyenizdeki SOL ÜST harf tuşuna (Tab tuşunun sağındaki harf) basın."
+  read -r -n 1 -p "Ekranda çıkan harf: " k; echo
+  read -r -n 1 -p "Bu harf klavyenizin üzerindeki harfle aynı mı? (e/h): " a; echo
+  case "$a" in
+    e|E) echo "Tamam: aktif düzen klavyenizle uyuşuyor." ;;
+    h|H)
+      cur=$(kreadconfig6 --file kxkbrc --group Layout --key VariantList 2>/dev/null)
+      if [ "$cur" = "f" ]; then set_layout tr ""; else set_layout tr f; fi
+      echo "Düzen değiştirildi. Yeni düzen için oturumu kapatıp açın, sonra --check komutunu tekrar çalıştırın."
+      ;;
+    *) echo "Belirsiz yanıt; hiçbir şey değiştirilmedi. Elle seçim (menü) her zaman geçerlidir." ;;
+  esac
+  echo "(Okunan harf: '$k'.)"
+  read -r -p "Kapatmak için Enter." _
+  exit 0
+fi
+
+echo "Klavye düzeni seçin:"
+echo "  1) Türkçe Q (varsayılan)"
+echo "  2) Türkçe F"
+echo "  3) US (İngilizce)"
+read -r -p "Seçim [1]: " ch
+case "${ch:-1}" in
+  2) set_layout tr f ;;
+  3) set_layout us "" ;;
+  *) set_layout tr "" ;;
+esac
+echo
+echo "Düzen oturum açılışta uygulanır: oturumu kapatıp açın. Ardından doğrulama için: alpbahos-keyboard --check"
+read -r -p "Kapatmak için Enter." _

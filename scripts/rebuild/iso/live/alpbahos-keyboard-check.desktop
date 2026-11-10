@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Klavye doğrulama
+GenericName=Keyboard check
+Comment=Oturum açtıktan sonra: sol üst tuşla düzeni doğrulayın
+Exec=konsole -e /usr/bin/alpbahos-keyboard --check
+Icon=input-keyboard
+Terminal=false
+Categories=System;

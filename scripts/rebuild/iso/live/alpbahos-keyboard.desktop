@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Klavye düzeni
+GenericName=Keyboard layout
+Comment=Türkçe Q, Türkçe F veya US seçin; tuşla doğrulayın
+Exec=konsole -e /usr/bin/alpbahos-keyboard
+Icon=input-keyboard
+Terminal=false
+Categories=System;

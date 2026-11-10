@@ -103,6 +103,8 @@ fi
 L /usr/sbin/usermod -L root
 install -d -m 755 "$LIVE/home/live/Desktop"
 install -m 755 "$LIVE_SRC/alpbahos-install.desktop" "$LIVE/home/live/Desktop/alpbahos-install.desktop"
+install -m 755 "$LIVE_SRC/alpbahos-keyboard.desktop" "$LIVE/home/live/Desktop/alpbahos-keyboard.desktop"
+install -m 755 "$LIVE_SRC/alpbahos-keyboard-check.desktop" "$LIVE/home/live/Desktop/alpbahos-keyboard-check.desktop"
 L /usr/bin/chown -R live:live /home/live
 install -m 755 "$LIVE_SRC/alpbahos-install" "$LIVE/usr/bin/alpbahos-install"
 install -d -m 755 "$LIVE/etc/polkit-1/rules.d"
@@ -115,6 +117,7 @@ fi
 install -d -m 755 "$LIVE/usr/lib/alpbahos"
 install -m 755 "$LIVE_SRC/target-cleanup.sh" "$LIVE/usr/lib/alpbahos/target-cleanup.sh"
 install -m 755 "$LIVE_SRC/target-initramfs.sh" "$LIVE/usr/lib/alpbahos/target-initramfs.sh"
+install -m 755 "$LIVE_SRC/live-layout-copy.sh" "$LIVE/usr/lib/alpbahos/live-layout-copy.sh"
 # Recovery of an installed system (round 7): alpbahos-recover runs target-initramfs.sh and grub-install from the live
 # image; see docs/verification/iso-beta-0.9-2026-11-09.md section 11.
 install -d -m 755 "$LIVE/usr/local/sbin"
