@@ -1,0 +1,26 @@
+# README demo flow, user yrslf, 2026-11-10T21:54:08Z
+$ alp search (unsigned demo, no flag)
+alp: hata: Katalog imzalı değil (/home/yrslf/alpbahOS/wt-alp-trust/docs/handoffs/claude/alp-prototype/demo/index.json.sig yok); kabul edilmedi. alpbahOS katalogları imzalıdır: 'alp update' ile yenileyin.
+rc=1
+$ alp --allow-unsigned (not root)
+alp: hata: --allow-unsigned yalnız root tarafından kullanılabilir.
+rc=1
+gpg: güvence veritabanı denetleniyor
+gpg: marginals needed: 3  completes needed: 1  trust model: pgp
+gpg: derinlik: 0  geçerli:   1  imzalı:   0  güvenilir: 0-, 0q, 0n, 0m, 0f, 1u
+$ stamp
+catalog_version=1 valid_until=2027-02-08 signed_keyring_version=1
+$ sign
+TMP/demo/index.json.sig
+$ install (signed, throwaway key)
+İşlem planı:
+  kur         alpbah-theme-solid 1.0.0 [core]
+alpbah-theme-solid (core) -> 1.0.0 kuruldu.
+rc=0
+$ one byte changed
+alp: hata: Katalog imzası geçersiz: imza katalogla uyuşmuyor (katalog ya da imza değiştirilmiş).
+rc=1
+$ sudo alp --allow-unsigned search (root)
+alp: UYARI: İMZASIZ KATALOG kullanılıyor (/home/yrslf/alpbahOS/wt-alp-trust/docs/handoffs/claude/alp-prototype/demo/index.json). --allow-unsigned yalnız geliştirme ve test içindir; bu katalogdaki her tarif doğrulanmadan çalıştırılır.
+alpbah-theme-solid  (core)
+rc=0
