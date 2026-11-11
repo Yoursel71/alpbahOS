@@ -3,6 +3,16 @@
 # install into $STAGE runs as root. HOME, the mach state and the cargo home stay inside the build tree.
 set -e
 export PATH=/opt/rustc/bin:$PATH
+# The book: "mountpoint -q /dev/shm || mount -t tmpfs devshm /dev/shm". The chroot's /dev is a plain bind of the
+# host's /dev, so /dev/shm is not a mount here and mach's process pool (POSIX semaphores) fails as alpbuild
+# (round 37 first try: PermissionError in multiprocessing SemLock). The tmpfs is removed again on any exit, so the
+# builder can unmount /dev afterwards.
+SHM_MOUNTED=0
+if ! mountpoint -q /dev/shm; then
+    mount -t tmpfs -o mode=1777,nosuid,nodev devshm /dev/shm
+    SHM_MOUNTED=1
+fi
+trap '[ "$SHM_MOUNTED" = 1 ] && umount /dev/shm' EXIT
 cp ../mozconfig mozconfig
 mkdir -p .home
 chown -R alpbuild:alpbuild .
