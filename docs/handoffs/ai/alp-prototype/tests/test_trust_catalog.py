@@ -561,6 +561,36 @@ def test_update_refuses_an_unsigned_index_and_an_unsigned_bundle(tmp_path, root,
     assert _snapshot(tmp_path / "local") == before
 
 
+def test_update_tells_a_signature_that_could_not_be_fetched_from_one_that_is_not_there(tmp_path, root, capsys, monkeypatch):
+    import urllib.error
+    index = _catalog(tmp_path / "local", catalog_version=5)
+    before = _snapshot(tmp_path / "local")
+    newer = _catalog(tmp_path / "upstream", version="2.0.0", catalog_version=6)
+    real = alp._download_raw
+
+    def failing(kind):
+        def download(url, dest):
+            if not str(url).endswith(".sig"):
+                return real(url, dest)
+            if kind == "network":
+                raise alp.AlpError("İndirme başarısız") from urllib.error.URLError("Temporary failure in name resolution")
+            if kind == "http500":
+                raise alp.AlpError("İndirme başarısız") from urllib.error.HTTPError(url, 500, "Server Error", None, None)
+            if kind == "http404":
+                raise alp.AlpError("İndirme başarısız") from urllib.error.HTTPError(url, 404, "Not Found", None, None)
+            raise PermissionError(13, "Permission denied")
+        return download
+
+    for kind, needle in (("network", "name resolution"), ("http500", "500"), ("perm", "Permission denied")):
+        monkeypatch.setattr(alp, "_download_raw", failing(kind))
+        code, _, err = _update(capsys, root, index, newer)
+        assert code == 1 and "imza dosyası alınamadı" in err and needle in err and "imzalı değil" not in err
+    monkeypatch.setattr(alp, "_download_raw", failing("http404"))
+    code, _, err = _update(capsys, root, index, newer)
+    assert code == 1 and "imzalı değil" in err and "alınamadı" not in err  # really no signature there
+    assert _snapshot(tmp_path / "local") == before  # refused either way
+
+
 def test_update_refuses_a_tampered_index(tmp_path, root, capsys):
     index = _catalog(tmp_path / "local", catalog_version=5)
     before = _snapshot(tmp_path / "local")

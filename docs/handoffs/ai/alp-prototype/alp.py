@@ -45,6 +45,7 @@ import subprocess
 import sys
 import tarfile
 import time
+import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -3661,13 +3662,23 @@ def _update_git_catalog(args: argparse.Namespace, paths: Paths, index_path: Path
         return 0
 
 
-def _fetch_signature(source: str, dest: Path) -> bytes | None:
-    """The detached signature published next to a bare index.json, or None."""
+def _fetch_signature(source: str, dest: Path) -> tuple[bytes | None, str | None]:
+    """The detached signature published next to a bare index.json.
+
+    Returns (signature, None); (None, None) when the source really has no
+    signature file (local file missing, HTTP 404); (None, reason) when it
+    could not be fetched for another reason. Either None is "no signature"
+    for the decision; the reason only makes the message truthful."""
     try:
         _download_raw(source + SIGNATURE_SUFFIX, dest)
-    except (AlpError, OSError):
-        return None
-    return _read_optional(dest, MAX_SIGNATURE_BYTES)
+    except FileNotFoundError:
+        return None, None
+    except (AlpError, OSError) as exc:
+        cause = exc.__cause__ if isinstance(exc, AlpError) and exc.__cause__ is not None else exc
+        if isinstance(cause, urllib.error.HTTPError) and cause.code == 404:
+            return None, None
+        return None, _first_line(cause)
+    return _read_optional(dest, MAX_SIGNATURE_BYTES), None
 
 
 def _bundle_payload(new_index: dict, new_root: Path) -> tuple[dict[str, bytes], int]:
@@ -3756,7 +3767,12 @@ def cmd_update(args: argparse.Namespace, paths: Paths, index_path: Path, index: 
                 versions_dir = new_root
             else:
                 data = blob.read_bytes()
-                signature = _fetch_signature(source, work / "download.sig")
+                signature, sig_problem = _fetch_signature(source, work / "download.sig")
+                if signature is None and sig_problem and not paths.trust.allow_unsigned:
+                    raise CatalogTrustError(
+                        f"Katalog imza dosyası alınamadı ({source}{SIGNATURE_SUFFIX}): {sig_problem}. "
+                        "İmza denetlenemedi; yerel katalog değiştirilmedi. Daha sonra yeniden deneyin."
+                    )
                 versions_dir = index_dir
             try:
                 new_index = accept_catalog_bytes(
