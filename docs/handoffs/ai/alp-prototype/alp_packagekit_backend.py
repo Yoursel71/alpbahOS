@@ -39,8 +39,23 @@ def _is_lock_error(stderr: str) -> bool:
     return "kilitli" in (stderr or "")
 
 
+# The store never waives the catalog signature or the build sandbox
+# (design/trust-model.md section 5): these alp switches are refused here
+# whatever asks for them, and no wrapper below passes them.
+FORBIDDEN_ALP_FLAGS = ("--allow-unsigned", "--no-sandbox")
+
+# Test-only: lets the test suite point the alp subprocess at a keyring made
+# in a temp dir (`--keyring F --allowed-keys F`). Empty in production, where
+# alp uses the system keyring. It cannot carry a forbidden flag either.
+TEST_TRUST_ARGS: tuple[str, ...] = ()
+
+
 def _run_alp(alp_path: Path, root: Path, index: Path, args: list[str], timeout: float | None = None) -> subprocess.CompletedProcess:
-    cmd = [sys.executable, str(alp_path), "--root", str(root), "--index", str(index), *args]
+    extra = [str(a) for a in TEST_TRUST_ARGS]
+    for arg in [*extra, *(str(a) for a in args)]:
+        if arg.split("=", 1)[0] in FORBIDDEN_ALP_FLAGS:
+            raise AlpBackendError(f"Mağaza arka ucu {arg.split('=', 1)[0]} seçeneğini kullanmaz; işlem reddedildi.")
+    cmd = [sys.executable, str(alp_path), "--root", str(root), "--index", str(index), *extra, *args]
     # stdin=DEVNULL: an inherited invalid stdin handle breaks CreateProcess on
     # Windows. It does not suppress alp's prompt (NUL reports isatty() there);
     # callers that change the system pass --yes for that.
@@ -53,7 +68,9 @@ def _run_alp(alp_path: Path, root: Path, index: Path, args: list[str], timeout: 
 
 def alp_search(alp_path: Path, root: Path, index: Path, term: str) -> list[dict]:
     proc = _run_alp(alp_path, root, index, ["--json", "search", term])
-    if proc.returncode not in (0, 1):  # 1 == "eşleşme yok", hata değil
+    # 1 == "eşleşme yok", hata değil -- unless alp said why it failed: a refused
+    # (unsigned, tampered) catalog also exits 1 and must not look like "no hits".
+    if proc.returncode not in (0, 1) or (proc.returncode == 1 and "alp: hata:" in (proc.stderr or "")):
         raise AlpBackendError(proc.stderr.strip() or "alp search başarısız", is_locked=_is_lock_error(proc.stderr))
     return json.loads(proc.stdout or "[]")
 

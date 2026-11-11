@@ -22,6 +22,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import alp  # noqa: E402
+from trusthelpers import sign_catalog  # noqa: E402
 
 
 def _recipe_catalog(tmp_path: Path, configure: list[str], **extra_recipe) -> Path:
@@ -45,6 +46,7 @@ def _recipe_catalog(tmp_path: Path, configure: list[str], **extra_recipe) -> Pat
     index.write_text(json.dumps({"schema_version": 1, "entries": {
         "demo": {"method": "recipe", "recipe": "recipes/demo.recipe.json", "description": "Deneme paketi"},
     }}), encoding="utf-8")
+    sign_catalog(index)  # ALP-TRUST-01: alp.main() only takes a signed catalog
     return index
 
 
