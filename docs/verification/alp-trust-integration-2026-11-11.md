@@ -231,3 +231,54 @@ Trials (`resign.log`, `resign-integrate.log`):
 Not settled: the version floor knows only what this root has seen (its index and its database); two regenerations
 on the same root at once are not locked against each other (one writer at a time, CLAUDE.md section 4);
 `valid_until` is renewed at every regeneration.
+
+## 12. Applied to the live r4-root (2026-11-11 10:38 +03:00) and host-side calls
+
+The integration was run on the live r4-root by the coordinator (not by this agent), from `wt-resign` `ae11e8d`.
+Summary of its log `scratch-lfs-bench/r4-ledger/trust-apply-2026-11-11.log` (read by this agent, not re-run):
+
+| Step | Result |
+|---|---|
+| backup | read-only snapshot `scratch-lfs-bench/r4-snapshots/r4-before-trust-2026-11-11` |
+| `alp check` before | rc 0, 550 packages |
+| `integrate-trust.sh` | rc 0; `alp-build-user 0.9-trust1`, `alp-keyring 1-temporary`, `alp 0.9-trust1`, `alp-catalog 2026.11.11-v1` (catalog_version 1, valid_until 2027-02-09, temporary primary key); `alpbuild` 998:998 |
+| chroot `alp list` / `check` / `search bash` | rc 0 (553 lines / 1 / 1) |
+| `iso-gate.sh` strict, `--auto` | PASS, PASS |
+| key files | root:root 644; no secret key in the root |
+| mounts left | 0 |
+| host `alp.py --root r4-root check` without key options | rc 1, "İzinli anahtar listesi okunamadı (/usr/share/alp/keys/allowed.txt)" |
+
+The last row is by design (D173: trust anchors from the running system). Fix on branch
+`claude/alp-hostkeys-2026-11-11`: `scripts/rebuild/trust/alp-host.sh`, used by every host-side call that loads a
+catalog:
+
+| File, line (before) | Change |
+|---|---|
+| `scripts/rebuild/r23/plymouth-r23.sh` 16 | `DONE=$(python3 .../alp.py --root "$R4" list 2>/dev/null \| cut -f1)` -> through `alp-host.sh`, stderr kept, stop with a message on an alp error or an empty list |
+| `scripts/rebuild/r24/profile-welcome-r24.sh` 15 | same |
+| `scripts/rebuild/r10/pkg-step-r10.sh` 28, 30 | `sudo python3 .../alp.py --root "$R4" $UNSIGNED --index demo ...` -> `sudo bash scripts/rebuild/trust/alp-host.sh .../alp.py --root ...` |
+| `scripts/rebuild/r11/pkg-url-r11.sh` 38, 40 | same |
+| `scripts/rebuild/r3/run-r3.sh` 149 | same form for `list` with the demo index |
+
+Not changed: `adopt-base` calls (r3, r4, r5, r7, trust scripts), `r4_lib.py transfer/claim_symlinks`,
+`stage-record-r8.py`, `alp-upgrade-record.py`, `temp01-reclassify.py`, `drop-live-medium-check.py` (database only,
+no catalog), and the chroot calls (`r13-records.sh`, `image-alp-check.sh`, `iso-gate.sh`, `integrate-trust.sh`),
+which use the root's own keys.
+
+Trials (`hostkeys.log`; integrated root = a read-only snapshot of the live r4-root taken for the test and deleted
+afterwards, old root = `r4-before-trust-2026-11-11`, read-only; new alp.py `7e7626b7`, old alp.py `bd8416f4` from the
+old root):
+
+| Call | integrated root, new alp | integrated root, old alp | old root, new alp | old root, old alp |
+|---|---|---|---|---|
+| DONE list (`list`, as root) | rc 0, 553 names | rc 0, 553 | rc 0, 550 (unsigned warning) | rc 0, 550 |
+| r10/r11 `check` / `list` with the demo index | rc 0, 553 | rc 0, 553 | rc 0, 550 | rc 0, 550 |
+
+Also: without the wrapper the new alp is refused on the integrated root (the finding); as an ordinary user the
+wrapper call works on the integrated root (553 lines); the guarded DONE block (copied from plymouth-r23.sh, the same
+text as in profile-welcome-r24.sh) goes on with 553/550 names and stops with "alp list failed on ...; stopping" when
+alp fails (the old form also stopped under `set -euo pipefail`, but silently); the wrapper adds nothing for the
+old alp.py on the integrated root beyond what it knows, `--allow-unsigned` on the old root, the key options on the
+integrated root, and refuses a call without `--root` (rc 2). `plymouth-r23.sh` and `profile-welcome-r24.sh` were not
+run as a whole.
+
