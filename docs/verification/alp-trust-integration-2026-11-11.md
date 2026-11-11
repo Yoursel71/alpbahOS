@@ -164,3 +164,31 @@ something printed "mounts left under copy: 0"; `findmnt -rn -o TARGET | grep -c 
   (only pinned files are installed) and git updates are refused in that layout; a git-checkout catalog would need
   the keys elsewhere.
 - Sandbox on a booted image: expected to work, not shown.
+
+## 10. Harmless merge (2026-11-11, later)
+
+The branch was brought up to `yoursel/main` `e8222c6` (merge commit `ac890d1`). One conflict, `docs/BACKLOG.md`
+(ZRAM-STOP-01, AUDIO-TOOLS-01, RECOVER-UX-01, GREETER-01 rows): main's rows taken, and the RECOVER-UX-01 sentence
+about the pkexec usage text added to main's row. `alpbahos-recover.sh` merged by git: main's round 31 ESP lookup and
+this branch's pkexec usage text are both in. No new decision numbers on main after D162; D170-D174 unchanged;
+handoff numbers 036 and 039 free on main.
+
+Section 5 changed: `build-iso.sh` calls `iso-gate.sh --auto`. It warns ("ALP-TRUST-01 henüz uygulanmadı: katalog
+imzasız") and lets the ISO build when the root has no `alp-keyring` record and the old alp.py; it is strict as soon
+as either is present. The r10, r11 and r3 callers pass `--allow-unsigned` only when the alp.py they run has it.
+Evidence in `soft-gate.log` (snapshots `r4-trust-old-ro`, read-only, of r4-root and `r4-trust-half`, writable, of the
+copy; both deleted afterwards):
+
+| Root | `iso-gate.sh --auto` |
+|---|---|
+| read-only snapshot of r4-root (never integrated) | warning, rc 0 (strict mode without `--auto`: FAIL, rc 1) |
+| integrated copy `r4-trust-probe` | strict, PASS, rc 0 |
+| copy with `index.json.sig` removed | strict, FAIL, rc 1 |
+| copy with keyring record but the old alp.py | strict, FAIL, rc 1 |
+
+| Caller form | New alp.py (repo) on the copy | Old alp.py (installed in r4-root, `bd8416f4…`) on the read-only snapshot |
+|---|---|---|
+| r10/r11 line (`check`, `list` with the demo index) | flag passed; check rc 0, 546 packages | flag not passed; check rc 0, 550 packages |
+| image-alp-check.sh form (installed alp in a chroot) | flag passed; check rc 0 | flag not passed; check rc 0 |
+
+Handoff for the other session: [036-alp-trust-merge-2026-11-11.md](../handoffs/claude/036-alp-trust-merge-2026-11-11.md).
