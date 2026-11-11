@@ -127,6 +127,8 @@ def test_bar_script(env, cubuk, center, spacers):
     assert "new Panel" not in script and 'x.location == "bottom"' in script
     assert script.count("function spacer()") == 1 and script.count("spacer();") == 2  # called only when center
     assert 't.writeConfig("fill", !center);' in script
+    # never leave the task manager without launchers (Plasma defaults would show missing apps as blank icons)
+    assert 't.writeConfig("launchers", launchers);' in script and "applicationExists(d)" in script
 
 
 def test_durum_reads_back_choices_and_glass(env):

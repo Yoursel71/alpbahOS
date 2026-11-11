@@ -45,7 +45,15 @@ var k = p.addWidget("org.kde.plasma.kickoff");
 k.currentConfigGroup = ["General"]; k.writeConfig("icon", icon ? icon : "alpbahos");
 var t = p.addWidget("org.kde.plasma.icontasks");
 t.currentConfigGroup = ["General"];
-if (launchers) t.writeConfig("launchers", launchers);
+// Round 36: when the old list cannot be read (round 35: empty), write the alpbahOS defaults that are installed, so
+// Plasma's own defaults (System Settings, Discover, preferred browser) never appear with blank icons.
+if (!launchers || launchers.length == 0) {
+    launchers = [];
+    ["org.kde.dolphin.desktop", "firefox.desktop", "org.kde.konsole.desktop", "libreoffice-writer.desktop"].forEach(function (d) {
+        if (applicationExists(d)) launchers.push("applications:" + d);
+    });
+}
+t.writeConfig("launchers", launchers);
 t.writeConfig("fill", !center);
 if (center) spacer();
 p.addWidget("org.kde.plasma.marginsseparator");
