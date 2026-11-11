@@ -11,7 +11,10 @@ Kompozisyon (D113, D114):
   üstüne büyütülmez; küçültme LANCZOS ile yapılır. Kaynağın düz #141414 kutusu bellekte
   şeffaflaştırılır (kaynak dosya değişmez). Logonun arkasında düşük opaklıkta bulanık bir
   açık lacivert/cyan ışıma, harflerin okunması için.
-- Vurgu: ince cyan yatay çizgi (genişliğin %16'sı), başında kısa turuncu parça.
+- Vurgu çizgisi duvar kâğıdında YOK (2026-11-11, kullanıcı isteği: logonun altındaki turuncu/cyan çizgi takılmış bir
+  yükleme çubuğu gibi duruyordu). Aynı yerde, aynı ölçüde gerçek bir yükleme çubuğu oturum açılış ekranında (KSplash)
+  çizilir: bu betik KSplash için ışıma+logo görselini (splash/images/brand-center.png) ve yerleşim ölçülerini
+  (splash/BrandGeometry.qml) de üretir; KSplash duvar kâğıdıyla aynı yerleşimi kurar, çubuk oturum aşamalarıyla dolar.
 - Metin, imza veya sembol eklenmez.
 
 Çıktı yalnızca bu betiğin çıktısıdır: PNG'ler sabit sıkıştırma düzeyiyle yazılır, zaman
@@ -22,7 +25,8 @@ Kullanım:
     python3 -B build_brand_wallpaper.py --check  # depodaki dosyalar bu betiğin çıktısıyla aynı mı
 
 Çıktı: branding/alpbahos-brand/wallpaper/alpbahOS-Brand/ altında metadata.json,
-contents/images/<G>x<Y>.png ve contents/screenshot.png.
+contents/images/<G>x<Y>.png ve contents/screenshot.png; profiles/desktop/lookandfeel/org.alpbahos.solid.desktop/
+contents/splash/ altında images/brand-center.png ve BrandGeometry.qml.
 """
 
 from __future__ import annotations
@@ -42,6 +46,8 @@ REPO = BRAND.parent.parent
 LOGO = REPO / "docs" / "assets" / "alpbahOS-logo.png"
 TOKENS = REPO / "profiles" / "desktop" / "tokens.json"
 PACKAGE = BRAND / "wallpaper" / "alpbahOS-Brand"
+SPLASH = REPO / "profiles" / "desktop" / "lookandfeel" / "org.alpbahos.solid.desktop" / "contents" / "splash"
+SPLASH_REF = (1920, 1200)   # KSplash görselinin üretildiği referans boyut
 
 # Aynı çözünürlük kümesi: branding/ataturk-theme/tools/build_wallpaper.py SIZES (test ile eşleşir).
 SIZES = [(1366, 768), (1920, 1080), (1920, 1200), (2560, 1440), (3440, 1440)]
@@ -192,14 +198,7 @@ def compose(size: tuple[int, int], colors: dict, logo: Image.Image) -> Image.Ima
     canvas.alpha_composite(glow_layer(size, centre, logo_h * GLOW_RADIUS_FRACTION, colors))
     canvas.alpha_composite(scaled, (logo_x, top))
 
-    line_t = max(2, round(height / 540))
-    line_w = round(width * ACCENT_WIDTH_FRACTION)
-    line_y = top + logo_h + gap
-    line_x0 = (width - line_w) // 2
-    draw = ImageDraw.Draw(canvas)
-    draw.rectangle((line_x0, line_y, line_x0 + line_w - 1, line_y + line_t - 1), fill=colors["cyan"] + (255,))
-    orange_w = max(1, round(line_w * ACCENT_ORANGE_FRACTION))
-    draw.rectangle((line_x0, line_y, line_x0 + orange_w - 1, line_y + line_t - 1), fill=colors["orange"] + (255,))
+    # Vurgu çizgisi yok: yerine KSplash'te gerçek yükleme çubuğu (aynı konum, aynı ölçü; splash_outputs).
     return canvas.convert("RGB")
 
 
@@ -208,6 +207,49 @@ def encode_png(image: Image.Image) -> bytes:
     # Sabit sıkıştırma düzeyi; meta veri ya da zaman damgası yok.
     image.save(buffer, "PNG", compress_level=9)
     return buffer.getvalue()
+
+
+def splash_outputs(colors: dict, logo: Image.Image) -> dict[Path, bytes]:
+    """KSplash: duvar kâğıdıyla aynı yerleşim. Işıma ve logo SPLASH_REF boyutunda saydam bir görsele çizilir ve
+    kırpılır; ölçüler BrandGeometry.qml'e yazılır (Splash.qml logo_box ile aynı hesabı yapar ve görseli logo
+    yüksekliğine göre ölçekler). Zemin degradesi ve çubuk QML'de çizilir."""
+    keyed = live_wordmark(key_background(logo))
+    width, height = SPLASH_REF
+    logo_x, top, logo_w, logo_h, gap = logo_box(SPLASH_REF, keyed)
+    scaled = keyed if logo_h == keyed.height else keyed.resize((logo_w, logo_h), Image.LANCZOS)
+    canvas = Image.new("RGBA", SPLASH_REF, (0, 0, 0, 0))
+    centre = (logo_x + logo_w / 2, top + logo_h / 2)
+    canvas.alpha_composite(glow_layer(SPLASH_REF, centre, logo_h * GLOW_RADIUS_FRACTION, colors))
+    canvas.alpha_composite(scaled, (logo_x, top))
+    box = canvas.getchannel("A").getbbox()
+    centre_img = canvas.crop(box)
+    top_colour = lerp(colors["bg-950"], colors["navy"], 0.55)
+    hexc = lambda c: "#%02x%02x%02x" % tuple(c)
+    qml = "\n".join([
+        "// ÜRETİLMİŞ DOSYA, elle düzenlemeyin: branding/alpbahos-brand/tools/build_brand_wallpaper.py",
+        "// Duvar kâğıdının (alpbahOS-Brand) yerleşim ölçüleri; Splash.qml aynı yerleşimi kurar.",
+        "import QtQuick",
+        "",
+        "QtObject {",
+        f"    readonly property real logoHeightFraction: {LOGO_HEIGHT_FRACTION}",
+        f"    readonly property real gapFraction: {GAP_FRACTION}",
+        f"    readonly property real accentWidthFraction: {ACCENT_WIDTH_FRACTION}",
+        f"    readonly property real accentOrangeFraction: {ACCENT_ORANGE_FRACTION}",
+        f"    readonly property int logoNativeWidth: {keyed.width}",
+        f"    readonly property int logoNativeHeight: {keyed.height}",
+        f"    readonly property int refLogoHeight: {logo_h}",
+        f"    readonly property int centreImageWidth: {centre_img.width}",
+        f"    readonly property int centreImageHeight: {centre_img.height}",
+        f"    readonly property int refLogoXInImage: {logo_x - box[0]}",
+        f"    readonly property int refLogoYInImage: {top - box[1]}",
+        f'    readonly property color gradientTop: "{hexc(top_colour)}"',
+        f'    readonly property color gradientBottom: "{hexc(colors["bg-950"])}"',
+        f'    readonly property color cyan: "{hexc(colors["cyan"])}"',
+        f'    readonly property color orange: "{hexc(colors["orange"])}"',
+        "}",
+        ""])
+    return {SPLASH / "images" / "brand-center.png": encode_png(centre_img),
+            SPLASH / "BrandGeometry.qml": qml.encode("utf-8")}
 
 
 def build() -> dict[Path, bytes]:
@@ -221,6 +263,7 @@ def build() -> dict[Path, bytes]:
         if size == PREVIEW_SOURCE:
             preview = image.resize(SCREENSHOT_SIZE, Image.LANCZOS)
             outputs[PACKAGE / "contents" / "screenshot.png"] = encode_png(preview)
+    outputs.update(splash_outputs(colors, logo))
     return outputs
 
 
