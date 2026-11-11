@@ -84,8 +84,10 @@ start)
     ;;
 stop)
     for DEV in $(swapon --noheadings --raw --show=NAME | grep '^/dev/zram' || true); do
-        swapoff "$DEV"
-        zramctl --reset "$DEV"
+        # At shutdown systemd may already have turned this swap off (its dev-zramN.swap unit): not an error
+        # (round 21 S1: "swapoff: Invalid argument" failed the unit in every cycle).
+        swapoff "$DEV" 2>/dev/null || ! grep -q "^$DEV " /proc/swaps || { echo "swapoff $DEV failed" >&2; exit 1; }
+        zramctl --reset "$DEV" 2>/dev/null || true
     done
     ;;
 *) echo "usage: $0 start|stop" >&2; exit 2 ;;

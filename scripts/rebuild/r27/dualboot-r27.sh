@@ -24,6 +24,8 @@ umount_part() { sudo umount "$M"; sudo losetup -d "$LO"; LO=""; }
 mount_part 1
 sudo mkdir -p "$M/EFI/Microsoft/Boot"
 printf 'stand-in for the Windows boot manager (alpbahOS test, round 27)\n' | sudo tee "$M/EFI/Microsoft/Boot/bootmgfw.efi" > /dev/null
+# os-prober's efi/20microsoft also needs the boot configuration store next to it (round 29: without BCD, no entry).
+printf 'stand-in BCD\n' | sudo tee "$M/EFI/Microsoft/Boot/BCD" > /dev/null
 find "$M/EFI" -maxdepth 3 | sed "s|$M||" > "$R/esp-tree.txt"
 umount_part
 mount_part 2

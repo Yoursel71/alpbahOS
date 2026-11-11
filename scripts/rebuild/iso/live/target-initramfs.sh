@@ -30,10 +30,13 @@ test -s "$IMG"
 LIST=$(lsinitrd "$IMG" 2>/dev/null)
 BUILTIN=/lib/modules/$KVER/modules.builtin
 for m in ahci nvme sd_mod virtio_blk; do
-    echo "$LIST" | grep -q "/$m\.ko" || grep -q "/$m\.ko" "$BUILTIN" || { echo "initramfs lacks module $m"; exit 1; }
+    # No "echo | grep -q": grep -q stops reading early and echo then prints "write error" (round 21 REC rows).
+    case "$LIST" in *"/$m.ko"*) continue ;; esac
+    grep -q "/$m\.ko" "$BUILTIN" || { echo "initramfs lacks module $m"; exit 1; }
 done
 # PLYMOUTH-01 (D160): the boot splash daemon and the alpbahOS theme are in the image (dracut module 45plymouth).
 for f in usr/sbin/plymouthd usr/share/plymouth/themes/alpbahos/alpbahos.script usr/share/plymouth/themes/alpbahos/mark.png; do
-    echo "$LIST" | grep -q " $f\$" || { echo "initramfs lacks $f"; exit 1; }
+    case "$LIST" in *" $f
+"*|*" $f") ;; *) echo "initramfs lacks $f"; exit 1 ;; esac
 done
 exit 0

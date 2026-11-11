@@ -1,0 +1,66 @@
+Grub yapılandırma dosyası oluşturuluyor ...
+Bulunan tema: /boot/grub/themes/alpbahos/theme.txt
+Bulunan linux kalıbı: /boot/vmlinuz-7.1.8-alpbahos
+Bulunan initrd kalıbı: /boot/initramfs-7.1.8-alpbahos.img
+Uyarı: os-prober, diğer açılabilir bölümleri saptamak için çalıştırılacak.
+Çıktısı, bölümdeki açılabilir dosyaları saptamak ve yeni açılış girdileri oluşturmak için kullanılacak.
+/usr/share/os-prober/common.sh: line 42: /var/lib/os-prober/labels: No such file or directory
+Windows Boot Manager /dev/vda1@/EFI/Microsoft/Boot/bootmgfw.efi bölümünde bulundu
+UEFI Firmware Ayarları için açılış menüsü girişi ekleniyor...
+bitti
+rc=0
+== os-prober
+/usr/share/os-prober/common.sh: line 42: /var/lib/os-prober/labels: No such file or directory
+/dev/vda1@/EFI/Microsoft/Boot/bootmgfw.efi:Windows Boot Manager:Windows:efi
+== lsblk
+NAME   FSTYPE PARTTYPE                             MOUNTPOINT
+sr0                                                
+zram0  swap                                        [SWAP]
+vda                                                
+├─vda1 vfat   c12a7328-f81f-11d2-ba4b-00a0c93ec93b /boot/efi
+└─vda2 ext4   0fc63daf-8483-4772-8e79-3d69d8477de4 /
+== journal
+Kas 11 04:13:46 alpbahos-test kernel: efi: EFI v2.7 by EDK II
+Kas 11 04:13:46 alpbahos-test kernel: efi: SMBIOS=0x7fc25000 ACPI=0x7feb1000 ACPI 2.0=0x7feb1014 MEMATTR=0x7df6b698 INITRD=0x7de66e98 
+Kas 11 04:13:46 alpbahos-test kernel: efi: Remove mem95: MMIO range=[0xffe00000-0xffffffff] (2MB) from e820 map
+Kas 11 04:13:46 alpbahos-test kernel: clocksource: refined-jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 1910969940391419 ns
+Kas 11 04:13:46 alpbahos-test kernel: efi: Freeing EFI boot services memory: 38284K
+Kas 11 04:13:46 alpbahos-test kernel: kprobes: kprobe jump-optimization is enabled. All kprobes are optimized if possible.
+Kas 11 04:13:46 alpbahos-test kernel: efivars: Registered efivars operations
+Kas 11 04:13:46 alpbahos-test kernel: EXT4-fs (vda2): mounted filesystem e7a88737-ac6c-4ede-a333-bd4ad4050307 ro with ordered data mode. Quota mode: none.
+Kas 11 04:13:46 alpbahos-test dracut: Mounted root filesystem /dev/vda2
+Kas 11 04:13:46 alpbahos-test systemd[1]: Created slice Slice /system/modprobe.
+Kas 11 04:13:46 alpbahos-test systemd[1]: Load Kernel Module efi_pstore skipped, unmet condition check ConditionKernelModuleLoaded=!efi_pstore
+Kas 11 04:13:46 alpbahos-test systemd[1]: Clear Stale Hibernate Storage Info skipped, unmet condition check ConditionPathExists=/sys/firmware/efi/efivars/HibernateLocation-8cf2644b-4b0b-428f-9387-6d876050dc67
+Kas 11 04:13:46 alpbahos-test systemd[1]: Mounted Huge Pages File System.
+Kas 11 04:13:46 alpbahos-test systemd[1]: Mounted POSIX Message Queue File System.
+Kas 11 04:13:46 alpbahos-test systemd[1]: Mounted Kernel Debug File System.
+Kas 11 04:13:46 alpbahos-test systemd[1]: Mounted Kernel Trace File System.
+Kas 11 04:13:46 alpbahos-test systemd[1]: Mounted Kernel Configuration File System.
+Kas 11 04:13:46 alpbahos-test systemd[1]: Mounted FUSE Control File System.
+Kas 11 04:13:46 alpbahos-test systemd[1]: modprobe@tun.service: Deactivated successfully.
+Kas 11 04:13:46 alpbahos-test kernel: EXT4-fs (vda2): re-mounted e7a88737-ac6c-4ede-a333-bd4ad4050307 r/w.
+Kas 11 04:13:47 alpbahos-test systemd[1]: Mounted Arbitrary Executable File Formats File System.
+Kas 11 04:13:47 alpbahos-test systemd[1]: Mounting /boot/efi...
+Kas 11 04:13:47 alpbahos-test systemd[1]: Mounted /boot/efi.
+Kas 11 04:13:48 alpbahos-test systemd[1]: Starting Round 27 test: grub-mkconfig with os-prober, then power off...
+Kas 11 04:13:49 alpbahos-test os-prober[1073]: debug: running /usr/lib/os-probes/mounted/05efi on mounted /dev/vda1
+Kas 11 04:13:49 alpbahos-test 05efi[1075]: debug: /dev/vda1 is a FAT32 partition
+Kas 11 04:13:49 alpbahos-test 05efi[1083]: debug: /dev/vda1 partition scheme is gpt
+Kas 11 04:13:49 alpbahos-test 05efi[1084]: debug: /dev/vda1 partition type is c12a7328-f81f-11d2-ba4b-00a0c93ec93b
+Kas 11 04:13:49 alpbahos-test 05efi[1088]: debug: running subtest /usr/lib/os-probes/mounted/efi/10elilo
+Kas 11 04:13:49 alpbahos-test 05efi[1091]: debug: running subtest /usr/lib/os-probes/mounted/efi/20microsoft
+Kas 11 04:13:49 alpbahos-test 20microsoft[1109]: result: Microsoft/Boot/bootmgfw.efi:Windows Boot Manager:Windows
+Kas 11 04:13:49 alpbahos-test 05efi[1110]: debug: bootloader Microsoft/Boot/bootmgfw.efi:Windows Boot Manager:Windows found by subtest /usr/lib/os-probes/mounted/efi/20microsoft
+Kas 11 04:13:49 alpbahos-test 05efi[1111]: result: /dev/vda1@/EFI/Microsoft/Boot/bootmgfw.efi:Windows Boot Manager:Windows:efi
+Kas 11 04:13:49 alpbahos-test os-prober[1112]: debug: os detected by /usr/lib/os-probes/mounted/05efi
+Kas 11 04:13:49 alpbahos-test os-prober[1261]: debug: running /usr/lib/os-probes/mounted/05efi on mounted /dev/vda1
+Kas 11 04:13:49 alpbahos-test 05efi[1263]: debug: /dev/vda1 is a FAT32 partition
+Kas 11 04:13:49 alpbahos-test 05efi[1271]: debug: /dev/vda1 partition scheme is gpt
+Kas 11 04:13:49 alpbahos-test 05efi[1272]: debug: /dev/vda1 partition type is c12a7328-f81f-11d2-ba4b-00a0c93ec93b
+Kas 11 04:13:49 alpbahos-test 05efi[1276]: debug: running subtest /usr/lib/os-probes/mounted/efi/10elilo
+Kas 11 04:13:49 alpbahos-test 05efi[1287]: debug: running subtest /usr/lib/os-probes/mounted/efi/20microsoft
+Kas 11 04:13:49 alpbahos-test 20microsoft[1307]: result: Microsoft/Boot/bootmgfw.efi:Windows Boot Manager:Windows
+Kas 11 04:13:49 alpbahos-test 05efi[1308]: debug: bootloader Microsoft/Boot/bootmgfw.efi:Windows Boot Manager:Windows found by subtest /usr/lib/os-probes/mounted/efi/20microsoft
+Kas 11 04:13:49 alpbahos-test 05efi[1309]: result: /dev/vda1@/EFI/Microsoft/Boot/bootmgfw.efi:Windows Boot Manager:Windows:efi
+Kas 11 04:13:49 alpbahos-test os-prober[1310]: debug: os detected by /usr/lib/os-probes/mounted/05efi
