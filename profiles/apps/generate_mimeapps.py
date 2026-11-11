@@ -73,7 +73,7 @@ def render(profile: dict) -> str:
         "# alpbahOS varsayılan uygulamaları -- ÜRETİLMİŞ DOSYA, elle düzenlemeyin.",
         "# Kaynak: profiles/apps/apps.json; üretici: profiles/apps/generate_mimeapps.py",
         "# Kurulum hedefi: /etc/xdg/mimeapps.list (kullanıcı ~/.config/mimeapps.list önce gelir).",
-        "# Uygulamalar Gen2 test imajında kurulu değil; ilişkiler gerçek oturumda test edilmedi.",
+        "# Firefox, VLC ve LibreOffice imajda (APPS-01); ilişkiler QEMU'da denendi, gerçek bilgisayarda değil.",
         "",
         "[Default Applications]",
     ]

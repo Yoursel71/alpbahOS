@@ -1,6 +1,6 @@
 {
   "$schema": "alpbahOS/apps/v1",
-  "durum": "Default application profile (D127). Built and tested in the QEMU LFS test image on 2026-11-05 (see docs/verification/vm-session-3-t6-2026-11-05.md): Dolphin, Okular, KWrite, Gwenview, Ark. LibreOffice, VLC and Firefox are planned and not built yet; their entries are written from upstream desktop files and are not tested on alpbahOS.",
+  "durum": "Default application profile (D127). Dolphin, Okular, KWrite, Gwenview and Ark built and tested in QEMU on 2026-11-05 (docs/verification/vm-session-3-t6-2026-11-05.md). Firefox 153.2.0esr, VLC 3.0.23 and LibreOffice 26.2.5.2 built from BLFS 13.1 and opened in QEMU on 2026-11-11, round 37 (docs/verification/round-37-2026-11-11.md); not tested on real hardware.",
   "kaynak": "docs/MASTER_PLAN.md §11, docs/DECISIONS.md P09",
   "kurulum_hedefi": "/etc/xdg/mimeapps.list",
   "tek_kaynak_notu": "mimeapps.list bu dosyadan profiles/apps/generate_mimeapps.py ile üretilir; üretilmiş dosya elle düzenlenmez.",
