@@ -207,4 +207,12 @@ Where the code is stricter than, or different from, the text above:
   that climbs above the root, or, for a `--relocate` build, an absolute target outside the root. A hard link is
   refused when the inode has more names than the stage holds. The setuid/setgid check covers directories too.
   Core archives get the same checks with an empty setuid list.
+- **Normalising (changed after the coordinator review of 2026-11-11):** group and other write are dropped from
+  every staged file and directory, not only under `/usr` as section 6.2 says. The one exception is a directory
+  with the sticky bit (for example `var/tmp` 1777). A recipe cannot ask for another exception, and a sticky
+  world-writable directory needs no listing in the recipe; an explicit recipe list for such directories was
+  considered and left out (it would be a second allow-list next to `setuid` for a case no current recipe has).
+- **Rule 4 (changed after the same review):** every entry that has a `recipe` field needs `recipe_sha256`,
+  whatever its `method`; entries of a signed catalog are marked (`SignedEntry`) and a recipe is never read for a
+  marked entry without a digest.
 - **Landlock:** not implemented (section 6.1 called it optional).
