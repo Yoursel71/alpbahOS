@@ -27,11 +27,11 @@ slideshow:               "show.qml"
 slideshowAPI:            2
 
 style:
-   # alpbahOS colours (profiles/desktop/tokens.json). Calamares 3.3 names (…Current) and the 3.2 names both set:
-   # with the dark installer (INSTALLER-THEME-01) the 3.2 names alone left the current step dark on black.
-   sidebarBackground:        "#0b1014"
-   sidebarText:              "#d4e0e8"
-   sidebarTextCurrent:       "#f4f8fb"
-   sidebarBackgroundCurrent: "#062746"
+   # alpbahOS colours (profiles/desktop/tokens.json). Calamares 3.3 reads the capitalised Sidebar* names (default/branding.desc);
+   # the 3.2 lower-case names are kept for older readers. Round 28 still showed the current step dark on black.
+   SidebarBackground:        "#0b1014"
+   SidebarText:              "#d4e0e8"
+   SidebarTextCurrent:       "#f4f8fb"
+   SidebarBackgroundCurrent: "#062746"
    sidebarTextSelect:        "#f4f8fb"
    sidebarTextHighlight:     "#00aeef"

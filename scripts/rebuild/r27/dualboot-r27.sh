@@ -33,7 +33,7 @@ Description=Round 27 test: grub-mkconfig with os-prober, then power off
 After=multi-user.target
 [Service]
 Type=oneshot
-ExecStart=/bin/sh -c '/usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg > /root/r27-grub-mkconfig.log 2>&1; echo rc=$? >> /root/r27-grub-mkconfig.log; os-prober >> /root/r27-grub-mkconfig.log 2>&1; sync'
+ExecStart=/bin/sh -c '/usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg > /root/r27-grub-mkconfig.log 2>&1; echo rc=$? >> /root/r27-grub-mkconfig.log; echo == os-prober >> /root/r27-grub-mkconfig.log; os-prober >> /root/r27-grub-mkconfig.log 2>&1; echo == lsblk >> /root/r27-grub-mkconfig.log; lsblk -o NAME,FSTYPE,PARTTYPE,MOUNTPOINT >> /root/r27-grub-mkconfig.log 2>&1; echo == journal >> /root/r27-grub-mkconfig.log; journalctl -b --no-pager | grep -i -E "os-prober|probe|efi|microsoft|mounted" | tail -60 >> /root/r27-grub-mkconfig.log 2>&1; sync'
 ExecStartPost=/usr/bin/systemctl poweroff
 [Install]
 WantedBy=multi-user.target

@@ -89,6 +89,18 @@ welcome)
     G boot bios "$R" second
     G login "$R/second"; sleep 50; Q "$R/second" shot w08-second-login
     G stop "$R" ;;
+ksplash)
+    log "KSplash row (session start screen after the greeter login, BIOS, image unchanged)"
+    R=$L/KS1; G start bios "$IMGB" "$R" > /dev/null 2>&1 || true
+    # vm-gui start makes a reflink copy; the login below starts the session, the burst records the next 12 s.
+    PW=$(cat "$B/test-secrets/r21.pw")
+    Q "$R" click 766 489; sleep 1; G type "$R" "$PW"; Q "$R" key ret
+    python3 scripts/rebuild/r24/qmp-burst.py "$R" 12 nopower > "$R/burst.out" 2>&1
+    python3 -c "
+import glob
+from PIL import Image
+for f in sorted(glob.glob('$R/burst-*.ppm')): Image.open(f).save(f[:-4] + '.png')"
+    G stop "$R" ;;
 dualboot)
     log "dual boot row (os-prober, stand-in Windows boot manager on a copy)"
     ROUND=$RND bash scripts/rebuild/r27/dualboot-r27.sh "$IMGU" DB1 > "$L/DB1.out" 2>&1 ;;

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Round 24 (PLYMOUTH-01 shutdown row): presses the ACPI power button through QMP, then takes screendumps as fast as one
 QMP session allows (PPM files <run-dir>/burst-NNN.ppm with the time since the press in burst.txt) until QEMU closes the
-socket or MAX seconds pass. Usage: qmp-burst.py <run-dir> [max-seconds]
+socket or MAX seconds pass. Usage: qmp-burst.py <run-dir> [max-seconds] [nopower]
+"nopower" (round 29, KSplash row): no power button, only the screendumps (files burst-NNN as before).
 """
 import json
 import os
@@ -11,6 +12,7 @@ import time
 
 RUN = sys.argv[1]
 MAX = float(sys.argv[2]) if len(sys.argv) > 2 else 60
+POWER = not (len(sys.argv) > 3 and sys.argv[3] == "nopower")
 s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 s.connect(os.path.join(RUN, "qmp.sock"))
 s.settimeout(5)
@@ -32,7 +34,8 @@ def cmd(c):
 
 cmd({"execute": "qmp_capabilities"})
 t0 = time.time()
-cmd({"execute": "system_powerdown"})
+if POWER:
+    cmd({"execute": "system_powerdown"})
 log = open(os.path.join(RUN, "burst.txt"), "w")
 n = 0
 try:
@@ -42,7 +45,7 @@ try:
         cmd({"execute": "screendump", "arguments": {"filename": path}})
         log.write(f"burst-{n:03d} {time.time() - t0:.2f}\n")
         log.flush()
-        time.sleep(0.03)
+        time.sleep(0.03 if POWER else 0.25)
 except (EOFError, OSError, ValueError):
     log.write(f"QEMU closed after {time.time() - t0:.2f} s\n")
 print(f"{n} screendumps")

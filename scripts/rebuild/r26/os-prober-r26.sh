@@ -17,6 +17,7 @@ tar -xf "$TAR" -C "$R4/tmp"
 chroot "$R4" /usr/bin/env PATH=/usr/bin:/usr/sbin sh -c 'cd /tmp/os-prober-1.85 && gcc -O2 -march=x86-64 -mtune=generic -Wall newns.c -o newns' > "$W/build.log" 2>&1
 S=$R4/tmp/os-prober-1.85
 install -D -m 755 "$S/os-prober" "$ST/usr/bin/os-prober"
+# Round 29 (os-prober-locale-r29) adds "export LC_ALL=C" to os-prober and linux-boot-prober (Turkish i/I in grep -i).
 install -D -m 755 "$S/linux-boot-prober" "$ST/usr/bin/linux-boot-prober"
 install -D -m 755 "$S/newns" "$ST/usr/lib/os-prober/newns"
 install -D -m 644 "$S/common.sh" "$ST/usr/share/os-prober/common.sh"
