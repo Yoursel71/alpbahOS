@@ -171,17 +171,29 @@ def _lock_holder_is_dead(holder: str) -> bool:
     return False
 
 
+_LOCK_PERMISSION_MSG = (
+    "Bu işlem paket veritabanını değiştirir ve yönetici yetkisi ister; "
+    "komutu başına 'sudo' ekleyerek çalıştırın (örnek: sudo alp install <paket>). "
+    "Yazılamayan yer: {path}"
+)
+
+
 class DbLock:
     def __init__(self, lock_file: Path):
         self.lock_file = lock_file
         self._held = False
 
     def __enter__(self) -> "DbLock":
-        self.lock_file.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            self.lock_file.parent.mkdir(parents=True, exist_ok=True)
+        except PermissionError as exc:
+            raise AlpError(_LOCK_PERMISSION_MSG.format(path=self.lock_file.parent)) from exc
         for attempt in (1, 2):
             try:
                 fd = os.open(str(self.lock_file), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
                 break
+            except PermissionError as exc:
+                raise AlpError(_LOCK_PERMISSION_MSG.format(path=self.lock_file)) from exc
             except FileExistsError as exc:
                 holder = self._read_holder()
                 if attempt == 1 and _lock_holder_is_dead(holder):
