@@ -1,0 +1,46 @@
+# host-side alp calls through scripts/rebuild/trust/alp-host.sh, 2026-11-11T07:41:15Z, hostkeys HEAD ae11e8d + working tree
+integrated root: read-only snapshot of the live r4-root (/home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-hostkeys-ro); old root: /home/yrslf/alpbahOS/scratch-lfs-bench/r4-snapshots/r4-before-trust-2026-11-11 (readonly: ro=true)
+new alp.py 7e7626b7f07b, old alp.py (from the old root) bd8416f48599
+keys in roots: integrated allowed.txt alpbahos-catalog.gpg ; old []
+
+== 0. without the wrapper (the finding): new alp.py, --root integrated, list
+rc=1 alp: hata: İzinli anahtar listesi okunamadı (/usr/share/alp/keys/allowed.txt): No such file or directory
+
+== 1. r23/r24 DONE line (as root, as the scripts run), via the wrapper
+root=r4-trust-hostkeys-ro alp=alp.py: rc=0, 553 names, alpbahos-plymouth-theme listed: 1, stderr: 
+root=r4-trust-hostkeys-ro alp=old-alp.py: rc=0, 553 names, alpbahos-plymouth-theme listed: 1, stderr: 
+root=r4-before-trust-2026-11-11 alp=alp.py: rc=0, 550 names, alpbahos-plymouth-theme listed: 1, stderr: alp: UYARI: İMZASIZ KATALOG kullanılıyor (/home/yrslf/alpbahOS/scratch-lfs-bench/r4-snapshots/r4-
+root=r4-before-trust-2026-11-11 alp=old-alp.py: rc=0, 550 names, alpbahos-plymouth-theme listed: 1, stderr: 
+  same as an ordinary user (integrated root, new alp.py):
+  rc=0 553 lines 
+
+== 2. the guarded DONE block itself (lines copied from plymouth-r23.sh, WT pointed at this worktree)
+r23 and r24 blocks identical
+  [integrated] continued with 553 names
+  [integrated] rc=0
+  [old] alp: UYARI: İMZASIZ KATALOG kullanılıyor (/home/yrslf/alpbahOS/scratch-lfs-bench/r4-snapshots/r4-before-trust-2026-11-11/usr/share/alp/index.json). --allow-unsigned yalnız geliştirme ve test içindir; bu katalogdaki her tarif doğrulanmadan çalıştırılır.
+  [old] continued with 550 names
+  [old] rc=0
+  [alp-fails] alp: hata: simulated
+  [alp-fails] alp list failed on /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-hostkeys-ro; stopping
+  [alp-fails] rc=1
+  for comparison, the OLD form with a failing alp under set -euo pipefail:
+  rc=1 (the old form stops too, but prints nothing at all)
+
+== 3. r10/r11 lines (sudo, demo index, conditional --allow-unsigned) via the wrapper
+root=r4-trust-hostkeys-ro alp=alp.py flag='--allow-unsigned': check rc=0 (Bağımlılık tutarlılığı: sorun yok (553 kurulu paket).), list 553 packages
+root=r4-trust-hostkeys-ro alp=old-alp.py flag='': check rc=0 (Bağımlılık tutarlılığı: sorun yok (553 kurulu paket).), list 553 packages
+root=r4-before-trust-2026-11-11 alp=alp.py flag='--allow-unsigned': check rc=0 (Bağımlılık tutarlılığı: sorun yok (550 kurulu paket).), list 550 packages
+root=r4-before-trust-2026-11-11 alp=old-alp.py flag='': check rc=0 (Bağımlılık tutarlılığı: sorun yok (550 kurulu paket).), list 550 packages
+
+== 4. run-r3.sh line form (list with the demo index) is the same call as 3; adopt-base, r4_lib transfer/claim_symlinks,
+   stage-record and the r5 scripts load no catalog (load_db/save_db only) and are not changed
+
+== 5. the wrapper adds nothing for an old alp.py or a root without keys
+  trace lines with allowed-keys for the old alp.py (expect only the grep test): 1
+  old root: + exec python3 /home/yrslf/alpbahOS/wt-hostkeys/docs/handoffs/claude/alp-prototype/alp.py --allow-unsigned --root /home/yrslf/alpbahOS/scratch-lfs-b
+  integrated root (--root=): + exec python3 /home/yrslf/alpbahOS/wt-hostkeys/docs/handoffs/claude/alp-prototype/alp.py --keyring /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-hostkeys-ro/usr/share/a
+alp-host: --root ROOT missing
+  no --root: rc=2
+deleted /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-hostkeys-ro
+mounts under scratch r4-*: 0

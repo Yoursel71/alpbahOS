@@ -13,7 +13,12 @@ R4=$SB/r4-root
 ST=$SB/r23/stage-plymouth
 [ -x "$R4/usr/sbin/plymouthd" ] || { echo "plymouth missing in r4-root"; exit 1; }
 rm -rf "$ST"
-DONE=$(python3 "$WT/docs/handoffs/claude/alp-prototype/alp.py" --root "$R4" list 2>/dev/null | cut -f1)
+# ALP-TRUST-01: through alp-host.sh (the root's own catalog keys, when it has them). A failing or empty `alp list`
+# stops the run: an empty DONE would make every record below look "not done yet" and be applied again.
+DONE=$(bash "$WT/scripts/rebuild/trust/alp-host.sh" "$WT/docs/handoffs/claude/alp-prototype/alp.py" --root "$R4" list) \
+    || { echo "alp list failed on $R4; stopping" >&2; exit 1; }
+DONE=$(cut -f1 <<< "$DONE")
+[ -n "$DONE" ] || { echo "alp list on $R4 returned nothing; stopping" >&2; exit 1; }
 install -d -m 755 "$ST/theme/usr/share/plymouth/themes/alpbahos" "$ST/config/etc/plymouth"
 install -m 644 "$WT"/branding/plymouth-theme/alpbahos/* "$ST/theme/usr/share/plymouth/themes/alpbahos/"
 cat > "$ST/config/etc/plymouth/plymouthd.conf" <<'CONF'

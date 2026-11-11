@@ -35,9 +35,9 @@ sudo env REPLACE="${REPLACE:-0}" bash scripts/rebuild/r7/apply-r7.sh "$WT/script
 # check/list read only the database.
 UNSIGNED=""
 grep -q -- "--allow-unsigned" docs/handoffs/claude/alp-prototype/alp.py && UNSIGNED="--allow-unsigned"
-sudo python3 docs/handoffs/claude/alp-prototype/alp.py --root "$R4" $UNSIGNED --index docs/handoffs/claude/alp-prototype/demo/index.json check > /tmp/r11-$NAME.txt 2>&1 && RC=0 || RC=$?
+sudo bash scripts/rebuild/trust/alp-host.sh docs/handoffs/claude/alp-prototype/alp.py --root "$R4" $UNSIGNED --index docs/handoffs/claude/alp-prototype/demo/index.json check > /tmp/r11-$NAME.txt 2>&1 && RC=0 || RC=$?
 echo "alp check rc=$RC; $(tail -1 /tmp/r11-$NAME.txt)"
-echo "packages $(sudo python3 docs/handoffs/claude/alp-prototype/alp.py --root "$R4" $UNSIGNED --index docs/handoffs/claude/alp-prototype/demo/index.json list | wc -l)"
+echo "packages $(sudo bash scripts/rebuild/trust/alp-host.sh docs/handoffs/claude/alp-prototype/alp.py --root "$R4" $UNSIGNED --index docs/handoffs/claude/alp-prototype/demo/index.json list | wc -l)"
 printf "%s\t%s-%s\tEXTRA\t%s\t%s\t\t%s\tno\t\tr11-recorded\t\t\t%s; sha256 %s\n" \
   "$NN" "$NAME" "$VER" "$TNAME" "$URL" "$URL" "$VSRC" "$SHA" >> scripts/rebuild/r4/packages.tsv
 echo "row $NN $NAME-$VER sha256 $SHA"
