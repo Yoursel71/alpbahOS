@@ -18,7 +18,7 @@
 set -u
 ISO=$1; WHICH=${2:-all}
 B=/home/yrslf/alpbahOS/scratch-lfs-bench
-W=/home/yrslf/alpbahOS/wt-t2-kisayol/scripts/rebuild/image
+W=${LANES_W:-/home/yrslf/alpbahOS/wt-t2-kisayol/scripts/rebuild/image}   # LANES_W: image helpers of another worktree
 RD=${ROUND:-r20}
 D=${OUTD:-$B/lfs13-logs/iso-beta-0.9/$RD}
 IMGB=$B/images/inst-bios-msdos-$RD.raw

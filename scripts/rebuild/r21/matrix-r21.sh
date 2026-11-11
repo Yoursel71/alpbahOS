@@ -20,7 +20,7 @@
 # Guest typing (live session, Turkish Q): tq, with the AltGr keys for | > & etc.
 set -u
 B=/home/yrslf/alpbahOS/scratch-lfs-bench
-WT=/home/yrslf/alpbahOS/wt-t2-kisayol
+WT=${MATRIX_WT:-/home/yrslf/alpbahOS/wt-t2-kisayol}   # MATRIX_WT: run the helpers of another worktree
 W=$WT/scripts/rebuild/image
 S=$WT/scripts/rebuild/r21
 MR=${MROUND:-r21}   # round 27+: MROUND=r27 (ISO, installs, password file and evidence directory of that round)
@@ -302,8 +302,8 @@ cmd_recboot() { # bios|uefi name: the repaired copy alone
 }
 
 # --- KF: Turkish F chosen in the live session, GUI install to a new image, checks ----------------------------------
-IMGK=$B/images/inst-bios-kf-r21m.raw
-KPW=$B/test-secrets/r21m-kf.pw
+IMGK=${KF_IMG:-$B/images/inst-bios-kf-r21m.raw}   # KF_IMG, KF_PW: new names per round (refused if they exist)
+KPW=${KF_PW:-$B/test-secrets/r21m-kf.pw}
 cmd_kflive() { # live boot with the new target image, keyboard tool, choice 2 (Turkish F)
   local R=$D/KF; fresh "$R" "$IMGK" "$KPW"
   ( umask 077; printf '%s\n' "$(tr -dc 0-9 < /dev/urandom | head -c 10)" > "$KPW" ); truncate -s 30G "$IMGK"
@@ -320,17 +320,18 @@ cmd_kffill() { # installer up to the filled users page; the reviewer reads i-05 
   local R=$D/KF n; tq "$R" exit; q "$R" key ret; sleep 3
   q "$R" click 58 40; sleep 1; q "$R" key ret; sleep 40; shot "$R" i-00
   for n in 1 2 3 4; do q "$R" click 1007 637; sleep 3; shot "$R" "i-0$n"; done
-  q "$R" click 404 180; sleep 1; clr "$R"; tq "$R" "Test User"
-  q "$R" click 404 236; sleep 1; clr "$R"; tq "$R" "testuser"
-  q "$R" click 404 292; sleep 1; clr "$R"; tq "$R" "alpbahos-kf"
-  q "$R" click 404 348; sleep 1; clr "$R"; q "$R" text "$(cat "$KPW")"
-  q "$R" click 610 348; sleep 1; clr "$R"; q "$R" text "$(cat "$KPW")"
+  # field positions of the round 33+ installer (same as install_run in r20-lanes.sh)
+  q "$R" click 424 181; sleep 1; clr "$R"; tq "$R" "Test User"
+  q "$R" click 424 245; sleep 1; clr "$R"; tq "$R" "testuser"
+  q "$R" click 424 309; sleep 1; clr "$R"; tq "$R" "alpbahos-kf"
+  q "$R" click 424 373; sleep 1; clr "$R"; q "$R" text "$(cat "$KPW")"
+  q "$R" click 629 373; sleep 1; clr "$R"; q "$R" text "$(cat "$KPW")"
   sleep 2; shot "$R" i-05-users-filled
 }
 cmd_kfgo() { local R=$D/KF i
   q "$R" click 1007 637; sleep 3; shot "$R" i-06-summary
-  q "$R" click 1000 652; sleep 4; shot "$R" i-07-confirm
-  q "$R" click 749 435; sleep 5; shot "$R" i-08-running
+  q "$R" click 1002 709; sleep 4; shot "$R" i-07-confirm
+  q "$R" click 748 470; sleep 5; shot "$R" i-08-running
   for i in $(seq 1 120); do grep -aq "unmounting filesystem" "$R/serial.log" 2> /dev/null && break; sleep 20; done
   sleep 20; shot "$R" i-09-done; vmquit "$R"; stamp "KF install ended (unmount line: $(grep -ac 'unmounting filesystem' "$R/serial.log"))"
 }
@@ -367,9 +368,9 @@ cmd_kfagent() { # reflink copy of the KF install with the test shell; logs the t
 }
 
 # --- F1: forced failure (lane3 of r20-lanes.sh) with new names ------------------------------------------------------
-IMGF1=$B/images/inst-bios-f1-r21m.raw
+IMGF1=${F1_IMG:-$B/images/inst-bios-f1-r21m.raw}
 cmd_f1() { fresh "$D/F1" "$D/F1-boot" "$IMGF1"; stamp "F1 start"
-  ROUND=r21 OUTD=$D IMGF=$IMGF1 F1NAME=F1 NOCLOBBER=1 FAILSHOTS=${FAILSHOTS:-20} bash "$WT/scripts/rebuild/r20/r20-lanes.sh" "$ISO" lane3
+  ROUND=$MR OUTD=$D IMGF=$IMGF1 F1NAME=F1 NOCLOBBER=1 FAILSHOTS=${FAILSHOTS:-20} bash "$WT/scripts/rebuild/r20/r20-lanes.sh" "$ISO" lane3
   stamp "F1 end"; cmd_rofacts "$IMGF1" F1 f1; }
 
 if [ "${MATRIX_LIB:-0}" != 1 ]; then
