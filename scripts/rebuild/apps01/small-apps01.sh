@@ -63,4 +63,16 @@ w libnotify && step libnotify 0.8.8 https://download.gnome.org/sources/libnotify
 w tiff && step tiff 4.7.2 https://download.osgeo.org/libtiff/tiff-4.7.2.tar.gz tiff-4.7.2.tar.gz cmake - 420 \
     general/tiff.html a2a65ea450b8f469c667128848ffebfc
 
+# xdg-open, xdg-settings, xdg-mime (round 37 finding: missing from the image; Firefox's default-browser check uses
+# xdg-settings). xdg-utils builds its scripts with xmlto's text backend, which needs lynx.
+w lynx && EXTRA_FILES="$WT/scripts/rebuild/apps01/chroot/lynx.sh" CUSTOM_CMD="sh ../lynx.sh" \
+  step lynx 2.9.3 https://invisible-mirror.net/archives/lynx/tarballs/lynx2.9.3.tar.bz2 lynx2.9.3.tar.bz2 custom - 421 \
+    basicnet/lynx.html faedd64b8e3cb87ae41197340cc3016a
+# the book's URL (pagure.io) answers 404; the same tarball from the BLFS mirror, book MD5 checked
+w xmlto && EXTRA_FILES="$WT/scripts/rebuild/apps01/chroot/xmlto.sh" CUSTOM_CMD="sh ../xmlto.sh" \
+  step xmlto 0.0.29 https://ftp.osuosl.org/pub/blfs/conglomeration/xmlto/xmlto-0.0.29.tar.gz xmlto-0.0.29.tar.gz custom - \
+    422 pst/xmlto.html 556f2642cdcd005749bd4c08bc621c37
+w xdg-utils && step xdg-utils 1.2.1 https://gitlab.freedesktop.org/xdg/xdg-utils/-/archive/v1.2.1/xdg-utils-v1.2.1.tar.gz \
+    xdg-utils-v1.2.1.tar.gz configure - 423 xsoft/xdg-utils.html 4c72585a98ba8f775cb9e72b066cc0df
+
 echo "small-apps01 done $(date +%T)"

@@ -32,6 +32,9 @@ PAGES = {
     "multimedia/vlc.html": None,
     "general/zip.html": None,
     "general/tiff.html": None,
+    "basicnet/lynx.html": None,
+    "pst/xmlto.html": None,
+    "xsoft/xdg-utils.html": None,
     "general/perl-modules.html": 'id="perl-archive-zip"',
     "xsoft/libreoffice.html": None,
 }

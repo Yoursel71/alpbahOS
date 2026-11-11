@@ -211,7 +211,7 @@ cmd_r1() { # reboot through the session's org.kde.Shutdown logoutAndReboot, QEMU
 cmd_apps() { # APPS-01 (round 37+): the preinstalled apps in the test user's Wayland session, plus the alp trust rows
   # of the booted system (scripts/rebuild/r36/alp-hook-r36.sh as root). Firefox opens a page over the network (Turkish
   # UI expected); VLC plays a test video made in the guest with the image's ffmpeg, then Space pauses it (two
-  # screenshots 4 s apart must match while paused), once native Wayland and once with QT_QPA_PLATFORM=xcb (BLFS note);
+  # screenshots 4 s apart must match while paused); round 38+: opened through its desktop entry (Xwayland, BLFS note);
   # LibreOffice converts a text file to .docx headless, then Writer opens it. Verdicts come from the screenshots.
   local R=$D/APPS i; fresh "$D/APPS-disk.raw" "$R"; cmd_mkcopy uefi APPS-disk
   stamp "APPS start"; agent_start APPS uefi APPS-disk virtio 6G
@@ -221,14 +221,15 @@ cmd_apps() { # APPS-01 (round 37+): the preinstalled apps in the test user's Way
   gsh "$R" 15 'r21m-as-user --bg firefox https://www.kernel.org/; echo started'
   for i in 1 2 3; do sleep 15; q "$R" key shift; shot "$R" "apps-firefox-$i"; done
   gsh "$R" 10 'echo "firefox processes: $(pgrep -u testuser -c firefox)"; pkill -u testuser firefox; sleep 3; echo "left: $(pgrep -u testuser -c firefox)"'
-  gsh "$R" 15 'r21m-as-user --bg vlc /home/testuser/test.mp4; echo started'
-  sleep 15; shot "$R" apps-vlc-wayland-1; sleep 4; shot "$R" apps-vlc-wayland-2
-  q "$R" key spc; sleep 2; shot "$R" apps-vlc-wayland-paused-1; sleep 4; shot "$R" apps-vlc-wayland-paused-2
-  gsh "$R" 10 'echo "vlc processes: $(pgrep -u testuser -c vlc)"; pkill -u testuser vlc; sleep 3'
-  gsh "$R" 15 'r21m-as-user --bg env QT_QPA_PLATFORM=xcb vlc /home/testuser/test.mp4; echo started'
-  sleep 15; shot "$R" apps-vlc-xcb-1; sleep 4; shot "$R" apps-vlc-xcb-2
-  q "$R" key spc; sleep 2; shot "$R" apps-vlc-xcb-paused-1; sleep 4; shot "$R" apps-vlc-xcb-paused-2
-  gsh "$R" 10 'echo "vlc processes: $(pgrep -u testuser -c vlc)"; pkill -u testuser vlc; sleep 3'
+  # Round 38+: VLC is opened the way a user opens a file (default application from mimeapps.list, through its
+  # desktop entry, which starts it under Xwayland); Enter accepts VLC's first-run privacy dialog first.
+  gsh "$R" 15 'r21m-as-user --bg kioclient exec /home/testuser/test.mp4; echo started'
+  sleep 15; shot "$R" apps-vlc-0-privacy; q "$R" key ret; sleep 3
+  shot "$R" apps-vlc-1-play-a; sleep 4; shot "$R" apps-vlc-1-play-b
+  q "$R" key spc; sleep 2; shot "$R" apps-vlc-2-paused-a; sleep 4; shot "$R" apps-vlc-2-paused-b
+  q "$R" key spc; sleep 3; q "$R" combo alt right; sleep 3; shot "$R" apps-vlc-3-after-jump
+  gsh "$R" 10 'P=$(pgrep -u testuser -x vlc | head -n 1); echo "vlc processes: $(pgrep -u testuser -c vlc); $(tr "\0" "\n" < /proc/$P/environ | grep QT_QPA_PLATFORM)"; pkill -u testuser vlc; sleep 3'
+  gsh "$R" 15 'echo "xdg-settings default browser: $(r21m-as-user xdg-settings get default-web-browser) check: $(r21m-as-user xdg-settings check default-web-browser firefox.desktop)"; echo "xdg-mime video/mp4: $(r21m-as-user xdg-mime query default video/mp4)"'
   gsh "$R" 120 'r21m-as-user libreoffice --headless --convert-to docx --outdir /home/testuser /home/testuser/belge.txt; echo "docx: $(stat -c %s /home/testuser/belge.docx 2>&1)"'
   gsh "$R" 15 'r21m-as-user --bg libreoffice --writer /home/testuser/belge.docx; echo started'
   for i in 1 2; do sleep 20; q "$R" key shift; shot "$R" "apps-writer-$i"; done
