@@ -234,6 +234,11 @@ cmd_apps() { # APPS-01 (round 37+): the preinstalled apps in the test user's Way
   gsh "$R" 15 'r21m-as-user --bg libreoffice --writer /home/testuser/belge.docx; echo started'
   for i in 1 2; do sleep 20; q "$R" key shift; shot "$R" "apps-writer-$i"; done
   gsh "$R" 15 'echo "soffice processes: $(pgrep -u testuser -c soffice.bin)"; echo "failed units: $(systemctl --failed --no-legend | wc -l)"; echo "coredumps: $(ls /var/lib/systemd/coredump 2> /dev/null | wc -l)"'
+  # Round 40+: PIXBUF-01 (GTK image loading), PORTAL-01 (portal daemon on the session bus), ALP-FLATHUB-01 (alp offers
+  # the Flathub app for a name that is not in its catalogue; dry run, nothing installed)
+  gsh "$R" 30 'gdk-pixbuf-csource --raw /usr/share/pixmaps/firefox.png > /dev/null 2>&1 && echo "pixbuf png: loaded" || echo "pixbuf png: FAILED"'
+  gsh "$R" 30 'r21m-as-user busctl --user call org.freedesktop.portal.Desktop /org/freedesktop/portal/desktop org.freedesktop.DBus.Properties Get ss org.freedesktop.portal.FileChooser version 2>&1 | sed "s/^/portal FileChooser version: /"'
+  gsh "$R" 600 'flatpak update --appstream -y > /dev/null 2>&1; alp install --dry-run --yes calculator 2>&1 | tail -n 4 | sed "s/^/alp-flathub: /"'
   vmquit "$R"; rm -f "$D/APPS-disk.raw"; stamp "APPS end (copy removed)"
 }
 
