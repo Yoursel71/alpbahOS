@@ -91,7 +91,11 @@ def test_theme_sets_wallpaper(env, tema, path):
     r = run(e, "uygula", "--tema", tema, "--gorunum", "solid", "--cubuk", "sol")
     assert r.returncode == 0, r.stderr
     assert f"plasma-apply-wallpaperimage {path}" in log(tmp)
-    assert "SCREENLOCK-01" in r.stdout  # the lock screen part is not claimed
+    # the lock screen gets the same wallpaper package (kscreenlockerrc, image plugin)
+    assert (f"kwriteconfig6 --file kscreenlockerrc --group Greeter --group Wallpaper --group org.kde.image "
+            f"--group General --key Image file://{path}/") in log(tmp)
+    assert "kwriteconfig6 --file kscreenlockerrc --group Greeter --key WallpaperPlugin org.kde.image" in log(tmp)
+    assert "kilit ekranı" in r.stdout
     assert (tmp / "config" / "alpbah-hosgeldin.tamam").exists()
 
 

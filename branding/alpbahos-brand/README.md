@@ -17,7 +17,8 @@ picked in the wallpaper dialog (D114).
 ## Design
 
 - Background: vertical gradient from a mix of `navy` to `bg-950` (colours read from `profiles/desktop/tokens.json`).
-- Logo: `docs/assets/alpbahOS-logo.png`, height 22 % of the image height, centred horizontally.
+- Logo: the mark of `docs/assets/alpbahOS-logo.png` with the live wordmark (white "alpbah", cyan "OS", D155; from
+  `branding/plymouth-theme/alpbahos/wordmark.png`), height 22 % of the image height, centred horizontally.
   It is scaled with LANCZOS and never enlarged above its native size (296x359).
   The source logo has an opaque flat #141414 box. The generator makes pixels within distance 18 of that
   colour transparent in memory, with a 12-step soft edge. The source file is not changed.

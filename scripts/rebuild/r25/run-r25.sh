@@ -56,6 +56,7 @@ welcome)
     log "Welcome app rows (BIOS copy)"
     R=$L/W1
     G start bios "$IMGB" "$R"
+    Q "$R" key shift; sleep 3; Q "$R" shot w00-greeter-active   # round 33: the greeter form, not its idle view
     G login "$R"; sleep 50; Q "$R" shot w01-first-login
     pos=$(python3 scripts/rebuild/r25/find-window.py "$R/w01-first-login.png")
     echo "window at: ${pos:-not found}" >> "$L/run.log"
@@ -70,6 +71,11 @@ welcome)
         Q "$R" shot w03-choices-ataturk-orta
         Q "$R" click $((X + 836)) $((Y + 662)); sleep 20
         Q "$R" shot w04-desktop-ataturk-orta
+        # Round 32 (SCREENLOCK-01, THEME-01): Meta+L locks; the lock screen shows the chosen theme; the password unlocks.
+        Q "$R" combo meta_l l; sleep 6; Q "$R" shot w04b-locked
+        # Round 33: Shift wakes the password field (Enter on the idle lock screen started an empty attempt in r32).
+        Q "$R" key shift; sleep 3; Q "$R" shot w04b2-lock-form; G type "$R" "$(cat "$B/test-secrets/r21.pw")"; Q "$R" key ret; sleep 6
+        Q "$R" shot w04c-unlocked
         # open again from the run dialog, choose alpbahOS and Solda
         Q "$R" combo alt f2; sleep 3; G type "$R" "alpbah-hosgeldin"; Q "$R" key ret; sleep 12
         Q "$R" shot w05-reopened
@@ -94,7 +100,7 @@ ksplash)
     R=$L/KS1; G start bios "$IMGB" "$R" > /dev/null 2>&1 || true
     # vm-gui start makes a reflink copy; the login below starts the session, the burst records the next 12 s.
     PW=$(cat "$B/test-secrets/r21.pw")
-    Q "$R" click 766 489; sleep 1; G type "$R" "$PW"; Q "$R" key ret
+    Q "$R" click 622 474; sleep 1; G type "$R" "$PW"; Q "$R" key ret
     python3 scripts/rebuild/r24/qmp-burst.py "$R" 12 nopower > "$R/burst.out" 2>&1
     python3 -c "
 import glob

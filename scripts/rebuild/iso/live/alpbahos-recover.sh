@@ -8,7 +8,8 @@
 #   (in the live session: the live user has no password, so sudo cannot be used there, and /usr/local/sbin is not
 #   in its PATH; the live polkit rule lets pkexec run without a prompt. Round 21 REC1/REC2.)
 #   ROOT_PART  the root partition of the installed system, e.g. /dev/sda1 (ext4, holds /boot)
-#   ESP_PART   the EFI system partition, UEFI installs only (vfat, mounted at /boot/efi); omit for BIOS
+#   ESP_PART   the EFI system partition (vfat, /boot/efi). Omitted: the one EFI System partition on the same disk
+#              is used (UEFI install), none found means BIOS; "none" forces BIOS
 # With no argument the candidate partitions are listed and nothing is changed.
 #
 # UEFI: GRUB is written to the ESP as the removable fallback (EFI/BOOT/BOOTX64.EFI) and the NVRAM boot entry is NOT
@@ -41,15 +42,28 @@ if [ -z "$ROOT" ]; then
     exit 2
 fi
 [ -b "$ROOT" ] || die "$ROOT is not a block device"
-[ -z "$ESP" ] || [ -b "$ESP" ] || die "$ESP is not a block device"
+[ -z "$ESP" ] || [ "$ESP" = none ] || [ -b "$ESP" ] || die "$ESP is not a block device"
 [ -r "$TI_SCRIPT" ] || die "$TI_SCRIPT not found"
-
-# The install type comes from the arguments: an ESP argument means a UEFI install (GRUB x86_64-efi), none means BIOS.
-EFI=0
-[ -n "$ESP" ] && EFI=1
 
 DISK=/dev/$(lsblk -no PKNAME "$ROOT" | head -n 1)
 [ "$DISK" != /dev/ ] || die "cannot find the parent disk of $ROOT"
+
+# Round 31 (RECOVER-UX-01): with no ESP argument the ESP is looked up on the same disk (partition type EFI System,
+# as the installer makes it for UEFI installs only). One found: UEFI install. None: BIOS install. "none" forces BIOS.
+# Round 30 showed the old behaviour (no ESP argument = BIOS) failing on a UEFI disk: grub-install i386-pc on GPT.
+if [ -z "$ESP" ]; then
+    ESPS=$(lsblk -nrpo NAME,PARTTYPE "$DISK" | awk 'tolower($2) == "c12a7328-f81f-11d2-ba4b-00a0c93ec93b" {print $1}')
+    case $(printf '%s\n' "$ESPS" | grep -c .) in
+        0) ;;
+        1) ESP=$ESPS; say "EFI system partition found on $DISK: $ESP (UEFI install)" ;;
+        *) die "more than one EFI system partition on $DISK ($(echo $ESPS)): give the one to use as the second argument" ;;
+    esac
+fi
+[ "$ESP" = none ] && ESP=""
+
+# The install type: an ESP (given or found) means a UEFI install (GRUB x86_64-efi), none means BIOS.
+EFI=0
+[ -n "$ESP" ] && EFI=1
 say "root=$ROOT esp=${ESP:-none} disk=$DISK efi=$EFI"
 
 MOUNTED=""

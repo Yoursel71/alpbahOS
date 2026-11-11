@@ -1,0 +1,21 @@
+--- a/src/modules/partition/gui/PartitionLabelsView.cpp	2026-11-11 08:46:17.666322276 +0300
++++ b/src/modules/partition/gui/PartitionLabelsView.cpp	2026-11-11 08:46:17.698992672 +0300
+@@ -360,7 +360,8 @@
+                                 const QPoint& pos,
+                                 bool selected )
+ {
+-    painter->setPen( Qt::black );
++    // alpbahOS: the text colour of the palette (dark installer theme), not a fixed black.
++    painter->setPen( palette().color( QPalette::WindowText ) );
+     int vertOffset = 0;
+     int width = 0;
+     for ( const QString& textLine : text )
+@@ -382,7 +383,7 @@
+         drawSelectionSquare( painter, partitionSquareRect.adjusted( 2, 2, -2, -2 ), color );
+     }
+ 
+-    painter->setPen( Qt::black );
++    painter->setPen( palette().color( QPalette::WindowText ) );
+ }
+ 
+ QModelIndex

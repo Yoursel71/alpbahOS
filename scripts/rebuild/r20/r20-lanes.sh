@@ -10,6 +10,8 @@
 # Keys in the Turkish-Q session: '-' = equal, 'i' = apostrophe, '.' = slash, '/' = shift 7, '*' = minus.
 # Usage: r20-lanes.sh <iso> [lane1|lane2|lane3|all]
 # Round 27: installer click positions for the dark installer (QT_QPA_PLATFORMTHEME=kde, Inter font; measured on r27).
+# Round 33: greeter password field at 622,474 (the greeter now uses the KDE platform theme and Inter; 766,489 no longer
+# submitted the login). Same change in diag-r21.sh, matrix-r21.sh, run-r25.sh, vm-gui.sh, shutdown-cycle.sh.
 # Round 21 matrix (defaults unchanged): OUTD (evidence directory), IMGF (forced-failure target image), F1NAME, and
 #   NOCLOBBER=1 (an existing run directory is refused instead of removed), FAILSHOTS (minutes watched in the
 #   forced-failure run, default 10).
@@ -91,7 +93,7 @@ net_checks() { # run-dir prefix ; Konsole is open
 installed_checks() { # fw image name
   local FW=$1 IMG=$2 N=$3 R=$D/$3; rm -rf "$R"; local Q="python3 $W/qmpctl.py $R"
   EXTRA_ARGS="-snapshot" ACCEL=kvm bash $W/vm-start.sh "$FW" "" "$R" "$IMG" virtio 6G > /dev/null
-  sleep 95; $Q shot "$N-greeter"; $Q click 766 489; sleep 1; tq "$R" "$PW"; $Q key ret; sleep 55; $Q shot "$N-desktop"
+  sleep 95; $Q shot "$N-greeter"; $Q click 622 474; sleep 1; tq "$R" "$PW"; $Q key ret; sleep 55; $Q shot "$N-desktop"
   $Q combo alt spc; sleep 2; tq "$R" konsole; $Q key ret; sleep 8
   run "$R" "id" 3 "$N-id"
   run "$R" "getent passwd live testuser" 3 "$N-live"

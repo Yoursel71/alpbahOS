@@ -1,0 +1,23 @@
+== root=/dev/vda2 esp=/dev/vda1 disk=/dev/vda efi=1
+== 1 mount root and ESP
+== root has: config-7.1.8-alpbahos efi grub initrd.img-7.1.8 System.map-7.1.8-alpbahos vmlinuz-7.1.8-alpbahos 
+== 2 bind the kernel file systems
+== 3 initramfs (installer script, same dracut options)
+
+== 4 grub-install
+x86_64-efi platformu için kuruluyor.
+Kurulum tamamlandı. Hata bildirilmedi.
+== 5 grub-mkconfig
+Grub yapılandırma dosyası oluşturuluyor ...
+Bulunan tema: /boot/grub/themes/alpbahos/theme.txt
+Bulunan linux kalıbı: /boot/vmlinuz-7.1.8-alpbahos
+Bulunan initrd kalıbı: /boot/initramfs-7.1.8-alpbahos.img
+Uyarı: os-prober, diğer açılabilir bölümleri saptamak için çalıştırılacak.
+Çıktısı, bölümdeki açılabilir dosyaları saptamak ve yeni açılış girdileri oluşturmak için kullanılacak.
+  /var/lock: stat failed: No such file or directory
+  File locking initialisation failed.
+UEFI Firmware Ayarları için açılış menüsü girişi ekleniyor...
+bitti
+== 6 checks
+== kernel 7.1.8-alpbahos, initramfs 57711887 bytes, grub entries 1
+== recovery done; unmounting; reboot the installed disk

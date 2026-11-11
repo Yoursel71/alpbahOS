@@ -37,7 +37,7 @@ boot)
     sleep 95; python3 $W/qmpctl.py "$R/$TAG" shot greeter > /dev/null ;;
 login)
     R=$1; PW=$(cat $B/test-secrets/r21.pw)
-    python3 $W/qmpctl.py "$R" click 766 489 > /dev/null; sleep 1; tq "$R" "$PW"; python3 $W/qmpctl.py "$R" key ret > /dev/null ;;
+    python3 $W/qmpctl.py "$R" click 622 474 > /dev/null; sleep 1; tq "$R" "$PW"; python3 $W/qmpctl.py "$R" key ret > /dev/null ;;
 type)
     R=$1; shift; tq "$R" "$*" ;;
 stop)

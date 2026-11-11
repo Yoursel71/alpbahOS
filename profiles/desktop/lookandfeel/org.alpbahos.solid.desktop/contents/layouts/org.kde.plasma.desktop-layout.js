@@ -23,12 +23,21 @@ launcher.writeConfig("icon", "alpbahos");
 // Firefox ve LibreOffice henüz paketlenmedi; başlatıcı kaydı olarak yer alıyor.
 var tasks = panel.addWidget("org.kde.plasma.icontasks");
 tasks.currentConfigGroup = ["General"];
-tasks.writeConfig("launchers", [
-    "applications:org.kde.dolphin.desktop",
-    "applications:firefox.desktop",
-    "applications:org.kde.konsole.desktop",
-    "applications:libreoffice-writer.desktop"
-]);
+// Yalnız sistemde bulunan uygulamalar sabitlenir: Firefox ve LibreOffice henüz imajda yokken görev çubuğunda boş
+// dosya simgesi kalıyordu (round 30 ekran görüntüleri). applicationExists: Plasma scripting API.
+var wanted = [
+    "org.kde.dolphin.desktop",
+    "firefox.desktop",
+    "org.kde.konsole.desktop",
+    "libreoffice-writer.desktop"
+];
+var pinned = [];
+for (var i = 0; i < wanted.length; i++) {
+    if (applicationExists(wanted[i])) {
+        pinned.push("applications:" + wanted[i]);
+    }
+}
+tasks.writeConfig("launchers", pinned);
 
 panel.addWidget("org.kde.plasma.marginsseparator");
 panel.addWidget("org.kde.plasma.systemtray");

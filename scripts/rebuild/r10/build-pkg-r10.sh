@@ -32,7 +32,8 @@ case "$KIND" in
 meson)
   CMD="cd $BLD && meson setup build --prefix=/usr --buildtype=release -Db_lto=false $OPTS && ninja -C build -j16 && DESTDIR=/tmp/stage-$NAME ninja -C build install" ;;
 cmake)
-  CMD="cd $BLD && cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_C_FLAGS='-O2 -march=x86-64 -mtune=generic' $OPTS && cmake --build build --parallel 16 && DESTDIR=/tmp/stage-$NAME cmake --install build" ;;
+  # Round 34: PRE_PATCH (opt-in) also for cmake builds (calamares label colour patch).
+  CMD="cd $BLD && ${PRE_PATCH:+patch -Np1 -i $BLD/.pre.patch && }cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_C_FLAGS='-O2 -march=x86-64 -mtune=generic' $OPTS && cmake --build build --parallel 16 && DESTDIR=/tmp/stage-$NAME cmake --install build" ;;
 configure)
   CMD="cd $BLD && ./configure --prefix=/usr CFLAGS='-O2 -march=x86-64 -mtune=generic' $OPTS && make -j16 && make DESTDIR=/tmp/stage-$NAME install" ;;
 autogen)
