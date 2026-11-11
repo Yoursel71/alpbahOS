@@ -142,7 +142,8 @@ done < "$LEDGER/manifests/index.tsv"
 say "alp adopt-base: $adopted recorded, $failed refused (log $ADOPT_LOG)"
 
 INDEX=$WT/docs/handoffs/claude/alp-prototype/demo/index.json
-python3 "$ALP_PY" --root "$R3ROOT" --index "$INDEX" list > "$LEDGER/alp-list.txt" 2>> "$ADOPT_LOG" || true
+# ALP-TRUST-01: unsigned demo index, repo alp.py of this checkout; run-r3.sh runs as root.
+python3 "$ALP_PY" --root "$R3ROOT" --allow-unsigned --index "$INDEX" list > "$LEDGER/alp-list.txt" 2>> "$ADOPT_LOG" || true
 say "alp list: $(grep -c 'lfs-base' "$LEDGER/alp-list.txt" || true) lfs-base records"
 python3 "$HERE/r3_ledger.py" dbowned "$R3ROOT" "$LEDGER/dbowned.txt" | tee -a "$STATUS"
 

@@ -47,7 +47,8 @@ if findmnt -rn -o TARGET | grep -qE "^($R4|$WORK)(/|\$)"; then die "something is
 [ ! -e "$SNAP_SRC" ] || die "$SNAP_SRC exists (delete it first)"
 [ ! -e "$LIVE" ] || die "$LIVE exists (delete it first)"
 [ ! -e "$OUT" ] || die "$OUT exists"
-for f in "$LIVE_SRC/calamares/settings.conf" "$M11_MOD/bootloader.conf" "$M11_MOD/grubcfg.conf"; do
+TRUST_GATE=$SELF_DIR/../trust/iso-gate.sh   # ALP-TRUST-01: no ISO from a root without a signed, accepted alp catalog
+for f in "$LIVE_SRC/calamares/settings.conf" "$M11_MOD/bootloader.conf" "$M11_MOD/grubcfg.conf" "$TRUST_GATE"; do
     [ -f "$f" ] || die "missing input $f"
 done
 for t in dracut mksquashfs unsquashfs xorriso grub-mkimage mkfs.vfat rsync calamares pkexec sddm efibootmgr grub-install; do
@@ -71,6 +72,13 @@ log "snapshot r4-root (read-only) -> $SNAP_SRC"
 btrfs subvolume snapshot -r "$R4" "$SNAP_SRC" > /dev/null
 log "writable copy -> $LIVE"
 btrfs subvolume snapshot "$SNAP_SRC" "$LIVE" > /dev/null
+# ALP-TRUST-01 gate, on the writable copy (r4-root itself is not written): signed catalog accepted by the copy's
+# own alp and gpgv, a changed catalog refused, keyring and build user present. On failure the two snapshots just
+# made are removed again, so a rerun is not blocked by them.
+if ! bash "$TRUST_GATE" "$LIVE" 2>&1 | tee "$LOGS/trust-gate.log"; then
+    btrfs subvolume delete "$LIVE" > /dev/null; btrfs subvolume delete "$SNAP_SRC" > /dev/null
+    die "alp trust gate failed (see $LOGS/trust-gate.log); run scripts/rebuild/trust/integrate-trust.sh on r4-root first"
+fi
 # INSTALL-UID-01 (D148): the top directory of r4-root belongs to the build user (UID 1000). mksquashfs takes the
 # owner of / from it, and unpackfs copies it to the installed /, where UID 1000 is the first installed user.
 chown 0:0 "$LIVE"
