@@ -31,6 +31,7 @@ PAGES = {
     "general/desktop-file-utils.html": None,
     "multimedia/vlc.html": None,
     "general/zip.html": None,
+    "general/tiff.html": None,
     "general/perl-modules.html": 'id="perl-archive-zip"',
     "xsoft/libreoffice.html": None,
 }

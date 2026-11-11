@@ -31,6 +31,6 @@ chroot --userspec=alpbuild:alpbuild / /usr/bin/env -i HOME="$B/.home" LANG=C.UTF
       --disable-ldap --enable-release-build=yes --enable-python=system --enable-qt6 --enable-kf6 \
       --with-parallelism=$JOBS \
       --with-system-boost --with-system-curl --with-system-epoxy --with-system-expat \
-      --with-system-icu --with-system-jpeg --with-system-lcms2 --with-system-libpng --with-system-libxml \
+      --with-system-icu --with-system-jpeg --with-system-lcms2 --with-system-libtiff --with-system-libpng --with-system-libxml \
       --with-system-nss --with-system-openssl --with-system-zlib --with-system-zstd && make build"
 make DESTDIR="$STAGE" distro-pack-install

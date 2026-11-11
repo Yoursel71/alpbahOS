@@ -3,7 +3,8 @@
 # (pkg-url-r11.sh: build in a chroot of r4-root, stage, record, alp check, packages.tsv row). Sources were fetched
 # and checked against the book MD5 by fetch-apps01.py (scratch-lfs-bench/apps01-src/SOURCES.tsv); they are linked
 # into r10/dl, where pkg-url-r11.sh looks first. Book commands, DESTDIR/STAGE instead of the live root; docs left out.
-# Lua 5.4 is already in r4-root. Usage: small-apps01.sh [NAME ...] (default: all, in order). Run as root.
+# Lua 5.4 is already in r4-root. tiff (round 37): LibreOffice's bundled libtiff left zlib out of the libvcllo link.
+# Usage: small-apps01.sh [NAME ...] (default: all, in order). Run as root.
 # Env: NICE (default 19) and JOBS (default 4) so a running QEMU round is not disturbed.
 set -euo pipefail
 export LC_ALL=C
@@ -58,5 +59,8 @@ w desktop-file-utils && step desktop-file-utils 0.28 \
 
 w libnotify && step libnotify 0.8.8 https://download.gnome.org/sources/libnotify/0.8/libnotify-0.8.8.tar.xz \
     libnotify-0.8.8.tar.xz meson - 411 x/libnotify.html 35bef24dc1e9a336394556d09345e078 -Dgtk_doc=false -Dman=false -Dtests=false -Dintrospection=disabled
+
+w tiff && step tiff 4.7.2 https://download.osgeo.org/libtiff/tiff-4.7.2.tar.gz tiff-4.7.2.tar.gz cmake - 420 \
+    general/tiff.html a2a65ea450b8f469c667128848ffebfc
 
 echo "small-apps01 done $(date +%T)"
