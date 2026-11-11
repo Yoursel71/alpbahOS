@@ -1,0 +1,106 @@
+# e2e on /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-probe, 2026-11-11T03:06:09Z, integ HEAD 9624090
+== gate
+iso-gate: PASS (/home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-probe: signed catalog accepted, changed catalog refused, alpbuild present)
+gate rc=0
+== gate on the UNCHANGED live root's read-only view is not run (live r4-root is not touched); gate on a second pristine snapshot:
+iso-gate: FAIL: installed alp.py has no signature check
+gate on pristine root rc=1 (must be non-zero)
+7e7626b7f07bb641  /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-probe/usr/lib/alp/alp.py
+7e7626b7f07bb641  /home/yrslf/alpbahOS/wt-integ/docs/handoffs/claude/alp-prototype/alp.py
+root:root 644 /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-probe/usr/share/alp/keys/allowed.txt
+root:root 644 /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-probe/usr/share/alp/keys/alpbahos-catalog.gpg
+root:root 644 /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-probe/usr/share/alp/index.json
+root:root 644 /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-probe/usr/share/alp/index.json.sig
+root:root 644 /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-probe/usr/lib/sysusers.d/alp-build.conf
+/home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-probe/etc/passwd:alpbuild:x:998:998:alp build user:/:/usr/sbin/nologin
+/home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-probe/etc/group:alpbuild:x:998:
+1
+alp 0.9-trust1 ['usr/lib/alp/alp.py']
+alp-catalog 2026.11.11-trust1 ['usr/share/alp/index.json', 'usr/share/alp/index.json.sig']
+alp-keyring 1-temporary ['usr/share/alp/keys/allowed.txt', 'usr/share/alp/keys/alpbahos-catalog.gpg']
+alp-build-user 0.9-trust1 ['usr/lib/sysusers.d/alp-build.conf']
+packages 546
+catalog_version=1 valid_until=2027-02-09 signed_keyring_version=1
+== installed alp, image catalog (signed)
+$ alp list
+bash: satır 43: TMP/out.txt: Erişim engellendi
+bash: satır 43: TMP/out.txt: Böyle bir dosya ya da dizin yok
+tail: 'TMP/out.txt' okuma için açılamadı: Böyle bir dosya ya da dizin yok
+rc=1 ( lines; last: )
+$ alp check
+bash: satır 43: TMP/out.txt: Erişim engellendi
+bash: satır 43: TMP/out.txt: Böyle bir dosya ya da dizin yok
+tail: 'TMP/out.txt' okuma için açılamadı: Böyle bir dosya ya da dizin yok
+rc=1 ( lines; last: )
+$ alp search bash
+bash: satır 43: TMP/out.txt: Erişim engellendi
+bash: satır 43: TMP/out.txt: Böyle bir dosya ya da dizin yok
+tail: 'TMP/out.txt' okuma için açılamadı: Böyle bir dosya ya da dizin yok
+rc=1 ( lines; last: )
+== one byte of /usr/share/alp/index.json changed (copy only), then restored
+$ alp list
+alp: hata: Katalog imzası geçersiz: imza katalogla uyuşmuyor (katalog ya da imza değiştirilmiş).
+rc=1
+$ alp check
+alp: hata: Katalog imzası geçersiz: imza katalogla uyuşmuyor (katalog ya da imza değiştirilmiş).
+rc=1
+$ alp search bash
+alp: hata: Katalog imzası geçersiz: imza katalogla uyuşmuyor (katalog ya da imza değiştirilmiş).
+rc=1
+== signature removed (copy only), then restored
+$ alp list
+alp: hata: Katalog imzalı değil (/usr/share/alp/index.json.sig yok); kabul edilmedi. alpbahOS katalogları imzalıdır: 'alp update' ile yenileyin.
+rc=1
+$ alp search bash
+alp: hata: Katalog imzalı değil (/usr/share/alp/index.json.sig yok); kabul edilmedi. alpbahOS katalogları imzalıdır: 'alp update' ile yenileyin.
+rc=1
+$ alp --allow-unsigned list (root)
+1
+$ alp check
+Bağımlılık tutarlılığı: sorun yok (546 kurulu paket).
+rc=0
+== source build from the signed test catalog: alpbuild + bwrap, image gcc/make, no network
+$ alp --index /tmp/cat/index.json search hello
+alp-hello  (recipe)   trust probe
+rc=0
+$ alp --index /tmp/cat/index.json install -y alp-hello
+İşlem planı:
+  kur         alp-hello 1.0 [recipe]
+alp-hello (recipe) -> 1.0 kuruldu.
+rc=0
+$ /usr/bin/alp-hello
+alp-hello 1.0
+built as uid: 998 (alpbuild is 998)
+root:root 755 /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-probe/usr/bin/alp-hello
+root:root 644 /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-probe/usr/share/alp-hello/built-as-uid
+$ make
+# [bwrap, uid 998; MAKEFLAGS=-j1 SOURCE_DATE_EPOCH=315532800]
+cc -O2 -o alp-hello hello.c
+id -u > built-as-uid
+$ make install DESTDIR=/var/lib/alp/cache/destdir-alp-hello-1.0
+# [bwrap, uid 998; MAKEFLAGS=-j1 SOURCE_DATE_EPOCH=315532800]
+install -D -m 755 alp-hello /var/lib/alp/cache/destdir-alp-hello-1.0/usr/bin/alp-hello
+install -D -m 644 built-as-uid /var/lib/alp/cache/destdir-alp-hello-1.0/usr/share/alp-hello/built-as-uid
+== the same in a plain chroot (bubblewrap cannot make a user namespace there)
+alp: hata: bubblewrap bu sistemde çalışmıyor (bwrap: No permissions to create a new namespace, likely because the kernel does not allow non-privileged user namespaces. On e.g. debian this can be enabled with 'sysctl kernel.unprivileged_userns_clone=1'.); kaynak derleme reddedildi. Korumalı alan olmadan derlemek için root olarak --no-sandbox verilmelidir.
+İşlem planı:
+  yeniden kur alp-hello 1.0 [recipe]
+rc=1
+== recipe changed after signing: install of that package refused
+$ alp --index /tmp/cat/index.json remove -y alp-hello
+alp-hello kaldırıldı.
+rc=0
+$ alp --index /tmp/cat/index.json install -y alp-hello
+alp: hata: Tarif dosyası katalogdaki özetle uyuşmuyor (/tmp/cat/recipes/alp-hello.recipe.json):
+  beklenen : 0ea0546259f6c2b8c07895ba65698f434ad881404b2b2695773fb0096746319f
+  hesaplanan: 575b3d40e0df5bdc8d337b913a855d2cacffdc7144a4ad60c0eebae4973706f6
+Tarif değiştirilmiş olabilir; okunmadı.
+rc=1
+ls: '/home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-probe/usr/bin/alp-hello' ögesine erişilemedi: Böyle bir dosya ya da dizin yok
+== stored catalog version in the copy's database
+{'accepted_at': '2026-11-11T03:06:12Z', 'signer': '3421D4077D20373C547AD79959CADCB70E2EB50E', 'version': 1}
+== gate again after the e2e
+iso-gate: PASS (/home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-probe: signed catalog accepted, changed catalog refused, alpbuild present)
+gate rc=0
+mounts left under copy: 0
+0

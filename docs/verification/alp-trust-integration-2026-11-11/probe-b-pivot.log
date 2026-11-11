@@ -1,0 +1,2 @@
+=== (b') sandbox inside the copy entered by pivot_root (host bwrap --bind COPY / --bind /proc /proc)
+_prepare_sandbox OK: BuildSandbox(bwrap='/usr/bin/bwrap', ids=(65534, 65534))

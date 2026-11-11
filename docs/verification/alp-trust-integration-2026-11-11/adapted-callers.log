@@ -1,0 +1,27 @@
+# adapted callers, tried against the copy, 2026-11-11T03:07:16Z
+== r10/r11 line with the NEW repo alp.py (sudo, demo index, --allow-unsigned), root = copy
+alp: UYARI: İMZASIZ KATALOG kullanılıyor (/home/yrslf/alpbahOS/wt-integ/docs/handoffs/claude/alp-prototype/demo/index.json). --allow-unsigned yalnız geliştirme ve test içindir; bu katalogdaki her tarif doğrulanmadan çalıştırılır.
+Bağımlılık tutarlılığı: sorun yok (546 kurulu paket).
+check rc=0
+packages 546
+== the same line WITHOUT the flag, new alp.py (what happens if a script is not adapted)
+alp: hata: Katalog imzalı değil (/home/yrslf/alpbahOS/wt-integ/docs/handoffs/claude/alp-prototype/demo/index.json.sig yo
+== old alp.py (main worktree, read only) with the adapted line: the old engine does not know the flag
+alp: tanınmayan argüman: --allow-unsigned
+Yardım için: alp --help
+== image-alp-check.sh probe: which flag for which installed alp
+/home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-probe -> '--allow-unsigned'
+/home/yrslf/alpbahOS/scratch-lfs-bench/r4-root -> ''
+== alpbahos-recover usage text (not root, no argument)
+alpbahos-recover: run as root: pkexec /usr/local/sbin/alpbahos-recover ROOT_PART [ESP_PART]
+rc=0
+== round 30 state of the other two findings in this tree
+1
+0
+== first three e2e commands again (the e2e log has a harness error there: the output file was not writable)
+zxing-cpp	3.1.1	lfs-base	(korumalı)
+alp list rc=0
+Bağımlılık tutarlılığı: sorun yok (546 kurulu paket).
+alp check rc=0
+bash  (lfs-base)
+alp search bash rc=0

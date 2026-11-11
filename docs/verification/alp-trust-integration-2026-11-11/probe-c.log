@@ -1,0 +1,22 @@
+=== (c) alp test suite with the copy's python3 Python 3.14.7, root inside the copy
+........................................................................ [ 16%]
+........................................................................ [ 33%]
+...ssssss.........s..................................................... [ 50%]
+.......................................................................s [ 66%]
+s........................s...................sssssss.................... [ 83%]
+......s................................................................. [100%]
+=========================== short test summary info ============================
+SKIPPED [1] tests/test_git_catalog_update.py:78: git yok
+SKIPPED [1] tests/test_git_catalog_update.py:84: git yok
+SKIPPED [1] tests/test_git_catalog_update.py:92: git yok
+SKIPPED [1] tests/test_git_catalog_update.py:101: git yok
+SKIPPED [1] tests/test_git_catalog_update.py:109: git yok
+SKIPPED [1] tests/test_git_catalog_update.py:118: git yok
+SKIPPED [1] tests/test_m02_rollback.py:195: needs POSIX permissions and a non-root user
+SKIPPED [2] tests/test_trust_catalog.py:236: root olmayan kullanıcı gerekir
+SKIPPED [1] tests/test_trust_catalog.py:411: root olmayan kullanıcı gerekir
+SKIPPED [1] tests/test_trust_catalog.py:723: git yok
+SKIPPED [5] tests/test_trust_catalog.py:735: git yok
+SKIPPED [1] tests/test_trust_catalog.py:760: git yok
+SKIPPED [1] tests/test_trust_sandbox.py:341: root olmayan kullanıcı gerekir
+414 passed, 18 skipped in 23.59s

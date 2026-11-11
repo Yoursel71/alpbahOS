@@ -1,0 +1,10 @@
+=== (a)+(b) in chroot
+gpgv: gpgv (GnuPG) 2.5.21
+memfd_create: True | /dev/fd -> /proc/self/fd
+GOOD signature accepted: True
+tampered data refused: Katalog imzası geçersiz: imza katalogla uyuşmuyor (katalog ya da imza değiştirilmiş).
+tampered signature refused: Katalog imzası geçersiz: imza katalogla uyuşmuyor (katalog ya da imza değiştirilmiş).
+accept_catalog_bytes signed: True 1
+--- (b) sandbox in the chroot, as root, build ids 65534
+_prepare_sandbox REFUSED: bubblewrap bu sistemde çalışmıyor (bwrap: No permissions to create a new namespace, likely because the kernel does not allow non-privileged user namespaces. On e.g. debian this can be enabled with 'sysctl kernel.unprivileged_userns_clone=1'.); kaynak derleme reddedildi. Korumalı alan olmadan derlemek için root olarak --no-sandbox verilmelidir.
+bwrap direct rc 1 bwrap: No permissions to create a new namespace, likely because the kernel does not allow non-privileged user namespaces. On e.g. debian this can be enabled with 'sysctl kernel.unprivileged_userns_clone=1'.
