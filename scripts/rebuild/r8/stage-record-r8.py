@@ -16,8 +16,11 @@ R4, ALP, LEDGER, STAGE, NAME, VER = sys.argv[1:7]
 EXCLUDE = set(sys.argv[7:])
 REPO_SRC = "https://github.com/alperenyardim30-hash/alpbahOS/blob/claude/t2-kisayol-2026-11-05/scripts/rebuild/r8/stage-record-r8.py"
 entries = []
-for dirpath, _dirs, names in os.walk(STAGE):
-    for n in sorted(names):
+for dirpath, dirs, names in os.walk(STAGE):
+    # A symlink to a directory is listed by os.walk under dirs (and not descended into), so it is taken from there:
+    # before round 40 these links were dropped silently (FW-DIRLINK-01: nvidia/gb206 -> gb202 and 15 more firmware links).
+    links = [d for d in dirs if os.path.islink(os.path.join(dirpath, d))]
+    for n in sorted(names + links):
         full = os.path.join(dirpath, n)
         rel = os.path.relpath(full, STAGE)
         if rel in EXCLUDE:
