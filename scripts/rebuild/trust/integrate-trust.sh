@@ -1,10 +1,11 @@
 #!/bin/bash
 # ALP-TRUST-01 step 3: put the signed-catalog alp into a root tree (run as root on the host).
 #
-# Usage: integrate-trust.sh <ROOT> <LEDGER_DIR> [CATALOG_VERSION]
+# Usage: integrate-trust.sh <ROOT> <LEDGER_DIR>
 #   ROOT            the root tree to change. The live r4-root is refused unless ALLOW_LIVE_R4=1 is set on purpose.
 #   LEDGER_DIR      where the manifests of the new alp records are written (outside the repository)
-#   CATALOG_VERSION integer for the signed index (default 1); must grow with every re-signing of a changed catalog
+# catalog_version is chosen by resign-catalog.py (one above the highest the root has seen). Later catalog changes:
+# scripts/rebuild/trust/record-catalog.sh (make-catalog-r8.py re-signs by itself once the root is integrated).
 # Needs scratch-lfs-bench/alp-signing/ from make-temp-signing-key.sh (SIGNING=... to point elsewhere).
 #
 # What it does, each as an alp record (stage-record-r8.py + r4_lib.py transfer + alp adopt-base, like apply-r7.sh):
@@ -20,8 +21,8 @@
 set -euo pipefail
 export LC_ALL=C
 [ "$(id -u)" -eq 0 ] || { echo "integrate-trust: run as root" >&2; exit 1; }
-[ $# -ge 2 ] || { echo "usage: integrate-trust.sh <ROOT> <LEDGER_DIR> [CATALOG_VERSION]" >&2; exit 1; }
-ROOT=$(realpath "$1"); LEDGER=$2; CATVER=${3:-1}
+[ $# -eq 2 ] || { echo "usage: integrate-trust.sh <ROOT> <LEDGER_DIR>  (the catalog version argument is gone: resign-catalog.py picks it)" >&2; exit 1; }
+ROOT=$(realpath "$1"); LEDGER=$2
 SB=/home/yrslf/alpbahOS/scratch-lfs-bench
 SIGNING=${SIGNING:-$SB/alp-signing}
 WT=$(cd "$(dirname "$0")/../../.." && pwd)
@@ -43,7 +44,6 @@ done
 grep -q verify_catalog_signature "$ALP" || die "$ALP is not the signed-catalog alp"
 [ -x "$ROOT/usr/bin/gpgv" ] && [ -x "$ROOT/usr/bin/bwrap" ] || die "$ROOT has no /usr/bin/gpgv or /usr/bin/bwrap"
 if findmnt -rn -o TARGET | grep -qE "^$ROOT(/|\$)"; then die "something is mounted under $ROOT"; fi
-case "$CATVER" in ''|*[!0-9]*) die "CATALOG_VERSION must be an integer" ;; esac
 PRIMARY=$(awk '$1=="primary"{print $2}' "$SIGNING/FINGERPRINTS")
 
 W=$(mktemp -d /var/tmp/alp-trust-integrate.XXXXXX)
@@ -100,11 +100,10 @@ record alp "$VER" "$S"
 # 4. signed catalog ----------------------------------------------------------------------------------------------
 S=$W/catalog; mkdir -p "$S/usr/share/alp"
 cp "$ROOT/usr/share/alp/index.json" "$S/usr/share/alp/index.json"
-python3 "$PROTO/alp_catalog_tool.py" stamp "$S/usr/share/alp/index.json" --catalog-version "$CATVER" --keyring-version 1
-python3 "$PROTO/alp_catalog_tool.py" sign "$S/usr/share/alp/index.json" --homedir "$SIGNING/primary" --local-user "$PRIMARY" > /dev/null
-gpgconf --homedir "$SIGNING/primary" --kill all
-chmod 644 "$S/usr/share/alp/index.json" "$S/usr/share/alp/index.json.sig"
-record alp-catalog "$(date -u +%Y.%m.%d)-trust$CATVER" "$S"
+# the one signing path (same as make-catalog-r8.py): the keyring record above makes the root "applied"
+python3 "$WT/scripts/rebuild/trust/resign-catalog.py" "$ROOT" "$S/usr/share/alp/index.json" --signing "$SIGNING"
+CATVER=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["catalog_version"])' "$S/usr/share/alp/index.json")
+record alp-catalog "$(date -u +%Y.%m.%d)-v$CATVER" "$S"
 
 # 5. checks in a chroot of ROOT (the image's own python3, gpgv and alp) ----------------------------------------
 for f in usr/share/alp/keys/alpbahos-catalog.gpg usr/share/alp/keys/allowed.txt usr/share/alp/index.json usr/share/alp/index.json.sig usr/lib/alp/alp.py; do

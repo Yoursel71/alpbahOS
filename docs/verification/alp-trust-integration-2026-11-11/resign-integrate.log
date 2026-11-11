@@ -1,0 +1,25 @@
+# integrate-trust.sh (now signing through resign-catalog.py) on a fresh writable snapshot of r4-root, 2026-11-11T07:34:06Z
+usage: integrate-trust.sh <ROOT> <LEDGER_DIR>  (the catalog version argument is gone: resign-catalog.py picks it)
+old 3-argument call rc=1
+Creating user 'alpbuild' (alp build user) with UID 998 and GID 998.
+alpbuild:x:998:998:alp build user:/:/usr/sbin/nologin
+0
+recorded alp-keyring 1-temporary (2 entries)
+1
+recorded alp 0.9-trust1 (1 entries)
+resign-catalog: signed /var/tmp/alp-trust-integrate.vLh9Fg/catalog/usr/share/alp/index.json catalog_version=1 valid_until=2027-02-09 by 3421D4077D20373C547AD79959CADCB70E2EB50E (alp-keyring record: 1, signed-catalog alp.py: 1)
+1
+recorded alp-catalog 2026.11.11-v1 (2 entries)
+chroot alp list: rc 0 (553 lines)
+chroot alp check: rc 0 (1 lines)
+chroot alp search bash: rc 0 (1 lines)
+integrate-trust: done for /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-integ2 (catalog_version 1, signed by 3421D4077D20373C547AD79959CADCB70E2EB50E)
+integrate-trust: mounts left under /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-integ2: 0
+rc=0
+iso-gate: PASS (/home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-integ2: signed catalog accepted, changed catalog refused, alpbuild present)
+== then one catalog regeneration
+resign-catalog: signed /var/tmp/alp-record-catalog.ElL4J7/stage/usr/share/alp/index.json catalog_version=2 valid_until=2027-02-09 by 3421D4077D20373C547AD79959CADCB70E2EB50E (alp-keyring record: 1, signed-catalog alp.py: 1)
+record-catalog: recorded alp-catalog 2026.11.11-v2 (2 files)
+iso-gate: PASS (/home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-integ2: signed catalog accepted, changed catalog refused, alpbuild present)
+deleted /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-integ2
+mounts under scratch r4-*: 0

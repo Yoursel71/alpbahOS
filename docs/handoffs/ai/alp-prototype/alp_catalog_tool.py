@@ -32,8 +32,15 @@ DEFAULT_VALID_DAYS = 90  # DECISIONS D172
 
 
 def stamp(index_path: Path, *, catalog_version: int, keyring_version: int,
-          valid_until: str | None = None, valid_days: int = DEFAULT_VALID_DAYS) -> dict:
-    """Write the signed fields into index.json and return the new index."""
+          valid_until: str | None = None, valid_days: int = DEFAULT_VALID_DAYS,
+          recipe_bases: list | None = None) -> dict:
+    """Write the signed fields into index.json and return the new index.
+
+    recipe_sha256 is written for every entry that has a `recipe` field (alp
+    requires it for all of them, whatever the method). The recipe file is
+    looked up in `recipe_bases` in order (default: the index's directory);
+    the first directory that has it wins. A recipe found nowhere is an error.
+    """
     index_path = Path(index_path)
     index = json.loads(index_path.read_text(encoding="utf-8"))
     if not isinstance(index, dict) or not isinstance(index.get("entries"), dict):
@@ -42,10 +49,13 @@ def stamp(index_path: Path, *, catalog_version: int, keyring_version: int,
         today = datetime.datetime.now(datetime.timezone.utc).date()
         valid_until = (today + datetime.timedelta(days=valid_days)).isoformat()
     datetime.date.fromisoformat(valid_until)
+    bases = [Path(b) for b in (recipe_bases or [index_path.parent])]
     for name, entry in index["entries"].items():
-        if isinstance(entry, dict) and entry.get("method") == "recipe":
-            recipe = index_path.parent / entry["recipe"]
-            entry["recipe_sha256"] = hashlib.sha256(recipe.read_bytes()).hexdigest()
+        if isinstance(entry, dict) and ("recipe" in entry or entry.get("method") == "recipe"):
+            found = [b / entry["recipe"] for b in bases if (b / entry["recipe"]).is_file()]
+            if not found:
+                raise SystemExit(f"{name}: tarif dosyası bulunamadı: {entry.get('recipe')!r} ({', '.join(map(str, bases))})")
+            entry["recipe_sha256"] = hashlib.sha256(found[0].read_bytes()).hexdigest()
     index["catalog_version"] = int(catalog_version)
     index["valid_until"] = valid_until
     index["signed_keyring_version"] = int(keyring_version)
