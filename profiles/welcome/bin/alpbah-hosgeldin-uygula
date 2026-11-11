@@ -7,8 +7,7 @@ Kullanım:
     alpbah-hosgeldin-uygula gec                   "Şimdilik geç": yalnız ilk açılış işaretini yazar
     alpbah-hosgeldin-uygula ilk-acilis-mi         çıkış 0: uygulama şimdi açılmalı (işaret yok, canlı oturum değil)
 
-Tema duvar kağıdını değiştirir (D114, plasma-apply-wallpaperimage). Kilit ekranı SCREENLOCK-01'i bekliyor: bu sürümde
-kilit ekranı yok, o yüzden yalnız seçim kaydedilir ve çıktıda söylenir. Görünüm alpbah-gorunum aracını çağırır
+Tema duvar kağıdını (plasma-apply-wallpaperimage) ve kilit ekranının duvar kağıdını (kscreenlockerrc) değiştirir (D114). Görünüm alpbah-gorunum aracını çağırır
 (Glass yazılım çizimde reddedilir). Görev çubuğu: tek alt paneldeki (D115) simgelerin yeri Plasma betiğiyle
 değişir; panel tam genişlik kalır. "Ortada": panelin başına ve görev yöneticisinin sonuna genişleyen boşluk
 eklenir, görev yöneticisi boş alanı doldurmaz (fill=false). Seçimler ~/.config/alpbahrc [Hosgeldin] grubuna yazılır;
@@ -127,8 +126,13 @@ def glass_status():
 
 def apply_theme(tema):
     run([tool("plasma-apply-wallpaperimage"), WALLPAPERS[tema]])
+    # Lock screen (D114, SCREENLOCK-01): KScreenLocker's greeter uses the image wallpaper plugin with the same package.
+    kw = tool("kwriteconfig6")
+    run([kw, "--file", "kscreenlockerrc", "--group", "Greeter", "--key", "WallpaperPlugin", "org.kde.image"])
+    run([kw, "--file", "kscreenlockerrc", "--group", "Greeter", "--group", "Wallpaper", "--group", "org.kde.image",
+         "--group", "General", "--key", "Image", "file://" + WALLPAPERS[tema] + "/"])
     write_state("Tema", tema)
-    return "Kilit ekranı bu sürümde yok (SCREENLOCK-01); seçim kaydedildi."
+    return "Duvar kağıdı ve kilit ekranı ayarlandı."
 
 
 def apply_look(gorunum):

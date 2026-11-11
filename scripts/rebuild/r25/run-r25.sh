@@ -70,6 +70,10 @@ welcome)
         Q "$R" shot w03-choices-ataturk-orta
         Q "$R" click $((X + 836)) $((Y + 662)); sleep 20
         Q "$R" shot w04-desktop-ataturk-orta
+        # Round 32 (SCREENLOCK-01, THEME-01): Meta+L locks; the lock screen shows the chosen theme; the password unlocks.
+        Q "$R" combo meta_l l; sleep 6; Q "$R" shot w04b-locked
+        Q "$R" key ret; sleep 2; G type "$R" "$(cat "$B/test-secrets/r21.pw")"; Q "$R" key ret; sleep 6
+        Q "$R" shot w04c-unlocked
         # open again from the run dialog, choose alpbahOS and Solda
         Q "$R" combo alt f2; sleep 3; G type "$R" "alpbah-hosgeldin"; Q "$R" key ret; sleep 12
         Q "$R" shot w05-reopened
