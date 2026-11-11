@@ -11,6 +11,7 @@
 #   mkcopy <bios|uefi> <copy-name> [src]   reflink copy with the test shell unit (guest-agent-r21.sh)
 #   agent <name> <bios|uefi> <copy-name> <bus> <mem>   boot an instrumented copy and log the test user in
 #   s1 | r1 | fpgui          shutdown cycles, reboot, Flatpak Calculator in the session
+#   apps                     APPS-01 (round 37+): Firefox, VLC, LibreOffice in the session; alp trust rows
 #   check <copy-name> <label>              read-only look at a copy: coredumps and the last boot's journal
 #   recprep, reclive, recboot              REC1/REC2: break a copy, repair it from the live ISO, boot it alone
 #   kflive, kffill, kfgo, kfdisk, kfboot, kfagent   KF: Turkish F in the live session, install to a new image, checks
@@ -207,6 +208,34 @@ cmd_r1() { # reboot through the session's org.kde.Shutdown logoutAndReboot, QEMU
   stamp "R1 end"
 }
 
+cmd_apps() { # APPS-01 (round 37+): the preinstalled apps in the test user's Wayland session, plus the alp trust rows
+  # of the booted system (scripts/rebuild/r36/alp-hook-r36.sh as root). Firefox opens a page over the network (Turkish
+  # UI expected); VLC plays a test video made in the guest with the image's ffmpeg, then Space pauses it (two
+  # screenshots 4 s apart must match while paused), once native Wayland and once with QT_QPA_PLATFORM=xcb (BLFS note);
+  # LibreOffice converts a text file to .docx headless, then Writer opens it. Verdicts come from the screenshots.
+  local R=$D/APPS i; fresh "$D/APPS-disk.raw" "$R"; cmd_mkcopy uefi APPS-disk
+  stamp "APPS start"; agent_start APPS uefi APPS-disk virtio 6G
+  greeter_login "$R" apps; sleep 20; shot "$R" apps-desktop
+  gsh "$R" 90 "$(cat "$WT/scripts/rebuild/r36/alp-hook-r36.sh")"
+  gsh "$R" 90 'cd /home/testuser && ffmpeg -loglevel error -f lavfi -i testsrc=duration=60:size=640x360:rate=25 -f lavfi -i sine=frequency=440:duration=60 -c:v mpeg4 -q:v 5 -c:a aac test.mp4 && printf "alpbahOS APPS-01 deneme belgesi: ğüşıöç ĞÜŞİÖÇ\n" > belge.txt && chown testuser: test.mp4 belge.txt && echo "media: $(stat -c %s test.mp4) bytes"'
+  gsh "$R" 15 'r21m-as-user --bg firefox https://www.kernel.org/; echo started'
+  for i in 1 2 3; do sleep 15; q "$R" key shift; shot "$R" "apps-firefox-$i"; done
+  gsh "$R" 10 'echo "firefox processes: $(pgrep -u testuser -c firefox)"; pkill -u testuser firefox; sleep 3; echo "left: $(pgrep -u testuser -c firefox)"'
+  gsh "$R" 15 'r21m-as-user --bg vlc /home/testuser/test.mp4; echo started'
+  sleep 15; shot "$R" apps-vlc-wayland-1; sleep 4; shot "$R" apps-vlc-wayland-2
+  q "$R" key spc; sleep 2; shot "$R" apps-vlc-wayland-paused-1; sleep 4; shot "$R" apps-vlc-wayland-paused-2
+  gsh "$R" 10 'echo "vlc processes: $(pgrep -u testuser -c vlc)"; pkill -u testuser vlc; sleep 3'
+  gsh "$R" 15 'r21m-as-user --bg env QT_QPA_PLATFORM=xcb vlc /home/testuser/test.mp4; echo started'
+  sleep 15; shot "$R" apps-vlc-xcb-1; sleep 4; shot "$R" apps-vlc-xcb-2
+  q "$R" key spc; sleep 2; shot "$R" apps-vlc-xcb-paused-1; sleep 4; shot "$R" apps-vlc-xcb-paused-2
+  gsh "$R" 10 'echo "vlc processes: $(pgrep -u testuser -c vlc)"; pkill -u testuser vlc; sleep 3'
+  gsh "$R" 120 'r21m-as-user libreoffice --headless --convert-to docx --outdir /home/testuser /home/testuser/belge.txt; echo "docx: $(stat -c %s /home/testuser/belge.docx 2>&1)"'
+  gsh "$R" 15 'r21m-as-user --bg libreoffice --writer /home/testuser/belge.docx; echo started'
+  for i in 1 2; do sleep 20; q "$R" key shift; shot "$R" "apps-writer-$i"; done
+  gsh "$R" 15 'echo "soffice processes: $(pgrep -u testuser -c soffice.bin)"; echo "failed units: $(systemctl --failed --no-legend | wc -l)"; echo "coredumps: $(ls /var/lib/systemd/coredump 2> /dev/null | wc -l)"'
+  vmquit "$R"; rm -f "$D/APPS-disk.raw"; stamp "APPS end (copy removed)"
+}
+
 cmd_fpgui() { # Flatpak install by the test shell (root), then the Calculator in the test user's Wayland session
   local R=$D/FPGUI i; fresh "$D/FPGUI-disk.raw" "$R"; cmd_mkcopy uefi FPGUI-disk
   stamp "FP-GUI start"; agent_start FPGUI uefi FPGUI-disk virtio 6G
@@ -347,7 +376,7 @@ cmd_f1() { fresh "$D/F1" "$D/F1-boot" "$IMGF1"; stamp "F1 start"
 if [ "${MATRIX_LIB:-0}" != 1 ]; then
   c=${1:-}; shift || true
   case $c in
-    sha|live|diag|mkcopy|agent|check|s1|r1|fpgui|type|enter|key|combo|click|shot|quit|run|recprep|reclive|recboot|kflive|kffill|kfgo|kfdisk|kfboot|kfagent|rofacts|f1|shutlines) "cmd_$c" "$@" ;;
+    sha|live|diag|mkcopy|agent|check|s1|r1|fpgui|apps|type|enter|key|combo|click|shot|quit|run|recprep|reclive|recboot|kflive|kffill|kfgo|kfdisk|kfboot|kfagent|rofacts|f1|shutlines) "cmd_$c" "$@" ;;
     *) echo "usage: matrix-r21.sh sha|live|diag|mkcopy|agent|check|s1|r1|fpgui ..."; exit 2 ;;
   esac
 fi

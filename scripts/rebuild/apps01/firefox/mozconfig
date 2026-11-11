@@ -1,0 +1,28 @@
+# alpbahOS mozconfig for Firefox 153.2.0esr (APPS-01). Base: BLFS 13.1-systemd xsoft/firefox.html. Changes from the
+# book, each with its reason:
+#   - no Google location service key file: no keys in the repo or the image (CLAUDE.md section 4);
+#   - system copies only where r4-root has the library (ICU, NSPR, NSS, ffi, pixman, jpeg, zlib); av1, libevent,
+#     libvpx and webp use Firefox's bundled copies (not in r4-root);
+#   - no --with-system-png: r4-root's libpng has no APNG support (no png_get_acTL), which Firefox needs.
+#   - official branding as in the book (the unofficial branding is named "Nightly"); see BACKLOG APPS-01 for the
+#     trademark question before a public release.
+ac_add_options --disable-necko-wifi
+ac_add_options --with-system-icu
+ac_add_options --with-system-nspr
+ac_add_options --with-system-nss
+ac_add_options --enable-official-branding
+ac_add_options --disable-debug-symbols
+ac_add_options --prefix=/usr
+ac_add_options --enable-application=browser
+ac_add_options --disable-crashreporter
+ac_add_options --disable-updater
+ac_add_options --disable-tests
+ac_add_options --enable-rust-simd
+ac_add_options --enable-system-ffi
+ac_add_options --enable-system-pixman
+ac_add_options --with-system-jpeg
+ac_add_options --with-system-zlib
+ac_add_options --without-wasm-sandboxed-libraries
+unset MOZ_TELEMETRY_REPORTING
+mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/firefox-build-dir
+MOZ_APP_REMOTINGNAME=firefox
