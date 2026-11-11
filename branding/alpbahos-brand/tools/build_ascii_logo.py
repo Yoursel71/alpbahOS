@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 """build_ascii_logo.py -- the alpbahOS terminal (fastfetch) logo from the user's ASCII drawing (2026-11-11).
 
-Input: branding/alpbahos-brand/terminal/alpbahos-ascii.txt (the drawing as given, common indent removed).
+Input: branding/alpbahos-brand/terminal/alpbahos-ascii.txt (the user's small drawing, 44x17, common indent removed;
+the first, 89x34 drawing is kept as alpbahos-ascii-large.txt).
 Output: branding/alpbahos-brand/terminal/alpbahos-logo.fastfetch.txt with fastfetch colour markers ($1..$4) and a
 preview of the colours used. Colours (the navy of the brand is unreadable on dark terminals, so the mountain uses a
 lighter brand blue):
   $1 mountain and hill  "#"          38;2;46;112;184
   $2 snow face          "-" "+"      38;2;0;174;239  (cyan #00aeef)
   $3 prompt ">"         "." and the "+"/"-" around it   38;2;244;248;251
-  $4 cursor "_"         the two "-----------" runs under the prompt, with their "+" ends  38;2;245;166;35 (orange)
+  $4 cursor "_"         the "-"/"+" run right of the prompt in its last rows  38;2;245;166;35 (orange)
 The prompt and the cursor are drawn with "$" (user request; written "$$" for fastfetch) and are found by position: the prompt is every non-"#" character within two columns of the
-"." characters, from one row above the first "." row to one row below the last; the cursor is the longest "-" runs in
-the last rows of the drawing.
+"." characters, from one row above the first "." row to one row below the last; the cursor is the "-"/"+" run of 5 or
+more characters right of the prompt, from its last row down.
 Usage: python3 -B build_ascii_logo.py [--check]
 """
 from __future__ import annotations
@@ -33,9 +34,9 @@ def classify(lines: list[str]) -> list[list[str]]:
     prompt_rows = [i for i, r in enumerate(lines) if "." in r]
     # cursor: "-" runs of length >= 8 in the lowest rows that contain such a run left of the face
     cursor = set()
-    for i in range(len(lines) - 6, len(lines)):
-        for m in re.finditer(r"\+?-{8,}\+?", lines[i]):
-            if prompt_rows and i >= prompt_rows[-1] - 1:
+    for i in range(len(lines)):
+        for m in re.finditer(r"[-+]{5,}", lines[i]):
+            if prompt_rows and i >= prompt_rows[-1] and m.start() > max(j for j, c in enumerate(lines[prompt_rows[-1]]) if c == "."):
                 cursor.update((i, j) for j in range(m.start(), m.end()))
     cursor_left = min((j for _, j in cursor), default=10 ** 6)
     dots = [j for i in prompt_rows for j, c in enumerate(lines[i]) if c == "."]
@@ -77,7 +78,7 @@ def main() -> int:
         print("güncel" if ok else "GÜNCEL DEĞİL")
         return 0 if ok else 1
     OUT.write_text(text, encoding="utf-8")
-    print(f"{OUT.relative_to(HERE.parent.parent.parent)}: {len(lines)} rows, colours {COLOURS}")
+    print(f"{OUT.relative_to(HERE.parent.parent.parent)}: {text.count(chr(10))} rows, colours {COLOURS}")
     return 0
 
 
