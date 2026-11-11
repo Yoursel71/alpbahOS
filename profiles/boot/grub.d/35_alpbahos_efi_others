@@ -1,0 +1,85 @@
+#!/bin/sh
+# alpbahOS (GRUB-OTHERS-01, real-PC test 2026-11-11): list the EFI boot loaders of other Linux systems found on EFI
+# system partitions, as chainload entries. On UEFI, os-prober only detects Windows' boot manager (and it did not find
+# the user's Fedora, whose root is a btrfs subvolume). Windows stays with os-prober, which checks that Windows is
+# there; this script skips EFI/Microsoft, EFI/BOOT (fallback copies) and alpbahOS's own directory. Each ESP is mounted
+# read-only in a temporary directory, or read where it is already mounted; nothing is written. Only on UEFI systems.
+set -e
+export LC_ALL=C
+[ -d /sys/firmware/efi ] || exit 0
+command -v lsblk > /dev/null && command -v blkid > /dev/null || exit 0
+
+title_of() {
+    case "$1" in
+        fedora) echo "Fedora Linux" ;;
+        ubuntu) echo "Ubuntu" ;;
+        debian) echo "Debian GNU/Linux" ;;
+        opensuse|opensuse-tumbleweed|opensuse-leap) echo "openSUSE" ;;
+        arch|archlinux|grub-arch) echo "Arch Linux" ;;
+        linuxmint|mint) echo "Linux Mint" ;;
+        pardus) echo "Pardus" ;;
+        manjaro) echo "Manjaro" ;;
+        pop|pop_os) echo "Pop!_OS" ;;
+        centos) echo "CentOS" ;;
+        rocky) echo "Rocky Linux" ;;
+        almalinux) echo "AlmaLinux" ;;
+        *) echo "$2" ;;
+    esac
+}
+
+# Partition type and UUID are probed on the device itself (blkid -p): in a chroot (installer, grub-mkconfig run from
+# another system) there is no udev database for lsblk's PARTTYPE.
+for dev in $(lsblk -rpno NAME,TYPE 2> /dev/null | awk '$2 == "part" {print $1}'); do
+    ptype=$(blkid -p -s PART_ENTRY_TYPE -o value "$dev" 2> /dev/null | tr 'A-F' 'a-f') || continue
+    [ "$ptype" = c12a7328-f81f-11d2-ba4b-00a0c93ec93b ] || continue
+    uuid=$(blkid -p -s UUID -o value "$dev" 2> /dev/null) || continue
+    [ -n "$uuid" ] || continue
+    mnt=$(mktemp -d)
+    base=
+    if mount -o ro "$dev" "$mnt" > /dev/null 2>&1; then
+        base=$mnt
+    else
+        # Already mounted read-write (e.g. a running system's /boot/efi): read it where it is mounted. Mount points come
+        # from the host's mount table (/proc/1/mountinfo, reached through /proc/1/root when grub-mkconfig runs in a
+        # chroot) and from our own; a directory is used only if its file system is this very device (st_dev equals the
+        # partition's major:minor), so a path that means another disk inside a chroot is never taken.
+        rmdir "$mnt"; mnt=
+        mm=$(stat -L -c '%t %T' "$dev" 2> /dev/null) || continue
+        maj=$((0x${mm% *})); min=$((0x${mm#* }))
+        want=$(( (min & 255) | (maj << 8) | ((min & ~255) << 12) ))
+        for src in /proc/1/mountinfo /proc/self/mountinfo; do
+            for t in $(awk -v m="$maj:$min" '$3 == m {print $5}' "$src" 2> /dev/null); do
+                for p in "/proc/1/root$t" "$t"; do
+                    if [ -d "$p/EFI" ] && [ "$(stat -c '%d' "$p" 2> /dev/null)" = "$want" ]; then base=$p; break 3; fi
+                done
+            done
+        done
+        [ -n "$base" ] || continue
+    fi
+    for d in "$base"/EFI/*/; do
+        [ -d "$d" ] || continue
+        name=$(basename "$d")
+        lc=$(printf '%s' "$name" | tr 'A-Z' 'a-z')
+        case "$lc" in boot|microsoft|alpbahos) continue ;; esac
+        loader=
+        for f in shimx64.efi grubx64.efi; do
+            if [ -f "$d$f" ]; then loader=$f; break; fi
+        done
+        [ -n "$loader" ] || continue
+        title=$(title_of "$lc" "$name")
+        echo "Found $title on $dev (EFI/$name/$loader)" >&2
+        cat << ENTRY
+menuentry '$title' --class os --id 'alpbahos-efi-$lc-$uuid' {
+	insmod part_gpt
+	insmod fat
+	insmod chain
+	search --no-floppy --fs-uuid --set=root $uuid
+	chainloader /EFI/$name/$loader
+}
+ENTRY
+    done
+    if [ -n "$mnt" ]; then
+        umount "$mnt" > /dev/null 2>&1 || true
+        rmdir "$mnt" 2> /dev/null || true
+    fi
+done
