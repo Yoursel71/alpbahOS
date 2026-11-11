@@ -52,3 +52,10 @@ def _test_trust_anchors(session_key, monkeypatch, tmp_path_factory):
         monkeypatch.setattr(alp, "SYSTEM_KEYRING", str(session_key.keyring))
         monkeypatch.setattr(alp, "SYSTEM_ALLOWED_KEYS", str(session_key.allowed))
         monkeypatch.setattr(pkb, "TEST_TRUST_ARGS", tuple(session_key.cli))
+
+
+@pytest.fixture(autouse=True)
+def _no_real_debian_box(monkeypatch):
+    """D164: no test may create or enter a real Distrobox container on the host or in an image that has one.
+    tests/test_kutu_fallback.py turns the box on again with a fake subprocess."""
+    monkeypatch.setattr(alp, "kutu_available", lambda: False)

@@ -37,6 +37,7 @@ import inspect
 import json
 import os
 import posixpath
+import pwd
 import re
 import shutil
 import socket
@@ -2602,7 +2603,7 @@ def cmd_info(index: dict, db: dict, name: str, index_dir: Path | None = None) ->
     return 0
 
 
-def cmd_list(db: dict, as_json: bool = False) -> int:
+def cmd_list(db: dict, as_json: bool = False, box: dict | None = None) -> int:
     if as_json:
         rows = [
             {"name": name, "version": pkg["version"], "method": pkg["method"],
@@ -2613,7 +2614,8 @@ def cmd_list(db: dict, as_json: bool = False) -> int:
         ]
         print(json.dumps(rows, ensure_ascii=False))
         return 0
-    if not db["packages"]:
+    box = box or {}
+    if not db["packages"] and not box:
         print("Kurulu paket yok.")
         return 0
     for name, pkg in sorted(db["packages"].items()):
@@ -2621,6 +2623,8 @@ def cmd_list(db: dict, as_json: bool = False) -> int:
         if pkg.get("protected"):
             suffix += "\t(korumalı)"
         print(f"{name}\t{pkg['version']}\t{pkg['method']}{suffix}")
+    for name, pkg in sorted(box.items()):
+        print(f"{name}\t{pkg.get('version', '?')}\tkutu ({pkg.get('box', KUTU_NAME)})")
     return 0
 
 
@@ -3190,10 +3194,12 @@ def _choose_flathub(term: str, cands: list[tuple[str, str]], assume_yes: bool) -
     return None
 
 
-def _install_from_flathub(args: argparse.Namespace, paths: Paths) -> int:
+def _install_from_flathub(args: argparse.Namespace, paths: Paths,
+                          cands: list[tuple[str, str]] | None = None) -> int:
     """D163: a name that is not in the alp catalogue is looked up on Flathub; after a yes the app is installed with
     flatpak (system-wide) and recorded in the alp database (method flatpak), so 'alp list' and 'alp remove' see it."""
-    cands = flathub_candidates(args.name)
+    if cands is None:
+        cands = flathub_candidates(args.name)
     if not cands:
         raise AlpError(f"Bilinmeyen paket: {args.name!r}. alp kataloğunda yok, Flathub'da da bulunamadı "
                        f"(flatpak kurulu mu, Flathub ekli mi?). 'alp search {args.name}' ile denetleyin.")
@@ -3227,11 +3233,285 @@ def _install_from_flathub(args: argparse.Namespace, paths: Paths) -> int:
     return 0
 
 
+# --------------------------------------------------------------------------
+# D164 (ALP-KUTU-01): the Debian box. A name that neither the alp catalogue nor Flathub (exact match) has is installed
+# with apt into a Debian 13 container of the user (Distrobox, rootless Podman); its commands are exported to
+# ~/.local/bin and its desktop entries to the menu. The box belongs to one user, so this step always runs as that user
+# (under sudo: SUDO_USER) and keeps its own record in ~/.local/share/alp/kutu.json; the base system and the alp
+# database are never touched. Kernel drivers and firmware cannot work from a container (it uses the alpbahOS kernel)
+# and are refused. The PackageKit backend (--no-flathub) never reaches this step.
+# --------------------------------------------------------------------------
+
+KUTU_NAME = "alp-debian"
+KUTU_IMAGE = "docker.io/library/debian:13"
+KUTU_NOT_FOUND = 3  # exit code when Debian has no such package; the caller may still offer other Flathub matches
+_DEB_NAME = re.compile(r"^[a-z0-9][a-z0-9+.-]+$")  # Debian policy 5.6.1
+_KUTU_DRIVER = re.compile(r"^(nvidia|linux-image|linux-headers|linux-modules|firmware-|grub|dkms$)|-dkms$")
+_KUTU_BIN_DIRS = ("/usr/bin", "/usr/games", "/usr/sbin", "/bin", "/sbin")
+
+
+def kutu_available() -> bool:
+    return shutil.which("distrobox") is not None and shutil.which("podman") is not None
+
+
+def _kutu_home() -> Path:
+    return Path(os.environ.get("HOME") or pwd.getpwuid(os.getuid()).pw_dir)
+
+
+def _kutu_state_file(home: Path) -> Path:
+    return home / ".local" / "share" / "alp" / "kutu.json"
+
+
+def load_kutu(home: Path) -> dict:
+    path = _kutu_state_file(home)
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return {"packages": {}}
+    except (OSError, ValueError) as exc:
+        raise AlpError(f"Debian kutusu kaydı okunamadı ({path}): {exc}") from exc
+    if not isinstance(data, dict) or not isinstance(data.get("packages"), dict):
+        raise AlpError(f"Debian kutusu kaydı bozuk: {path}")
+    return data
+
+
+def save_kutu(home: Path, data: dict) -> None:
+    path = _kutu_state_file(home)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(path.name + ".tmp")
+    tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    os.replace(tmp, path)
+
+
+def _kutu_cmd(*cmd: str) -> list[str]:
+    return ["distrobox", "enter", KUTU_NAME, "--", *cmd]
+
+
+def kutu_exists() -> bool:
+    return subprocess.run(["podman", "container", "exists", KUTU_NAME], capture_output=True, text=True).returncode == 0
+
+
+def kutu_create() -> None:
+    print(f"Debian kutusu oluşturuluyor ({KUTU_IMAGE}); ilk sefer birkaç dakika sürer ve internet gerekir.")
+    subprocess.run(["distrobox", "create", "--name", KUTU_NAME, "--image", KUTU_IMAGE, "--yes", "--no-entry"],
+                   check=True)
+    subprocess.run(_kutu_cmd("true"), check=True)  # the first entry sets the box up
+
+
+def kutu_candidate(name: str) -> str | None:
+    """The version apt would install in the box, or None when Debian has no installable package of that name."""
+    r = subprocess.run(_kutu_cmd("env", "LC_ALL=C", "apt-cache", "policy", name),
+                       capture_output=True, text=True, timeout=600)
+    if r.returncode != 0:
+        return None
+    for line in r.stdout.splitlines():
+        key, _, value = line.strip().partition(":")
+        if key == "Candidate":
+            value = value.strip()
+            return None if not value or value == "(none)" else value
+    return None
+
+
+def _host_has_command(name: str) -> bool:
+    return shutil.which(name, path="/usr/bin:/usr/sbin:/bin:/sbin") is not None
+
+
+def _kutu_exports(files: list[str]) -> tuple[list[str], list[str], list[str]]:
+    """(commands to export, desktop entries to export, commands skipped because the host has the same name)."""
+    bins: list[str] = []
+    apps: list[str] = []
+    skipped: list[str] = []
+    for f in files:
+        pp = PurePosixPath(f)
+        if str(pp.parent) in _KUTU_BIN_DIRS and pp.name:
+            (skipped if _host_has_command(pp.name) else bins).append(f)
+        elif str(pp.parent) == "/usr/share/applications" and pp.suffix == ".desktop":
+            apps.append(pp.stem)
+    return bins, apps, skipped
+
+
+def _kutu_argv(command: str, args: argparse.Namespace) -> list[str]:
+    argv = [command, args.name, "--kutu"]
+    if getattr(args, "yes", False):
+        argv.append("--yes")
+    if getattr(args, "dry_run", False):
+        argv.append("--dry-run")
+    return argv
+
+
+def _as_box_user(argv: list[str]) -> int:
+    """alp runs as root (sudo alp ...): the box belongs to the user who ran sudo, so this step runs again as that
+    user with a clean environment (HOME, XDG_RUNTIME_DIR of the user's session for rootless Podman)."""
+    user = os.environ.get("SUDO_USER", "")
+    if not user or user == "root":
+        raise AlpError("Debian kutusu bir kullanıcıya aittir, root oturumundan kullanılamaz. Komutu kendi "
+                       f"kullanıcınızla yazın: alp {' '.join(argv)}")
+    try:
+        pw = pwd.getpwnam(user)
+    except KeyError as exc:
+        raise AlpError(f"Kullanıcı bulunamadı: {user}") from exc
+    runtime = f"/run/user/{pw.pw_uid}"
+    if not os.path.isdir(runtime):
+        raise AlpError(f"{user} kullanıcısının oturumu açık değil ({runtime} yok); Debian kutusu için masaüstünde "
+                       "oturum açın.")
+    env = [f"HOME={pw.pw_dir}", f"USER={user}", f"LOGNAME={user}", "PATH=/usr/bin:/bin",
+           f"XDG_RUNTIME_DIR={runtime}", f"DBUS_SESSION_BUS_ADDRESS=unix:path={runtime}/bus",
+           f"LANG={os.environ.get('LANG', 'tr_TR.UTF-8')}", f"TERM={os.environ.get('TERM', 'dumb')}"]
+    cmd = ["runuser", "-u", user, "--", "env", "-i", *env, sys.executable, os.path.abspath(__file__), *argv]
+    return subprocess.run(cmd).returncode
+
+
+def _install_from_kutu(args: argparse.Namespace, explicit: bool = True) -> int:
+    name = args.name
+    if _KUTU_DRIVER.search(name):
+        raise AlpError(f"{name!r} bir sürücü/çekirdek paketi: Debian kutusu alpbahOS çekirdeğini kullandığı için "
+                       "çalışmaz. Sürücüler alp paketi olarak gelir (örneğin: alp search nvidia).")
+    if not _DEB_NAME.match(name):
+        if not explicit:
+            return KUTU_NOT_FOUND
+        raise AlpError(f"Geçersiz Debian paket adı: {name!r}")
+    if not kutu_available():
+        if not explicit:
+            return KUTU_NOT_FOUND
+        raise AlpError("Debian kutusu için distrobox ve podman gerekir; bu sistemde yoklar.")
+    if _is_root():
+        return _as_box_user(_kutu_argv("install", args))
+    yes = getattr(args, "yes", False)
+    home = _kutu_home()
+    state = load_kutu(home)
+    if name in state["packages"]:
+        print(f"{name} Debian kutusunda zaten kurulu (sürüm {state['packages'][name].get('version', '?')}).")
+        return 0
+    if not kutu_exists():
+        if args.dry_run:
+            print(f"[dry-run] Debian kutusu yok; önce oluşturulurdu: distrobox create --name {KUTU_NAME} "
+                  f"--image {KUTU_IMAGE}")
+            print(f"[dry-run] sonra kutuda: apt-get install -y {name}")
+            return 0
+        if not _confirm(f"{name!r} alp kataloğunda ve Flathub'da yok. Debian 13 kutusu ({KUTU_NAME}) oluşturulup "
+                        "orada aransın mı? İlk sefer birkaç dakika sürer, internet gerekir.", yes):
+            print("İptal edildi, hiçbir şey değişmedi.")
+            return 1
+        kutu_create()
+    if not args.dry_run:
+        subprocess.run(_kutu_cmd("sudo", "apt-get", "update", "-qq"), check=True)
+    version = kutu_candidate(name)
+    if version is None:
+        print(f"{name!r} Debian 13 depolarında da yok.")
+        return KUTU_NOT_FOUND
+    if args.dry_run:
+        print(f"[dry-run] Debian kutusuna ({KUTU_NAME}) kurulurdu: {name} {version}")
+        return 0
+    if not _confirm(f"{name} {version} Debian kutusuna (apt) kurulsun mu?", yes):
+        print("İptal edildi, hiçbir şey değişmedi.")
+        return 1
+    subprocess.run(_kutu_cmd("sudo", "env", "DEBIAN_FRONTEND=noninteractive", "apt-get", "install", "-y", name),
+                   check=True)
+    record = {"version": version, "box": KUTU_NAME, "image": KUTU_IMAGE, "installed_at": _now(),
+              "installed_by": f"alp/{ALP_VERSION}", "bins": [], "apps": []}
+    state["packages"][name] = record
+    save_kutu(home, state)  # recorded before the exports, so 'alp remove' finds it even if an export fails
+    files = subprocess.run(_kutu_cmd("dpkg", "-L", name), capture_output=True, text=True, check=True).stdout
+    bins, apps, skipped = _kutu_exports(files.splitlines())
+    bindir = home / ".local" / "bin"
+    bindir.mkdir(parents=True, exist_ok=True)
+    try:
+        for b in bins:
+            subprocess.run(_kutu_cmd("distrobox-export", "--bin", b, "--export-path", str(bindir)), check=True)
+            record["bins"].append(b)
+        for a in apps:
+            subprocess.run(_kutu_cmd("distrobox-export", "--app", a), check=True)
+            record["apps"].append(a)
+    finally:
+        save_kutu(home, state)
+    print(f"Kuruldu: {name} {version}, Debian kutusu ({KUTU_NAME}).")
+    if bins:
+        print("Komutlar: " + ", ".join(PurePosixPath(b).name for b in bins) + " (~/.local/bin; yeni açılan "
+              "terminalde çalışır)")
+    if apps:
+        print("Uygulama menüsüne eklendi: " + ", ".join(apps))
+    if skipped:
+        print("Sistemde aynı adlı komut olduğu için dışa aktarılmadı: "
+              + ", ".join(PurePosixPath(b).name for b in skipped)
+              + f". Kutudakini çalıştırmak için: distrobox enter {KUTU_NAME} -- <komut>")
+    if not bins and not apps:
+        print(f"Kutuda çalıştırmak için: distrobox enter {KUTU_NAME}")
+    print(f"Kaldırmak için: alp remove {name}")
+    return 0
+
+
+def _box_packages_of_caller() -> dict:
+    """The box record of the user alp acts for (the sudo user when root); empty when there is none or it is
+    unreadable. Read only."""
+    try:
+        if _is_root():
+            user = os.environ.get("SUDO_USER", "")
+            if not user or user == "root":
+                return {}
+            home = Path(pwd.getpwnam(user).pw_dir)
+        else:
+            home = _kutu_home()
+        return load_kutu(home)["packages"]
+    except (AlpError, KeyError, OSError):
+        return {}
+
+
+def _remove_from_kutu(args: argparse.Namespace) -> int:
+    if _is_root():
+        return _as_box_user(_kutu_argv("remove", args))
+    name = args.name
+    home = _kutu_home()
+    state = load_kutu(home)
+    record = state["packages"].get(name)
+    if record is None:
+        raise AlpError(f"Debian kutusunda kurulu değil: {name}")
+    if args.dry_run:
+        print(f"[dry-run] Debian kutusundan kaldırılırdı: {name} (dışa aktarılanlar: "
+              f"{', '.join([PurePosixPath(b).name for b in record.get('bins', [])] + record.get('apps', [])) or 'yok'})")
+        return 0
+    if not _confirm(f"{name} Debian kutusundan kaldırılsın mı?", getattr(args, "yes", False)):
+        print("İptal edildi, hiçbir şey değişmedi.")
+        return 1
+    if kutu_exists():
+        bindir = home / ".local" / "bin"
+        for a in record.get("apps", []):
+            subprocess.run(_kutu_cmd("distrobox-export", "--app", a, "--delete"), check=False)
+        for b in record.get("bins", []):
+            subprocess.run(_kutu_cmd("distrobox-export", "--bin", b, "--export-path", str(bindir), "--delete"),
+                           check=False)
+        subprocess.run(_kutu_cmd("sudo", "env", "DEBIAN_FRONTEND=noninteractive", "apt-get", "remove", "-y", name),
+                       check=True)
+    else:
+        print(f"Debian kutusu ({KUTU_NAME}) artık yok; yalnız kayıt siliniyor.")
+    del state["packages"][name]
+    save_kutu(home, state)
+    print(f"Kaldırıldı: {name} (Debian kutusu). Kutu ve içindeki diğer paketler duruyor.")
+    return 0
+
+
+def _install_unknown(args: argparse.Namespace, paths: Paths) -> int:
+    """D163/D164: a name the alp catalogue does not have: the Flathub app on an exact match, else the Debian box,
+    else the other Flathub matches."""
+    cands = flathub_candidates(args.name)
+    if any(_flathub_rank(args.name, *c) == 0 for c in cands):
+        return _install_from_flathub(args, paths, cands)
+    rc = _install_from_kutu(args, explicit=False)
+    if rc != KUTU_NOT_FOUND:
+        return rc
+    if cands:
+        return _install_from_flathub(args, paths, cands)
+    hint = "" if kutu_available() else " (Debian kutusu için distrobox gerekir)"
+    raise AlpError(f"Bilinmeyen paket: {args.name!r}. alp kataloğunda, Flathub'da ve Debian'da bulunamadı{hint}. "
+                   f"'alp search {args.name}' ile denetleyin.")
+
+
 def cmd_install(args: argparse.Namespace, paths: Paths, index: dict, index_dir: Path) -> int:
+    if getattr(args, "kutu", False):
+        return _install_from_kutu(args)
     if args.name not in index["entries"]:
         if getattr(args, "no_flathub", False):
             raise AlpError(f"Bilinmeyen paket: {args.name!r}. Önce 'alp search {args.name}' ile denetleyin.")
-        return _install_from_flathub(args, paths)
+        return _install_unknown(args, paths)
 
     paths.ensure()
     with DbLock(paths.lock_file):
@@ -3371,6 +3651,11 @@ def _remove_many(order: list[str], paths: Paths, db: dict, dry_run: bool) -> Non
 
 
 def cmd_remove(args: argparse.Namespace, paths: Paths, index: dict | None = None) -> int:
+    if getattr(args, "kutu", False):
+        return _remove_from_kutu(args)
+    if (not getattr(args, "no_flathub", False) and args.name not in load_db(paths)["packages"]
+            and args.name in _box_packages_of_caller()):
+        return _remove_from_kutu(args)
     index = index or {"entries": {}}
     paths.ensure()
     with DbLock(paths.lock_file):
@@ -3941,7 +4226,8 @@ def main_help() -> str:
             ("list", "Kurulu paketleri listele"),
         ]),
         ("Kurma ve kaldırma", [
-            ("install <paket>", "Paketi ve gerektirdiği paketleri kur"),
+            ("install <paket>", "Paketi kur; alp'de yoksa Flathub'dan ya da Debian kutusundan"),
+            ("install --kutu <paket>", "Debian paketini kutuya (apt) kur"),
             ("remove <paket>", "Paketi kaldır"),
             ("upgrade [paket]", "Paketi yükselt; ad verilmezse hepsini"),
             ("autoremove", "Artık gerekmeyen bağımlılıkları kaldır"),
@@ -3973,6 +4259,7 @@ def main_help() -> str:
         head("Örnekler"),
         f"  alp search tema          {dim('# adında/açıklamasında tema geçenler')}",
         f"  alp install figlet       {dim('# kur (önce planı gösterip onay ister)')}",
+        f"  alp install htop         {dim('# alp ve Flathub da yoksa Debian kutusuna (apt) kurar')}",
         f"  alp remove -y figlet     {dim('# sormadan kaldır')}",
         f"  alp upgrade              {dim('# eskimiş her şeyi yükselt')}",
         "",
@@ -4107,7 +4394,8 @@ def build_parser() -> argparse.ArgumentParser:
         g.add_argument("--keyring", default=None if default is False else default, help=argparse.SUPPRESS)
         g.add_argument("--allowed-keys", default=None if default is False else default, help=argparse.SUPPRESS)
         g.add_argument("--jobs", type=int, default=None if default is False else default, help=argparse.SUPPRESS)
-        # D163: the PackageKit backend (Discover has its own Flatpak backend) turns the Flathub offer off
+        # D163/D164: the PackageKit backend (Discover has its own Flatpak backend) turns the Flathub offer and the
+        # Debian box off: it never creates containers
         g.add_argument("--no-flathub", action="store_true", default=default, help=argparse.SUPPRESS)
 
     global_options(p, False)
@@ -4140,6 +4428,8 @@ def build_parser() -> argparse.ArgumentParser:
                  confirm=True, epilog="Örnek:\n  alp install figlet\n  alp install -y figlet --reinstall")
     sp.add_argument("name", metavar="paket", help="Paket adı")
     sp.add_argument("--reinstall", action="store_true", help="Kuruluysa yeniden kur")
+    sp.add_argument("--kutu", action="store_true",
+                    help="Debian 13 kutusuna (Distrobox) apt ile kur; komutlar ~/.local/bin'e, uygulamalar menüye gelir")
 
     sp = command("upgrade", args="[paket]", description="Kurulu paketi yeni sürüme yükseltir. Ad verilmezse eskimiş tüm paketleri yükseltir.",
                  confirm=True, epilog="Örnek:\n  alp upgrade\n  alp upgrade figlet")
@@ -4149,6 +4439,7 @@ def build_parser() -> argparse.ArgumentParser:
                  confirm=True, epilog="Örnek:\n  alp remove figlet\n  alp remove --cascade libfoo")
     sp.add_argument("name", metavar="paket", help="Paket adı")
     sp.add_argument("--cascade", action="store_true", help="Ona bağlı kurulu paketleri de kaldır")
+    sp.add_argument("--kutu", action="store_true", help="Debian kutusuna kurulmuş paketi kaldır")
 
     command("autoremove", "Bağımlılık olarak gelip artık hiçbir paketin ihtiyaç duymadığı paketleri kaldırır.",
             confirm=True)
@@ -4212,6 +4503,9 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     paths = Paths.resolve(args.root)
     try:
+        if getattr(args, "kutu", False) and args.command in ("install", "remove"):
+            # The Debian box needs no alp catalogue (and runs as a user, see _as_box_user)
+            return _install_from_kutu(args) if args.command == "install" else _remove_from_kutu(args)
         if args.command == "adopt-base":
             return cmd_adopt_base(args, paths)
         if args.command == "recover":
@@ -4247,7 +4541,7 @@ def main(argv: list[str] | None = None) -> int:
             db = load_db(paths)
             return cmd_info(index, db, args.name, index_dir=index_dir)
         if args.command == "list":
-            return cmd_list(load_db(paths), as_json=args.json)
+            return cmd_list(load_db(paths), as_json=args.json, box=None if args.json else _box_packages_of_caller())
         paths.keep_build = getattr(args, "keep_build", False)
         paths.relocate = getattr(args, "relocate", False)
         progress_fd = getattr(args, "progress_fd", None)

@@ -246,6 +246,25 @@ cmd_apps() { # APPS-01 (round 37+): the preinstalled apps in the test user's Way
   vmquit "$R"; rm -f "$D/APPS-disk.raw"; stamp "APPS end (copy removed)"
 }
 
+cmd_kutu() { # ALP-KUTU-01 (D164, round 41+): the Debian box through alp, as the test user and the sudo way (root with
+  # SUDO_USER, so alp runs the box step again as that user); the apt hint (D123, also as root); a driver name refused;
+  # htop shown in Konsole from the box; remove. Needs network (image pull, Debian mirrors).
+  local R=$D/KUTU; fresh "$D/KUTU-disk.raw" "$R"; cmd_mkcopy uefi KUTU-disk
+  stamp "KUTU start"; agent_start KUTU uefi KUTU-disk virtio 6G
+  greeter_login "$R" kutu; sleep 20; shot "$R" kutu-desktop
+  gsh "$R" 20 'apt install htop > /tmp/hint.txt 2>&1; echo "apt rc=$?"; sed "s/^/apt-hint: /" /tmp/hint.txt; echo "apt link: $(readlink /usr/bin/apt)"'
+  gsh "$R" 30 'r21m-as-user alp install --yes nvidia-smi > /tmp/nv.txt 2>&1; echo "alp install nvidia-smi rc=$?"; sed "s/^/alp-nvidia: /" /tmp/nv.txt'
+  gsh "$R" 1800 'r21m-as-user alp install --yes htop > /tmp/kutu-htop.log 2>&1; echo "alp install htop rc=$?"; tail -n 8 /tmp/kutu-htop.log'
+  gsh "$R" 30 'r21m-as-user sh -lc "command -v htop; htop --version" 2>&1 | sed "s/^/htop: /"; r21m-as-user alp list 2>&1 | grep kutu | sed "s/^/alp list: /"; ls /home/testuser/.local/share/applications/ 2>&1 | sed "s/^/menu: /"'
+  gsh "$R" 900 'env SUDO_USER=testuser alp install --yes cowsay > /tmp/kutu-cowsay.log 2>&1; echo "sudo-way alp install cowsay rc=$?"; tail -n 6 /tmp/kutu-cowsay.log; r21m-as-user sh -lc "cowsay alpbahOS" 2>&1 | tail -n 8 | sed "s/^/cowsay: /"'
+  gsh "$R" 15 'r21m-as-user --bg konsole -e sh -lc htop; echo started'
+  sleep 15; q "$R" key shift; shot "$R" kutu-htop-konsole
+  gsh "$R" 10 'pkill -u testuser konsole; sleep 2'
+  gsh "$R" 300 'r21m-as-user alp remove --yes htop > /tmp/kutu-rm.log 2>&1; echo "alp remove htop rc=$?"; tail -n 3 /tmp/kutu-rm.log; r21m-as-user sh -lc "command -v htop || echo htop gone"; r21m-as-user alp list 2>&1 | grep kutu | sed "s/^/alp list after: /"'
+  gsh "$R" 15 'echo "failed units: $(systemctl --failed --no-legend | wc -l)"; echo "coredumps: $(ls /var/lib/systemd/coredump 2> /dev/null | wc -l)"'
+  vmquit "$R"; rm -f "$D/KUTU-disk.raw"; stamp "KUTU end (copy removed)"
+}
+
 cmd_fpgui() { # Flatpak install by the test shell (root), then the Calculator in the test user's Wayland session
   local R=$D/FPGUI i; fresh "$D/FPGUI-disk.raw" "$R"; cmd_mkcopy uefi FPGUI-disk
   stamp "FP-GUI start"; agent_start FPGUI uefi FPGUI-disk virtio 6G
@@ -386,7 +405,7 @@ cmd_f1() { fresh "$D/F1" "$D/F1-boot" "$IMGF1"; stamp "F1 start"
 if [ "${MATRIX_LIB:-0}" != 1 ]; then
   c=${1:-}; shift || true
   case $c in
-    sha|live|diag|mkcopy|agent|check|s1|r1|fpgui|apps|type|enter|key|combo|click|shot|quit|run|recprep|reclive|recboot|kflive|kffill|kfgo|kfdisk|kfboot|kfagent|rofacts|f1|shutlines) "cmd_$c" "$@" ;;
+    sha|live|diag|mkcopy|agent|check|s1|r1|fpgui|apps|kutu|type|enter|key|combo|click|shot|quit|run|recprep|reclive|recboot|kflive|kffill|kfgo|kfdisk|kfboot|kfagent|rofacts|f1|shutlines) "cmd_$c" "$@" ;;
     *) echo "usage: matrix-r21.sh sha|live|diag|mkcopy|agent|check|s1|r1|fpgui ..."; exit 2 ;;
   esac
 fi
