@@ -9,7 +9,7 @@ lighter brand blue):
   $2 snow face          "-" "+"      38;2;0;174;239  (cyan #00aeef)
   $3 prompt ">"         "." and the "+"/"-" around it   38;2;244;248;251
   $4 cursor "_"         the two "-----------" runs under the prompt, with their "+" ends  38;2;245;166;35 (orange)
-The prompt and the cursor are found by position: the prompt is every non-"#" character within two columns of the
+The prompt and the cursor are drawn with "$" (user request; written "$$" for fastfetch) and are found by position: the prompt is every non-"#" character within two columns of the
 "." characters, from one row above the first "." row to one row below the last; the cursor is the longest "-" runs in
 the last rows of the drawing.
 Usage: python3 -B build_ascii_logo.py [--check]
@@ -63,7 +63,8 @@ def render(lines: list[str]) -> str:
             if c != " " and k != cur:
                 s.append("$" + k)
                 cur = k
-            s.append(c)
+            # user request: the prompt and the cursor are drawn solid with "$" ("$$" is a literal "$" in fastfetch)
+            s.append("$$" if k in ("3", "4") else c)
         out.append("".join(s))
     return "\n".join(out) + "\n"
 
