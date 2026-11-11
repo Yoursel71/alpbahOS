@@ -3138,9 +3138,100 @@ def _hint_orphans(index: dict, installed: dict, removing: set[str] = frozenset()
               "Kaldırmak için: alp autoremove")
 
 
+FLATHUB_REMOTE = "flathub"
+
+
+def _flathub_rank(term: str, app: str, name: str) -> int:
+    """0: exact (application id, its last part or the app's name), 1: the term is in the name or id, 2: other."""
+    t = term.lower()
+    if app.lower() == t or app.rsplit(".", 1)[-1].lower() == t or name.lower() == t:
+        return 0
+    if t in name.lower() or t in app.lower():
+        return 1
+    return 2
+
+
+def flathub_candidates(term: str) -> list[tuple[str, str]]:
+    """Flathub apps for `term` as (application id, name), best match first (D163). Empty when flatpak, the Flathub
+    remote or its AppStream data is missing; this is only an offer, never an error."""
+    if shutil.which("flatpak") is None:
+        return []
+    try:
+        out = subprocess.run(["flatpak", "search", "--columns=application,name,remotes", term],
+                             capture_output=True, text=True, timeout=120).stdout
+    except (OSError, subprocess.SubprocessError):
+        return []
+    rows: list[tuple[str, str]] = []
+    for line in out.splitlines():
+        parts = [p.strip() for p in line.split("\t")]
+        if len(parts) < 3 or not parts[0] or "." not in parts[0]:
+            continue
+        if FLATHUB_REMOTE not in [r.strip() for r in parts[2].split(",")]:
+            continue
+        if (parts[0], parts[1]) not in rows:
+            rows.append((parts[0], parts[1]))
+    rows.sort(key=lambda r: (_flathub_rank(term, r[0], r[1]), r[0]))
+    return rows
+
+
+def _choose_flathub(term: str, cands: list[tuple[str, str]], assume_yes: bool) -> tuple[str, str] | None:
+    exact = [c for c in cands if _flathub_rank(term, *c) == 0]
+    if len(exact) == 1:
+        return exact[0]
+    if assume_yes or sys.stdin is None or not sys.stdin.isatty():
+        raise AlpError(f"{term!r} için Flathub'da birden çok uygulama var; uygulama kimliğini yazın, örneğin: "
+                       f"alp install {cands[0][0]}")
+    try:
+        answer = input(f"Hangisi kurulsun? [1-{min(len(cands), 5)}, boş = iptal] ").strip()
+    except EOFError:
+        return None
+    if answer.isdigit() and 1 <= int(answer) <= min(len(cands), 5):
+        return cands[int(answer) - 1]
+    return None
+
+
+def _install_from_flathub(args: argparse.Namespace, paths: Paths) -> int:
+    """D163: a name that is not in the alp catalogue is looked up on Flathub; after a yes the app is installed with
+    flatpak (system-wide) and recorded in the alp database (method flatpak), so 'alp list' and 'alp remove' see it."""
+    cands = flathub_candidates(args.name)
+    if not cands:
+        raise AlpError(f"Bilinmeyen paket: {args.name!r}. alp kataloğunda yok, Flathub'da da bulunamadı "
+                       f"(flatpak kurulu mu, Flathub ekli mi?). 'alp search {args.name}' ile denetleyin.")
+    shown = cands[:5]
+    print(f"{args.name!r} alp kataloğunda yok. Flathub'da bulunanlar:")
+    for i, (app, name) in enumerate(shown, 1):
+        print(f"  {i}. {name} ({app})")
+    choice = _choose_flathub(args.name, shown, getattr(args, "yes", False))
+    if choice is None:
+        print("İptal edildi, hiçbir şey değişmedi.")
+        return 1
+    app, name = choice
+    paths.ensure()
+    with DbLock(paths.lock_file):
+        _require_no_pending(paths)
+        db = load_db(paths)
+        if app in db["packages"]:
+            print(f"{name} ({app}) zaten kurulu.")
+            return 0
+        if not args.dry_run and not _confirm(f"{name} ({app}) Flathub'dan kurulsun mu?", getattr(args, "yes", False)):
+            print("İptal edildi, hiçbir şey değişmedi.")
+            return 1
+        record = install_flatpak({"flatpak_ref": app, "remote": FLATHUB_REMOTE}, args.dry_run)
+        if args.dry_run:
+            return 0
+        record["reason"] = "explicit"
+        record["description"] = f"{name} (Flathub)"
+        db["packages"][app] = record
+        save_db(paths, db)
+        print(f"Kuruldu: {name} ({app}), Flathub. Kaldırmak için: alp remove {app}")
+    return 0
+
+
 def cmd_install(args: argparse.Namespace, paths: Paths, index: dict, index_dir: Path) -> int:
     if args.name not in index["entries"]:
-        raise AlpError(f"Bilinmeyen paket: {args.name!r}. Önce 'alp search {args.name}' ile denetleyin.")
+        if getattr(args, "no_flathub", False):
+            raise AlpError(f"Bilinmeyen paket: {args.name!r}. Önce 'alp search {args.name}' ile denetleyin.")
+        return _install_from_flathub(args, paths)
 
     paths.ensure()
     with DbLock(paths.lock_file):
@@ -4016,6 +4107,8 @@ def build_parser() -> argparse.ArgumentParser:
         g.add_argument("--keyring", default=None if default is False else default, help=argparse.SUPPRESS)
         g.add_argument("--allowed-keys", default=None if default is False else default, help=argparse.SUPPRESS)
         g.add_argument("--jobs", type=int, default=None if default is False else default, help=argparse.SUPPRESS)
+        # D163: the PackageKit backend (Discover has its own Flatpak backend) turns the Flathub offer off
+        g.add_argument("--no-flathub", action="store_true", default=default, help=argparse.SUPPRESS)
 
     global_options(p, False)
     common = _AlpArgumentParser(add_help=False)

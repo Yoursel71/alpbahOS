@@ -414,8 +414,11 @@ def _index(tmp_path: Path, entries: dict) -> tuple[dict, Path]:
     return {"schema_version": 1, "entries": entries}, tmp_path
 
 
-def test_cmd_install_rejects_unknown_package(paths: alp.Paths, tmp_path: Path):
+def test_cmd_install_rejects_unknown_package(paths: alp.Paths, tmp_path: Path, monkeypatch):
     import argparse
+    # D163: an unknown name is looked up on Flathub first; no candidate there keeps the old error. The host's own
+    # flatpak is never asked (tests/test_flathub_fallback.py covers the Flathub path).
+    monkeypatch.setattr(alp, "flathub_candidates", lambda term: [])
     args = argparse.Namespace(name="ghost", dry_run=False, reinstall=False)
     index, index_dir = _index(tmp_path, {})
     with pytest.raises(alp.AlpError, match="Bilinmeyen paket"):

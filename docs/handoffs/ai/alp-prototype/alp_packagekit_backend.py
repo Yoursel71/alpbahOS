@@ -91,7 +91,8 @@ def alp_info(alp_path: Path, root: Path, index: Path, name: str) -> dict:
 
 def alp_install(alp_path: Path, root: Path, index: Path, name: str) -> str:
     # --yes: PackageKit/polkit already asked the user; alp must not ask again.
-    proc = _run_alp(alp_path, root, index, ["install", "--yes", name])
+    # --no-flathub: Discover lists Flathub apps through its own Flatpak backend (D163)
+    proc = _run_alp(alp_path, root, index, ["install", "--yes", "--no-flathub", name])
     if proc.returncode != 0:
         raise AlpBackendError(proc.stderr.strip() or f"alp install {name} başarısız", is_locked=_is_lock_error(proc.stderr))
     return proc.stdout
