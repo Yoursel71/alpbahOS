@@ -22,6 +22,8 @@ if [ "$SRCDIR" = "-" ]; then SRC=$(find "$W/src" -mindepth 1 -maxdepth 1 -type d
 BLD=/tmp/${BLD_NAME:-build-$NAME}
 rm -rf "$R4$BLD" "$R4/tmp/stage-$NAME" && mkdir -p "$R4$BLD"
 cp -a "$SRC/." "$R4$BLD/"
+# APPS-01 (opt-in): DROP_SRC=1 removes the host copy of the unpacked tree once it is in the chroot (large trees).
+[ "${DROP_SRC:-0}" != 1 ] || rm -rf "$W/src"
 # Round 12: optional patch applied first in the build dir (PRE_PATCH=<file>, used by the itstool lxml patch).
 if [ -n "${PRE_PATCH:-}" ]; then cp "$PRE_PATCH" "$R4$BLD/.pre.patch"; fi
 EXTRA_COPIED=""

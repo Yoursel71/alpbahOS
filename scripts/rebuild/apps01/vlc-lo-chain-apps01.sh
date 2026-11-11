@@ -9,7 +9,7 @@ SB=/home/yrslf/alpbahOS/scratch-lfs-bench
 WT=/home/yrslf/alpbahOS/wt-t2-kisayol
 A=$WT/scripts/rebuild/apps01
 SRC=$SB/apps01-src
-export NICE=${NICE:-10} JOBS=${JOBS:-14}
+export NICE=${NICE:-10} JOBS=${JOBS:-14} DROP_SRC=1
 mkdir -p "$SB/r10/dl"
 link() { [ -e "$SB/r10/dl/$1" ] || ln "$SRC/$1" "$SB/r10/dl/$1"; }
 ARGS=("$@")

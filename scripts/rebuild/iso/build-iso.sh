@@ -211,6 +211,9 @@ mv "$LIVE/boot/initramfs-live.img" "$ISOTREE/tree/boot/initramfs-live.img"
 cp "$LIVE/boot/vmlinuz-$KVER" "$ISOTREE/tree/boot/vmlinuz"
 rm -rf "$LIVE/var/cache/"* "$LIVE/var/tmp/"* "$LIVE/tmp/"* 2>/dev/null || true
 find "$LIVE/root" "$LIVE/home" -name .bash_history -delete 2>/dev/null || true
+# ROOT-HOME-01 (round 37): root's home in the build root holds build and debug leftovers (cargo cache, kwin logs,
+# debug builds, about 550 MB on 2026-11-11). The image ships an empty /root; only this writable copy is emptied.
+find "$LIVE/root" -mindepth 1 -delete
 
 cat > "$ISOTREE/excludes.txt" << 'EOF'
 dev
@@ -261,6 +264,7 @@ done
 for p in sources tools iso blfs-work; do check_absent "$p"; done
 awk '$NF=="squashfs-root/tmp" {print $1}' "$LL" | grep -qx 'drwxrwxrwt' || die "squashfs /tmp mode"
 awk '$NF=="squashfs-root/root" {print $1}' "$LL" | grep -qx 'drwxr-x---' || die "squashfs /root mode"
+if awk 'index($NF, "squashfs-root/root/") == 1 {f=1} END {exit !f}' "$LL"; then die "squashfs /root is not empty (ROOT-HOME-01)"; fi
 # INSTALL-UID-01 (D148): nothing outside /home/live may belong to UID or GID 1000 (the live user's IDs, which the first
 # installed user gets): not / itself and not a leftover build tree. Field 6 of -lln is the path.
 L /usr/bin/unsquashfs -lln /iso/tree/LiveOS/squashfs.img > "$ISOTREE/squashfs-lln.txt" 2>/dev/null || die "unsquashfs -lln failed"
