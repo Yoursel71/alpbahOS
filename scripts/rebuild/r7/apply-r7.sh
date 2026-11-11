@@ -6,11 +6,13 @@ set -euo pipefail
 export LC_ALL=C
 SB=/home/yrslf/alpbahOS/scratch-lfs-bench
 WT=/home/yrslf/alpbahOS/wt-t2-kisayol
-R4=$SB/r4-root
+# Opt-in (2026-11-11, updating the user's real install): TARGET_ROOT and LEDGER_DIR point the same record at another
+# root and ledger; defaults unchanged.
+R4=${TARGET_ROOT:-$SB/r4-root}
 ALP=$WT/docs/handoffs/claude/alp-prototype/alp.py
 LIB=$WT/scripts/rebuild/r4/r4_lib.py
 script=$1; name=$2; ver=$3; shift 3
-dir=$SB/r4-ledger/r7/$name
+dir=${LEDGER_DIR:-$SB/r4-ledger/r7}/$name
 mkdir -p "$dir"
 python3 "$script" "$R4" "$ALP" "$dir" "$@"
 man=$dir/manifest.json
