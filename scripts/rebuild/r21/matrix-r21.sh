@@ -253,6 +253,8 @@ cmd_kutu() { # ALP-KUTU-01 (D164, round 41+): the Debian box through alp, as the
   stamp "KUTU start"; agent_start KUTU uefi KUTU-disk virtio 6G
   greeter_login "$R" kutu; sleep 20; shot "$R" kutu-desktop
   gsh "$R" 20 'apt install htop > /tmp/hint.txt 2>&1; echo "apt rc=$?"; sed "s/^/apt-hint: /" /tmp/hint.txt; echo "apt link: $(readlink /usr/bin/apt)"'
+  # FW-DIRLINK-01: the RTX 5060 (GB206) GSP firmware resolves in the installed system
+  gsh "$R" 10 'echo "gb206 -> $(readlink /usr/lib/firmware/nvidia/gb206); $(ls /usr/lib/firmware/nvidia/gb206/gsp/ | tr "\n" " ")"; echo "alp owner: $(grep -l "nvidia/gb206" /var/lib/alp/db.json > /dev/null && echo recorded)"'
   gsh "$R" 30 'r21m-as-user alp install --yes nvidia-smi > /tmp/nv.txt 2>&1; echo "alp install nvidia-smi rc=$?"; sed "s/^/alp-nvidia: /" /tmp/nv.txt'
   gsh "$R" 1800 'r21m-as-user alp install --yes htop > /tmp/kutu-htop.log 2>&1; echo "alp install htop rc=$?"; tail -n 8 /tmp/kutu-htop.log'
   gsh "$R" 30 'r21m-as-user sh -lc "command -v htop; htop --version" 2>&1 | sed "s/^/htop: /"; r21m-as-user alp list 2>&1 | grep kutu | sed "s/^/alp list: /"; ls /home/testuser/.local/share/applications/ 2>&1 | sed "s/^/menu: /"'
