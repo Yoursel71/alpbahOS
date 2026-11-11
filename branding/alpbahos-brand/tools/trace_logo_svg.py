@@ -109,6 +109,198 @@ def path_el(fill, d, height_px, dx=0.0, dy=0.0):
             f'translate(0,{height_px}) scale(0.1,-0.1)" d="{d}"/>')
 
 
+# --- clean redraw of the mark (2026-11-11, user: "hala mükemmel değil") -------------------------------------------
+# The PNG's own edges are stair-stepped, so a curve trace copies the teeth. Instead each layer is traced as polygons
+# only (potrace -a 0), each ring is simplified (Douglas-Peucker), and the path is drawn again: a vertex where the
+# outline turns sharply stays a corner (mountain peaks, cursor corners); through the other vertices a smooth
+# Catmull-Rom curve runs, so straight edges stay straight and curved edges (the gap, the hill) are smooth.
+SIMPLIFY_PX = 1.1      # Douglas-Peucker tolerance in PNG pixels
+CORNER_DEG = 38        # a turn sharper than this is a corner
+
+
+def polygon_rings(mask: Image.Image) -> list[list[tuple[float, float]]]:
+    with tempfile.TemporaryDirectory() as tmp:
+        pbm = Path(tmp) / "m.pbm"
+        mask.point(lambda v: 0 if v else 255).convert("1").save(pbm)
+        svg = subprocess.run(["potrace", "-s", "--flat", "-a", "0", "-t", "40", "-o", "-", str(pbm)],
+                             check=True, capture_output=True, text=True).stdout
+    H8 = mask.height
+    rings = []
+    for d in re.findall(r'<path d="([^"]+)"', svg, re.S):
+        tokens = re.findall(r"[MmLlZz]|-?\d+(?:\.\d+)?", d)
+        i, cur, ring, cmd = 0, (0.0, 0.0), [], None
+        while i < len(tokens):
+            t = tokens[i]
+            if t in "MmLlZz":
+                cmd = t
+                i += 1
+                if t in "Zz":
+                    if ring:
+                        rings.append(ring)
+                    ring = []
+                continue
+            x, y = float(tokens[i]), float(tokens[i + 1])
+            i += 2
+            if cmd in "Ml" or (cmd == "m"):
+                pass
+            if cmd == "M":
+                if ring:
+                    rings.append(ring)
+                cur, ring = (x, y), [(x, y)]
+                cmd = "L"
+            elif cmd == "m":
+                if ring:
+                    rings.append(ring)
+                cur = (cur[0] + x, cur[1] + y)
+                ring = [cur]
+                cmd = "l"
+            elif cmd == "l":
+                cur = (cur[0] + x, cur[1] + y)
+                ring.append(cur)
+            elif cmd == "L":
+                cur = (x, y)
+                ring.append(cur)
+        if ring:
+            rings.append(ring)
+    # potrace units: 0.1 px of the 8x bitmap, y up -> PNG pixels, y down
+    return [[(px / 10 / SCALE, (H8 - py / 10) / SCALE) for px, py in r] for r in rings]
+
+
+def dp(points, eps):
+    if len(points) < 3:
+        return points
+    (x1, y1), (x2, y2) = points[0], points[-1]
+    dx, dy = x2 - x1, y2 - y1
+    n = (dx * dx + dy * dy) ** 0.5 or 1e-9
+    far, idx = -1.0, 0
+    for i in range(1, len(points) - 1):
+        x, y = points[i]
+        dd = abs(dy * x - dx * y + x2 * y1 - y2 * x1) / n
+        if dd > far:
+            far, idx = dd, i
+    if far <= eps:
+        return [points[0], points[-1]]
+    return dp(points[:idx + 1], eps)[:-1] + dp(points[idx:], eps)
+
+
+def simplify_ring(ring):
+    if ring[0] == ring[-1]:
+        ring = ring[:-1]
+    # split the closed ring at its two farthest points so DP works on open chains
+    far = max(range(len(ring)), key=lambda i: (ring[i][0] - ring[0][0]) ** 2 + (ring[i][1] - ring[0][1]) ** 2)
+    a = dp(ring[:far + 1], SIMPLIFY_PX)
+    b = dp(ring[far:] + [ring[0]], SIMPLIFY_PX)
+    return a[:-1] + b[:-1]
+
+
+def smooth_path(ring) -> str:
+    import math
+    n = len(ring)
+    if n < 3:
+        return ""
+    def turn(i):
+        (ax, ay), (bx, by), (cx, cy) = ring[i - 1], ring[i], ring[(i + 1) % n]
+        a1, a2 = math.atan2(by - ay, bx - ax), math.atan2(cy - by, cx - bx)
+        d = abs((a2 - a1 + math.pi) % (2 * math.pi) - math.pi)
+        return math.degrees(d)
+    corner = [turn(i) > CORNER_DEG for i in range(n)]
+    tang = []
+    for i in range(n):
+        if corner[i]:
+            tang.append((0.0, 0.0))
+        else:
+            (px, py), (qx, qy) = ring[i - 1], ring[(i + 1) % n]
+            tang.append(((qx - px) / 2, (qy - py) / 2))
+    out = [f"M{ring[0][0]:.2f},{ring[0][1]:.2f}"]
+    for i in range(n):
+        j = (i + 1) % n
+        (x0, y0), (x1, y1) = ring[i], ring[j]
+        if corner[i] and corner[j]:
+            out.append(f"L{x1:.2f},{y1:.2f}")
+            continue
+        c1 = (x0 + tang[i][0] / 3, y0 + tang[i][1] / 3)
+        c2 = (x1 - tang[j][0] / 3, y1 - tang[j][1] / 3)
+        out.append(f"C{c1[0]:.2f},{c1[1]:.2f} {c2[0]:.2f},{c2[1]:.2f} {x1:.2f},{y1:.2f}")
+    return "".join(out) + "Z"
+
+
+def despike(ring, short=3.5, sharp=100):
+    """Drop tiny spurs left by the PNG's stair steps: a vertex whose two neighbouring edges are both short and that
+    turns back sharply (a one-pixel tooth on a peak or a corner)."""
+    import math
+    changed = True
+    while changed and len(ring) > 4:
+        changed = False
+        n = len(ring)
+        for i in range(n):
+            (ax, ay), (bx, by), (cx, cy) = ring[i - 1], ring[i], ring[(i + 1) % n]
+            l1, l2 = math.hypot(bx - ax, by - ay), math.hypot(cx - bx, cy - by)
+            a1, a2 = math.atan2(by - ay, bx - ax), math.atan2(cy - by, cx - bx)
+            t = math.degrees(abs((a2 - a1 + math.pi) % (2 * math.pi) - math.pi))
+            if min(l1, l2) < short and t > sharp:
+                del ring[i]
+                changed = True
+                break
+    return ring
+
+
+def clean_layer(mask: Image.Image) -> str:
+    return "".join(smooth_path(despike(simplify_ring(r))) for r in polygon_rings(mask) if len(r) > 3)
+
+
+# --- hand geometry of the mark (2026-11-11, second user review: traced edges still had teeth) --------------------
+# The vertices below were measured on the PNG (simplified polygons of each colour layer, see clean_layer) and then
+# drawn as clean geometry: straight edges, single sharp peaks, smooth curves through the listed points (Catmull-Rom);
+# "c" marks a corner. The snow face shares its left curve with the mountain's inner edge, so no dark rim is left.
+CYAN_LEFT = [(147.5, 70.5), (155.1, 108.4), (166.5, 128.6), (179.3, 145.4), (191.6, 157.1), (208.7, 167.9),
+             (234.2, 178.8), (245.2, 181.9)]
+MOUNTAIN = ([("c", 146.0, 40.0), ("c", 186.5, 95.0), ("c", 198.5, 85.5), ("c", 273.0, 193.5), ("c", 245.2, 181.9)]
+            + [("s", x, y) for x, y in reversed(CYAN_LEFT[1:-1])]
+            + [("c", 147.5, 70.5), ("s", 120.0, 112.0), ("s", 100.1, 138.6), ("s", 77.2, 149.3), ("s", 62.4, 161.3),
+               ("s", 55.5, 172.5), ("c", 53.0, 197.3), ("c", 16.5, 197.5), ("c", 85.6, 93.4), ("c", 98.8, 109.5)])
+CYAN = ([("c", *CYAN_LEFT[0])] + [("s", x, y) for x, y in CYAN_LEFT[1:-1]]
+        + [("c", 245.2, 181.9), ("c", 197.8, 113.0), ("c", 187.5, 122.2)])
+HILL = [("c", 134.5, 125.6), ("s", 166.5, 152.9), ("s", 187.2, 165.8), ("s", 252.0, 196.5), ("s", 266.0, 205.5),
+        ("c", 276.0, 217.3), ("c", 98.0, 217.6), ("s", 85.5, 215.5), ("s", 75.5, 208.0), ("s", 69.5, 195.0),
+        ("s", 69.5, 177.5), ("s", 76.5, 162.5), ("s", 88.0, 151.6)]
+PROMPT = [(90.8, 164.8), (121.8, 181.0), (121.8, 188.2), (90.8, 204.2), (90.8, 195.6), (109.0, 184.6), (90.8, 173.6)]
+CURSOR = (128.0, 195.6, 33.2, 8.4)   # x, y, w, h
+
+
+def spline_path(points) -> str:
+    """Closed path through (kind, x, y); kind "c" = corner (no tangent), "s" = smooth (Catmull-Rom tangent)."""
+    n = len(points)
+    pts = [(x, y) for _, x, y in points]
+    tang = []
+    for i, (kind, _, _) in enumerate(points):
+        if kind == "c":
+            tang.append((0.0, 0.0))
+        else:
+            (px, py), (qx, qy) = pts[i - 1], pts[(i + 1) % n]
+            tang.append(((qx - px) / 2, (qy - py) / 2))
+    out = [f"M{pts[0][0]:.2f},{pts[0][1]:.2f}"]
+    for i in range(n):
+        j = (i + 1) % n
+        (x0, y0), (x1, y1) = pts[i], pts[j]
+        if points[i][0] == "c" and points[j][0] == "c":
+            out.append(f"L{x1:.2f},{y1:.2f}")
+        else:
+            out.append(f"C{x0 + tang[i][0] / 3:.2f},{y0 + tang[i][1] / 3:.2f} "
+                       f"{x1 - tang[j][0] / 3:.2f},{y1 - tang[j][1] / 3:.2f} {x1:.2f},{y1:.2f}")
+    return "".join(out) + "Z"
+
+
+def hand_mark(colours) -> list[str]:
+    x, y, w, h = CURSOR
+    prompt = "M" + " L".join(f"{px:.2f},{py:.2f}" for px, py in PROMPT) + "Z"
+    return [f'<path fill="{colours["navy"]}" d="{spline_path(MOUNTAIN)}"/>',
+            f'<path fill="{colours["cyan"]}" d="{spline_path(CYAN)}"/>',
+            f'<path fill="{colours["navy"]}" d="{spline_path(HILL)}"/>',
+            f'<path fill="{colours["white"]}" stroke="{colours["white"]}" stroke-width="1.6" stroke-linejoin="round" '
+            f'd="{prompt}"/>',
+            f'<rect fill="{colours["orange"]}" x="{x}" y="{y}" width="{w}" height="{h}" rx="1.6"/>']
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--inter", type=Path, default=INTER_DEFAULT)
@@ -132,7 +324,7 @@ def main() -> int:
         "white": mask_of(im, lambda p, x, y: in_mark(y) and near(x, y, "white") and coverage(p, navy_c, white_c)),
         "orange": mask_of(im, lambda p, x, y: in_mark(y) and near(x, y, "orange") and coverage(p, navy_c, orange_c)),
     }
-    traced = {k: trace(m) for k, m in layers.items()}
+    # measurement only (clean_layer): the drawn mark is hand_mark()
     H8 = im.height * SCALE
     pts = [(x, y) for y in range(cut) for x in range(im.width) if classify(im.load()[x, y])]
     mx0, my0 = min(p[0] for p in pts), min(p[1] for p in pts)
@@ -175,8 +367,7 @@ def main() -> int:
                f"<!-- alpbahOS logo. Mark traced from docs/assets/alpbahOS-logo.png, wordmark Inter Bold (Inter 4.1, "
                f"SIL OFL 1.1) as in D155; {version.split('.')[0]}.{version.split('.')[1][:2]} "
                f"(branding/alpbahos-brand/tools/trace_logo_svg.py). -->"]
-        for k in ("navy", "cyan", "white", "orange"):
-            out.append(path_el(colours[k], " ".join(traced[k]), H8))
+        out.extend(hand_mark(colours))
         if with_word:
             for part, fill in zip(("alpbah", "OS"), word_fills):
                 paths, h, dx = word[part]
