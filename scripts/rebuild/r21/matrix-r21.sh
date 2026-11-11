@@ -246,8 +246,8 @@ cmd_apps() { # APPS-01 (round 37+): the preinstalled apps in the test user's Way
   vmquit "$R"; rm -f "$D/APPS-disk.raw"; stamp "APPS end (copy removed)"
 }
 
-cmd_kutu() { # ALP-KUTU-01 (D164, round 41+): the Debian box through alp, as the test user and the sudo way (root with
-  # SUDO_USER, so alp runs the box step again as that user); the apt hint (D123, also as root); a driver name refused;
+cmd_kutu() { # ALP-KUTU-01 (D164, round 41+): the Debian box through alp, as the test user and through a real sudo
+  # (alp runs the box step again as SUDO_USER); the apt hint (D123, also as root); a driver name refused;
   # htop shown in Konsole from the box; remove. Needs network (image pull, Debian mirrors).
   local R=$D/KUTU; fresh "$D/KUTU-disk.raw" "$R"; cmd_mkcopy uefi KUTU-disk
   stamp "KUTU start"; agent_start KUTU uefi KUTU-disk virtio 6G
@@ -256,7 +256,8 @@ cmd_kutu() { # ALP-KUTU-01 (D164, round 41+): the Debian box through alp, as the
   gsh "$R" 30 'r21m-as-user alp install --yes nvidia-smi > /tmp/nv.txt 2>&1; echo "alp install nvidia-smi rc=$?"; sed "s/^/alp-nvidia: /" /tmp/nv.txt'
   gsh "$R" 1800 'r21m-as-user alp install --yes htop > /tmp/kutu-htop.log 2>&1; echo "alp install htop rc=$?"; tail -n 8 /tmp/kutu-htop.log'
   gsh "$R" 30 'r21m-as-user sh -lc "command -v htop; htop --version" 2>&1 | sed "s/^/htop: /"; r21m-as-user alp list 2>&1 | grep kutu | sed "s/^/alp list: /"; ls /home/testuser/.local/share/applications/ 2>&1 | sed "s/^/menu: /"'
-  gsh "$R" 900 'env SUDO_USER=testuser alp install --yes cowsay > /tmp/kutu-cowsay.log 2>&1; echo "sudo-way alp install cowsay rc=$?"; tail -n 6 /tmp/kutu-cowsay.log; r21m-as-user sh -lc "cowsay alpbahOS" 2>&1 | tail -n 8 | sed "s/^/cowsay: /"'
+  # A real sudo (env_reset, secure_path): a NOPASSWD rule for the test user in this test copy only
+  gsh "$R" 900 'install -m 440 /dev/null /etc/sudoers.d/99-kutu-test; echo "testuser ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/99-kutu-test; r21m-as-user sudo -n alp install --yes cowsay > /tmp/kutu-cowsay.log 2>&1; echo "sudo alp install cowsay rc=$?"; tail -n 6 /tmp/kutu-cowsay.log; r21m-as-user sh -lc "cowsay alpbahOS" 2>&1 | tail -n 8 | sed "s/^/cowsay: /"; r21m-as-user sudo -n apt install htop 2>&1 | head -n 2 | sed "s/^/sudo apt: /"'
   gsh "$R" 15 'r21m-as-user --bg konsole -e sh -lc htop; echo started'
   sleep 15; q "$R" key shift; shot "$R" kutu-htop-konsole
   gsh "$R" 10 'pkill -u testuser konsole; sleep 2'

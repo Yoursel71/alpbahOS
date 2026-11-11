@@ -3357,8 +3357,42 @@ def _as_box_user(argv: list[str]) -> int:
     env = [f"HOME={pw.pw_dir}", f"USER={user}", f"LOGNAME={user}", "PATH=/usr/bin:/bin",
            f"XDG_RUNTIME_DIR={runtime}", f"DBUS_SESSION_BUS_ADDRESS=unix:path={runtime}/bus",
            f"LANG={os.environ.get('LANG', 'tr_TR.UTF-8')}", f"TERM={os.environ.get('TERM', 'dumb')}"]
-    cmd = ["runuser", "-u", user, "--", "env", "-i", *env, sys.executable, os.path.abspath(__file__), *argv]
+    me = os.path.abspath(__file__)
+    # No runuser/setpriv in the image (LFS builds util-linux without them): alp switches to the user itself
+    cmd = [sys.executable, "-I", me, _AS_USER_FLAG, user, "--", "/usr/bin/env", "-i", *env, sys.executable, "-I", me,
+           *argv]
     return subprocess.run(cmd).returncode
+
+
+_AS_USER_FLAG = "--alp-internal-as-user"
+
+
+def _as_user_main(argv: list[str]) -> int:
+    """`alp.py --alp-internal-as-user USER -- /absolute/program ARGS...`: become USER (its groups, real/effective/saved
+    ids) and exec. Unlike the build drop (_drop_privileges), no_new_privs stays off: rootless Podman needs the setuid
+    newuidmap/newgidmap. Only root can switch, so a caller gains nothing it did not have."""
+    try:
+        user = argv[0]
+        if len(argv) < 3 or argv[1] != "--" or not os.path.isabs(argv[2]):
+            raise ValueError("kullanım: KULLANICI -- /mutlak/program [argümanlar]")
+        pw = pwd.getpwnam(user)
+        if pw.pw_uid <= 0 or pw.pw_gid <= 0:
+            raise ValueError("root'a geçilmez")
+        os.initgroups(user, pw.pw_gid)
+        os.setresgid(pw.pw_gid, pw.pw_gid, pw.pw_gid)
+        os.setresuid(pw.pw_uid, pw.pw_uid, pw.pw_uid)
+        if os.getresuid() != (pw.pw_uid,) * 3 or os.getresgid() != (pw.pw_gid,) * 3:
+            raise RuntimeError("kimlik değiştirilemedi")
+        try:
+            os.setuid(0)
+        except OSError:
+            pass
+        else:
+            raise RuntimeError("root yetkisi geri alınabiliyor")
+        os.execv(argv[2], argv[2:])
+    except Exception as exc:  # noqa: BLE001 - any doubt: do not run the box step
+        print(f"alp: kullanıcıya geçilemedi, Debian kutusu adımı çalıştırılmadı: {exc}", file=sys.stderr)
+    return 126
 
 
 def _install_from_kutu(args: argparse.Namespace, explicit: bool = True) -> int:
@@ -3375,6 +3409,8 @@ def _install_from_kutu(args: argparse.Namespace, explicit: bool = True) -> int:
             return KUTU_NOT_FOUND
         raise AlpError("Debian kutusu için distrobox ve podman gerekir; bu sistemde yoklar.")
     if _is_root():
+        if not explicit and os.environ.get("SUDO_USER", "root") == "root":
+            return KUTU_NOT_FOUND  # plain root: no box; the other Flathub matches may still be offered
         return _as_box_user(_kutu_argv("install", args))
     yes = getattr(args, "yes", False)
     home = _kutu_home()
@@ -3500,7 +3536,12 @@ def _install_unknown(args: argparse.Namespace, paths: Paths) -> int:
         return rc
     if cands:
         return _install_from_flathub(args, paths, cands)
-    hint = "" if kutu_available() else " (Debian kutusu için distrobox gerekir)"
+    if not kutu_available():
+        hint = " (Debian kutusu için distrobox gerekir)"
+    elif _is_root() and os.environ.get("SUDO_USER", "root") == "root":
+        hint = " (Debian kutusu root oturumundan kullanılamaz; kendi kullanıcınızla 'sudo alp install' yazın)"
+    else:
+        hint = ""
     raise AlpError(f"Bilinmeyen paket: {args.name!r}. alp kataloğunda, Flathub'da ve Debian'da bulunamadı{hint}. "
                    f"'alp search {args.name}' ile denetleyin.")
 
@@ -4581,4 +4622,6 @@ def main(argv: list[str] | None = None) -> int:
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == _DROP_HELPER_FLAG:
         raise SystemExit(_drop_helper_main(sys.argv[2:]))
+    if len(sys.argv) > 1 and sys.argv[1] == _AS_USER_FLAG:
+        raise SystemExit(_as_user_main(sys.argv[2:]))
     raise SystemExit(main())

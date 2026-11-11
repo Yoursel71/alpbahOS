@@ -46,7 +46,7 @@ class FakeBox:
             return cp()
         if cmd[:2] == ["flatpak", "search"]:
             return cp(0, self.flathub)
-        if cmd[0] == "runuser":
+        if alp._AS_USER_FLAG in cmd:
             self.runuser = cmd
             return cp()
         assert cmd[:4] == ENTER, cmd
@@ -165,10 +165,28 @@ def test_sudo_runs_the_box_step_as_the_user(box, monkeypatch):
     monkeypatch.setattr(alp.os.path, "isdir", lambda p: p == "/run/user/1000")
     assert alp._install_from_kutu(_args("htop", yes=True)) == 0
     cmd = box.runuser
-    assert cmd[:5] == ["runuser", "-u", "testuser", "--", "env"]
-    assert "XDG_RUNTIME_DIR=/run/user/1000" in cmd and "HOME=/home/testuser" in cmd
-    assert cmd[-4:] == ["install", "htop", "--kutu", "--yes"]
+    me = alp.os.path.abspath(alp.__file__)
+    assert cmd[:7] == [alp.sys.executable, "-I", me, alp._AS_USER_FLAG, "testuser", "--", "/usr/bin/env"]
+    assert cmd[7] == "-i" and "XDG_RUNTIME_DIR=/run/user/1000" in cmd and "HOME=/home/testuser" in cmd
+    assert cmd[-7:] == [alp.sys.executable, "-I", me, "install", "htop", "--kutu", "--yes"]
     assert box.inner_calls() == []  # nothing ran as root
+
+
+def test_plain_root_in_fallback_skips_the_box(box, paths, monkeypatch):
+    monkeypatch.setattr(alp, "_is_root", lambda: True)
+    monkeypatch.delenv("SUDO_USER", raising=False)
+    with pytest.raises(alp.AlpError, match="root oturumundan kullanılamaz"):
+        alp.cmd_install(_args("htop"), paths, {"entries": {}}, paths.root)
+    assert box.calls == [["flatpak", "search", "--columns=application,name,remotes", "htop"]]
+
+
+@pytest.mark.parametrize("argv", [[], ["testuser"], ["testuser", "x", "/bin/true"], ["testuser", "--", "true"],
+                                  ["root", "--", "/bin/true"], ["nosuchuser-alp", "--", "/bin/true"]])
+def test_as_user_helper_refuses_bad_calls_without_exec(monkeypatch, argv, capsys):
+    monkeypatch.setattr(alp.os, "execv", lambda *a: pytest.fail("must not exec"))
+    monkeypatch.setattr(alp.os, "setresuid", lambda *a: pytest.fail("must not switch"))
+    assert alp._as_user_main(argv) == 126
+    assert "kullanıcıya geçilemedi" in capsys.readouterr().err
 
 
 def test_unknown_name_prefers_an_exact_flathub_match(box, paths):
@@ -247,3 +265,12 @@ def test_list_shows_box_packages_in_text_only(box, paths, tmp_path, capsys):
 def test_main_kutu_flag_needs_no_catalogue(box, tmp_path, capsys):
     rc = alp.main(["install", "htop", "--kutu", "--yes", "--root", str(tmp_path / "nocatalog")])
     assert rc == 0 and "htop" in _state(tmp_path)
+
+
+@pytest.mark.skipif(alp.os.geteuid() != 0, reason="switching users needs root")
+def test_as_user_helper_really_switches_when_root():
+    import pwd as pwdmod
+    nobody = pwdmod.getpwnam("nobody")
+    r = subprocess.run([alp.sys.executable, "-I", alp.os.path.abspath(alp.__file__), alp._AS_USER_FLAG, "nobody", "--",
+                        "/usr/bin/id", "-u"], capture_output=True, text=True)
+    assert r.returncode == 0 and r.stdout.strip() == str(nobody.pw_uid)
