@@ -239,6 +239,10 @@ cmd_apps() { # APPS-01 (round 37+): the preinstalled apps in the test user's Way
   gsh "$R" 30 'gdk-pixbuf-csource --raw /usr/share/pixmaps/firefox.png > /dev/null 2>&1 && echo "pixbuf png: loaded" || echo "pixbuf png: FAILED"'
   gsh "$R" 30 'r21m-as-user busctl --user call org.freedesktop.portal.Desktop /org/freedesktop/portal/desktop org.freedesktop.DBus.Properties Get ss org.freedesktop.portal.FileChooser version 2>&1 | sed "s/^/portal FileChooser version: /"'
   gsh "$R" 600 'flatpak update --appstream -y > /dev/null 2>&1; alp install --dry-run --yes calculator 2>&1 | tail -n 4 | sed "s/^/alp-flathub: /"'
+  # Round 40+: DISTROBOX-01 (D163): a Debian 13 box for the test user (rootless Podman), apt inside it
+  gsh "$R" 15 'echo "subuid testuser: $(grep -c "^testuser:" /etc/subuid) subgid: $(grep -c "^testuser:" /etc/subgid)"'
+  gsh "$R" 900 'r21m-as-user distrobox create --name deb --image docker.io/library/debian:13 --yes > /tmp/dbx-create.log 2>&1; echo "distrobox create rc=$?"; tail -n 3 /tmp/dbx-create.log'
+  gsh "$R" 1200 'r21m-as-user distrobox enter deb -- sh -c "sudo apt-get update -qq > /dev/null 2>&1; sudo apt-get install -y -qq cowsay > /dev/null 2>&1; /usr/games/cowsay alpbahOS; cat /etc/os-release | head -n 1" 2>&1 | tail -n 10 | sed "s/^/dbx: /"'
   vmquit "$R"; rm -f "$D/APPS-disk.raw"; stamp "APPS end (copy removed)"
 }
 

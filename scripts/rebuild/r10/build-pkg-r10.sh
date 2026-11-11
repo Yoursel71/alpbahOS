@@ -31,7 +31,9 @@ for f in ${EXTRA_FILES:-}; do cp "$f" "$R4/tmp/" && EXTRA_COPIED="$EXTRA_COPIED 
 JOBS=${JOBS:-16}
 OPTS="$*"
 mount --bind /dev "$R4/dev"; mount -t proc proc "$R4/proc"; mount -t sysfs sys "$R4/sys"; mount -t tmpfs tmpfs "$R4/run"
-cleanup() { umount "$R4/run" "$R4/sys" "$R4/proc" "$R4/dev" 2>/dev/null || true; }
+# 2026-11-11: one target at a time, lazy if busy (a /dev bind was once left behind after a failed configure)
+cleanup() { local t; for t in "$R4/run" "$R4/sys" "$R4/proc" "$R4/dev"; do
+  mountpoint -q "$t" && { umount "$t" 2>/dev/null || umount -l "$t" 2>/dev/null || true; }; done; }
 trap cleanup EXIT
 case "$KIND" in
 meson)
