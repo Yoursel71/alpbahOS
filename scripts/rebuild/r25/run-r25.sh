@@ -100,7 +100,7 @@ ksplash)
     R=$L/KS1; G start bios "$IMGB" "$R" > /dev/null 2>&1 || true
     # vm-gui start makes a reflink copy; the login below starts the session, the burst records the next 12 s.
     PW=$(cat "$B/test-secrets/r21.pw")
-    Q "$R" click 766 489; sleep 1; G type "$R" "$PW"; Q "$R" key ret
+    Q "$R" click 622 474; sleep 1; G type "$R" "$PW"; Q "$R" key ret
     python3 scripts/rebuild/r24/qmp-burst.py "$R" 12 nopower > "$R/burst.out" 2>&1
     python3 -c "
 import glob

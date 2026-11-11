@@ -123,7 +123,7 @@ agent_start() { # name fw copy-name bus mem   (NO_REBOOT, NVME_BOOTINDEX, EXTRA_
 greeter_login() { # run-dir shot-prefix [password-file]: waits for the boot line of the test shell, then logs in
   local R=$1 P=$2 i PWFILE=${3:-$PWF}
   for i in $(seq 1 90); do grep -aq "R21M begin" "$R/serial.log" 2> /dev/null && break; sleep 2; done
-  sleep 20; shot "$R" "$P-greeter"; q "$R" click 766 489; sleep 2; shot "$R" "$P-greeter-clicked"
+  sleep 20; shot "$R" "$P-greeter"; q "$R" click 622 474; sleep 2; shot "$R" "$P-greeter-clicked"
   q "$R" text "$(cat "$PWFILE")"; q "$R" key ret
   for i in $(seq 1 60); do gsh "$R" 8 'pgrep -u testuser -x plasmashell > /dev/null && echo SESSION-UP' 2> /dev/null | grep -q SESSION-UP && break; sleep 3; done
   gsh "$R" 8 'echo "session: plasmashell pid $(pgrep -u testuser -x plasmashell | head -n 1), $(loginctl list-sessions --no-legend | tr -s " " | tr "\n" ";")"'
@@ -201,7 +201,7 @@ cmd_r1() { # reboot through the session's org.kde.Shutdown logoutAndReboot, QEMU
   gsh "$R" 0 "r21m-as-user $SHUTCALL logoutAndReboot"; echo "org.kde.Shutdown logoutAndReboot sent $(date -Is)"
   for i in $(seq 1 150); do [ "$(grep -ac 'R21M begin' "$R/serial.log")" -ge 2 ] && break; sleep 2; done
   echo "boot lines in the serial log: $(grep -ac 'R21M begin' "$R/serial.log")"; grep -a 'R21M begin' "$R/serial.log"
-  sleep 20; shot "$R" r1-boot2-greeter; q "$R" click 766 489; sleep 3; shot "$R" r1-boot2-greeter-clicked
+  sleep 20; shot "$R" r1-boot2-greeter; q "$R" click 622 474; sleep 3; shot "$R" r1-boot2-greeter-clicked
   gsh "$R" 10 'echo "boot 2: $(cat /proc/sys/kernel/random/boot_id) uptime $(cut -d" " -f1 /proc/uptime) s; sessions: $(loginctl list-sessions --no-legend | tr -s " " | tr "\n" ";"); failed units $(systemctl --failed --no-legend | wc -l)"'
   cat "$R/qmp-events.log"; vmquit "$R"; cmd_check R1-disk after
   stamp "R1 end"
@@ -268,7 +268,7 @@ cmd_reclive() { # bios|uefi name "<recover arguments>"      live ISO first, brok
 cmd_recboot() { # bios|uefi name: the repaired copy alone
   local FW=$1 N=$2 R=$D/$2-boot CP=$D/$2-broken.raw; fresh "$R"
   ACCEL=kvm bash "$W/vm-start.sh" "$FW" "" "$R" "$CP" virtio 4G > /dev/null
-  sleep 60; shot "$R" rec-disk-greeter; q "$R" click 766 489; sleep 3; shot "$R" rec-disk-greeter-clicked
+  sleep 60; shot "$R" rec-disk-greeter; q "$R" click 622 474; sleep 3; shot "$R" rec-disk-greeter-clicked
   vmquit "$R"; stamp "$N boot of the repaired copy done"
 }
 
@@ -330,7 +330,7 @@ cmd_kfdisk() { OUTD=$D bash "$WT/scripts/rebuild/r20/disk-check-r20.sh" "$IMGK" 
 cmd_kfboot() { # the KF install with -snapshot, greeter login with the digits password; GUI steps by hand afterwards
   local R=$D/${1:-KF-boot}; fresh "$R"
   EXTRA_ARGS="-snapshot" ACCEL=kvm bash "$W/vm-start.sh" bios "" "$R" "$IMGK" virtio 4G > /dev/null
-  sleep 50; shot "$R" kf-greeter; q "$R" click 766 489; sleep 2; q "$R" text "$(cat "$KPW")"; q "$R" key ret; sleep 50; shot "$R" kf-desktop
+  sleep 50; shot "$R" kf-greeter; q "$R" click 622 474; sleep 2; q "$R" text "$(cat "$KPW")"; q "$R" key ret; sleep 50; shot "$R" kf-desktop
 }
 cmd_kfagent() { # reflink copy of the KF install with the test shell; logs the test user in
   fresh "$D/KF-agent-disk.raw"; cmd_mkcopy bios KF-agent-disk "$IMGK"

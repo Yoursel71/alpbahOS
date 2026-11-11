@@ -9,7 +9,7 @@ Q="python3 $W/qmpctl.py $R"
 rm -rf "$R"
 EXTRA_ARGS="-device intel-hda -device hda-duplex" ACCEL=kvm bash $W/vm-start.sh bios "" "$R" "$DISK" virtio 6G > /dev/null
 sleep 100
-$Q click 766 489; sleep 1
+$Q click 622 474; sleep 1
 $Q text TestPass; $Q key equal; $Q text 0; $Q key slash; $Q text 9; $Q key ret
 sleep 50
 $Q combo alt spc; sleep 2

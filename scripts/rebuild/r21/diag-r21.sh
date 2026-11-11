@@ -128,7 +128,7 @@ sudo umount "$M"; sudo losetup -d "$LO"; rmdir "$M"
 if [ "${NIC_NONE:-0}" = 1 ]; then NICV=none; else NICV="user,model=virtio-net-pci,hostfwd=tcp:127.0.0.1:$PORT-:8080"; fi
 Q="python3 $W/qmpctl.py $R"
 NIC="$NICV" ACCEL=kvm bash $W/vm-start.sh "$FW" "" "$R" "$CP" "${BUS:-virtio}" "${MEM:-6G}" > /dev/null
-sleep 95; $Q shot "$NAME-greeter"; $Q click 766 489; sleep 1; $Q text "$PW"; $Q key ret; sleep 60; $Q shot "$NAME-desktop"
+sleep 95; $Q shot "$NAME-greeter"; $Q click 622 474; sleep 1; $Q text "$PW"; $Q key ret; sleep 60; $Q shot "$NAME-desktop"
 if [ "${NIC_NONE:-0}" != 1 ]; then
   for n in 1 2; do
     for i in $(seq 1 60); do grep -aq "probe-$n-ready" "$R/serial.log" && break; sleep 5; done
