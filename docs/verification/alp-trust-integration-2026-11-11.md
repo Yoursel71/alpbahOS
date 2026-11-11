@@ -266,7 +266,7 @@ no catalog), and the chroot calls (`r13-records.sh`, `image-alp-check.sh`, `iso-
 which use the root's own keys.
 
 Trials (`hostkeys.log`; integrated root = a read-only snapshot of the live r4-root taken for the test and deleted
-afterwards, old root = `r4-before-trust-2026-11-11`, read-only; new alp.py `7e7626b7`, old alp.py `bd8416f4` from the
+afterwards, old root = `r4-before-trust-2026-11-11`, read-only; new alp.py = the repo file of this branch, old alp.py = the one installed in the
 old root):
 
 | Call | integrated root, new alp | integrated root, old alp | old root, new alp | old root, old alp |
