@@ -1,0 +1,10 @@
+# host thewo, Python 3.14.7, 2026-11-11T02:56:07Z, HEAD 4408ee6, sudo
+.......................................................................s [ 66%]
+s........................s.............................................. [ 83%]
+......s................................................................. [100%]
+=========================== short test summary info ============================
+SKIPPED [1] tests/test_m02_rollback.py:195: needs POSIX permissions and a non-root user
+SKIPPED [2] tests/test_trust_catalog.py:236: root olmayan kullanıcı gerekir
+SKIPPED [1] tests/test_trust_catalog.py:411: root olmayan kullanıcı gerekir
+SKIPPED [1] tests/test_trust_sandbox.py:341: root olmayan kullanıcı gerekir
+427 passed, 5 skipped in 21.55s

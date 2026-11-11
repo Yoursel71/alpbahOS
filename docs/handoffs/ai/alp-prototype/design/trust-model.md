@@ -1,7 +1,11 @@
 # alp trust model: signed catalog and unprivileged builds (design note, C9)
 
-Status: **design for external review, no code yet** (review item C9, 2026-11-10). The user has this note reviewed
-before anything is implemented. BACKLOG: ALP-TRUST-01.
+Status: **accepted by the user 2026-11-10 (D170); implemented in the prototype** (`alp.py`, branch
+`claude/alp-trust-2026-11-10`), **not yet in any image**. Record:
+[alp-trust-2026-11-10.md](../../../../verification/alp-trust-2026-11-10.md). BACKLOG: ALP-TRUST-01.
+The four open questions of section 8 have default answers (D171-D174) that the user can change; section 9 lists
+where the code differs from this note. The text below is the note as reviewed, with rule 3 of section 3.3 and the
+`valid_until` window updated to D172.
 
 ## 1. Problem
 
@@ -51,7 +55,7 @@ protection cover that. Compromise of the signing key is handled by rotation and 
 - One file is signed: `index.json`, with a detached `index.json.sig` next to it.
 - `index.json` gains fields, all inside the signed bytes:
   - `catalog_version`: an integer that only grows;
-  - `valid_until`: an ISO date (proposed: 30 days after signing);
+  - `valid_until`: an ISO date (90 days after signing, D172; the note first proposed 30);
   - `signed_keyring_version`: the keyring version it expects (4);
   - for every package entry, `recipe_sha256`: the sha256 of the recipe JSON file it names.
 - Recipes already carry the sha256 of their source tarball. So one signature covers the whole chain:
@@ -63,8 +67,10 @@ protection cover that. Compromise of the signing key is handled by rotation and 
 
 1. Signature valid and made by an allowed, unrevoked key: otherwise refuse, keep the old catalog, Turkish error.
 2. `catalog_version` >= the last version alp accepted (stored in the alp database): otherwise refuse (rollback).
-3. `valid_until` not in the past: otherwise `alp update` refuses it, and an install from an expired local catalog
-   refuses with "katalog süresi doldu, `alp update` çalıştırın" (freeze).
+3. `valid_until` not in the past: otherwise `alp update` refuses the new catalog (freeze). The catalog already on
+   disk is still used after `valid_until`: alp warns "katalog süresi doldu ... `alp update` çalıştırın" on every
+   command and goes on, as long as rules 1 and 2 hold (D172; the first version of this note refused here). Reason:
+   the image ships a signed snapshot and must be able to install offline.
 4. Each recipe file's sha256 equals `recipe_sha256` before the recipe is read.
 
 ### 3.4 When it is checked
@@ -147,7 +153,8 @@ one `gpgv` call per command (milliseconds).
   matches. Refused, the old catalog stays.
 - A missing signature: refused, unless `--allow-unsigned`.
 - A signature by a key that is not in the keyring, or by a revoked key: refused.
-- An older `catalog_version` than the last accepted one: refused. An expired `valid_until`: refused.
+- An older `catalog_version` than the last accepted one: refused. An expired `valid_until`: refused at
+  `alp update`, warning at local use (D172).
 - A build step that tries to write outside its build dir (`/etc/x`, `/usr/bin/x`, `$HOME/x` of root): the step
   fails and nothing outside the stage changes.
 - A build step that tries to use the network: it fails.
@@ -162,3 +169,50 @@ one `gpgv` call per command (milliseconds).
 3. Where should the private key live (hardware token or offline machine), and who holds the backup key?
 4. Is refusing source builds without a sandbox (6.1, last bullet) acceptable, or should binary-only installs be
    the only path for end users?
+
+Default answers taken on 2026-11-10 (open to the user's change): 1 -> D171 (gpgv); 2 -> D172 (90 days, warning at
+local use); 3 -> D173 for the public side, the private key's home is still open; 4 -> D174 (refuse, `--no-sandbox`
+for root).
+
+## 9. Implementation notes (2026-11-10)
+
+Where the code is stricter than, or different from, the text above:
+
+- **Same bytes verified and parsed.** `index.json` and `index.json.sig` are read once; gpgv gets the data on stdin
+  and the signature and keyring through anonymous descriptors (`memfd`); the JSON parser runs on the same bytes.
+  Recipes are read once, hashed, and the same bytes parsed.
+- **Signature rules beyond 3.1:** exactly one signature; binary class (00) only; SHA-256/384/512 only; gpgv and
+  bwrap are taken from fixed paths, not `PATH`; gpgv runs with an empty environment and a non-existent home.
+- **`allowed.txt`** names primary-key fingerprints; `revoked` matches the primary key or the signing subkey.
+- **`signed_keyring_version`** is checked for type and compared with `keyring-version` in `allowed.txt`; a catalog
+  that expects a newer keyring prints a hint and is still accepted (it is how the keyring update arrives). The
+  "install `alp-keyring` first, then check again" step of section 4 is **not implemented**; it needs the package.
+- **Bundles:** only files the accepted index names are installed, each checked against the sha256 the index pins.
+  Everything else in the archive is ignored. Before, every file was copied, which would have let a sender add a
+  keyring next to a genuine signed index.
+- **Git catalogs:** the fetched commit is verified from the object store (`git show`) before the fast-forward, and
+  again from the files after it. alp refuses a git update when the keyring or `allowed.txt` is inside the checkout.
+- **`alp update` with an unusable local catalog** still runs (it is the way out), but then takes nothing from the
+  local catalog: the source must be given with `--source`. `alp recover` needs no catalog at all.
+- **Rollback floor at update** is the higher of the stored version and the verified local catalog's version, so a
+  fresh install is protected before anything was stored. An unsigned catalog never changes the stored version.
+- **Sandbox:** `/run` is also a private tmpfs (its sockets reach D-Bus, resolved and nscd, which a network
+  namespace does not close); `--unshare-uts` is added. The build tree stays in `var/lib/alp/cache/` (the note said
+  `var/lib/alp/build/<transaction>/`). `MAKEFLAGS` is `-j<--jobs>` (default 1) and nothing is inherited from the
+  caller's environment, also with `--no-sandbox`.
+- **Ordinary users:** alp run by a non-root user starts bubblewrap directly, with no privilege drop (there is
+  nothing to drop). `--no-sandbox` and `--allow-unsigned` are refused for non-root.
+- **Stage checks:** allowed top-level directories are `usr etc var opt boot srv bin sbin lib lib32 lib64 libx32`;
+  `var/lib/alp` and `var/log/alp` are refused. "Symlink outside the root" is decided lexically: a relative target
+  that climbs above the root, or, for a `--relocate` build, an absolute target outside the root. A hard link is
+  refused when the inode has more names than the stage holds. The setuid/setgid check covers directories too.
+  Core archives get the same checks with an empty setuid list.
+- **Normalising (changed after the coordinator review of 2026-11-11):** group and other write are dropped from
+  every staged file and directory, not only under `/usr` as section 6.2 says. The one exception is a directory
+  with the sticky bit (for example `var/tmp` 1777). A recipe cannot ask for another exception, and a sticky
+  world-writable directory needs no listing in the recipe; an explicit recipe list for such directories was
+  considered and left out (it would be a second allow-list next to `setuid` for a case no current recipe has).
+- **Rule 4 (changed after the same review):** every entry that has a `recipe` field needs `recipe_sha256`,
+  whatever its `method`; entries of a signed catalog are marked (`SignedEntry`) and a recipe is never read for a
+  marked entry without a digest.
+- **Landlock:** not implemented (section 6.1 called it optional).

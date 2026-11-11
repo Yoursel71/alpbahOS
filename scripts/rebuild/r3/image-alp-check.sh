@@ -29,16 +29,21 @@ LOOP=$(losetup -fP --show -r "$IMG") || die "losetup failed"
 mount -o ro "${LOOP}p3" "$M" || die "mount root failed"
 mount -t tmpfs -o size=16m tmpfs "$M/run" || die "tmpfs on /run failed"
 cp "$INDEX" "$M/run/alp-index.json"
+# ALP-TRUST-01: this uses the alp INSTALLED in the image with the unsigned demo index. An image with the
+# signed-catalog alp needs --allow-unsigned for that (root only; this script is root); an older image does not
+# know the option, so it is passed only when the installed alp.py has it.
+UNSIGNED=""
+grep -q -- "--allow-unsigned" "$M/usr/lib/alp/alp.py" 2> /dev/null && UNSIGNED="--allow-unsigned"
 
 echo "== alp list (in the image chroot)"
-chroot "$M" /usr/bin/alp --index /run/alp-index.json list > "$M/run/list.txt" 2>&1
+chroot "$M" /usr/bin/alp $UNSIGNED --index /run/alp-index.json list > "$M/run/list.txt" 2>&1
 echo "list rc=$?"
 echo "lfs-base records: $(grep -c 'lfs-base' "$M/run/list.txt")"
 echo "alp list output (last lines):"
 tail -n 3 "$M/run/list.txt"
 
 echo "== alp check (in the image chroot)"
-chroot "$M" /usr/bin/alp --index /run/alp-index.json check > "$M/run/check.txt" 2>&1
+chroot "$M" /usr/bin/alp $UNSIGNED --index /run/alp-index.json check > "$M/run/check.txt" 2>&1
 echo "check rc=$?"
 head -n 20 "$M/run/check.txt"
 mkdir -p "$OUTDIR"

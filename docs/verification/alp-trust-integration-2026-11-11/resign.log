@@ -1,0 +1,58 @@
+# re-signing on the copy /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-probe, 2026-11-11T07:33:41Z, resign HEAD 7cb38bd + working tree
+== before
+index catalog_version 1 valid_until 2027-02-09 | record 2026.11.11-trust1 ['usr/share/alp/index.json', 'usr/share/alp/index.json.sig'] | db catalog {'accepted_at': '2026-11-11T03:06:12Z', 'signer': '3421D4077D20373C547AD79959CADCB70E2EB50E', 'version': 1}
+  alp list rc=0 
+  alp check rc=0 
+== (a) regenerate the catalog through the production path (record-catalog.sh -> make-catalog-r8.py -> resign-catalog.py)
+resign-catalog: signed /var/tmp/alp-record-catalog.HEiLqC/stage/usr/share/alp/index.json catalog_version=2 valid_until=2027-02-09 by 3421D4077D20373C547AD79959CADCB70E2EB50E (alp-keyring record: 1, signed-catalog alp.py: 1)
+entries 536 bytes 154467
+1
+record-catalog: recorded alp-catalog 2026.11.11-v2 (2 files)
+rc=0
+index catalog_version 2 valid_until 2027-02-09 | record 2026.11.11-v2 ['usr/share/alp/index.json', 'usr/share/alp/index.json.sig'] | db catalog {'accepted_at': '2026-11-11T03:06:12Z', 'signer': '3421D4077D20373C547AD79959CADCB70E2EB50E', 'version': 1}
+  alp list rc=0 
+  alp check rc=0 
+iso-gate: ALP-TRUST-01 applied to /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-probe (alp-keyring record: 1, signed-catalog alp.py: 1): strict check
+iso-gate: PASS (/home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-probe: signed catalog accepted, changed catalog refused, alpbuild present)
+gate --auto rc=0
+== (b) twice more in a row
+1
+record-catalog: recorded alp-catalog 2026.11.11-v3 (2 files)
+index catalog_version 3 valid_until 2027-02-09 | record 2026.11.11-v3 ['usr/share/alp/index.json', 'usr/share/alp/index.json.sig'] | db catalog {'accepted_at': '2026-11-11T03:06:12Z', 'signer': '3421D4077D20373C547AD79959CADCB70E2EB50E', 'version': 1}
+  alp list rc=0 
+  alp check rc=0 
+1
+record-catalog: recorded alp-catalog 2026.11.11-v4 (2 files)
+index catalog_version 4 valid_until 2027-02-09 | record 2026.11.11-v4 ['usr/share/alp/index.json', 'usr/share/alp/index.json.sig'] | db catalog {'accepted_at': '2026-11-11T03:06:12Z', 'signer': '3421D4077D20373C547AD79959CADCB70E2EB50E', 'version': 1}
+  alp list rc=0 
+  alp check rc=0 
+  (two runs on the same day get different record versions because the version is in the name)
+iso-gate: PASS (/home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-probe: signed catalog accepted, changed catalog refused, alpbuild present)
+gate --auto rc=0
+== (c) wrong signing directory, given to the helper and through make-catalog-r8.py
+resign-catalog: HATA / ERROR: kök imzalı katalog kullanıyor ama imza anahtarı yok / the root uses signed catalogs but there is no signing key in /home/yrslf/alpbahOS/scratch-lfs-bench/no-such-signing-dir (scripts/rebuild/trust/make-temp-signing-key.sh); katalog imzalanmadı, üretim durduruldu
+helper rc=1
+index.json
+resign-catalog: HATA / ERROR: kök imzalı katalog kullanıyor ama imza anahtarı yok / the root uses signed catalogs but there is no signing key in /home/yrslf/alpbahOS/scratch-lfs-bench/no-such-signing-dir (scripts/rebuild/trust/make-temp-signing-key.sh); katalog imzalanmadı, üretim durduruldu
+entries 536 bytes 154463
+make-catalog-r8: re-signing failed (rc 1); the catalog in /tmp/tmp.OSWW02ouKB/stage must not be recorded
+make-catalog-r8 rc=1
+resign-catalog: HATA / ERROR: kök imzalı katalog kullanıyor ama imza anahtarı yok / the root uses signed catalogs but there is no signing key in /home/yrslf/alpbahOS/scratch-lfs-bench/no-such-signing-dir (scripts/rebuild/trust/make-temp-signing-key.sh); katalog imzalanmadı, üretim durduruldu
+entries 536 bytes 154463
+make-catalog-r8: re-signing failed (rc 1); the catalog in /var/tmp/alp-record-catalog.lgtKzY/stage must not be recorded
+record-catalog rc=1
+root catalog unchanged after the failures
+index catalog_version 4 valid_until 2027-02-09 | record 2026.11.11-v4 ['usr/share/alp/index.json', 'usr/share/alp/index.json.sig'] | db catalog {'accepted_at': '2026-11-11T03:06:12Z', 'signer': '3421D4077D20373C547AD79959CADCB70E2EB50E', 'version': 1}
+  alp list rc=0 
+  alp check rc=0 
+== (d) never-integrated root: read-only snapshot of the live r4-root
+resign-catalog: ALP-TRUST-01 not applied to /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-resign-ro (alp-keyring record: 0, signed-catalog alp.py: 0): catalog left unsigned, as before
+entries 541 bytes 156247
+make-catalog-r8 rc=0
+index.json
+catalog_version in new index: None
+entries = installed packages of the root (unchanged behaviour)
+iso-gate: UYARI: ALP-TRUST-01 henüz uygulanmadı: katalog imzasız (kökte alp-keyring kaydı yok, kurulu alp.py eski sürüm). ISO derlemesi sürüyor; imzalı katalog için önce scripts/rebuild/trust/integrate-trust.sh çalıştırın.
+gate --auto rc=0
+deleted /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-resign-ro
+mounts under scratch r4-*: 0

@@ -34,6 +34,14 @@ MAKEFILE = (
 def paths(tmp_path: Path) -> alp.Paths:
     p = alp.Paths.resolve(str(tmp_path / "root"))
     p.ensure()
+    # ALP-TRUST-01: builds run inside bubblewrap. These tests are about
+    # @PREFIX@/--relocate, so on a host where bubblewrap cannot run they use
+    # the engine's explicit no-sandbox mode instead of failing; the sandbox
+    # itself is tested in test_trust_sandbox.py.
+    try:
+        alp._prepare_sandbox(p)
+    except alp.AlpError:
+        p.sandbox = "off"
     return p
 
 

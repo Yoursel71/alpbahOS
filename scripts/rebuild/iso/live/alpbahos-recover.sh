@@ -4,7 +4,9 @@
 # the target chroot, so the same dracut options and storage drivers as the install), GRUB is reinstalled and
 # grub.cfg is regenerated. Nothing else in the installed system is changed.
 #
-# Usage:  sudo alpbahos-recover ROOT_PART [ESP_PART]
+# Usage:  pkexec /usr/local/sbin/alpbahos-recover ROOT_PART [ESP_PART]
+#   (in the live session: the live user has no password, so sudo cannot be used there, and /usr/local/sbin is not
+#   in its PATH; the live polkit rule lets pkexec run without a prompt. Round 21 REC1/REC2.)
 #   ROOT_PART  the root partition of the installed system, e.g. /dev/sda1 (ext4, holds /boot)
 #   ESP_PART   the EFI system partition (vfat, /boot/efi). Omitted: the one EFI System partition on the same disk
 #              is used (UEFI install), none found means BIOS; "none" forces BIOS
@@ -31,10 +33,10 @@ ESP=${2:-}
 say() { echo "== $*"; }
 die() { echo "alpbahos-recover: $*" >&2; exit 1; }
 
-[ "$(id -u)" = 0 ] || die "run as root (sudo alpbahos-recover ROOT_PART [ESP_PART])"
+[ "$(id -u)" = 0 ] || die "run as root: pkexec /usr/local/sbin/alpbahos-recover ROOT_PART [ESP_PART]"
 
 if [ -z "$ROOT" ]; then
-    echo "usage: sudo alpbahos-recover ROOT_PART [ESP_PART]"
+    echo "usage: pkexec /usr/local/sbin/alpbahos-recover ROOT_PART [ESP_PART]"
     echo "candidate partitions (ext4 root candidates, vfat ESP candidates):"
     lsblk -o NAME,SIZE,FSTYPE,PARTLABEL,MOUNTPOINTS
     exit 2

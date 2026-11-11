@@ -1,0 +1,19 @@
+0
+recorded alp-build-user 0.9-trust1 (1 entries)
+login.defs specifies UID allocation range 101–999 that is different than the built-in defaults (201–999)
+login.defs specifies GID allocation range 101–999 that is different than the built-in defaults (201–999)
+Creating group 'alpbuild' with GID 998.
+Creating user 'alpbuild' (alp build user) with UID 998 and GID 998.
+alpbuild:x:998:998:alp build user:/:/usr/sbin/nologin
+0
+recorded alp-keyring 1-temporary (2 entries)
+1
+recorded alp 0.9-trust1 (1 entries)
+catalog_version=1 valid_until=2027-02-09 signed_keyring_version=1
+1
+recorded alp-catalog 2026.11.11-trust1 (2 entries)
+chroot alp list: rc 0 (546 lines)
+chroot alp check: rc 0 (1 lines)
+chroot alp search bash: rc 0 (1 lines)
+integrate-trust: done for /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-probe (catalog_version 1, signed by 3421D4077D20373C547AD79959CADCB70E2EB50E)
+integrate-trust: mounts left under /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-probe: 0

@@ -18,9 +18,13 @@ Security notes (see proposal doc section 7 for the full discussion):
   - Every downloaded archive is sha256-verified before it is extracted or built.
   - No subprocess call uses shell=True or a shell string; argv lists only.
   - Archive extraction uses tarfile's path-traversal-safe filter.
-  - A recipe's build commands ARE trusted code execution by design (this is how
-    every source-based package manager works) -- that trust boundary is the repo
-    that hosts recipes/, not this script. Flagged explicitly in the proposal doc.
+  - The catalog is signed (index.json + index.json.sig, checked with gpgv on
+    every load) and pins every recipe by sha256; see "Catalog trust" below and
+    design/trust-model.md.
+  - A recipe's build commands are code execution by design. They run as the
+    unprivileged build user inside bubblewrap, without network, and what they
+    stage is checked by root before the merge; see "Build sandbox". A recipe
+    we signed is still trusted for what it installs.
 """
 
 from __future__ import annotations
@@ -41,8 +45,9 @@ import subprocess
 import sys
 import tarfile
 import time
+import urllib.error
 import urllib.request
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from pathlib import PurePosixPath
 
@@ -79,6 +84,15 @@ class Paths:
     keep_build: bool = False  # --keep-build: leave build/destdir trees in the cache
     relocate: bool = False  # --relocate: build recipes for <root>/usr instead of /usr
     progress: object = None  # --progress-fd: text stream for JSON-line progress events
+    # How the catalog is accepted. Default: signed by an allowed key (see "Catalog trust").
+    trust: "TrustPolicy" = field(default_factory=lambda: TrustPolicy())
+    # "require": recipe steps run inside bubblewrap or not at all. "off" is the
+    # engine-side form of --no-sandbox (root only, enforced in main()).
+    sandbox: str = "require"
+    # Test-only: numeric (uid, gid) to build as instead of looking up the
+    # `alpbuild` user. No command-line option or environment variable sets it.
+    build_ids: tuple | None = None
+    jobs: int = 1  # --jobs: MAKEFLAGS=-j<jobs> inside the build environment
 
     @classmethod
     def resolve(cls, root: str | None) -> "Paths":
@@ -484,6 +498,518 @@ def load_index(index_path: Path) -> dict:
 
 
 # --------------------------------------------------------------------------
+# Catalog trust (design/trust-model.md; DECISIONS D170, D171, D172, D173).
+#
+# index.json carries a detached OpenPGP signature, index.json.sig. The bytes
+# that are parsed are the bytes that were verified: both files are read once
+# into memory, gpgv gets the data on stdin and the signature and the keyring
+# through anonymous file descriptors, and the JSON parser then runs on the
+# very same bytes object. No path is verified and then opened again.
+#
+# The signed index pins every recipe file by sha256 (recipe_sha256), recipes
+# pin their source archive, core entries pin their archive: one signature
+# covers index -> recipe -> source.
+#
+# Trust anchors (keyring, allowed.txt) come from the system that RUNS alp,
+# never from --root and never from an environment variable. They can be
+# redirected only by /etc/alp/trust.conf (root-owned) or by --keyring /
+# --allowed-keys on the command line.
+#
+# load_index() above stays the raw JSON reader. It does not verify anything
+# and main() does not use it; the entry points that take catalog bytes from
+# disk or the network are load_catalog() and cmd_update().
+# --------------------------------------------------------------------------
+
+SYSTEM_KEYRING = "/usr/share/alp/keys/alpbahos-catalog.gpg"
+SYSTEM_ALLOWED_KEYS = "/usr/share/alp/keys/allowed.txt"
+SYSTEM_TRUST_CONFIG = "/etc/alp/trust.conf"
+SIGNATURE_SUFFIX = ".sig"
+# Fixed locations: a PATH from the caller's environment must not choose the
+# program that decides whether a signature is good.
+GPGV_CANDIDATES = ("/usr/bin/gpgv", "/bin/gpgv")
+GPGV_TIMEOUT_S = 30
+MAX_SIGNATURE_BYTES = 64 * 1024
+MAX_TRUST_FILE_BYTES = 4 * 1024 * 1024
+_FINGERPRINT_RE = re.compile(r"(?:[0-9A-F]{40}|[0-9A-F]{64})\Z")
+_ISO_DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}\Z")
+# OpenPGP hash algorithm ids accepted for the catalog signature: SHA-256, SHA-384, SHA-512.
+_SIG_HASH_ALGOS = frozenset({"8", "9", "10"})
+_GPGV_BAD_STATUS = frozenset({
+    "BADSIG", "ERRSIG", "EXPSIG", "EXPKEYSIG", "REVKEYSIG", "NODATA", "UNEXPECTED", "FAILURE",
+})
+
+
+class CatalogTrustError(AlpError):
+    """The catalog (or a recipe it names) failed a trust check."""
+
+
+@dataclass(frozen=True)
+class TrustPolicy:
+    """How a catalog is accepted. The default is the strict one: a valid
+    signature by an allowed key from the system keyring.
+
+    `keyring` / `allowed_keys` empty means "the configured or built-in system
+    path". `allow_unsigned` is the engine-side form of --allow-unsigned;
+    main() is where the root-only rule for that flag is enforced, and no
+    configuration file or environment variable can set it.
+    """
+    keyring: str = ""
+    allowed_keys: str = ""
+    allow_unsigned: bool = False
+
+
+def _is_root() -> bool:
+    return hasattr(os, "geteuid") and os.geteuid() == 0
+
+
+def _read_trust_file(path: str, what: str, *, must_be_root_owned: bool) -> bytes:
+    """Read a trust anchor once. The final path component may not be a
+    symlink, the file must be a regular file and, when alp runs as root (or
+    always, for the configuration file), owned by root and not writable by
+    group or others."""
+    if not os.path.isabs(path):
+        raise CatalogTrustError(f"{what} yolu mutlak olmalı: {path}")
+    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_CLOEXEC", 0)
+    try:
+        fd = os.open(path, flags)
+    except OSError as exc:
+        raise CatalogTrustError(f"{what} okunamadı ({path}): {exc.strerror or exc}") from exc
+    try:
+        st = os.fstat(fd)
+        if not stat.S_ISREG(st.st_mode):
+            raise CatalogTrustError(f"{what} normal dosya değil: {path}")
+        if must_be_root_owned and hasattr(os, "geteuid"):
+            if st.st_uid != 0 or st.st_mode & 0o022:
+                raise CatalogTrustError(
+                    f"{what} root'a ait ve yalnız root tarafından yazılabilir olmalı: {path} "
+                    f"(sahip uid {st.st_uid}, izin {stat.S_IMODE(st.st_mode):04o})"
+                )
+        if st.st_size > MAX_TRUST_FILE_BYTES:
+            raise CatalogTrustError(f"{what} beklenmedik kadar büyük: {path}")
+        chunks = []
+        while True:
+            chunk = os.read(fd, 1 << 16)
+            if not chunk:
+                break
+            chunks.append(chunk)
+        return b"".join(chunks)
+    finally:
+        os.close(fd)
+
+
+def _load_trust_config() -> dict[str, str]:
+    """/etc/alp/trust.conf: `keyring = /abs/path` and `allowed_keys = /abs/path`.
+
+    Nothing else is accepted. In particular there is no key that switches
+    signature checking or the build sandbox off, so neither can be made
+    permanent. The file must belong to root whoever runs alp."""
+    path = SYSTEM_TRUST_CONFIG
+    if not os.path.lexists(path):
+        return {}
+    raw = _read_trust_file(path, "alp güven yapılandırması", must_be_root_owned=True)
+    out: dict[str, str] = {}
+    for number, line in enumerate(raw.decode("utf-8", errors="replace").splitlines(), 1):
+        line = line.split("#", 1)[0].strip()
+        if not line:
+            continue
+        key, sep, value = line.partition("=")
+        key, value = key.strip(), value.strip()
+        if not sep or key not in ("keyring", "allowed_keys") or not os.path.isabs(value) or key in out:
+            raise CatalogTrustError(
+                f"{path}:{number}: geçersiz satır. Yalnız 'keyring = /yol' ve 'allowed_keys = /yol' "
+                "yazılabilir; imza denetimi ya da derleme korumalı alanı buradan kapatılamaz."
+            )
+        out[key] = value
+    return out
+
+
+def _trust_paths(policy: TrustPolicy) -> tuple[str, str]:
+    """(keyring, allowed.txt): command line, then /etc/alp/trust.conf, then the built-in paths."""
+    config = _load_trust_config() if not (policy.keyring and policy.allowed_keys) else {}
+    keyring = policy.keyring or config.get("keyring") or SYSTEM_KEYRING
+    allowed = policy.allowed_keys or config.get("allowed_keys") or SYSTEM_ALLOWED_KEYS
+    return os.path.abspath(keyring), os.path.abspath(allowed)
+
+
+@dataclass(frozen=True)
+class AllowedKeys:
+    allowed: frozenset
+    revoked: frozenset
+    keyring_version: int | None
+
+
+def parse_allowed_keys(raw: bytes, origin: str) -> AllowedKeys:
+    """allowed.txt, one statement per line:
+
+        # comment
+        keyring-version 3
+        0123...CDEF            primary-key fingerprint that may sign catalogs
+        revoked 0123...CDEF    fingerprint (primary key or signing subkey) that may not
+
+    Fingerprints are 40 or 64 hex digits without spaces. A line that is none
+    of these is an error: a typo must not silently drop a revocation."""
+    allowed: set[str] = set()
+    revoked: set[str] = set()
+    version: int | None = None
+    try:
+        text = raw.decode("ascii")
+    except UnicodeDecodeError as exc:
+        raise CatalogTrustError(f"{origin}: yalnız ASCII olmalı.") from exc
+    for number, line in enumerate(text.splitlines(), 1):
+        words = line.split("#", 1)[0].split()
+        if not words:
+            continue
+        if len(words) == 1 and _FINGERPRINT_RE.fullmatch(words[0].upper()):
+            allowed.add(words[0].upper())
+        elif len(words) == 2 and words[0] == "revoked" and _FINGERPRINT_RE.fullmatch(words[1].upper()):
+            revoked.add(words[1].upper())
+        elif len(words) == 2 and words[0] == "keyring-version" and words[1].isdigit() and version is None:
+            version = int(words[1])
+        else:
+            raise CatalogTrustError(f"{origin}:{number}: anlaşılmayan satır; anahtar listesi kullanılmadı.")
+    return AllowedKeys(frozenset(allowed), frozenset(revoked), version)
+
+
+def _find_fixed_program(candidates: tuple[str, ...]) -> str | None:
+    for candidate in candidates:
+        if os.path.isfile(candidate) and os.access(candidate, os.X_OK):
+            return candidate
+    return None
+
+
+def _anonymous_fd(data: bytes, label: str) -> int:
+    """An inheritable descriptor holding `data`, with no name in any directory
+    another process could swap."""
+    if hasattr(os, "memfd_create"):
+        fd = os.memfd_create(label)
+    else:  # pragma: no cover - non-Linux fallback
+        import tempfile
+        with tempfile.TemporaryFile() as tmp:
+            fd = os.dup(tmp.fileno())
+    try:
+        view = memoryview(data)
+        while view:
+            view = view[os.write(fd, view):]
+        os.lseek(fd, 0, os.SEEK_SET)
+    except BaseException:
+        os.close(fd)
+        raise
+    return fd
+
+
+@dataclass(frozen=True)
+class SignatureInfo:
+    signing_fingerprint: str
+    primary_fingerprint: str
+    keyring_version: int | None
+
+
+def _parse_gpgv_status(status: bytes, returncode: int) -> tuple[str, str]:
+    """Strict reading of `gpgv --status-fd` output. Returns (signing key
+    fingerprint, primary key fingerprint) of the one good signature, or
+    raises. The exit code is checked too, but never trusted alone."""
+    counts: dict[str, int] = {}
+    validsig: list[str] | None = None
+    for raw_line in status.split(b"\n"):
+        if not raw_line.strip():
+            continue
+        try:
+            line = raw_line.decode("ascii")
+        except UnicodeDecodeError:
+            line = raw_line.decode("utf-8", errors="replace")
+        if not line.startswith("[GNUPG:] "):
+            raise CatalogTrustError("gpgv beklenmeyen bir çıktı verdi; imza kabul edilmedi.")
+        words = line[len("[GNUPG:] "):].split()
+        if not words:
+            raise CatalogTrustError("gpgv beklenmeyen bir çıktı verdi; imza kabul edilmedi.")
+        counts[words[0]] = counts.get(words[0], 0) + 1
+        if words[0] == "VALIDSIG":
+            validsig = words[1:]
+    bad = sorted(k for k in counts if k in _GPGV_BAD_STATUS)
+    if bad:
+        reason = {
+            "BADSIG": "imza katalogla uyuşmuyor (katalog ya da imza değiştirilmiş)",
+            "ERRSIG": "imzayı atan anahtar anahtarlıkta yok ya da imza denetlenemedi",
+            "EXPSIG": "imzanın süresi dolmuş",
+            "EXPKEYSIG": "imzayı atan anahtarın süresi dolmuş",
+            "REVKEYSIG": "imzayı atan anahtar iptal edilmiş",
+        }.get(bad[0], f"gpgv durumu {bad[0]}")
+        raise CatalogTrustError(f"Katalog imzası geçersiz: {reason}.")
+    if counts.get("NEWSIG", 0) > 1 or counts.get("GOODSIG", 0) != 1 or counts.get("VALIDSIG", 0) != 1:
+        raise CatalogTrustError(
+            "Katalog imzası geçersiz: tam olarak bir geçerli imza bekleniyordu "
+            f"(GOODSIG {counts.get('GOODSIG', 0)}, VALIDSIG {counts.get('VALIDSIG', 0)})."
+        )
+    if returncode != 0:
+        raise CatalogTrustError(f"Katalog imzası geçersiz: gpgv {returncode} koduyla çıktı.")
+    # VALIDSIG <fpr> <date> <timestamp> <expire> <version> <reserved> <pubkey-algo> <hash-algo> <class> <primary-fpr>
+    if validsig is None or len(validsig) < 10:
+        raise CatalogTrustError("Katalog imzası geçersiz: VALIDSIG satırı eksik alanlı.")
+    signing, hash_algo, sig_class, primary = validsig[0].upper(), validsig[7], validsig[8], validsig[9].upper()
+    if not _FINGERPRINT_RE.fullmatch(signing) or not _FINGERPRINT_RE.fullmatch(primary):
+        raise CatalogTrustError("Katalog imzası geçersiz: parmak izi okunamadı.")
+    if sig_class != "00":
+        # A text-mode signature (class 01) ignores line-ending changes, so the
+        # verified bytes would not be exactly the bytes that are parsed.
+        raise CatalogTrustError("Katalog imzası geçersiz: ikili (binary) belge imzası değil.")
+    if hash_algo not in _SIG_HASH_ALGOS:
+        raise CatalogTrustError("Katalog imzası geçersiz: zayıf özet algoritması.")
+    return signing, primary
+
+
+def verify_catalog_signature(data: bytes, signature: bytes, policy: TrustPolicy) -> SignatureInfo:
+    """Check `signature` over exactly `data`. Returns who signed, or raises CatalogTrustError."""
+    if len(signature) > MAX_SIGNATURE_BYTES:
+        raise CatalogTrustError("Katalog imza dosyası beklenmedik kadar büyük; kabul edilmedi.")
+    keyring_path, allowed_path = _trust_paths(policy)
+    keys = parse_allowed_keys(
+        _read_trust_file(allowed_path, "İzinli anahtar listesi", must_be_root_owned=_is_root()), allowed_path)
+    keyring = _read_trust_file(keyring_path, "Katalog anahtarlığı", must_be_root_owned=_is_root())
+    gpgv = _find_fixed_program(GPGV_CANDIDATES)
+    if gpgv is None:
+        raise CatalogTrustError(
+            "gpgv bulunamadı (" + ", ".join(GPGV_CANDIDATES) + "); katalog imzası denetlenemedi, katalog kabul edilmedi."
+        )
+    sig_fd = _anonymous_fd(signature, "alp-catalog-sig")
+    try:
+        key_fd = _anonymous_fd(keyring, "alp-catalog-keyring")
+    except BaseException:
+        os.close(sig_fd)
+        raise
+    try:
+        done = subprocess.run(
+            [gpgv, "--status-fd", "1", "--homedir", "/nonexistent-alp-gnupg",
+             "--keyring", f"/dev/fd/{key_fd}", f"/dev/fd/{sig_fd}", "-"],
+            input=data, capture_output=True, pass_fds=(sig_fd, key_fd), timeout=GPGV_TIMEOUT_S,
+            env={"LC_ALL": "C", "PATH": "/usr/bin:/bin"}, cwd="/",
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise CatalogTrustError(f"gpgv çalıştırılamadı; katalog kabul edilmedi: {_first_line(exc)}") from exc
+    finally:
+        os.close(sig_fd)
+        os.close(key_fd)
+    signing, primary = _parse_gpgv_status(done.stdout, done.returncode)
+    if signing in keys.revoked or primary in keys.revoked:
+        raise CatalogTrustError(f"Katalog imzası geçersiz: imzalayan anahtar iptal listesinde ({primary}).")
+    if primary not in keys.allowed:
+        raise CatalogTrustError(
+            f"Katalog imzası geçersiz: imzalayan anahtar izinli listede değil ({primary})."
+        )
+    return SignatureInfo(signing, primary, keys.keyring_version)
+
+
+class SignedEntry(dict):
+    """A package entry of a catalog that was accepted with a valid
+    signature. The type is the mark read_recipe() looks at: for such an
+    entry a missing recipe_sha256 is a refusal, never "nothing to check"."""
+
+
+class Catalog(dict):
+    """A catalog that passed load_catalog()/cmd_update(): the parsed index
+    plus how it was accepted. Code that only reads entries treats it as the
+    plain dict it always was."""
+    signed: bool = False
+    signer: str | None = None
+    catalog_version: int | None = None
+    valid_until: str | None = None
+    expired: bool = False
+
+
+def _warn_unsigned(origin: str) -> None:
+    red, reset = ("\033[1;31m", "\033[0m") if sys.stderr.isatty() and not os.environ.get("NO_COLOR") else ("", "")
+    print(
+        f"{red}alp: UYARI: İMZASIZ KATALOG kullanılıyor ({origin}). --allow-unsigned yalnız geliştirme ve "
+        f"test içindir; bu katalogdaki her tarif doğrulanmadan çalıştırılır.{reset}",
+        file=sys.stderr,
+    )
+
+
+def _today_utc() -> str:
+    return time.strftime("%Y-%m-%d", time.gmtime())
+
+
+def _signed_int(index: dict, key: str) -> int:
+    value = index.get(key)
+    if type(value) is not int or value < 0:
+        raise CatalogTrustError(f"İmzalı katalogda '{key}' alanı yok ya da negatif olmayan tam sayı değil.")
+    return value
+
+
+def stored_catalog_version(db: dict) -> int | None:
+    """catalog_version of the last signed catalog this system accepted, or None."""
+    value = (db.get("catalog") or {}).get("version") if isinstance(db.get("catalog"), dict) else None
+    return value if type(value) is int and value >= 0 else None
+
+
+def _note_accepted_catalog(db: dict, index: dict) -> bool:
+    """Raise the stored high-water mark to a signed catalog's version (in
+    memory; the caller's two-phase database write makes it durable). Unsigned
+    catalogs never move it: their catalog_version is not authenticated."""
+    if not getattr(index, "signed", False) or index.catalog_version is None:
+        return False
+    stored = stored_catalog_version(db)
+    if stored is not None and stored >= index.catalog_version:
+        return False
+    db["catalog"] = {"version": index.catalog_version, "signer": index.signer, "accepted_at": _now()}
+    return True
+
+
+def accept_catalog_bytes(
+    data: bytes, signature: bytes | None, policy: TrustPolicy, *,
+    origin: str, at_update: bool, floor: int | None, today: str | None = None,
+) -> Catalog:
+    """Turn catalog bytes into a Catalog, or raise. `today` (YYYY-MM-DD) is
+    a parameter for tests only; nothing on the command line or in the
+    environment sets it.
+
+    Rules (design/trust-model.md 3.3; D171, D172):
+      1. A signature must be present, good, and made by an allowed, unrevoked key.
+      2. catalog_version must not be lower than `floor`, the highest version
+         this system has accepted.
+      3. valid_until in the past: refused when this is a new catalog being
+         fetched (`at_update`); for the catalog already on disk it is a
+         warning, so an installed system can still install offline.
+      4. Every recipe entry carries recipe_sha256.
+    Without a signature the catalog is accepted only under
+    policy.allow_unsigned, with a warning every time, and rules 2-4 do not
+    apply (nothing in it is authenticated).
+    """
+    if signature is None:
+        if not policy.allow_unsigned:
+            raise CatalogTrustError(
+                f"Katalog imzalı değil ({origin}{SIGNATURE_SUFFIX} yok); kabul edilmedi. "
+                "alpbahOS katalogları imzalıdır: 'alp update' ile yenileyin."
+            )
+        _warn_unsigned(origin)
+        info = None
+    else:
+        # A signature that is present is always checked, --allow-unsigned or
+        # not: a bad signature is evidence of tampering, not of a dev catalog.
+        info = verify_catalog_signature(data, signature, policy)
+    try:
+        index = json.loads(data.decode("utf-8"))
+    except (ValueError, UnicodeError) as exc:
+        raise AlpError(f"Katalog dizini okunamadı/geçersiz JSON ({origin}): {exc}") from exc
+    if not isinstance(index, dict) or not isinstance(index.get("entries"), dict):
+        raise AlpError(f"Katalog dizininde 'entries' tablosu yok: {origin}")
+    catalog = Catalog(index)
+    if info is None:
+        return catalog
+
+    version = _signed_int(index, "catalog_version")
+    wanted_keyring = _signed_int(index, "signed_keyring_version")
+    valid_until = index.get("valid_until")
+    if not isinstance(valid_until, str) or not _ISO_DATE_RE.fullmatch(valid_until):
+        raise CatalogTrustError("İmzalı katalogda 'valid_until' alanı yok ya da YYYY-AA-GG biçiminde değil.")
+    try:
+        time.strptime(valid_until, "%Y-%m-%d")
+    except ValueError as exc:
+        raise CatalogTrustError(f"İmzalı katalogda 'valid_until' geçerli bir tarih değil: {valid_until}") from exc
+    for name, entry in index["entries"].items():
+        # Any entry that names a recipe file, whatever its method says:
+        # read_recipe() reads the file of every entry that has the field.
+        if isinstance(entry, dict) and ("recipe" in entry or entry.get("method") == "recipe"):
+            digest = entry.get("recipe_sha256")
+            if not isinstance(digest, str) or not _SHA256_RE.fullmatch(digest):
+                raise CatalogTrustError(
+                    f"İmzalı katalogda {name!r} tarifi için 'recipe_sha256' yok ya da geçersiz; katalog kabul edilmedi."
+                )
+    if floor is not None and version < floor:
+        raise CatalogTrustError(
+            f"Katalog sürümü geri gidiyor: bu katalog {version}, bu sistemin son kabul ettiği {floor}. "
+            "Eski bir katalog yeniden sunulmuş olabilir; kabul edilmedi."
+        )
+    expired = valid_until < (today or _today_utc())  # ISO dates compare as text
+    if expired and at_update:
+        raise CatalogTrustError(
+            f"Yeni kataloğun süresi dolmuş (geçerlilik sonu {valid_until}); kabul edilmedi. "
+            "Kaynak eski bir kataloğu sunuyor olabilir."
+        )
+    if expired:
+        print(
+            f"alp: UYARI: katalog süresi doldu (geçerlilik sonu {valid_until}); güvenlik güncellemeleri "
+            "eksik olabilir. Bağlantı olduğunda `alp update` çalıştırın.",
+            file=sys.stderr,
+        )
+    if info.keyring_version is not None and wanted_keyring > info.keyring_version:
+        print(
+            f"alp: bilgi: bu katalog anahtarlık sürümü {wanted_keyring} bekliyor, kurulu olan "
+            f"{info.keyring_version}. Önce anahtarlık paketini yükseltin: alp upgrade alp-keyring",
+            file=sys.stderr,
+        )
+    for name, entry in list(catalog["entries"].items()):
+        if isinstance(entry, dict):
+            catalog["entries"][name] = SignedEntry(entry)
+    catalog.signed = True
+    catalog.signer = info.primary_fingerprint
+    catalog.catalog_version = version
+    catalog.valid_until = valid_until
+    catalog.expired = expired
+    return catalog
+
+
+def _read_optional(path: Path, limit: int) -> bytes | None:
+    try:
+        with open(path, "rb") as f:
+            data = f.read(limit + 1)
+    except FileNotFoundError:
+        return None
+    if len(data) > limit:
+        raise CatalogTrustError(f"Dosya beklenmedik kadar büyük: {path}")
+    return data
+
+
+def load_catalog(index_path: Path, paths: "Paths") -> Catalog:
+    """Read, verify and parse the local catalog. Every command that uses the
+    catalog goes through here, on every run (design 3.4)."""
+    try:
+        data = index_path.read_bytes()
+    except OSError as exc:
+        raise AlpError(f"Katalog dizini okunamadı/geçersiz JSON ({index_path}): {exc}") from exc
+    try:
+        signature = _read_optional(index_path.with_name(index_path.name + SIGNATURE_SUFFIX), MAX_SIGNATURE_BYTES)
+    except OSError as exc:
+        raise CatalogTrustError(f"Katalog imza dosyası okunamadı: {exc}") from exc
+    floor = stored_catalog_version(load_db(paths)) if signature is not None else None
+    return accept_catalog_bytes(
+        data, signature, paths.trust, origin=str(index_path), at_update=False, floor=floor,
+    )
+
+
+def _check_recipe_hash(entry: dict, raw: bytes, origin: str) -> None:
+    """recipe_sha256 from the (signed) index must match the recipe bytes
+    about to be parsed. "No digest, nothing to check" holds only for an
+    entry of a catalog that was accepted unsigned (or a dict a caller built
+    itself). An entry of a signed catalog (SignedEntry) without a digest is
+    refused here as well as at load (rule 4 of accept_catalog_bytes)."""
+    wanted = entry.get("recipe_sha256")
+    if wanted is None:
+        if isinstance(entry, SignedEntry):
+            raise CatalogTrustError(
+                f"İmzalı katalog girdisinde 'recipe_sha256' yok ({origin}); tarif okunmadı."
+            )
+        return
+    actual = hashlib.sha256(raw).hexdigest()
+    if not isinstance(wanted, str) or actual != wanted.lower():
+        raise CatalogTrustError(
+            f"Tarif dosyası katalogdaki özetle uyuşmuyor ({origin}):\n  beklenen : {wanted}\n  hesaplanan: {actual}\n"
+            "Tarif değiştirilmiş olabilir; okunmadı."
+        )
+
+
+def read_recipe(entry: dict, index_dir: Path) -> dict:
+    """The one place a recipe file is read: bytes once, hash check, then the
+    same bytes are parsed."""
+    path = index_dir / entry["recipe"]
+    raw = path.read_bytes()
+    _check_recipe_hash(entry, raw, str(path))
+    recipe = json.loads(raw.decode("utf-8"))
+    if not isinstance(recipe, dict):
+        raise ValueError(f"tarif bir JSON nesnesi değil: {path}")
+    return recipe
+
+
+# --------------------------------------------------------------------------
 # Download + mandatory checksum verification.
 # CLAUDE.md: "Kaynağı doğrulamadan derleme yapma."
 # --------------------------------------------------------------------------
@@ -793,7 +1319,7 @@ def _maybe_transaction(paths: Paths, label: str, dry_run: bool):
     return contextlib.nullcontext(None) if dry_run else _transaction(paths, label)
 
 
-def _tool_available(binary: str, cwd: Path) -> bool:
+def _tool_available(binary: str, cwd: Path, search_path: str | None = None) -> bool:
     """Like shutil.which(), but path-relative binaries (./configure,
     ../foo/build.sh) are resolved against `cwd` -- the directory the build
     step actually runs in (subprocess.run(..., cwd=cwd)) -- not the
@@ -806,6 +1332,8 @@ def _tool_available(binary: str, cwd: Path) -> bool:
     if os.path.isabs(binary) or binary.startswith(("./", "../")) or os.sep in binary:
         candidate = Path(binary) if os.path.isabs(binary) else (cwd / binary)
         return candidate.is_file() and os.access(candidate, os.X_OK)
+    if search_path is not None:  # the PATH the build step will really see
+        return shutil.which(binary, path=search_path) is not None
     return shutil.which(binary) is not None
 
 
@@ -923,6 +1451,126 @@ def _preflight_merge(
         raise AlpError("Kurulum çakışması, hiçbir dosyaya dokunulmadı:\n  " + shown + more)
 
 
+# Top-level directories a package may install into. Everything else in a
+# staged tree (/dev, /proc, /sys, /run, /tmp, /home, /root, /mnt, /media, a
+# stray build directory, ...) is refused.
+STAGE_ALLOWED_TOP = frozenset({
+    "usr", "etc", "var", "opt", "boot", "srv", "bin", "sbin", "lib", "lib32", "lib64", "libx32",
+})
+_STAGE_FORBIDDEN = ("/" + DEFAULT_STATE_DIR, "/" + DEFAULT_LOG_DIR)
+
+
+def _symlink_escapes(rel: str, target: str, absolute_root: Path | None) -> bool:
+    """Would this staged symlink point outside the root once installed?
+    Resolved lexically, as the installed system will see it (other symlinks
+    on the way are not followed)."""
+    if target.startswith("/"):
+        if absolute_root is None:
+            return False  # built for "/": an absolute target is inside the installed system
+        root = posixpath.normpath(str(absolute_root))
+        resolved = posixpath.normpath(target)
+        return not (resolved == root or resolved.startswith(root.rstrip("/") + "/"))
+    depth = 0
+    for part in (posixpath.dirname(rel).strip("/").split("/") + target.split("/")):
+        if part in ("", "."):
+            continue
+        if part == "..":
+            depth -= 1
+            if depth < 0:
+                return True
+        else:
+            depth += 1
+    return False
+
+
+def _preflight_stage(
+    staged_root: Path, entries: list[tuple[str, str]], *,
+    setuid_allowed: frozenset = frozenset(), absolute_link_root: Path | None = None,
+) -> None:
+    """Root-side checks of what a build (or a core archive) staged, before
+    anything is merged or even chowned (design/trust-model.md 6.2). The tree
+    was writable by the unprivileged build user, so nothing in it is taken
+    on trust. Device nodes, sockets and FIFOs were already refused by
+    _walk_staged()."""
+    problems: list[str] = []
+    stats = {rel: os.lstat(staged_root / rel.lstrip("/")) for rel, _kind in entries}
+    names_per_inode: dict[tuple[int, int], int] = {}
+    for rel, kind in entries:
+        if kind == "file":
+            key = (stats[rel].st_dev, stats[rel].st_ino)
+            names_per_inode[key] = names_per_inode.get(key, 0) + 1
+    for rel, kind in entries:
+        st = stats[rel]
+        top = rel.lstrip("/").split("/", 1)[0]
+        if top not in STAGE_ALLOWED_TOP:
+            problems.append(f"{rel}: izin verilen kurulum dizinlerinin dışında")
+            continue
+        if any(rel == bad or rel.startswith(bad + "/") for bad in _STAGE_FORBIDDEN):
+            problems.append(f"{rel}: alp'in kendi durum/günlük dizini")
+            continue
+        if kind == "symlink":
+            if _symlink_escapes(rel, os.readlink(staged_root / rel.lstrip("/")), absolute_link_root):
+                problems.append(f"{rel}: kök dizinin dışını gösteren symlink")
+            continue
+        if kind == "file" and st.st_nlink > names_per_inode[(st.st_dev, st.st_ino)]:
+            # More names than the stage holds: the inode is also linked from
+            # somewhere else. Touching it (chown, chmod) would touch that file.
+            problems.append(f"{rel}: hazırlık dizininin dışına sabit bağ (hard link)")
+            continue
+        if os.name == "posix" and st.st_mode & (stat.S_ISUID | stat.S_ISGID) and rel not in setuid_allowed:
+            problems.append(f"{rel}: setuid/setgid ama tarifin 'setuid' listesinde değil")
+    if problems:
+        shown = "\n  ".join(problems[:20])
+        more = f"\n  ... ve {len(problems) - 20} sorun daha" if len(problems) > 20 else ""
+        raise AlpError("Hazırlanan paket ağacı reddedildi, hiçbir dosyaya dokunulmadı:\n  " + shown + more)
+
+
+def _chmod_nofollow(directory_fd: int, name: str, mode: int) -> None:
+    if hasattr(os, "O_PATH"):
+        fd = os.open(name, os.O_PATH | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=directory_fd)
+        try:
+            if stat.S_ISLNK(os.fstat(fd).st_mode):
+                return
+            os.chmod(f"/proc/self/fd/{fd}", mode)
+        finally:
+            os.close(fd)
+    else:  # pragma: no cover - non-Linux
+        os.chmod(name, mode, dir_fd=directory_fd)
+
+
+def _normalise_stage(staged_root: Path) -> None:
+    """After _preflight_stage(): make the staged tree root's (when alp is
+    root) and drop group and other write from every file and directory,
+    wherever it is (/usr, /etc, /var, /opt, /boot ...): the tree was written
+    by the build user and nothing in it may stay writable by everybody.
+    The one exception is a directory with the sticky bit (var/tmp 1777
+    style), which is world-writable on purpose and safe for it. Recipes
+    have no way to ask for another exception. Modes are otherwise kept, so
+    the unchanged merge copies them as they are.
+
+    chown clears setuid/setgid on Linux, even for root, so the mode read
+    before the chown is put back afterwards; the bits that survive are
+    exactly the ones _preflight_stage() allowed."""
+    if os.name != "posix":
+        return
+    as_root = _is_root()
+    top = str(staged_root)
+    for dirpath, dirnames, filenames, dirfd in os.fwalk(top, follow_symlinks=False):
+        if as_root:
+            os.fchown(dirfd, 0, 0)
+        for name in [*dirnames, *filenames]:
+            st = os.lstat(name, dir_fd=dirfd)
+            if as_root:
+                os.chown(name, 0, 0, dir_fd=dirfd, follow_symlinks=False)
+            if stat.S_ISLNK(st.st_mode):
+                continue
+            mode = stat.S_IMODE(st.st_mode)
+            if not (stat.S_ISDIR(st.st_mode) and mode & stat.S_ISVTX):
+                mode &= ~0o022
+            if as_root or mode != stat.S_IMODE(st.st_mode):
+                _chmod_nofollow(dirfd, name, mode)
+
+
 @dataclass
 class MergeResult:
     installed: list[str]
@@ -939,6 +1587,8 @@ def _merge_staged(
     old_record: dict | None,
     other_owners: dict[str, str],
     journal: FileJournal | None = None,
+    setuid_allowed: frozenset = frozenset(),
+    absolute_link_root: Path | None = None,
 ) -> MergeResult:
     """The single path every recipe/core install, upgrade and reinstall uses
     to copy a staged tree (a recipe's DESTDIR or an extracted core archive)
@@ -961,7 +1611,9 @@ def _merge_staged(
     old_record = old_record or {}
     self_owned = set(old_record.get("files", []))
     old_hashes = old_record.get("config_hashes", {})
+    _preflight_stage(staged_root, entries, setuid_allowed=setuid_allowed, absolute_link_root=absolute_link_root)
     _preflight_merge(entries, root, self_owned, other_owners)
+    _normalise_stage(staged_root)
 
     owned: list[str] = []
     symlinks: list[str] = []
@@ -1118,6 +1770,268 @@ def _require_recipe_dependencies(recipe: dict) -> None:
 
 
 # --------------------------------------------------------------------------
+# Build sandbox (design/trust-model.md section 6.1; DECISIONS D170, D174).
+#
+# Recipe steps never run as root and never run unconfined:
+#   - alp as root: a helper process drops to the build user (`alpbuild`),
+#     then starts bubblewrap, which runs the step;
+#   - alp as an ordinary user: bubblewrap runs the step directly (there is
+#     nothing to drop).
+# Inside: "/" is read-only, only the transaction's source and stage
+# directories are writable, /tmp and /run are private and empty, there is no
+# network, and the environment is cleared.
+# Without a working bubblewrap (or, for root, without the build user) the
+# build is refused. The only way around is --no-sandbox, root only, with a
+# warning on every build, and nothing can make it permanent.
+# --------------------------------------------------------------------------
+
+BUILD_USER = "alpbuild"
+BWRAP_CANDIDATES = ("/usr/bin/bwrap", "/bin/bwrap")
+_TRUE_CANDIDATES = ("/usr/bin/true", "/bin/true")
+SANDBOX_PATH = "/usr/bin:/usr/sbin:/bin:/sbin"
+DEFAULT_SOURCE_DATE_EPOCH = 315532800  # 1980-01-01, the earliest date zip can store
+_DROP_HELPER_FLAG = "--alp-internal-drop-exec"
+_PR_SET_NO_NEW_PRIVS = 38
+_PR_GET_NO_NEW_PRIVS = 39
+
+
+def _drop_privileges(uid: int, gid: int) -> None:
+    """Become uid:gid for good, in the calling process: no supplementary
+    groups, real/effective/saved ids all set, no_new_privs on. Every step is
+    checked afterwards; any doubt raises and the caller must not exec."""
+    import ctypes
+
+    if type(uid) is not int or type(gid) is not int or uid <= 0 or gid <= 0:
+        raise RuntimeError(f"geçersiz derleme kimliği uid={uid!r} gid={gid!r}")
+    os.setgroups([])
+    os.setresgid(gid, gid, gid)
+    os.setresuid(uid, uid, uid)
+    libc = ctypes.CDLL(None, use_errno=True)
+    if libc.prctl(_PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) != 0:
+        raise RuntimeError(f"no_new_privs ayarlanamadı (errno {ctypes.get_errno()})")
+    if os.getresuid() != (uid, uid, uid) or os.getresgid() != (gid, gid, gid):
+        raise RuntimeError("uid/gid düşürülemedi")
+    if os.getgroups() not in ([], [gid]):
+        raise RuntimeError("ek gruplar bırakılamadı")
+    if libc.prctl(_PR_GET_NO_NEW_PRIVS, 0, 0, 0, 0) != 1:
+        raise RuntimeError("no_new_privs doğrulanamadı")
+    for regain in (lambda: os.setuid(0), lambda: os.setgid(0), lambda: os.setgroups([0])):
+        try:
+            regain()
+        except OSError:
+            continue
+        raise RuntimeError("yetkiler geri alınabiliyor; düşürme başarısız")
+    os.umask(0o022)
+
+
+def _drop_helper_main(argv: list[str]) -> int:
+    """`alp.py --alp-internal-drop-exec UID GID -- PROGRAM ARGS...`: drop, verify, exec.
+
+    A separate process (not a preexec_fn) so the drop runs in ordinary,
+    single-threaded Python and its failure is an exit status. It can only
+    lower privileges, so being reachable from the command line gives a
+    caller nothing it did not have."""
+    try:
+        uid, gid = int(argv[0]), int(argv[1])
+        if argv[2] != "--" or not os.path.isabs(argv[3]):
+            raise ValueError("kullanım: UID GID -- /mutlak/program [argümanlar]")
+        _drop_privileges(uid, gid)
+        os.execv(argv[3], argv[3:])
+    except Exception as exc:  # noqa: BLE001 - anything at all means: do not run the build
+        print(f"alp: yetki düşürme başarısız, derleme adımı çalıştırılmadı: {exc}", file=sys.stderr)
+    return 126
+
+
+@dataclass
+class BuildSandbox:
+    bwrap: str | None  # None: --no-sandbox, steps run directly
+    ids: tuple | None  # (uid, gid) to drop to before bubblewrap; None when alp is not root
+
+
+def _build_ids(paths: Paths) -> tuple:
+    if paths.build_ids is not None:
+        uid, gid = paths.build_ids
+    else:
+        import pwd
+        try:
+            entry = pwd.getpwnam(BUILD_USER)
+        except KeyError as exc:
+            raise AlpError(
+                f"Derleme kullanıcısı '{BUILD_USER}' bu sistemde yok; kaynak derleme reddedildi. "
+                "Tarif adımları root olarak çalıştırılmaz."
+            ) from exc
+        uid, gid = entry.pw_uid, entry.pw_gid
+    if type(uid) is not int or type(gid) is not int or uid <= 0 or gid <= 0:
+        raise AlpError(f"Derleme kullanıcısı yetkisiz olmalı (uid {uid}, gid {gid}); kaynak derleme reddedildi.")
+    return uid, gid
+
+
+def _drop_prefix(ids: tuple | None) -> list[str]:
+    if ids is None:
+        return []
+    return [sys.executable, "-I", os.path.abspath(__file__), _DROP_HELPER_FLAG, str(ids[0]), str(ids[1]), "--"]
+
+
+def _bwrap_argv(bwrap: str, writable: list[Path], cwd: Path | None, env: dict[str, str]) -> list[str]:
+    argv = [
+        bwrap,
+        "--unshare-user", "--unshare-net", "--unshare-ipc", "--unshare-pid", "--unshare-uts",
+        "--die-with-parent", "--new-session",
+        "--ro-bind", "/", "/",
+        "--dev", "/dev", "--proc", "/proc",
+        # Private and empty. /run goes too: its sockets (D-Bus, resolved, nscd)
+        # are a way out of "no network" that a network namespace does not close.
+        "--tmpfs", "/tmp", "--tmpfs", "/run",
+    ]
+    for directory in writable:  # after the tmpfs lines: a build dir under /tmp must stay visible
+        argv += ["--bind", str(directory), str(directory)]
+    if cwd is not None:
+        argv += ["--chdir", str(cwd)]
+    argv.append("--clearenv")
+    for key, value in env.items():
+        argv += ["--setenv", key, value]
+    argv.append("--")
+    return argv
+
+
+_OUTER_ENV = {"PATH": SANDBOX_PATH, "LC_ALL": "C"}
+
+
+def _prepare_sandbox(paths: Paths) -> BuildSandbox:
+    """Decide how recipe steps will run, or refuse. Never falls back silently."""
+    if paths.sandbox == "off":
+        print(
+            "alp: UYARI: --no-sandbox: tarif adımları KORUMALI ALAN OLMADAN, alp'i çalıştıran kullanıcının "
+            "yetkileriyle (root ise root olarak) çalıştırılacak. Yalnız bubblewrap'in çalışamadığı derleme "
+            "ortamları içindir.",
+            file=sys.stderr,
+        )
+        return BuildSandbox(bwrap=None, ids=None)
+    if paths.sandbox != "require":
+        raise AlpError(f"Tanımsız korumalı alan kipi: {paths.sandbox!r}")
+    hint = " Korumalı alan olmadan derlemek için root olarak --no-sandbox verilmelidir."
+    bwrap = _find_fixed_program(BWRAP_CANDIDATES)
+    if bwrap is None:
+        raise AlpError("bubblewrap (bwrap) bulunamadı; kaynak derleme reddedildi." + hint)
+    ids = _build_ids(paths) if _is_root() else None
+    probe = _find_fixed_program(_TRUE_CANDIDATES)
+    if probe is None:
+        raise AlpError("Korumalı alan denenemedi (/usr/bin/true yok); kaynak derleme reddedildi." + hint)
+    try:
+        done = subprocess.run(
+            _drop_prefix(ids) + _bwrap_argv(bwrap, [], None, {"PATH": SANDBOX_PATH}) + [probe],
+            stdin=subprocess.DEVNULL, capture_output=True, text=True, errors="replace", timeout=60,
+            env=_OUTER_ENV, cwd="/",
+        )
+        failure = "" if done.returncode == 0 else (done.stderr.strip().splitlines() or [f"çıkış {done.returncode}"])[-1]
+    except (OSError, subprocess.SubprocessError) as exc:
+        failure = _first_line(exc)
+    if failure:
+        raise AlpError(f"bubblewrap bu sistemde çalışmıyor ({failure}); kaynak derleme reddedildi." + hint)
+    return BuildSandbox(bwrap=bwrap, ids=ids)
+
+
+def _build_environment(paths: Paths, recipe: dict, home: Path) -> dict[str, str]:
+    """The whole environment of a build step. Nothing is inherited from the
+    caller: an inherited MAKEFLAGS or CC could put code into a package."""
+    path = SANDBOX_PATH
+    if paths.relocate and not _is_fs_root(paths.root):
+        path = f"{paths.root}{DEFAULT_RECIPE_PREFIX}/bin:{path}"
+    epoch = recipe.get("source_date_epoch")
+    if type(epoch) is not int or epoch < 0:
+        epoch = DEFAULT_SOURCE_DATE_EPOCH
+    jobs = paths.jobs if type(paths.jobs) is int and 1 <= paths.jobs <= 1024 else 1
+    return {
+        "PATH": path,
+        "HOME": str(home),
+        "LC_ALL": "C",
+        "MAKEFLAGS": f"-j{jobs}",
+        "SOURCE_DATE_EPOCH": str(epoch),
+    }
+
+
+def _give_tree_to(top: Path, uid: int, gid: int) -> None:
+    """chown -R without following anything: every name is changed relative to
+    an open directory descriptor with lchown semantics, so a symlink or a
+    path swapped underneath cannot redirect the change outside `top`."""
+    for _dirpath, dirnames, filenames, dirfd in os.fwalk(str(top), follow_symlinks=False):
+        os.fchown(dirfd, uid, gid)
+        for name in [*dirnames, *filenames]:
+            os.chown(name, uid, gid, dir_fd=dirfd, follow_symlinks=False)
+
+
+def _require_reachable(directory: Path, uid: int, gid: int) -> None:
+    """The build user must be able to walk down to its build directory."""
+    for parent in reversed(directory.resolve().parents):
+        st = os.stat(parent)
+        mode = st.st_mode
+        ok = (mode & 0o100) if st.st_uid == uid else (mode & 0o010) if st.st_gid == gid else (mode & 0o001)
+        if not ok:
+            raise AlpError(
+                f"Derleme kullanıcısı (uid {uid}) derleme dizinine ulaşamıyor: {parent} geçiş izni vermiyor "
+                f"(izin {stat.S_IMODE(mode):04o}). Kaynak derleme başlatılmadı."
+            )
+
+
+def _run_recipe_steps(
+    paths: Paths, recipe: dict, steps: list[list[str]], *,
+    src_dir: Path, build_root: Path, destdir: Path, log_path: Path, emit_name: str,
+) -> None:
+    """Run configure/make/make_install. The source tree was downloaded,
+    sha256-checked and unpacked by the caller (as root on a real system);
+    only now, right before the first step, is it handed to the build user."""
+    env = _build_environment(paths, recipe, build_root)
+    sandbox: BuildSandbox | None = None
+    for label, step in zip(("configure", "make", "make_install"), steps):
+        _emit(paths, "phase", name=emit_name, phase="build", step=label)
+        binary = step[0]
+        if not _tool_available(binary, src_dir, search_path=env["PATH"]):
+            raise AlpError(
+                f"Gerekli araç bulunamadı: {binary!r}. Bu adım gerçek bir Linux "
+                "build ortamı (configure/make toolchain) gerektirir."
+            )
+        if sandbox is None:
+            sandbox = _prepare_sandbox(paths)
+            if sandbox.ids is not None:
+                for tree in (build_root, destdir):
+                    _require_reachable(tree, *sandbox.ids)
+                    _give_tree_to(tree, *sandbox.ids)
+        if sandbox.bwrap is None:
+            argv, run_env, cwd = list(step), env, src_dir
+        else:
+            argv = (_drop_prefix(sandbox.ids)
+                    + _bwrap_argv(sandbox.bwrap, [build_root, destdir], src_dir, env) + list(step))
+            run_env, cwd = _OUTER_ENV, Path("/")
+        with open(log_path, "a", encoding="utf-8") as log:
+            mode = "korumalı alan yok" if sandbox.bwrap is None else (
+                f"bwrap, uid {sandbox.ids[0]}" if sandbox.ids else "bwrap, çağıran kullanıcı")
+            log.write(f"$ {' '.join(step)}\n# [{mode}; MAKEFLAGS={env['MAKEFLAGS']} "
+                      f"SOURCE_DATE_EPOCH={env['SOURCE_DATE_EPOCH']}]\n")
+            log.flush()
+            done = subprocess.run(argv, cwd=cwd, env=run_env, stdin=subprocess.DEVNULL,
+                                  stdout=log, stderr=subprocess.STDOUT)
+        if done.returncode != 0:
+            raise subprocess.CalledProcessError(done.returncode, step)
+
+
+def _recipe_setuid(recipe: dict) -> frozenset:
+    """The recipe's `setuid` list: absolute installed paths that may carry
+    the setuid or setgid bit. It is part of the recipe, so it is covered by
+    recipe_sha256 and the catalog signature."""
+    listed = recipe.get("setuid", [])
+    if not isinstance(listed, list) or not all(isinstance(p, str) and p.startswith("/") for p in listed):
+        raise AlpError(f"Tarif {recipe.get('name', '?')!r}: 'setuid' mutlak yolların listesi olmalı.")
+    return frozenset(posixpath.normpath(p) for p in listed)
+
+
+def _absolute_link_root(paths: Paths) -> Path | None:
+    """Where an absolute symlink target must stay. None for an ordinary
+    package (built for "/", so "/x" is inside the installed system by
+    definition); the root itself for a --relocate build, which runs from there."""
+    return paths.root if paths.relocate and not _is_fs_root(paths.root) else None
+
+
+# --------------------------------------------------------------------------
 # Method 1: System Build Recipes
 # --------------------------------------------------------------------------
 
@@ -1193,6 +2107,13 @@ def _staged_tree(paths: Paths, destdir: Path) -> Path:
     if not paths.relocate or _is_fs_root(paths.root):
         return destdir
     staged = destdir / paths.root.relative_to(paths.root.anchor)
+    # The build user owned destdir. A symlink on the way down to the staged
+    # root would make the mkdir and the merge below work on another tree.
+    cursor = destdir
+    for part in staged.relative_to(destdir).parts:
+        cursor = cursor / part
+        if cursor.is_symlink():
+            raise AlpError(f"--relocate: hazırlık dizininde kök yolu bir symlink: {cursor}; paket reddedildi.")
     stray = [
         p for p in destdir.rglob("*")
         if (p.is_symlink() or not p.is_dir()) and staged not in p.parents
@@ -1208,9 +2129,8 @@ def install_recipe(
     paths: Paths, entry: dict, index_dir: Path, dry_run: bool,
     db: dict | None = None, pkg_name: str | None = None, journal: FileJournal | None = None,
 ) -> dict:
-    recipe_path = index_dir / entry["recipe"]
-    with open(recipe_path, "r", encoding="utf-8") as f:
-        recipe = json.load(f)
+    recipe = read_recipe(entry, index_dir)
+    setuid_allowed = _recipe_setuid(recipe)
 
     _require_recipe_dependencies(recipe)
 
@@ -1256,17 +2176,10 @@ def install_recipe(
     destdir.mkdir(parents=True)
 
     real_steps = _recipe_steps(recipe, paths, str(destdir))
-    for label, step in zip(("configure", "make", "make_install"), real_steps):
-        _emit(paths, "phase", name=pkg_name or recipe["name"], phase="build", step=label)
-        binary = step[0]
-        if not _tool_available(binary, src_dir):
-            raise AlpError(
-                f"Gerekli araç bulunamadı: {binary!r}. Bu adım gerçek bir Linux "
-                "build ortamı (configure/make toolchain) gerektirir."
-            )
-        with open(log_path, "a", encoding="utf-8") as log:
-            log.write(f"$ {' '.join(step)}\n")
-            subprocess.run(step, cwd=src_dir, check=True, stdout=log, stderr=subprocess.STDOUT)
+    _run_recipe_steps(
+        paths, recipe, real_steps, src_dir=src_dir, build_root=build_root, destdir=destdir,
+        log_path=log_path, emit_name=pkg_name or recipe["name"],
+    )
 
     config_files = set(recipe.get("config_files", []))
     db = db if db is not None else load_db(paths)
@@ -1276,6 +2189,7 @@ def install_recipe(
         config_files=config_files, old_record=None,
         other_owners=_other_owners(db, exclude=pkg_name or recipe["name"]),
         journal=journal,
+        setuid_allowed=setuid_allowed, absolute_link_root=_absolute_link_root(paths),
     )
     _cleanup_build(paths, build_root, destdir)
 
@@ -1305,9 +2219,8 @@ def upgrade_recipe(
     paths: Paths, entry: dict, index_dir: Path, old_record: dict, dry_run: bool,
     db: dict | None = None, pkg_name: str | None = None, journal: FileJournal | None = None,
 ) -> dict:
-    recipe_path = index_dir / entry["recipe"]
-    with open(recipe_path, "r", encoding="utf-8") as f:
-        recipe = json.load(f)
+    recipe = read_recipe(entry, index_dir)
+    setuid_allowed = _recipe_setuid(recipe)
 
     _require_recipe_dependencies(recipe)
 
@@ -1335,17 +2248,10 @@ def upgrade_recipe(
 
     log_path = paths.log_dir / f"{recipe['name']}-{recipe['version']}.upgrade.log"
     steps = _recipe_steps(recipe, paths, str(destdir))
-    for label, step in zip(("configure", "make", "make_install"), steps):
-        _emit(paths, "phase", name=pkg_name or recipe["name"], phase="build", step=label)
-        binary = step[0]
-        if not _tool_available(binary, src_dir):
-            raise AlpError(
-                f"Gerekli araç bulunamadı: {binary!r}. Bu adım gerçek bir Linux "
-                "build ortamı (configure/make toolchain) gerektirir."
-            )
-        with open(log_path, "a", encoding="utf-8") as log:
-            log.write(f"$ {' '.join(step)}\n")
-            subprocess.run(step, cwd=src_dir, check=True, stdout=log, stderr=subprocess.STDOUT)
+    _run_recipe_steps(
+        paths, recipe, steps, src_dir=src_dir, build_root=build_root, destdir=destdir,
+        log_path=log_path, emit_name=pkg_name or recipe["name"],
+    )
 
     db = db if db is not None else load_db(paths)
     other_owners = _other_owners(db, exclude=pkg_name or recipe["name"])
@@ -1353,6 +2259,7 @@ def upgrade_recipe(
     merged = _merge_staged(
         _staged_tree(paths, destdir), paths.root,
         config_files=config_files, old_record=old_record, other_owners=other_owners, journal=journal,
+        setuid_allowed=setuid_allowed, absolute_link_root=_absolute_link_root(paths),
     )
     _drop_stale_files(paths.root, old_record, merged.installed, other_owners, journal=journal)
     _cleanup_build(paths, build_root, destdir)
@@ -1631,12 +2538,14 @@ def _entry_metadata(entry: dict, index_dir: Path | None) -> dict:
     recipe: dict = {}
     if index_dir is not None and entry.get("method") == "recipe" and isinstance(entry.get("recipe"), str):
         try:
-            with open(index_dir / entry["recipe"], "r", encoding="utf-8") as f:
-                loaded = json.load(f)
-            if isinstance(loaded, dict):
-                recipe = loaded
+            recipe = read_recipe(entry, index_dir)
         except (OSError, ValueError):
             pass
+        except CatalogTrustError:
+            # Display only: nothing from the mismatching file is shown or used.
+            # Installing the package is refused where the recipe is read for real.
+            print(f"alp: uyarı: {entry['recipe']} katalogdaki özetle uyuşmuyor; bilgileri gösterilmiyor.",
+                  file=sys.stderr)
     meta: dict = {}
     for key in ("version", "license", "homepage"):
         value = entry.get(key, recipe.get(key))
@@ -1826,8 +2735,7 @@ def catalog_version(index: dict, index_dir: Path, name: str) -> str:
     if "version" in entry:
         return str(entry["version"])
     if entry.get("method") == "recipe":
-        with open(index_dir / entry["recipe"], "r", encoding="utf-8") as f:
-            return str(json.load(f)["version"])
+        return str(read_recipe(entry, index_dir)["version"])
     return "unknown"
 
 
@@ -2243,6 +3151,8 @@ def cmd_install(args: argparse.Namespace, paths: Paths, index: dict, index_dir: 
             index, index_dir, installed, [args.name],
             mode="install", reinstall=getattr(args, "reinstall", False),
         )
+        if not args.dry_run:
+            _note_accepted_catalog(db, index)  # durable with this transaction's database write
 
         if getattr(args, "json", False) and args.dry_run:
             return _print_plan_json("install", _plan_rows(steps, index),
@@ -2297,6 +3207,8 @@ def cmd_upgrade(args: argparse.Namespace, paths: Paths, index: dict, index_dir: 
         db = load_db(paths)
         installed = db["packages"]
         name = getattr(args, "name", None)
+        if not args.dry_run:
+            _note_accepted_catalog(db, index)  # durable with this transaction's database write
 
         if name:
             if name not in installed:
@@ -2497,9 +3409,11 @@ def cmd_check(paths: Paths, index: dict, index_dir: Path) -> int:
 # (recipes/archives stay as they are) or a .tar.gz bundle with index.json at
 # its top (everything in it replaces the local copy, index.json last).
 #
-# Honest limit: the catalog itself is not signed. Trust comes from https (or
-# a local path) and, when given, --sha256. Every package archive it names is
-# still sha256-verified at install time.
+# A bundle and a git checkout are only transports. What is accepted is the
+# signed index.json: its signature, catalog_version and valid_until are
+# checked on the fetched bytes before anything local is replaced, and from a
+# bundle only the files the signed index names (and pins by sha256) are
+# installed. On any refusal the local catalog is left exactly as it was.
 # --------------------------------------------------------------------------
 
 def _catalog_versions(index: dict, base_dir: Path) -> dict[str, str]:
@@ -2512,26 +3426,110 @@ def _catalog_versions(index: dict, base_dir: Path) -> dict[str, str]:
     return out
 
 
-def _validate_catalog(index: object, base_dir: Path) -> None:
+def _catalog_relpath(raw: object) -> str | None:
+    """A catalog-relative file name in plain form, or None when it is not one
+    (absolute, climbing out with "..", empty, or a name alp keeps for itself)."""
+    if not isinstance(raw, str) or not raw or "\x00" in raw or "\\" in raw or raw.startswith("/"):
+        return None
+    norm = posixpath.normpath(raw)
+    parts = norm.split("/")
+    if norm in (".", "") or ".." in parts or parts[0].startswith(".alp-") or parts[0] == ".git":
+        return None
+    if norm in ("index.json", "index.json" + SIGNATURE_SUFFIX) or norm.endswith(".prev"):
+        return None
+    return norm
+
+
+def _validate_catalog(index: object, base_dir: Path, read=None) -> None:
+    """Structural check of a new catalog. Recipes are read through `read`
+    (catalog-relative name -> bytes; default: the files under base_dir) and
+    each one must match its recipe_sha256 before it is parsed."""
     if not isinstance(index, dict) or not isinstance(index.get("entries"), dict):
         raise AlpError("Yeni katalog geçersiz: 'entries' tablosu yok. Yerel katalog değiştirilmedi.")
     real_base = os.path.realpath(base_dir)
+
+    def read_from_disk(rel: str) -> bytes:
+        target = os.path.realpath(os.path.join(real_base, rel))
+        if not _inside(real_base, target) or not os.path.isfile(target):
+            raise FileNotFoundError(rel)
+        with open(target, "rb") as f:
+            return f.read()
+
+    read = read or read_from_disk
     for name, entry in index["entries"].items():
         if not isinstance(entry, dict) or entry.get("method") not in ("recipe", "core", "flatpak"):
             raise AlpError(f"Yeni katalog geçersiz: {name!r} için tanımsız yöntem. Yerel katalog değiştirilmedi.")
         if entry["method"] == "recipe":
-            recipe = os.path.realpath(os.path.join(real_base, str(entry.get("recipe", ""))))
-            if not _inside(real_base, recipe) or not os.path.isfile(recipe):
-                raise AlpError(f"Yeni katalog geçersiz: {name!r} tarif dosyası yok ya da katalog dışında. Yerel katalog değiştirilmedi.")
+            rel = _catalog_relpath(entry.get("recipe"))
             try:
-                with open(recipe, "r", encoding="utf-8") as f:
-                    r = json.load(f)
+                if rel is None:
+                    raise FileNotFoundError(str(entry.get("recipe", "")))
+                raw = read(rel)
+            except OSError as exc:
+                raise AlpError(
+                    f"Yeni katalog geçersiz: {name!r} tarif dosyası yok ya da katalog dışında. "
+                    "Yerel katalog değiştirilmedi."
+                ) from exc
+            try:
+                _check_recipe_hash(entry, raw, rel)
+            except CatalogTrustError as exc:
+                raise CatalogTrustError(
+                    f"Yeni katalog geçersiz: {name!r}: {exc} Yerel katalog değiştirilmedi. (Tarifler değiştiyse "
+                    "katalog tek index.json olarak değil, katalog paketi olarak güncellenmelidir.)"
+                ) from exc
+            try:
+                r = json.loads(raw.decode("utf-8"))
                 for key in ("name", "version", "source_url", "sha256", "build"):
                     r[key]
-            except (ValueError, KeyError, OSError) as exc:
+            except (ValueError, KeyError, TypeError) as exc:
                 raise AlpError(f"Yeni katalog geçersiz: {name!r} tarifi okunamadı ({exc}). Yerel katalog değiştirilmedi.") from exc
         elif entry["method"] == "core" and not (entry.get("url") and entry.get("sha256")):
             raise AlpError(f"Yeni katalog geçersiz: {name!r} için url/sha256 yok. Yerel katalog değiştirilmedi.")
+
+
+def _update_floor(paths: Paths, current: object) -> int | None:
+    """Lowest catalog_version `alp update` may accept: the highest of what
+    the database remembers and what the verified local catalog is at."""
+    known = [v for v in (stored_catalog_version(load_db(paths)),
+                         getattr(current, "catalog_version", None) if getattr(current, "signed", False) else None)
+             if v is not None]
+    return max(known) if known else None
+
+
+def _record_accepted_catalog(paths: Paths, catalog: dict) -> None:
+    """After the new catalog is in place: remember its version (two-phase
+    database write, under the caller's lock)."""
+    db = load_db(paths)
+    if _note_accepted_catalog(db, catalog):
+        save_db(paths, db)
+
+
+def _write_atomic(dst: Path, data: bytes) -> None:
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    tmp = _tmp_name(dst)
+    try:
+        with open(tmp, "wb") as f:
+            f.write(data)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, dst)
+    except BaseException:
+        tmp.unlink(missing_ok=True)
+        raise
+
+
+def _old_versions(index: object, index_dir: Path) -> dict[str, str]:
+    """Versions of the catalog being replaced, for the diff. That catalog may
+    be the very thing that is broken, so nothing here may stop the update."""
+    if not isinstance(index, dict) or not isinstance(index.get("entries"), dict):
+        return {}
+    out: dict[str, str] = {}
+    for name in index["entries"]:
+        try:
+            out[name] = catalog_version(index, index_dir, name)
+        except (OSError, ValueError, KeyError, TypeError, AlpError):
+            out[name] = "?"
+    return out
 
 
 def _print_catalog_diff(paths: Paths, old_v: dict[str, str], new_v: dict[str, str]) -> None:
@@ -2567,19 +3565,44 @@ def _git(index_dir: Path, *args: str) -> str:
     return done.stdout.strip()
 
 
+def _git_show(index_dir: Path, rev: str, rel: str) -> bytes:
+    """Bytes of `rel` in commit `rev`, straight from the object store."""
+    done = subprocess.run(["git", "-C", str(index_dir), "show", f"{rev}:{rel}"], capture_output=True)
+    if done.returncode != 0:
+        raise FileNotFoundError(rel)
+    return done.stdout
+
+
+def _refuse_trust_files_inside(index_dir: Path, policy: TrustPolicy) -> None:
+    """A git fast-forward rewrites every tracked file of the checkout before
+    alp can look at it. The keyring and the allowed list must therefore not
+    live inside the checkout: an upstream that only added keys/allowed.txt
+    would otherwise replace the trust anchors while index.json still verifies."""
+    real_dir = os.path.realpath(index_dir)
+    for path in _trust_paths(policy):
+        if _inside(real_dir, os.path.realpath(path)):
+            raise CatalogTrustError(
+                f"Katalog anahtarlığı ({path}) git katalog deposunun içinde ({index_dir}); git ile güncelleme "
+                "reddedildi. Anahtarlar katalog deposunun dışında durmalıdır."
+            )
+
+
 def _update_git_catalog(args: argparse.Namespace, paths: Paths, index_path: Path, index: dict) -> int:
     """`alp update` for a catalog that is a git checkout and has no "source".
 
     Fetches the upstream branch and fast-forwards to it; git handles auth
     (e.g. a private GitHub catalog through `gh auth git-credential`). Never
     merges or overwrites local edits: a diverged or dirty checkout is
-    refused. The new catalog is validated after the fast-forward and the
-    checkout is moved back if it does not validate.
+    refused. The new catalog is verified from the fetched commit (signature,
+    version, expiry, recipe hashes) before the working tree is touched, and
+    once more from the files after the fast-forward; if that second check
+    fails the checkout is moved back.
     """
     index_dir = index_path.parent
     paths.ensure()
     with DbLock(paths.lock_file):
         _require_no_pending(paths)
+        _refuse_trust_files_inside(index_dir, paths.trust)
         if _git(index_dir, "status", "--porcelain", "--untracked-files=no"):
             raise AlpError(f"Katalog deposunda kaydedilmemiş değişiklik var ({index_dir}); güncelleme yapılmadı.")
         try:
@@ -2598,33 +3621,121 @@ def _update_git_catalog(args: argparse.Namespace, paths: Paths, index_path: Path
                 f"Yerel katalog dalı {upstream} ile ayrışmış; alp yalnız ileri sarar. "
                 "Güncelleme yapılmadı."
             )
-        old_v = _catalog_versions(index, index_dir)
+        floor = _update_floor(paths, index)
+        try:
+            data = _git_show(index_dir, new, index_path.name)
+            try:
+                signature = _git_show(index_dir, new, index_path.name + SIGNATURE_SUFFIX)
+            except FileNotFoundError:
+                signature = None
+            fetched = accept_catalog_bytes(
+                data, signature, paths.trust, origin=f"git {new[:7]}:{index_path.name}",
+                at_update=True, floor=floor,
+            )
+            _validate_catalog(fetched, index_dir, read=lambda rel: _git_show(index_dir, new, rel))
+        except (AlpError, ValueError, OSError) as exc:
+            kind = CatalogTrustError if isinstance(exc, CatalogTrustError) else AlpError
+            text = str(exc).replace(" Yerel katalog değiştirilmedi.", "")
+            text = text if text.startswith("Yeni katalog geçersiz") else f"Yeni katalog geçersiz: {text}"
+            raise kind(f"{text} Yerel kataloğun eski hâline dokunulmadı.") from exc
+        old_v = _old_versions(index, index_dir)
         if args.dry_run:
             print(_git(index_dir, "diff", "--stat", old, new))
             print("[dry-run] yerel katalog değiştirilmedi.")
             return 0
         _git(index_dir, "merge", "--ff-only", "--quiet", new)
         try:
-            new_index = load_index(index_path)
+            # Again from the working tree: checkout filters can change bytes,
+            # and these are the files every later command will read.
+            new_index = accept_catalog_bytes(
+                index_path.read_bytes(),
+                _read_optional(index_path.with_name(index_path.name + SIGNATURE_SUFFIX), MAX_SIGNATURE_BYTES),
+                paths.trust, origin=str(index_path), at_update=True, floor=floor,
+            )
             _validate_catalog(new_index, index_dir)
-        except (AlpError, ValueError) as exc:
+        except (AlpError, ValueError, OSError) as exc:
             _git(index_dir, "reset", "--keep", old)
             raise AlpError(f"Yeni katalog geçersiz: {exc}. Katalog eski hâline döndürüldü.") from exc
+        _record_accepted_catalog(paths, new_index)
         _print_catalog_diff(paths, old_v, _catalog_versions(new_index, index_dir))
         print(f"Katalog güncellendi ({old[:7]} -> {new[:7]}).")
         return 0
 
 
-def cmd_update(args: argparse.Namespace, paths: Paths, index_path: Path, index: dict) -> int:
-    source = getattr(args, "source", None) or index.get("source")
+def _fetch_signature(source: str, dest: Path) -> tuple[bytes | None, str | None]:
+    """The detached signature published next to a bare index.json.
+
+    Returns (signature, None); (None, None) when the source really has no
+    signature file (local file missing, HTTP 404); (None, reason) when it
+    could not be fetched for another reason. Either None is "no signature"
+    for the decision; the reason only makes the message truthful."""
+    try:
+        _download_raw(source + SIGNATURE_SUFFIX, dest)
+    except FileNotFoundError:
+        return None, None
+    except (AlpError, OSError) as exc:
+        cause = exc.__cause__ if isinstance(exc, AlpError) and exc.__cause__ is not None else exc
+        if isinstance(cause, urllib.error.HTTPError) and cause.code == 404:
+            return None, None
+        return None, _first_line(cause)
+    return _read_optional(dest, MAX_SIGNATURE_BYTES), None
+
+
+def _bundle_payload(new_index: dict, new_root: Path) -> tuple[dict[str, bytes], int]:
+    """What a bundle may install besides index.json: only files the accepted
+    index names, each read once and checked against the sha256 the index (or,
+    for a recipe, recipe_sha256) pins. Returns ({relative name: bytes},
+    number of other files that were ignored).
+
+    Copying everything in the archive, as before, would let whoever serves
+    the bundle add files of their own next to a genuine signed index -- for
+    example a replacement keyring, if the catalog directory holds the keys."""
+    real_root = os.path.realpath(new_root)
+    payload: dict[str, bytes] = {}
+
+    def take(raw_rel: object, expected: object, what: str) -> None:
+        rel = _catalog_relpath(raw_rel)
+        if rel is None:
+            return
+        src = os.path.join(real_root, rel)
+        if os.path.islink(src) or not os.path.isfile(src) or not _inside(real_root, os.path.realpath(src)):
+            return
+        with open(src, "rb") as f:
+            data = f.read()
+        if expected is not None:
+            actual = hashlib.sha256(data).hexdigest()
+            if not isinstance(expected, str) or actual != expected.lower():
+                raise CatalogTrustError(
+                    f"Katalog paketindeki {what} katalogdaki özetle uyuşmuyor: {rel}\n  beklenen : {expected}\n"
+                    f"  hesaplanan: {actual}\nYerel katalog değiştirilmedi."
+                )
+        payload[rel] = data
+
+    for entry in new_index["entries"].values():
+        if entry.get("method") == "recipe":
+            take(entry.get("recipe"), entry.get("recipe_sha256"), "tarif")
+        elif entry.get("method") == "core" and not str(entry.get("url", "")).startswith(("http://", "https://", "file://")):
+            take(entry.get("url"), entry.get("sha256"), "arşiv")
+    present = sum(1 for p in new_root.rglob("*") if p.is_symlink() or p.is_file())
+    listed = sum(1 for name in ("index.json", "index.json" + SIGNATURE_SUFFIX) if (new_root / name).is_file())
+    return payload, max(0, present - listed - len(payload))
+
+
+def cmd_update(args: argparse.Namespace, paths: Paths, index_path: Path, index: dict | None) -> int:
+    """`index` is the current local catalog, or None when it could not be
+    accepted (main() still lets `update` run then: it is the way out of an
+    expired, damaged or rolled-back local catalog). Nothing from an
+    unaccepted local catalog is used, so its "source" is not either."""
+    source = getattr(args, "source", None) or (index or {}).get("source")
     if not source and (index_path.parent / ".git").exists():
-        return _update_git_catalog(args, paths, index_path, index)
+        return _update_git_catalog(args, paths, index_path, index or {})
     if not source:
         raise AlpError("Katalog kaynağı yok: --source verin ya da index.json'a \"source\" alanı ekleyin.")
     if str(source).startswith("http://"):
-        raise AlpError("http:// güvensiz (katalog imzalı değil). https:// ya da yerel yol kullanın.")
+        raise AlpError("http:// güvensiz. https:// ya da yerel yol kullanın.")
     index_dir = index_path.parent
     source = resolve_source_url(source, index_dir)
+    sig_path = index_path.with_name(index_path.name + SIGNATURE_SUFFIX)
 
     paths.ensure()
     with DbLock(paths.lock_file):
@@ -2643,26 +3754,43 @@ def cmd_update(args: argparse.Namespace, paths: Paths, index_path: Path, index: 
                 )
             bundle = tarfile.is_tarfile(blob)
             if bundle:
+                # Unpacked before it is verified (the signature is inside), but
+                # only into the work directory and only through safe_extract().
                 new_root = work / "catalog"
                 safe_extract(blob, new_root)
                 if not (new_root / "index.json").is_file():
                     new_root = _single_top_level_dir(new_root)
                 if not (new_root / "index.json").is_file():
                     raise AlpError("Katalog paketinde index.json yok. Yerel katalog değiştirilmedi.")
-                new_path = new_root / "index.json"
+                data = (new_root / "index.json").read_bytes()
+                signature = _read_optional(new_root / ("index.json" + SIGNATURE_SUFFIX), MAX_SIGNATURE_BYTES)
                 versions_dir = new_root
             else:
-                new_path = blob
+                data = blob.read_bytes()
+                signature, sig_problem = _fetch_signature(source, work / "download.sig")
+                if signature is None and sig_problem and not paths.trust.allow_unsigned:
+                    raise CatalogTrustError(
+                        f"Katalog imza dosyası alınamadı ({source}{SIGNATURE_SUFFIX}): {sig_problem}. "
+                        "İmza denetlenemedi; yerel katalog değiştirilmedi. Daha sonra yeniden deneyin."
+                    )
                 versions_dir = index_dir
             try:
-                new_index = load_index(new_path)
-            except ValueError as exc:
-                raise AlpError(f"Yeni katalog JSON değil: {exc}. Yerel katalog değiştirilmedi.") from exc
+                new_index = accept_catalog_bytes(
+                    data, signature, paths.trust, origin=str(source), at_update=True,
+                    floor=_update_floor(paths, index),
+                )
+            except CatalogTrustError as exc:
+                raise CatalogTrustError(f"{exc} Yerel katalog değiştirilmedi.") from exc
+            except AlpError as exc:
+                raise AlpError(f"Yeni katalog JSON değil ya da geçersiz: {exc}. Yerel katalog değiştirilmedi.") from exc
             _validate_catalog(new_index, versions_dir)
+            payload, ignored = _bundle_payload(new_index, new_root) if bundle else ({}, 0)
 
             _print_catalog_diff(
-                paths, _catalog_versions(index, index_dir), _catalog_versions(new_index, versions_dir),
+                paths, _old_versions(index, index_dir), _catalog_versions(new_index, versions_dir),
             )
+            if ignored:
+                print(f"Katalog paketindeki {ignored} dosya katalogda adı geçmediği için yok sayıldı.")
 
             if args.dry_run:
                 print("[dry-run] yerel katalog değiştirilmedi.")
@@ -2670,18 +3798,26 @@ def cmd_update(args: argparse.Namespace, paths: Paths, index_path: Path, index: 
             if bundle:
                 prev = index_dir / ".alp-catalog-prev"
                 shutil.rmtree(prev, ignore_errors=True)
-                files = sorted(p for p in new_root.rglob("*") if p.is_file() and p.name != "index.json")
-                for src in files:
-                    rel = src.relative_to(new_root)
+                for rel in sorted(payload):
                     dst = index_dir / rel
                     if dst.is_file():
                         (prev / rel).parent.mkdir(parents=True, exist_ok=True)
                         shutil.copy2(dst, prev / rel)
-                    dst.parent.mkdir(parents=True, exist_ok=True)
-                    os.replace(src, dst)
+                    _write_atomic(dst, payload[rel])  # the bytes that were hash-checked
             if index_path.is_file():
                 shutil.copy2(index_path, index_path.with_name(index_path.name + ".prev"))
-            os.replace(new_path, index_path)  # last: the catalog only points at files that already exist
+            if sig_path.is_file():
+                shutil.copy2(sig_path, sig_path.with_name(sig_path.name + ".prev"))
+            # Signature first, index last: the catalog only points at files
+            # that already exist, and a crash in between leaves a pair that
+            # fails verification (and `alp update` repairs), never a pair
+            # that verifies but was not what was accepted.
+            if signature is not None:
+                _write_atomic(sig_path, signature)
+            else:
+                sig_path.unlink(missing_ok=True)
+            _write_atomic(index_path, data)  # the bytes that were verified, not a re-read
+            _record_accepted_catalog(paths, new_index)
             print("Katalog güncellendi. Önceki index.json: " + index_path.name + ".prev")
             return 0
         finally:
@@ -2771,6 +3907,17 @@ def developer_help() -> str:
 
   adopt-base        Önceden kurulmuş LFS dosyalarını korumalı paket olarak kaydet
                     (ayrıntı: alp adopt-base --help)
+
+Güven ve derleme (ayrıntı: design/trust-model.md):
+  --keyring DOSYA       Katalog imzasının denetleneceği anahtarlık
+                        (varsayılan: /usr/share/alp/keys/alpbahos-catalog.gpg)
+  --allowed-keys DOSYA  İmzalamaya izinli ve iptal edilmiş parmak izleri
+                        (varsayılan: /usr/share/alp/keys/allowed.txt)
+  --allow-unsigned      İmzasız kataloğu kabul et. Yalnız root; her çalıştırmada
+                        uyarır; kalıcı yapılamaz; mağaza (PackageKit) kabul etmez
+  --no-sandbox          Tarif adımlarını bubblewrap olmadan çalıştır. Yalnız root;
+                        her derlemede uyarır; kalıcı yapılamaz
+  --jobs N              Derlemede MAKEFLAGS=-jN (varsayılan 1)
 
 Bu seçenekler komuttan önce ya da sonra yazılabilir:
   alp --root /tmp/deneme install figlet
@@ -2862,6 +4009,13 @@ def build_parser() -> argparse.ArgumentParser:
         g.add_argument("--relocate", action="store_true", default=default, help=argparse.SUPPRESS)
         g.add_argument("--progress-fd", type=int, default=None if default is False else default,
                        help=argparse.SUPPRESS)
+        # Trust and sandbox switches. None of them has a configuration-file or
+        # environment form; --allow-unsigned and --no-sandbox are root only (main()).
+        g.add_argument("--allow-unsigned", action="store_true", default=default, help=argparse.SUPPRESS)
+        g.add_argument("--no-sandbox", action="store_true", default=default, help=argparse.SUPPRESS)
+        g.add_argument("--keyring", default=None if default is False else default, help=argparse.SUPPRESS)
+        g.add_argument("--allowed-keys", default=None if default is False else default, help=argparse.SUPPRESS)
+        g.add_argument("--jobs", type=int, default=None if default is False else default, help=argparse.SUPPRESS)
 
     global_options(p, False)
     common = _AlpArgumentParser(add_help=False)
@@ -2967,9 +4121,33 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if args.command == "adopt-base":
             return cmd_adopt_base(args, paths)
+        if args.command == "recover":
+            # Needs no catalog, and must stay usable when the catalog is the
+            # problem: a pending journal blocks `alp update` too.
+            return cmd_recover(args, paths)
+        for flag, given in (("--allow-unsigned", args.allow_unsigned), ("--no-sandbox", args.no_sandbox)):
+            if given and not _is_root():
+                raise AlpError(f"{flag} yalnız root tarafından kullanılabilir.")
+        jobs = getattr(args, "jobs", None)
+        if jobs is not None and not 1 <= jobs <= 1024:
+            raise AlpError("--jobs 1 ile 1024 arasında olmalı.")
+        paths.trust = TrustPolicy(
+            keyring=os.path.abspath(args.keyring) if args.keyring else "",
+            allowed_keys=os.path.abspath(args.allowed_keys) if args.allowed_keys else "",
+            allow_unsigned=bool(args.allow_unsigned),
+        )
+        paths.sandbox = "off" if args.no_sandbox else "require"
+        paths.jobs = jobs or 1
         index_path = resolve_index_path(args.index, paths)
         index_dir = index_path.parent
-        index = load_index(index_path)
+        try:
+            index = load_catalog(index_path, paths)
+        except AlpError as exc:
+            if args.command != "update":
+                raise
+            print(f"alp: uyarı: yerel katalog kabul edilmedi, içeriği kullanılmıyor: {_first_line(exc)}",
+                  file=sys.stderr)
+            index = None
         if args.command == "search":
             return cmd_search(index, args.term, as_json=args.json, index_dir=index_dir)
         if args.command == "info":
@@ -2987,8 +4165,6 @@ def main(argv: list[str] | None = None) -> int:
                 raise AlpError(f"--progress-fd {progress_fd} açılamadı: {exc}") from exc
         if args.command == "update":
             return cmd_update(args, paths, index_path, index)
-        if args.command == "recover":
-            return cmd_recover(args, paths)
         if args.command == "protect":
             return cmd_protect(args, paths, protect=True)
         if args.command == "unprotect":
@@ -3016,4 +4192,6 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == _DROP_HELPER_FLAG:
+        raise SystemExit(_drop_helper_main(sys.argv[2:]))
     raise SystemExit(main())

@@ -1,0 +1,37 @@
+# soft trust gate and old/new alp.py, 2026-11-11T07:26:19Z, integ HEAD ac890d1 + working tree
+== 1. root never integrated: read-only snapshot of the live r4-root (/home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-old-ro; r4-root itself is only snapshotted)
+iso-gate: UYARI: ALP-TRUST-01 henüz uygulanmadı: katalog imzasız (kökte alp-keyring kaydı yok, kurulu alp.py eski sürüm). ISO derlemesi sürüyor; imzalı katalog için önce scripts/rebuild/trust/integrate-trust.sh çalıştırın.
+gate --auto rc=0
+iso-gate: FAIL: installed alp.py has no signature check
+gate strict (no --auto) rc=1
+== 2. integrated copy (/home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-probe)
+iso-gate: ALP-TRUST-01 applied to /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-probe (alp-keyring record: 1, signed-catalog alp.py: 1): strict check
+iso-gate: PASS (/home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-probe: signed catalog accepted, changed catalog refused, alpbuild present)
+gate --auto rc=0
+== 3. integrated but broken: writable snapshot of the copy with index.json.sig removed (/home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-half)
+iso-gate: ALP-TRUST-01 applied to /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-half (alp-keyring record: 1, signed-catalog alp.py: 1): strict check
+iso-gate: FAIL: usr/share/alp/index.json.sig missing or not a regular file
+gate --auto rc=1
+== 3b. same, alp-keyring record present but old alp.py put back (copied from the read-only snapshot)
+iso-gate: ALP-TRUST-01 applied to /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-half (alp-keyring record: 1, signed-catalog alp.py: 0): strict check
+iso-gate: FAIL: installed alp.py has no signature check
+gate --auto rc=1
+deleted /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-half
+== 4. demo-index caller line (r10/r11 form) with the NEW alp.py (repo), root = integrated copy
+UNSIGNED='--allow-unsigned'
+Bağımlılık tutarlılığı: sorun yok (546 kurulu paket).
+check rc=0
+packages 546
+== 5. the same line with the OLD alp.py (the one installed in r4-root, read from the read-only snapshot), root = read-only snapshot
+bd8416f485994bbe
+UNSIGNED=''
+Bağımlılık tutarlılığı: sorun yok (550 kurulu paket).
+check rc=0
+packages 550
+== 6. image-alp-check.sh form (installed alp in a chroot, demo index in /run): old image vs integrated copy
+(old snapshot first, then the integrated copy) flag='' check rc=0
+Bağımlılık tutarlılığı: sorun yok (550 kurulu paket).
+(old snapshot first, then the integrated copy) flag='--allow-unsigned' check rc=0
+Bağımlılık tutarlılığı: sorun yok (546 kurulu paket).
+deleted /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-old-ro
+mounts under scratch r4-*: 0

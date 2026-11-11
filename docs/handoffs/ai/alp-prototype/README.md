@@ -18,6 +18,8 @@ Full list: [docs/DECISIONS.md](../../../DECISIONS.md). Live plan: [docs/MASTER_P
 ## Files
 
 - `alp.py` — prototype CLI (Python 3.10+; tested with 3.14.7).
+- `alp_catalog_tool.py` — maintainer-side helper for the signed catalog: `stamp` writes `catalog_version`, `valid_until`, `signed_keyring_version` and every `recipe_sha256` into `index.json`; `sign` runs `gpg --detach-sign`. alp never signs and does not import it.
+- `design/trust-model.md` — signed catalog and sandboxed builds (ALP-TRUST-01, D170-D174).
 - `demo/index.json` — sample catalog: one `recipe` entry (htop), one `flatpak` entry (firefox), one `core` entry (alpbah-theme-solid).
 - `demo/recipes/htop.recipe.json` — sample build recipe. **The `sha256` field is a deliberate placeholder** (`REPLACE_WITH_REAL_UPSTREAM_SHA256_BEFORE_USE`); real htop version verification was not done.
 - `demo/core/alpbah-theme-solid-1.0.0.tar.gz` — a few-hundred-byte fake theme archive made for testing only. It is not a real alpbahOS theme.
@@ -34,6 +36,58 @@ python3 alp.py --root /tmp/alp-test --index demo/index.json remove alpbah-theme-
 ```
 
 `--root` replaces the real `/` with a DESTROOT. On alpbahOS the flag is omitted.
+
+Since ALP-TRUST-01 (2026-11-10) alp refuses a catalog without a valid signature, so the demo catalog (unsigned in
+the repository; no key is committed) needs one of the two ways in the next section first.
+
+## Signed catalog and sandboxed builds (ALP-TRUST-01, 2026-11-10)
+
+Design and decisions: [`design/trust-model.md`](design/trust-model.md), D170-D174. Evidence:
+[`docs/verification/alp-trust-2026-11-10.md`](../../../verification/alp-trust-2026-11-10.md). Not in any image yet.
+
+What alp checks, on every command that loads the catalog and again in `alp update` before anything is replaced:
+`index.json.sig` is a good OpenPGP signature over `index.json` (checked with `/usr/bin/gpgv`) by a key listed in
+`allowed.txt` and not revoked; `catalog_version` is not lower than the last version this system accepted;
+`valid_until` (an expired new catalog is refused at `alp update`, an expired local one only warns); and each recipe
+file matches its `recipe_sha256` before it is parsed.
+
+| Option | Meaning |
+|---|---|
+| `--keyring FILE` | keyring to check against (default `/usr/share/alp/keys/alpbahos-catalog.gpg`) |
+| `--allowed-keys FILE` | allowed and revoked fingerprints (default `/usr/share/alp/keys/allowed.txt`) |
+| `--allow-unsigned` | accept a catalog with no `.sig`. Root only, warns on every run, cannot be stored, never used by the PackageKit backend. A signature that is present but bad is still refused |
+| `--no-sandbox` | run recipe steps without bubblewrap. Root only, warns on every build, cannot be stored |
+| `--jobs N` | `MAKEFLAGS=-jN` in the build environment (default 1) |
+
+`/etc/alp/trust.conf` (root-owned) may set `keyring = /path` and `allowed_keys = /path`, nothing else. No
+environment variable changes any of this. `allowed.txt`: one primary-key fingerprint per line, `revoked <fingerprint>`,
+`keyring-version <n>`, `#` comments.
+
+Running the demo catalog with a throwaway key (ordinary user; the key never leaves the temp dir):
+
+```bash
+cd docs/handoffs/claude/alp-prototype
+T=$(mktemp -d); cp -r demo "$T/demo"; mkdir -m 700 "$T/gnupg"
+gpg --homedir "$T/gnupg" --batch --pinentry-mode loopback --passphrase '' --quick-generate-key 'alp demo <demo@alp.invalid>' ed25519 sign never
+FPR=$(gpg --homedir "$T/gnupg" --list-keys --with-colons | awk -F: '/^fpr/{print $10; exit}')
+gpg --homedir "$T/gnupg" --output "$T/demo.gpg" --export "$FPR"; printf 'keyring-version 1\n%s\n' "$FPR" > "$T/allowed.txt"
+python3 alp_catalog_tool.py stamp "$T/demo/index.json" --catalog-version 1 --keyring-version 1
+python3 alp_catalog_tool.py sign "$T/demo/index.json" --homedir "$T/gnupg" --local-user "$FPR"
+python3 alp.py --root "$T/root" --index "$T/demo/index.json" --keyring "$T/demo.gpg" --allowed-keys "$T/allowed.txt" install -y alpbah-theme-solid
+gpgconf --homedir "$T/gnupg" --kill all; rm -rf "$T"
+```
+
+Or, as root only: `sudo python3 alp.py --root /tmp/alp-test --index demo/index.json --allow-unsigned search alp`.
+
+Builds: recipe steps run inside bubblewrap (`/usr/bin/bwrap`) with `/` read-only, only the source and stage
+directories writable, private `/tmp` and `/run`, no network, and only `PATH`, `HOME`, `LC_ALL`, `MAKEFLAGS`,
+`SOURCE_DATE_EPOCH` in the environment. As root, alp first drops to the `alpbuild` user (must exist; no fallback).
+A recipe may list `"setuid": ["/usr/bin/x"]`; any other setuid/setgid file in the staged tree, a device node, FIFO,
+socket, hard link to outside the stage, symlink out of the root or a path outside the allowed directories stops the
+merge before a file is written.
+
+Tests: `python3 -m pytest tests/ -q` as an ordinary user, and `sudo python3 -m pytest tests/test_trust_sandbox.py -rs`
+for the parts that need root (privilege drop, ownership; they build as uid 65534, no user is created).
 
 ## Tested in the first prototype environment (win32, Python 3.14.7, historical)
 

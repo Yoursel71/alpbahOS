@@ -12,7 +12,12 @@ SB=/home/yrslf/alpbahOS/scratch-lfs-bench
 WT=/home/yrslf/alpbahOS/wt-t2-kisayol
 R4=$SB/r4-root
 ST=$SB/r24/stage
-DONE=$(python3 "$WT/docs/handoffs/claude/alp-prototype/alp.py" --root "$R4" list 2>/dev/null | cut -f1)
+# ALP-TRUST-01: through alp-host.sh (the root's own catalog keys, when it has them). A failing or empty `alp list`
+# stops the run: an empty DONE would make every record below look "not done yet" and be applied again.
+DONE=$(bash "$WT/scripts/rebuild/trust/alp-host.sh" "$WT/docs/handoffs/claude/alp-prototype/alp.py" --root "$R4" list) \
+    || { echo "alp list failed on $R4; stopping" >&2; exit 1; }
+DONE=$(cut -f1 <<< "$DONE")
+[ -n "$DONE" ] || { echo "alp list on $R4 returned nothing; stopping" >&2; exit 1; }
 mkdir -p "$SB/r24"
 cd "$WT"
 if ! grep -qx alpbahos-desktop-profile <<< "$DONE"; then

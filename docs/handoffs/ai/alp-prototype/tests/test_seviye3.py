@@ -16,6 +16,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import alp  # noqa: E402
+from trusthelpers import sign_catalog  # noqa: E402
 
 
 def _entry(tmp_path: Path, name: str, version: str = "1.0.0", depends=None, conflicts=None) -> dict:
@@ -399,6 +400,7 @@ def test_cli_end_to_end_via_main(paths, tmp_path: Path, capsys):
     entries = {"app": _entry(tmp_path, "app", depends=["lib>=1"]), "lib": _entry(tmp_path, "lib")}
     index_path = tmp_path / "index.json"
     index_path.write_text(json.dumps({"schema_version": 1, "entries": entries}), encoding="utf-8")
+    sign_catalog(index_path)  # ALP-TRUST-01: alp.main() only takes a signed catalog
     base = ["--root", str(paths.root), "--index", str(index_path)]
     assert alp.main(base + ["install", "-y", "app"]) == 0
     assert alp.main(base + ["remove", "lib"]) == 1

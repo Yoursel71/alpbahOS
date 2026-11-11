@@ -1,0 +1,10 @@
+# sudo, whole suite, 2026-11-10T17:20:09Z
+....................................................................ss.. [ 67%]
+......................s................................................. [ 84%]
+..s................................................................      [100%]
+=========================== short test summary info ============================
+SKIPPED [1] tests/test_m02_rollback.py:195: needs POSIX permissions and a non-root user
+SKIPPED [2] tests/test_trust_catalog.py:201: root olmayan kullanıcı gerekir
+SKIPPED [1] tests/test_trust_catalog.py:376: root olmayan kullanıcı gerekir
+SKIPPED [1] tests/test_trust_sandbox.py:341: root olmayan kullanıcı gerekir
+422 passed, 5 skipped in 22.18s
