@@ -21,11 +21,11 @@
 set -u
 FW=$1; SRC=$2; NAME=$3
 B=/home/yrslf/alpbahOS/scratch-lfs-bench
-WT=/home/yrslf/alpbahOS/wt-t2-kisayol
+WT=${MATRIX_WT:-/home/yrslf/alpbahOS/wt-t2-kisayol}
 W=$WT/scripts/rebuild/image
 D=${OUTD:-$B/lfs13-logs/iso-beta-0.9/r21}
 R=$D/$NAME; CP=$D/$NAME-copy.raw; M=$D/mnt-$NAME
-PW=$(cat "$B/test-secrets/r21.pw")
+PW=$(cat "${DIAG_PWF:-$B/test-secrets/r21.pw}")   # DIAG_PWF: password file of the installs under test
 PORT=$((18080 + RANDOM % 1000))
 mkdir -p "$D"
 if [ -n "${OUTD:-}" ]; then

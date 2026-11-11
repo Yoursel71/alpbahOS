@@ -25,9 +25,10 @@ W=$WT/scripts/rebuild/image
 S=$WT/scripts/rebuild/r21
 MR=${MROUND:-r21}   # round 27+: MROUND=r27 (ISO, installs, password file and evidence directory of that round)
 D=${MATRIX_DIR:-$B/lfs13-logs/iso-beta-0.9/$MR/matrix}
-ISO=$B/images/alpbahos-beta-0.9-2026-11-09-$MR.iso
-IMGB=$B/images/inst-bios-msdos-$MR.raw
-IMGU=$B/images/inst-uefi-gpt-$MR.raw
+# ISO_PATH, IMGB_PATH, IMGU_PATH: the ISO and the two installs from another directory (e.g. a kept copy)
+ISO=${ISO_PATH:-$B/images/alpbahos-beta-0.9-2026-11-09-$MR.iso}
+IMGB=${IMGB_PATH:-$B/images/inst-bios-msdos-$MR.raw}
+IMGU=${IMGU_PATH:-$B/images/inst-uefi-gpt-$MR.raw}
 PWF=$B/test-secrets/$MR.pw
 mkdir -p "$D"
 
