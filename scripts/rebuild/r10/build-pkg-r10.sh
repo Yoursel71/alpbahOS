@@ -24,6 +24,9 @@ rm -rf "$R4$BLD" "$R4/tmp/stage-$NAME" && mkdir -p "$R4$BLD"
 cp -a "$SRC/." "$R4$BLD/"
 # Round 12: optional patch applied first in the build dir (PRE_PATCH=<file>, used by the itstool lxml patch).
 if [ -n "${PRE_PATCH:-}" ]; then cp "$PRE_PATCH" "$R4$BLD/.pre.patch"; fi
+EXTRA_COPIED=""
+for f in ${EXTRA_FILES:-}; do cp "$f" "$R4/tmp/" && EXTRA_COPIED="$EXTRA_COPIED $R4/tmp/$(basename "$f")"; done
+JOBS=${JOBS:-16}
 OPTS="$*"
 mount --bind /dev "$R4/dev"; mount -t proc proc "$R4/proc"; mount -t sysfs sys "$R4/sys"; mount -t tmpfs tmpfs "$R4/run"
 cleanup() { umount "$R4/run" "$R4/sys" "$R4/proc" "$R4/dev" 2>/dev/null || true; }
@@ -42,14 +45,22 @@ autogen)
 pip)
   # Round 12: Python module (BLFS pip3 wheel, then install into a staging root).
   CMD="cd $BLD && python3 -m pip wheel -w /tmp/wheel-$NAME --no-build-isolation --no-deps --no-cache-dir $OPTS $BLD && python3 -m pip install --no-index --no-deps --no-user --root /tmp/stage-$NAME /tmp/wheel-$NAME/*.whl" ;;
+custom)
+  [ -n "${CUSTOM_CMD:-}" ] || { echo "custom kind needs CUSTOM_CMD"; exit 2; }
+  CMD="export MAKEFLAGS=-j$JOBS; cd $BLD && $CUSTOM_CMD" ;;
 *) echo "bad kind"; exit 2 ;;
 esac
 set +e
-chroot "$R4" /usr/bin/env PATH=/usr/bin:/usr/sbin:/bin:/sbin sh -c "set -e; $CMD" > "$W/build.log" 2>&1
+nice -n "${NICE:-0}" chroot "$R4" /usr/bin/env PATH=/usr/bin:/usr/sbin:/bin:/sbin STAGE=/tmp/stage-$NAME JOBS=$JOBS \
+  HOME=/root sh -c "set -e; $CMD" > "$W/build.log" 2>&1
 RC=$?
 set -e
 echo "chroot build rc=$RC (log $W/build.log)"
-[ "$RC" = 0 ] || exit 1
+[ -z "$EXTRA_COPIED" ] || rm -f $EXTRA_COPIED
+if [ "$RC" != 0 ]; then
+  [ "${KEEP_FAILED:-0}" = 1 ] && echo "failed tree kept: $R4$BLD (remove before any ISO build)" || rm -rf "$R4$BLD" "$R4/tmp/stage-$NAME"
+  exit 1
+fi
 rm -rf "$W/stage" && cp -a "$R4/tmp/stage-$NAME" "$W/stage"
 rm -rf "$R4$BLD" "$R4/tmp/stage-$NAME"
 echo "staged files: $(find "$W/stage" -type f -o -type l | wc -l)"
