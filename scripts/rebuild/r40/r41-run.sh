@@ -1,8 +1,12 @@
 #!/bin/bash
 # Round 41: the r40 fixes found after round 40 started: FW-DIRLINK-01 (linux-firmware-dirlinks), ALP-KUTU-01 (alp
 # Debian box, apt/dnf/pacman hint, ~/.local/bin on PATH: alp-kutu-r40b, alpbahos-pm-hint-r40) and INSTALLER-UI-01 r41
-# (summary strings in the future tense: calamares-r41). Rows: I1 and I2 installs with installer screenshots, the
-# matrix KUTU row (also checks the gb206 firmware link) and B2. Same host sharing as r40-run.sh (gate, gap).
+# (summary strings in the future tense: calamares-r41), MESA-01 (libglvnd, Mesa with the Intel/AMD drivers: gpu-r41.sh).
+# Round 40's run stopped at I1 (the fixed Kur click missed the smaller installer's button; r20-lanes.sh now finds it in
+# the screenshot), so this round also covers every round 40 row: I1 and I2 installs with installer screenshots,
+# Welcome, timing, KSplash, the matrix APPS row (PIXBUF-01, PORTAL-01, ALP-FLATHUB-01, DISTROBOX-01), the KUTU row
+# (also checks the gb206 firmware link) and B2. Same host sharing as r40-run.sh (gate, gap; timing waits up to 45 min
+# for a host without other VMs).
 # Runs as the build user (nohup); sudo for the ISO build.
 set -u
 B=/home/yrslf/alpbahOS/scratch-lfs-bench
@@ -32,7 +36,13 @@ gate 1; log "lane1 (I1 BIOS install)"
 ROUND=r41 bash scripts/rebuild/r20/r20-lanes.sh "$ISO" lane1 > "$L/lane1.log" 2>&1; gap
 gate 1; log "lane2 (L1 live UEFI, I2 UEFI install)"
 ROUND=r41 bash scripts/rebuild/r20/r20-lanes.sh "$ISO" lane2 > "$L/lane2.log" 2>&1; gap
+R25() { ROUND=r41 bash scripts/rebuild/r25/run-r25.sh "$ISO" "$@" >> "$B/r41/run-r41.out" 2>&1; }
+gate 1; log "welcome"; R25 welcome; gap
+w=0; while [ "$(qn)" -gt 0 ] && [ $w -lt 90 ]; do sleep 30; w=$((w + 1)); done
+gate 1; log "timing (other QEMU at start: $(qn))"; R25 timing; gap
+gate 1; log "ksplash"; R25 ksplash; gap
 MD=$L/matrix; mkdir -p "$MD"
+gate 1; log "matrix APPS"; env MROUND=r41 bash scripts/rebuild/r21/matrix-r21.sh apps > "$MD/run-APPS.out" 2>&1; gap
 gate 1; log "matrix KUTU"; env MROUND=r41 bash scripts/rebuild/r21/matrix-r21.sh kutu > "$MD/run-KUTU.out" 2>&1; gap
 gate 1; log "matrix B2"; env MROUND=r41 bash scripts/rebuild/r21/matrix-r21.sh diag B2 > "$MD/run-B2.out" 2>&1
 log "r41 done"

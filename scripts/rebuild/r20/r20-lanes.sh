@@ -62,6 +62,10 @@ install_run() { # fw image name kur_x kur_y  (KERNEL, INITRD, APPEND from the ca
   $Q click 629 373; sleep 1; clr "$Q"; tq "$R" "$PW"
   sleep 2; $Q shot i-05-users-filled
   $Q click 1007 637; sleep 3; $Q shot i-06-summary
+  # Round 41: the Kur button is found in the summary screenshot (find-button-y.py); the fixed y is the fallback. Round
+  # 40's smaller installer moved it from y 709 to 684 and the fixed click started no install.
+  local KYF; KYF=$(python3 "$W/find-button-y.py" "$R/i-06-summary.ppm" "$KX" 2>/dev/null) \
+    && { echo "Kur button at y=$KYF (fixed $KY)"; KY=$KYF; } || echo "Kur button not found, fixed y=$KY"
   $Q click $KX $KY; sleep 4; $Q shot i-07-confirm
   $Q click 748 470; sleep 5; $Q shot i-08-running
   if [ "${FAILRUN:-0}" = 1 ]; then
