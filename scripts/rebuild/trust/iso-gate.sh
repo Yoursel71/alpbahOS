@@ -1,7 +1,16 @@
 #!/bin/bash
 # ALP-TRUST-01 gate for image builds (run as root): no ISO from a root whose alp catalog is not signed and accepted.
 #
-# Usage: iso-gate.sh <ROOT>      exit 0 = pass, anything else = do not build
+# Usage: iso-gate.sh [--auto] <ROOT>      exit 0 = build may go on, anything else = do not build
+#
+# Without --auto the gate is always strict. With --auto (what build-iso.sh uses) the root decides, from its own
+# files, never from an environment variable:
+#   - strict when ALP-TRUST-01 has been applied to the root: the alp database has an `alp-keyring` record, OR the
+#     installed alp.py is the signed-catalog version (such an alp refuses an unsigned catalog, so an image with it
+#     and without a signed catalog would ship a broken package manager);
+#   - otherwise warning only: prints "ALP-TRUST-01 henüz uygulanmadı: katalog imzasız" and exits 0, so images of a
+#     root that was never integrated keep building as before.
+# Once scripts/rebuild/trust/integrate-trust.sh has run on the root, --auto is strict by itself.
 # Checks, with the tools of ROOT itself (its python3, gpgv and installed alp, in a chroot):
 #   - the installed alp.py is the signed-catalog version;
 #   - keyring, allowed.txt, index.json and index.json.sig exist, root:root, not group/other-writable;
@@ -14,9 +23,23 @@
 set -euo pipefail
 export LC_ALL=C
 [ "$(id -u)" -eq 0 ] || { echo "iso-gate: run as root" >&2; exit 1; }
-ROOT=$(realpath "${1:?usage: iso-gate.sh <ROOT>}")
+AUTO=0
+[ "${1:-}" = --auto ] && { AUTO=1; shift; }
+ROOT=$(realpath "${1:?usage: iso-gate.sh [--auto] <ROOT>}")
 fail() { echo "iso-gate: FAIL: $*" >&2; exit 1; }
 K=usr/share/alp/keys
+if [ "$AUTO" = 1 ]; then
+    [ -f "$ROOT/var/lib/alp/db.json" ] || fail "$ROOT has no alp database"
+    HAS_KEYRING=$(python3 -c 'import json,sys; print(int("alp-keyring" in json.load(open(sys.argv[1]))["packages"]))' "$ROOT/var/lib/alp/db.json") \
+        || fail "cannot read $ROOT/var/lib/alp/db.json"
+    NEW_ALP=0
+    grep -q verify_catalog_signature "$ROOT/usr/lib/alp/alp.py" 2> /dev/null && NEW_ALP=1
+    if [ "$HAS_KEYRING" = 0 ] && [ "$NEW_ALP" = 0 ]; then
+        echo "iso-gate: UYARI: ALP-TRUST-01 henüz uygulanmadı: katalog imzasız (kökte alp-keyring kaydı yok, kurulu alp.py eski sürüm). ISO derlemesi sürüyor; imzalı katalog için önce scripts/rebuild/trust/integrate-trust.sh çalıştırın."
+        exit 0
+    fi
+    echo "iso-gate: ALP-TRUST-01 applied to $ROOT (alp-keyring record: $HAS_KEYRING, signed-catalog alp.py: $NEW_ALP): strict check"
+fi
 grep -q verify_catalog_signature "$ROOT/usr/lib/alp/alp.py" 2> /dev/null || fail "installed alp.py has no signature check"
 for f in $K/alpbahos-catalog.gpg $K/allowed.txt usr/share/alp/index.json usr/share/alp/index.json.sig usr/lib/alp/alp.py; do
     [ -f "$ROOT/$f" ] && [ ! -L "$ROOT/$f" ] || fail "$f missing or not a regular file"

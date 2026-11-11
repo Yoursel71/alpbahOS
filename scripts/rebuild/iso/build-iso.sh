@@ -72,13 +72,16 @@ log "snapshot r4-root (read-only) -> $SNAP_SRC"
 btrfs subvolume snapshot -r "$R4" "$SNAP_SRC" > /dev/null
 log "writable copy -> $LIVE"
 btrfs subvolume snapshot "$SNAP_SRC" "$LIVE" > /dev/null
-# ALP-TRUST-01 gate, on the writable copy (r4-root itself is not written): signed catalog accepted by the copy's
-# own alp and gpgv, a changed catalog refused, keyring and build user present. On failure the two snapshots just
-# made are removed again, so a rerun is not blocked by them.
-if ! bash "$TRUST_GATE" "$LIVE" 2>&1 | tee "$LOGS/trust-gate.log"; then
+# ALP-TRUST-01 gate, on the writable copy (r4-root itself is not written). --auto: if the root was never integrated
+# (no alp-keyring record and the old alp.py) it only warns, so the ISO still builds; once integrate-trust.sh has
+# run on r4-root it is strict: signed catalog accepted by the copy's own alp and gpgv, a changed catalog refused,
+# keyring and build user present. On failure the two snapshots just made are removed again, so a rerun is not
+# blocked by them.
+if ! bash "$TRUST_GATE" --auto "$LIVE" 2>&1 | tee "$LOGS/trust-gate.log"; then
     btrfs subvolume delete "$LIVE" > /dev/null; btrfs subvolume delete "$SNAP_SRC" > /dev/null
     die "alp trust gate failed (see $LOGS/trust-gate.log); run scripts/rebuild/trust/integrate-trust.sh on r4-root first"
 fi
+grep -q 'henüz uygulanmadı' "$LOGS/trust-gate.log" && log "WARNING: ALP-TRUST-01 henüz uygulanmadı: katalog imzasız (see $LOGS/trust-gate.log)"
 # INSTALL-UID-01 (D148): the top directory of r4-root belongs to the build user (UID 1000). mksquashfs takes the
 # owner of / from it, and unpackfs copies it to the installed /, where UID 1000 is the first installed user.
 chown 0:0 "$LIVE"
