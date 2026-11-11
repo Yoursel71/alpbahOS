@@ -131,6 +131,28 @@ def key_background(logo: Image.Image) -> Image.Image:
     return out
 
 
+WORDMARK = REPO / "branding" / "plymouth-theme" / "alpbahos" / "wordmark.png"
+
+
+def live_wordmark(keyed: Image.Image) -> Image.Image:
+    """D155 (2026-11-11): the mark of the keyed logo with the live wordmark ("alpbah" #f4f8fb, "OS" #00aeef, Inter Bold,
+    rendered by branding/plymouth-theme/tools/build_plymouth_theme.py) under it. The logo's own navy wordmark is
+    unreadable on the dark wallpaper. Mark: rows above the first fully empty row run, trimmed; never enlarged."""
+    alpha = keyed.getchannel("A")
+    rows = [y for y in range(keyed.height) if alpha.crop((0, y, keyed.width, y + 1)).getextrema()[1] > 8]
+    # No empty row between mark and wordmark (e.g. a plain test image): the whole image is the mark.
+    cut = next((rows[i] for i in range(1, len(rows)) if rows[i] - rows[i - 1] > 1), keyed.height)
+    mark = keyed.crop((0, 0, keyed.width, cut))
+    mark = mark.crop(mark.getchannel("A").point(lambda v: 255 if v > 8 else 0).getbbox())
+    word = Image.open(WORDMARK).convert("RGBA")
+    gap = round(mark.height * 0.12)
+    w = max(mark.width, word.width)
+    out = Image.new("RGBA", (w, mark.height + gap + word.height), (0, 0, 0, 0))
+    out.alpha_composite(mark, ((w - mark.width) // 2, 0))
+    out.alpha_composite(word, ((w - word.width) // 2, mark.height + gap))
+    return out
+
+
 def logo_box(size: tuple[int, int], logo: Image.Image) -> tuple[int, int, int, int, int]:
     """(x, y, w, h, gap) — logo+çizgi bloğu dikeyde ortalanmış yerleşim. Hem compose hem test kullanır."""
     width, height = size
@@ -162,7 +184,7 @@ def compose(size: tuple[int, int], colors: dict, logo: Image.Image) -> Image.Ima
     navy = colors["navy"]
     canvas = vertical_gradient(size, lerp(colors["bg-950"], navy, 0.55), colors["bg-950"]).convert("RGBA")
 
-    keyed = key_background(logo)
+    keyed = live_wordmark(key_background(logo))
     logo_x, top, logo_w, logo_h, gap = logo_box(size, keyed)
     scaled = keyed if logo_h == keyed.height else keyed.resize((logo_w, logo_h), Image.LANCZOS)
 
