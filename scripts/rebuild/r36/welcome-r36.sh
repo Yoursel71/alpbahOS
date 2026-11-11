@@ -1,5 +1,5 @@
 #!/bin/bash
-# THEME-01 / SCREENLOCK-01 (round 32): the Welcome apply tool also sets the lock screen wallpaper (kscreenlockerrc,
+# LAYOUT-01 (round 36): the Welcome panel script writes the installed alpbahOS launchers when it cannot read the old
 # list (round 35: Plasma defaults with a blank Discover icon and Vim as the browser appeared).
 # Run as root on the host.
 set -euo pipefail
