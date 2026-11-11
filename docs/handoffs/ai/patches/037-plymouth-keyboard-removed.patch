@@ -1,0 +1,11 @@
+--- a/src/libply-splash-core/ply-device-manager.c
++++ b/src/libply-splash-core/ply-device-manager.c
+@@ -166,6 +166,8 @@
+                 keyboard_renderer = ply_keyboard_get_renderer (keyboard);
+ 
+                 if (keyboard_renderer == renderer) {
++                        if (manager->keyboard_removed_handler != NULL)
++                                manager->keyboard_removed_handler (manager->event_handler_data, keyboard);
+                         ply_keyboard_free (keyboard);
+                         ply_list_remove_node (manager->keyboards, node);
+                 }
