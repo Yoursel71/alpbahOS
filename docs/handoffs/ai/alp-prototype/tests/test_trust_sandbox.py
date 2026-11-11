@@ -403,7 +403,7 @@ def test_root_build_runs_as_the_build_user_and_installs_as_root(paths, work):
         assert (st.st_uid, st.st_gid) == (0, 0), rel
     assert stat.S_IMODE((paths.root / "usr/bin/demo").stat().st_mode) == 0o755
     assert stat.S_IMODE((paths.root / "usr/share/demo").stat().st_mode) == 0o755
-    assert stat.S_IMODE((paths.root / "etc/demo.conf").stat().st_mode) == 0o664
+    assert stat.S_IMODE((paths.root / "etc/demo.conf").stat().st_mode) == 0o644  # also outside /usr
     # the source tree was handed to the build user, the stage was taken back by root
     build = paths.cache_dir / "build-demo-1.0"
     assert os.lstat(build / "demo-1.0/README").st_uid == 65534

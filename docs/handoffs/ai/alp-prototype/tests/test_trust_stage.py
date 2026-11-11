@@ -171,21 +171,37 @@ def test_hard_links_inside_the_stage_are_fine(stage, root):
     assert (root / "usr/bin/tool-alias").read_text() == (root / "usr/bin/tool").read_text()
 
 
-def test_group_and_other_write_is_dropped_under_usr_only(stage, root):
+def test_group_and_other_write_is_dropped_everywhere_except_sticky_directories(stage, root):
     (stage / "usr/bin/tool").chmod(0o777)
-    (stage / "usr/share/loose").mkdir(parents=True)
-    (stage / "usr/share/loose").chmod(0o777)
+    loose_dirs = ["usr/share/loose", "etc/loose.d", "var/lib/loose", "opt/loose", "boot/loose"]
+    loose_files = ["etc/x.conf", "var/lib/loose/state", "opt/loose/data", "boot/loose/cfg"]
+    for rel in loose_dirs:
+        (stage / rel).mkdir(parents=True)
+    for rel in loose_files:
+        (stage / rel).write_text("x")
+        (stage / rel).chmod(0o666)
+    for rel in loose_dirs:
+        (stage / rel).chmod(0o777)
     (stage / "var/spool/x").mkdir(parents=True)
     (stage / "var/spool/x").chmod(0o1777)
-    (stage / "etc").mkdir()
-    (stage / "etc/x.conf").write_text("x")
-    (stage / "etc/x.conf").chmod(0o664)
+    (stage / "var/spool/x/inside").write_text("x")
+    (stage / "var/spool/x/inside").chmod(0o666)
+    (stage / "etc/keep").write_text("x")
+    (stage / "etc/keep").chmod(0o640)
     _merge(stage, root)
     mode = lambda rel: stat.S_IMODE((root / rel).stat().st_mode)  # noqa: E731
     assert mode("usr/bin/tool") == 0o755
-    assert mode("usr/share/loose") == 0o755
-    assert mode("var/spool/x") == 0o1777  # modes outside /usr are kept
-    assert mode("etc/x.conf") == 0o664
+    assert [mode(rel) for rel in loose_dirs] == [0o755] * len(loose_dirs)
+    assert [mode(rel) for rel in loose_files] == [0o644] * len(loose_files)
+    assert mode("var/spool/x") == 0o1777  # sticky directory: world-writable on purpose, kept
+    assert mode("var/spool/x/inside") == 0o644  # a file inside it is not
+    assert mode("etc/keep") == 0o640  # other bits are not touched
+
+
+def test_sticky_bit_on_a_file_does_not_keep_it_writable(stage, root):
+    (stage / "usr/bin/tool").chmod(0o1777)
+    _merge(stage, root)
+    assert stat.S_IMODE((root / "usr/bin/tool").stat().st_mode) & 0o022 == 0
 
 
 def test_normalising_does_not_follow_a_symlink(stage, root, tmp_path):

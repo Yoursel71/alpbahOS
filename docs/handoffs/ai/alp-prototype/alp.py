@@ -1539,8 +1539,13 @@ def _chmod_nofollow(directory_fd: int, name: str, mode: int) -> None:
 
 def _normalise_stage(staged_root: Path) -> None:
     """After _preflight_stage(): make the staged tree root's (when alp is
-    root) and drop group/other write from everything under /usr. Modes are
-    otherwise kept, so the unchanged merge copies them as they are.
+    root) and drop group and other write from every file and directory,
+    wherever it is (/usr, /etc, /var, /opt, /boot ...): the tree was written
+    by the build user and nothing in it may stay writable by everybody.
+    The one exception is a directory with the sticky bit (var/tmp 1777
+    style), which is world-writable on purpose and safe for it. Recipes
+    have no way to ask for another exception. Modes are otherwise kept, so
+    the unchanged merge copies them as they are.
 
     chown clears setuid/setgid on Linux, even for root, so the mode read
     before the chown is put back afterwards; the bits that survive are
@@ -1552,7 +1557,6 @@ def _normalise_stage(staged_root: Path) -> None:
     for dirpath, dirnames, filenames, dirfd in os.fwalk(top, follow_symlinks=False):
         if as_root:
             os.fchown(dirfd, 0, 0)
-        rel_dir = "/" + os.path.relpath(dirpath, top).replace(os.sep, "/") if dirpath != top else ""
         for name in [*dirnames, *filenames]:
             st = os.lstat(name, dir_fd=dirfd)
             if as_root:
@@ -1560,8 +1564,7 @@ def _normalise_stage(staged_root: Path) -> None:
             if stat.S_ISLNK(st.st_mode):
                 continue
             mode = stat.S_IMODE(st.st_mode)
-            rel = f"{rel_dir}/{name}"
-            if rel == "/usr" or rel.startswith("/usr/"):
+            if not (stat.S_ISDIR(st.st_mode) and mode & stat.S_ISVTX):
                 mode &= ~0o022
             if as_root or mode != stat.S_IMODE(st.st_mode):
                 _chmod_nofollow(dirfd, name, mode)
