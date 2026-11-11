@@ -94,3 +94,33 @@ Before relying on it:
 ## Recommendation
 
 Option B, with the 20-boot loop as the check. Option A only if the splash may be dropped.
+
+## Update 2026-11-12: option B built and tested (PLY-FIX-02)
+
+The patch was built in a booted reflink copy of the r39 BIOS install. The build used the original record's meson
+options and the same build directory; the source sha256 matches `packages.tsv` row 402. Only
+`libply-splash-core.so.5.0.0` was replaced, `UseSimpledrm=1` was kept, and the initramfs was rebuilt with
+`target-initramfs.sh`. The library in the initramfs is byte-identical to `strip -g` of the patched build.
+
+Result over 30 boots, with the same core setup as before:
+
+- **0 crashes** (r39 as shipped: 3/20);
+- plymouth-quit succeeded 30/30;
+- SDDM started at 3.9–5.3 s (no 20 s delay);
+- every power-off finished within 60 s;
+- **the splash is still shown** (logo and bar at about 7–10 s).
+
+9 of the 30 boots fell in the 0–40 ms window after the virtio_gpu switch, where every r39 crash happened, and none
+crashed. Details: [r39x-followup-2026-11-11.md](../../verification/r39x-followup-2026-11-11.md), section 5.
+
+For the build session:
+
+1. Rebuild the plymouth record with
+   `PRE_PATCH=docs/handoffs/claude/patches/037-plymouth-keyboard-removed.patch`.
+2. Keep the meson options from `r10/plymouth/build.log`.
+3. Keep `UseSimpledrm=1`.
+4. Build the next ISO.
+5. On an install from that ISO, rerun the boot loop (`scripts/rebuild/r39y/ply-loop-r39y.sh`, cores counted from
+   files).
+
+Still not tested: real GPUs and the LUKS prompt.
