@@ -176,6 +176,41 @@ def test_signed_catalog_must_pin_every_recipe(tmp_path, root, capsys, session_ke
     assert code == 1 and "recipe_sha256" in err
 
 
+def test_signed_catalog_must_pin_a_recipe_named_by_any_entry(tmp_path, root, capsys):
+    """Rule 4 is about the `recipe` field, not about method == "recipe"."""
+    index = _catalog(tmp_path / "cat")
+    data = json.loads(index.read_text())
+    data["entries"]["tool"]["recipe"] = "recipes/demo.recipe.json"  # a core entry that names a recipe file
+    index.write_text(json.dumps(data))
+    sign_catalog(index, stamp=False)
+    code, _, err = _main(capsys, root, index, "search", "tool")
+    assert code == 1 and "recipe_sha256" in err and "'tool'" in err
+
+
+def test_entry_of_a_signed_catalog_without_digest_is_never_read(tmp_path, root):
+    index = _catalog(tmp_path / "cat")
+    catalog = alp.load_catalog(index, alp.Paths.resolve(str(root)))
+    entry = catalog["entries"]["demo"]
+    assert isinstance(entry, alp.SignedEntry) and isinstance(catalog["entries"]["tool"], alp.SignedEntry)
+    assert alp.read_recipe(entry, index.parent)["name"] == "demo"
+    del entry["recipe_sha256"]  # whatever lost it after the load
+    with pytest.raises(alp.CatalogTrustError, match="recipe_sha256"):
+        alp.read_recipe(entry, index.parent)
+    with pytest.raises(alp.CatalogTrustError, match="recipe_sha256"):
+        alp.catalog_version(catalog, index.parent, "demo")
+    with pytest.raises(alp.CatalogTrustError, match="recipe_sha256"):
+        alp.install_recipe(alp.Paths.resolve(str(root)), entry, index.parent, dry_run=True)
+
+
+def test_entry_of_an_unsigned_catalog_may_lack_the_digest(tmp_path, root, capsys):
+    index = _catalog(tmp_path / "cat", sign=False)
+    paths = alp.Paths.resolve(str(root))
+    paths.trust = alp.TrustPolicy(allow_unsigned=True)
+    catalog = alp.load_catalog(index, paths)
+    assert not isinstance(catalog["entries"]["demo"], alp.SignedEntry)
+    assert alp.read_recipe(catalog["entries"]["demo"], index.parent)["name"] == "demo"
+
+
 @pytest.mark.parametrize("field", ["catalog_version", "valid_until", "signed_keyring_version"])
 def test_signed_catalog_must_carry_the_signed_fields(tmp_path, root, capsys, field):
     index = _catalog(tmp_path / "cat")

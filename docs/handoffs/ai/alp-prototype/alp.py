@@ -797,6 +797,12 @@ def verify_catalog_signature(data: bytes, signature: bytes, policy: TrustPolicy)
     return SignatureInfo(signing, primary, keys.keyring_version)
 
 
+class SignedEntry(dict):
+    """A package entry of a catalog that was accepted with a valid
+    signature. The type is the mark read_recipe() looks at: for such an
+    entry a missing recipe_sha256 is a refusal, never "nothing to check"."""
+
+
 class Catalog(dict):
     """A catalog that passed load_catalog()/cmd_update(): the parsed index
     plus how it was accepted. Code that only reads entries treats it as the
@@ -899,7 +905,9 @@ def accept_catalog_bytes(
     except ValueError as exc:
         raise CatalogTrustError(f"İmzalı katalogda 'valid_until' geçerli bir tarih değil: {valid_until}") from exc
     for name, entry in index["entries"].items():
-        if isinstance(entry, dict) and entry.get("method") == "recipe":
+        # Any entry that names a recipe file, whatever its method says:
+        # read_recipe() reads the file of every entry that has the field.
+        if isinstance(entry, dict) and ("recipe" in entry or entry.get("method") == "recipe"):
             digest = entry.get("recipe_sha256")
             if not isinstance(digest, str) or not _SHA256_RE.fullmatch(digest):
                 raise CatalogTrustError(
@@ -928,6 +936,9 @@ def accept_catalog_bytes(
             f"{info.keyring_version}. Önce anahtarlık paketini yükseltin: alp upgrade alp-keyring",
             file=sys.stderr,
         )
+    for name, entry in list(catalog["entries"].items()):
+        if isinstance(entry, dict):
+            catalog["entries"][name] = SignedEntry(entry)
     catalog.signed = True
     catalog.signer = info.primary_fingerprint
     catalog.catalog_version = version
@@ -966,11 +977,16 @@ def load_catalog(index_path: Path, paths: "Paths") -> Catalog:
 
 def _check_recipe_hash(entry: dict, raw: bytes, origin: str) -> None:
     """recipe_sha256 from the (signed) index must match the recipe bytes
-    about to be parsed. A signed catalog always has the field (rule 4 of
-    accept_catalog_bytes); an entry without it can only come from a catalog
-    that was accepted unsigned."""
+    about to be parsed. "No digest, nothing to check" holds only for an
+    entry of a catalog that was accepted unsigned (or a dict a caller built
+    itself). An entry of a signed catalog (SignedEntry) without a digest is
+    refused here as well as at load (rule 4 of accept_catalog_bytes)."""
     wanted = entry.get("recipe_sha256")
     if wanted is None:
+        if isinstance(entry, SignedEntry):
+            raise CatalogTrustError(
+                f"İmzalı katalog girdisinde 'recipe_sha256' yok ({origin}); tarif okunmadı."
+            )
         return
     actual = hashlib.sha256(raw).hexdigest()
     if not isinstance(wanted, str) or actual != wanted.lower():
