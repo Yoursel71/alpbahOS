@@ -192,3 +192,42 @@ copy; both deleted afterwards):
 | image-alp-check.sh form (installed alp in a chroot) | flag passed; check rc 0 | flag not passed; check rc 0 |
 
 Handoff for the other session: [036-alp-trust-merge-2026-11-11.md](../handoffs/claude/036-alp-trust-merge-2026-11-11.md).
+
+
+## 11. Re-signing a regenerated catalog (2026-11-11, later)
+
+Branch `claude/alp-resign-2026-11-11` (worktree `/home/yrslf/alpbahOS/wt-resign`, from `yoursel/main` `7cb38bd`).
+
+Writers of `usr/share/alp/index.json` in `scripts/` (grep, without `legacy`): only `scripts/rebuild/r8/make-catalog-r8.py`
+(writes `<STAGE>/usr/share/alp/index.json`) and step 4 of `integrate-trust.sh`. No chain script in this tree calls
+`make-catalog-r8.py`; it was run by hand in round 8 (r4-root still has record `alp-catalog 2026.11.09-r8`).
+
+New `scripts/rebuild/trust/resign-catalog.py <ROOT> <INDEX> [--signing DIR]` is the one place that decides and
+signs. Rule: the same as `iso-gate.sh --auto` (alp-keyring record or the signed-catalog alp.py in ROOT). Not
+applied: nothing is done (a stale `.sig` next to INDEX is removed). Applied: `catalog_version` = 1 + the highest of
+ROOT's current `index.json`, ROOT's database (`catalog.version`) and INDEX; `valid_until` today + 90 days; every
+`recipe_sha256` recomputed (recipes looked up next to INDEX, then in ROOT's `/usr/share/alp`); signed with the
+temporary primary key; then checked with ROOT's own keyring and `allowed.txt`, the repo alp.py rules and the
+rollback floor; `.sig` first, index last. Missing key, key not allowed by ROOT, signing or verification failure:
+exit 1 with a Turkish/English message, INDEX untouched.
+
+Callers: `make-catalog-r8.py` (optional third argument SIGNING_DIR; fails when the helper fails) and
+`integrate-trust.sh` (its catalog-version argument is gone). New `record-catalog.sh <ROOT> <LEDGER> [SIGNING]`
+regenerates and records `alp-catalog <date>-v<N>` (or `-unsigned`) with stage-record + transfer + adopt-base, so the
+record's manifest holds the sha256 of exactly the new `index.json` and `index.json.sig`; `adopt-base` checks the
+live files against it when it records. `alp_catalog_tool.stamp` now hashes every entry with a `recipe` field (the
+rule of review fix 1) and can search several recipe directories.
+
+Trials (`resign.log`, `resign-integrate.log`):
+
+| # | Trial | Result |
+|---|---|---|
+| a | `record-catalog.sh` on the integrated copy `r4-trust-probe` | signed, `catalog_version` 2 (was 1), record `alp-catalog 2026.11.11-v2` with both files; `alp list` and `check` in the copy rc 0; `iso-gate.sh --auto` strict PASS |
+| b | twice more in a row | versions 3 and 4, records `-v3`, `-v4`; list/check rc 0; gate PASS |
+| c | wrong signing directory: helper alone, `make-catalog-r8.py`, `record-catalog.sh` | rc 1 each with the "imza anahtarı yok / no signing key" message; nothing recorded; the copy's catalog unchanged (cmp) |
+| d | `make-catalog-r8.py` on a read-only snapshot of r4-root (never integrated; deleted afterwards) | rc 0, unsigned, no `.sig`, no `catalog_version`; entries = installed packages; `iso-gate.sh --auto` warning, rc 0 |
+| e | `integrate-trust.sh` (new form) on a fresh writable snapshot of r4-root, then one `record-catalog.sh` (snapshot deleted) | old three-argument call refused with a usage line; integration rc 0 with `alp-catalog -v1`; regeneration gives `-v2`; gate PASS both times |
+
+Not settled: the version floor knows only what this root has seen (its index and its database); two regenerations
+on the same root at once are not locked against each other (one writer at a time, CLAUDE.md section 4);
+`valid_until` is renewed at every regeneration.

@@ -39,11 +39,18 @@ To switch it on for real (in this order; one writer on r4-root at a time):
 1. Keys. The only keys that exist are **temporary build keys** in `scratch-lfs-bench/alp-signing/` (no passphrase;
    never commit, never copy into an image). Their permanent home is the user's decision (D173); replace them
    before any release. To make them on another host: `bash scripts/rebuild/trust/make-temp-signing-key.sh`.
-2. `sudo ALLOW_LIVE_R4=1 bash scripts/rebuild/trust/integrate-trust.sh /home/yrslf/alpbahOS/scratch-lfs-bench/r4-root /home/yrslf/alpbahOS/scratch-lfs-bench/r4-ledger/trust 1`
-   (records `alp-build-user`, `alp-keyring`, `alp`, `alp-catalog`; then `alp list/check/search` in a chroot).
+2. `sudo ALLOW_LIVE_R4=1 bash scripts/rebuild/trust/integrate-trust.sh /home/yrslf/alpbahOS/scratch-lfs-bench/r4-root /home/yrslf/alpbahOS/scratch-lfs-bench/r4-ledger/trust`
+   (records `alp-build-user`, `alp-keyring`, `alp`, `alp-catalog <date>-v1`; then `alp list/check/search` in a
+   chroot). Since the re-signing branch it takes two arguments only; the catalog version is chosen automatically.
 3. `sudo bash scripts/rebuild/trust/iso-gate.sh /home/yrslf/alpbahOS/scratch-lfs-bench/r4-root` -> PASS.
-4. Every later change of `/usr/share/alp/index.json` (for example `make-catalog-r8.py`): run step 2 again with the
-   next catalog version (2, 3, ...). Otherwise the gate stops the ISO.
+4. **Re-signing is automatic** (branch `claude/alp-resign-2026-11-11`): `make-catalog-r8.py` calls
+   `scripts/rebuild/trust/resign-catalog.py` on the catalog it writes. On an integrated root it signs with
+   `catalog_version` one above the highest the root has seen and `valid_until` 90 days ahead; if the key is missing
+   or signing fails, `make-catalog-r8.py` fails, so no unsigned catalog is left for a signed root. On a root that
+   is not integrated it does nothing. To regenerate and record in one step:
+   `sudo ALLOW_LIVE_R4=1 bash scripts/rebuild/trust/record-catalog.sh <r4-root> <ledger dir>` (record
+   `alp-catalog <date>-v<N>`). In this tree `make-catalog-r8.py` is the only writer of `usr/share/alp/index.json`
+   (grep), and no chain script calls it today (the catalog record on r4-root is still `2026.11.09-r8`).
 5. Build the ISO, then QEMU: `alp list/check/search` rc 0 live and installed; a changed catalog refused; a recipe
    build on the booted system; Discover.
 
@@ -55,7 +62,11 @@ works when the root is entered with pivot_root (`bwrap --bind ROOT / --dev /dev 
 nspawn). An `alp install` of a recipe inside a chroot therefore needs `--no-sandbox` (root, warns every time) or a
 pivot_root entry. Today's image build uses `adopt-base`, not recipes, so this does not bite yet.
 
-Not done: integration of the live r4-root; ISO; QEMU; real keys; full runs of the r10/r11/r3 scripts; a re-signing
-hook in `make-catalog-r8.py`; GitHub workflow run.
+Not done: integration of the live r4-root; ISO; QEMU; real keys; full runs of the r10/r11/r3 scripts; GitHub
+workflow run.
 
-Next single action: merge the branch (ISO builds keep working, with the warning), then decide when to run step 2.
+Re-signing is ready, so applying step 2 to the live r4-root is now safe for later rounds: a regenerated catalog is
+signed by the same command that writes it, and the gate stays green. Order: merge `claude/alp-resign-2026-11-11`,
+then steps 2-3 on r4-root (one writer at a time), then the ISO.
+
+Next single action: merge the re-signing branch, then decide when to run step 2.
