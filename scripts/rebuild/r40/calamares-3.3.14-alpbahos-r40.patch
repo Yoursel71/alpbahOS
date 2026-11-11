@@ -1,0 +1,80 @@
+--- a/src/modules/partition/gui/PartitionLabelsView.cpp	2026-11-11 08:46:17.666322276 +0300
++++ b/src/modules/partition/gui/PartitionLabelsView.cpp	2026-11-11 08:46:17.698992672 +0300
+@@ -360,7 +360,8 @@
+                                 const QPoint& pos,
+                                 bool selected )
+ {
+-    painter->setPen( Qt::black );
++    // alpbahOS: the text colour of the palette (dark installer theme), not a fixed black.
++    painter->setPen( palette().color( QPalette::WindowText ) );
+     int vertOffset = 0;
+     int width = 0;
+     for ( const QString& textLine : text )
+@@ -382,7 +383,7 @@
+         drawSelectionSquare( painter, partitionSquareRect.adjusted( 2, 2, -2, -2 ), color );
+     }
+ 
+-    painter->setPen( Qt::black );
++    painter->setPen( palette().color( QPalette::WindowText ) );
+ }
+ 
+ QModelIndex
+diff -ruN a/lang/calamares_tr_TR.ts b/lang/calamares_tr_TR.ts
+--- a/lang/calamares_tr_TR.ts	2025-02-20 22:06:14.000000000 +0300
++++ b/lang/calamares_tr_TR.ts	2026-11-11 20:50:48.537671072 +0300
+@@ -1294,7 +1294,7 @@
+       <location filename="../src/modules/partition/jobs/CreatePartitionJob.cpp" line="196"/>
+       <source>Create new %2MiB partition on %4 (%3) with file system %1</source>
+       <comment>@title</comment>
+-      <translation>%4 üzerinde (%3) ile %1 dosya sisteminde %2 MB bölüm oluştur</translation>
++      <translation>%4 (%3) üzerinde %1 dosya sistemiyle %2 MB bölüm oluştur</translation>
+     </message>
+     <message>
+       <location filename="../src/modules/partition/jobs/CreatePartitionJob.cpp" line="212"/>
+@@ -1312,7 +1312,7 @@
+       <location filename="../src/modules/partition/jobs/CreatePartitionJob.cpp" line="229"/>
+       <source>Create new &lt;strong&gt;%2MiB&lt;/strong&gt; partition on &lt;strong&gt;%4&lt;/strong&gt; (%3) with file system &lt;strong&gt;%1&lt;/strong&gt;</source>
+       <comment>@info</comment>
+-      <translation>&lt;strong&gt;%4&lt;/strong&gt; (%3) üzerinde ile &lt;strong&gt;%1&lt;/strong&gt; dosya sistemiyle &lt;strong&gt;%2 MB&lt;/strong&gt;bölüm oluştur</translation>
++      <translation>&lt;strong&gt;%4&lt;/strong&gt; (%3) üzerinde &lt;strong&gt;%1&lt;/strong&gt; dosya sistemiyle &lt;strong&gt;%2 MB&lt;/strong&gt; bölüm oluştur</translation>
+     </message>
+     <message>
+       <location filename="../src/modules/partition/jobs/CreatePartitionJob.cpp" line="254"/>
+diff -ruN a/src/calamares/progresstree/ProgressTreeDelegate.cpp b/src/calamares/progresstree/ProgressTreeDelegate.cpp
+--- a/src/calamares/progresstree/ProgressTreeDelegate.cpp	2025-02-20 22:06:14.000000000 +0300
++++ b/src/calamares/progresstree/ProgressTreeDelegate.cpp	2026-11-11 20:50:48.536348651 +0300
+@@ -22,7 +22,8 @@
+ static inline int
+ item_fontsize()
+ {
+-    return Calamares::defaultFontSize() + 4;
++    // alpbahOS: +1 instead of +4; the sidebar text was much larger than the page text (real-PC test 2026-11-11)
++    return Calamares::defaultFontSize() + 1;
+ }
+ 
+ static void
+diff -ruN a/src/modules/summary/SummaryPage.cpp b/src/modules/summary/SummaryPage.cpp
+--- a/src/modules/summary/SummaryPage.cpp	2025-02-20 22:06:14.000000000 +0300
++++ b/src/modules/summary/SummaryPage.cpp	2026-11-11 20:50:48.536410212 +0300
+@@ -37,7 +37,8 @@
+     this->setObjectName( "summaryStep" );
+ 
+     QVBoxLayout* layout = new QVBoxLayout( this );
+-    layout->setContentsMargins( 0, 0, 0, 0 );
++    // alpbahOS: the page text started at the window edge (real-PC test 2026-11-11)
++    layout->setContentsMargins( 16, 8, 16, 0 );
+ 
+     QLabel* headerLabel = new QLabel( this );
+     headerLabel->setObjectName( "summaryTitle" );
+@@ -133,8 +134,9 @@
+     Calamares::unmarginLayout( m_layout );
+ 
+     QFont titleFont = font();
+-    titleFont.setWeight( QFont::Light );
+-    titleFont.setPointSize( Calamares::defaultFontSize() * 2 );
++    // alpbahOS: semibold and 1.5x instead of light and 2x (thin, oversized headings next to small body text)
++    titleFont.setWeight( QFont::DemiBold );
++    titleFont.setPointSize( Calamares::defaultFontSize() * 3 / 2 );
+ 
+     QPalette bodyPalette( palette() );
+     bodyPalette.setColor( WindowBackground, palette().window().color().lighter( 108 ) );

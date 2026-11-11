@@ -9,9 +9,9 @@ strings:
     productName:         alpbahOS
     shortProductName:    alpbahOS
     version:             0.9 Beta
-    shortVersion:        BETA
+    shortVersion:        0.9 Beta
     versionedName:       alpbahOS 0.9 Beta
-    shortVersionedName:  alpbahOS BETA
+    shortVersionedName:  alpbahOS 0.9 Beta
     bootloaderEntryName: alpbahOS     # GRUB_DISTRIBUTOR (grubcfg keep_distributor: false); name per D110
     productUrl:          https://example.invalid/alpbahos
     supportUrl:          https://example.invalid/alpbahos/support
@@ -19,8 +19,10 @@ strings:
     releaseNotesUrl:     https://example.invalid/alpbahos/release-notes
 
 images:
+    # logo.png: branding/alpbahos-brand/logo/alpbahOS-logo-dark.svg (light wordmark, D155; the old navy wordmark was
+    # unreadable on the dark installer, real-PC test 2026-11-11); icon.png: alpbahOS-mark.svg
     productLogo:         "logo.png"
-    productIcon:         "logo.png"
+    productIcon:         "icon.png"
     productWelcome:      "logo.png"
 
 slideshow:               "show.qml"

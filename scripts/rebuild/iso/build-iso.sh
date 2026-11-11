@@ -167,6 +167,7 @@ install -m 644 "$LIVE_SRC/calamares/branding/show.qml" "$LIVE/usr/share/calamare
 # The Calamares logo is the real brand logo (round 9): a transparent PNG made from docs/assets/alpbahOS-logo.png by
 # scripts/rebuild/r9/brand-logo-r9.py (same keying as the brand wallpaper). The placeholder generator is gone.
 install -m 644 "$LIVE_SRC/calamares/branding/logo.png" "$LIVE/usr/share/calamares/branding/alpbahos/logo.png"
+install -m 644 "$LIVE_SRC/calamares/branding/icon.png" "$LIVE/usr/share/calamares/branding/alpbahos/icon.png"
 [ -s "$LIVE/usr/share/calamares/branding/alpbahos/logo.png" ] || die "logo not written"
 if [ "$DEBUG" != 1 ]; then grep -q '^live::' "$LIVE/etc/shadow" || die "live user has a password (expected empty)"; fi
 grep -q '^root:[!*]' "$LIVE/etc/shadow" || die "root is not locked"
