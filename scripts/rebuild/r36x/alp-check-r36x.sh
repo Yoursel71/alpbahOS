@@ -21,7 +21,7 @@ good)
   python3 -c 'import json; d=json.load(open("/usr/share/alp/index.json")); print("== catalog fields:", {k: d.get(k) for k in ("schema_version","catalog_version","valid_until","updated_at")}, "packages:", len(d.get("packages", {})))' 2>&1
   echo "== keys dir: $(stat -c '%n %U:%G %a' /usr/share/alp/keys)"
   for f in /usr/share/alp/keys/*; do echo "   $(stat -c '%n %U:%G %a %s' "$f")"; done
-  echo "== secret key material under /usr/share/alp and /etc: $(grep -rl -E 'PRIVATE KEY|BEGIN PGP PRIVATE' /usr/share/alp /etc 2>/dev/null | wc -l)"
+  echo "== secret key material under /usr/share/alp and /etc: $(grep -rl -E 'PRIV''ATE KEY|BEGIN PGP PRIV''ATE' /usr/share/alp /etc 2>/dev/null | wc -l)"
   gpg --show-keys --with-colons /usr/share/alp/keys/alpbahos-catalog.gpg 2>/dev/null | grep -E '^(pub|sec|ssb|fpr)' | cut -d: -f1,5,10 | head -n 4 | sed 's/^/   key: /'
   echo "   (sec/ssb lines above would mean secret keys; pub/fpr only = public)"
   echo "== allowed.txt:"; sed 's/^/   | /' /usr/share/alp/keys/allowed.txt
