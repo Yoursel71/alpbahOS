@@ -307,6 +307,19 @@ cmd_apps2() { # APPS-02 + SHELL-R4-01 (round 43+): the KDE apps opened the way a
   vmquit "$R"; rm -f "$D/APPS2-disk.raw"; stamp "APPS2 end (copy removed)"
 }
 
+cmd_apps3() { # round 46 packages: the emoji font (fc-match), VA-API driver files (libva, intel-media-driver; no GPU in
+  # QEMU, so only the files and vainfo's driver search are checked), iio-sensor-proxy (installed, enabled on demand),
+  # the Avahi services directory. One guest, no screenshots needed.
+  local R=$D/APPS3; fresh "$D/APPS3-disk.raw" "$R"; cmd_mkcopy uefi APPS3-disk
+  stamp "APPS3 start"; agent_start APPS3 uefi APPS3-disk virtio 6G
+  greeter_login "$R" apps3; sleep 20
+  gsh "$R" 30 'echo "emoji font: $(fc-match "Noto Color Emoji" family file | tr "\n" " ")"; echo "emoji glyph font: $(fc-match "emoji" family | head -1)"'
+  gsh "$R" 30 'echo "iHD driver: $(ls /usr/lib/dri/iHD_drv_video.so /usr/lib64/dri/iHD_drv_video.so 2>/dev/null | tr "\n" " ")"; echo "libva: $(ls /usr/lib/libva.so* 2>/dev/null | head -1)"; echo "gmm: $(ls /usr/lib/libigdgmm.so* 2>/dev/null | head -1)"'
+  gsh "$R" 30 'echo "iio-sensor-proxy: $(command -v iio-sensor-proxy || ls /usr/libexec/iio-sensor-proxy 2>&1 | head -1)"; echo "unit: $(systemctl cat iio-sensor-proxy.service > /dev/null 2>&1 && echo present || echo missing)"; echo "avahi services dir: $(test -d /etc/avahi/services && echo yes || echo no)"'
+  gsh "$R" 15 'echo "failed units: $(systemctl --failed --no-legend | wc -l)"'
+  vmquit "$R"; rm -f "$D/APPS3-disk.raw"; stamp "APPS3 end (copy removed)"
+}
+
 cmd_drv() { # DRIVERS-01 (D166, round 43+): the first-boot driver service on an install without an NVIDIA GPU: the marker
   # the installer job writes (drivers-mark nvidia), a reboot, then the service must find no NVIDIA display
   # controller, write "no-nvidia", remove the marker and install nothing.
@@ -334,8 +347,9 @@ cmd_print() { # PRINT-01 step 2 (round 44+): network printing in the guest. ippe
   gsh "$R" 20 'mkdir -p /root/ipp && nohup ippeveprinter -d /root/ipp -k -p 8631 -f application/pdf,image/pwg-raster "alpbah Test" > /root/ipp-eve.log 2>&1 & sleep 10; echo "ippeveprinter: $(pgrep -c -x ippeveprinter)"'
   gsh "$R" 75 'echo "avahi-browse alpbah: $(avahi-browse -rtp _ipp._tcp 2>/dev/null | grep -c "alpbah")"; echo "ippfind: $(timeout 20 ippfind -T 10 _ipp._tcp 2>/dev/null | tr "\n" " ")"; echo "nss-mdns: $(getent hosts "$(hostname).local" | head -n 1)"; echo "lpinfo dnssd: $(timeout 40 lpinfo --include-schemes dnssd -v 2>&1 | head -n 3 | tr "\n" " ")"'
   gsh "$R" 90 'gs -q -sDEVICE=pdfwrite -o /root/t.pdf -c "/Helvetica findfont 24 scalefont setfont 72 700 moveto (alpbahOS PRINT-01) show showpage" && lpadmin -p alpbahtest -E -v ipp://localhost:8631/ipp/print -m everywhere && echo "queue: $(lpstat -p alpbahtest | head -n 1)"; lp -d alpbahtest /root/t.pdf; sleep 30; echo "completed jobs: $(lpstat -W completed -o alpbahtest | wc -l)"; echo "received by the printer: $(find /root/ipp -type f | sed "s|/root/ipp/||" | tr "\n" " ")"'
-  gsh "$R" 15 'r21m-as-user --bg systemsettings kcm_printer_manager; echo opened'
+  gsh "$R" 15 'r21m-as-user --bg sh -c "QT_LOGGING_RULES=\"*.debug=false\" systemsettings kcm_printer_manager > /tmp/ss-kcm.log 2>&1; echo exit=\$? >> /tmp/ss-kcm.log"; echo opened'
   sleep 25; q "$R" key shift; shot "$R" print-kcm
+  gsh "$R" 30 'echo "--- systemsettings output:"; tail -n 25 /tmp/ss-kcm.log; echo "--- coredumpctl info:"; coredumpctl info systemsettings --no-pager 2>&1 | head -n 45; echo "--- lpinfo dnssd:"; lpinfo --include-schemes dnssd -v 2>&1 | head -n 5'
   gsh "$R" 15 'echo "failed units: $(systemctl --failed --no-legend | wc -l)"; echo "coredumps: $(ls /var/lib/systemd/coredump 2>/dev/null | wc -l)"; coredumpctl list --no-pager 2>/dev/null | tail -n 3; tail -n 3 /root/ipp-eve.log'
   vmquit "$R"; rm -f "$D/PRINT-disk.raw"; stamp "PRINT end (copy removed)"
 }
@@ -490,7 +504,7 @@ cmd_f1() { fresh "$D/F1" "$D/F1-boot" "$IMGF1"; stamp "F1 start"
 if [ "${MATRIX_LIB:-0}" != 1 ]; then
   c=${1:-}; shift || true
   case $c in
-    sha|live|diag|mkcopy|agent|check|s1|r1|fpgui|apps|apps2|drv|print|kutu|nvidia|type|enter|key|combo|click|shot|quit|run|recprep|reclive|recboot|kflive|kffill|kfgo|kfdisk|kfboot|kfagent|rofacts|f1|shutlines) "cmd_$c" "$@" ;;
+    sha|live|diag|mkcopy|agent|check|s1|r1|fpgui|apps|apps2|apps3|drv|print|kutu|nvidia|type|enter|key|combo|click|shot|quit|run|recprep|reclive|recboot|kflive|kffill|kfgo|kfdisk|kfboot|kfagent|rofacts|f1|shutlines) "cmd_$c" "$@" ;;
     *) echo "usage: matrix-r21.sh sha|live|diag|mkcopy|agent|check|s1|r1|fpgui ..."; exit 2 ;;
   esac
 fi
