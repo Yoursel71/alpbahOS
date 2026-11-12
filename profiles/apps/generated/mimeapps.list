@@ -1,7 +1,8 @@
 # alpbahOS varsayılan uygulamaları -- ÜRETİLMİŞ DOSYA, elle düzenlemeyin.
 # Kaynak: profiles/apps/apps.json; üretici: profiles/apps/generate_mimeapps.py
 # Kurulum hedefi: /etc/xdg/mimeapps.list (kullanıcı ~/.config/mimeapps.list önce gelir).
-# Firefox, VLC ve LibreOffice imajda (APPS-01); ilişkiler QEMU'da denendi, gerçek bilgisayarda değil.
+# Firefox, VLC ve LibreOffice (APPS-01), Okular, Gwenview, Ark ve KWrite (APPS-02) imajda;
+# ilişkiler QEMU'da denendi, gerçek bilgisayarda değil.
 
 [Default Applications]
 application/msword=libreoffice-writer.desktop;
