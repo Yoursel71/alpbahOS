@@ -321,6 +321,25 @@ cmd_drv() { # DRIVERS-01 (D166, round 43+): the first-boot driver service on an 
   vmquit "$R"; rm -f "$D/DRV-disk.raw"; stamp "DRV end (copy removed)"
 }
 
+cmd_print() { # PRINT-01 step 2 (round 44+): network printing in the guest. ippeveprinter (CUPS' IPP Everywhere test
+  # printer) announces itself over DNS-SD through avahi-daemon; avahi-browse and ippfind must see it, the guest's own
+  # .local name must resolve through nss-mdns, and a PDF made with ghostscript must print to an IPP Everywhere queue
+  # (lpadmin -m everywhere) through the filters of step 1; the test printer keeps what it received. Then the KDE
+  # printer settings page as the test user (screenshot). QEMU user networking has no LAN multicast, so a printer on
+  # a real network is not covered here.
+  local R=$D/PRINT; fresh "$D/PRINT-disk.raw" "$R"; cmd_mkcopy uefi PRINT-disk
+  stamp "PRINT start"; agent_start PRINT uefi PRINT-disk virtio 6G
+  greeter_login "$R" print; sleep 20
+  gsh "$R" 30 'for u in avahi-daemon cups cups-browsed alpbahos-firewall; do echo "$u: $(systemctl is-active $u)"; done; echo "mDNS rules v4/v6: $(iptables -S INPUT | grep -c 5353)/$(ip6tables -S INPUT | grep -c 5353)"; echo "resolved MulticastDNS: $(resolvectl status 2>/dev/null | grep -m1 -i mdns | tr -s " ")"; echo "hosts: $(grep ^hosts: /etc/nsswitch.conf)"'
+  gsh "$R" 20 'mkdir -p /root/ipp && nohup ippeveprinter -d /root/ipp -k -p 8631 -f application/pdf,image/pwg-raster "alpbah Test" > /root/ipp-eve.log 2>&1 & sleep 10; echo "ippeveprinter: $(pgrep -c -x ippeveprinter)"'
+  gsh "$R" 45 'echo "avahi-browse alpbah: $(avahi-browse -rtp _ipp._tcp 2>/dev/null | grep -c "alpbah")"; echo "ippfind: $(timeout 20 ippfind -T 10 _ipp._tcp 2>/dev/null | tr "\n" " ")"; echo "nss-mdns: $(getent hosts "$(hostname).local" | head -n 1)"'
+  gsh "$R" 90 'gs -q -sDEVICE=pdfwrite -o /root/t.pdf -c "/Helvetica findfont 24 scalefont setfont 72 700 moveto (alpbahOS PRINT-01) show showpage" && lpadmin -p alpbahtest -E -v ipp://localhost:8631/ipp/print -m everywhere && echo "queue: $(lpstat -p alpbahtest | head -n 1)"; lp -d alpbahtest /root/t.pdf; sleep 30; echo "completed jobs: $(lpstat -W completed -o alpbahtest | wc -l)"; echo "received by the printer: $(find /root/ipp -type f | sed "s|/root/ipp/||" | tr "\n" " ")"'
+  gsh "$R" 15 'r21m-as-user --bg systemsettings kcm_printer_manager; echo opened'
+  sleep 25; q "$R" key shift; shot "$R" print-kcm
+  gsh "$R" 15 'echo "failed units: $(systemctl --failed --no-legend | wc -l)"; echo "coredumps: $(ls /var/lib/systemd/coredump 2>/dev/null | wc -l)"; tail -n 3 /root/ipp-eve.log'
+  vmquit "$R"; rm -f "$D/PRINT-disk.raw"; stamp "PRINT end (copy removed)"
+}
+
 cmd_fpgui() { # Flatpak install by the test shell (root), then the Calculator in the test user's Wayland session
   local R=$D/FPGUI i; fresh "$D/FPGUI-disk.raw" "$R"; cmd_mkcopy uefi FPGUI-disk
   stamp "FP-GUI start"; agent_start FPGUI uefi FPGUI-disk virtio 6G
@@ -471,7 +490,7 @@ cmd_f1() { fresh "$D/F1" "$D/F1-boot" "$IMGF1"; stamp "F1 start"
 if [ "${MATRIX_LIB:-0}" != 1 ]; then
   c=${1:-}; shift || true
   case $c in
-    sha|live|diag|mkcopy|agent|check|s1|r1|fpgui|apps|apps2|drv|kutu|nvidia|type|enter|key|combo|click|shot|quit|run|recprep|reclive|recboot|kflive|kffill|kfgo|kfdisk|kfboot|kfagent|rofacts|f1|shutlines) "cmd_$c" "$@" ;;
+    sha|live|diag|mkcopy|agent|check|s1|r1|fpgui|apps|apps2|drv|print|kutu|nvidia|type|enter|key|combo|click|shot|quit|run|recprep|reclive|recboot|kflive|kffill|kfgo|kfdisk|kfboot|kfagent|rofacts|f1|shutlines) "cmd_$c" "$@" ;;
     *) echo "usage: matrix-r21.sh sha|live|diag|mkcopy|agent|check|s1|r1|fpgui ..."; exit 2 ;;
   esac
 fi

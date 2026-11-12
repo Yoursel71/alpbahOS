@@ -29,6 +29,10 @@ sudo mount -o ro "$P" "$M"
   echo "sudo: $(test -u "$M/usr/bin/sudo" && echo setuid) sudoers.d: $(sudo ls "$M/etc/sudoers.d" 2>/dev/null | tr '\n' ' ') wheel lines: $(sudo grep -h '^%wheel' "$M"/etc/sudoers.d/* 2>/dev/null | tr '\n' ' ')"
   echo "localtime: $(readlink "$M/etc/localtime"); $(grep -E '^(LANG|LC_TIME)=' "$M/etc/locale.conf" 2>/dev/null | tr '\n' ' ')"
   echo "units enabled: firewall $(test -L "$M/etc/systemd/system/multi-user.target.wants/alpbahos-firewall.service" && echo yes) zram $(test -L "$M/etc/systemd/system/swap.target.wants/alpbahos-zram.service" && echo yes)"
+  # Round 44: login shell (SHELL-R4-01), the installer's driver choice (D166), network printing (PRINT-01, D176).
+  echo "login shell of uid 1000: $(awk -F: '$3==1000 {print $7}' "$M/etc/passwd")"
+  echo "drivers marker: $(cat "$M/var/lib/alpbahos/install-drivers" 2>/dev/null || echo none); driver service enabled: $(test -L "$M/etc/systemd/system/multi-user.target.wants/alpbahos-install-drivers.service" && echo yes || echo no)"
+  echo "print: avahi $(test -L "$M/etc/systemd/system/multi-user.target.wants/avahi-daemon.service" && echo yes || echo no), cups-browsed $(test -L "$M/etc/systemd/system/multi-user.target.wants/cups-browsed.service" && echo yes || echo no); $(grep '^hosts:' "$M/etc/nsswitch.conf"); mDNS rule: $(grep -c -- '--dport 5353' "$M/etc/alpbahos/firewall/rules.v4")"
 } > "$D/disk-check-$NAME.txt" 2>&1
 sudo umount "$M"; sudo losetup -d "$LO"; rmdir "$M"
 cat "$D/disk-check-$NAME.txt"

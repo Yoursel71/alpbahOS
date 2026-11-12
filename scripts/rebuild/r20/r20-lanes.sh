@@ -64,6 +64,9 @@ install_run() { # fw image name kur_x kur_y  (KERNEL, INITRD, APPEND from the ca
   sleep 2; $Q shot i-05-users-filled
   if [ "${DRIVERS_PAGE:-0}" = 1 ]; then  # D166 (round 43+): the "Sürücüler" page between users and summary
     $Q click 1007 637; sleep 3; $Q shot i-05b-drivers
+    if [ "${DRIVERS_CHOICE:-}" = nvidia ]; then  # round 44: pick the NVIDIA row (second list row) for the marker check
+      $Q click 384 173; sleep 2; $Q shot i-05c-drivers-nvidia
+    fi
     local NY; NY=$(python3 "$W/find-button-y.py" "$R/i-05b-drivers.ppm" 1007 2>/dev/null) || NY=637
     echo "Sonraki on the drivers page at y=$NY"; $Q click 1007 "$NY"; sleep 3; $Q shot i-06-summary
   else

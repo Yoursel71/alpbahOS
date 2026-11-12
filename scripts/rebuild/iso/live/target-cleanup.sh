@@ -61,7 +61,9 @@ fi
 SDDM_FILES="/etc/sddm.conf $(ls /etc/sddm.conf.d/*.conf /usr/lib/sddm/sddm.conf.d/*.conf 2>/dev/null | tr '\n' ' ')"
 LIVE_ONLY="/etc/polkit-1/rules.d/49-alpbahos-live.rules /etc/profile.d/99-alpbahos-live.sh /usr/bin/alpbahos-install
 /etc/alpbahos-live-debug /usr/lib/alpbahos/live-layout-copy.sh /usr/lib/alpbahos/target-initramfs.sh
-/usr/lib/alpbahos/target-live-user.sh"
+/usr/lib/alpbahos/target-live-user.sh /usr/lib/alpbahos/target-grub-gfxmode.sh"
+# (target-grub-gfxmode.sh runs later from the live system, dontChroot; the target's copy was left behind until round
+# 43, so /usr/lib/alpbahos stayed in installed systems.)
 if grep -qw 'alpbahos.testfail=live-cleanup' /proc/cmdline 2>/dev/null; then
     echo "alpbahos cleanup: TEST HOOK alpbahos.testfail=live-cleanup, removals skipped" >&2
 else
