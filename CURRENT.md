@@ -1,12 +1,13 @@
 # alpbahOS — Current state
 
-Last updated: 2026-11-11
+Last updated: 2026-11-12
 
 asistan is the only agent on this project (D100). Decisions were re-done on 2026-11-06 in a 50-question review; see [docs/DECISIONS.md](docs/DECISIONS.md). History is in [docs/WORKLOG.md](docs/WORKLOG.md), [docs/handoffs/ai/](docs/handoffs/ai/) and [docs/archive/](docs/archive/).
 
 ## Current state (2026-11-11)
 
 - **Alpha ISO:** `alpbahos-alpha-2026-11-08.iso` in `scratch-lfs-bench/images/` (not in the repo).
+- **Round 45 (2026-11-12):** ISO `alpbahos-beta-0.9-2026-11-09-r45.iso`, sha256 `3b67f5d23b78943f668e99b273f7f54300d63e90d5d9b7b2d5ddd516df18f7cb`. BIOS and UEFI installs, live UEFI, network printing (Avahi fixed), Welcome and idle memory (886 MiB at 4 GB) pass in QEMU; see [round-45-2026-11-12.md](docs/verification/round-45-2026-11-12.md). The ISO is on a USB stick for the owner's real-PC test. Open: systemsettings printer KCM crash, empty `lpinfo` dnssd list. Next: r46 (emoji font, VA-API, sensors).
 - **Beta 0.9:** ISO `alpbahos-beta-0.9-2026-11-09.iso`, sha256 `1686abfd38dc04fabbb405fdec85307d2a587160d18502a1f5b50f5cfe8d4347`. Gate **not met** (record: [docs/verification/iso-beta-0.9-2026-11-09.md](docs/verification/iso-beta-0.9-2026-11-09.md), sections 10.5 and 10.6).
   - Passing on this sha: live BIOS and UEFI desktops; BIOS MSDOS and UEFI GPT installs complete; installed boots on BIOS virtio, BIOS AHCI, UEFI virtio and UEFI NVMe; sound on BIOS virtio and UEFI NVMe.
   - Open: the shutdown coredump is not reproduced and not fixed (the drop-in stop-order fix is shown only for the at-spi failure); installed BIOS on NVMe does not boot in SeaBIOS in the round 6 runs; the round 6 reruns (shutdown menu, tr_TR, trq, AHCI sound, alp update and rollback, live-ISO recovery) were not run.
