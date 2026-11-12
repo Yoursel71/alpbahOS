@@ -5,6 +5,8 @@ Firewall: iptables (legacy, BLFS 13.1) rule files loaded by alpbahos-firewall.se
   Inbound: default DROP; accepted are loopback, replies to our own traffic (conntrack RELATED,ESTABLISHED), DHCP
   replies (IPv4 67->68, IPv6 547->546) and the ICMPv6 messages that IPv6 needs (neighbour discovery, router
   advertisements). Ping (echo request) and every service port are dropped. Forward: DROP. Outbound: ACCEPT.
+  Round 44 (D176, PRINT-01): multicast DNS to the mDNS group (224.0.0.251 / ff02::fb, UDP 5353) is accepted, so
+  Avahi sees network printers' answers (they go to the group, not as conntrack replies). Unicast to 5353 stays dropped.
   Stopping the unit loads the open rule files (ACCEPT everywhere), so `systemctl stop alpbahos-firewall` really opens.
   The unit is not stopped at shutdown (no Conflicts=shutdown.target), so the rules stay until the end.
 Zram: alpbahos-zram.service runs /usr/libexec/alpbahos/zram-swap at boot: one zram device of half the RAM (at most
@@ -24,6 +26,7 @@ V4 = """# alpbahOS firewall, IPv4 (D153). Loaded by alpbahos-firewall.service wi
 -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 -A INPUT -m conntrack --ctstate INVALID -j DROP
 -A INPUT -p udp --sport 67 --dport 68 -j ACCEPT
+-A INPUT -p udp -d 224.0.0.251 --dport 5353 -j ACCEPT
 COMMIT
 """
 V6 = """# alpbahOS firewall, IPv6 (D153). Loaded by alpbahos-firewall.service with ip6tables-restore.
@@ -38,6 +41,7 @@ V6 = """# alpbahOS firewall, IPv6 (D153). Loaded by alpbahos-firewall.service wi
 -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 -A INPUT -m conntrack --ctstate INVALID -j DROP
 -A INPUT -p udp --sport 547 --dport 546 -j ACCEPT
+-A INPUT -p udp -d ff02::fb --dport 5353 -j ACCEPT
 COMMIT
 """
 OPEN = """# alpbahOS firewall stopped: everything accepted (loaded when alpbahos-firewall.service stops).
