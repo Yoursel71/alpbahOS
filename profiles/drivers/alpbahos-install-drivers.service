@@ -1,0 +1,15 @@
+# alpbahOS (D166): extra drivers chosen in the installer, installed on the first boots (until it succeeds).
+# Type=simple: the boot does not wait for the download and the module build.
+[Unit]
+Description=alpbahOS: kurulumda seçilen ek sürücüleri kur
+ConditionPathExists=/var/lib/alpbahos/install-drivers
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/libexec/alpbahos/install-drivers
+Nice=10
+
+[Install]
+WantedBy=multi-user.target

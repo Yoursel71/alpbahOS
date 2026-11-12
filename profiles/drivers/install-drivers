@@ -1,0 +1,32 @@
+#!/bin/bash
+# alpbahOS (D166): installs the extra drivers chosen in the installer, on the installed system (alp's build sandbox
+# needs a booted system). Started by alpbahos-install-drivers.service on every boot until it succeeds; the choice is
+# /var/lib/alpbahos/install-drivers, the state for the desktop notification /var/lib/alpbahos/drivers-status.
+set -u
+M=/var/lib/alpbahos/install-drivers
+ST=/var/lib/alpbahos/drivers-status
+LOG=/var/log/alpbahos-drivers.log
+status() { echo "$1" > "$ST"; chmod 644 "$ST"; }
+[ -s "$M" ] || exit 0
+has_nvidia() {  # an NVIDIA (vendor 0x10de) display controller (PCI class 0x03xxxx)
+    local d
+    for d in /sys/bus/pci/devices/*; do
+        [ "$(cat "$d/vendor" 2>/dev/null)" = 0x10de ] && case "$(cat "$d/class" 2>/dev/null)" in 0x03*) return 0 ;; esac
+    done
+    return 1
+}
+if grep -qx nvidia "$M"; then
+    if ! has_nvidia; then
+        echo "$(date -Is) no NVIDIA display controller: nothing installed" >> "$LOG"
+        status no-nvidia; rm -f "$M"; exit 0
+    fi
+    status installing
+    for i in $(seq 1 60); do getent hosts download.nvidia.com > /dev/null && break; sleep 10; done
+    echo "$(date -Is) alp install nvidia" >> "$LOG"
+    if alp install --yes --jobs "$(nproc)" nvidia >> "$LOG" 2>&1; then
+        status done-reboot; rm -f "$M"
+    else
+        status failed
+    fi
+fi
+exit 0

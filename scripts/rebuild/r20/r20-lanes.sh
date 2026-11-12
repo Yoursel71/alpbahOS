@@ -62,7 +62,13 @@ install_run() { # fw image name kur_x kur_y  (KERNEL, INITRD, APPEND from the ca
   $Q click 424 373; sleep 1; clr "$Q"; tq "$R" "$PW"
   $Q click 629 373; sleep 1; clr "$Q"; tq "$R" "$PW"
   sleep 2; $Q shot i-05-users-filled
-  $Q click 1007 637; sleep 3; $Q shot i-06-summary
+  if [ "${DRIVERS_PAGE:-0}" = 1 ]; then  # D166 (round 43+): the "Sürücüler" page between users and summary
+    $Q click 1007 637; sleep 3; $Q shot i-05b-drivers
+    local NY; NY=$(python3 "$W/find-button-y.py" "$R/i-05b-drivers.ppm" 1007 2>/dev/null) || NY=637
+    echo "Sonraki on the drivers page at y=$NY"; $Q click 1007 "$NY"; sleep 3; $Q shot i-06-summary
+  else
+    $Q click 1007 637; sleep 3; $Q shot i-06-summary
+  fi
   # Round 41: the Kur button is found in the summary screenshot (find-button-y.py); the fixed y is the fallback. Round
   # 40's smaller installer moved it from y 709 to 684 and the fixed click started no install.
   local KYF; KYF=$(python3 "$W/find-button-y.py" "$R/i-06-summary.ppm" "$KX" 2>/dev/null) \

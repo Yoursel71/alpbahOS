@@ -1,0 +1,27 @@
+#!/bin/bash
+# alpbahOS (D166): desktop notifications for the first-boot driver install (autostart in the Plasma session). Shows
+# "installing" once, then "done, reboot" or "failed" once per state; quiet when nothing was chosen.
+ST=/var/lib/alpbahos/drivers-status
+SEEN=${XDG_STATE_HOME:-$HOME/.local/state}/alpbahos-drivers-notified
+[ -e "$ST" ] || exit 0
+mkdir -p "$(dirname "$SEEN")"
+shown() { grep -qx "$1" "$SEEN" 2>/dev/null; }
+mark() { echo "$1" >> "$SEEN"; }
+for i in $(seq 1 240); do   # up to 2 hours, every 30 s
+    s=$(cat "$ST" 2>/dev/null)
+    case $s in
+        installing)
+            shown installing || { notify-send -a alpbahOS -i preferences-desktop-display "NVIDIA sürücüsü kuruluyor" \
+                "Arka planda indiriliyor ve derleniyor (birkaç dakika). Bitince haber verilecek."; mark installing; } ;;
+        done-reboot)
+            shown done-reboot || notify-send -a alpbahOS -u critical -i system-reboot "NVIDIA sürücüsü kuruldu" \
+                "Kullanmaya başlamak için bilgisayarı yeniden başlatın."
+            mark done-reboot; exit 0 ;;
+        failed)
+            shown failed || notify-send -a alpbahOS -u critical -i dialog-error "NVIDIA sürücüsü kurulamadı" \
+                "Ayrıntı: /var/log/alpbahos-drivers.log. Bir sonraki açılışta yeniden denenecek; elle: sudo alp install nvidia"
+            mark failed; exit 0 ;;
+        *) exit 0 ;;
+    esac
+    sleep 30
+done

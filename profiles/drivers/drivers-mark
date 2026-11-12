@@ -1,0 +1,8 @@
+#!/bin/sh
+# alpbahOS (D166): run by the installer (Calamares contextualprocess, inside the new system) when extra drivers were
+# chosen. Records the choice and enables the first-boot service; installs nothing itself.
+set -eu
+[ $# -gt 0 ] || exit 0
+install -d -m 755 /var/lib/alpbahos
+printf '%s\n' "$@" > /var/lib/alpbahos/install-drivers
+systemctl enable alpbahos-install-drivers.service

@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=alpbahOS sürücü bildirimi
+Exec=/usr/libexec/alpbahos/drivers-notify
+NoDisplay=true
+X-KDE-autostart-phase=2
+OnlyShowIn=KDE;
