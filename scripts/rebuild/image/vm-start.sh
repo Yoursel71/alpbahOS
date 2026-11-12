@@ -6,11 +6,11 @@
 # VGA (D1): see below.
 # NVME_BOOTINDEX (round 21 matrix) is the bootindex of the NVMe disk (default 1; SeaBIOS needs 0 and RAM <= 3G).
 set -u
-FW=$1; ISO=$2; RUN=$3; DISK=$4; BUS=${5:-virtio}; MEM=${6:-6G}
+FW=$1; ISO=$2; RUN=$3; DISK=$4; BUS=${5:-virtio}; MEM=${6:-12G}
 OVMF=/usr/share/edk2/ovmf
 mkdir -p "$RUN"
 rm -f "$RUN/qmp.sock"
-ARGS=(-cpu qemu64 -m "$MEM" -smp 4 -display none -vga virtio
+ARGS=(-cpu qemu64 -m "$MEM" -smp 10 -display none -vga virtio
       -device qemu-xhci -device usb-kbd -device usb-tablet
       -nic "${NIC:-user,model=virtio-net-pci}"
       -serial "file:$RUN/serial.log" -qmp "unix:$RUN/qmp.sock,server,nowait")
