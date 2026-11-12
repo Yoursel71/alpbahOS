@@ -363,8 +363,12 @@ cmd_kffill() { # installer up to the filled users page; the reviewer reads i-05 
 }
 cmd_kfgo() { local R=$D/KF i
   q "$R" click 1007 637; sleep 3; shot "$R" i-06-summary
-  q "$R" click 1002 709; sleep 4; shot "$R" i-07-confirm
-  q "$R" click 748 470; sleep 5; shot "$R" i-08-running
+  # the Kur button is found in the summary screenshot (find-button-y.py, round 41); 709 is the old fallback
+  local KY; KY=$(python3 "$W/find-button-y.py" "$R/i-06-summary.png" 1002 2>/dev/null) || KY=709
+  echo "kfgo: Kur button y=$KY"
+  q "$R" click 1002 "$KY"; sleep 4; shot "$R" i-07-confirm
+  # INSTALLER-UI-01 (r40+): the confirm dialog button "Şimdi Kur" is at y 455 (470 hit its edge, rc01 I1)
+  q "$R" click 748 455; sleep 5; shot "$R" i-08-running
   for i in $(seq 1 120); do grep -aq "unmounting filesystem" "$R/serial.log" 2> /dev/null && break; sleep 20; done
   sleep 20; shot "$R" i-09-done; vmquit "$R"; stamp "KF install ended (unmount line: $(grep -ac 'unmounting filesystem' "$R/serial.log"))"
 }

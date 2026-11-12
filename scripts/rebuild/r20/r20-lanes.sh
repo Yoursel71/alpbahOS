@@ -21,8 +21,9 @@ B=/home/yrslf/alpbahOS/scratch-lfs-bench
 W=${LANES_W:-/home/yrslf/alpbahOS/wt-t2-kisayol/scripts/rebuild/image}   # LANES_W: image helpers of another worktree
 RD=${ROUND:-r20}
 D=${OUTD:-$B/lfs13-logs/iso-beta-0.9/$RD}
-IMGB=$B/images/inst-bios-msdos-$RD.raw
-IMGU=$B/images/inst-uefi-gpt-$RD.raw
+# IMGB_OUT, IMGU_OUT (BETA-RC-01): install targets outside images/ (new names; refused if they exist)
+IMGB=${IMGB_OUT:-$B/images/inst-bios-msdos-$RD.raw}
+IMGU=${IMGU_OUT:-$B/images/inst-uefi-gpt-$RD.raw}
 IMGF=${IMGF:-$B/images/inst-bios-f1-$RD.raw}
 mkdir -p "$D" "$B/test-secrets"
 PWF=$B/test-secrets/$RD.pw
@@ -67,7 +68,8 @@ install_run() { # fw image name kur_x kur_y  (KERNEL, INITRD, APPEND from the ca
   local KYF; KYF=$(python3 "$W/find-button-y.py" "$R/i-06-summary.ppm" "$KX" 2>/dev/null) \
     && { echo "Kur button at y=$KYF (fixed $KY)"; KY=$KYF; } || echo "Kur button not found, fixed y=$KY"
   $Q click $KX $KY; sleep 4; $Q shot i-07-confirm
-  $Q click 748 470; sleep 5; $Q shot i-08-running
+  # INSTALLER-UI-01 (r40+): the confirm dialog button "Şimdi Kur" is at y 455 (470 hit its edge, rc01 I1)
+  $Q click 748 455; sleep 5; $Q shot i-08-running
   if [ "${FAILRUN:-0}" = 1 ]; then
     # Forced-failure run: no "unmounting" line comes. Keep the live session from locking (it cannot be unlocked:
     # the live user has no password) with a Shift press every 30 s, and take a screenshot every minute.
