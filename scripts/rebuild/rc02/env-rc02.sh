@@ -10,8 +10,8 @@ export DIAG_PWF=$B/test-secrets/rc02.pw
 export KF_IMG=$RCD/inst-bios-kf-rc02.raw KF_PW=$B/test-secrets/rc02-kf.pw F1_IMG=$RCD/inst-bios-f1-rc02.raw
 M=/home/yrslf/alpbahOS/wt-rc02/scripts/rebuild/r21/matrix-r21.sh
 D=$MATRIX_DIR
-gate() { # gate [min-free-GiB]: total QEMU <= 2, available >= 9 GiB, /home free >= min (default 20); wait up to 90 min
-  local i n a f min=${1:-20}
+gate() { # gate [min-free-GiB]: total QEMU <= 2, available >= 9 GiB, /home free >= min (default 30); wait up to 90 min
+  local i n a f min=${1:-30}
   for i in $(seq 1 90); do
     n=$(pgrep -c qemu-system); a=$(free -g | awk '/^Mem:/ {print $7}'); f=$(df -BG --output=avail /home | tail -1 | tr -dc 0-9)
     if [ "$n" -le 2 ] && [ "$a" -ge 9 ] && [ "$f" -ge "$min" ]; then echo "gate ok $(date +%T): qemu=$n avail=${a}G free=${f}G (min ${min}G)"; return 0; fi

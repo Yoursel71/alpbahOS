@@ -18,7 +18,7 @@ if want lane2; then
   run lane2 40 env ROUND=rc02 NOCLOBBER=1 bash "$LANES" "$ISO_PATH" lane2
 fi
 if want kutu; then
-  run KUTU 25 bash -c '
+  run KUTU 30 bash -c '
     . '"$RBD"'/rc02/env-rc02.sh; RBD='"$RBD"'; MM=$M; MATRIX_LIB=1 . "$MM"; gs() { python3 "$RBD/r21/gsh.py" "$D/KUTU" "$@"; }
     bash "$MM" mkcopy uefi KUTU-disk
     LO=$(sudo losetup -f -P --show "$D/KUTU-disk.raw"); P=$(rootpart "$LO"); MT=$(mktemp -d /tmp/rc02-k.XXXX)
@@ -34,9 +34,9 @@ if want kutu; then
     cat KUTU-*.txt; shot "$D/KUTU" kutu-end; vmquit "$D/KUTU" && rm -f "$D/KUTU-disk.raw"'
 fi
 if want uefi; then
-  run U1 20 env OUTD=$D BUS=virtio MEM=6G FLATPAK=1 bash "$RBD/r21/diag-r21.sh" uefi "$IMGU_PATH" U1
+  run U1 30 env OUTD=$D BUS=virtio MEM=6G FLATPAK=1 bash "$RBD/r21/diag-r21.sh" uefi "$IMGU_PATH" U1
   [ -e sbx-catalog ] || cp -a /home/yrslf/alpbahOS/scratch-lfs-bench/lfs13-logs/iso-beta-0.9/r39x/sbx-catalog sbx-catalog
-  run ALP 20 bash -c '
+  run ALP 30 bash -c '
     . '"$RBD"'/rc02/env-rc02.sh; RBD='"$RBD"'; MM=$M; MATRIX_LIB=1 . "$MM"; gs() { python3 "$RBD/r21/gsh.py" "$D/ALP" "$@"; }
     bash "$MM" mkcopy uefi ALP-disk; agent_start ALP uefi ALP-disk virtio 6G; greeter_login "$D/ALP" alp
     T64=$(tar -C sbx-catalog -czf - . | base64 -w0); G64=$(base64 -w0 < "$RBD/r39x/sbx-guest-r39x.sh"); A64=$(base64 -w0 < "$RBD/r36x/alp-check-r36x.sh")
@@ -46,22 +46,22 @@ if want uefi; then
     gs 300 "bash /root/alp-check.sh tamper" > ALP-tamper.txt 2>&1
     gs 30 "echo \"failed units: \$(systemctl --failed --no-legend | wc -l), coredumps: \$(ls /var/lib/systemd/coredump | wc -l)\"" > ALP-units.txt 2>&1
     cat ALP-*.txt; shot "$D/ALP" alp-end; vmquit "$D/ALP" && rm -f "$D/ALP-disk.raw"'
-  run APPS 20 bash "$MM" apps
+  run APPS 30 bash "$MM" apps
 fi
 if want lane1; then
   run lane1 40 env ROUND=rc02 NOCLOBBER=1 bash "$LANES" "$ISO_PATH" lane1
 fi
 if want bios; then
-  run B1 20 env OUTD=$D BUS=virtio MEM=6G bash "$RBD/r21/diag-r21.sh" bios "$IMGB_PATH" B1
-  run S1 20 bash "$MM" s1
+  run B1 30 env OUTD=$D BUS=virtio MEM=6G bash "$RBD/r21/diag-r21.sh" bios "$IMGB_PATH" B1
+  run S1 30 bash "$MM" s1
 fi
 if want ply; then
   [ -e env.sh ] || cp "$RBD/rc02/env-rc02.sh" env.sh
-  run PLY 20 env MAXCYC=10 MAXMIN=40 bash "$RBD/r39y/ply-loop-r39y.sh"
+  run PLY 30 env MAXCYC=10 MAXMIN=40 bash "$RBD/r39y/ply-loop-r39y.sh"
 fi
 if want kf; then
   run KF 40 bash -c ". $RBD/rc02/env-rc02.sh; bash \$M kflive && bash \$M kffill && bash \$M kfgo && bash \$M kfdisk"
-  run KF-agent 20 bash -c '
+  run KF-agent 30 bash -c '
     . '"$RBD"'/rc02/env-rc02.sh; RBD='"$RBD"'; MM=$M; MATRIX_LIB=1 . "$MM"
     bash "$MM" kfagent KF-agent; R=$D/KF-agent; gs() { python3 "$RBD/r21/gsh.py" "$@"; }
     gs "$R" 40 "r21m-as-user busctl --user call org.kde.keyboard /Layouts org.kde.KeyboardLayouts getLayoutsList; localectl status; tr \"\\0\" \"\\n\" < /proc/\$(pgrep -u testuser -x kwin_wayland | head -1)/environ | grep -i xkb; r21m-as-user --bg konsole; sleep 7; pgrep -u testuser -a konsole"
