@@ -97,6 +97,9 @@ sleep 300
 /usr/local/sbin/r21-collect-metrics --label r21-idle --uid "$(id -u testuser)" --home /home/testuser --no-dbus --out /root/r21-perf.json > /dev/null 2>&1
 say "perf: $(python3 -c 'import json; d=json.load(open("/root/r21-perf.json"))["memory"]; print(" ".join(f"{k}={v}" for k,v in d.items()))' 2>&1)"
 say "free -m: $(free -m | tr -s ' ' | tr '\n' ';')"
+# round 43: the largest processes at the idle point (round 42 B2 was 1098.8 MiB against 934 in r39: no list to see why)
+say "top rss: $(ps -eo rss=,comm= --sort=-rss | head -n 12 | awk '{printf "%s %d MiB; ", $2, $1/1024}')"
+say "slab/shmem: $(grep -E '^(Shmem|Slab|SUnreclaim):' /proc/meminfo | tr -s ' ' | tr '\n' ';')"
 if [ "$FLATPAK" = 1 ]; then
   flatpak install -y --noninteractive flathub org.gnome.Calculator > /tmp/fp.out 2>&1; FR=$?
   say "flatpak install org.gnome.Calculator: rc=$FR; $(tail -1 /tmp/fp.out)"
