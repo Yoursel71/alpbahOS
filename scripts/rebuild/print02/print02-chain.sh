@@ -11,7 +11,7 @@
 # /etc/nsswitch.conf from glibc with mdns4_minimal on the hosts line; the firewall rule files of
 # scripts/rebuild/r21/product-r21.py with the mDNS rule, D176) and avahi-daemon/cups-browsed enabled (state, no record).
 # A read-only snapshot r4-snapshots/r4-before-print02 is taken first. Run as root. Env NICE (default 15), JOBS (10).
-# Usage: print02-chain.sh [NAME ...] (default: all; names: libdaemon avahi nss-mdns cups browsed mdns enable)
+# Usage: print02-chain.sh [NAME ...] (default: all; names: libdaemon avahi nss-mdns cups browsed mdns cupsadmin enable)
 set -euo pipefail
 export LC_ALL=C
 SB=/home/yrslf/alpbahOS/scratch-lfs-bench
@@ -104,6 +104,18 @@ if w mdns; then
   grep '^hosts:' "$ST/etc/nsswitch.conf"
   cd "$WT"
   REPLACE=1 bash scripts/rebuild/r7/apply-r7.sh scripts/rebuild/r8/stage-record-r8.py alpbahos-mdns-r44 0.9-r44 "$ST" alpbahos-mdns-r44 0.9-r44
+fi
+if w cupsadmin; then  # PRINT-02 (round 45): root may administer CUPS. With "SystemGroup lpadmin" alone, root (not in
+  # lpadmin) gets "Forbidden" from `sudo lpadmin` / the matrix PRINT row of round 44; the first user is already in
+  # lpadmin (users.conf). Record alpbahos-cups-admin-r45 (REPLACE=1) takes /etc/cups/cups-files.conf over from cups-dnssd.
+  ST=$SB/print02/stage-cupsadmin; rm -rf "$ST"; mkdir -p "$ST/etc/cups"
+  grep -q '^SystemGroup lpadmin$' "$R4/etc/cups/cups-files.conf" || { echo "unexpected SystemGroup line"; exit 1; }
+  sed 's/^SystemGroup lpadmin$/SystemGroup lpadmin root/' "$R4/etc/cups/cups-files.conf" > "$ST/etc/cups/cups-files.conf"
+  chmod --reference="$R4/etc/cups/cups-files.conf" "$ST/etc/cups/cups-files.conf"
+  chown --reference="$R4/etc/cups/cups-files.conf" "$ST/etc/cups/cups-files.conf"
+  grep '^SystemGroup' "$ST/etc/cups/cups-files.conf"
+  cd "$WT"
+  REPLACE=1 bash scripts/rebuild/r7/apply-r7.sh scripts/rebuild/r8/stage-record-r8.py alpbahos-cups-admin-r45 0.9-r45 "$ST" alpbahos-cups-admin-r45 0.9-r45
 fi
 if w enable; then
   chroot "$R4" /usr/bin/systemctl enable avahi-daemon.service cups-browsed.service 2>&1 | grep -v 'not mounted\|Proceeding anyway\|mileage' || true
