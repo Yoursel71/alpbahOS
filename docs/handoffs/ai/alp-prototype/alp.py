@@ -3033,6 +3033,49 @@ def _upgrade_one(
     raise AlpError(f"Tanımsız yöntem: {method!r}")
 
 
+
+# --------------------------------------------------------------------------
+# Triggers (NVIDIA-PKG-01 groundwork): a catalogue entry may name fixed system steps that run once after a
+# transaction that installed, upgraded or removed it: "ldconfig" (library cache) and "depmod" (kernel module index,
+# for every kernel under usr/lib/modules). Only these names exist; a catalogue that names any other is refused, so
+# a catalogue can never make alp run an arbitrary command. A failing trigger is reported, not rolled back: the
+# files and the database are already committed, and the trigger can be run again by hand.
+# --------------------------------------------------------------------------
+
+TRIGGERS = ("ldconfig", "depmod")
+
+
+def _trigger_commands(paths: Paths, name: str) -> list[list[str]]:
+    root = str(paths.root)
+    if name == "ldconfig":
+        return [["ldconfig"] if root == "/" else ["ldconfig", "-r", root]]
+    if name == "depmod":
+        mods = Path(paths.root, "usr/lib/modules")
+        kvers = sorted(d.name for d in mods.iterdir() if d.is_dir()) if mods.is_dir() else []
+        return [["depmod", "-a", kv] if root == "/" else ["depmod", "-a", "-b", root, kv] for kv in kvers]
+    raise AlpError(f"Tanımsız tetikleyici: {name!r}")
+
+
+def run_triggers(paths: Paths, names: set[str], dry_run: bool) -> None:
+    for name in [t for t in TRIGGERS if t in names]:
+        for cmd in _trigger_commands(paths, name):
+            if dry_run:
+                print(f"[dry-run] tetikleyici: {' '.join(cmd)}")
+                continue
+            exe = shutil.which(cmd[0], path="/usr/sbin:/usr/bin:/sbin:/bin")
+            if exe is None:
+                print(f"alp: uyarı: tetikleyici çalıştırılamadı, {cmd[0]} bulunamadı.", file=sys.stderr)
+                continue
+            r = subprocess.run([exe, *cmd[1:]], capture_output=True, text=True)
+            _emit(paths, "trigger", name=name, command=cmd, returncode=r.returncode)
+            if r.returncode != 0:
+                print(f"alp: uyarı: tetikleyici başarısız (çıkış {r.returncode}): {' '.join(cmd)}: "
+                      f"{_first_line(RuntimeError(r.stderr.strip() or '-'))}. Elle yeniden çalıştırın.", file=sys.stderr)
+
+
+def _entry_triggers(entry: dict | None) -> set[str]:
+    return set((entry or {}).get("triggers", []) or [])
+
 def _run_plan(
     steps: list[PlanStep], paths: Paths, index: dict, index_dir: Path, db: dict,
     dry_run: bool, explicit: set[str],
@@ -3060,6 +3103,8 @@ def _run_plan(
                     record = _install_one(paths, step.name, entry, index_dir, dry_run, db, journal=journal)
                 record["depends"] = list(entry.get("depends", []))
                 record["conflicts"] = list(entry.get("conflicts", []))
+                if _entry_triggers(entry):
+                    record["triggers"] = sorted(_entry_triggers(entry))
                 if step.name in explicit:
                     record["reason"] = "explicit"
                 elif old is not None:
@@ -3091,6 +3136,7 @@ def _run_plan(
               index=position + 1, total=total, percentage=round(100 * (position + 1) / total))
         shown = "" if shown in (None, "unknown") else f" -> {shown}"
         print(f"{tag}{step.name} ({entry['method']}){shown} {_ACTION_DONE[step.action]}.")
+    run_triggers(paths, set().union(*(_entry_triggers(index["entries"][n]) for n in done)) if done else set(), dry_run)
     _emit(paths, "done", completed=list(done))
 
 
@@ -3683,6 +3729,7 @@ def cmd_upgrade(args: argparse.Namespace, paths: Paths, index: dict, index_dir: 
 def _remove_many(order: list[str], paths: Paths, db: dict, dry_run: bool) -> None:
     tag = "[dry-run] " if dry_run else ""
     total = len(order)
+    triggers = set().union(*(_entry_triggers(db["packages"].get(n)) for n in order)) if order else set()
     for position, name in enumerate(order):
         _emit(paths, "step", name=name, action="remove", phase="start",
               index=position + 1, total=total, percentage=round(100 * position / total))
@@ -3700,6 +3747,7 @@ def _remove_many(order: list[str], paths: Paths, db: dict, dry_run: bool) -> Non
         _emit(paths, "step", name=name, action="remove", phase="done",
               index=position + 1, total=total, percentage=round(100 * (position + 1) / total))
         print(f"{tag}{name} kaldırıldı.")
+    run_triggers(paths, triggers, dry_run)
     _emit(paths, "done", completed=list(order))
 
 
@@ -3888,6 +3936,10 @@ def _validate_catalog(index: object, base_dir: Path, read=None) -> None:
     for name, entry in index["entries"].items():
         if not isinstance(entry, dict) or entry.get("method") not in ("recipe", "core", "flatpak"):
             raise AlpError(f"Yeni katalog geçersiz: {name!r} için tanımsız yöntem. Yerel katalog değiştirilmedi.")
+        trig = entry.get("triggers", [])
+        if not isinstance(trig, list) or any(t not in TRIGGERS for t in trig):
+            raise AlpError(f"Yeni katalog geçersiz: {name!r} için tanımsız tetikleyici {trig!r} "
+                           f"(yalnız {', '.join(TRIGGERS)}). Yerel katalog değiştirilmedi.")
         if entry["method"] == "recipe":
             rel = _catalog_relpath(entry.get("recipe"))
             try:
