@@ -289,6 +289,38 @@ cmd_nvidia() { # NVIDIA-PKG-01 (D165, round 42+): `sudo alp install nvidia` as t
   vmquit "$R"; rm -f "$D/NVIDIA-disk.raw"; stamp "NVIDIA end (copy removed)"
 }
 
+cmd_apps2() { # APPS-02 + SHELL-R4-01 (round 43+): the KDE apps opened the way a user opens a file (default app through
+  # kioclient), each a screenshot and a process check: a PDF in Okular, a PNG in Gwenview, a zip in Ark, a text file in
+  # KWrite; 7z on the command line; the test user's shell is zsh with suggestions and highlighting.
+  local R=$D/APPS2 i; fresh "$D/APPS2-disk.raw" "$R"; cmd_mkcopy uefi APPS2-disk
+  stamp "APPS2 start"; agent_start APPS2 uefi APPS2-disk virtio 6G
+  greeter_login "$R" apps2; sleep 20; shot "$R" apps2-desktop
+  gsh "$R" 180 'cd /home/testuser && printf "alpbahOS APPS-02 deneme: ğüşıöç ĞÜŞİÖÇ\n" > metin.txt && r21m-as-user libreoffice --headless --convert-to pdf --outdir /home/testuser /home/testuser/metin.txt > /dev/null 2>&1; ffmpeg -loglevel error -f lavfi -i testsrc=size=640x360 -frames:v 1 resim.png && zip -q arsiv.zip metin.txt resim.png && chown testuser: metin.txt resim.png arsiv.zip metin.pdf 2>/dev/null; ls -la metin.pdf resim.png arsiv.zip metin.txt | awk "{print \$5, \$9}"'
+  for f in metin.pdf:okular resim.png:gwenview arsiv.zip:ark metin.txt:kwrite; do
+    gsh "$R" 15 "r21m-as-user --bg kioclient exec /home/testuser/${f%%:*}; echo opened ${f%%:*}"
+    sleep 20; q "$R" key shift; shot "$R" "apps2-${f##*:}"
+    gsh "$R" 15 "echo \"${f##*:} processes: \$(pgrep -u testuser -c -x ${f##*:})\"; pkill -u testuser -x ${f##*:}; sleep 2"
+  done
+  gsh "$R" 30 'cd /tmp && 7z a -bd t.7z /home/testuser/metin.txt > /dev/null && 7z l t.7z | grep -c metin.txt | sed "s/^/7z lists metin.txt: /"'
+  gsh "$R" 30 'echo "shell: $(getent passwd testuser | cut -d: -f7)"; r21m-as-user zsh -i -c "print strategy=\$ZSH_AUTOSUGGEST_STRATEGY; (( \$+functions[_zsh_highlight] )) && print highlighting=on" 2>&1 | tail -n 2; r21m-as-user sh -c "echo session XDG_DATA_DIRS=\$XDG_DATA_DIRS"'
+  gsh "$R" 15 'echo "failed units: $(systemctl --failed --no-legend | wc -l)"; echo "coredumps: $(ls /var/lib/systemd/coredump 2> /dev/null | wc -l)"'
+  vmquit "$R"; rm -f "$D/APPS2-disk.raw"; stamp "APPS2 end (copy removed)"
+}
+
+cmd_drv() { # DRIVERS-01 (D166, round 43+): the first-boot driver service on an install without an NVIDIA GPU: the marker
+  # the installer job writes (drivers-mark nvidia), a reboot, then the service must find no NVIDIA display
+  # controller, write "no-nvidia", remove the marker and install nothing.
+  local R=$D/DRV i; fresh "$D/DRV-disk.raw" "$R"; cmd_mkcopy uefi DRV-disk
+  stamp "DRV start"; NO_REBOOT=0 agent_start DRV uefi DRV-disk virtio 6G
+  greeter_login "$R" drv; sleep 15
+  gsh "$R" 30 '/usr/libexec/alpbahos/drivers-mark nvidia; echo "marker: $(cat /var/lib/alpbahos/install-drivers); enabled: $(systemctl is-enabled alpbahos-install-drivers.service)"'
+  gsh "$R" 0 'systemctl reboot'
+  for i in $(seq 1 150); do [ "$(grep -ac 'R21M begin' "$R/serial.log")" -ge 2 ] && break; sleep 2; done
+  greeter_login "$R" drv2; sleep 30; shot "$R" drv-after-reboot
+  gsh "$R" 30 'echo "status: $(cat /var/lib/alpbahos/drivers-status 2>&1); marker left: $(test -e /var/lib/alpbahos/install-drivers && echo yes || echo no)"; tail -n 2 /var/log/alpbahos-drivers.log; systemctl show -p ActiveState -p Result alpbahos-install-drivers.service | tr "\n" " "; echo; echo "nvidia record: $(alp list 2>/dev/null | grep -c "^nvidia")"; echo "failed units: $(systemctl --failed --no-legend | wc -l)"'
+  vmquit "$R"; rm -f "$D/DRV-disk.raw"; stamp "DRV end (copy removed)"
+}
+
 cmd_fpgui() { # Flatpak install by the test shell (root), then the Calculator in the test user's Wayland session
   local R=$D/FPGUI i; fresh "$D/FPGUI-disk.raw" "$R"; cmd_mkcopy uefi FPGUI-disk
   stamp "FP-GUI start"; agent_start FPGUI uefi FPGUI-disk virtio 6G
@@ -439,7 +471,7 @@ cmd_f1() { fresh "$D/F1" "$D/F1-boot" "$IMGF1"; stamp "F1 start"
 if [ "${MATRIX_LIB:-0}" != 1 ]; then
   c=${1:-}; shift || true
   case $c in
-    sha|live|diag|mkcopy|agent|check|s1|r1|fpgui|apps|kutu|nvidia|type|enter|key|combo|click|shot|quit|run|recprep|reclive|recboot|kflive|kffill|kfgo|kfdisk|kfboot|kfagent|rofacts|f1|shutlines) "cmd_$c" "$@" ;;
+    sha|live|diag|mkcopy|agent|check|s1|r1|fpgui|apps|apps2|drv|kutu|nvidia|type|enter|key|combo|click|shot|quit|run|recprep|reclive|recboot|kflive|kffill|kfgo|kfdisk|kfboot|kfagent|rofacts|f1|shutlines) "cmd_$c" "$@" ;;
     *) echo "usage: matrix-r21.sh sha|live|diag|mkcopy|agent|check|s1|r1|fpgui ..."; exit 2 ;;
   esac
 fi
