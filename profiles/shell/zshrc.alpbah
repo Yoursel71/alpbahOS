@@ -1,10 +1,7 @@
-# alpbahOS interaktif Zsh profili — TASLAK
+# alpbahOS interaktif Zsh profili (D119, SHELL-R4-01)
 #
-# Durum: statik taslak, gerçek terminal oturumunda çalıştırılmadı.
-# Hedef sistemde bu dosyanın /etc/alpbahos/zshrc.alpbah olarak konumlanıp
-# kullanıcı ~/.zshrc dosyasından `source /etc/alpbahos/zshrc.alpbah` ile
-# çağrılması planlanır. Sistem shell'i (/bin/sh) veya build scriptlerinin
-# yorumlayıcısı bu dosyadan ETKİLENMEZ.
+# /etc/alpbahos/zshrc.alpbah olarak kurulur; /etc/zsh/zshrc her etkileşimli Zsh'de yükler (kullanıcının ~/.zshrc
+# dosyası kendi ayarları içindir). Sistem shell'i (/bin/sh) ve build scriptlerinin yorumlayıcısı bundan ETKİLENMEZ.
 #
 # Kaynak: docs/MASTER_PLAN.md §4
 
@@ -122,4 +119,4 @@ command_not_found_handler() {
 # 256-color kod numaraları --ab-cyan / --ab-cyan-soft için YAKLAŞIK eşleşmedir;
 # gerçek terminalde truecolor doğrulaması yapılmadı.
 autoload -Uz colors && colors
-PROMPT='%F{39}%n@alpbahos%f:%F{75}%~%f%# '
+PROMPT='%F{39}%n@%m%f:%F{75}%~%f%# '

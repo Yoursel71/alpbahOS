@@ -1,6 +1,6 @@
 # alpbahOS Terminal/Shell Profile — SHELL-01 (v2)
 
-Status: **draft**. The files below were prepared as static files. The shell was tested in a chroot pty on 2026-11-05 (see the verification table). It has not been run in Konsole, and the Konsole profile has not been tested on a real desktop.
+Status: **in the image since round 42 (SHELL-R4-01)**: records zsh-autosuggestions 0.7.1, zsh-syntax-highlighting 0.8.0 and alpbahos-zsh-profile-r42c (`/etc/zsh/zprofile`, `/etc/zsh/zshrc`, `/etc/skel/.zshrc`, `/etc/shells`, useradd and installer default shell `/bin/zsh`). The pty checks below were repeated on a snapshot of the rebuilt root on 2026-11-12. Earlier status: draft. The files below were prepared as static files. The shell was tested in a chroot pty on 2026-11-05 (see the verification table). It has not been run in Konsole, and the Konsole profile has not been tested on a real desktop.
 
 Scope: `profiles/shell/` only. The system shell `/bin/sh` is not changed. The interpreter used by build scripts is not affected by this profile (CLAUDE.md).
 

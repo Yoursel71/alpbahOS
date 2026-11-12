@@ -1,0 +1,5 @@
+# alpbahOS (SHELL-R4-01, D119): the interactive profile for every user (completion, suggestions that are only
+# accepted, never run, syntax highlighting, alp completion, the apt hint): /etc/alpbahos/zshrc.alpbah.
+if [[ -o interactive && -r /etc/alpbahos/zshrc.alpbah ]]; then
+    source /etc/alpbahos/zshrc.alpbah
+fi

@@ -1,0 +1,18 @@
+# alpbahOS (SHELL-R4-01, D119): /etc/profile and /etc/profile.d/*.sh are bash scripts (BLFS). A login Zsh (the SDDM
+# Wayland session starts the user's shell with --login, a console login) runs them once in bash and takes over the
+# exported environment, so PATH, the Qt, KDE and Flatpak variables and ~/.local/bin (alp-local-bin.sh) are the same
+# as under bash. NUL-separated, so no value is parsed as shell code.
+if [[ -z "$ALPBAHOS_BASH_PROFILE" && -x /bin/bash ]]; then
+    () {
+        local entry name
+        while IFS= read -r -d '' entry; do
+            name=${entry%%=*}
+            # character classes, not [A-Z] ranges: once LANG=tr_TR.UTF-8 is imported, a range follows the Turkish
+            # collation and drops names with "I" (XDG_DATA_DIRS, QML2_IMPORT_PATH; seen in the chroot comparison)
+            [[ $name == [[:alpha:]_]* && $name != *[^[:alnum:]_]* ]] || continue
+            case $name in SHLVL|PWD|OLDPWD|_|ALPBAHOS_BASH_PROFILE) continue ;; esac
+            typeset -gx -- "$entry" 2>/dev/null   # -g: plain export in a function is local in Zsh
+        done < <(ALPBAHOS_BASH_PROFILE=1 /bin/bash --login -c 'env -0' 2>/dev/null </dev/null)
+    }
+    export ALPBAHOS_BASH_PROFILE=1
+fi

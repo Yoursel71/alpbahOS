@@ -1,5 +1,5 @@
 import os, pty, select, time, re
-R = "/mnt/lfs"
+R = os.environ.get("ZSH_TEST_ROOT", "/mnt/lfs")   # round 42: any root, e.g. a snapshot of r4-root
 ANSI = re.compile(rb'\x1b\[[0-9;?]*[A-Za-z]|\x1b[=>()][A-Za-z0-9]?|\x1b\][^\x07]*\x07')
 def read_for(fd, secs):
     buf = b""; end = time.time() + secs
