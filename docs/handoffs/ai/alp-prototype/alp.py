@@ -3348,6 +3348,21 @@ _KUTU_DRIVER = re.compile(r"^(nvidia|linux-image|linux-headers|linux-modules|fir
 _KUTU_BIN_DIRS = ("/usr/bin", "/usr/games", "/usr/sbin", "/bin", "/sbin")
 
 
+def _kutu_env() -> dict[str, str]:
+    """The caller's environment with the locale variables in the canonical spelling (tr_TR.utf8 -> tr_TR.UTF-8).
+    Installs before round 42 have LANG=tr_TR.utf8 (Calamares took the names from `locale -a`); distrobox-init then
+    looks for that spelling in Debian's locale.gen, finds nothing and stops (rc02 KUTU row, KUTU-LOCALE-01)."""
+    env = dict(os.environ)
+    for key, value in list(env.items()):
+        if key == "LANG" or key == "LANGUAGE" or key.startswith("LC_"):
+            env[key] = re.sub(r"\.utf-?8\b", ".UTF-8", value, flags=re.IGNORECASE)
+    return env
+
+
+def _kutu_run(cmd: list[str], **kw):
+    return subprocess.run(cmd, env=_kutu_env(), **kw)
+
+
 def kutu_available() -> bool:
     return shutil.which("distrobox") is not None and shutil.which("podman") is not None
 
@@ -3386,19 +3401,19 @@ def _kutu_cmd(*cmd: str) -> list[str]:
 
 
 def kutu_exists() -> bool:
-    return subprocess.run(["podman", "container", "exists", KUTU_NAME], capture_output=True, text=True).returncode == 0
+    return _kutu_run(["podman", "container", "exists", KUTU_NAME], capture_output=True, text=True).returncode == 0
 
 
 def kutu_create() -> None:
     print(f"Debian kutusu oluşturuluyor ({KUTU_IMAGE}); ilk sefer birkaç dakika sürer ve internet gerekir.")
-    subprocess.run(["distrobox", "create", "--name", KUTU_NAME, "--image", KUTU_IMAGE, "--yes", "--no-entry"],
+    _kutu_run(["distrobox", "create", "--name", KUTU_NAME, "--image", KUTU_IMAGE, "--yes", "--no-entry"],
                    check=True)
-    subprocess.run(_kutu_cmd("true"), check=True)  # the first entry sets the box up
+    _kutu_run(_kutu_cmd("true"), check=True)  # the first entry sets the box up
 
 
 def kutu_candidate(name: str) -> str | None:
     """The version apt would install in the box, or None when Debian has no installable package of that name."""
-    r = subprocess.run(_kutu_cmd("env", "LC_ALL=C", "apt-cache", "policy", name),
+    r = _kutu_run(_kutu_cmd("env", "LC_ALL=C", "apt-cache", "policy", name),
                        capture_output=True, text=True, timeout=600)
     if r.returncode != 0:
         return None
@@ -3454,7 +3469,7 @@ def _as_box_user(argv: list[str]) -> int:
                        "oturum açın.")
     env = [f"HOME={pw.pw_dir}", f"USER={user}", f"LOGNAME={user}", "PATH=/usr/bin:/bin",
            f"XDG_RUNTIME_DIR={runtime}", f"DBUS_SESSION_BUS_ADDRESS=unix:path={runtime}/bus",
-           f"LANG={os.environ.get('LANG', 'tr_TR.UTF-8')}", f"TERM={os.environ.get('TERM', 'dumb')}"]
+           f"LANG={_kutu_env().get('LANG', 'tr_TR.UTF-8')}", f"TERM={os.environ.get('TERM', 'dumb')}"]
     me = os.path.abspath(__file__)
     # No runuser/setpriv in the image (LFS builds util-linux without them): alp switches to the user itself
     cmd = [sys.executable, "-I", me, _AS_USER_FLAG, user, "--", "/usr/bin/env", "-i", *env, sys.executable, "-I", me,
@@ -3528,7 +3543,7 @@ def _install_from_kutu(args: argparse.Namespace, explicit: bool = True) -> int:
             return 1
         kutu_create()
     if not args.dry_run:
-        subprocess.run(_kutu_cmd("sudo", "apt-get", "update", "-qq"), check=True)
+        _kutu_run(_kutu_cmd("sudo", "apt-get", "update", "-qq"), check=True)
     version = kutu_candidate(name)
     if version is None:
         print(f"{name!r} Debian 13 depolarında da yok.")
@@ -3539,22 +3554,22 @@ def _install_from_kutu(args: argparse.Namespace, explicit: bool = True) -> int:
     if not _confirm(f"{name} {version} Debian kutusuna (apt) kurulsun mu?", yes):
         print("İptal edildi, hiçbir şey değişmedi.")
         return 1
-    subprocess.run(_kutu_cmd("sudo", "env", "DEBIAN_FRONTEND=noninteractive", "apt-get", "install", "-y", name),
+    _kutu_run(_kutu_cmd("sudo", "env", "DEBIAN_FRONTEND=noninteractive", "apt-get", "install", "-y", name),
                    check=True)
     record = {"version": version, "box": KUTU_NAME, "image": KUTU_IMAGE, "installed_at": _now(),
               "installed_by": f"alp/{ALP_VERSION}", "bins": [], "apps": []}
     state["packages"][name] = record
     save_kutu(home, state)  # recorded before the exports, so 'alp remove' finds it even if an export fails
-    files = subprocess.run(_kutu_cmd("dpkg", "-L", name), capture_output=True, text=True, check=True).stdout
+    files = _kutu_run(_kutu_cmd("dpkg", "-L", name), capture_output=True, text=True, check=True).stdout
     bins, apps, skipped = _kutu_exports(files.splitlines())
     bindir = home / ".local" / "bin"
     bindir.mkdir(parents=True, exist_ok=True)
     try:
         for b in bins:
-            subprocess.run(_kutu_cmd("distrobox-export", "--bin", b, "--export-path", str(bindir)), check=True)
+            _kutu_run(_kutu_cmd("distrobox-export", "--bin", b, "--export-path", str(bindir)), check=True)
             record["bins"].append(b)
         for a in apps:
-            subprocess.run(_kutu_cmd("distrobox-export", "--app", a), check=True)
+            _kutu_run(_kutu_cmd("distrobox-export", "--app", a), check=True)
             record["apps"].append(a)
     finally:
         save_kutu(home, state)
@@ -3609,11 +3624,11 @@ def _remove_from_kutu(args: argparse.Namespace) -> int:
     if kutu_exists():
         bindir = home / ".local" / "bin"
         for a in record.get("apps", []):
-            subprocess.run(_kutu_cmd("distrobox-export", "--app", a, "--delete"), check=False)
+            _kutu_run(_kutu_cmd("distrobox-export", "--app", a, "--delete"), check=False)
         for b in record.get("bins", []):
-            subprocess.run(_kutu_cmd("distrobox-export", "--bin", b, "--export-path", str(bindir), "--delete"),
+            _kutu_run(_kutu_cmd("distrobox-export", "--bin", b, "--export-path", str(bindir), "--delete"),
                            check=False)
-        subprocess.run(_kutu_cmd("sudo", "env", "DEBIAN_FRONTEND=noninteractive", "apt-get", "remove", "-y", name),
+        _kutu_run(_kutu_cmd("sudo", "env", "DEBIAN_FRONTEND=noninteractive", "apt-get", "remove", "-y", name),
                        check=True)
     else:
         print(f"Debian kutusu ({KUTU_NAME}) artık yok; yalnız kayıt siliniyor.")

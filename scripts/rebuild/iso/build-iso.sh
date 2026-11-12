@@ -153,6 +153,8 @@ log "Calamares configuration and branding"
 install -d -m 755 "$LIVE/etc/calamares/modules" "$LIVE/usr/share/calamares/branding/alpbahos"
 install -m 644 "$LIVE_SRC/calamares/settings.conf" "$LIVE/etc/calamares/settings.conf"
 for f in "$LIVE_SRC"/calamares/modules/*.conf; do install -m 644 "$f" "$LIVE/etc/calamares/modules/"; done
+# KUTU-LOCALE-01 (round 42): the canonical locale list Calamares offers (locale.conf localeGenPath), live only
+install -D -m 644 "$LIVE_SRC/calamares/locale.gen" "$LIVE/usr/share/alpbahos/calamares/locale.gen"
 install -m 644 "$M11_MOD/bootloader.conf" "$M11_MOD/grubcfg.conf" "$LIVE/etc/calamares/modules/"
 # PLYMOUTH-01 (D160): the DEBUG build installs systems without the splash and without "quiet" (plymouth.enable=0;
 # Calamares adds "splash" whenever plymouth is in the target), so the boot log stays on screen.

@@ -274,3 +274,29 @@ def test_as_user_helper_really_switches_when_root():
     r = subprocess.run([alp.sys.executable, "-I", alp.os.path.abspath(alp.__file__), alp._AS_USER_FLAG, "nobody", "--",
                         "/usr/bin/id", "-u"], capture_output=True, text=True)
     assert r.returncode == 0 and r.stdout.strip() == str(nobody.pw_uid)
+
+
+def test_distrobox_gets_canonical_locale_names(box, monkeypatch, tmp_path):
+    """KUTU-LOCALE-01 (rc02 KUTU row): installs before round 42 have LANG=tr_TR.utf8; distrobox-init only knows
+    Debian's tr_TR.UTF-8, so alp runs distrobox with the canonical spelling."""
+    seen = []
+    real = box.run
+
+    def run(cmd, **kw):
+        seen.append(kw.get("env") or {})
+        return real(cmd, **kw)
+
+    monkeypatch.setattr(alp.subprocess, "run", run)
+    monkeypatch.setenv("LANG", "tr_TR.utf8")
+    monkeypatch.setenv("LC_TIME", "tr_TR.utf8")
+    monkeypatch.setenv("LC_ALL", "en_US.UTF8")
+    alp._install_from_kutu(_args("htop"))
+    assert seen and all(e.get("LANG") == "tr_TR.UTF-8" and e.get("LC_TIME") == "tr_TR.UTF-8"
+                        and e.get("LC_ALL") == "en_US.UTF-8" for e in seen)
+
+
+def test_locale_without_utf8_is_left_alone(monkeypatch):
+    monkeypatch.setenv("LANG", "C")
+    monkeypatch.setenv("LC_CTYPE", "tr_TR.ISO-8859-9")
+    env = alp._kutu_env()
+    assert env["LANG"] == "C" and env["LC_CTYPE"] == "tr_TR.ISO-8859-9"

@@ -269,6 +269,26 @@ cmd_kutu() { # ALP-KUTU-01 (D164, round 41+): the Debian box through alp, as the
   vmquit "$R"; rm -f "$D/KUTU-disk.raw"; stamp "KUTU end (copy removed)"
 }
 
+cmd_nvidia() { # NVIDIA-PKG-01 (D165, round 42+): `sudo alp install nvidia` as the test user through a real sudo, with
+  # alp's build sandbox (alpbuild + bubblewrap; a chroot cannot test it): NVIDIA's .run downloaded inside the guest,
+  # the open modules built against linux-headers, files placed, triggers run. QEMU has no NVIDIA GPU: modprobe must
+  # say "No such device"; after a reboot the desktop must still come up (nouveau is blacklisted, virtio-gpu is not
+  # affected); then `alp remove nvidia`.
+  local R=$D/NVIDIA; fresh "$D/NVIDIA-disk.raw" "$R"; cmd_mkcopy uefi NVIDIA-disk
+  stamp "NVIDIA start"; NO_REBOOT=0 agent_start NVIDIA uefi NVIDIA-disk virtio 6G
+  greeter_login "$R" nvidia; sleep 20; shot "$R" nvidia-desktop
+  gsh "$R" 30 'install -m 440 /dev/null /etc/sudoers.d/99-nvidia-test; echo "testuser ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/99-nvidia-test; r21m-as-user alp install --dry-run --yes nvidia 2>&1 | tail -n 6 | sed "s/^/dry-run: /"'
+  gsh "$R" 3600 'S=$(date +%s); r21m-as-user sudo -n alp install --yes nvidia > /tmp/nv.log 2>&1; echo "alp install nvidia rc=$? in $(( $(date +%s) - S )) s"; tail -n 4 /tmp/nv.log; grep -c "bwrap, uid" /var/log/alp/nvidia-620.70.06.build.log | sed "s/^/sandboxed steps: /"'
+  gsh "$R" 60 'ls /usr/lib/modules/*/extra/nvidia/ | tr "\n" " "; echo; modinfo -F vermagic /usr/lib/modules/*/extra/nvidia/nvidia.ko; ldconfig -p | grep -c "libGLX_nvidia\|libEGL_nvidia\|libcuda" | sed "s/^/ldconfig nvidia libs: /"; modprobe nvidia 2>&1 | tail -n 1 | sed "s/^/modprobe: /"; ls -la /usr/lib/libGL.so.1 | sed "s/.* -> /libGL.so.1 -> /"; find /usr -xdev -perm -4000 -newer /usr/share/alp/index.json 2>/dev/null | sed "s/^/new setuid: /"; alp check 2>&1 | tail -n 1'
+  gsh "$R" 0 'systemctl reboot'; local i
+  for i in $(seq 1 150); do [ "$(grep -ac 'R21M begin' "$R/serial.log")" -ge 2 ] && break; sleep 2; done
+  echo "boot lines in the serial log: $(grep -ac 'R21M begin' "$R/serial.log")"
+  greeter_login "$R" nvidia2; sleep 20; shot "$R" nvidia-after-reboot
+  gsh "$R" 30 'lsmod | grep -c "^nouveau\|^nvidia" | sed "s/^/nouveau or nvidia loaded: /"; echo "failed units: $(systemctl --failed --no-legend | wc -l)"'
+  gsh "$R" 300 'r21m-as-user sudo -n alp remove --yes nvidia 2>&1 | tail -n 2; ls /usr/lib/modules/*/extra 2>&1 | tail -n 1; ldconfig -p | grep -c nvidia_ | sed "s/^/nvidia libs left: /"; alp check 2>&1 | tail -n 1; echo "coredumps: $(ls /var/lib/systemd/coredump 2> /dev/null | wc -l)"'
+  vmquit "$R"; rm -f "$D/NVIDIA-disk.raw"; stamp "NVIDIA end (copy removed)"
+}
+
 cmd_fpgui() { # Flatpak install by the test shell (root), then the Calculator in the test user's Wayland session
   local R=$D/FPGUI i; fresh "$D/FPGUI-disk.raw" "$R"; cmd_mkcopy uefi FPGUI-disk
   stamp "FP-GUI start"; agent_start FPGUI uefi FPGUI-disk virtio 6G
@@ -413,7 +433,7 @@ cmd_f1() { fresh "$D/F1" "$D/F1-boot" "$IMGF1"; stamp "F1 start"
 if [ "${MATRIX_LIB:-0}" != 1 ]; then
   c=${1:-}; shift || true
   case $c in
-    sha|live|diag|mkcopy|agent|check|s1|r1|fpgui|apps|kutu|type|enter|key|combo|click|shot|quit|run|recprep|reclive|recboot|kflive|kffill|kfgo|kfdisk|kfboot|kfagent|rofacts|f1|shutlines) "cmd_$c" "$@" ;;
+    sha|live|diag|mkcopy|agent|check|s1|r1|fpgui|apps|kutu|nvidia|type|enter|key|combo|click|shot|quit|run|recprep|reclive|recboot|kflive|kffill|kfgo|kfdisk|kfboot|kfagent|rofacts|f1|shutlines) "cmd_$c" "$@" ;;
     *) echo "usage: matrix-r21.sh sha|live|diag|mkcopy|agent|check|s1|r1|fpgui ..."; exit 2 ;;
   esac
 fi
