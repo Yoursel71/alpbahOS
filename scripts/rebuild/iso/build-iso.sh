@@ -166,6 +166,13 @@ else
 fi
 install -m 644 "$LIVE_SRC/calamares/branding/branding.desc" "$LIVE/usr/share/calamares/branding/alpbahos/"
 install -m 644 "$LIVE_SRC/calamares/branding/show.qml" "$LIVE/usr/share/calamares/branding/alpbahos/"
+# INSTALLER-02: stylesheet, QML sidebar and the drivers page pictures
+for f in stylesheet.qss calamares-sidebar.qml surucu-acik.png surucu-nvidia.png; do
+    install -m 644 "$LIVE_SRC/calamares/branding/$f" "$LIVE/usr/share/calamares/branding/alpbahos/$f"
+done
+install -D -m 644 "$SELF_DIR/../../../branding/icons/hicolor/scalable/apps/alpbahos-install.svg" \
+    "$LIVE/usr/share/icons/hicolor/scalable/apps/alpbahos-install.svg"
+L gtk-update-icon-cache -qtf /usr/share/icons/hicolor
 # The Calamares logo is the real brand logo (round 9): a transparent PNG made from docs/assets/alpbahOS-logo.png by
 # scripts/rebuild/r9/brand-logo-r9.py (same keying as the brand wallpaper). The placeholder generator is gone.
 install -m 644 "$LIVE_SRC/calamares/branding/logo.png" "$LIVE/usr/share/calamares/branding/alpbahos/logo.png"

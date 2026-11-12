@@ -25,6 +25,10 @@ images:
     productIcon:         "icon.png"
     productWelcome:      "logo.png"
 
+# INSTALLER-02: numbered steps (calamares-sidebar.qml); the navigation buttons stay widgets (styled in stylesheet.qss),
+# so their size and place do not change for the QEMU install lanes.
+sidebar:                 qml
+navigation:              widget
 slideshow:               "show.qml"
 slideshowAPI:            2
 

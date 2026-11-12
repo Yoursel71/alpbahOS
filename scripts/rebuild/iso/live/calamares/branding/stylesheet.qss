@@ -1,0 +1,89 @@
+/* alpbahOS installer (INSTALLER-02): Calamares loads this from the branding directory. Colours from
+   profiles/desktop/tokens.json; the palette itself comes from /etc/xdg/kdeglobals (alpbah-dark, D162).
+   Only colours, borders and radii: no padding or size changes on the page widgets, so every field and button stays
+   where the QEMU install lanes click (r20-lanes.sh). The main action (Sonraki / Kur / Bitti) is cyan; the focus ring
+   is orange like the rest of alpbahOS. */
+
+#mainApp {
+    background-color: #11171c;
+}
+
+QPushButton {
+    background-color: #16232d;
+    color: #d4e0e8;
+    border: 1px solid #29404f;
+    border-radius: 8px;
+    padding: 0px 10px;
+    min-height: 28px;
+}
+/* The three navigation buttons keep the Breeze size of round 43 (82 x 30 px; the lanes click their middle). */
+QPushButton#view-button-back, QPushButton#view-button-next, QPushButton#view-button-cancel {
+    min-width: 60px;
+}
+QPushButton:hover {
+    background-color: #1d2c38;
+    border-color: #54d6ff;
+}
+QPushButton:pressed {
+    background-color: #062746;
+}
+QPushButton:focus {
+    border: 2px solid #ffc45d;
+}
+QPushButton:disabled {
+    background-color: #11171c;
+    color: #53636d;
+    border-color: #1d2c38;
+}
+
+QPushButton#view-button-next {
+    background-color: #00aeef;
+    color: #0b1014;
+    border: 1px solid #00aeef;
+    font-weight: 600;
+}
+QPushButton#view-button-next:hover {
+    background-color: #33c2f5;
+    border-color: #33c2f5;
+}
+QPushButton#view-button-next:focus {
+    border: 2px solid #ffc45d;
+}
+QPushButton#view-button-next:disabled {
+    background-color: #1d2c38;
+    color: #53636d;
+    border-color: #1d2c38;
+}
+
+QProgressBar {
+    background-color: #16232d;
+    border: 1px solid #29404f;
+    border-radius: 5px;
+    color: #f4f8fb;
+    text-align: center;
+}
+QProgressBar::chunk {
+    background-color: #00aeef;
+    border-radius: 4px;
+}
+
+QListView, QTreeView, QTableView {
+    background-color: #0b1014;
+    border: 1px solid #29404f;
+    border-radius: 8px;
+    selection-background-color: #062746;
+    selection-color: #f4f8fb;
+}
+
+/* Drivers page (packagechooser): the picture sits on the page, without the light frame. */
+#productScreenshot {
+    background: transparent;
+    border: none;
+}
+#productName {
+    color: #f4f8fb;
+    font-weight: 600;
+}
+#productDescription {
+    color: #a9bac6;
+}

@@ -14,7 +14,9 @@ from PIL import Image
 
 
 WINDOW_BG = (17, 23, 28)  # installer page background of the alpbah-dark scheme (the panel has the same colour)
-BUTTON_FILL = (22, 35, 45)  # push button background of the same scheme
+# Push button fills: the scheme's button colour (until round 43) and, from round 44 (INSTALLER-02, stylesheet.qss),
+# the cyan main button (Sonraki/Kur) and its hover colour; the other buttons keep #16232d.
+BUTTON_FILLS = ((22, 35, 45), (0, 174, 239), (51, 194, 245))
 
 
 def close(a, b, tol=6):
@@ -35,7 +37,7 @@ def main() -> int:
             top = bottom
             while top > 0 and not is_bg[top - 1]:
                 top -= 1
-            fill = sum(close(im.getpixel((x, r)), BUTTON_FILL, 3) for r in range(top, bottom + 1))
+            fill = sum(any(close(im.getpixel((x, r)), c, 3) for c in BUTTON_FILLS) for r in range(top, bottom + 1))
             if 18 <= bottom - top + 1 <= 45 and top > h // 2 and fill >= 10:
                 print((top + bottom) // 2)
                 return 0
