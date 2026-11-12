@@ -1,7 +1,7 @@
 #!/bin/bash
 # BETA-RC-01 (2026-11-12), run as root on the host. Makes the release-candidate root WITHOUT touching the live r4-root:
 #   1. writable btrfs snapshot of r4-root: r4-snapshots/r4-rc01-2026-11-12 (r4-root is only read by the snapshot)
-#   2. plymouth 26.134.222 + docs/handoffs/claude/patches/037-plymouth-keyboard-removed.patch, built in a chroot of
+#   2. plymouth 26.134.222 + docs/handoffs/ai/patches/037-plymouth-keyboard-removed.patch, built in a chroot of
 #      the snapshot with the original meson options (r10/plymouth/build.log), ISA audit (D146), recorded as
 #      plymouth 26.134.222-alp1 (only the paths the old plymouth record owned; config files stay with their records)
 #   3. alp.py of this worktree (with ALP-LOCK-MSG-01) recorded as alp-lockmsg-rc01 0.9-trust1.4 (takes alp.py over
@@ -17,10 +17,10 @@ WT=$(cd "$(dirname "$0")/../../.." && pwd)
 SNAP=${RC01_SNAP:-$SB/r4-snapshots/r4-rc01-2026-11-12}   # RC01_SNAP, RC01_RC: reused by rc02-root.sh
 RC=${RC01_RC:-$SB/rc01}
 LED=$RC/ledger
-ALP=$WT/docs/handoffs/claude/alp-prototype/alp.py
+ALP=$WT/docs/handoffs/ai/alp-prototype/alp.py
 LIB=$WT/scripts/rebuild/r4/r4_lib.py
 REC=$WT/scripts/rebuild/r8/stage-record-r8.py
-PATCH=$WT/docs/handoffs/claude/patches/037-plymouth-keyboard-removed.patch
+PATCH=$WT/docs/handoffs/ai/patches/037-plymouth-keyboard-removed.patch
 TARBALL=$SB/r10/dl/plymouth-26.134.222.tar.xz
 OPTS="--prefix=/usr --buildtype=release -Db_lto=false -Dbackground-color=0x0b1014 -Dbackground-end-color-stop=0x0b1014 -Dbackground-start-color-stop=0x0b1014 -Ddocs=false -Dgtk=disabled -Drelease-file=/etc/os-release -Dsystemd-integration=true -Dtracing=false -Dudev=enabled -Dupstart-monitoring=false"
 die() { echo "rc01-root: $*" >&2; exit 1; }

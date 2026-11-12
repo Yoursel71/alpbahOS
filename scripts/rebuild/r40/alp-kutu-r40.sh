@@ -15,7 +15,7 @@ ALP_REC=alp-kutu-r40b ALP_VER=0.9-trust1.3
 SB=/home/yrslf/alpbahOS/scratch-lfs-bench
 WT=/home/yrslf/alpbahOS/wt-t2-kisayol
 ST=$SB/r40/stage-alp-kutu
-rm -rf "$ST" && install -D -m 755 "$WT/docs/handoffs/claude/alp-prototype/alp.py" "$ST/usr/lib/alp/alp.py"
+rm -rf "$ST" && install -D -m 755 "$WT/docs/handoffs/ai/alp-prototype/alp.py" "$ST/usr/lib/alp/alp.py"
 grep -q 'def _as_user_main' "$ST/usr/lib/alp/alp.py"
 cd "$WT"
 R4=${TARGET_ROOT:-$SB/r4-root}

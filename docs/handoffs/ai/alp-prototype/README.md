@@ -27,7 +27,7 @@ Full list: [docs/DECISIONS.md](../../../DECISIONS.md). Live plan: [docs/MASTER_P
 ## Running
 
 ```bash
-cd docs/handoffs/claude/alp-prototype
+cd docs/handoffs/ai/alp-prototype
 python3 alp.py --root /tmp/alp-test --index demo/index.json search alp
 python3 alp.py --root /tmp/alp-test --index demo/index.json install alpbah-theme-solid
 python3 alp.py --root /tmp/alp-test --index demo/index.json list
@@ -66,7 +66,7 @@ environment variable changes any of this. `allowed.txt`: one primary-key fingerp
 Running the demo catalog with a throwaway key (ordinary user; the key never leaves the temp dir):
 
 ```bash
-cd docs/handoffs/claude/alp-prototype
+cd docs/handoffs/ai/alp-prototype
 T=$(mktemp -d); cp -r demo "$T/demo"; mkdir -m 700 "$T/gnupg"
 gpg --homedir "$T/gnupg" --batch --pinentry-mode loopback --passphrase '' --quick-generate-key 'alp demo <demo@alp.invalid>' ed25519 sign never
 FPR=$(gpg --homedir "$T/gnupg" --list-keys --with-colons | awk -F: '/^fpr/{print $10; exit}')
@@ -105,11 +105,11 @@ The original entry has no date. This was the Windows host, which is historical.
 - PackageKit/Discover integration — not written at that point; out of scope.
 - Production run on a real alpbahOS rootfs with `--root /` — never tried, and should not be tried on the prototype (the real-system write path was never exercised).
 
-This split follows the CLAUDE.md rule: untested builds, tests or hardware checks cannot be reported as done. The recipe and flatpak code paths are written correctly, but they had not been run with the real external tools at that point.
+This split follows the AGENT.md rule: untested builds, tests or hardware checks cannot be reported as done. The recipe and flatpak code paths are written correctly, but they had not been run with the real external tools at that point.
 
 ## Fixes after an independent review (2026-09-21)
 
-Claude's independent code review found 3 problems, which were fixed (see [../003-alp-review-fixes.md](../003-alp-review-fixes.md)):
+asistan's independent code review found 3 problems, which were fixed (see [../003-alp-review-fixes.md](../003-alp-review-fixes.md)):
 
 1. **`--dry-run` no longer touches the network or the disk.** In the earlier version, `fetch()` (download and checksum) ran unconditionally for `recipe`/`core` installs, before the `dry_run` check. That broke the CLI's own "touch nothing persistent" rule. Now dry-run returns early with no network request and no persistent file write. Retested: after `--dry-run install htop/firefox/alpbah-theme-solid`, `var/lib/alp/cache/` stays empty.
 2. **Packages installed by the `recipe` method are now fully removed by `remove`.** `_merge_destdir` now records directories in `files[]` as well (before, only files were recorded, so directories created by `make install` stayed behind as orphans).
@@ -128,7 +128,7 @@ The checksum-rejection test was rerun as a real (non-dry-run) `install htop` cal
 `tests/test_alp.py` and `tests/test_packagekit_backend.py` — pytest. They never reach the real network. On 2026-09-24, on Windows with Python 3.14.7 in a TTY PowerShell session, **82 tests passed and 10 POSIX-only tests were skipped**. Details: [`docs/verification/m02-alp-tests-2026-09-24.md`](../../../verification/m02-alp-tests-2026-09-24.md).
 
 ```bash
-cd docs/handoffs/claude/alp-prototype
+cd docs/handoffs/ai/alp-prototype
 python3 -m pytest tests/ -v
 ```
 
@@ -170,13 +170,13 @@ Test results: on Windows **126 passed, 10 skipped**. On the builder (Ubuntu 24.0
 - **`alp update [--source URL|PATH] [--sha256 HEX]`.** The source is an `index.json` or a `.tar.gz` catalog package with `index.json` at its top. The `"source"` field in `index.json` is the default source. `http://` is refused. The new catalog is validated (recipe files must be inside the catalog and readable). Before the local catalog is replaced, the difference is shown (new / changed / removed, and `güncelleme var` for an update). `--dry-run` changes nothing. The previous `index.json` is kept as `index.json.prev`, and changed package files are kept under `.alp-catalog-prev/`. **The catalog is not signed.** Trust comes from https plus the optional `--sha256`. Package archives are still checked with sha256 at install time.
 - **Build cleanup.** After a successful recipe install, `build-*`/`destdir-*` (and their upgrade equivalents) are deleted. After a failed build they stay for debugging. `--keep-build` keeps all of them.
 
-Claude 014 verification: Windows **153 passed / 12 skipped**; Linux (Ubuntu 24.04, Python 3.12.3, user `sa`, real permissions) **165 passed / 0 skipped**; 12 of 12 mutations were caught by the tests; a real `kill -9` attempt (see handoff 014).
+asistan 014 verification: Windows **153 passed / 12 skipped**; Linux (Ubuntu 24.04, Python 3.12.3, user `sa`, real permissions) **165 passed / 0 skipped**; 12 of 12 mutations were caught by the tests; a real `kill -9` attempt (see handoff 014).
 
 ## M04: safely adopting installed LFS packages (2026-09-24)
 
 `alp adopt-base --manifest FILE --name NAME --version VERSION --source-sha256 HEX [--manifest-sha256 HEX]` records ownership of files that were already installed, after comparing them with the live root. The caller must check the expected checksums of the source archive and the manifest. The manifest JSON alone does not prove the source identity. The command checks file or symlink type, content or target, size, mode and uid/gid; it refuses conflicting paths and does not take ownership of shared directories. It creates a record with `method: "lfs-base"` and `protected: true`. alp keeps these records from remove, unprotect, upgrade and reinstall. `--dry-run` shows the proposed record without writing it.
 
-The feature was added in commit `7b2c657`, after Claude 014. `alp.py` SHA-256 `0475ea324b16895d3acbf3aebdab01d5d3a36900570f2562ca514008b11c2fc3`. Full Windows test suite: **170 passed, 13 skipped**; `py_compile`, `check_docs.py` (0 findings) and `git diff --check` passed. The adoption was not tested on the Linux builder. The feature was not installed into `/mnt/lfs`, and the live package DB is still empty. Limits and the checks still needed are in [`m02-alp-base-adoption-2026-09-24.md`](../../../verification/m02-alp-base-adoption-2026-09-24.md).
+The feature was added in commit `7b2c657`, after asistan 014. `alp.py` SHA-256 `0475ea324b16895d3acbf3aebdab01d5d3a36900570f2562ca514008b11c2fc3`. Full Windows test suite: **170 passed, 13 skipped**; `py_compile`, `check_docs.py` (0 findings) and `git diff --check` passed. The adoption was not tested on the Linux builder. The feature was not installed into `/mnt/lfs`, and the live package DB is still empty. Limits and the checks still needed are in [`m02-alp-base-adoption-2026-09-24.md`](../../../verification/m02-alp-base-adoption-2026-09-24.md).
 
 ## `--relocate` and `@PREFIX@` (2026-09-26)
 

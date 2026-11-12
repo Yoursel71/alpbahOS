@@ -1,8 +1,8 @@
-# Claude devir belgesi 008 — `alp`'e Seviye 1 bağımlılık ön kontrolü
+# asistan devir belgesi 008 — `alp`'e Seviye 1 bağımlılık ön kontrolü
 
 Görev ID / durum: (Backlog dışı, kullanıcı talebi — "bağımlılık çözümü ne kadar sürer" sorusuna verdiğim 3 seviyeli cevaptan "Seviye 1"i uygulamak, "tamam yap" onayıyla) tamamlandı.
 
-Çalışılan host: Windows (kod/test) + `alpbah-builder` Ubuntu VM (SSH, gerçek doğrulama). Dal: `claude/desktop-bootstrap`.
+Çalışılan host: Windows (kod/test) + `alpbah-builder` Ubuntu VM (SSH, gerçek doğrulama). Dal: `ai/desktop-bootstrap`.
 
 ## Neyin yapıldığı, neyin yapılmadığı
 

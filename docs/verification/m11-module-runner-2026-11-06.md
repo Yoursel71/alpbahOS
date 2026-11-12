@@ -5,7 +5,7 @@ Durum: **M11 KISMİ KABUL.** BIOS sanal diske kurulum ve giriş istemine kadar �
 ## İşe başlama kaydı
 
 - Görev: M11 kurulum kabulü, yöntem 2 (kurulum modüllerini doğrudan çalıştıran koşucu). Yöntem kullanıcı tarafından seçildi (devir notu 023, açık madde 1).
-- Sahiplik: `docs/BACKLOG.md` INSTALL-01 Codex'e ait. Görev bu oturumda kullanıcı tarafından Claude'a doğrudan verildi.
+- Sahiplik: `docs/BACKLOG.md` INSTALL-01 Codex'e ait. Görev bu oturumda kullanıcı tarafından asistan'a doğrudan verildi.
 - Ortam: Fedora ana makine (QEMU/KVM), LFS chroot `/mnt/lfs` yerel. Ana makine kapatılmadı.
 - Sınırlar: VM oturumu başına bir açılış, en fazla bir saat (kullanıcı onayı). Hedef yalnız yeni bir sanal disk dosyası; `alp-target.img` yazılmadı.
 

@@ -58,6 +58,6 @@ The project is developed on Fedora with test VMs under QEMU/KVM (D106).
 
 ## Next step
 
-- Run the live check on an installed system with the profile in place, not only in the QEMU test image. The 5 Nov 2026 pass (19/20) is on the test image, which had the profile installed by hand (see [022-t2-kisayol-2026-11-05.md](../../docs/handoffs/claude/022-t2-kisayol-2026-11-05.md)).
+- Run the live check on an installed system with the profile in place, not only in the QEMU test image. The 5 Nov 2026 pass (19/20) is on the test image, which had the profile installed by hand (see [022-t2-kisayol-2026-11-05.md](../../docs/handoffs/ai/022-t2-kisayol-2026-11-05.md)).
 - Test each key by hand in the VM and record the result.
 - Repeat on a real PC before release (D106).

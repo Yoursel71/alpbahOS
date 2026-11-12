@@ -17,7 +17,7 @@ ROOT=$(realpath "${1:?usage: record-catalog.sh <ROOT> <LEDGER_DIR> [SIGNING_DIR]
 SB=/home/yrslf/alpbahOS/scratch-lfs-bench
 SIGNING=${3:-$SB/alp-signing}
 WT=$(cd "$(dirname "$0")/../../.." && pwd)
-ALP=$WT/docs/handoffs/claude/alp-prototype/alp.py
+ALP=$WT/docs/handoffs/ai/alp-prototype/alp.py
 LIB=$WT/scripts/rebuild/r4/r4_lib.py
 REC=$WT/scripts/rebuild/r8/stage-record-r8.py
 die() { echo "record-catalog: $*" >&2; exit 1; }

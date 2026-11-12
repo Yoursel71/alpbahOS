@@ -2,7 +2,7 @@
 
 Status: **implemented and tested (2026-09-21).** `_config_aware_merge()`, `upgrade_recipe()`/`upgrade_core()`, `cmd_upgrade`, and the `.alpsave` branch of `remove_package` were added to `alp.py`. 12 new tests (`tests/test_alp.py`) confirmed the behaviour: an unchanged config is silently upgraded; a changed config produces `.alpnew` and leaves the user's file alone; `remove` keeps a changed config as `.alpsave`; dropped files are cleaned up. **Still not tested:** a full upgrade on a real Linux host with the `recipe` method (which needs `configure/make`). Only the `core` method was verified end to end (local-file based), because the host had no toolchain. The current design goal (D126, v2): upgrades are started by the user; alp does not send update notifications.
 
-This design closes the largest gap in the proposal's comparison table (§6): *"Configuration protection: none — the prototype does not handle upgrades at all, only install/remove."* The design below is the `alp` equivalent of the `.pacnew`/`.pacsave` mechanism used by Arch-family package managers. Users are already familiar with that pattern, and it is a proven UX. Reusing a known, well-understood pattern instead of inventing a new mechanism fits the CLAUDE.md principle "customise existing components, do not invent" (here the "component" is a UX pattern). The text below is kept as the original design; the implemented code followed it exactly.
+This design closes the largest gap in the proposal's comparison table (§6): *"Configuration protection: none — the prototype does not handle upgrades at all, only install/remove."* The design below is the `alp` equivalent of the `.pacnew`/`.pacsave` mechanism used by Arch-family package managers. Users are already familiar with that pattern, and it is a proven UX. Reusing a known, well-understood pattern instead of inventing a new mechanism fits the AGENT.md principle "customise existing components, do not invent" (here the "component" is a UX pattern). The text below is kept as the original design; the implemented code followed it exactly.
 
 ## 1. Scope
 
@@ -24,7 +24,7 @@ An optional field is added to recipe/core entries:
 }
 ```
 
-`config_files` is a subset of `files[]`. During installation, it is intersected with the full path list produced by `_merge_staged()`, which is the only merge path (since 2026-09-23, install, upgrade and `--reinstall` for both recipe and core go through it; see `docs/handoffs/claude/011-alp-logic-review-fixes.md`). This matches Debian's `conffiles` list or the `backup` array in the package metadata (`.PKGINFO`) used by Arch-family tools. It is not a new concept; it adds a well-known pattern to the `alp` schema.
+`config_files` is a subset of `files[]`. During installation, it is intersected with the full path list produced by `_merge_staged()`, which is the only merge path (since 2026-09-23, install, upgrade and `--reinstall` for both recipe and core go through it; see `docs/handoffs/ai/011-alp-logic-review-fixes.md`). This matches Debian's `conffiles` list or the `backup` array in the package metadata (`.PKGINFO`) used by Arch-family tools. It is not a new concept; it adds a well-known pattern to the `alp` schema.
 
 ## 3. `db.json` schema extension
 

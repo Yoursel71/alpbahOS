@@ -1,8 +1,8 @@
-# Claude devir belgesi 007 — 5 yeni gerçek tarif + symlink bug'ı (dangling symlink kopyalama)
+# asistan devir belgesi 007 — 5 yeni gerçek tarif + symlink bug'ı (dangling symlink kopyalama)
 
 Görev ID / durum: (Backlog dışı, kullanıcı talebi — "1000 yaygın/küçük paket ekle") **kasıtlı olarak küçültülmüş, dürüst bir kapsamla** tamamlandı. Kullanıcıya önce bunun neden mümkün olmadığı anlatıldı, "istediğini yap, alp kullanışlı olsun yeter" onayıyla devam edildi.
 
-Çalışılan host: Windows (araştırma/indirme/checksum) + `alpbah-builder` Ubuntu VM (SSH, gerçek derleme testi). Dal: `claude/desktop-bootstrap`.
+Çalışılan host: Windows (araştırma/indirme/checksum) + `alpbah-builder` Ubuntu VM (SSH, gerçek derleme testi). Dal: `ai/desktop-bootstrap`.
 
 ## Kapsam kararı
 

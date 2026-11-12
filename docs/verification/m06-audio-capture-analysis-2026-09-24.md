@@ -20,7 +20,7 @@ guest/host environment, device and graph evidence, and the raw capture artifact.
 - Windows host: `python -m pytest -q tests/test_audio_capture_analysis.py` —
   **4 passed**.
 - `python -m py_compile scripts/analyze-audio-capture.py` — passed.
-- `python docs/handoffs/claude/tools/check_docs.py` — 0 findings.
+- `python docs/handoffs/ai/tools/check_docs.py` — 0 findings.
 - `git diff --check` — passed.
 
 The tests cover stereo tone metrics, WAV header validation, rejection of an

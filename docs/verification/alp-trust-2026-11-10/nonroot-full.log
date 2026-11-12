@@ -1,8 +1,8 @@
 # host thewo, user yrslf (uid 1000), Python 3.14.7, gpgv (GnuPG) 2.4.9, bubblewrap 0.12.0, 2026-11-10T17:19:38Z
-# cd docs/handoffs/claude/alp-prototype && python3 -m pytest tests -v -rs
+# cd docs/handoffs/ai/alp-prototype && python3 -m pytest tests -v -rs
 ============================= test session starts ==============================
 platform linux -- Python 3.14.7, pytest-8.4.2, pluggy-1.6.0 -- /usr/bin/python3
-rootdir: /home/yrslf/alpbahOS/wt-alp-trust/docs/handoffs/claude/alp-prototype
+rootdir: /home/yrslf/alpbahOS/wt-alp-trust/docs/handoffs/ai/alp-prototype
 plugins: anyio-4.13.0
 collecting ... collected 427 items
 

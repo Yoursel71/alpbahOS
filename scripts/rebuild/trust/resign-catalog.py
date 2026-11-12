@@ -35,7 +35,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 WT = HERE.parents[2]
-PROTO = WT / "docs/handoffs/claude/alp-prototype"
+PROTO = WT / "docs/handoffs/ai/alp-prototype"
 DEFAULT_SIGNING = "/home/yrslf/alpbahOS/scratch-lfs-bench/alp-signing"
 sys.path.insert(0, str(PROTO))
 import alp  # noqa: E402

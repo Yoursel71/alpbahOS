@@ -2,11 +2,11 @@
 
 ## Change and purpose
 
-Claude handoff 014's reviewed Alp source was verified first: the `alp.py`
+asistan handoff 014's reviewed Alp source was verified first: the `alp.py`
 blob at commit `15de293` had SHA-256
 `3c72bbf27ee601311c1b84c8968c45ebafb951841229b08b01463ee363fe1c89`.
 Codex then added `adopt-base` in commit `7b2c657`; the integrated prototype
-`docs/handoffs/claude/alp-prototype/alp.py` now has SHA-256
+`docs/handoffs/ai/alp-prototype/alp.py` now has SHA-256
 `0475ea324b16895d3acbf3aebdab01d5d3a36900570f2562ca514008b11c2fc3`.
 
 `adopt-base` imports an already-installed LFS package record only after the
@@ -28,9 +28,9 @@ or a manifest alone.
 
 ## Verification
 
-- Windows Python 3.14: `python -m pytest docs/handoffs/claude/alp-prototype/tests -q` — **170 passed, 13 skipped**. The skipped cases require POSIX permissions/symlink behavior unavailable in this Windows account.
-- `python -m py_compile docs/handoffs/claude/alp-prototype/alp.py` passed.
-- `python docs/handoffs/claude/tools/check_docs.py` — **0 findings**.
+- Windows Python 3.14: `python -m pytest docs/handoffs/ai/alp-prototype/tests -q` — **170 passed, 13 skipped**. The skipped cases require POSIX permissions/symlink behavior unavailable in this Windows account.
+- `python -m py_compile docs/handoffs/ai/alp-prototype/alp.py` passed.
+- `python docs/handoffs/ai/tools/check_docs.py` — **0 findings**.
 - `git diff --check` passed.
 - Tests cover positive adoption, no-directory ownership, repeated adoption, dry-run immutability, malformed schema/identity/source/hash/path, conflicting claims, content/type/mode/uid mismatch, and removal/upgrade/reinstall protection.
 

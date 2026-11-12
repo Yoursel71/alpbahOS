@@ -10,7 +10,7 @@ Bu, önceki M08 QEMU kurulum denemesindeki Alp rollback hatasının htop tarifi 
 
 ## Kapsam ve durum
 
-- ISO, squashfs, katalog ve motor yalnızca okundu; Alp motoru veya Claude'a ait katalog değiştirilmedi.
+- ISO, squashfs, katalog ve motor yalnızca okundu; Alp motoru veya asistan'a ait katalog değiştirilmedi.
 - Kaynak probe'u geçici `/tmp` dizininde yapıldı; mevcut ISO ve VM artifact'leri değiştirilmedi.
 - Bu bulgu M08'i kapatmaz. Tarif düzeltmesi sahibi tarafından yapıldıktan sonra yeni ISO gerekir; Discover üzerinden install → launch → remove ve yetki akışı tekrar doğrulanmalıdır.
 - Önceki QEMU kanıtları ve sınırlar: [M08 transaction probe](m08-package-store-transaction-failure-2026-09-29.md).

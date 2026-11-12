@@ -20,7 +20,7 @@ Each shortcut row must be reversible with the built-in "Reset to default" featur
 
 ## 4. Idea left out of scope
 
-An overlay that shows shortcuts while the Meta key is held (present in some desktop environments) is only considered if the chosen Plasma version has it **ready-made**. No custom component is written for it (CLAUDE.md: customise ready-made components; do not invent a new compositor or shell part).
+An overlay that shows shortcuts while the Meta key is held (present in some desktop environments) is only considered if the chosen Plasma version has it **ready-made**. No custom component is written for it (AGENT.md: customise ready-made components; do not invent a new compositor or shell part).
 
 ## Not verified / not tested
 

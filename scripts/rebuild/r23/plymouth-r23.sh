@@ -15,7 +15,7 @@ ST=$SB/r23/stage-plymouth
 rm -rf "$ST"
 # ALP-TRUST-01: through alp-host.sh (the root's own catalog keys, when it has them). A failing or empty `alp list`
 # stops the run: an empty DONE would make every record below look "not done yet" and be applied again.
-DONE=$(bash "$WT/scripts/rebuild/trust/alp-host.sh" "$WT/docs/handoffs/claude/alp-prototype/alp.py" --root "$R4" list) \
+DONE=$(bash "$WT/scripts/rebuild/trust/alp-host.sh" "$WT/docs/handoffs/ai/alp-prototype/alp.py" --root "$R4" list) \
     || { echo "alp list failed on $R4; stopping" >&2; exit 1; }
 DONE=$(cut -f1 <<< "$DONE")
 [ -n "$DONE" ] || { echo "alp list on $R4 returned nothing; stopping" >&2; exit 1; }

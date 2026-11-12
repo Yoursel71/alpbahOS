@@ -59,7 +59,7 @@ Proposed protocol: `alp install <name> --progress-fd <N>` writes one JSON line p
 
 ## 5. Authorisation (polkit)
 
-MASTER_PLAN (v1 §5.3, live §5.1): *"Root access is never given to the whole store. Install and remove go through a separate authorised action."* CLAUDE.md: *"Limit root operations to the steps that need them; do not run the whole flow as root."*
+MASTER_PLAN (v1 §5.3, live §5.1): *"Root access is never given to the whole store. Install and remove go through a separate authorised action."* AGENT.md: *"Limit root operations to the steps that need them; do not run the whole flow as root."*
 
 Design: a PolicyKit action file named `org.alpbahos.alp.pkgkit.policy`:
 
@@ -74,7 +74,7 @@ Design: a PolicyKit action file named `org.alpbahos.alp.pkgkit.policy`:
 </action>
 ```
 
-`search`/`list`/`info`/`get-files` **do not ask for authorisation** (they are read-only, so everyone must be able to read `db.json` even with `--root /`; file permissions must be `0644`, and `alp.lock`/write operations `0600` and root-owned). Only `install`/`remove` (and the future `upgrade`) require `auth_admin`. This matches the only step of `install_recipe` that needs root (copying into `/` in `_merge_staged`). CLAUDE.md: "only the file copy / DESTDIR merge step needs write access to `/`; the whole `alp` process does not have to run as root."
+`search`/`list`/`info`/`get-files` **do not ask for authorisation** (they are read-only, so everyone must be able to read `db.json` even with `--root /`; file permissions must be `0644`, and `alp.lock`/write operations `0600` and root-owned). Only `install`/`remove` (and the future `upgrade`) require `auth_admin`. This matches the only step of `install_recipe` that needs root (copying into `/` in `_merge_staged`). AGENT.md: "only the file copy / DESTDIR merge step needs write access to `/`; the whole `alp` process does not have to run as root."
 
 ## 6. Interaction with the lock
 

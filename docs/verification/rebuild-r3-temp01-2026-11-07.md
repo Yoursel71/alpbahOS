@@ -66,7 +66,7 @@ and the repo source. The file list is unchanged.
 
 - previous sha256 `e24671e238a6043cbce13ec10f09ab50754b709a02abfbde1de3abc6619d24e8`;
 - new sha256 `f2a8f31dcf3fd55b1512c400c4ba06c8ba541be6411e61695d73475d69caecac` (equal to the repo file);
-- alp test suite (`docs/handoffs/claude/alp-prototype/tests`): 264 passed;
+- alp test suite (`docs/handoffs/ai/alp-prototype/tests`): 264 passed;
 - `alp check` after the upgrade: rc 0, 97 packages.
 
 ## 6. Open

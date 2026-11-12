@@ -1,7 +1,7 @@
 # ALP-TRUST-01 step 3 trial: merge branch and image integration on a copy of r4-root, 2026-11-11
 
-Follows [alp-trust-2026-11-10.md](alp-trust-2026-11-10.md). Done by a Claude sub-agent on the coordinator's
-instruction. Host `thewo`. Branch `claude/integ-alp-trust-2026-11-11`, worktree `/home/yrslf/alpbahOS/wt-integ`,
+Follows [alp-trust-2026-11-10.md](alp-trust-2026-11-10.md). Done by a asistan sub-agent on the coordinator's
+instruction. Host `thewo`. Branch `ai/integ-alp-trust-2026-11-11`, worktree `/home/yrslf/alpbahOS/wt-integ`,
 started from `ba7de06` (= `yoursel/main` after `git fetch`). Not pushed.
 
 **State: scripts written and tried on a snapshot copy of r4-root. Not applied to the live r4-root. No ISO built,
@@ -16,9 +16,9 @@ Where the real key lives (hardware token or offline machine) and who holds the b
 
 | Step | Result |
 |---|---|
-| `git merge --no-ff claude/alp-trust-2026-11-10` | one conflict, `docs/DECISIONS.md`: both sides added rows after D154. Kept both: main's D155-D162, then D170-D174 (none of D170-D174 was used on main; no renumbering). `docs/BACKLOG.md` merged by git without conflict. Commit `efe711b` |
-| `git merge --no-ff claude/matrix-r21-2026-11-10` | clean (one new file). Commit `b2975a7` |
-| alp prototype on main since `dc78ce9` | `git diff dc78ce9 ba7de06 -- docs/handoffs/claude/alp-prototype .github/workflows/alp-tests.yml`: empty. Nothing to reconcile |
+| `git merge --no-ff ai/alp-trust-2026-11-10` | one conflict, `docs/DECISIONS.md`: both sides added rows after D154. Kept both: main's D155-D162, then D170-D174 (none of D170-D174 was used on main; no renumbering). `docs/BACKLOG.md` merged by git without conflict. Commit `efe711b` |
+| `git merge --no-ff ai/matrix-r21-2026-11-10` | clean (one new file). Commit `b2975a7` |
+| alp prototype on main since `dc78ce9` | `git diff dc78ce9 ba7de06 -- docs/handoffs/ai/alp-prototype .github/workflows/alp-tests.yml`: empty. Nothing to reconcile |
 | Handoff number | 039 was free on main (035 is its newest) |
 | `CURRENT.md` | ALP-TRUST-01 and round 21 matrix entries added (`d0f4a81`) |
 
@@ -191,12 +191,12 @@ copy; both deleted afterwards):
 | r10/r11 line (`check`, `list` with the demo index) | flag passed; check rc 0, 546 packages | flag not passed; check rc 0, 550 packages |
 | image-alp-check.sh form (installed alp in a chroot) | flag passed; check rc 0 | flag not passed; check rc 0 |
 
-Handoff for the other session: [036-alp-trust-merge-2026-11-11.md](../handoffs/claude/036-alp-trust-merge-2026-11-11.md).
+Handoff for the other session: [036-alp-trust-merge-2026-11-11.md](../handoffs/ai/036-alp-trust-merge-2026-11-11.md).
 
 
 ## 11. Re-signing a regenerated catalog (2026-11-11, later)
 
-Branch `claude/alp-resign-2026-11-11` (worktree `/home/yrslf/alpbahOS/wt-resign`, from `yoursel/main` `7cb38bd`).
+Branch `ai/alp-resign-2026-11-11` (worktree `/home/yrslf/alpbahOS/wt-resign`, from `yoursel/main` `7cb38bd`).
 
 Writers of `usr/share/alp/index.json` in `scripts/` (grep, without `legacy`): only `scripts/rebuild/r8/make-catalog-r8.py`
 (writes `<STAGE>/usr/share/alp/index.json`) and step 4 of `integrate-trust.sh`. No chain script in this tree calls
@@ -229,7 +229,7 @@ Trials (`resign.log`, `resign-integrate.log`):
 | e | `integrate-trust.sh` (new form) on a fresh writable snapshot of r4-root, then one `record-catalog.sh` (snapshot deleted) | old three-argument call refused with a usage line; integration rc 0 with `alp-catalog -v1`; regeneration gives `-v2`; gate PASS both times |
 
 Not settled: the version floor knows only what this root has seen (its index and its database); two regenerations
-on the same root at once are not locked against each other (one writer at a time, CLAUDE.md section 4);
+on the same root at once are not locked against each other (one writer at a time, AGENT.md section 4);
 `valid_until` is renewed at every regeneration.
 
 ## 12. Applied to the live r4-root (2026-11-11 10:38 +03:00) and host-side calls
@@ -249,7 +249,7 @@ Summary of its log `scratch-lfs-bench/r4-ledger/trust-apply-2026-11-11.log` (rea
 | host `alp.py --root r4-root check` without key options | rc 1, "İzinli anahtar listesi okunamadı (/usr/share/alp/keys/allowed.txt)" |
 
 The last row is by design (D173: trust anchors from the running system). Fix on branch
-`claude/alp-hostkeys-2026-11-11`: `scripts/rebuild/trust/alp-host.sh`, used by every host-side call that loads a
+`ai/alp-hostkeys-2026-11-11`: `scripts/rebuild/trust/alp-host.sh`, used by every host-side call that loads a
 catalog:
 
 | File, line (before) | Change |

@@ -12,10 +12,10 @@ trap 'echo "FAILED at line $LINENO: $BASH_COMMAND" >&2' ERR
 #     compiled and installed the megadriver to /usr/lib but never created
 #     these symlinks (confirmed: no such step in mesa-build.log).
 # Offline via NBD; VM must be stopped. Never touches /mnt/lfs.
-IMG=${IMG:-/tmp/claude-gen2-v3.vhdx}
+IMG=${IMG:-/tmp/ai-gen2-v3.vhdx}
 EXPECTED_IMG=f1c7cb4a3278e6550bc3180e53cae469dff00c9244d6bb2ff059d7cc48c6d1f1
 NBD=/dev/nbd0
-WORK=$(mktemp -d /tmp/claude-gen2-dbusdri.XXXXXX)
+WORK=$(mktemp -d /tmp/ai-gen2-dbusdri.XXXXXX)
 MOUNT=$WORK/root
 ATTACHED=0
 ROOT_MOUNTED=0

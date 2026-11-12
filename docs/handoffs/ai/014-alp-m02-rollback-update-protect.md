@@ -1,8 +1,8 @@
-# Claude devir belgesi 014: `alp` M02 kapanışı (geri alma, recover, korumalı paket, update)
+# asistan devir belgesi 014: `alp` M02 kapanışı (geri alma, recover, korumalı paket, update)
 
 ```text
-Görev ID / durum: M02 (paket motoru) Claude kısmı. Kullanıcı 24 Eylül 2026'da "m2'yi kapat" dedi. `alp.py` tarafı tamamlandı; M02'nin resmî kapanışı Codex entegrasyonuna bağlı (aşağıda). Rootfs'e KURULMADI.
-Çalışılan host ve branch/commit: Windows (kod ve test) + Builder yrsk (Ubuntu 24.04.5, kullanıcı sa; yalnız /tmp/claude-alp-m2, iş sonunda silindi). Dal claude/desktop-bootstrap; main 8cc0445 birleştirildi. Bu belgeyle birlikte commit.
+Görev ID / durum: M02 (paket motoru) asistan kısmı. Kullanıcı 24 Eylül 2026'da "m2'yi kapat" dedi. `alp.py` tarafı tamamlandı; M02'nin resmî kapanışı Codex entegrasyonuna bağlı (aşağıda). Rootfs'e KURULMADI.
+Çalışılan host ve branch/commit: Windows (kod ve test) + Builder yrsk (Ubuntu 24.04.5, kullanıcı sa; yalnız /tmp/ai-alp-m2, iş sonunda silindi). Dal ai/desktop-bootstrap; main 8cc0445 birleştirildi. Bu belgeyle birlikte commit.
 Test edilen alp.py SHA-256: 3c72bbf27ee601311c1b84c8968c45ebafb951841229b08b01463ee363fe1c89 (Windows ve Builder kopyası aynı).
 Değişen dosyalar: alp-prototype/alp.py, alp-prototype/tests/test_m02_rollback.py (yeni), alp-prototype/README.md, bu belge.
 Gerçekleştirilen davranış: aşağıda.
@@ -14,7 +14,7 @@ Sonraki eylem: yok (Codex entegrasyonu ve M04 taban kaydı bekleniyor).
 
 ## Önce bir düzeltme
 
-23 Eylül gecesi başka bir Claude oturumu Seviye 3'ü (sürüm kısıtları, `conflicts`, **ters bağımlılık koruması**, `autoremove`, tam sistem `upgrade`, `alp check`) yazmış ve `8df1ac4` ile commit'lemişti (belge 013), ama push'lanmamıştı. Bu oturumun ilk yarısında "ters bağımlılık kontrolü yok" demiştim; o yanlıştı. Bu işi yinelemedim; `8df1ac4` bu commit ile birlikte push'landı.
+23 Eylül gecesi başka bir asistan oturumu Seviye 3'ü (sürüm kısıtları, `conflicts`, **ters bağımlılık koruması**, `autoremove`, tam sistem `upgrade`, `alp check`) yazmış ve `8df1ac4` ile commit'lemişti (belge 013), ama push'lanmamıştı. Bu oturumun ilk yarısında "ters bağımlılık kontrolü yok" demiştim; o yanlıştı. Bu işi yinelemedim; `8df1ac4` bu commit ile birlikte push'landı.
 
 ## Ne yapıldı
 
@@ -53,12 +53,12 @@ Sonraki eylem: yok (Codex entegrasyonu ve M04 taban kaydı bekleniyor).
 
 ## Codex için (entegrasyon)
 
-1. `git show <bu commit>:docs/handoffs/claude/alp-prototype/alp.py | sha256sum` → `3c72bbf27ee601311c1b84c8968c45ebafb951841229b08b01463ee363fe1c89` olmalı. Bu, rootfs'teki `e8b0376` sürümünün (`7b2998a5…`) yerini alır; arada Seviye 3 (`8df1ac4`) ve bu iş var.
+1. `git show <bu commit>:docs/handoffs/ai/alp-prototype/alp.py | sha256sum` → `3c72bbf27ee601311c1b84c8968c45ebafb951841229b08b01463ee363fe1c89` olmalı. Bu, rootfs'teki `e8b0376` sürümünün (`7b2998a5…`) yerini alır; arada Seviye 3 (`8df1ac4`) ve bu iş var.
 2. Rootfs'e kurduktan sonra hash'i doğrula; yeni imajda `alp --help` komut listesinde `recover`, `protect`, `unprotect`, `update` görünmeli.
 3. Gerçek rootfs'te (yalnız bir test imajında, `/mnt/lfs`'de değil önce): `alp upgrade` başarılı, ardından kasıtlı `kill -9` ile `alp recover` denemesi. Benim `kill -9` betiğim belgede anlatıldığı gibi tekrarlanabilir.
 4. M04'te taban paketlerin kaydı girildiğinde `"protected": true` işaretle (ya da `alp protect`); ayrıca `alp remove` taban paketlerinde bu sayede reddedilir.
 5. M02'yi kapatmak için Codex'in yapacağı: (a) yukarıdaki 1-3, (b) Discover/PackageKit'in gerçek daemon'la denenmesi. (b) yapılmadan M02 "Kısmi" kalır; kanıtsız kapatma.
-6. `python docs/handoffs/claude/tools/check_docs.py` bu dalda çalıştırıldı (main birleştirildikten sonra): **0 bulgu** (broken-link=0, commit-ref=0, decision-ref=0, stale-term=0).
+6. `python docs/handoffs/ai/tools/check_docs.py` bu dalda çalıştırıldı (main birleştirildikten sonra): **0 bulgu** (broken-link=0, commit-ref=0, decision-ref=0, stale-term=0).
 
 ## Kapsam dışı bırakılan istek
 

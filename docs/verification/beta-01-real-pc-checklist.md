@@ -1,6 +1,6 @@
 # BETA-01: gerçek bilgisayarda USB testi (kontrol listesi)
 
-Bu listeyi kullanıcı kendi bilgisayarında uygular; Claude gerçek donanıma erişemez. Sonuçlar bu dosyanın sonundaki
+Bu listeyi kullanıcı kendi bilgisayarında uygular; asistan gerçek donanıma erişemez. Sonuçlar bu dosyanın sonundaki
 tabloya ya da yeni bir `docs/verification/beta-01-real-pc-<tarih>.md` dosyasına yazılır. BACKLOG: BETA-01 (D106).
 
 Önce okuyun:

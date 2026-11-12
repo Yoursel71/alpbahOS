@@ -1,8 +1,8 @@
-# Claude devir belgesi 018: mantık hataları düzeltmeleri ve PKG-02 mağaza sözleşmesi
+# asistan devir belgesi 018: mantık hataları düzeltmeleri ve PKG-02 mağaza sözleşmesi
 
 ```text
-Görev ID / durum: Kullanıcı isteği (28 Eylül 2026): "repoyu oku, mantık hatalarını bul, bildir ve düzelt; sonra Claude'a atanmış işlere başla". 5 hata düzeltildi; PKG-02'nin alp tarafı (plan JSON + ilerleme kanalı) uygulandı.
-Çalışılan host ve branch/commit: YRSLF dışında Windows makinesi; dal claude/logic-fixes, taban main 9c26ecf. Ana makineye SSH (yrslf@100.124.192.28) anahtar eklenmediği için kullanılamadı; parola ile giriş yapılmadı.
+Görev ID / durum: Kullanıcı isteği (28 Eylül 2026): "repoyu oku, mantık hatalarını bul, bildir ve düzelt; sonra asistan'a atanmış işlere başla". 5 hata düzeltildi; PKG-02'nin alp tarafı (plan JSON + ilerleme kanalı) uygulandı.
+Çalışılan host ve branch/commit: YRSLF dışında Windows makinesi; dal ai/logic-fixes, taban main 9c26ecf. Ana makineye SSH (yrslf@100.124.192.28) anahtar eklenmediği için kullanılamadı; parola ile giriş yapılmadı.
 Değişen dosyalar: aşağıda.
 Çalıştırılan doğrulama ve sonuç: alp test paketi 205 geçti / 18 atlandı (Windows, Python 3.14.4, pytest 9.1.1, geçici venv). Betik düzeltmeleri bash -n ve stub'lı yeniden üretimle denendi; Builder/Gen2'de çalıştırılmadı.
 Sonraki eylem: SSH erişimi açılınca M07/M09'un repoda olmayan dört dosyasını ana makinede bulup commit'lemek (017 §1); Gen2'de 015/016 doğrulamaları.
@@ -22,7 +22,7 @@ Ek olarak betik 4 artık `*/artifacts/*` altındaki bir imajı yerinde yamalamay
 
 **Geri çekilen bulgu:** 017 §7'deki (`refresh-ssh-hosts.ps1` ANSI kodlaması) Türkçe Windows'ta yeniden üretilemedi. Okuma ve yazma aynı ANSI kod sayfasını kullandığı için UTF-8 içerik bozulmadan geri yazıldı. Betik değiştirilmedi.
 
-**Düzeltilmeyen, raporlanan:** `docs/handoffs/claude/tools/check_docs.py` repoda olmayan betik/kanıt atıflarını yakalamıyor. Bir kural prototiplendi ama 11 bulgunun çoğu yanlış pozitif çıktı (belgeye göreli yollar, önek örnekleri), bu yüzden eklenmedi. Asıl eksik dört M07/M09 dosyasının commit'lenmesi (017 §1) ana makineye erişim ister.
+**Düzeltilmeyen, raporlanan:** `docs/handoffs/ai/tools/check_docs.py` repoda olmayan betik/kanıt atıflarını yakalamıyor. Bir kural prototiplendi ama 11 bulgunun çoğu yanlış pozitif çıktı (belgeye göreli yollar, önek örnekleri), bu yüzden eklenmedi. Asıl eksik dört M07/M09 dosyasının commit'lenmesi (017 §1) ana makineye erişim ister.
 
 ## PKG-02: alp ↔ mağaza işlem sözleşmesi (alp tarafı)
 
@@ -33,7 +33,7 @@ Ek olarak betik 4 artık `*/artifacts/*` altındaki bir imajı yerinde yamalamay
 
 ## Değişen dosyalar
 
-`docs/handoffs/claude/alp-prototype/{alp.py,alp_packagekit_backend.py,README.md,design/packagekit-integration.md,tests/test_base_adoption.py,tests/test_packagekit_backend.py,tests/test_store_contract.py}`, `scripts/{apply-m2-rootfs-fixes.sh,build-m2-gen2-test-image.sh,patch-m2-gen2-autoseat.sh,build-m04-{bc,dejagnu,flex,iana-etc,man-pages,sed,tcl}-stage.sh}`, `docs/AGENT_STANDING_RULES.md`, `docs/WORKLOG.md`, bu belge.
+`docs/handoffs/ai/alp-prototype/{alp.py,alp_packagekit_backend.py,README.md,design/packagekit-integration.md,tests/test_base_adoption.py,tests/test_packagekit_backend.py,tests/test_store_contract.py}`, `scripts/{apply-m2-rootfs-fixes.sh,build-m2-gen2-test-image.sh,patch-m2-gen2-autoseat.sh,build-m04-{bc,dejagnu,flex,iana-etc,man-pages,sed,tcl}-stage.sh}`, `docs/AGENT_STANDING_RULES.md`, `docs/WORKLOG.md`, bu belge.
 
 ## Sahiplik notu
 

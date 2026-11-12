@@ -15,7 +15,7 @@ Windows'tan geçenler için kolay, Türkçe, kişiselleştirilebilir ve kaynak k
 - [Görev sırası ve sahiplik](docs/BACKLOG.md)
 - [Hyper-V ortam planı](docs/HYPERV_PLAN.md)
 - [Ortak ajan kuralları](AGENTS.md)
-- [Claude talimatları](CLAUDE.md) ve [ilk görev](docs/CLAUDE_START.md)
+- [asistan talimatları](AGENT.md) ve [ilk görev](docs/AGENT_START.md)
 - [İş kaydı](docs/WORKLOG.md)
 - [M01 önyükleme doğrulaması](docs/M1_BOOT_VERIFICATION.md)
 - [Tasarım referansı](docs/alpbahOS-design-mockups.md)

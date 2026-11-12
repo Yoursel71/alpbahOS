@@ -5,7 +5,7 @@ Host: Windows desktop; Builder: Ubuntu 24.04 VM `yrsk`; target rootfs: /mnt/lfs.
 Command: Get-VM | Select-Object Name,State,Generation,ProcessorCount,MemoryStartup
 Result: Hyper-V denied the current Windows token: “Bu görevi tamamlamak için gerekli izne sahip değilsiniz”. No VM state was changed.
 
-Command: ssh -i C:\Users\thewo\.ssh\claude_alpbahos_m2 -o BatchMode=yes sa@172.28.162.172 "lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS; df -h /"
+Command: ssh -i C:\Users\thewo\.ssh\ai_alpbahos_m2 -o BatchMode=yes sa@172.28.162.172 "lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS; df -h /"
 Result:
   sda 210G disk
   sda1 1G vfat /boot/efi
@@ -15,22 +15,22 @@ Result:
   df: 98G total, 69G used, 25G available, 74% used.
 The Builder VHDX virtual capacity is 210 GiB. This pass did not resize the VHDX, PV, or LV.
 
-Command: ssh -i C:\Users\thewo\.ssh\claude_alpbahos_m2 -o BatchMode=yes sa@172.28.162.172 "sudo -n vgs; sudo -n lvs"
+Command: ssh -i C:\Users\thewo\.ssh\ai_alpbahos_m2 -o BatchMode=yes sa@172.28.162.172 "sudo -n vgs; sudo -n lvs"
 Result: both commands returned “sudo: a password is required”. VG/LV free-space values are therefore unavailable; no resize was attempted.
 
-Command: ssh -i C:\Users\thewo\.ssh\claude_alpbahos_m2 -o BatchMode=yes sa@172.28.162.172 "sed -n '1,100p' /mnt/lfs/etc/passwd; sed -n '1,100p' /mnt/lfs/etc/group; cat /mnt/lfs/etc/pam.d/system-session; ls -l /mnt/lfs/etc/shadow /mnt/lfs/etc/pam.d/login"
+Command: ssh -i C:\Users\thewo\.ssh\ai_alpbahos_m2 -o BatchMode=yes sa@172.28.162.172 "sed -n '1,100p' /mnt/lfs/etc/passwd; sed -n '1,100p' /mnt/lfs/etc/group; cat /mnt/lfs/etc/pam.d/system-session; ls -l /mnt/lfs/etc/shadow /mnt/lfs/etc/pam.d/login"
 Result: rootfs has no `sa` account; `wheel` and `users` groups exist; `/etc/shadow` and `/etc/pam.d/login` do not exist; `system-session` is only `session required pam_unix.so`. PAM-enabled Shadow/login provisioning is not complete in the authoritative rootfs.
 
-Command: ssh -i C:\Users\thewo\.ssh\claude_alpbahos_m2 -o BatchMode=yes sa@172.28.162.172 "grep -R -- '--xwayland' /mnt/lfs/opt/kf6/lib/systemd/user/plasma-kwin_wayland.service*"
+Command: ssh -i C:\Users\thewo\.ssh\ai_alpbahos_m2 -o BatchMode=yes sa@172.28.162.172 "grep -R -- '--xwayland' /mnt/lfs/opt/kf6/lib/systemd/user/plasma-kwin_wayland.service*"
 Result: `/mnt/lfs/opt/kf6/lib/systemd/user/plasma-kwin_wayland.service` contains `ExecStart=/opt/kf6/bin/kwin_wayland_wrapper --xwayland`.
 
-Command: ssh -i C:\Users\thewo\.ssh\claude_alpbahos_m2 -o BatchMode=yes -o ConnectTimeout=5 sa@172.28.169.177 "hostname; id"
+Command: ssh -i C:\Users\thewo\.ssh\ai_alpbahos_m2 -o BatchMode=yes -o ConnectTimeout=5 sa@172.28.169.177 "hostname; id"
 Result: TCP/22 connection timed out. The live guest could not be inspected; guest `systemctl --user cat`, session-start path, journal, and tty1 environment remain unverified.
 
 [P0-2] alp engine hashes; no package mutation
-Command: ssh -i C:\Users\thewo\.ssh\claude_alpbahos_m2 sa@172.28.162.172 "sha256sum /mnt/lfs/usr/lib/alp/alp.py"
+Command: ssh -i C:\Users\thewo\.ssh\ai_alpbahos_m2 sa@172.28.162.172 "sha256sum /mnt/lfs/usr/lib/alp/alp.py"
 Result: `d06c72ee0d1048b10af0889be8a815a5e4fc771c7897e42847b5f2dcc655b830`.
-Command: git show e8b0376:docs/handoffs/claude/alp-prototype/alp.py | sha256sum
+Command: git show e8b0376:docs/handoffs/ai/alp-prototype/alp.py | sha256sum
 Result: `7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132`.
 Result: hashes differ. Commit `e8b0376` is merged into main as merge commit `46c58b1`; it has not been installed into `/mnt/lfs`. No `alp remove` or `alp upgrade` was run in this audit. Hash claims in earlier WORKLOG rows were corrected. The obsolete main-owned `004-alp-real-lfs-file-mode-fix.patch` was removed.
 
@@ -47,15 +47,15 @@ Result: all commands exited 0; GNU patch reported the expected files with no fuz
 Wine 11.0 upstream release notes say new WoW64 is fully supported and can run 32-bit Windows applications without a 32-bit Unix process/library stack. Valve's current Steam for Linux README still requires 32-bit glibc and 32-bit graphics drivers. Source links are in `docs/DECISIONS.md`; D22/D32 remains open for user decision.
 
 [P0-6, P0-7, P0-8, P2-10, P2-12, P2-13, P2-14, P2-15, P2-16]
-Documentation updated in CURRENT.md, WORKLOG.md, DECISIONS.md, MASTER_PLAN.md, BACKLOG.md, AGENTS.md, CLAUDE.md, and HYPERV_PLAN.md. A repeatable test-user provisioning script was added; command `bash -n scripts/provision-m2-test-user.sh` exited 0. It was not run against the rootfs because its PAM/shadow prerequisites are currently absent and Builder root access is unavailable.
+Documentation updated in CURRENT.md, WORKLOG.md, DECISIONS.md, MASTER_PLAN.md, BACKLOG.md, AGENTS.md, AGENT.md, and HYPERV_PLAN.md. A repeatable test-user provisioning script was added; command `bash -n scripts/provision-m2-test-user.sh` exited 0. It was not run against the rootfs because its PAM/shadow prerequisites are currently absent and Builder root access is unavailable.
 
 ## 23 Eylül 2026 — P0 işi yeniden denetimi (bu oturum)
 
-Kapsam: salt okunur tekrar kontrolü. Bu oturumda rootfs, VHDX, LV veya VM değiştirilmedi; `alp remove`/`alp upgrade` çalıştırılmadı. Workspace başında `git status --short --branch` alındı: `main...origin/main [ahead 16]`; mevcut kullanıcı değişiklikleri korunuyor. Claude dosyaları ve `docs/patches/plasma-desktop-6.4.4-wayland-no-netwm.patch` değiştirilmedi.
+Kapsam: salt okunur tekrar kontrolü. Bu oturumda rootfs, VHDX, LV veya VM değiştirilmedi; `alp remove`/`alp upgrade` çalıştırılmadı. Workspace başında `git status --short --branch` alındı: `main...origin/main [ahead 16]`; mevcut kullanıcı değişiklikleri korunuyor. asistan dosyaları ve `docs/patches/plasma-desktop-6.4.4-wayland-no-netwm.patch` değiştirilmedi.
 
 **Builder bağlantısı ve storage**
 
-Komut: `ssh -i C:\Users\thewo\.ssh\claude_alpbahos_m2 -o BatchMode=yes -o ConnectTimeout=8 sa@172.28.162.172` üzerinden `hostname; id; lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS; df -h / /mnt/lfs; vgs; lvs; sudo -n vgs; sudo -n lvs; findmnt /mnt/lfs`.
+Komut: `ssh -i C:\Users\thewo\.ssh\ai_alpbahos_m2 -o BatchMode=yes -o ConnectTimeout=8 sa@172.28.162.172` üzerinden `hostname; id; lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS; df -h / /mnt/lfs; vgs; lvs; sudo -n vgs; sudo -n lvs; findmnt /mnt/lfs`.
 
 Sonuç: SSH başarılı; host `yrsk`, kullanıcı `uid=1000(sa)`, gruplar arasında `sudo` var. `lsblk`: `sda` 210G, `sda1` 1G EFI, `sda2` 2G `/boot`, `sda3` 206.9G LVM PV, root LV 100G. `df`: `/` ve `/mnt/lfs` aynı ext4 root dosya sisteminde, 98G toplam / 69G kullanım / 25G boş. `findmnt -T /mnt/lfs` hedefi `/` olarak gösteriyor; `/mnt/lfs` ayrı mount değil, rootfs dizini. Yetkisiz `vgs`/`lvs` LVM lock erişimi hatası verdi; `sudo -n vgs` ve `sudo -n lvs` ikisi de `sudo: a password is required` döndürdü. VHDX, PV veya LV büyütülmedi. İmaj üretimi için root yetkisi, LVM free space ve hedef artifact alanı doğrulanamadı.
 
@@ -69,7 +69,7 @@ Sonuç: `/etc/shadow` ve `/etc/pam.d/login` yok; `system-session` var fakat yaln
 
 **`alp.py` hash karşılaştırması**
 
-Komut: `sha256sum /mnt/lfs/usr/lib/alp/alp.py` (Builder); beklenen kaynak hash'i `git show e8b0376:docs/handoffs/claude/alp-prototype/alp.py` için önceki audit kaydıyla karşılaştırıldı.
+Komut: `sha256sum /mnt/lfs/usr/lib/alp/alp.py` (Builder); beklenen kaynak hash'i `git show e8b0376:docs/handoffs/ai/alp-prototype/alp.py` için önceki audit kaydıyla karşılaştırıldı.
 
 Sonuç: rootfs SHA-256 `d06c72ee0d1048b10af0889be8a815a5e4fc771c7897e42847b5f2dcc655b830`; beklenen merge edilmiş kaynak SHA-256 `7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132`; eşleşmiyor. Bu yalnızca raporlandı; `alp.py` değiştirilmedi.
 
@@ -77,7 +77,7 @@ Sonuç: rootfs SHA-256 `d06c72ee0d1048b10af0889be8a815a5e4fc771c7897e42847b5f2dc
 
 Komutlar: `Get-VM | Select-Object Name,State,Generation,ProcessorCount,MemoryStartup,Path`; `Get-VMHardDiskDrive -VMName *`; `Get-VMHost`; ayrıca `Test-NetConnection 172.28.169.177 -Port 22 -InformationLevel Quiet`.
 
-Sonuç: üç Hyper-V yönetim cmdlet'i de yerel Windows token'ı için “Bu görevi tamamlamak için gerekli izne sahip değilsiniz” verdi. VM/disk listesi alınamadı; VM state veya VHDX'e dokunulmadı. Port testi `False` verdi. Komut: `ssh -i C:\Users\thewo\.ssh\claude_alpbahos_m2 -o BatchMode=yes -o ConnectTimeout=5 -o ConnectionAttempts=1 sa@172.28.169.177 "hostname; id; loginctl list-sessions --no-legend"`. Sonuç: `ssh: connect to host 172.28.169.177 port 22: Connection timed out`.
+Sonuç: üç Hyper-V yönetim cmdlet'i de yerel Windows token'ı için “Bu görevi tamamlamak için gerekli izne sahip değilsiniz” verdi. VM/disk listesi alınamadı; VM state veya VHDX'e dokunulmadı. Port testi `False` verdi. Komut: `ssh -i C:\Users\thewo\.ssh\ai_alpbahos_m2 -o BatchMode=yes -o ConnectTimeout=5 -o ConnectionAttempts=1 sa@172.28.169.177 "hostname; id; loginctl list-sessions --no-legend"`. Sonuç: `ssh: connect to host 172.28.169.177 port 22: Connection timed out`.
 
 **Bu oturumun P0 kapı durumları**
 
@@ -107,7 +107,7 @@ Builder/rootfs actions (all against authoritative `/mnt/lfs`):
 - `chroot /mnt/lfs /usr/bin/alp --help` -> exit 0; `alp list` -> exit 0, empty package database. `/mnt/lfs/usr/lib/alp/alp.py` SHA-256 `d06c72ee0d1048b10af0889be8a815a5e4fc771c7897e42847b5f2dcc655b830`, expected merged source SHA-256 `7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132`; mismatch only reported, file untouched. No `alp remove` or `alp upgrade`.
 - Local SSH config verification: `ssh -G alp-builder` -> `sa@172.28.162.172` with the configured AlpbahOS key; `ssh -G alp-m2-gen1` -> `sa@172.28.169.177`, correcting the prior false Gen2 label. `ssh alp-builder 'hostname; id -un'` -> success; `ssh alp-m2-gen1` -> TCP/22 timeout.
 - `Get-VM`/`Get-VMHardDiskDrive` for `alpbahOS-M2-SSH-Gen1` -> Hyper-V authorization denied. No VM or disk modified. New Gen2 VHDX/VM has not been created; SSH active/login and Plasma have not been tested on a guest.
-## 23 Eylül 2026 — Gen2 boot kök nedeni düzeltmesi ve P0 doğrulaması (Claude, `alp-m2-gen2`)
+## 23 Eylül 2026 — Gen2 boot kök nedeni düzeltmesi ve P0 doğrulaması (asistan, `alp-m2-gen2`)
 
 Kapsam: kullanıcının pasted talimatı ile devam. `git -C C:\alpbahOS status --short --branch` başlangıçta `main...origin/main [ahead 16]`, önceki oturumdaki tüm değişiklikler korunmuş halde bulundu; hiçbiri sıfırlanmadı/stash edilmedi. Bu oturumda `/mnt/lfs` hiç mount edilmedi/değiştirilmedi; `alp remove`/`alp upgrade` çalıştırılmadı; commit/push yapılmadı.
 
@@ -117,7 +117,7 @@ Ekrandaki hata (`VFS: Cannot open root device "UUID=..."`) initramfs'siz kernel'
 
 **Uygulanan düzeltme**
 
-Yeni script: `scripts/patch-m2-gen2-root-partuuid.sh` (bu oturumda eklendi). Yalnızca `/tmp/alpbahOS-m2-ssh-gen2-test.vhdx`'i (kaynak hash `f606aedf3e54e5235b11f87bf87ae328c94deb3b5d3a85fa3d55f197e292705f` doğrulanarak) NBD ile bağlar, `grub.cfg`'deki `root=UUID=… rw` satırını gerçek `blkid`/`sgdisk -i 2` ile çapraz doğrulanmış `root=PARTUUID=… rootwait rw` ile değiştirir (`rootwait` eklendi: Hyper-V storvsc sürücüsü diski geç tanıtabiliyor, PARTUUID doğru olsa bile bu olmadan aynı hata tekrar edebilirdi), `grub-mkstandalone` ile EFI uygulamasını yeniden üretir, eski `grub.cfg`+`BOOTX64.EFI`'yi `/tmp/alpbahOS-m2-gen2-before-partuuid/` altına yedekler. Komut: `ssh alp-builder 'sudo -n bash /tmp/claude-patch-m2-gen2-root-partuuid.sh'` → exit 0. Yeni imaj SHA-256: `da7b69b3d43ea75250b3f631aef1e7c3c0357ca49be02863173c96c18139a849`. `qemu-img check` temiz.
+Yeni script: `scripts/patch-m2-gen2-root-partuuid.sh` (bu oturumda eklendi). Yalnızca `/tmp/alpbahOS-m2-ssh-gen2-test.vhdx`'i (kaynak hash `f606aedf3e54e5235b11f87bf87ae328c94deb3b5d3a85fa3d55f197e292705f` doğrulanarak) NBD ile bağlar, `grub.cfg`'deki `root=UUID=… rw` satırını gerçek `blkid`/`sgdisk -i 2` ile çapraz doğrulanmış `root=PARTUUID=… rootwait rw` ile değiştirir (`rootwait` eklendi: Hyper-V storvsc sürücüsü diski geç tanıtabiliyor, PARTUUID doğru olsa bile bu olmadan aynı hata tekrar edebilirdi), `grub-mkstandalone` ile EFI uygulamasını yeniden üretir, eski `grub.cfg`+`BOOTX64.EFI`'yi `/tmp/alpbahOS-m2-gen2-before-partuuid/` altına yedekler. Komut: `ssh alp-builder 'sudo -n bash /tmp/ai-patch-m2-gen2-root-partuuid.sh'` → exit 0. Yeni imaj SHA-256: `da7b69b3d43ea75250b3f631aef1e7c3c0357ca49be02863173c96c18139a849`. `qemu-img check` temiz.
 
 **Artifact ve VM çalışma diski güncellemesi**
 
@@ -129,7 +129,7 @@ Yeni imaj Builder'dan Windows host'a `scp` ile kopyalandı, hash doğrulandı (`
 
 **SSH ve P0 kontrolleri**
 
-`~/.ssh/config`'e `alp-m2-gen2 -> 172.28.160.110` eklendi (anahtar: `claude_alpbahos_m2`, `StrictHostKeyChecking accept-new`). `ssh alp-m2-gen2` anahtar tabanlı bağlandı: `uid=1000(sa) gid=999(users) groups=999(users),97(wheel)`, hostname `alpbahos-m2-gen2`.
+`~/.ssh/config`'e `alp-m2-gen2 -> 172.28.160.110` eklendi (anahtar: `ai_alpbahos_m2`, `StrictHostKeyChecking accept-new`). `ssh alp-m2-gen2` anahtar tabanlı bağlandı: `uid=1000(sa) gid=999(users) groups=999(users),97(wheel)`, hostname `alpbahos-m2-gen2`.
 
 - `systemctl --failed` → boş (hiçbir birim başarısız değil).
 - `networkctl status` → `eth0` `routable`/`online`, DHCP ile `172.28.160.110/20`, `20-wired.network` doğru eşleşti ("Found matching .network file… based on potentially unpredictable interface name").
@@ -153,9 +153,9 @@ Yeni imaj Builder'dan Windows host'a `scp` ile kopyalandı, hash doğrulandı (`
 - Plasma oturum testi: **YAPILMADI** (talimat gereği KWin geçmeden başlatılmadı).
 - `alp` hash: **KALDI** — rootfs hâlâ eski/düzeltilmemiş motor; dosya değiştirilmedi.
 
-**Değiştirilmeyenler**: `/mnt/lfs`, Gen1 VM ve diski, M1 artifact'ı, `docs/patches/plasma-desktop-6.4.4-wayland-no-netwm.patch`, Claude'un çalışma dosyaları, `/mnt/lfs/usr/lib/alp/alp.py`. Yeni dosyalar: `scripts/patch-m2-gen2-root-partuuid.sh`; yedekler: Builder `/tmp/alpbahOS-m2-gen2-before-partuuid/`, Windows `F:\alpbahOS-build\vms\alpbahOS-M2-SSH-Gen2\alpbahOS-M2-SSH-Gen2-v2.before-partuuid.vhdx`. Bu oturumda commit/push yapılmadı.
+**Değiştirilmeyenler**: `/mnt/lfs`, Gen1 VM ve diski, M1 artifact'ı, `docs/patches/plasma-desktop-6.4.4-wayland-no-netwm.patch`, asistan'un çalışma dosyaları, `/mnt/lfs/usr/lib/alp/alp.py`. Yeni dosyalar: `scripts/patch-m2-gen2-root-partuuid.sh`; yedekler: Builder `/tmp/alpbahOS-m2-gen2-before-partuuid/`, Windows `F:\alpbahOS-build\vms\alpbahOS-M2-SSH-Gen2\alpbahOS-M2-SSH-Gen2-v2.before-partuuid.vhdx`. Bu oturumda commit/push yapılmadı.
 
-## 23 Eylül 2026 — Gen2 test imajı: tty1 login, düzeltilmiş alp, DNS, admin hesabı (Claude)
+## 23 Eylül 2026 — Gen2 test imajı: tty1 login, düzeltilmiş alp, DNS, admin hesabı (asistan)
 
 Kapsam: yalnız Gen2 test imajı ve `alpbahOS-M2-SSH-Gen2` VM'i. `/mnt/lfs`, Gen1, M1 artifact'ı değiştirilmedi. Commit/push yok.
 
@@ -163,7 +163,7 @@ Kapsam: yalnız Gen2 test imajı ve `alpbahOS-M2-SSH-Gen2` VM'i. `/mnt/lfs`, Gen
 - Bulgu: guest'te DNS çalışmıyordu (`alp install htop` → "Temporary failure in name resolution"). `/etc/resolv.conf` `systemd-resolved` stub dosyasına işaret ediyor ama `systemd-resolved` hiç etkinleştirilmemişti; IP ile erişim çalışıyordu (1.1.1.1 ping 28 ms).
 - `scripts/patch-m2-gen2-dns-and-admin.sh` (parola `ADMIN_PASSWORD` ortam değişkeninden, loga yazılmaz): `systemd-resolved` etkinleştirildi, resolv.conf symlink'i imajda oluşturuldu, konsol hesabı `admin` (UID 1001, `users`, `wheel`) eklendi. Kullanıcı bu test VM'i için kullanıcı adı ve parolayı `admin`/`admin` olarak belirledi. SSH hâlâ key-only (`AllowUsers sa`), yani bu parola yalnız konsol için. Sonuç imaj SHA-256 `896642c22dcd88f88a209d6fe9475218fae892535b3b7085b40ca666716b07b8`, `qemu-img check` temiz. F: artifact ve VM çalışma diski bu hash'le eşleşti; önceki çalışma diski `alpbahOS-M2-SSH-Gen2-v2.before-admin-dns.vhdx` olarak korundu.
 - Guest (yeni IP `172.28.171.21`, DHCP MAC `00-15-5D-00-02-09` aynı; SSH alias güncellendi): `systemd-resolved` active, `getent hosts github.com` → `140.82.121.4`, `systemctl --failed` boş, `id admin` = `uid=1001 groups=users,wheel`, `getty@tty1` active.
-- `alp` uçtan uca (sa yetkisiyle, geçici `--root /tmp/claude-alp-root`): `alp install htop` → "htop (recipe) -> 3.3.0 kuruldu"; `alp list` → `htop 3.3.0 recipe`; ikili modu `-rwxr-xr-x`; `htop --version` → `htop 3.3.0`; `alp remove htop` → "htop kaldırıldı", liste boş. Kurulumdan sonra `var/lib/alp/cache/destdir-*` ve log dosyaları kalıyor (bilinen sınır 6). Gerçek `/` köküne kurulum denenmedi (sa'da sudo yok).
+- `alp` uçtan uca (sa yetkisiyle, geçici `--root /tmp/ai-alp-root`): `alp install htop` → "htop (recipe) -> 3.3.0 kuruldu"; `alp list` → `htop 3.3.0 recipe`; ikili modu `-rwxr-xr-x`; `htop --version` → `htop 3.3.0`; `alp remove htop` → "htop kaldırıldı", liste boş. Kurulumdan sonra `var/lib/alp/cache/destdir-*` ve log dosyaları kalıyor (bilinen sınır 6). Gerçek `/` köküne kurulum denenmedi (sa'da sudo yok).
 - Hata analizi notu (kendi hatam): patch script'lerinin başarısız çalıştırmaları imajı r/w bağlayıp ayırdığı için her seferinde hash'i değiştirdi; bu başka bir yazıcı sanılmıştı, sudo günlüğü tüm komutların bu oturuma ait olduğunu gösterdi. Ayrıca Builder `/tmp` üstünde benim bıraktığım üç VHDX kopyası root diski %100 doldurmuştu; silindi (75 GB kullanım, 19 GB boş).
 - Hâlâ açık: KWin taban birimi (`plasma-kwin_wayland.service`) kurulu değil; gerçek Plasma oturumu denenmedi. Bu üç düzeltme (getty, resolved, alp) yalnız test imajında; `/mnt/lfs` rootfs'ye Codex'in uygulaması gerekiyor.
 
@@ -172,7 +172,7 @@ Kapsam: yalnız Gen2 test imajı ve `alpbahOS-M2-SSH-Gen2` VM'i. `/mnt/lfs`, Gen
 **Builder ön kontrolü**
 
 - `ssh alp-builder 'hostname; id; df -h / /mnt/lfs; ...; sudo -n true'`: host `yrsk`, user `sa` uid 1000, `sudo -n` başarılı; `/mnt/lfs` Builder `/` üzerinde, 19 GiB boş. `ps` taramasında etkin make/ninja/cmake/chroot derlemesi yoktu. `/sys/block/nbd0/pid` boştu. Her NBD bağlantısından önce aynı PID dosyası tekrar kontrol edildi.
-- Yerel `git show e8b0376:docs/handoffs/claude/alp-prototype/alp.py` byte olarak `C:\tmp\alp-e8b0376.py` dosyasına yazıldı; SHA-256 `7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132`.
+- Yerel `git show e8b0376:docs/handoffs/ai/alp-prototype/alp.py` byte olarak `C:\tmp\alp-e8b0376.py` dosyasına yazıldı; SHA-256 `7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132`.
 
 **Rootfs değişiklikleri (Builder `/mnt/lfs`; `sudo -n bash /tmp/apply-m2-rootfs-fixes.sh /tmp/alp-e8b0376.py`)**
 

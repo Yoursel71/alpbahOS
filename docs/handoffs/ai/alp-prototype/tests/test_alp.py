@@ -1007,7 +1007,7 @@ def test_cmd_install_dry_run_chain_touches_nothing(paths: alp.Paths, tmp_path: P
 
 
 # --------------------------------------------------------------------------
-# Regression tests for the 23 Sep 2026 logic review (docs/handoffs/claude/
+# Regression tests for the 23 Sep 2026 logic review (docs/handoffs/ai/
 # 011-alp-logic-review-fixes.md). Symlink / FIFO / stale-lock cases skip on
 # hosts that can't create them (e.g. an unprivileged Windows shell) and must
 # also be run on Linux.

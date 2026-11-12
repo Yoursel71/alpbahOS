@@ -4,9 +4,9 @@ name: alp testleri
 
 on:
   push:
-    paths: ["docs/handoffs/claude/alp-prototype/**", ".github/workflows/alp-tests.yml"]
+    paths: ["docs/handoffs/ai/alp-prototype/**", ".github/workflows/alp-tests.yml"]
   pull_request:
-    paths: ["docs/handoffs/claude/alp-prototype/**", ".github/workflows/alp-tests.yml"]
+    paths: ["docs/handoffs/ai/alp-prototype/**", ".github/workflows/alp-tests.yml"]
   workflow_dispatch:
 
 permissions:
@@ -22,11 +22,11 @@ jobs:
     name: Python ${{ matrix.python }}
     defaults:
       run:
-        working-directory: docs/handoffs/claude/alp-prototype
+        working-directory: docs/handoffs/ai/alp-prototype
     steps:
       - uses: actions/checkout@v5
         with:
-          sparse-checkout: docs/handoffs/claude/alp-prototype
+          sparse-checkout: docs/handoffs/ai/alp-prototype
       - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python }}

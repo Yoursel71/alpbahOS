@@ -1,9 +1,9 @@
-# Claude devir belgesi 020: M07/M08 QEMU oturumu, kısayol engeli ve sonraki karar
+# asistan devir belgesi 020: M07/M08 QEMU oturumu, kısayol engeli ve sonraki karar
 
 ```text
-Görev ID / durum: DESKTOP-01 (Claude tarafındaki çalışma doğrulaması), UI-02 (kısayollar), SHELL-01 (Zsh/Konsole), UI-03 (Atatürk). Durum: KISMİ. M07 çalışma zamanı ve kararlılık açık; M08 kısayollar açık (11/18 etkin değil).
+Görev ID / durum: DESKTOP-01 (asistan tarafındaki çalışma doğrulaması), UI-02 (kısayollar), SHELL-01 (Zsh/Konsole), UI-03 (Atatürk). Durum: KISMİ. M07 çalışma zamanı ve kararlılık açık; M08 kısayollar açık (11/18 etkin değil).
 Çalışılan host ve dal: Fedora 44, QEMU/KVM (D36 test ortamı). Commit'ler yoursel/main'e fast-forward ile gitti: 8fed971 (kanıt + betikler), 96999a4 (M08 duvar kâğıdı/Konsole profili), d3a7647 (M07 statik kontrol), 2a0215b (kısayol canlı doğrulama), 124ee5d (kullanıcı kararları D40–D42), 14552d1 (kısayol teşhisi).
-Değişen dosyalar: docs/verification/m07-m08-qemu-evidence-2026-11-05.md; docs/verification/evidence-2026-11-05/* (kırpılmış QEMU ekran görüntüleri, DEVIATIONS.md, DECISIONS-2026-11-05.md, shortcut-live-verify çıktısı); profiles/shell/konsole/alpbahOS.profile (Command=/bin/zsh eklendi); docs/DECISIONS.md (D37–D42); CLAUDE.md (5 Kasım bölümü); scripts/lfs-blfs/ (BLFS derleme betikleri — bkz. sahiplik notu).
+Değişen dosyalar: docs/verification/m07-m08-qemu-evidence-2026-11-05.md; docs/verification/evidence-2026-11-05/* (kırpılmış QEMU ekran görüntüleri, DEVIATIONS.md, DECISIONS-2026-11-05.md, shortcut-live-verify çıktısı); profiles/shell/konsole/alpbahOS.profile (Command=/bin/zsh eklendi); docs/DECISIONS.md (D37–D42); AGENT.md (5 Kasım bölümü); scripts/lfs-blfs/ (BLFS derleme betikleri — bkz. sahiplik notu).
 Gerçekleştirilen davranış: BLFS 12.4/KDE Plasma 6.4.4 derlemesi DONE (336+ kayıt). Plasma Wayland oturumu QEMU'da (virtio-gpu + virgl, GTK gl=on) açıldı; Atatürk duvar kâğıdı masaüstünde görüldü; Konsole alpbahOS profiliyle ve Zsh (`alpbahos%`) ile açıldı; kwin_wayland ve plasmashell ~5 dk ayakta kaldı, yeni core dump yok.
 Çalıştırılan doğrulama ve sonuç:
 - verify_shortcuts_live.py (3 çalıştırma, hepsi RC=1): 7 geçti, 11 "etkin değil", 1 kapsam dışı, 1 kayıtsız (Dolphin). KWin'in kendi kısayolları (Meta+Up/Down, Meta+Tab) dahil etkin değil.
@@ -22,7 +22,7 @@ Bu oturum bir milestone için planlanan süreyi aştı (M07/M08 birden fazla VM 
 
 ## 2. Sahiplik notu
 
-`scripts/lfs-blfs/` (sıra dosyası, paket tablosu, derleme komutları, `run_blfs.sh`, `gen_blfs_chroot.py`, `post_blfs_test_config.sh`, imaj betikleri) LFS/BLFS derlemesidir ve AGENTS.md'ye göre **Codex alanına** aittir. Bu dosyalar Claude tarafından, kanıt amacıyla, yerel çalışma alanından taşındı. Entegratör bunları kendi tarif ağacıyla (`recipes/`) karşılaştırıp ayırmalı ya da kabul etmelidir. Paket depolarındaki tarball, ISO, VHDX ve loglar Git'e eklenmedi.
+`scripts/lfs-blfs/` (sıra dosyası, paket tablosu, derleme komutları, `run_blfs.sh`, `gen_blfs_chroot.py`, `post_blfs_test_config.sh`, imaj betikleri) LFS/BLFS derlemesidir ve AGENTS.md'ye göre **Codex alanına** aittir. Bu dosyalar asistan tarafından, kanıt amacıyla, yerel çalışma alanından taşındı. Entegratör bunları kendi tarif ağacıyla (`recipes/`) karşılaştırıp ayırmalı ya da kabul etmelidir. Paket depolarındaki tarball, ISO, VHDX ve loglar Git'e eklenmedi.
 
 ## 3. Kullanıcı kararları (DECISIONS.md)
 

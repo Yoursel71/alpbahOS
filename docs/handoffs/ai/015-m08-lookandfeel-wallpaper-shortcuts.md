@@ -1,8 +1,8 @@
-# Claude devir belgesi 015: M08 ilk dilim — look-and-feel, Atatürk duvar kâğıdı, Windows kısayolları
+# asistan devir belgesi 015: M08 ilk dilim — look-and-feel, Atatürk duvar kâğıdı, Windows kısayolları
 
 ```text
 Görev ID / durum: M08 ilk dilim (UI-01/UI-02/UI-03 uygulaması). Dosyalar kurulabilir durumda ve statik testlerden geçti; Gen2 imajına KURULMADI, gerçek Plasma oturumunda doğrulanmadı.
-Çalışılan host ve branch/commit: YRSLF dışında bir Windows 11 makinesi (Hyper-V/Builder/Gen2 erişimi yok), GitHub'dan yeni clone. Dal claude/m08-lookandfeel-shortcuts, taban main 3aead65. Bu belgeyle birlikte commit; PR ile main'e önerilir.
+Çalışılan host ve branch/commit: YRSLF dışında bir Windows 11 makinesi (Hyper-V/Builder/Gen2 erişimi yok), GitHub'dan yeni clone. Dal ai/m08-lookandfeel-shortcuts, taban main 3aead65. Bu belgeyle birlikte commit; PR ile main'e önerilir.
 Değişen dosyalar: aşağıda "Değişen dosyalar".
 Gerçekleştirilen davranış: aşağıda "Ne yapıldı".
 Çalıştırılan doğrulama ve sonuç: aşağıda "Doğrulama". Gen2 kurulum, ekran görüntüsü ve canlı kısayol testi ÇALIŞTIRILMADI.
@@ -52,7 +52,7 @@ Ortam: Windows 11, Python 3.14.4, Pillow 12.2.0, Node v26.7.0, Git Bash. Linux't
 | `python -m unittest tests.test_m08_desktop_profile -v` | 19 test, 19 geçti: profil geçerli, üretilmiş dosya güncel, MASTER_PLAN §6 kapsamı tam, çakışma/gerekçesiz kaldırma yakalanıyor, doğrulayıcı uygulanmış profilde GEÇTİ / upstream varsayılanlarında beklenen satırlarda KALDI / eksik bileşende KAYITSIZ veriyor, look-and-feel referansları (renk şeması, duvar kâğıdı Id, ikon) tutarlı, düzen JS sözdizimi `node --check` ile geçti, 5 duvar kâğıdı boyutu ve güvenli alan denetimi geçti, kurulum betiği temp köke kurdu / ikinci koşuda değişiklik yok / çakışmada durdu / `/` ve eksik `--destdir` reddedildi |
 | `python profiles/shortcuts/generate_kglobalshortcutsrc.py --check` | güncel |
 | `python branding/ataturk-theme/tools/build_wallpaper.py --check`, `python branding/icons/build_icons.py --check` | güncel (aynı Pillow sürümünde bayt bayt aynı; farklı Pillow/libjpeg sürümünde fark çıkabilir) |
-| `python docs/handoffs/claude/tools/check_docs.py` | 0 bulgu |
+| `python docs/handoffs/ai/tools/check_docs.py` | 0 bulgu |
 | Tüm test paketi (`python -m unittest discover -s tests`) | 120 test: M08 dışı 2 fail + 2 error, ikisi de bu değişiklikten bağımsız ve bu Windows ortamına özgü: `test_m04_package_install_transaction` Linux'a özgü modülü import edemiyor; `test_m04_lfs_ch8_source_verifier` snapshot SHA-256'sı, sistem `core.autocrlf=true` ile CRLF'e çevrilmiş checkout yüzünden tutmuyor. Builder'da tekrarlanmadı. |
 
 **Çalıştırılmadı:** Gen2'ye kurulum, Plasma'da look-and-feel/duvar kâğıdı/panel görüntüsü, `verify_shortcuts_live.py` canlı koşusu, tuşların elle denenmesi, 100/125/150/200% ölçek görüntüleri, kilit ekranı.
@@ -74,7 +74,7 @@ a7a1a38ef69893ab2e5e624fc2071e6e6a33a6816dd634fb72b6cf0ddce58e6b  branding/atatu
 
 Kurallar: test VM'de derleme yok; Builder `/tmp` altında iş bitince temizlik; `/mnt/lfs`'e kurulum entegratörün işi.
 
-1. Dalı al (Builder'daki repo kopyası ya da Windows'taki çalışma ağacı): `git fetch origin && git checkout claude/m08-lookandfeel-shortcuts`.
+1. Dalı al (Builder'daki repo kopyası ya da Windows'taki çalışma ağacı): `git fetch origin && git checkout ai/m08-lookandfeel-shortcuts`.
 2. Gerekli dizinleri yalnız Gen2 test VM'ine aktar ve kurulumu orada, çakışma denetimli betikle yap (test imajında `sa` şifresiz sudo):
    `tar -cf - profiles/desktop profiles/shortcuts branding/ataturk-theme/wallpaper branding/icons/hicolor | ssh alp-m2-gen2 'mkdir -p /tmp/m08-src && tar -C /tmp/m08-src -xf -'`
    `ssh alp-m2-gen2 'cd /tmp/m08-src && sudo bash profiles/desktop/install-desktop-profile.sh --destdir / --allow-live-root --manifest /var/tmp/m08.manifest'`

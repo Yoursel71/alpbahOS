@@ -20,7 +20,7 @@ import sys
 R4, ALP, LEDGER = sys.argv[1], sys.argv[2], sys.argv[3]
 NAME = "display-order-r5fix"
 VER = "13.1-r5fix"
-REPO_SRC = "https://github.com/alperenyardim30-hash/alpbahOS/blob/claude/t2-kisayol-2026-11-05/scripts/rebuild/r5/display-order-r5fix.py"
+REPO_SRC = "https://github.com/alperenyardim30-hash/alpbahOS/blob/ai/t2-kisayol-2026-11-05/scripts/rebuild/r5/display-order-r5fix.py"
 REL = "etc/systemd/system/sddm.service.d/10-alpbahos-udev.conf"
 CONTENT = """# REBUILD-R5 round 2 (alp package display-order-r5fix): sddm starts after udev has settled, so the DRM
 # device (virtio-gpu on UEFI appears after simpledrm) exists before the autologin session starts.

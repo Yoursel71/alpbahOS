@@ -3,7 +3,7 @@
 # applied to the live r4-root (its single writer: no other build may run). A read-only snapshot
 # r4-snapshots/r4-before-r41-root is taken first.
 #   1. read-only snapshot of r4-root (rollback point)
-#   2. plymouth 26.134.222 + docs/handoffs/claude/patches/037-plymouth-keyboard-removed.patch, built in a chroot of
+#   2. plymouth 26.134.222 + docs/handoffs/ai/patches/037-plymouth-keyboard-removed.patch, built in a chroot of
 #      the snapshot with the original meson options (r10/plymouth/build.log), ISA audit (D146), recorded as
 #      plymouth 26.134.222-alp1 (only the paths the old plymouth record owned; config files stay with their records)
 #   3. alp.py of this worktree (ALP-LOCK-MSG-01 and ALP-KUTU-01) recorded as alp-r41 0.9-trust1.5 (takes alp.py over
@@ -20,10 +20,10 @@ SNAP=$SB/r4-root
 RO=$SB/r4-snapshots/r4-before-r41-root
 RC=$SB/r41
 LED=$SB/r4-ledger/r41
-ALP=$WT/docs/handoffs/claude/alp-prototype/alp.py
+ALP=$WT/docs/handoffs/ai/alp-prototype/alp.py
 LIB=$WT/scripts/rebuild/r4/r4_lib.py
 REC=$WT/scripts/rebuild/r8/stage-record-r8.py
-PATCH=$WT/docs/handoffs/claude/patches/037-plymouth-keyboard-removed.patch
+PATCH=$WT/docs/handoffs/ai/patches/037-plymouth-keyboard-removed.patch
 TARBALL=$SB/r10/dl/plymouth-26.134.222.tar.xz
 OPTS="--prefix=/usr --buildtype=release -Db_lto=false -Dbackground-color=0x0b1014 -Dbackground-end-color-stop=0x0b1014 -Dbackground-start-color-stop=0x0b1014 -Ddocs=false -Dgtk=disabled -Drelease-file=/etc/os-release -Dsystemd-integration=true -Dtracing=false -Dudev=enabled -Dupstart-monitoring=false"
 die() { echo "r41-root: $*" >&2; exit 1; }

@@ -1,17 +1,17 @@
-# Claude devir belgesi 004 — `alp` güçlendirme turu: gerçek paketler, test seti, eksik tasarımlar
+# asistan devir belgesi 004 — `alp` güçlendirme turu: gerçek paketler, test seti, eksik tasarımlar
 
 Görev ID / durum: (Backlog dışı, kullanıcı talebi — "daha fazla tarif", "test seti", "eksik tasarımlar") üçü de tamamlandı.
 
-Çalışılan host ve branch/commit: Windows host, worktree `C:\alpbahOS-claude`, dal `claude/desktop-bootstrap`; `alpbahOS-alp` reposu ayrı bir yerel checkout üzerinden (`main` dalı). Bu belgenin yazıldığı anda henüz commit atılmadı; hash bu turun commit'iyle güncellenecek.
+Çalışılan host ve branch/commit: Windows host, worktree `C:\alpbahOS-ai`, dal `ai/desktop-bootstrap`; `alpbahOS-alp` reposu ayrı bir yerel checkout üzerinden (`main` dalı). Bu belgenin yazıldığı anda henüz commit atılmadı; hash bu turun commit'iyle güncellenecek.
 
 Değişen dosyalar:
 - `Yoursel71/alpbahOS-alp` (ayrı repo): `recipes/htop.recipe.json`, `recipes/jq.recipe.json`, `recipes/zsh.recipe.json`, `recipes/tmux.recipe.json`, `index.json`, `README.md`.
-- `docs/handoffs/claude/alp-prototype/tests/test_alp.py` (yeni)
-- `docs/handoffs/claude/alp-prototype/design/packagekit-integration.md` (yeni)
-- `docs/handoffs/claude/alp-prototype/design/config-protection.md` (yeni)
-- `docs/handoffs/claude/alp-prototype/README.md` (test bölümü eklendi)
-- `docs/handoffs/claude/001-alp-hybrid-pkg-proposal.md` (gap tablosu, yeni tasarım belgelerine bağlandı)
-- `docs/handoffs/claude/004-alp-hardening.md` (bu dosya)
+- `docs/handoffs/ai/alp-prototype/tests/test_alp.py` (yeni)
+- `docs/handoffs/ai/alp-prototype/design/packagekit-integration.md` (yeni)
+- `docs/handoffs/ai/alp-prototype/design/config-protection.md` (yeni)
+- `docs/handoffs/ai/alp-prototype/README.md` (test bölümü eklendi)
+- `docs/handoffs/ai/001-alp-hybrid-pkg-proposal.md` (gap tablosu, yeni tasarım belgelerine bağlandı)
+- `docs/handoffs/ai/004-alp-hardening.md` (bu dosya)
 
 Gerçekleştirilen davranış:
 

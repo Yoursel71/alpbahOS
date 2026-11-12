@@ -4,10 +4,10 @@
 74 passed in 5.33s
 ...............                                                          [100%]
 15 passed in 3.05s
-# python3 docs/handoffs/claude/tools/check_docs.py
+# python3 docs/handoffs/ai/tools/check_docs.py
 
 check_docs: 3 finding(s) (broken-link=3, commit-ref=0, decision-ref=0, stale-term=0)
 docs/BACKLOG.md:35: [broken-link] link target does not exist: verification/alp-trust-2026-11-10.md
-docs/handoffs/claude/alp-prototype/README.md:46: [broken-link] link target does not exist: ../../../verification/alp-trust-2026-11-10.md
-docs/handoffs/claude/alp-prototype/design/trust-model.md:5: [broken-link] link target does not exist: ../../../../verification/alp-trust-2026-11-10.md
+docs/handoffs/ai/alp-prototype/README.md:46: [broken-link] link target does not exist: ../../../verification/alp-trust-2026-11-10.md
+docs/handoffs/ai/alp-prototype/design/trust-model.md:5: [broken-link] link target does not exist: ../../../../verification/alp-trust-2026-11-10.md
 rc=0

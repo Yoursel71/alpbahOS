@@ -6,7 +6,7 @@ set -Eeuo pipefail
 # and the previous alp.py is backed up before being overwritten.
 IMG=/tmp/alpbahOS-m2-ssh-gen2-test.vhdx
 EXPECTED_IMG=da7b69b3d43ea75250b3f631aef1e7c3c0357ca49be02863173c96c18139a849
-NEW_ALP=/tmp/claude-alp-fixed.py
+NEW_ALP=/tmp/ai-alp-fixed.py
 EXPECTED_ALP=7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132
 NBD=/dev/nbd0
 WORK=$(mktemp -d /tmp/alpbahos-gen2-login-alp.XXXXXX)

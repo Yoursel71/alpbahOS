@@ -1,6 +1,6 @@
 # alpbahOS mozconfig for Firefox 153.2.0esr (APPS-01). Base: BLFS 13.1-systemd xsoft/firefox.html. Changes from the
 # book, each with its reason:
-#   - no Google location service key file: no keys in the repo or the image (CLAUDE.md section 4);
+#   - no Google location service key file: no keys in the repo or the image (AGENT.md section 4);
 #   - system copies only where r4-root has the library (ICU, NSPR, NSS, ffi, pixman, jpeg, zlib); av1, libevent,
 #     libvpx and webp use Firefox's bundled copies (not in r4-root);
 #   - no --with-system-png: r4-root's libpng has no APNG support (no png_get_acTL), which Firefox needs.

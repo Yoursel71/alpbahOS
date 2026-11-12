@@ -1,6 +1,6 @@
 # PERF-01 — RAM, frame time and effect measurement method
 
-Status (26 September 2026): **method and tools ready; no measurements taken.** Updated 2026-11-06: the targets now follow D135. Owner: Claude (D100; Claude is the only agent, so there is no owner split). Prerequisite: DESKTOP-01 (a running Plasma session). The tools themselves were tested on Windows with fake data (`tests/test_m08_desktop_profile.py`). There is no real Gen2 or bare-metal data yet.
+Status (26 September 2026): **method and tools ready; no measurements taken.** Updated 2026-11-06: the targets now follow D135. Owner: asistan (D100; asistan is the only agent, so there is no owner split). Prerequisite: DESKTOP-01 (a running Plasma session). The tools themselves were tested on Windows with fake data (`tests/test_m08_desktop_profile.py`). There is no real Gen2 or bare-metal data yet.
 
 Liquid is not in the first release (D116). Its plan is in [liquid-prototype.md](../desktop/liquid-prototype.md); this document only covers the Liquid measurement criteria that depend on it.
 

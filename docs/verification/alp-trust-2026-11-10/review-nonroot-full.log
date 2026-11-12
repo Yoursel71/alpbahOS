@@ -1,7 +1,7 @@
 # host thewo, Python 3.14.7, 2026-11-11T02:56:07Z, HEAD 4408ee6, user yrslf
 ============================= test session starts ==============================
 platform linux -- Python 3.14.7, pytest-8.4.2, pluggy-1.6.0 -- /usr/bin/python3
-rootdir: /home/yrslf/alpbahOS/wt-alp-trust/docs/handoffs/claude/alp-prototype
+rootdir: /home/yrslf/alpbahOS/wt-alp-trust/docs/handoffs/ai/alp-prototype
 plugins: anyio-4.13.0
 collecting ... collected 432 items
 

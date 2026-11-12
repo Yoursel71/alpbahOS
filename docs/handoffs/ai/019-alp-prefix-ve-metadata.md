@@ -1,9 +1,9 @@
-# Claude devir belgesi 019: M10 engeli — `@PREFIX@` kurulum hatası, Discover metadata'sı, wallpaper entegrasyonu
+# asistan devir belgesi 019: M10 engeli — `@PREFIX@` kurulum hatası, Discover metadata'sı, wallpaper entegrasyonu
 
 ```text
-Görev ID / durum: PKG-01/PKG-02 (alp motoru + katalog sözleşmesi) ve UI-03 entegrasyon adımı. Başlangıç: 29 Eylül 2026, Claude (Fedora ana host). Kod ve testler tamam; rootfs/VM/Discover doğrulaması ÇALIŞTIRILMADI (aşağıda).
-Çalışılan host ve branch/commit: Fedora 44, Python 3.14.7, pytest 8.4.2. Dal `claude/alp-prefix-metadata`, PR #3'ün ucu (`claude/logic-fixes`, aa5e818) üzerine kurulu; o da Yoursel71/alpbahOS `main` 9c26ecf üzerinde.
-Dosya sınırı: yalnız `docs/handoffs/claude/` (alp motoru, testleri, yama önerileri, bu belge). `scripts/`, `/mnt/lfs`, `alpbahOS-work` ağacı ve ortak WORKLOG/BACKLOG'a DOKUNULMADI.
+Görev ID / durum: PKG-01/PKG-02 (alp motoru + katalog sözleşmesi) ve UI-03 entegrasyon adımı. Başlangıç: 29 Eylül 2026, asistan (Fedora ana host). Kod ve testler tamam; rootfs/VM/Discover doğrulaması ÇALIŞTIRILMADI (aşağıda).
+Çalışılan host ve branch/commit: Fedora 44, Python 3.14.7, pytest 8.4.2. Dal `ai/alp-prefix-metadata`, PR #3'ün ucu (`ai/logic-fixes`, aa5e818) üzerine kurulu; o da Yoursel71/alpbahOS `main` 9c26ecf üzerinde.
+Dosya sınırı: yalnız `docs/handoffs/ai/` (alp motoru, testleri, yama önerileri, bu belge). `scripts/`, `/mnt/lfs`, `alpbahOS-work` ağacı ve ortak WORKLOG/BACKLOG'a DOKUNULMADI.
 Değişen dosyalar: alp-prototype/alp.py, alp-prototype/tests/test_catalog_contract.py (yeni), alp-prototype/tests/test_packagekit_backend.py (1 beklenti), patches/019-alpBackend-metadata.patch (yeni), patches/019-verify_alpbackend.py (yeni), bu belge.
 Sonraki eylem: Entegratör (Codex) aşağıdaki "Entegrasyon" adımlarını atılabilir bir overlay'de uygular ve `pkcon install htop` kabulünü yeniden koşar.
 ```
@@ -29,7 +29,7 @@ Yeni motorla **gerçek** kur → çalıştır → kaldır (geçici kök, Fedora 
 
 ## 3. Doğrulama (çalıştırılanlar)
 
-- `python3 -m pytest docs/handoffs/claude/alp-prototype/tests`: **238 geçti, 0 atlandı** (PR #3 öncesi Linux tabanı 223; +15 yeni). PR #3'ün "205 geçti/18 atlandı" ölçümü Windows'tandı; Linux'ta atlanan 18 test de geçiyor.
+- `python3 -m pytest docs/handoffs/ai/alp-prototype/tests`: **238 geçti, 0 atlandı** (PR #3 öncesi Linux tabanı 223; +15 yeni). PR #3'ün "205 geçti/18 atlandı" ölçümü Windows'tandı; Linux'ta atlanan 18 test de geçiyor.
 - Yeni 15 testin **13'ü eski `alp.py`'de başarısız** (gerçek regresyon testi); 2'si değişmemesi gereken davranış korumasıdır.
 - `check_docs.py`: 0 bulgu.
 - Yardımcı yaması çevrimdışı doğrulandı (`patches/019-verify_alpbackend.py`): rootfs'in kendi `packagekit` Python modülü (salt okunur) + gerçek alp + gerçek katalog ile PackageKit tel satırları karşılaştırıldı:
@@ -50,8 +50,8 @@ Yeni motorla **gerçek** kur → çalıştır → kaldır (geçici kök, Fedora 
 
 Hiçbiri bu oturumda uygulanmadı. Bir atılabilir overlay'de dene, sonra rootfs'e al.
 
-1. **Motoru dağıt.** Kaynak: bu daldaki `docs/handoffs/claude/alp-prototype/alp.py`, SHA-256 `92d519212d161159f6f083008b14c7b5b22c2d3e7e60f49fe17d493538fe25b2` (kopyadan önce `sha256sum` ile doğrula). Hedef `/usr/lib/alp/alp.py`; rootfs'teki mevcut dosya `0475ea32…`. **Dalı `alpbahOS-work` ağacına birleştirme:** o ağaç `a9bac38`'de ve çok sayıda commit'lenmemiş belge içeriyor; yalnız dosyayı hash ile kopyala (motoru `0475ea32…` → yeni sürüme taşımak `3f6f0f1`, `9475ce1`, `6243c44` ve PR #3'ü de birlikte getirir; `6243c44` Türkçe hata/yardım metinlerini değiştirir, yardımcı bunları ayrıştırmıyor, ama `get_updates` `alp check` metnini ayrıştırıyor: yukarıda doğrulandı). PR #3 açıklamasına göre (kodu bu oturumda okunmadı) `scripts/apply-m2-rootfs-fixes.sh` artık rootfs'teki motoru sessizce eski sürüme döndürmüyor; bilinçli değiştirme için `ALP_REPLACE=1` ve `EXPECTED_ALP` gerekir. Bu betik PR #3 birleşmeden Codex ağacında eski davranışta.
-2. **Yardımcı yamasını uygula:** `patch -p1 < docs/handoffs/claude/patches/019-alpBackend-metadata.patch` (Codex ağacında `scripts/packagekit/alpBackend.py`; yama tabanı `e3cdda16…`, rootfs'teki `/usr/share/PackageKit/helpers/alp/alpBackend.py` ile aynı, `--dry-run` temiz uygulandı). Sonra rootfs'e aynı dosyayı kur.
+1. **Motoru dağıt.** Kaynak: bu daldaki `docs/handoffs/ai/alp-prototype/alp.py`, SHA-256 `92d519212d161159f6f083008b14c7b5b22c2d3e7e60f49fe17d493538fe25b2` (kopyadan önce `sha256sum` ile doğrula). Hedef `/usr/lib/alp/alp.py`; rootfs'teki mevcut dosya `0475ea32…`. **Dalı `alpbahOS-work` ağacına birleştirme:** o ağaç `a9bac38`'de ve çok sayıda commit'lenmemiş belge içeriyor; yalnız dosyayı hash ile kopyala (motoru `0475ea32…` → yeni sürüme taşımak `3f6f0f1`, `9475ce1`, `6243c44` ve PR #3'ü de birlikte getirir; `6243c44` Türkçe hata/yardım metinlerini değiştirir, yardımcı bunları ayrıştırmıyor, ama `get_updates` `alp check` metnini ayrıştırıyor: yukarıda doğrulandı). PR #3 açıklamasına göre (kodu bu oturumda okunmadı) `scripts/apply-m2-rootfs-fixes.sh` artık rootfs'teki motoru sessizce eski sürüme döndürmüyor; bilinçli değiştirme için `ALP_REPLACE=1` ve `EXPECTED_ALP` gerekir. Bu betik PR #3 birleşmeden Codex ağacında eski davranışta.
+2. **Yardımcı yamasını uygula:** `patch -p1 < docs/handoffs/ai/patches/019-alpBackend-metadata.patch` (Codex ağacında `scripts/packagekit/alpBackend.py`; yama tabanı `e3cdda16…`, rootfs'teki `/usr/share/PackageKit/helpers/alp/alpBackend.py` ile aynı, `--dry-run` temiz uygulandı). Sonra rootfs'e aynı dosyayı kur.
 3. **Wallpaper + Solid look-and-feel'i kur.** Rootfs'te (salt okunur bakıldı) yalnız Breeze look-and-feel'leri var; ne `/opt/kf6/share/wallpapers` ne `/usr/share/wallpapers` var, ve `org.alpbahos.solid.desktop` kurulu değil. Siyah arka planın nedeni olarak bu **büyük olasılıkla** yeterli, ama VM'de doğrulanmadı.
 
    ```bash

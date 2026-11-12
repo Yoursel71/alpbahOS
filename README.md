@@ -14,13 +14,13 @@ alpbahOS is a desktop Linux system built from Linux From Scratch (LFS) for x86_6
 
 ## Documents
 
-- [CLAUDE.md](CLAUDE.md): working rules for the agent (rules)
+- [AGENT.md](AGENT.md): working rules for the agent (rules)
 - [CURRENT.md](CURRENT.md): current state
 - [docs/DECISIONS.md](docs/DECISIONS.md): decisions with IDs
 - [docs/MASTER_PLAN.md](docs/MASTER_PLAN.md): plan and milestones
 - [docs/BACKLOG.md](docs/BACKLOG.md): tasks, acceptance criteria, status
 - [docs/WORKLOG.md](docs/WORKLOG.md): history (not rewritten)
-- [docs/handoffs/claude/](docs/handoffs/claude/): session notes
+- [docs/handoffs/ai/](docs/handoffs/ai/): session notes
 - [docs/verification/](docs/verification/): test evidence and logs
 - [docs/archive/](docs/archive/): old versions of the documents above
 

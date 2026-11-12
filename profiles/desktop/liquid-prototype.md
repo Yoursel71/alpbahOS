@@ -26,6 +26,6 @@ KWin 6.4.4's `blur` effect (`src/plugins/blur/`) samples the area behind a windo
 
 ## Open items
 
-- The effect is compiled C++. Compilation and packaging belong to the BLFS build chain. Claude prepares the source and shader; the build runs in the BLFS chain.
+- The effect is compiled C++. Compilation and packaging belong to the BLFS build chain. asistan prepares the source and shader; the build runs in the BLFS chain.
 - The target hardware class (RTX) is not available in the earlier Windows-host VM setup (history in [docs/archive/](../../docs/archive/)). Measurement needs bare-metal hardware and can be deferred to BETA-01.
 - If it fails, the alpha ships with Glass, and Liquid is written up as a known limitation (MASTER_PLAN §13).

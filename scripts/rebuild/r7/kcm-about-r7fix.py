@@ -19,7 +19,7 @@ import sys
 R4, ALP, LEDGER, LOGO = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
 NAME = "kcm-about-r7fix"
 VER = "0.9-r7fix"
-REPO_SRC = "https://github.com/alperenyardim30-hash/alpbahOS/blob/claude/t2-kisayol-2026-11-05/scripts/rebuild/r7/kcm-about-r7fix.py"
+REPO_SRC = "https://github.com/alperenyardim30-hash/alpbahOS/blob/ai/t2-kisayol-2026-11-05/scripts/rebuild/r7/kcm-about-r7fix.py"
 RC = (
     "[General]\n"
     "LogoPath=/usr/share/pixmaps/alpbahos-logo.png\n"

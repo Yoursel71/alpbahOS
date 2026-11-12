@@ -75,7 +75,7 @@ to 26.134.222 (`patch -Np1 --dry-run`: OK).
 ```
 
 How to apply: rebuild the plymouth record with the existing hook,
-`PRE_PATCH=docs/handoffs/claude/patches/037-plymouth-keyboard-removed.patch` in
+`PRE_PATCH=docs/handoffs/ai/patches/037-plymouth-keyboard-removed.patch` in
 `scripts/rebuild/r10/build-pkg-r10.sh` (lines 27-28, 48, autogen path), the same way as the itstool and Calamares
 patches. Keep `UseSimpledrm=1` (`scripts/rebuild/r23/plymouth-r23.sh` lines 30 and 52). Then rebuild the
 initramfs: the plymouthd in the initramfs is the one that crashes.
@@ -116,7 +116,7 @@ crashed. Details: [r39x-followup-2026-11-11.md](../../verification/r39x-followup
 For the build session:
 
 1. Rebuild the plymouth record with
-   `PRE_PATCH=docs/handoffs/claude/patches/037-plymouth-keyboard-removed.patch`.
+   `PRE_PATCH=docs/handoffs/ai/patches/037-plymouth-keyboard-removed.patch`.
 2. Keep the meson options from `r10/plymouth/build.log`.
 3. Keep `UseSimpledrm=1`.
 4. Build the next ISO.

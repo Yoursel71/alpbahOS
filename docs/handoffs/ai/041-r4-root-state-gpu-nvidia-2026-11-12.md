@@ -5,7 +5,7 @@ For: the other session (rc01/rc02 work, handoffs 037/038) and the next session.
 Task / status: rounds 40-41 fixes and the NVIDIA groundwork are in r4-root. Round 40's run stopped at I1 (harness
 click), round 41's run stopped in L1 (host disk full); rc02 (other session) covers most rows on the same root.
 
-Host, branch and commit: host `thewo`, worktree `wt-t2-kisayol`, branch `claude/t2-kisayol-2026-11-05`, pushed to
+Host, branch and commit: host `thewo`, worktree `wt-t2-kisayol`, branch `ai/t2-kisayol-2026-11-05`, pushed to
 `yoursel` main (this note's commit).
 
 ## What r4-root has now (newest first; alp records)

@@ -1,5 +1,5 @@
 #!/bin/bash
-# PLY-FIX-02 (round 39y): build plymouth 26.134.222 with docs/handoffs/claude/patches/037-plymouth-keyboard-removed.patch
+# PLY-FIX-02 (round 39y): build plymouth 26.134.222 with docs/handoffs/ai/patches/037-plymouth-keyboard-removed.patch
 # inside a booted reflink copy of the kept r39 BIOS install (it has gcc, meson, ninja and the -dev files), put ONLY
 # the patched libply-splash-core.so.5.0.0 on the copy, rebuild the initramfs with target-initramfs.sh, keep
 # UseSimpledrm=1 (the original setting), then boot CYCLES times with the PLY core setup and count core files.
@@ -10,7 +10,7 @@
 set -u
 . ./env.sh
 RB=$MATRIX_WT/scripts/rebuild
-PATCH=$MATRIX_WT/docs/handoffs/claude/patches/037-plymouth-keyboard-removed.patch
+PATCH=$MATRIX_WT/docs/handoffs/ai/patches/037-plymouth-keyboard-removed.patch
 TARBALL=/home/yrslf/alpbahOS/scratch-lfs-bench/r10/dl/plymouth-26.134.222.tar.xz
 export MATRIX_DIR=$MATRIX_DIR/PLYFIX2
 MATRIX_LIB=1 . "$M"          # D is now r39y/PLYFIX2

@@ -2,7 +2,7 @@
 """alp -- alpbahOS hybrid package manager (prototype).
 
 Status: accepted package engine since DECISIONS.md D31 (21 Sep 2026); still a
-prototype -- see docs/handoffs/claude/001-alp-hybrid-pkg-proposal.md for the
+prototype -- see docs/handoffs/ai/001-alp-hybrid-pkg-proposal.md for the
 honest list of what is and isn't implemented/tested.
 
 Three installation methods, dispatched from a local "index" (the thing a real
@@ -135,7 +135,7 @@ def _emit(paths: Paths, event: str, **fields) -> None:
 
 # --------------------------------------------------------------------------
 # Single-writer lock.
-# CLAUDE.md: "Tek paket veri tabanı ve tek yazıcı/işlem kilidi kullan."
+# AGENT.md: "Tek paket veri tabanı ve tek yazıcı/işlem kilidi kullan."
 # --------------------------------------------------------------------------
 
 def _pid_namespace() -> str:
@@ -1025,7 +1025,7 @@ def read_recipe(entry: dict, index_dir: Path) -> dict:
 
 # --------------------------------------------------------------------------
 # Download + mandatory checksum verification.
-# CLAUDE.md: "Kaynağı doğrulamadan derleme yapma."
+# AGENT.md: "Kaynağı doğrulamadan derleme yapma."
 # --------------------------------------------------------------------------
 
 def sha256_of(path: Path) -> str:

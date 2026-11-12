@@ -13,7 +13,7 @@ Bu dosya iki farklı güven seviyesinde koddan oluşur, kasıtlı olarak ayrılm
    **Bu kısım bu ortamda (Windows, PackageKit yok) hiç import edilemedi,
    hiç çalıştırılamadı.** design/packagekit-integration.md'deki yöntem
    eşlemesinin somut kod hâlidir; gerçek bir PackageKit daemon'una
-   yüklenip test edilmeden "çalışıyor" sayılamaz (CLAUDE.md kuralı).
+   yüklenip test edilmeden "çalışıyor" sayılamaz (AGENT.md kuralı).
 
 Kaynak: design/packagekit-integration.md.
 """

@@ -5,7 +5,7 @@ reaches the Plasma desktop on BIOS (PASS), but not on UEFI (FAIL; the alpha ISO 
 round did not cause it). The installed-system QA and the install matrix were not run, and the shutdown crash fix is not
 shown by a reproduction. Each item below says what was run and what was not.
 
-Host: `thewo`, worktree `/home/yrslf/alpbahOS/wt-t2-kisayol`, branch `claude/t2-kisayol-2026-11-05`. Data in
+Host: `thewo`, worktree `/home/yrslf/alpbahOS/wt-t2-kisayol`, branch `ai/t2-kisayol-2026-11-05`. Data in
 `scratch-lfs-bench/` (not in the repo). Heavy work under `nice -n 19 ionice -c3`. The guest runs are TCG
 (`-cpu qemu64`, no KVM). No real disk, host `/boot`, NVRAM, `/mnt/lfs`, `/mnt/hdd` or `lfs13-snapshots` was written.
 The host was not rebooted.
@@ -121,8 +121,8 @@ dropped from the record in the alp database under its lock, file deleted, `usr/l
 | Test | Result | Evidence |
 |---|---|---|
 | `pytest tests/test_r4_driver.py tests/test_audit_isa.py tests/test_r3_ledger.py` | 27 passed | terminal, round 1 |
-| alp suite (`docs/handoffs/claude/alp-prototype`, `python3 -m pytest -q`) | 264 passed | terminal, round 1 |
-| `check_docs.py` (`docs/handoffs/claude/tools/check_docs.py`) | 0 findings | terminal (re-run in round 2, see the commit) |
+| alp suite (`docs/handoffs/ai/alp-prototype`, `python3 -m pytest -q`) | 264 passed | terminal, round 1 |
+| `check_docs.py` (`docs/handoffs/ai/tools/check_docs.py`) | 0 findings | terminal (re-run in round 2, see the commit) |
 | `alp check` on r4-root (demo index) | rc 0, 469 packages | `r4-ledger/r5/alp-check-r5c.txt` |
 | Release squashfs content | as in section 1 | `unsquashfs -cat` on the release ISO |
 | Logout order (section 2.1) | drop-ins order the stops; no abort in A or B | `journal-A-logout.txt`, `journal-B-logout.txt` |
@@ -491,7 +491,7 @@ This is what these runs show: the NVMe read fails once RAM is 4G or more in this
 
 ### 10.9 Round 6 item 6: M12 checks
 
-- 6a, alp (`docs/handoffs/claude/alp-prototype/alp.py`): commands are `search info install upgrade remove autoremove check list recover protect unprotect adopt-base update help`. There is no `rollback` command. Undo exists only inside a transaction (`FileJournal`, `undo_journal`, `ROLLBACK_DIR`) and `alp recover` replays an interrupted one. On the installed overlay (`r6/item6a-alp/`, Konsole) every command stopped with "--index PATH is required"; the installed system has no catalog `index.json` (checked read-only). So `alp update` and the rollback behaviour were **not run**. What is needed: a catalog on the installed system (or `--index` pointing at one), a harmless package in it, then `alp upgrade` to a newer version and a forced failure to exercise `recover`. No new function was built.
+- 6a, alp (`docs/handoffs/ai/alp-prototype/alp.py`): commands are `search info install upgrade remove autoremove check list recover protect unprotect adopt-base update help`. There is no `rollback` command. Undo exists only inside a transaction (`FileJournal`, `undo_journal`, `ROLLBACK_DIR`) and `alp recover` replays an interrupted one. On the installed overlay (`r6/item6a-alp/`, Konsole) every command stopped with "--index PATH is required"; the installed system has no catalog `index.json` (checked read-only). So `alp update` and the rollback behaviour were **not run**. What is needed: a catalog on the installed system (or `--index` pointing at one), a harmless package in it, then `alp upgrade` to a newer version and a forced failure to exercise `recover`. No new function was built.
 - 6b, recovery from the live ISO (BIOS, sha 1686; `r6/item6b-recovery/`):
   1. The live ISO booted with `-boot order=dc` (autologin). The installed overlay appeared as `vda`, root `vda1` (30 GiB).
   2. `sudo` is not installed in the live image; the live user has `pkexec` (polkit rule `polkit-49-alpbahos-live.rules`), which works without a password. `/usr/sbin/chroot` is needed because pkexec's PATH has no `/usr/sbin`.
@@ -567,7 +567,7 @@ Requirement, from the plan (not invented):
 (a) Catalog location (decision and change):
 - The installed system keeps its catalog at `<root>/usr/share/alp/index.json`, with the artifacts in `usr/share/alp/core/`
   (the index's own directory, as for the demo catalog). There was no config file or default lookup, so the smallest change
-  was made: `resolve_index_path()` in `docs/handoffs/claude/alp-prototype/alp.py` uses that file when `--index` is absent
+  was made: `resolve_index_path()` in `docs/handoffs/ai/alp-prototype/alp.py` uses that file when `--index` is absent
   (an explicit `--index` still wins; a missing default gives the error with the path). Tests: `tests/test_default_index.py`
   (3 new); the alp suite gives **267 passed** (264 before, all still pass).
 - Not done: the image does not ship a catalog at that path yet, so an installed ISO still has no catalog. That needs the
@@ -993,7 +993,7 @@ Notes on the matrix:
 ### 15.4 Failures, open items and explanations
 
 1. **Flatpak FAIL (first real run).** pkexec flatpak remote-add --if-not-exists flathub /etc/flatpak/remotes.d/flathub.flatpakrepo shows the polkit dialog for testuser (wheel group), accepts the password, then prints `error: GPG: Unable to configure context: gpgme_ctx_set_engine_info: GPGME: Geçersiz kripto işletkisi` (invalid crypto engine). flatpak run org.gnome.Calculator then reports that app/org.gnome.Calculator/x86_64/master is not installed. Best explanation: GnuPG is missing from the image. r4-root has gpgme-config, gpgme-tool, gpgme-json and gpg-error, but no gpg or gpgconf, so gpgme has no engine to use. Not fixed in this round: a fix changes the build inputs, so it needs a new record, a new ISO and a full rerun.
-2. **alp FAIL on the installed system.** The installed /usr/lib/alp/alp.py (r4-root, 3007 lines) is an older copy. The repo file docs/handoffs/claude/alp-prototype/alp.py (3019 lines, commit 711d699, round 7 "alp default catalog path") makes usr/share/alp/index.json the default, and the r4-root copy does not have that code (diff 18 lines). The catalog file itself is on the installed disk (/usr/share/alp/index.json, 131779 bytes). The "alp check rc 0" gate ran the repo copy, so it did not show this. Fix: install the repo alp.py into r4-root through alp (new record), rebuild, and rerun the rows that use alp.
+2. **alp FAIL on the installed system.** The installed /usr/lib/alp/alp.py (r4-root, 3007 lines) is an older copy. The repo file docs/handoffs/ai/alp-prototype/alp.py (3019 lines, commit 711d699, round 7 "alp default catalog path") makes usr/share/alp/index.json the default, and the r4-root copy does not have that code (diff 18 lines). The catalog file itself is on the installed disk (/usr/share/alp/index.json, 131779 bytes). The "alp check rc 0" gate ran the repo copy, so it did not show this. Fix: install the repo alp.py into r4-root through alp (new record), rebuild, and rerun the rows that use alp.
 3. **curl NOT VERIFIED.** In every guest session (B1d, B2, B3, U1, U2) the command `curl -I ftp.gnu.org` was echoed and a new prompt came back with no output, not even an error (also with -sS). The r4-root curl 8.21.0 runs (in the chroot it reports "Could not resolve host", because the chroot has no DNS). The round 6 PASS (HTTP/1.1 200, sha 1686) is not repeated on this sha. Cause not found; it is not claimed as a PASS.
 4. **sudo.** The installed system has no sudo ("bash: sudo: command not found"). pkexec with the testuser password works (the polkit dialog appears). The brief's sudo path was not available.
 5. **fusermount3 mode (review item 1).** The file in r4-root and on the installed disk is -rwxr-xr-x (755), not setuid. The brief says the record has 4755; the r4-ledger record was not compared field by field, so the difference is between the brief and the file. The BLFS stable book (fuse page, postlfs/fuse.html, Fuse 3.17.4) installs fusermount3 and then runs chmod u+s /usr/bin/fusermount3. The text here is from a search summary, not a verbatim quote; the source is https://www.linuxfromscratch.org/blfs/view/stable/postlfs/fuse.html. So the book's setuid bit is missing in this image, and unprivileged FUSE mounts would fail. Not changed in this round.

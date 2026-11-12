@@ -24,7 +24,7 @@ Durum: M11 **kısmi kabul**. BIOS sanal diske kurulum ve seri giriş istemi (`al
 - Test şifreleri repo dışında kaldı; bu oturumda parola yazılmadı.
 
 ## Dosyalar ve yollar
-- Çalışma: `/home/yrslf/alpbahOS/wt-t2-kisayol` (branch `claude/t2-kisayol-2026-11-05`).
+- Çalışma: `/home/yrslf/alpbahOS/wt-t2-kisayol` (branch `ai/t2-kisayol-2026-11-05`).
 - Koşucu günlükleri ve hedef: `/home/yrslf/alpbahOS/scratch-lfs-bench/m11-runner/` (`logs-1` … `logs-12`, `boot-vm2/`, `m11-target.img`).
 - Yardımcı araçlar: `scratch-lfs-bench/m11-runner/hosttools/` (rsync/unsquashfs sarmalayıcıları).
 - Chroot: `/mnt/lfs` (`scripts/lfs-blfs/mount_lfs.sh` ile bağlı). Koşucu sonunda kendi bağlarını ve loop aygıtlarını kaldırır.

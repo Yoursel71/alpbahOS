@@ -28,7 +28,7 @@ NAME = "session-r5fix"
 VER = "13.1-r5fix"
 # Config record: there is no upstream archive. The source is this file in the repository; the sha256 is the
 # sha256 of this file (computed below). adopt-base requires an https URL.
-REPO_SRC = "https://github.com/alperenyardim30-hash/alpbahOS/blob/claude/t2-kisayol-2026-11-05/scripts/rebuild/r5/session-r5fix.py"
+REPO_SRC = "https://github.com/alperenyardim30-hash/alpbahOS/blob/ai/t2-kisayol-2026-11-05/scripts/rebuild/r5/session-r5fix.py"
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 PLASMA_UNITS = []

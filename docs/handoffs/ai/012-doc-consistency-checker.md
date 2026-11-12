@@ -1,16 +1,16 @@
-# Claude devir belgesi 012: belge tutarlılık denetçisi
+# asistan devir belgesi 012: belge tutarlılık denetçisi
 
 **Görev ID / durum:** Backlog dışı. Kullanıcı isteği ("belgeler ilerlemeye yetişemiyor, nasıl çözeriz" → "yaz"). Tamamlandı.
 
-**Host / dal:** Windows. Dal: `claude/desktop-bootstrap`.
+**Host / dal:** Windows. Dal: `ai/desktop-bootstrap`.
 
-**Değişen dosya:** `docs/handoffs/claude/tools/check_docs.py` (yeni, yalnız standart kütüphane). `scripts/` Codex'in sahipliğinde olduğu için araç Claude'un kendi alanında duruyor; oraya taşınması entegratörün kararı.
+**Değişen dosya:** `docs/handoffs/ai/tools/check_docs.py` (yeni, yalnız standart kütüphane). `scripts/` Codex'in sahipliğinde olduğu için araç asistan'un kendi alanında duruyor; oraya taşınması entegratörün kararı.
 
 ## Ne yapıyor
 
 | Kural | Denetim |
 |---|---|
-| `stale-term` | Yaşayan belgelerde (AGENTS, CLAUDE, CURRENT, README, MASTER_PLAN, DECISIONS, BACKLOG, HYPERV_PLAN, CLAUDE_START, M2 manifesti) geçersiz kararlara ait ifadeler: 13.1 (D33), pacman/libalpm/Discover (D31), multilib/32-bit (D32). Tarihsel ya da iptal bağlamındaki satırlar sayılmaz. WORKLOG ve devir belgeleri tarih sıralı kayıt olduğu için muaf. |
+| `stale-term` | Yaşayan belgelerde (AGENTS, AGENT, CURRENT, README, MASTER_PLAN, DECISIONS, BACKLOG, HYPERV_PLAN, AGENT_START, M2 manifesti) geçersiz kararlara ait ifadeler: 13.1 (D33), pacman/libalpm/Discover (D31), multilib/32-bit (D32). Tarihsel ya da iptal bağlamındaki satırlar sayılmaz. WORKLOG ve devir belgeleri tarih sıralı kayıt olduğu için muaf. |
 | `commit-ref` | Backtick içindeki commit/blob hash'leri depoda gerçekten var mı. `alpbahOS-alp` reposuna ait satırlar atlanır. |
 | `broken-link` | Göreli Markdown bağlantılarının hedef dosyası var mı. |
 | `decision-ref` | Geçen D/P kimlikleri DECISIONS.md'de tanımlı mı. |
@@ -27,7 +27,7 @@ Bir satırı bilinçli olarak muaf tutmak için satıra `<!-- doccheck: ok -->` 
 - **Ayarlama sırasında giderilen yanlış alarmlar:**
   - WORKLOG'daki `2077d1a` bir blob hash'i; commit değil (`a82f872:…/alp.py` için doğru).
   - `f591c97` ve `812cb04` `alpbahOS-alp` reposunun commit'leri.
-- **`C:\alpbahOS-claude` dalında:** `decision-ref` D31 ve P13'ü "tanımsız" buldu. Bu gerçek bir kayma: D31–D33 doğrudan main'e yazıldı, bu dalın DECISIONS.md'si eski.
+- **`C:\alpbahOS-ai` dalında:** `decision-ref` D31 ve P13'ü "tanımsız" buldu. Bu gerçek bir kayma: D31–D33 doğrudan main'e yazıldı, bu dalın DECISIONS.md'si eski.
 - Git deposu olmayan bir dizinde çıkış kodu 2 döndü.
 - **Çalıştırılmadı:** commit öncesi (pre-commit) hook entegrasyonu. Hook kurmak, iki ajanın ortak git yapılandırmasını değiştirir; entegratörün kararı.
 
@@ -35,7 +35,7 @@ Bir satırı bilinçli olarak muaf tutmak için satıra `<!-- doccheck: ok -->` 
 
 1. main'deki 19 `stale-term` bulgusunu düzelt; betik 0 bulgu verene kadar devam et.
 2. `AGENTS.md`'ye oturum kapanış kuralını ekle:
-   - her oturum sonunda `python docs/handoffs/claude/tools/check_docs.py` çalıştır;
+   - her oturum sonunda `python docs/handoffs/ai/tools/check_docs.py` çalıştır;
    - bulgu varsa düzelt ya da gerekçeyle `doccheck: ok` işaretle;
    - durum yalnız `CURRENT.md`'de, kararlar yalnız `DECISIONS.md`'de tutulur, diğer belgeler bunlara referans verir.
 3. İstenirse aracı `scripts/`'e taşı ve pre-commit hook yap.

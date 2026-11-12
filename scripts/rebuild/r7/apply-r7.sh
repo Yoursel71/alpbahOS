@@ -9,7 +9,7 @@ WT=/home/yrslf/alpbahOS/wt-t2-kisayol
 # Opt-in (2026-11-11, updating the user's real install): TARGET_ROOT and LEDGER_DIR point the same record at another
 # root and ledger; defaults unchanged.
 R4=${TARGET_ROOT:-$SB/r4-root}
-ALP=$WT/docs/handoffs/claude/alp-prototype/alp.py
+ALP=$WT/docs/handoffs/ai/alp-prototype/alp.py
 LIB=$WT/scripts/rebuild/r4/r4_lib.py
 script=$1; name=$2; ver=$3; shift 3
 dir=${LEDGER_DIR:-$SB/r4-ledger/r7}/$name

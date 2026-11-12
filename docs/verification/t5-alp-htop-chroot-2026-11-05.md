@@ -11,7 +11,7 @@ Kapsam: PKG-01/PKG-02 için `alp install htop` → çalıştır → `alp remove 
 
 ## Motor
 
-- `docs/handoffs/claude/alp-prototype/alp.py` → rootfs `/usr/bin/alp`. sha256 (ilk 16 hane) `92d519212d161159`, repo dosyasıyla `cmp` eşleşti.
+- `docs/handoffs/ai/alp-prototype/alp.py` → rootfs `/usr/bin/alp`. sha256 (ilk 16 hane) `92d519212d161159`, repo dosyasıyla `cmp` eşleşti.
 - Motor `python3` (LFS 3.13) ile çalıştı. `@PREFIX@` yer tutucusu kullanıldı; `--root /` altında önek `/usr`.
 
 ## Adımlar ve sonuçlar

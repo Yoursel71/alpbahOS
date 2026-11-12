@@ -38,8 +38,8 @@ root=r4-before-trust-2026-11-11 alp=old-alp.py flag='': check rc=0 (Bağımlıl�
 
 == 5. the wrapper adds nothing for an old alp.py or a root without keys
   trace lines with allowed-keys for the old alp.py (expect only the grep test): 1
-  old root: + exec python3 /home/yrslf/alpbahOS/wt-hostkeys/docs/handoffs/claude/alp-prototype/alp.py --allow-unsigned --root /home/yrslf/alpbahOS/scratch-lfs-b
-  integrated root (--root=): + exec python3 /home/yrslf/alpbahOS/wt-hostkeys/docs/handoffs/claude/alp-prototype/alp.py --keyring /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-hostkeys-ro/usr/share/a
+  old root: + exec python3 /home/yrslf/alpbahOS/wt-hostkeys/docs/handoffs/ai/alp-prototype/alp.py --allow-unsigned --root /home/yrslf/alpbahOS/scratch-lfs-b
+  integrated root (--root=): + exec python3 /home/yrslf/alpbahOS/wt-hostkeys/docs/handoffs/ai/alp-prototype/alp.py --keyring /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-hostkeys-ro/usr/share/a
 alp-host: --root ROOT missing
   no --root: rc=2
 deleted /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-hostkeys-ro

@@ -6,7 +6,7 @@ Date: 2026-09-24, Windows verification run at approximately 17:58 UTC.
 
 - Read the installed source from Builder with `scp alp-builder:/mnt/lfs/usr/lib/alp/alp.py` into a temporary Windows test directory (`%TEMP%\alp-rootfs-m04-audit-20260924\alp.py`). No file was written to Builder or `/mnt/lfs`.
 - Verified the copied file SHA-256: `7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132` (50,348 bytes). This is the pinned `e8b0376` implementation.
-- Copied the repository's existing `docs/handoffs/claude/alp-prototype/tests/test_alp.py` into the temporary directory. Its import path resolves to the copied Builder-installed `alp.py`, not the repository's current module.
+- Copied the repository's existing `docs/handoffs/ai/alp-prototype/tests/test_alp.py` into the temporary directory. Its import path resolves to the copied Builder-installed `alp.py`, not the repository's current module.
 - Ran:
 
   ```powershell

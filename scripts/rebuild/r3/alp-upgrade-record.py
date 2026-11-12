@@ -52,7 +52,7 @@ def main(argv):
             "file": "/" + ALP_FILE,
             "from_sha256": a.previous_sha,
             "to_sha256": new_sha,
-            "source": "docs/handoffs/claude/alp-prototype/alp.py (repo)",
+            "source": "docs/handoffs/ai/alp-prototype/alp.py (repo)",
             "method": "copy + record (alp upgrade refuses lfs-base records)",
         })
         rec["version"] = rec.get("version", "r3-prototype")

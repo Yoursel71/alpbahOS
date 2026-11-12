@@ -65,13 +65,13 @@ Bu dosya soruları ve kullanıcının ham cevaplarını tutar. Cevaplar her turd
 
 ### Tur 1
 1. Temizlik derinliği: **Canlı belge+kod.** Eski handoff, WORKLOG ve doğrulama logları tarihli geçmiş olarak kalır.
-2. AGENTS.md: **CLAUDE.md'ye birleştir**, AGENTS.md silinir.
+2. AGENTS.md: **AGENT.md'ye birleştir**, AGENTS.md silinir.
 3. Uzak `codex/*` dalları: **Arşiv etiketi koy, sonra sil.**
 4. Eski klon `~/alpbahOS/alpbahOS`: **İncele, işe yarayanı al** (sonra arşivle ve sil).
 
 ### Tur 2
 5. Codex CLI ve `~/.codex`: **Dokunma, yalnız repo.**
-6. Roller: **Claude tek ajan.** Sahiplik tabloları, entegratör ve "iki ajan" kuralları kalkar; kullanıcı karar/onay verir.
+6. Roller: **asistan tek ajan.** Sahiplik tabloları, entegratör ve "iki ajan" kuralları kalkar; kullanıcı karar/onay verir.
 7. DECISIONS.md: **Sıfırdan yeni dosya, eskisi `docs/archive/DECISIONS-v1.md`.**
 8. Teslim: **Main'e doğrudan** (fast-forward push, PR yok).
 

@@ -20,7 +20,7 @@ import sys
 R4, ALP, LEDGER, BG, LOGO = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5]
 NAME = "sddm-alpbahos-r7fix"
 VER = "0.9-r7fix"
-REPO_SRC = "https://github.com/alperenyardim30-hash/alpbahOS/blob/claude/t2-kisayol-2026-11-05/scripts/rebuild/r7/sddm-alpbahos-r7fix.py"
+REPO_SRC = "https://github.com/alperenyardim30-hash/alpbahOS/blob/ai/t2-kisayol-2026-11-05/scripts/rebuild/r7/sddm-alpbahos-r7fix.py"
 SRC = os.path.join(R4, "usr/share/sddm/themes/breeze")
 DST_REL = "usr/share/sddm/themes/alpbahos"
 DST = os.path.join(R4, DST_REL)

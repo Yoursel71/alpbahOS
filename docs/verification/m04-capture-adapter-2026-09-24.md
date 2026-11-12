@@ -92,6 +92,6 @@ remain required.
 
 - Windows host: focused M04 capture/adapter/bundle/reconciler/identity and audio-analysis suite, `python -m pytest -q tests/test_m04_install_event_capture.py tests/test_m04_capture_event_adapter.py tests/test_m04_evidence_bundle.py tests/test_m04_final_owner_reconciler.py tests/test_m04_recipe_identity_inventory.py tests/test_audio_capture_analysis.py tests/test_m04_linux_seccomp_integration.py` — **62 passed, 6 skipped**. This includes correct, missing, and tampered detached event-manifest cases, a CLI-path fixture test that writes an adapted index and passes it through the existing bundle verifier, and the opt-in Linux integration tests skipped on Windows.
 - `python -m py_compile scripts/capture-m04-install-event.py scripts/adapt-m04-capture-event.py tests/test_m04_install_event_capture.py tests/test_m04_capture_event_adapter.py tests/test_m04_linux_seccomp_integration.py` — passed.
-- `python docs/handoffs/claude/tools/check_docs.py` — 0 findings.
+- `python docs/handoffs/ai/tools/check_docs.py` — 0 findings.
 - `git diff --check` — passed.
 - The Linux integration probe remains unrun. The Windows pass is unit/fixture evidence only and does not establish Linux ctime behavior, seccomp enforcement, or production capture readiness.

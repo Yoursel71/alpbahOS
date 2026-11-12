@@ -29,7 +29,7 @@
 *.key
 id_rsa*
 id_ed25519*
-.claude/settings.local.json
+.ai/settings.local.json
 __pycache__/
 *.pyc
 .venv/

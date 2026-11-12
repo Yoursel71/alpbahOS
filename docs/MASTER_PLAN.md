@@ -118,7 +118,7 @@ Engine: `alp`, a stdlib-only Python program (D122). Commands and Turkish message
 D124 chooses KDE Discover with an alp PackageKit backend. Two drafts exist:
 
 - `scripts/legacy/wip-2026-09-30/scripts/packagekit/alpBackend.py` with the helper scripts and PolicyKit rules next to it (2026-09-30 candidate). The README there calls it a starting point for D124.
-- `docs/handoffs/claude/alp-prototype/alp_packagekit_backend.py`, a Python wrapper that calls `alp.py` as a subprocess. Its wrapper functions are tested against `alp.py` without PackageKit. The `AlpPackageKitBackend` class has never run on a PackageKit daemon. Design notes: [packagekit-integration.md](handoffs/claude/alp-prototype/design/packagekit-integration.md).
+- `docs/handoffs/ai/alp-prototype/alp_packagekit_backend.py`, a Python wrapper that calls `alp.py` as a subprocess. Its wrapper functions are tested against `alp.py` without PackageKit. The `AlpPackageKitBackend` class has never run on a PackageKit daemon. Design notes: [packagekit-integration.md](handoffs/ai/alp-prototype/design/packagekit-integration.md).
 
 Both drafts are untested on the current 12.4 base. On 2026-09-30 a different candidate rootfs (never merged into the test base) gave these results: Discover search for `htop` returned the catalog item; a `pkcon` install of `htop` completed with a `PATH` fix; removal finished but printed a "not installed" error afterwards. That run is **not a pass** ([m08-live-packagekit-auth-runtime-2026-09-30.md](../scripts/legacy/wip-2026-09-30/docs/verification/m08-live-packagekit-auth-runtime-2026-09-30.md), [m08-packagekit-path-and-auth-retest-2026-09-30.md](../scripts/legacy/wip-2026-09-30/docs/verification/m08-packagekit-path-and-auth-retest-2026-09-30.md)). The store is not ready until install, launch and remove pass cleanly on the new base, and catalog signature checks are tested.
 
@@ -150,7 +150,7 @@ Both drafts are untested on the current 12.4 base. On 2026-09-30 a different can
 | Win+Shift+S | Region screenshot (Spectacle) | Wayland permission and selection flow |
 | Ctrl+C / V / X / Z | Copy, paste, cut, undo in GUI apps | Terminal is the exception (Ctrl+C is interrupt) |
 
-State: the 2026-11-05 QEMU run passed 19 of 20 checks (commit 8e674a4; see [handoff 022](handoffs/claude/022-t2-kisayol-2026-11-05.md)). A Dolphin shortcut could not be checked because Dolphin was not in that test image. Two implementation rules come from the 2026-11-05 work:
+State: the 2026-11-05 QEMU run passed 19 of 20 checks (commit 8e674a4; see [handoff 022](handoffs/ai/022-t2-kisayol-2026-11-05.md)). A Dolphin shortcut could not be checked because Dolphin was not in that test image. Two implementation rules come from the 2026-11-05 work:
 
 - The session preparation step must run before KWin starts. Otherwise KGlobalAccel loads the old shortcut file and writes the old state back on exit (handoff 022).
 - Shortcut file path and reload follow v1 D41 and D43, carried into v2 by D143.
@@ -200,7 +200,7 @@ No browser, Wine, file indexing or store starts in the background by default. If
 - LFS chroot at `/mnt/lfs`. Scripts live in `scripts/lfs-blfs/`. Source tarballs and disk images are not in Git.
 - Long builds and tests may run for hours in the background, overnight included. Results are summarised afterwards (D105). The user spends about 1–2 hours a day.
 - Builds are local. Small CI tests run on GitHub Actions ([alp-tests.yml](../.github/workflows/alp-tests.yml)). Release ISOs go to GitHub Releases (D107).
-- Safety rules from [CLAUDE.md](../CLAUDE.md) apply: installer and disk tests only on new image files; one writer on `/mnt/lfs` and on any loop or nbd device; mount scripts clean up with an ERR/EXIT trap.
+- Safety rules from [AGENT.md](../AGENT.md) apply: installer and disk tests only on new image files; one writer on `/mnt/lfs` and on any loop or nbd device; mount scripts clean up with an ERR/EXIT trap.
 - Binary baseline is generic x86-64 (D146). No package is built with `-march=native` or host CPU flags. Newer instructions only with runtime dispatch. Every build is audited with `scripts/lfs-blfs/cpu-baseline/audit-isa.sh`. QEMU tests use the default `qemu64` CPU model as the gate.
 
 ### 8.2 Reproducibility inputs
@@ -236,7 +236,7 @@ Status is as of 2026-11-06. "Not started" means no record was found. "Not verifi
 
 | ID | Scope | Status (2026-11-06) | Exit criteria |
 |---|---|---|---|
-| M00 | Requirements, decisions, repo rules | Done. Decision review recorded as D100–D143. | DECISIONS.md and this plan agree; rule file CLAUDE.md is the only rule file. |
+| M00 | Requirements, decisions, repo rules | Done. Decision review recorded as D100–D143. | DECISIONS.md and this plan agree; rule file AGENT.md is the only rule file. |
 | M01 | Host, disk space, network, LFS host check, log layout | Not verified on the current Fedora host. The v1 record covers the earlier Windows-host setup only. | Host check passes on the current machine. |
 | M02 | `alp` engine, catalogue, first store contract | Partial. Install/remove of htop verified in chroot and VM. `alp update`, real upgrade, rollback and store path open. | `alp install/remove/update/upgrade` pass on the test base with logs; rollback tested. |
 | M03 | ABI and temporary tools; **multilib added** (D111) | Reopened. The 12.4 base is 64-bit only. Multilib not built. | R1–R2 pass (section 9). |
@@ -288,7 +288,7 @@ Status is as of 2026-11-06. "Not started" means no record was found. "Not verifi
 - Licence: GPL-3.0 for project code, with a LICENSE file (D109). Third-party components keep their own licences. A licence and source record is kept for every shipped package and image.
 - Release gate:
   - User approval for every release (D108).
-  - No test accounts, test passwords, embedded keys or test fonts in release images (safety rules in [CLAUDE.md](../CLAUDE.md)). Check this before each release.
+  - No test accounts, test passwords, embedded keys or test fonts in release images (safety rules in [AGENT.md](../AGENT.md)). Check this before each release.
   - Checksums for every ISO, published with the release notes and known issues.
   - Test matrix (section 13) run and recorded; failures listed.
 - Repository: private until the first alpha ISO is ready, then public (D108).
@@ -317,4 +317,4 @@ Tests not run are reported as "not run". A test with a log but no pass is "faile
 
 Option (b) was chosen: the installed system boots with `root=PARTUUID=…` and no initramfs. It needs GPT and `CONFIG_EFI_PARTITION=y`. Implemented in `scripts/lfs-blfs/calamares/modules/grubcfg.conf`; proven on a BIOS virtual disk ([record](verification/m11-d144-partuuid-2026-11-06.md)).
 
-History: `grub-mkconfig` wrote `root=UUID=…` for the installed system; with no initramfs the kernel panicked ([handoff 024](handoffs/claude/024-devir-m11-modul-kosucu-2026-11-06.md), item 3). No other open user decisions are recorded as of 2026-11-06.
+History: `grub-mkconfig` wrote `root=UUID=…` for the installed system; with no initramfs the kernel panicked ([handoff 024](handoffs/ai/024-devir-m11-modul-kosucu-2026-11-06.md), item 3). No other open user decisions are recorded as of 2026-11-06.

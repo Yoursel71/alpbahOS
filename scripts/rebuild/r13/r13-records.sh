@@ -22,7 +22,7 @@ rec() {
 }
 # 1 alp
 S=$W/stage-alp; rm -rf "$S"; mkdir -p "$S/usr/lib/alp" "$S/usr/bin"
-install -m 755 "$WT/docs/handoffs/claude/alp-prototype/alp.py" "$S/usr/lib/alp/alp.py"
+install -m 755 "$WT/docs/handoffs/ai/alp-prototype/alp.py" "$S/usr/lib/alp/alp.py"
 cp -a "$R4/usr/bin/alp" "$S/usr/bin/alp"
 rec alp 0.9-r13 "$S" 1
 # 2 fuse3 (package key of the r7 record)

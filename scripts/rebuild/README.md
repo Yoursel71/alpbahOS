@@ -59,7 +59,7 @@ when the runner exits.
 |---|---|---|
 | User `lfs`, `groupadd`/`useradd` | Existing host user `yrslf` | Single developer account; no new login. |
 | `.bash_profile` + `.bashrc` (4.4) | `config.sh` values plus `env -i HOME TERM bash --noprofile --norc` per script | Same clean environment without dotfiles. |
-| `LFS=/mnt/lfs`, `MAKEFLAGS=-j$(nproc)` | `LFS=/mnt/lfs13`, `MAKEFLAGS=-j16` | Contract value; repeat the parallelism measurement before trusting it (CLAUDE.md section 5). |
+| `LFS=/mnt/lfs`, `MAKEFLAGS=-j$(nproc)` | `LFS=/mnt/lfs13`, `MAKEFLAGS=-j16` | Contract value; repeat the parallelism measurement before trusting it (AGENT.md section 5). |
 | `chown root:root $LFS/sources/*` after download | `sources` and downloads owned by `yrslf` | Builds run as yrslf. |
 | `$LFS` owned by root (2.6) | `$LFS` owned by `yrslf` | Same reason. |
 | `mv /etc/bash.bashrc` (4.4 note) | Not done | Only affects interactive bash; the runner uses `--norc`. The host file is not changed. |
@@ -77,7 +77,7 @@ Multilib: the book's 13.1 pages read for this step list no x32 parts, so none we
 - No `-march`, `-mtune` or host-detected CPU flags in anything that ends up in the final system. `config.sh` sets no `CFLAGS`.
 - `libffi` is configured with `--with-gcc-arch=x86-64` (chapter 5/6 scripts).
 - GMP is built with `--enable-fat` and generic `CFLAGS` when built standalone.
-- `scripts/lfs-blfs/cpu-baseline/audit-isa.sh` is the audit after builds (CLAUDE.md section 5).
+- `scripts/lfs-blfs/cpu-baseline/audit-isa.sh` is the audit after builds (AGENT.md section 5).
 
 ## Checking the scripts
 

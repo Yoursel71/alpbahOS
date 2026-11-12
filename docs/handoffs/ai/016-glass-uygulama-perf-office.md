@@ -1,8 +1,8 @@
-# Claude devir belgesi 016: Glass profili, varsayılan uygulamalar, PERF-01 ve OFFICE-01
+# asistan devir belgesi 016: Glass profili, varsayılan uygulamalar, PERF-01 ve OFFICE-01
 
 ```text
-Görev ID / durum: M08 Glass (D10/P04), APPS-01 Claude tarafı, PERF-01 yöntem/araç, OFFICE-01 plan. Hepsi dosya düzeyinde hazır ve birim testli; hiçbiri alpbahOS üzerinde çalıştırılmadı.
-Çalışılan host ve branch/commit: YRSLF dışında Windows makinesi (Hyper-V/Builder/Gen2 erişimi yok); dal claude/glass-apps-perf-office (taban main 9c26ecf; M08 ilk dilim PR #1 ile birleşti).
+Görev ID / durum: M08 Glass (D10/P04), APPS-01 asistan tarafı, PERF-01 yöntem/araç, OFFICE-01 plan. Hepsi dosya düzeyinde hazır ve birim testli; hiçbiri alpbahOS üzerinde çalıştırılmadı.
+Çalışılan host ve branch/commit: YRSLF dışında Windows makinesi (Hyper-V/Builder/Gen2 erişimi yok); dal ai/glass-apps-perf-office (taban main 9c26ecf; M08 ilk dilim PR #1 ile birleşti).
 Değişen dosyalar: aşağıda.
 Gerçekleştirilen davranış: aşağıda.
 Çalıştırılan doğrulama ve sonuç: tests/test_m08_desktop_profile.py 36/36 (Windows, Python 3.14.4); OFFICE fixture'ları yerel Word/Excel 16.0 ile gidiş-dönüş GEÇTİ. Linux/VM testi çalıştırılmadı.
@@ -11,9 +11,9 @@ Entegrasyon için gereken: aşağıda "Codex için".
 Sonraki eylem: 015'teki Gen2 adımlarından sonra `alpbah-gorunum durum` ve PERF-01 Solid ölçümü.
 ```
 
-## Kapsam dışı bırakılan Claude işleri
+## Kapsam dışı bırakılan asistan işleri
 
-- **PKG-01/PKG-02 (`alp` ve mağaza sözleşmesi):** 26 Eylül'de başka bir Claude oturumu `alp.py` üzerinde aktif çalışıyordu (main'de aynı gün 5 `alp` commit'i). Aynı dosya grubunu eşzamanlı değiştirmemek için bu oturumda dokunulmadı.
+- **PKG-01/PKG-02 (`alp` ve mağaza sözleşmesi):** 26 Eylül'de başka bir asistan oturumu `alp.py` üzerinde aktif çalışıyordu (main'de aynı gün 5 `alp` commit'i). Aynı dosya grubunu eşzamanlı değiştirmemek için bu oturumda dokunulmadı.
 - **VM gerektiren doğrulamalar** (SHELL-01 oturum testi, UI-01/02/03 görüntü, PERF-01 ölçümleri): erişim yok. Adımlar 015 ve `profiles/perf/README.md` içinde.
 
 ## Ne yapıldı
@@ -41,7 +41,7 @@ Wine (.exe), Steam ve mağaza `dahil_degil` listesinde; dosyaya girmez (D35 sonr
 - Yeni: `profiles/desktop/bin/alpbah-gorunum`, `profiles/desktop/liquid-prototype.md`
 - Yeni: `profiles/apps/{README.md,apps.json,generate_mimeapps.py,generated/mimeapps.list}`, `profiles/apps/office/{README.md,office_fixtures.py}`
 - Yeni: `profiles/perf/{README.md,analyze_kwin_perf_csv.py,collect_session_metrics.py}`
-- Yeni: `docs/handoffs/claude/017-codex-betik-incelemesi.md`, bu belge
+- Yeni: `docs/handoffs/ai/017-codex-betik-incelemesi.md`, bu belge
 - Güncellendi: `profiles/desktop/tokens.json` (profiles.*.kde), `profiles/desktop/README.md` (§0 tablo, §5.1, §6.1), `profiles/desktop/install-desktop-profile.sh` (`--bindir`, araç ve mimeapps; 22 dosya), `tests/test_m08_desktop_profile.py` (19 → 36 test), `.gitattributes` (bin ve generated için LF)
 
 ## Bilinen sorun ve açık karar

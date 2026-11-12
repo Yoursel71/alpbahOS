@@ -24,7 +24,7 @@ Kullanıcının kabul ettiği deneyim:
 - Wine (yalnız 64-bit sistemde WoW64, D35); Office 2016/2019/2021 ailesi için sürüm bazlı uyumluluk testleri. Steam istemcisi D35 ile kapsam dışı.
 - Legacy BIOS ve UEFI; daha sonraki kurucuda internetsiz kurulum ve Windows yanında kurulum.
 - Yerel Hyper-V geliştirme, 300 GB depolama bütçesi; bulut derleme/depolama kullanılmaz. C: NVMe çalışma alanı, F: SATA HDD artifact/build-VM alanıdır.
-- Günde 1–2 saat kullanıcı katkısı; Claude Code ve Codex için özel Git deposunda ayrı çalışma alanları.
+- Günde 1–2 saat kullanıcı katkısı; asistan ve Codex için özel Git deposunda ayrı çalışma alanları.
 
 Önceki canlı USB/VM tercihi ilk alfayı tanımlar. Sonraki “hepsi olsun” yanıtı grafik, çevrimdışı ve Windows yanında kurulum özelliklerini genel yol haritasına ekler; ilk alfa ile kurulabilir beta ayrı teslimlerdir.
 
@@ -51,7 +51,7 @@ Kullanıcı teknik seçimleri devrettiği için aşağıdaki başlangıç mimari
 | Masaüstü | KDE Plasma / KWin | İlk sanal masaüstü oturumu ve donanım testi |
 | Görüntü protokolü | Wayland öncelikli. X11/Xwayland build tercihi açık kullanıcı kararı; Qt XCB ve Xwayland şu an kapalı. | P02 uyumluluk yolu kullanıcı yanıtı ve build sonrası test bekliyor |
 | Terminal | Konsole + etkileşimli Zsh | Öneri, düzeltme, Unicode ve kısayol testleri |
-| Paket deneyimi | `alp`: recipe/kaynaktan derleme, Flatpak sarmalayıcı ve alpbahOS core arşivi (D31/P13) | Kod `docs/handoffs/claude/alp-prototype/`; rootfs motoru commit ve SHA-256 ile eşleşmeli |
+| Paket deneyimi | `alp`: recipe/kaynaktan derleme, Flatpak sarmalayıcı ve alpbahOS core arşivi (D31/P13) | Kod `docs/handoffs/ai/alp-prototype/`; rootfs motoru commit ve SHA-256 ile eşleşmeli |
 | Uygulama mağazası | `alp` PackageKit backend taslağı; Discover/GUI entegrasyonu doğrulanmış değil | Ortak veritabanı, işlem kilidi ve paket işlemleri uçtan uca test edilmeden hazır sayılmaz |
 | Ses/ağ | PipeWire + WirePlumber; NetworkManager; Bluetooth için BlueZ | Ses, ağ geçişi ve cihaz testleri |
 | Kurucu | Sonraki sürümde Calamares özelleştirmesi | Offline, BIOS/UEFI, boş disk ve dual-boot sanal disk senaryoları |
@@ -115,7 +115,7 @@ Etkileşimli Zsh kullanımı build scriptlerinin yorumlayıcısını veya `/bin/
 
 ## 5. Paket ve mağaza deneyimi
 
-> **21 Eylül 2026 güncellemesi (D31/P13):** pacman/libalpm + Discover/PackageKit alpm altyapısı terk edildi ve `alp` motoru seçildi; sahipliği Claude'a geçti. Motor kodu bu repodaki `docs/handoffs/claude/alp-prototype/alp.py` ve yardımcı dosyalardadır. Ayrı [alpbahOS-alp tarif deposu](https://github.com/Yoursel71/alpbahOS-alp) tarif/index içeriğini taşır. Rootfs'ye kurulu motor, kaynak commit blob SHA-256'sı ile aynı değilse güncel kabul edilmez. Discover/PackageKit hazır entegrasyon gibi sunulmaz.
+> **21 Eylül 2026 güncellemesi (D31/P13):** pacman/libalpm + Discover/PackageKit alpm altyapısı terk edildi ve `alp` motoru seçildi; sahipliği asistan'a geçti. Motor kodu bu repodaki `docs/handoffs/ai/alp-prototype/alp.py` ve yardımcı dosyalardadır. Ayrı [alpbahOS-alp tarif deposu](https://github.com/Yoursel71/alpbahOS-alp) tarif/index içeriğini taşır. Rootfs'ye kurulu motor, kaynak commit blob SHA-256'sı ile aynı değilse güncel kabul edilmez. Discover/PackageKit hazır entegrasyon gibi sunulmaz.
 
 ### 5.1 Kullanıcıya sunulacak komut ailesi (tarihsel — bkz. yukarıdaki güncelleme)
 
@@ -258,7 +258,7 @@ Aşağıdaki yeni dizinlerin çoğu henüz oluşturulmadı; görevler geldikçe 
 ```text
 alpbahOS/
   AGENTS.md
-  CLAUDE.md
+  AGENT.md
   docs/
     MASTER_PLAN.md
     DECISIONS.md
@@ -409,13 +409,13 @@ Gizlilik/sürücü/uyumluluk seçenekleri Ayarlar'dan erişilebilir. Telemetri v
 
 Çıkış koşulları ilk sürüm kapsamına göre daraltılır; örneğin Liquid prototipi başarısızsa Glass ile alfa çıkışı mümkün olabilir. Bu durum bilinen sınırlama olarak yazılır, tamamlanmış Liquid özelliği gibi sunulmaz.
 
-## 14. Codex ve Claude iş bölümü
+## 14. Codex ve asistan iş bölümü
 
-Kullanıcının devrettiği rol seçimi: Codex build sistemi, LFS, ABI kapsamı, Hyper-V/ISO ve entegrasyon sahibi; Claude Code masaüstü profilleri, terminal kullanıcı deneyimi, kısayollar, tema, **paket motoru (`alp`, bkz. D31/P13, 21 Eylül 2026)** ve ikinci göz inceleme sahibi. Bu sahiplik planıdır.
+Kullanıcının devrettiği rol seçimi: Codex build sistemi, LFS, ABI kapsamı, Hyper-V/ISO ve entegrasyon sahibi; asistan masaüstü profilleri, terminal kullanıcı deneyimi, kısayollar, tema, **paket motoru (`alp`, bkz. D31/P13, 21 Eylül 2026)** ve ikinci göz inceleme sahibi. Bu sahiplik planıdır.
 
-**Not (21 Eylül 2026):** Önceki sürümde "paket entegrasyonu" Codex'in sahiplik alanındaydı (pacman/libalpm + PackageKit backend'i, PKG-01/PKG-02). Kullanıcı D31 ile bu kararı değiştirdi: motor artık `alp`, sahibi Claude. Codex'in rolü bu noktadan sonra LFS temel sistemine `alp`'i (saf Python, stdlib-only bir script; ek bağımlılık gerektirmez) yerleştirmek ve BLFS grafik/oturum zincirini ilerletmekle sınırlı; PackageKit/Discover backend'i artık bu planın kapsamında değildir (`alp`'in kendi GUI entegrasyon yolu ayrıca ele alınacak, proposal §6'da "Yok" olarak işaretli açık eksiklik).
+**Not (21 Eylül 2026):** Önceki sürümde "paket entegrasyonu" Codex'in sahiplik alanındaydı (pacman/libalpm + PackageKit backend'i, PKG-01/PKG-02). Kullanıcı D31 ile bu kararı değiştirdi: motor artık `alp`, sahibi asistan. Codex'in rolü bu noktadan sonra LFS temel sistemine `alp`'i (saf Python, stdlib-only bir script; ek bağımlılık gerektirmez) yerleştirmek ve BLFS grafik/oturum zincirini ilerletmekle sınırlı; PackageKit/Discover backend'i artık bu planın kapsamında değildir (`alp`'in kendi GUI entegrasyon yolu ayrıca ele alınacak, proposal §6'da "Yok" olarak işaretli açık eksiklik).
 
-Ana kaynak kökü `C:\alpbahOS`; Claude için ayrı Git worktree `C:\alpbahOS-claude`. Ortak `main` üzerinde eşzamanlı yazılmaz. Kod, küçük varlıklar ve Markdown dosyaları özel repoda; büyük çıktılar F: üzerinde. Claude aynı makinede değilse kendi clone/branch'inde aynı kuralları izler. İlk devir belgesi [CLAUDE_START.md](CLAUDE_START.md), görev listesi [BACKLOG.md](BACKLOG.md).
+Ana kaynak kökü `C:\alpbahOS`; asistan için ayrı Git worktree `C:\alpbahOS-ai`. Ortak `main` üzerinde eşzamanlı yazılmaz. Kod, küçük varlıklar ve Markdown dosyaları özel repoda; büyük çıktılar F: üzerinde. asistan aynı makinede değilse kendi clone/branch'inde aynı kuralları izler. İlk devir belgesi [AGENT_START.md](AGENT_START.md), görev listesi [BACKLOG.md](BACKLOG.md).
 
 Her görevde: ID, sahip, dosya sınırı, girdi/çıktı, bağımlılık, test yöntemi ve devir notu bulunur. Ortak dosya veya rootfs için tek yazıcı olur. Aynı anda iki build motoru tek paket veri tabanını değiştirmez.
 
@@ -427,7 +427,7 @@ Her görevde: ID, sahip, dosya sınırı, girdi/çıktı, bağımlılık, test y
 - Paket manifesti ve build artifact yolları.
 - Test raporu, log ve görev devri biçimi.
 
-Ortak kurallar [AGENTS.md](../AGENTS.md), Claude başlangıç talimatları [CLAUDE.md](../CLAUDE.md) içindedir. Bağlantı veya ortak repo kurulmadan Claude'a iş gönderildiği varsayılmaz.
+Ortak kurallar [AGENTS.md](../AGENTS.md), asistan başlangıç talimatları [AGENT.md](../AGENT.md) içindedir. Bağlantı veya ortak repo kurulmadan asistan'a iş gönderildiği varsayılmaz.
 
 ## 15. Zaman ve kaynak tahmini yöntemi
 
@@ -450,7 +450,7 @@ Her 1–2 saatlik kullanıcı oturumu: 10 dk devir/log inceleme, 40–75 dk tek 
 1. Plan/repo/devir düzeni ve Hyper-V yetki kontrolü.
 2. Builder hazırlığı, ağ/SSH ve LFS host-check.
 3. Kaynak/kitap sabitleme, ABI kapsamı ve paket motoru küçük deneyleri.
-4. Geçici toolchain başlatma; Claude tarafında tema/kısayol dosyalarının hazırlanması.
+4. Geçici toolchain başlatma; asistan tarafında tema/kısayol dosyalarının hazırlanması.
 5. Sonuçları doğrulama ve ölçümlerle sonraki oturumları planlama.
 
 Bu sıra bir günde bir aşamanın kesin biteceği anlamına gelmez. Uzun derleme/test adımları birden fazla oturuma yayılabilir.

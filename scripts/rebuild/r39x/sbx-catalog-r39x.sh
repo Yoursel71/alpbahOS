@@ -11,7 +11,7 @@
 set -eu
 OUT=$1
 WT=$(cd "$(dirname "$0")/../../.." && pwd)
-TOOL=$WT/docs/handoffs/claude/alp-prototype/alp_catalog_tool.py
+TOOL=$WT/docs/handoffs/ai/alp-prototype/alp_catalog_tool.py
 GH=/home/yrslf/alpbahOS/scratch-lfs-bench/alp-signing/primary
 [ ! -e "$OUT" ] || { echo "REFUSED: $OUT exists"; exit 2; }
 mkdir -p "$OUT/src" "$OUT/recipes"

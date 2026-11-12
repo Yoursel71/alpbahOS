@@ -1,19 +1,19 @@
-# Claude devir belgesi 005 — `alp`: `upgrade` + `.alpnew`/`.alpsave` + `--json` + PackageKit backend kodu
+# asistan devir belgesi 005 — `alp`: `upgrade` + `.alpnew`/`.alpsave` + `--json` + PackageKit backend kodu
 
 Görev ID / durum: (Backlog dışı, kullanıcı talebi — "PackageKit + config koruma tasarımlarını gerçekten kodla") tamamlandı.
 
-Çalışılan host ve branch/commit: Windows host, worktree `C:\alpbahOS-claude`, dal `claude/desktop-bootstrap`. Bu belgenin yazıldığı anda henüz commit atılmadı; hash bu turun commit'iyle güncellenecek.
+Çalışılan host ve branch/commit: Windows host, worktree `C:\alpbahOS-ai`, dal `ai/desktop-bootstrap`. Bu belgenin yazıldığı anda henüz commit atılmadı; hash bu turun commit'iyle güncellenecek.
 
 Değişen dosyalar:
-- `docs/handoffs/claude/alp-prototype/alp.py` (upgrade, config-aware merge, `.alpsave`, `--json`)
-- `docs/handoffs/claude/alp-prototype/alp_packagekit_backend.py` (yeni)
-- `docs/handoffs/claude/alp-prototype/tests/test_alp.py` (+12 test)
-- `docs/handoffs/claude/alp-prototype/tests/test_packagekit_backend.py` (yeni, 7 test)
-- `docs/handoffs/claude/alp-prototype/README.md`
-- `docs/handoffs/claude/alp-prototype/design/config-protection.md` (durum güncellendi: koda döküldü)
-- `docs/handoffs/claude/alp-prototype/design/packagekit-integration.md` (durum güncellendi: kısmen koda döküldü)
-- `docs/handoffs/claude/001-alp-hybrid-pkg-proposal.md` (gap tablosu güncellendi)
-- `docs/handoffs/claude/005-alp-json-upgrade-packagekit.md` (bu dosya)
+- `docs/handoffs/ai/alp-prototype/alp.py` (upgrade, config-aware merge, `.alpsave`, `--json`)
+- `docs/handoffs/ai/alp-prototype/alp_packagekit_backend.py` (yeni)
+- `docs/handoffs/ai/alp-prototype/tests/test_alp.py` (+12 test)
+- `docs/handoffs/ai/alp-prototype/tests/test_packagekit_backend.py` (yeni, 7 test)
+- `docs/handoffs/ai/alp-prototype/README.md`
+- `docs/handoffs/ai/alp-prototype/design/config-protection.md` (durum güncellendi: koda döküldü)
+- `docs/handoffs/ai/alp-prototype/design/packagekit-integration.md` (durum güncellendi: kısmen koda döküldü)
+- `docs/handoffs/ai/001-alp-hybrid-pkg-proposal.md` (gap tablosu güncellendi)
+- `docs/handoffs/ai/005-alp-json-upgrade-packagekit.md` (bu dosya)
 
 Gerçekleştirilen davranış:
 

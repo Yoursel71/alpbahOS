@@ -22,7 +22,7 @@ setopt HIST_IGNORE_SPACE
 bindkey '^R' history-incremental-search-backward
 
 # --- Yazım düzeltme: yalnızca komut adı, tüm argümanlar DEĞİL ---
-# CLAUDE.md: "Yazım yardımı argümanları/dosya adlarını sessizce yeniden yazmaz."
+# AGENT.md: "Yazım yardımı argümanları/dosya adlarını sessizce yeniden yazmaz."
 setopt CORRECT
 unsetopt CORRECT_ALL
 
@@ -54,7 +54,7 @@ zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 # --- alp paket adı tamamlama (MASTER_PLAN §4.3 madde 4) ---
 # Kaynak: yerel katalog index.json (ALP_INDEX ortam değişkeni, yoksa
 # /usr/share/alp/index.json). Yalnız okur; root ya da ağ gerekmez.
-# alp CLI sözleşmesi: alp.py (docs/handoffs/claude/alp-prototype/).
+# alp CLI sözleşmesi: alp.py (docs/handoffs/ai/alp-prototype/).
 _alp_index_names() {
   local idx=${ALP_INDEX:-/usr/share/alp/index.json}
   [[ -r $idx ]] || return 1

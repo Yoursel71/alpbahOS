@@ -8,10 +8,10 @@ trap 'echo "FAILED at line $LINENO: $BASH_COMMAND" >&2' ERR
 #  2. add a local console account "admin" (wheel) with a password chosen by the
 #     user for this throwaway test VM. SSH stays key-only (AllowUsers sa).
 # The plaintext password comes from ADMIN_PASSWORD and is never echoed.
-IMG=${IMG:-/tmp/claude-gen2-work.vhdx}
+IMG=${IMG:-/tmp/ai-gen2-work.vhdx}
 ADMIN_PASSWORD=${ADMIN_PASSWORD:?Set ADMIN_PASSWORD}
 NBD=/dev/nbd0
-WORK=$(mktemp -d /tmp/claude-gen2-admin.XXXXXX)
+WORK=$(mktemp -d /tmp/ai-gen2-admin.XXXXXX)
 MOUNT=$WORK/root
 ATTACHED=0
 ROOT_MOUNTED=0

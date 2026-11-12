@@ -13,7 +13,7 @@
 ```text
 ┌──────────────────────────── Windows host (kullanıcının PC'si) ────────────────────────────┐
 │  C:\alpbahOS          → Git ana çalışma ağacı (main, Codex)   — BELGE/KOD, derleme YOK      │
-│  C:\alpbahOS-claude   → Git çalışma ağacı (claude/desktop-bootstrap, Claude)               │
+│  C:\alpbahOS-ai   → Git çalışma ağacı (ai/desktop-bootstrap, asistan)               │
 │  F:\alpbahOS-build\   → Büyük dosyalar: artifacts\ (VHDX release), vms\ (VM çalışma diski) │
 │  Hyper-V Manager      → VM'leri açar/kapatır (yönetici yetkisi gerekir)                    │
 │                                                                                            │
@@ -54,15 +54,15 @@
 |---|---|---|
 | Bir BLFS paketini derlemek ya da kurmak | **Builder → `/mnt/lfs` chroot** | Kaynağı `/mnt/lfs/sources`'a indir, checksum doğrula, chroot'ta derle. Logu `/mnt/lfs/tmp/alp-logs/`'e yaz (§4.1). |
 | Kernel derlemek | **Builder → `/mnt/lfs` chroot** | Aynı kaynak ağacı; config değişikliğini WORKLOG'a yaz. |
-| `alp`'i sisteme yerleştirmek | **Builder → `/mnt/lfs/usr/lib/alp/alp.py`** | Kaynak: `docs/handoffs/claude/alp-prototype/alp.py` (belirli bir commit'ten). Kurulumdan sonra hash karşılaştır (§4.3). |
-| `alp` kodunu değiştirmek | **Windows → `C:\alpbahOS-claude`** | Claude'un sahipliğinde. Codex bulguyu raporlar, kodu değiştirmez. |
+| `alp`'i sisteme yerleştirmek | **Builder → `/mnt/lfs/usr/lib/alp/alp.py`** | Kaynak: `docs/handoffs/ai/alp-prototype/alp.py` (belirli bir commit'ten). Kurulumdan sonra hash karşılaştır (§4.3). |
+| `alp` kodunu değiştirmek | **Windows → `C:\alpbahOS-ai`** | asistan'un sahipliğinde. Codex bulguyu raporlar, kodu değiştirmez. |
 | `alp`'in testlerini Linux'ta koşmak | **Builder → `/tmp/<ajan>-<iş>-XXXX`** | Geçici dizin kullan. `/mnt/lfs`'e ve Builder'daki Git reposuna dokunma; iş bitince dizini sil. |
 | Yeni VHDX imajı üretmek | **Builder** (rootfs'ten) → **F:\alpbahOS-build\artifacts** | Rootfs'ten üret, SHA-256 al, `.sha256` ve `.txt` manifestini yanına koy (§4.2). |
 | Kullanıcı hesabı, parola, SSH anahtarı eklemek | **Builder → rootfs'e provisioning betiğiyle** | M1 imajından kopyalama yok; tekrarlanabilir betik kullan (`docs/IMAGE_PROVISIONING.md`). |
 | Açılışı, ağı, reboot'u denemek | **Güncel Gen2 test VM** | login → `networkctl status` → hosttan ping → kontrollü reboot → tekrar. Gen1 BIOS sonucu tarihsel kanıttır; VM silinmiştir. |
 | Plasma oturumunu denemek | **Test VM, VMConnect konsolu (tty1)** | SSH oturumu DRM seat vermez; SSH'den Plasma testi geçersizdir. |
 | Belge, karar, backlog güncellemek | **Windows → Git ağacı** | Durum → `CURRENT.md`, karar → `DECISIONS.md`, kanıt → `WORKLOG.md`. Başka yerde tekrarlama. |
-| Belge tutarlılığını kontrol etmek | **Windows → Git ağacı** | `python docs/handoffs/claude/tools/check_docs.py` → 0 bulgu olmalı. |
+| Belge tutarlılığını kontrol etmek | **Windows → Git ağacı** | `python docs/handoffs/ai/tools/check_docs.py` → 0 bulgu olmalı. |
 | VM oluşturmak, açmak, kapatmak, disk bağlamak | **Windows → Hyper-V** (yönetici) | Yetki yoksa kullanıcıdan iste (§7). |
 
 ---
@@ -90,7 +90,7 @@
 
 ```text
 # Windows'ta: kurulacak dosyanın beklenen hash'i
-git show <commit>:docs/handoffs/claude/alp-prototype/alp.py | sha256sum
+git show <commit>:docs/handoffs/ai/alp-prototype/alp.py | sha256sum
 # Builder'da: kurulumdan sonra
 sha256sum /mnt/lfs/usr/lib/alp/alp.py        # iki hash aynı olmalı
 ```
@@ -171,4 +171,4 @@ Engeli WORKLOG'a "bloklandı: <sebep>, gereken: <yetki>" diye yaz ve **başka bi
 - **Test VM / guest:** Üretilen imajı açan Hyper-V VM'i. Gen1 = BIOS, Gen2 = UEFI.
 - **Release VHDX:** `F:\alpbahOS-build\artifacts` altındaki, hash'i kayıtlı, değiştirilmeyen imaj.
 - **Çalışma kopyası:** Test VM'inin açtığı, değişebilen disk kopyası.
-- **`alp`:** alpbahOS paket yöneticisi (Claude'un sahipliğinde); rootfs'te `/usr/lib/alp/alp.py`.
+- **`alp`:** alpbahOS paket yöneticisi (asistan'un sahipliğinde); rootfs'te `/usr/lib/alp/alp.py`.

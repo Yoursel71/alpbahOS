@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # audit-isa.sh -- ISA audit for x86-64 baseline builds. Runs on the HOST (needs objdump, readelf, gawk).
 # Method: section 6.3 of docs/verification/sigill-cpu-baseline-2026-11-06.md, extended on
-# 2026-11-06 (REBUILD-R2) with the rules below. Decisions: D146, CLAUDE.md section 5.
+# 2026-11-06 (REBUILD-R2) with the rules below. Decisions: D146, AGENT.md section 5.
 #
 # Usage:  audit-isa.sh [--report-only] [--include-ko] [--allowlist FILE] <file-or-dir> [...]
 #   A directory is scanned for ELF files (*.so* and executables). Symlinks are

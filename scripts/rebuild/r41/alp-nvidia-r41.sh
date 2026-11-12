@@ -9,8 +9,8 @@ WT=/home/yrslf/alpbahOS/wt-t2-kisayol
 R4=${TARGET_ROOT:-$SB/r4-root}
 ST=$SB/r41/stage-alp-nvidia
 rm -rf "$ST"
-install -D -m 755 "$WT/docs/handoffs/claude/alp-prototype/alp.py" "$ST/usr/lib/alp/alp.py"
-install -D -m 755 "$WT/docs/handoffs/claude/alp-prototype/helpers/nvidia-stage.py" "$ST/usr/lib/alp/helpers/nvidia-stage.py"
+install -D -m 755 "$WT/docs/handoffs/ai/alp-prototype/alp.py" "$ST/usr/lib/alp/alp.py"
+install -D -m 755 "$WT/docs/handoffs/ai/alp-prototype/helpers/nvidia-stage.py" "$ST/usr/lib/alp/helpers/nvidia-stage.py"
 grep -q '_unpack_source' "$ST/usr/lib/alp/alp.py"
 [ "${ALP_REC:-}" != alp-r42 ] || grep -q '_kutu_env' "$ST/usr/lib/alp/alp.py"
 cd "$WT"

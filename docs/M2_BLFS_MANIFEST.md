@@ -46,9 +46,9 @@ Durum: Başlangıç manifesti; yalnız `[verified-lfs-12.4]` olarak işaretlenen
 
 ## `alp` entegrasyon kanıtı
 
-- Paket yöneticisi sahibi Claude; ana repodaki dosya sahipliği kuralına göre motoru yeniden yazma/değiştirme yok.
+- Paket yöneticisi sahibi asistan; ana repodaki dosya sahipliği kuralına göre motoru yeniden yazma/değiştirme yok.
 - Kaynak: `Yoursel71/alpbahOS-alp`, checkout commit `f591c9770f0b90ab47dc31894d83b0ec7cbbd166`.
-- Prototip: Claude dalındaki `docs/handoffs/claude/alp-prototype/alp.py`; LFS Python 3.13 üzerinde test edilecek.
+- Prototip: asistan dalındaki `docs/handoffs/ai/alp-prototype/alp.py`; LFS Python 3.13 üzerinde test edilecek.
 - İlk recipe test girdisi `htop 3.3.0`, SHA-256 `a69acf9b42ff592c4861010fce7d8006805f0d6ef0e8ee647a6ee6e59b743d5c`. `alp install` test root'una indir/build/stage/merge; `list`, DB sahipliği ve `remove` testleri.
 - Htop LFS 12.4 chroot'unda `ncurses` başlık/kütüphane gerektirir; eksik bağımlılık saptanırsa paket kaydı olmadan durur. Flatpak/GUI entegrasyonu bu dar test kapsamına girmez.
 

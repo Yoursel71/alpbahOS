@@ -1,6 +1,6 @@
 # alpbahOS Desktop Profile — UI-01
 
-Status: **M08 first slice — installable package ready; not yet run in a real Plasma session.** The look-and-feel package, the Atatürk wallpaper, the symbol icon, system defaults and the install script are in the repo. They were written against the Plasma 6.4.4 source code and pass the static tests (`tests/test_m08_desktop_profile.py`, run on 26 September 2026). Nothing counts as "applied" until it has been installed on the Gen2 test image and checked with a screenshot. Details: [015 handoff](../../docs/handoffs/claude/015-m08-lookandfeel-wallpaper-shortcuts.md).
+Status: **M08 first slice — installable package ready; not yet run in a real Plasma session.** The look-and-feel package, the Atatürk wallpaper, the symbol icon, system defaults and the install script are in the repo. They were written against the Plasma 6.4.4 source code and pass the static tests (`tests/test_m08_desktop_profile.py`, run on 26 September 2026). Nothing counts as "applied" until it has been installed on the Gen2 test image and checked with a screenshot. Details: [015 handoff](../../docs/handoffs/ai/015-m08-lookandfeel-wallpaper-shortcuts.md).
 
 Current design (2026-11-06, not yet run in a real Plasma session): the desktop uses a single bottom panel with a Start menu, the Solid appearance is the default and Glass is an option (D115, D116). Liquid is not in the first release (D116). The look-and-feel defaults use the `alpbahOS-Brand` wallpaper (D114). The Atatürk wallpaper is installed and can be selected (D114). Brand assets: [../../branding/alpbahos-brand/README.md](../../branding/alpbahos-brand/README.md). See the sections below for each item.
 
@@ -22,7 +22,7 @@ Install: `profiles/desktop/install-desktop-profile.sh --destdir <root> [--datadi
 
 Mechanism (from the Plasma 6.4.4 source): on the first session, `startplasma` applies the `contents/defaults` file of the package named in `kdeglobals [KDE] LookAndFeelPackage` to `~/.config/kdedefaults/`. The default wallpaper is read from the `[Wallpaper] Image` key of that same file through `libkworkspace` `DefaultWallpaper`; the lock screen uses the same default. `contents/layouts/...-layout.js` runs only for a new user with no layout, or with `plasma-apply-lookandfeel -a org.alpbahos.solid.desktop --resetLayout`.
 
-Scope: only `profiles/desktop/`. The `pkg` backend, toolchain, kernel, rootfs and the earlier Windows-host VM settings were not touched (history in [docs/archive/](../../docs/archive/)). See also [CLAUDE.md](../../CLAUDE.md) and [CLAUDE_START.md](../../docs/archive/CLAUDE_START.md). Ready-made KDE/Qt/GTK components are customised; no new compositor or desktop shell is proposed.
+Scope: only `profiles/desktop/`. The `pkg` backend, toolchain, kernel, rootfs and the earlier Windows-host VM settings were not touched (history in [docs/archive/](../../docs/archive/)). See also [AGENT.md](../../AGENT.md) and [AGENT_START.md](../../docs/archive/AGENT_START.md). Ready-made KDE/Qt/GTK components are customised; no new compositor or desktop shell is proposed.
 
 Sources: [docs/MASTER_PLAN.md](../../docs/MASTER_PLAN.md) §6–7, [docs/alpbahOS-design-mockups.md](../../docs/alpbahOS-design-mockups.md), [docs/assets/alpbahOS-logo.png](../../docs/assets/alpbahOS-logo.png).
 
@@ -87,7 +87,7 @@ Mockup contents from §4.1, not yet implemented: left, small alpbahOS symbol + a
 
 - For GTK2/3/4 sync, use **kde-gtk-config** (a ready-made KDE component).
 - For Qt5/Qt6 apps outside Plasma, use **qt5ct / qt6ct** + the **Kvantum** theme, generated from the same colour tokens.
-- Caveat from CLAUDE.md / MASTER_PLAN: one theme package is not assumed to look identical in GTK, Qt and third-party apps. The table below limits the test scope.
+- Caveat from AGENT.md / MASTER_PLAN: one theme package is not assumed to look identical in GTK, Qt and third-party apps. The table below limits the test scope.
 
 ### 6.1 Verification status
 
@@ -109,7 +109,7 @@ Mockup contents from §4.1, not yet implemented: left, small alpbahOS symbol + a
 
 ## 7. Packages the BLFS build must add (BLFS integration input)
 
-The list below is a request list, not an install command. Source and checksum verification must be done on the BLFS side, as CLAUDE.md requires.
+The list below is a request list, not an install command. Source and checksum verification must be done on the BLFS side, as AGENT.md requires.
 
 - `plasma-desktop`, `plasma-workspace`, `kwin`, `breeze`, `breeze-gtk`
 - For the M08 layout: `breeze-icons` (finding: no icons in panel/launcher), `kirigami-addons` (finding: Kickoff did not open), a font package with Turkish characters (Noto/DejaVu/Liberation; the image had no fonts), `konsole`, `dolphin`, `systemsettings`, a browser (dock launchers), `spectacle` and `plasma-systemmonitor` (shortcuts)
@@ -127,4 +127,4 @@ Not BLFS packages: Steam is supported natively through multilib (D129). Bottles 
 
 ## 8. Integration note
 
-UI-01 draft was prepared on branch `claude/desktop-bootstrap` and merged to main ([001](../../docs/handoffs/claude/001-desktop-bootstrap.md)). The M08 first slice is on branch `claude/m08-lookandfeel-shortcuts`; the Gen2 verification steps are in [015](../../docs/handoffs/claude/015-m08-lookandfeel-wallpaper-shortcuts.md).
+UI-01 draft was prepared on branch `ai/desktop-bootstrap` and merged to main ([001](../../docs/handoffs/ai/001-desktop-bootstrap.md)). The M08 first slice is on branch `ai/m08-lookandfeel-shortcuts`; the Gen2 verification steps are in [015](../../docs/handoffs/ai/015-m08-lookandfeel-wallpaper-shortcuts.md).

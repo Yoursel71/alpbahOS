@@ -7,7 +7,7 @@ set -euo pipefail
 SB=/home/yrslf/alpbahOS/scratch-lfs-bench
 WT=/home/yrslf/alpbahOS/wt-t2-kisayol
 ST=$SB/r40/stage-alp-flathub
-rm -rf "$ST" && install -D -m 755 "$WT/docs/handoffs/claude/alp-prototype/alp.py" "$ST/usr/lib/alp/alp.py"
+rm -rf "$ST" && install -D -m 755 "$WT/docs/handoffs/ai/alp-prototype/alp.py" "$ST/usr/lib/alp/alp.py"
 grep -q 'def flathub_candidates' "$ST/usr/lib/alp/alp.py"
 cd "$WT"
 REPLACE=1 bash scripts/rebuild/r7/apply-r7.sh scripts/rebuild/r8/stage-record-r8.py alp-flathub-r40 0.9-trust1.1 "$ST" \

@@ -1,8 +1,8 @@
-# Claude devir belgesi 011: `alp` mantık denetimi düzeltmeleri
+# asistan devir belgesi 011: `alp` mantık denetimi düzeltmeleri
 
 **Görev ID / durum:** Backlog dışı. Kullanıcı 23 Eylül 2026'da "repoyu oku, mantık hatalarını bul" dedi, ardından `alp` bulgularının düzeltilmesini onayladı. Tamamlandı.
 
-**Host / dal:** Windows'ta kod ve test; Ubuntu Builder'da (`sa@172.28.162.172`, yalnız `/tmp/claude-alp-*` geçici dizinleri) Linux doğrulaması. Dal: `claude/desktop-bootstrap`.
+**Host / dal:** Windows'ta kod ve test; Ubuntu Builder'da (`sa@172.28.162.172`, yalnız `/tmp/ai-alp-*` geçici dizinleri) Linux doğrulaması. Dal: `ai/desktop-bootstrap`.
 
 ## Bulunan hatalar
 
@@ -87,8 +87,8 @@ Bunların yerine tek bir `_merge_staged()` geldi. Recipe ve core yöntemlerinde 
 
 - **Gerçek rootfs'teki motor eski.** `/mnt/lfs/usr/lib/alp/alp.py` (SHA-256 `d06c72ee…`), WORKLOG'un yazdığı gibi `a82f872` değil; `36f5240` + `copy2` yaması. Bu, bütün geçmiş sürümlerden hash yeniden üretilerek doğrulandı.
 - Bu commit'ten kurulmalı ve kurulum hash ile doğrulanmalı:
-  `git show <commit>:docs/handoffs/claude/alp-prototype/alp.py | sha256sum`
+  `git show <commit>:docs/handoffs/ai/alp-prototype/alp.py | sha256sum`
 - O zamana kadar gerçek rootfs'te `alp remove` ve `alp upgrade` çalıştırılmamalı.
-- main'deki `docs/handoffs/claude/004-alp-real-lfs-file-mode-fix.patch` artık gereksiz (aynı sorun `a82f872`'de çözüldü) ve bu dizindeki `004` numaralı belgeyle çakışıyor.
+- main'deki `docs/handoffs/ai/004-alp-real-lfs-file-mode-fix.patch` artık gereksiz (aynı sorun `a82f872`'de çözüldü) ve bu dizindeki `004` numaralı belgeyle çakışıyor.
 
 **Sonraki eylem:** Kaldırmada ters bağımlılık kontrolü (sınır 1), kullanıcı onay verirse.

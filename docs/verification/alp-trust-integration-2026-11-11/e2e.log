@@ -6,7 +6,7 @@ gate rc=0
 iso-gate: FAIL: installed alp.py has no signature check
 gate on pristine root rc=1 (must be non-zero)
 7e7626b7f07bb641  /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-probe/usr/lib/alp/alp.py
-7e7626b7f07bb641  /home/yrslf/alpbahOS/wt-integ/docs/handoffs/claude/alp-prototype/alp.py
+7e7626b7f07bb641  /home/yrslf/alpbahOS/wt-integ/docs/handoffs/ai/alp-prototype/alp.py
 root:root 644 /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-probe/usr/share/alp/keys/allowed.txt
 root:root 644 /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-probe/usr/share/alp/keys/alpbahos-catalog.gpg
 root:root 644 /home/yrslf/alpbahOS/scratch-lfs-bench/r4-trust-probe/usr/share/alp/index.json

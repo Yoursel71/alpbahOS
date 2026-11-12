@@ -1,7 +1,7 @@
 # Greeter and lock screen (rounds 32 to 34), 2026-11-11
 
 Started by the user's report "Giriş ekranında bir sıkıntı var, yazılar uymamış; görüyorsun da neden bir şey demiyorsun?"
-The defect was visible in Claude's own screenshots since round 19 and was not reported; that is recorded as a lesson.
+The defect was visible in asistan's own screenshots since round 19 and was not reported; that is recorded as a lesson.
 Host `thewo`, QEMU/KVM `-cpu qemu64`. Screenshots: [greeter-lock-r33-r34-2026-11-11/](greeter-lock-r33-r34-2026-11-11/).
 
 ## Findings and fixes

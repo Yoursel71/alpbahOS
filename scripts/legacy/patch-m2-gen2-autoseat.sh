@@ -9,7 +9,7 @@ set -Eeuo pipefail
 trap 'echo "FAILED at line $LINENO: $BASH_COMMAND" >&2' ERR
 IMG=${IMG:?set IMG}
 NBD=/dev/nbd0
-WORK=$(mktemp -d /tmp/claude-autoseat.XXXXXX); MOUNT=$WORK/root; ATTACHED=0; MOUNTED=0
+WORK=$(mktemp -d /tmp/ai-autoseat.XXXXXX); MOUNT=$WORK/root; ATTACHED=0; MOUNTED=0
 cleanup() { set +e; ((MOUNTED)) && umount "$MOUNT"; ((ATTACHED)) && qemu-nbd --disconnect "$NBD" >/dev/null 2>&1; rm -rf -- "$WORK"; }
 trap cleanup EXIT
 [[ $EUID -eq 0 ]] || { echo 'Run as root.' >&2; exit 1; }

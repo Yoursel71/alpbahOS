@@ -1,7 +1,7 @@
 # alp trust model: signed catalog and unprivileged builds (design note, C9)
 
 Status: **accepted by the user 2026-11-10 (D170); implemented in the prototype** (`alp.py`, branch
-`claude/alp-trust-2026-11-10`), **not yet in any image**. Record:
+`ai/alp-trust-2026-11-10`), **not yet in any image**. Record:
 [alp-trust-2026-11-10.md](../../../../verification/alp-trust-2026-11-10.md). BACKLOG: ALP-TRUST-01.
 The four open questions of section 8 have default answers (D171-D174) that the user can change; section 9 lists
 where the code differs from this note. The text below is the note as reviewed, with rule 3 of section 3.3 and the

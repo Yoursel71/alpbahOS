@@ -21,7 +21,7 @@ LEDGER=$SB/r3-ledger
 LOGROOT=$SB/lfs13-logs/r3
 FETCH=$SB/lfs13-logs/fetch
 STATUS=$SB/r3-status.txt
-ALP_PY=$WT/docs/handoffs/claude/alp-prototype/alp.py
+ALP_PY=$WT/docs/handoffs/ai/alp-prototype/alp.py
 SNAPDIR=$SB/lfs13-snapshots
 NOTEST22=$HERE/22-mpfr-notest.sh
 # Scripts whose own gates count test results (STOP on a missing PASS count). Their test targets
@@ -141,7 +141,7 @@ while IFS=$'\t' read -r name version sha manifest entries msha step; do
 done < "$LEDGER/manifests/index.tsv"
 say "alp adopt-base: $adopted recorded, $failed refused (log $ADOPT_LOG)"
 
-INDEX=$WT/docs/handoffs/claude/alp-prototype/demo/index.json
+INDEX=$WT/docs/handoffs/ai/alp-prototype/demo/index.json
 # ALP-TRUST-01: unsigned demo index. --allow-unsigned (root only; run-r3.sh runs as root) only when this alp.py
 # knows it, so the line works with the signed-catalog alp.py and with an older one.
 UNSIGNED=""

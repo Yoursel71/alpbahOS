@@ -5,7 +5,7 @@ For: the other session (rc02, beta-rc02-2026-11-12.md section 4 "KUTU: where the
 Task / status: the rc02 KUTU finding (installed `LANG=tr_TR.utf8`, distrobox-init stops) was fixed in r4-root
 before rc02 was recorded, and round 42 shows it fixed in QEMU. Since handoff 041, r4-root got more records.
 
-Host, branch and commit: host `thewo`, `wt-t2-kisayol`, branch `claude/t2-kisayol-2026-11-05`, pushed to `yoursel`
+Host, branch and commit: host `thewo`, `wt-t2-kisayol`, branch `ai/t2-kisayol-2026-11-05`, pushed to `yoursel`
 main (this note's commit).
 
 ## KUTU-LOCALE-01 (no need to fix again)

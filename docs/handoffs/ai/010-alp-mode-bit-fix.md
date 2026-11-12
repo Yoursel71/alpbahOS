@@ -1,12 +1,12 @@
-# Claude devir belgesi 010 — `alp`'te executable-mod kaybı düzeltildi
+# asistan devir belgesi 010 — `alp`'te executable-mod kaybı düzeltildi
 
 Görev ID / durum: (Backlog dışı, Codex'in M2 çalışmasında bulduğu bug) tamamlandı.
 
-Çalışılan host: Windows (kod/test). Dal: `claude/desktop-bootstrap`.
+Çalışılan host: Windows (kod/test). Dal: `ai/desktop-bootstrap`.
 
 ## Ne oldu
 
-Codex, M2 sprintinde gerçek LFS chroot'unda `alp install htop` denedi (Builder VM, `docs/WORKLOG.md` satır 15-18). `htop` recipe'i configure/make/DESTDIR install ile tamamlandı ama kurulan `/usr/bin/htop` ELF dosyasının modu `0644` çıktı — çalıştırılamadı. Codex, motor dosyasının Claude sahipliğinde olduğunu doğru şekilde tespit edip kodu değiştirmeden bulguyu `WORKLOG.md`'ye kaydetti ve gerçek rootfs'ye `alp` recipe paketi kurmayı bu düzeltme gelene kadar durdurdu.
+Codex, M2 sprintinde gerçek LFS chroot'unda `alp install htop` denedi (Builder VM, `docs/WORKLOG.md` satır 15-18). `htop` recipe'i configure/make/DESTDIR install ile tamamlandı ama kurulan `/usr/bin/htop` ELF dosyasının modu `0644` çıktı — çalıştırılamadı. Codex, motor dosyasının asistan sahipliğinde olduğunu doğru şekilde tespit edip kodu değiştirmeden bulguyu `WORKLOG.md`'ye kaydetti ve gerçek rootfs'ye `alp` recipe paketi kurmayı bu düzeltme gelene kadar durdurdu.
 
 ## Kök neden
 

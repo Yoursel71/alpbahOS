@@ -26,7 +26,7 @@ ROOT=$(realpath "$1"); LEDGER=$2
 SB=/home/yrslf/alpbahOS/scratch-lfs-bench
 SIGNING=${SIGNING:-$SB/alp-signing}
 WT=$(cd "$(dirname "$0")/../../.." && pwd)
-PROTO=$WT/docs/handoffs/claude/alp-prototype
+PROTO=$WT/docs/handoffs/ai/alp-prototype
 ALP=$PROTO/alp.py
 LIB=$WT/scripts/rebuild/r4/r4_lib.py
 REC=$WT/scripts/rebuild/r8/stage-record-r8.py

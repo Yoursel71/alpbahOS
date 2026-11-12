@@ -1,14 +1,14 @@
-# Claude devir belgesi 003 — `alp` prototipine bağımsız inceleme + düzeltme
+# asistan devir belgesi 003 — `alp` prototipine bağımsız inceleme + düzeltme
 
 Görev ID / durum: (Backlog dışı, kullanıcı talebi) `alp` prototipinin (paralel oturumun `51f93b9` commit'i) bağımsız güvenlik/doğruluk incelemesi ve bulunan 3 sorunun düzeltilmesi. Tamamlandı.
 
-Çalışılan host ve branch/commit: Windows host, worktree `C:\alpbahOS-claude`, dal `claude/desktop-bootstrap`. Bu belgenin yazıldığı anda henüz commit atılmadı; commit hash'i bu turun commit'iyle güncellenecek.
+Çalışılan host ve branch/commit: Windows host, worktree `C:\alpbahOS-ai`, dal `ai/desktop-bootstrap`. Bu belgenin yazıldığı anda henüz commit atılmadı; commit hash'i bu turun commit'iyle güncellenecek.
 
 Değişen dosyalar:
-- `docs/handoffs/claude/alp-prototype/alp.py` (3 düzeltme)
-- `docs/handoffs/claude/alp-prototype/README.md` (düzeltme notu)
-- `docs/handoffs/claude/001-alp-hybrid-pkg-proposal.md` (güncelleme notu eklendi, orijinal test tablosu tarihsel kayıt olarak korundu)
-- `docs/handoffs/claude/003-alp-review-fixes.md` (bu dosya)
+- `docs/handoffs/ai/alp-prototype/alp.py` (3 düzeltme)
+- `docs/handoffs/ai/alp-prototype/README.md` (düzeltme notu)
+- `docs/handoffs/ai/001-alp-hybrid-pkg-proposal.md` (güncelleme notu eklendi, orijinal test tablosu tarihsel kayıt olarak korundu)
+- `docs/handoffs/ai/003-alp-review-fixes.md` (bu dosya)
 
 Gerçekleştirilen davranış: `alp.py`, `code-review` skill'iyle (medium effort) satır satır incelendi; 3 aday bulundu, kodu izleyerek ve demo tarball'ı elle açarak doğrulandı, `ReportFindings` ile raporlandı. Kullanıcı onayıyla üçü de düzeltildi:
 

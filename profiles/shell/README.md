@@ -2,7 +2,7 @@
 
 Status: **in the image since round 42 (SHELL-R4-01)**: records zsh-autosuggestions 0.7.1, zsh-syntax-highlighting 0.8.0 and alpbahos-zsh-profile-r42c (`/etc/zsh/zprofile`, `/etc/zsh/zshrc`, `/etc/skel/.zshrc`, `/etc/shells`, useradd and installer default shell `/bin/zsh`). The pty checks below were repeated on a snapshot of the rebuilt root on 2026-11-12. Earlier status: draft. The files below were prepared as static files. The shell was tested in a chroot pty on 2026-11-05 (see the verification table). It has not been run in Konsole, and the Konsole profile has not been tested on a real desktop.
 
-Scope: `profiles/shell/` only. The system shell `/bin/sh` is not changed. The interpreter used by build scripts is not affected by this profile (CLAUDE.md).
+Scope: `profiles/shell/` only. The system shell `/bin/sh` is not changed. The interpreter used by build scripts is not affected by this profile (AGENT.md).
 
 Sources: [docs/MASTER_PLAN.md](../../docs/MASTER_PLAN.md) §4, [docs/DECISIONS.md](../../docs/DECISIONS.md) D119 (terminal choice, technical choice delegated by the user) and D123 (apt hint).
 
@@ -15,7 +15,7 @@ Ready-made components are configured. No new shell or completion engine is writt
 - **[zsh-syntax-highlighting](https://github.com/zsh-users/zsh-syntax-highlighting)** — syntax colouring
 - **Konsole** — colour scheme and profile file
 
-Version and checksum verification of the source packages, and their addition to the LFS/BLFS chain, are done in the BLFS build chain (CLAUDE.md: "Do not build before the source is verified").
+Version and checksum verification of the source packages, and their addition to the LFS/BLFS chain, are done in the BLFS build chain (AGENT.md: "Do not build before the source is verified").
 
 ## Files
 
@@ -30,7 +30,7 @@ The **default** behaviour of `zsh-autosuggestions` already separates accepting f
 
 ## Spelling correction (MASTER_PLAN §4.1)
 
-`setopt CORRECT` is on and `CORRECT_ALL` is off. Only **command names** get correction suggestions. Arguments and file names are never rewritten silently (CLAUDE.md: "Spelling help never silently rewrites arguments or file names"). Zsh offers the correction with a `y/n/a/e` prompt, and the user can refuse it.
+`setopt CORRECT` is on and `CORRECT_ALL` is off. Only **command names** get correction suggestions. Arguments and file names are never rewritten silently (AGENT.md: "Spelling help never silently rewrites arguments or file names"). Zsh offers the correction with a `y/n/a/e` prompt, and the user can refuse it.
 
 ## Foreign package-manager hint (D123)
 
@@ -81,7 +81,7 @@ Current status (5 November 2026): [docs/verification/t3-zsh-chroot-2026-11-05.md
 
 ## Integration note
 
-The real verification can only be done after the BLFS terminal and session chain is installed. See [docs/handoffs/claude/001-desktop-bootstrap.md](../../docs/handoffs/claude/001-desktop-bootstrap.md).
+The real verification can only be done after the BLFS terminal and session chain is installed. See [docs/handoffs/ai/001-desktop-bootstrap.md](../../docs/handoffs/ai/001-desktop-bootstrap.md).
 
 ## Changes in v2
 

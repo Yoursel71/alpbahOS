@@ -1,14 +1,14 @@
-# Claude devir belgesi 006 — `alp`'in ilk gerçek Linux testi (SSH ile)
+# asistan devir belgesi 006 — `alp`'in ilk gerçek Linux testi (SSH ile)
 
 Görev ID / durum: (Backlog dışı, kullanıcı talebi — "alp'i şuanki Linux'unda deneyelim") tamamlandı. **Bu, `alp`'in kuruluşundan beri ilk kez gerçek bir Linux ortamında çalıştırılmasıdır.**
 
-Çalışılan host: `alpbah-builder` Ubuntu 24.04.5 LTS VM'i (Codex'in build ortamı), SSH ile (`sa@172.28.174.11`, kullanıcı tarafından üretilip yetkilendirilen `claude_alpbahos_m2` anahtarıyla). Dal: `claude/desktop-bootstrap` (Windows worktree'de düzeltme yapıldı, VM'e yalnız test için kopyalandı).
+Çalışılan host: `alpbah-builder` Ubuntu 24.04.5 LTS VM'i (Codex'in build ortamı), SSH ile (`sa@172.28.174.11`, kullanıcı tarafından üretilip yetkilendirilen `ai_alpbahos_m2` anahtarıyla). Dal: `ai/desktop-bootstrap` (Windows worktree'de düzeltme yapıldı, VM'e yalnız test için kopyalandı).
 
 ## Erişim ve kapsam sınırı
 
-Kullanıcı, benim için özel bir SSH anahtar çifti (`claude_alpbahos_m2`) ürettirip VM'in `~/.ssh/authorized_keys`'ine ekletti. Test **tamamen izole bir dizinde** (`~/alp-real-test`, iş bitince silindi) yapıldı — `AGENTS.md`'nin "Linux rootfs ve paket deposu tek yazıcı" kuralına uyarak Codex'in gerçek LFS rootfs'üne (`/mnt/alpbahos-*`) veya `~/alpbahOS` git deposuna **hiç dokunulmadı**, hiçbir dosya değiştirilmedi.
+Kullanıcı, benim için özel bir SSH anahtar çifti (`ai_alpbahos_m2`) ürettirip VM'in `~/.ssh/authorized_keys`'ine ekletti. Test **tamamen izole bir dizinde** (`~/alp-real-test`, iş bitince silindi) yapıldı — `AGENTS.md`'nin "Linux rootfs ve paket deposu tek yazıcı" kuralına uyarak Codex'in gerçek LFS rootfs'üne (`/mnt/alpbahos-*`) veya `~/alpbahOS` git deposuna **hiç dokunulmadı**, hiçbir dosya değiştirilmedi.
 
-Not: VM'in yerel `~/alpbahOS` git deposunda `claude-a/lfs-base` ve `claude-b/desktop-ux` adında, bu oturumdan bağımsız yerel dallar görüldü — bunlara da dokunulmadı, incelenmedi; kullanıcıya bilgi olarak düşülüyor, kaynağı bu ajana bilinmiyor.
+Not: VM'in yerel `~/alpbahOS` git deposunda `ai-a/lfs-base` ve `ai-b/desktop-ux` adında, bu oturumdan bağımsız yerel dallar görüldü — bunlara da dokunulmadı, incelenmedi; kullanıcıya bilgi olarak düşülüyor, kaynağı bu ajana bilinmiyor.
 
 ## Bulunan gerçek bug ve düzeltme
 
@@ -35,7 +35,7 @@ Bu hata Windows'ta hiç fark edilmedi çünkü orada zaten `make`/`configure` to
 1. `tmux`/`zsh` tarifleri bu turda gerçek Linux'ta denenmedi (yalnızca `htop` denendi) — muhtemelen benzer eksik-kütüphane hatalarıyla karşılaşırlar (tmux: libevent/ncurses; zsh muhtemelen sorunsuz derlenir, ek kütüphane istemez).
 2. Gerçek bir `libncursesw`+`make`+full derleme zinciri hâlâ hiç denenmedi (sudo erişimi yok).
 3. `flatpak` yöntemi bu VM'de de test edilmedi (`flatpak` kurulu değil, Ubuntu Server minimal).
-4. VM'in yerel repo'sunda görülen `claude-a`/`claude-b` dallarının ne olduğu bilinmiyor — kullanıcıya sorulmalı.
+4. VM'in yerel repo'sunda görülen `ai-a`/`ai-b` dallarının ne olduğu bilinmiyor — kullanıcıya sorulmalı.
 
 ## Entegrasyon için gereken
 

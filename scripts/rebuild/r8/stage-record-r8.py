@@ -14,7 +14,7 @@ import stat
 import sys
 R4, ALP, LEDGER, STAGE, NAME, VER = sys.argv[1:7]
 EXCLUDE = set(sys.argv[7:])
-REPO_SRC = "https://github.com/alperenyardim30-hash/alpbahOS/blob/claude/t2-kisayol-2026-11-05/scripts/rebuild/r8/stage-record-r8.py"
+REPO_SRC = "https://github.com/alperenyardim30-hash/alpbahOS/blob/ai/t2-kisayol-2026-11-05/scripts/rebuild/r8/stage-record-r8.py"
 entries = []
 for dirpath, dirs, names in os.walk(STAGE):
     # A symlink to a directory is listed by os.walk under dirs (and not descended into), so it is taken from there:

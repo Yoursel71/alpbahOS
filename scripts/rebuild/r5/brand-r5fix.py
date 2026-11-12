@@ -18,7 +18,7 @@ NAME = "branding-r5fix"
 VER = "0.9-r5fix"
 # Config record (no upstream archive): the source is this file in the repository (https URL, as adopt-base requires);
 # the sha256 is the sha256 of this file.
-REPO_SRC = "https://github.com/alperenyardim30-hash/alpbahOS/blob/claude/t2-kisayol-2026-11-05/scripts/rebuild/r5/brand-r5fix.py"
+REPO_SRC = "https://github.com/alperenyardim30-hash/alpbahOS/blob/ai/t2-kisayol-2026-11-05/scripts/rebuild/r5/brand-r5fix.py"
 
 files = {
     "etc/os-release": (

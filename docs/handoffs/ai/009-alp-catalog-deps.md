@@ -1,8 +1,8 @@
-# Claude devir belgesi 009 — `alp`'e Seviye 2 katalog-içi bağımlılık zinciri
+# asistan devir belgesi 009 — `alp`'e Seviye 2 katalog-içi bağımlılık zinciri
 
 Görev ID / durum: (Backlog dışı, kullanıcı talebi — "seviye 2" onayıyla) tamamlandı.
 
-Çalışılan host: Windows (kod/test) + `alpbah-builder` Ubuntu VM (SSH, gerçek uçtan uca doğrulama). Dal: `claude/desktop-bootstrap`.
+Çalışılan host: Windows (kod/test) + `alpbah-builder` Ubuntu VM (SSH, gerçek uçtan uca doğrulama). Dal: `ai/desktop-bootstrap`.
 
 ## Ne yapıldı
 

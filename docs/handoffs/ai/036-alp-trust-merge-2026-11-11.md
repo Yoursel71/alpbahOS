@@ -3,15 +3,15 @@
 For the session that builds the ISOs. Written by a sub-agent that worked in its own worktree; it did not touch the
 main worktree, r4-root, ISOs, r3x folders or VMs.
 
-Task / status: branch `claude/integ-alp-trust-2026-11-11` (worktree `/home/yrslf/alpbahOS/wt-integ`) is
+Task / status: branch `ai/integ-alp-trust-2026-11-11` (worktree `/home/yrslf/alpbahOS/wt-integ`) is
 `yoursel/main` (`e8222c6`) plus ALP-TRUST-01 (signed alp catalog, sandboxed recipe builds, D170-D174) and the
 round 21 matrix record. Not pushed. Ready to merge; **merging changes nothing for the next ISO build** (below).
 
-Host, branch and commit: host `thewo`; see `git log yoursel/main..claude/integ-alp-trust-2026-11-11`.
+Host, branch and commit: host `thewo`; see `git log yoursel/main..ai/integ-alp-trust-2026-11-11`.
 
 What the branch brings:
 
-- `docs/handoffs/claude/alp-prototype/alp.py`: catalog must be signed (`index.json.sig`, gpgv, keyring and
+- `docs/handoffs/ai/alp-prototype/alp.py`: catalog must be signed (`index.json.sig`, gpgv, keyring and
   `allowed.txt` under `/usr/share/alp/keys/`); recipe hashes; recipe steps as user `alpbuild` in bubblewrap; stage
   checks before the merge; `--allow-unsigned` and `--no-sandbox` (root only). Prototype tests: 415 passed as user,
   427 under sudo. Details: [alp-trust-2026-11-10.md](../../verification/alp-trust-2026-11-10.md).
@@ -43,7 +43,7 @@ To switch it on for real (in this order; one writer on r4-root at a time):
    (records `alp-build-user`, `alp-keyring`, `alp`, `alp-catalog <date>-v1`; then `alp list/check/search` in a
    chroot). Since the re-signing branch it takes two arguments only; the catalog version is chosen automatically.
 3. `sudo bash scripts/rebuild/trust/iso-gate.sh /home/yrslf/alpbahOS/scratch-lfs-bench/r4-root` -> PASS.
-4. **Re-signing is automatic** (branch `claude/alp-resign-2026-11-11`): `make-catalog-r8.py` calls
+4. **Re-signing is automatic** (branch `ai/alp-resign-2026-11-11`): `make-catalog-r8.py` calls
    `scripts/rebuild/trust/resign-catalog.py` on the catalog it writes. On an integrated root it signs with
    `catalog_version` one above the highest the root has seen and `valid_until` 90 days ahead; if the key is missing
    or signing fails, `make-catalog-r8.py` fails, so no unsigned catalog is left for a signed root. On a root that
@@ -66,7 +66,7 @@ Not done (as of the re-signing branch; the live r4-root was integrated later, se
 workflow run.
 
 Re-signing is ready, so applying step 2 to the live r4-root is now safe for later rounds: a regenerated catalog is
-signed by the same command that writes it, and the gate stays green. Order: merge `claude/alp-resign-2026-11-11`,
+signed by the same command that writes it, and the gate stays green. Order: merge `ai/alp-resign-2026-11-11`,
 then steps 2-3 on r4-root (one writer at a time), then the ISO.
 
 ## Applied to the live r4-root on 2026-11-11 at 10:38 (+03:00)
@@ -90,7 +90,7 @@ Done by the coordinator from `/home/yrslf/alpbahOS/wt-resign` (`ae11e8d`), log
 ### Rule for running alp from the host against a build root
 
 Use `bash scripts/rebuild/trust/alp-host.sh <alp.py> --root <ROOT> <command...>` (branch
-`claude/alp-hostkeys-2026-11-11`), or pass `--keyring <ROOT>/usr/share/alp/keys/alpbahos-catalog.gpg --allowed-keys
+`ai/alp-hostkeys-2026-11-11`), or pass `--keyring <ROOT>/usr/share/alp/keys/alpbahos-catalog.gpg --allowed-keys
 <ROOT>/usr/share/alp/keys/allowed.txt` yourself. The wrapper adds those options when the root has the key files and
 the alp.py knows them; for a never-integrated root (no keys, no `alp-keyring` record) run as root it adds
 `--allow-unsigned`, so old roots and snapshots read as before. Inside a chroot of the root (`chroot R /usr/bin/alp`)
@@ -108,8 +108,8 @@ go back, with no other writer active: move the current r4-root aside under a new
 
 ### For the other session
 
-Pull `yoursel/main` (with `claude/alp-hostkeys-2026-11-11` merged) before the next round. The ISO gate is strict
+Pull `yoursel/main` (with `ai/alp-hostkeys-2026-11-11` merged) before the next round. The ISO gate is strict
 now. If a round changes `/usr/share/alp/index.json`, use `record-catalog.sh` (or `make-catalog-r8.py`, which
 re-signs by itself). Call alp from the host only through `alp-host.sh` (or with the two key options).
 
-Next single action: merge `claude/alp-hostkeys-2026-11-11`.
+Next single action: merge `ai/alp-hostkeys-2026-11-11`.

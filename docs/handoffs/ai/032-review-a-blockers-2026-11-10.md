@@ -6,7 +6,7 @@ sub-agents were used (the work was package builds, installer changes and boot te
 main agent).
 
 Host, branch and commit: host `thewo` (Fedora); worktree `/home/yrslf/alpbahOS/wt-t2-kisayol`, branch
-`claude/t2-kisayol-2026-11-05` (tracks `yoursel/main`). Item commits `bcdb764` (A1), `1854988` (A2), `df76056` (A3),
+`ai/t2-kisayol-2026-11-05` (tracks `yoursel/main`). Item commits `bcdb764` (A1), `1854988` (A2), `df76056` (A3),
 then the evidence commit with this note.
 
 Changed files:

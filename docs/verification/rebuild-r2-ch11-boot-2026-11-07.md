@@ -2,7 +2,7 @@
 
 Task / status: chapter 11 release files written. The `/mnt/lfs13` tree was installed on a sparse raw disk image (BIOS boot partition, 512 MiB ESP, ext4 root) and booted headless in QEMU with BIOS and with UEFI (OVMF). **Both boots pass** on the final image: login prompt on the serial console, zero `FAILED` lines, DHCP lease on virtio-net. The first BIOS boot exposed one real defect (systemd binfmt_misc automount failed). It was fixed by building `CONFIG_BINFMT_MISC=y` into the kernel and the image was rebuilt and both boots re-run.
 
-Host: `thewo` (Fedora 44), build root `/mnt/lfs13`, worktree `/home/yrslf/alpbahOS/wt-t2-kisayol`, branch `claude/t2-kisayol-2026-11-05`. Image: `scratch-lfs-bench/images/alpbahos-r2-ch11-2026-11-07.raw` (raw, 20 GiB sparse, outside the repo). Logs: `scratch-lfs-bench/lfs13-logs/boot/`.
+Host: `thewo` (Fedora 44), build root `/mnt/lfs13`, worktree `/home/yrslf/alpbahOS/wt-t2-kisayol`, branch `ai/t2-kisayol-2026-11-05`. Image: `scratch-lfs-bench/images/alpbahos-r2-ch11-2026-11-07.raw` (raw, 20 GiB sparse, outside the repo). Logs: `scratch-lfs-bench/lfs13-logs/boot/`.
 
 ## 1. Results
 
@@ -109,7 +109,7 @@ The final image stays at `scratch-lfs-bench/images/alpbahos-r2-ch11-2026-11-07.r
 ## 8. Tests and checks
 
 - `python3 tests/test_audit_isa.py`: RC 0.
-- `python3 docs/handoffs/claude/tools/check_docs.py`: RC 0 (`0 finding(s) (broken-link=0, commit-ref=0, decision-ref=0, stale-term=0)`).
+- `python3 docs/handoffs/ai/tools/check_docs.py`: RC 0 (`0 finding(s) (broken-link=0, commit-ref=0, decision-ref=0, stale-term=0)`).
 
 ## 9. Not verified
 

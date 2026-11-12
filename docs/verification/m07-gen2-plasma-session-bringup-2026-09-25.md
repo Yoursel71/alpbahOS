@@ -1,6 +1,6 @@
-# M07 — Gen2 Plasma oturumu bring-up (25 Eylül 2026, Claude)
+# M07 — Gen2 Plasma oturumu bring-up (25 Eylül 2026, asistan)
 
-Test imajı: `F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen2-vgem-autoseat-claude-2026-09-25.vhdx`
+Test imajı: `F:\alpbahOS-build\artifacts\alpbahOS-m2-ssh-gen2-vgem-autoseat-ai-2026-09-25.vhdx`
 (Codex'in `...vgem-test-final-2026-09-25.vhdx` dosyasının kopyası + `scripts/patch-m2-gen2-autoseat.sh`;
 kaynak SHA-256 `89f2517a…`, yamalı `2b85c2b1…`). Kaynak dosya değiştirilmedi.
 

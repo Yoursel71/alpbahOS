@@ -3,7 +3,7 @@
 
 Catches living documents that fall behind the project. Rules:
 
-  stale-term   Living documents (CLAUDE.md, CURRENT.md, README.md, docs/MASTER_PLAN.md,
+  stale-term   Living documents (AGENT.md, CURRENT.md, README.md, docs/MASTER_PLAN.md,
                docs/DECISIONS.md, docs/BACKLOG.md) must not use terms of retired
                decisions: Codex (D100), Hyper-V (D106), Windows paths C:\\alpbahOS
                (D104), AGENTS.md (D101), pacman/libalpm (D122). A line carrying
@@ -46,7 +46,7 @@ from pathlib import Path
 
 # Living documents: they describe the current state and rules, so they must not
 # contain obsolete wording.
-LIVING_DOCS = {"CLAUDE.md", "CURRENT.md", "README.md", "docs/MASTER_PLAN.md", "docs/DECISIONS.md", "docs/BACKLOG.md"}
+LIVING_DOCS = {"AGENT.md", "CURRENT.md", "README.md", "docs/MASTER_PLAN.md", "docs/DECISIONS.md", "docs/BACKLOG.md"}
 
 # Current and archived decision records. Decision IDs are defined here.
 DECISION_FILES = ("docs/DECISIONS.md", "docs/archive/DECISIONS-v1.md")
@@ -59,7 +59,7 @@ STALE_TERMS = [
     (re.compile(r"\bcodex\b", re.I), "Codex was removed from the project (D100)"),
     (re.compile(r"\bHyper-V\b", re.I), "test environment is Fedora + QEMU (D106); Hyper-V is historical"),
     (re.compile(r"C:\\alpbahOS", re.I), "Windows paths are historical (D104)"),
-    (re.compile(r"\bAGENTS\.md\b"), "AGENTS.md was merged into CLAUDE.md (D101)"),
+    (re.compile(r"\bAGENTS\.md\b"), "AGENTS.md was merged into AGENT.md (D101)"),
     (re.compile(r"\b(pacman|libalpm)\b", re.I), "package engine is alp (D122)"),
 ]
 

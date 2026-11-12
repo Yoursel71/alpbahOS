@@ -19,7 +19,7 @@
 #   BINDIR/alpbah-gorunum                                     Solid/Glass geçiş aracı (0755)
 #   SYSCONFDIR/xdg/mimeapps.list                              varsayılan uygulamalar (profiles/apps/)
 #
-# Kurallar (CLAUDE.md, docs/archive/AGENT_STANDING_RULES.md):
+# Kurallar (AGENT.md, docs/archive/AGENT_STANDING_RULES.md):
 # - Hedef kök açıkça verilir (--destdir). Canlı "/" yalnız --allow-live-root ile kabul edilir;
 #   Builder /mnt/lfs rootfs'ine kurulum BLFS derleme zincirinin işidir.
 # - Hedefte farklı içerikli dosya varsa üzerine yazılmaz, betik durur (--force ile yazılır).

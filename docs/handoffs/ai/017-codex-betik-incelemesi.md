@@ -1,11 +1,11 @@
-# Claude devir belgesi 017: Codex betiklerinin ikinci göz incelemesi (M04/M07/M09)
+# asistan devir belgesi 017: Codex betiklerinin ikinci göz incelemesi (M04/M07/M09)
 
 ```text
 Görev ID / durum: AGENTS.md "Her iki ajan diğerinin kritik değişikliklerini inceleyebilir" kapsamında salt okunur inceleme. Hiçbir betik değiştirilmedi (scripts/ Codex'in alanı); düzeltmeler öneri/yama olarak aşağıda.
-Çalışılan host ve branch/commit: YRSLF dışında Windows makinesi; main 9c26ecf üzerinden, dal claude/glass-apps-perf-office.
+Çalışılan host ve branch/commit: YRSLF dışında Windows makinesi; main 9c26ecf üzerinden, dal ai/glass-apps-perf-office.
 İncelenen: scripts/build-m2-gen2-test-image.sh, scripts/apply-m2-rootfs-fixes.sh, scripts/build-m07-vgem-kernel.sh, scripts/patch-m2-gen2-autoseat.sh, scripts/refresh-ssh-hosts.ps1, scripts/vm-screenshot.ps1, scripts/build-m04-*-stage.sh içindeki mount korumaları; CURRENT.md, docs/WORKLOG.md, docs/NEW_SESSION_HANDOFF.md ve M07 kanıt belgesindeki betik/kanıt atıfları.
 Çalıştırılan doğrulama: atıf taraması (git ls-tree ile), bash errexit davranışının küçük bir yeniden üretimi (Git Bash 5.x). Builder/VM'de hiçbir şey çalıştırılmadı.
-Sonraki eylem: Codex bulgu 1-3'ü değerlendirip kendi dalında düzeltir; inceleme gerekiyorsa Claude'a geri verir.
+Sonraki eylem: Codex bulgu 1-3'ü değerlendirip kendi dalında düzeltir; inceleme gerekiyorsa asistan'a geri verir.
 ```
 
 Önem sırasıyla. Her bulguda kanıt ve önerilen düzeltme var; "önerilen" yamalar uygulanmadı ve test edilmedi.
@@ -21,7 +21,7 @@ Sonraki eylem: Codex bulgu 1-3'ü değerlendirip kendi dalında düzeltir; incel
 | `scripts/verify-m09-live-iso.sh` | WORKLOG ("passed") |
 | `docs/verification/m09-live-iso-preflight-2026-09-25.md` | CURRENT M09 satırı, WORKLOG |
 
-Etkisi: M07 "masaüstü ve panel görüldü" sonucu ile M09 ISO adayı repodan yeniden üretilemez ve incelenemez; M09 çıkış koşulu "temiz, tekrarlanabilir imaj" ister. `docs/handoffs/claude/tools/check_docs.py` yalnız Markdown bağlantılarını denetlediği için bunu yakalamıyor. Muhtemelen `C:\alpbahOS` çalışma ağacında commitlenmemiş duruyorlar (NEW_SESSION_HANDOFF §11 benzer bir durumu kaydetmiş). **Öneri:** dosyaları içerikleri incelenerek commit'lemek; commitlenene kadar CURRENT/WORKLOG'da "repoda değil" diye işaretlemek. İstenirse `check_docs.py`'ye backtick içindeki `scripts/…`, `docs/verification/…` yollarını da denetleyen bir kural eklenebilir (Claude'un aracı; ayrı iş).
+Etkisi: M07 "masaüstü ve panel görüldü" sonucu ile M09 ISO adayı repodan yeniden üretilemez ve incelenemez; M09 çıkış koşulu "temiz, tekrarlanabilir imaj" ister. `docs/handoffs/ai/tools/check_docs.py` yalnız Markdown bağlantılarını denetlediği için bunu yakalamıyor. Muhtemelen `C:\alpbahOS` çalışma ağacında commitlenmemiş duruyorlar (NEW_SESSION_HANDOFF §11 benzer bir durumu kaydetmiş). **Öneri:** dosyaları içerikleri incelenerek commit'lemek; commitlenene kadar CURRENT/WORKLOG'da "repoda değil" diye işaretlemek. İstenirse `check_docs.py`'ye backtick içindeki `scripts/…`, `docs/verification/…` yollarını da denetleyen bir kural eklenebilir (asistan'un aracı; ayrı iş).
 
 ## 2. Orta-Yüksek — `apply-m2-rootfs-fixes.sh`, rootfs'teki `alp.py`yi sessizce `e8b0376` sürümüne geri döndürür
 
@@ -73,7 +73,7 @@ Bash, `!` ile tersine çevrilmiş komutlarda `errexit`'i ve `ERR` trap'ini uygul
 - Betik `.bash_profile` içinde işaret dosyasını `/run/alp-plasma-tried`'a yazıyor. `/run` root'a ait olduğundan `admin` kullanıcısı yazamaz: yazma hatası verir, `exec startplasma-wayland` yine çalışır ve her tty1 girişinde tekrarlanabilir. WORKLOG'a göre runtimefix imajında işaret `XDG_RUNTIME_DIR`'e taşınmış, ama bu düzeltme repodaki betikte yok. `docs/AGENT_STANDING_RULES.md` hâlâ `sudo rm /run/alp-plasma-tried` diyor. Aynı dosyada anılan "KDE QML/plugin yolları" profili de repoda yok.
 - Başlık "COPY" diyor, ama betik `IMG`'in bir kopya olduğunu denetlemiyor. `artifacts/` altındaki bir sürüm VHDX'i yerinde değiştirilebilir (NEW_SESSION_HANDOFF §1: "M1 final VHDX'i yerinde değiştirme"). **Öneri:** `IMG` yolu `*/artifacts/*` ise ya da bilinen sürüm SHA-256'larından biriyse reddetmek. Güncel `.bash_profile` içeriğini repoya almak.
 
-Not: Bu betiği 25 Eylül'de bir Claude oturumu yazmış (`claude-autoseat` geçici dizin adı). Düzeltme sahipliği Codex ile konuşulmalı.
+Not: Bu betiği 25 Eylül'de bir asistan oturumu yazmış (`ai-autoseat` geçici dizin adı). Düzeltme sahipliği Codex ile konuşulmalı.
 
 ## 7. Düşük — `refresh-ssh-hosts.ps1` dosyayı ANSI kodlamasıyla geri yazıyor
 

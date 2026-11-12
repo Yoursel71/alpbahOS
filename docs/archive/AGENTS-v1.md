@@ -29,7 +29,7 @@ Bu dosya projede çalışan tüm ajanların ortak talimatıdır. Kullanıcının
 ## Doğruluk ve kayıt
 
 - Mockuplardaki kernel, RAM, paket sayısı, `pacman`, `alba` ve masaüstü adları çalışan sistem kanıtı değildir.
-- Yapılmamış derleme, test, donanım doğrulaması veya Claude incelemesi yapılmış gibi raporlanamaz.
+- Yapılmamış derleme, test, donanım doğrulaması veya asistan incelemesi yapılmış gibi raporlanamaz.
 - Test sonucu yanında ortam, komut/işlem, sonuç ve log/artifact yolu ver.
 - Kitap sürümü, kaynak URL'si, checksum, yamalar, yapılandırma ve bağımlılıklar kayıtlı olmalı.
 - Günlük tahminleri ilk gerçek derleme ölçümlerinden sonra güncelle; token bütçesinden teslim tarihi çıkarma.
@@ -71,12 +71,12 @@ Bu dosya projede çalışan tüm ajanların ortak talimatıdır. Kullanıcının
 ## İki ajanla çalışma
 
 - Aynı dosya grubunu ve aynı rootfs'yi eşzamanlı değiştirme. Dosya işi için görev sahipliği; build/mount/paket işlemleri için ortam kilidi kullan.
-- Rol planı: Codex altyapı/entegrasyon, Claude Code masaüstü/tema/terminal UX. Göreve gerçek başlama durumu BACKLOG.md ve devir kayıtlarıyla izlenir; Claude başlatılmış varsayılmaz.
-- Ana çalışma ağacı `C:\alpbahOS`; Claude çalışma ağacı `C:\alpbahOS-claude`. Her ajan kendi dalında çalışır; main'e entegrasyon sahibi birleştirir. Paralellik yeni bir AI sürecini kendiliğinden başlatma yetkisi değildir.
+- Rol planı: Codex altyapı/entegrasyon, asistan masaüstü/tema/terminal UX. Göreve gerçek başlama durumu BACKLOG.md ve devir kayıtlarıyla izlenir; asistan başlatılmış varsayılmaz.
+- Ana çalışma ağacı `C:\alpbahOS`; asistan çalışma ağacı `C:\alpbahOS-ai`. Her ajan kendi dalında çalışır; main'e entegrasyon sahibi birleştirir. Paralellik yeni bir AI sürecini kendiliğinden başlatma yetkisi değildir.
 - Ayrı Git dalları/worktree'ler uygunsa kullan; test edilen commit ve birleştirme sorumlusu kaydedilsin.
 - İşe başlamadan `docs/WORKLOG.md` içinde görev, sahip, dosya sınırı ve bağımlılığı kaydet; başka ajanla ortak kaydı eşzamanlı değiştirmek yerine entegratör üzerinden güncelle.
 - Görev devrinde değişiklik, dosyalar, ortam, testler, hatalar ve sıradaki tek eylemi yaz.
-- Claude'a erişim yoksa ona görev gönderilmiş veya inceleme yaptırılmış gibi davranma; kullanıcıya aktarılabilir görev metni hazırla.
+- asistan'a erişim yoksa ona görev gönderilmiş veya inceleme yaptırılmış gibi davranma; kullanıcıya aktarılabilir görev metni hazırla.
 - Entegrasyon öncesi kritik build, paket ve kurulum değişikliklerini diğer ajanın incelemesine sunma imkânı varsa kullan; inceleme yoksa bunu açıkça kaydet.
 
 ## Tamamlanma ve raporlama

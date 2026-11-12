@@ -2,7 +2,7 @@
 
 Son canlı doğrulama: 24 Eylül 2026, Europe/Istanbul
 
-Bu belge yeni Codex/Claude sohbetinin ortamı yeniden keşfetmeye çalışırken yanlış VM'i, diski veya rootfs'yi değiştirmesini önlemek içindir. Önce bunu, sonra `AGENTS.md`, `CURRENT.md` ve `docs/WORKLOG.md` dosyalarını oku.
+Bu belge yeni Codex/asistan sohbetinin ortamı yeniden keşfetmeye çalışırken yanlış VM'i, diski veya rootfs'yi değiştirmesini önlemek içindir. Önce bunu, sonra `AGENTS.md`, `CURRENT.md` ve `docs/WORKLOG.md` dosyalarını oku.
 
 ## 1. Değiştirilemez güvenlik kuralları
 
@@ -60,7 +60,7 @@ ssh -i C:\Users\thewo\.ssh\codex_alpbahos_m1 thewo@localhost
 - Windows'tan anahtarlı bağlantı:
 
 ```powershell
-ssh -i C:\Users\thewo\.ssh\claude_alpbahos_m2 sa@172.28.162.172
+ssh -i C:\Users\thewo\.ssh\ai_alpbahos_m2 sa@172.28.162.172
 ```
 
 - Anahtar parolasızdır. Özel anahtarı repoya veya mesaja koyma.
@@ -122,17 +122,17 @@ M07 hâlâ açık: çalışan Gen2 test VM'inde VMConnect `tty1` üzerinden `adm
 4. Yalnız bu kanıttan sonra konsol oturumunda Plasma Wayland başlat; siyah ekran/çökme varsa journal ve KWin logundan kök nedeni araştır.
 5. Görüntü oluşmadan M07 tamamlandı yazma.
 
-## 10. Paket yöneticisi için Claude sınırı
+## 10. Paket yöneticisi için asistan sınırı
 
 - Kanonik motor `alp`; aynı rootfs'ye apt/pacman gibi ikinci native paket veritabanı ekleme.
 - Builder `/mnt/lfs/usr/lib/alp/alp.py` son kontrolde `e8b0376` kaynağının beklenen SHA-256 `7b2998a5f76fbae2702c07b5325cd9679a29c11a5a8617eca9bd01a0d4aef132` değeriyle eşleşti. Paket işlemlerinden önce hash'i tekrar doğrula.
 - Bu hash eşleşmeden gerçek rootfs'de `alp remove` veya `alp upgrade` çalıştırma.
 - Htop dışındaki katalog, `alp update`, bağımlılık çözümü, transaction lock, rollback/config protection ve PackageKit yolu ayrı ayrı test edilmeden hazır sayılmaz.
-- Claude değişikliği ayrı dosya/branch sınırında teslim etmeli; rootfs'ye kurulum tek entegratör tarafından yapılmalı.
+- asistan değişikliği ayrı dosya/branch sınırında teslim etmeli; rootfs'ye kurulum tek entegratör tarafından yapılmalı.
 
 ## 11. Mevcut commitlenmemiş çalışma
 
-23 Eylül kontrolünde `AGENTS.md`, `CLAUDE.md`, `CURRENT.md`, `docs/BACKLOG.md`, `docs/DECISIONS.md`, `docs/HYPERV_PLAN.md`, `docs/MASTER_PLAN.md`, `docs/WORKLOG.md` ve bazı patch'lerde önceden var olan değişiklikler bulunuyordu. Ayrıca `configs/`, `scripts/`, `docs/IMAGE_PROVISIONING.md` ve `docs/verification/` untracked idi.
+23 Eylül kontrolünde `AGENTS.md`, `AGENT.md`, `CURRENT.md`, `docs/BACKLOG.md`, `docs/DECISIONS.md`, `docs/HYPERV_PLAN.md`, `docs/MASTER_PLAN.md`, `docs/WORKLOG.md` ve bazı patch'lerde önceden var olan değişiklikler bulunuyordu. Ayrıca `configs/`, `scripts/`, `docs/IMAGE_PROVISIONING.md` ve `docs/verification/` untracked idi.
 
 Özellikle:
 
@@ -163,7 +163,7 @@ Uzun yeniden keşif, tekrar tekrar aynı hash kontrolü veya kanıtsız “M2 ta
 - Canlı guest SSH adresi DHCP ile değişir; en son reboot sonrası `sa@172.28.164.164`, MAC `00-15-5D-00-02-09`. Reboot sonrası boot ID `6df39e0d-a48d-4e8f-a138-6ec5c4e4a663`, kernel `root=PARTUUID=84b8b2c9-9a5c-46b9-b9a0-0a22834278fe rootwait`, root `/dev/sda2`; DHCP/gateway/DNS, host ping 4/4, key-only SSH, DNS resolve, boş failed-unit listesi, getty/resolved/sshd enabled+active doğrulandı. KWin user unit tabanı ve drop-in `systemctl --user cat/show` ile görüldü; etkin ExecStart `kwin_wayland_wrapper`, `--xwayland` olmadan.
 - VMConnect penceresinde tty1 için `admin/admin` girişi kullanıcıdan istendi. Gerçek tty/PAM/logind session kanıtı henüz alınmadı; SSH ile `loginctl` sorgusu girişten sonra yapılacak. KWin gate geçmeden önce Plasma başlatılmadı; gerçek Plasma/seat0 testi hâlâ açık.
 
-- M04 sahiplik çıkış koşulu açık: `/mnt/lfs/var/lib/alp/db.json` boş `packages`. Claude 014'teki yeni `alp protect` rootfs'e kurulmadı; bu sürümde de kurulu dosyaları güvenle içeri alma komutu yok. Coreutils, Zlib, Gzip, Zstd, Xz, Bzip2, Lz4, File, Readline, M4, Diffutils, Findutils, Gawk, Grep, Bash, Libtool, GDBM, Gperf, Expat, Inetutils, Less ve Perl için izole stage manifestleri var; bazıları mevcut rootfs ile uyuşmuyor ve tam LFS taban kapsamı oluşmadı. Expat 2.7.1 stage `make check` 2/2 PASS, `xmlwf` smoke geçti, 25/31 girdisi eşleşti. Inetutils 2.6 stage `make check` 9 PASS/3 SKIP/0 FAIL, `ftp` smoke geçti, 16/30 girdisi eşleşti. Less 679 stage `make check` 17 testte 0 error verdi; `less --version` smoke geçti, 8/11 girdisi eşleşti. Perl 5.42.0 LFS harness 2,915 dosyada 1,350,925 test PASS; `threads` runtime smoke geçti, 2,164/3,181 girdi eşleşti. Stage'ler rootfs'e birleştirilmedi ve tarihsel sahipliğin yerine geçmez; dosya uid/gid'sinden sahiplik tahmini yapma. Expat 2.7.1 LFS 12.4 sürüm eşleşmesidir; yayın öncesi [güncel LFS güvenlik uyarılarındaki sürüme](https://linuxfromscratch.org/blfs/advisories/consolidated.html) geçiş değerlendirilmeli. Değerlendirme: `docs/verification/m04-base-ownership-assessment-2026-09-23.md`.
+- M04 sahiplik çıkış koşulu açık: `/mnt/lfs/var/lib/alp/db.json` boş `packages`. asistan 014'teki yeni `alp protect` rootfs'e kurulmadı; bu sürümde de kurulu dosyaları güvenle içeri alma komutu yok. Coreutils, Zlib, Gzip, Zstd, Xz, Bzip2, Lz4, File, Readline, M4, Diffutils, Findutils, Gawk, Grep, Bash, Libtool, GDBM, Gperf, Expat, Inetutils, Less ve Perl için izole stage manifestleri var; bazıları mevcut rootfs ile uyuşmuyor ve tam LFS taban kapsamı oluşmadı. Expat 2.7.1 stage `make check` 2/2 PASS, `xmlwf` smoke geçti, 25/31 girdisi eşleşti. Inetutils 2.6 stage `make check` 9 PASS/3 SKIP/0 FAIL, `ftp` smoke geçti, 16/30 girdisi eşleşti. Less 679 stage `make check` 17 testte 0 error verdi; `less --version` smoke geçti, 8/11 girdisi eşleşti. Perl 5.42.0 LFS harness 2,915 dosyada 1,350,925 test PASS; `threads` runtime smoke geçti, 2,164/3,181 girdi eşleşti. Stage'ler rootfs'e birleştirilmedi ve tarihsel sahipliğin yerine geçmez; dosya uid/gid'sinden sahiplik tahmini yapma. Expat 2.7.1 LFS 12.4 sürüm eşleşmesidir; yayın öncesi [güncel LFS güvenlik uyarılarındaki sürüme](https://linuxfromscratch.org/blfs/advisories/consolidated.html) geçiş değerlendirilmeli. Değerlendirme: `docs/verification/m04-base-ownership-assessment-2026-09-23.md`.
 - Resmî LFS 12.4-systemd Chapter 8 kapsamı 79 paket; repoda 28 stage manifesti (10,271 path) var. Man-pages 6.15 3,029/3,029 match; Iana-Etc'in `services` ve `protocols` dosyaları eşleşiyor, `/etc` metadata'sı uid 1001/0 farkı gösteriyor. Paket paket liste ve eşleşme durumu: `docs/verification/m04-lfs-12.4-package-coverage-2026-09-24.md`. Kalan 51 paket için aday kaynak arşivi var; checksum/build/test ayrı doğrulanmalı. Tcl 8.6.16 stage tamamlandı (43,930 PASS/3,175 SKIP; isteğe bağlı tdbcpostgres `libpq.so.5` hatası kaydedildi). Expect 5.45.4 stage tamamlandı (PTY ve 29/29 test geçti, 51/51 eşleşti); rootfs ve DB'ye merge yok.
 - Artifact ve komut kanıtları: `docs/verification/p0-p2-audit-2026-09-23.log`. Bu bölümdeki durumlar `CURRENT.md` ile birlikte okunmalı.
 

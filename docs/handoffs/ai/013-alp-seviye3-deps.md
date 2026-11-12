@@ -1,12 +1,12 @@
-# Claude devir belgesi 013 — `alp` Seviye 3 bağımlılık denetimi
+# asistan devir belgesi 013 — `alp` Seviye 3 bağımlılık denetimi
 
 ```text
 Görev ID / durum: Backlog dışı. Kullanıcı 23 Eylül 2026'da "seviye 3 bağımlılık kontrolüne başla, alp'i kullanışlı yap" dedi. Tamamlandı. Rootfs'ye kurulmadı.
-Çalışılan host ve branch/commit: Windows (kod ve test) + Builder `yrsk` (Ubuntu 24.04.5, sa@172.28.162.172; yalnız /tmp/claude-alp-s3). Dal claude/desktop-bootstrap. Commit bu belgeyle birlikte atılıyor; test edilen alp.py SHA-256'sı a34b796d64d14ea20d8228708f1add135e37e2328eac96efbca448b2b95f510e (Windows ve Builder kopyası aynı).
+Çalışılan host ve branch/commit: Windows (kod ve test) + Builder `yrsk` (Ubuntu 24.04.5, sa@172.28.162.172; yalnız /tmp/ai-alp-s3). Dal ai/desktop-bootstrap. Commit bu belgeyle birlikte atılıyor; test edilen alp.py SHA-256'sı a34b796d64d14ea20d8228708f1add135e37e2328eac96efbca448b2b95f510e (Windows ve Builder kopyası aynı).
 Değişen dosyalar: alp-prototype/alp.py, alp-prototype/alp_packagekit_backend.py, alp-prototype/tests/test_alp.py, alp-prototype/tests/test_packagekit_backend.py, alp-prototype/tests/test_seviye3.py (yeni), alp-prototype/README.md, bu belge.
 Gerçekleştirilen davranış: aşağıda.
 Çalıştırılan doğrulama ve sonuç: Windows 126 geçti, 10 atlandı (10 ardışık koşuda kararlı); Builder 136 geçti, 0 atlandı; 10 mutasyonun hepsi testlerce yakalandı; gerçek pty'de CLI demosu beklenen çıktıyı verdi.
-Log / ekran görüntüsü / artifact: Builder'da /tmp/claude-alp-s3/s3demo.log (geçici). Önemli kısmı aşağıda.
+Log / ekran görüntüsü / artifact: Builder'da /tmp/ai-alp-s3/s3demo.log (geçici). Önemli kısmı aşağıda.
 Bilinen sorun ve açık karar: MASTER_PLAN'daki "sıfırdan bağımlılık çözücü" yasağı karşısında kullanıcı kararı karar kaydına işlenmeli (öneri aşağıda). Gerçek katalogdaki (alpbahOS-alp) 4 tarifte hâlâ hiç depends yok.
 Entegrasyon için gereken: Entegratörün aşağıdaki karar önerisini DECISIONS.md'ye yeni D numarasıyla işlemesi ve main'e birleştirmesi. Rootfs'deki eski motorun (d06c72…) değiştirilmesi ayrı iş; bu turda yapılmadı.
 Sonraki eylem: alpbahOS-alp kataloğuna gerçek bağımlılık zinciri eklemek (ncurses → htop) ve bunu Builder'da gerçek derlemeyle denemek.
@@ -54,7 +54,7 @@ Sonraki eylem: alpbahOS-alp kataloğuna gerçek bağımlılık zinciri eklemek (
 ## Doğrulama
 
 - **Windows:** `python -m pytest tests/ -q` → 126 geçti, 10 atlandı (symlink/mod/stale-lock testleri bu hostta yapılamıyor). Önbellek silinip 10 kez ardışık çalıştırıldı, kararlı.
-- **Builder:** kod `/tmp/claude-alp-s3` altına kopyalandı. pytest sistem Python'una kurulmadı; saf-Python paketleri Windows'ta bir dizine indirilip `PYTHONPATH` ile kullanıldı. Sonuç 136 geçti, 0 atlandı.
+- **Builder:** kod `/tmp/ai-alp-s3` altına kopyalandı. pytest sistem Python'una kurulmadı; saf-Python paketleri Windows'ta bir dizine indirilip `PYTHONPATH` ile kullanıldı. Sonuç 136 geçti, 0 atlandı.
 - **Mutasyon kontrolü:** 10 ayrı bozma denendi: `state_problems` hep boş, remove engeli yok, orphan yok, `need()` hiç yükseltmiyor, `vercmp` metin karşılaştırması, onay hep evet, reason hep explicit, conflicts yok sayılıyor, cascade sırası ters, kept-back yok. Her birinde 1 ile 7 arası test düştü. Testler süs değil.
 - **Gerçek pty'de CLI demosu** (Builder, `script` ile):
   - `h` cevabı → "İptal edildi, hiçbir şey değişmedi", `list` boş.
