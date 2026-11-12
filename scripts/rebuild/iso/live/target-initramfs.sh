@@ -10,7 +10,10 @@ KVER=$(ls /lib/modules | head -n 1)
 [ -n "$KVER" ] || { echo "no kernel modules directory in the target"; exit 1; }
 IMG="/boot/initramfs-$KVER.img"
 
-mkdir -p /etc/dracut.conf.d
+# NOUVEAU-HANG-01: nouveau hangs on recent NVIDIA cards (RTX 5060 real PC); the installed system never loads it (the
+# firmware framebuffer keeps the screen). The file is written before dracut so the initramfs carries it as well.
+mkdir -p /etc/modprobe.d /etc/dracut.conf.d
+printf '%s\n' '# alpbahOS: nouveau hangs on recent NVIDIA cards; remove this file to try it.' 'blacklist nouveau' 'options nouveau modeset=0' > /etc/modprobe.d/alpbahos-nouveau.conf
 cat > /etc/dracut.conf.d/90-alpbahos-storage.conf << 'EOF'
 # alpbahOS BETA: storage drivers in the installed initramfs (SATA, NVMe, virtio, SCSI).
 add_drivers+=" ahci ata_piix nvme sd_mod sr_mod virtio_blk virtio_pci virtio_scsi "
