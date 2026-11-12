@@ -1,0 +1,14 @@
+{
+ "_comment": "D165: catalogue entries offered for installation (not installed in the image). make-catalog-r8.py copies each recipe next to index.json and pins it with recipe_sha256 before the catalogue is signed.",
+ "nvidia": {
+  "method": "recipe",
+  "name": "nvidia",
+  "version": "620.70.06",
+  "recipe": "recipes/nvidia.recipe.json",
+  "triggers": [
+   "depmod",
+   "ldconfig"
+  ],
+  "description": "NVIDIA sürücüsü (RTX 20 serisi ve sonrası; açık çekirdek modülleri). NVIDIA'dan indirilir, internet gerekir."
+ }
+}

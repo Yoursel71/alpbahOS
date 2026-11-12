@@ -1,0 +1,38 @@
+{
+ "name": "nvidia",
+ "version": "620.70.06",
+ "description": "NVIDIA sürücüsü 620.70.06: açık çekirdek modülleri ve NVIDIA kütüphaneleri (OpenGL, Vulkan, CUDA, NVENC). NVIDIA'nın sitesinden indirilir, modüller bu bilgisayarda derlenir (D165).",
+ "source_url": "https://download.nvidia.com/XFree86/Linux-x86_64/620.70.06/NVIDIA-Linux-x86_64-620.70.06.run",
+ "sha256": "29118e3abd08c07559bcca3d9c76238d039490af0362a2e5bcfcbe7204afd4b1",
+ "unpack": false,
+ "requires_commands": [
+  "sh",
+  "make",
+  "gcc",
+  "python3"
+ ],
+ "build": {
+  "configure": [
+   "sh",
+   "NVIDIA-Linux-x86_64-620.70.06.run",
+   "--extract-only",
+   "--target",
+   "nv"
+  ],
+  "make": [
+   "make",
+   "-C",
+   "nv/kernel-open",
+   "SYSSRC=@KERNEL_BUILD@",
+   "SYSOUT=@KERNEL_BUILD@",
+   "modules"
+  ],
+  "make_install": [
+   "python3",
+   "/usr/lib/alp/helpers/nvidia-stage.py",
+   "nv",
+   "@DESTDIR@",
+   "@KERNEL_RELEASE@"
+  ]
+ }
+}

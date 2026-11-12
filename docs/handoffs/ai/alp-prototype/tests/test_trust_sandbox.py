@@ -228,6 +228,7 @@ def test_environment_is_cleared(paths, work, monkeypatch):
     assert env == {
         "PATH": alp.SANDBOX_PATH,
         "HOME": str(paths.cache_dir / "build-demo-1.0"),
+        "TMPDIR": str(paths.cache_dir / "build-demo-1.0"),  # D165: temporary files stay in the build tree
         "LC_ALL": "C",
         "MAKEFLAGS": "-j3",
         "SOURCE_DATE_EPOCH": "1700000000",

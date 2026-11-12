@@ -47,6 +47,7 @@ import sys
 import tarfile
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -1957,6 +1958,7 @@ def _build_environment(paths: Paths, recipe: dict, home: Path) -> dict[str, str]
     return {
         "PATH": path,
         "HOME": str(home),
+        "TMPDIR": str(home),  # self-extracting sources (D165) write temporary files; keep them in the build tree
         "LC_ALL": "C",
         "MAKEFLAGS": f"-j{jobs}",
         "SOURCE_DATE_EPOCH": str(epoch),
@@ -2050,6 +2052,46 @@ def _absolute_link_root(paths: Paths) -> Path | None:
 
 RECIPE_PREFIX_TOKEN = "@PREFIX@"
 RECIPE_DESTDIR_TOKEN = "@DESTDIR@"
+# D165 (NVIDIA-PKG-01): out-of-tree kernel modules. The kernel is the one of the root alp installs into, read from
+# ROOT/usr/lib/modules (never uname -r: a chroot or --root runs on another kernel).
+RECIPE_KREL_TOKEN = "@KERNEL_RELEASE@"
+RECIPE_KBUILD_TOKEN = "@KERNEL_BUILD@"
+
+
+def _target_kernel(paths: Paths) -> tuple[str, str]:
+    """(release, build dir) of the one kernel under ROOT/usr/lib/modules that has a build tree."""
+    mods = Path(paths.root, "usr/lib/modules")
+    found = sorted(d.name for d in mods.iterdir() if (d / "build").exists()) if mods.is_dir() else []
+    if len(found) != 1:
+        raise AlpError("Çekirdek modülü derlenecek çekirdek belirlenemedi: "
+                       + (f"{mods} altında derleme ağacı (build) olan çekirdek yok; linux-headers paketi kurulu mu?"
+                          if not found else f"birden çok çekirdek var ({', '.join(found)})."))
+    return found[0], str(mods / found[0] / "build")
+
+
+def _fill_tokens(arg: str, paths: Paths, prefix: str, destdir: str) -> str:
+    arg = arg.replace(RECIPE_PREFIX_TOKEN, prefix).replace(RECIPE_DESTDIR_TOKEN, destdir)
+    if RECIPE_KREL_TOKEN in arg or RECIPE_KBUILD_TOKEN in arg:
+        krel, kbuild = _target_kernel(paths)
+        arg = arg.replace(RECIPE_KREL_TOKEN, krel).replace(RECIPE_KBUILD_TOKEN, kbuild)
+    return arg
+
+
+def _unpack_source(recipe: dict, archive: Path, build_root: Path) -> Path:
+    """The source tree of a recipe. "unpack": false (D165: NVIDIA's self-extracting .run) puts the downloaded file,
+    sha256-checked by fetch(), unchanged into build_root/src under the URL's file name; the recipe's own steps
+    unpack it inside the build sandbox."""
+    if recipe.get("unpack", True) is False:
+        name = PurePosixPath(urllib.parse.urlparse(recipe["source_url"]).path).name
+        if not name or name in (".", ".."):
+            raise AlpError(f"Tarif {recipe.get('name', '?')!r}: kaynak dosya adı çıkarılamadı.")
+        src = build_root / "src"
+        src.mkdir(parents=True)
+        shutil.copyfile(archive, src / name)
+        os.chmod(src / name, 0o644)
+        return src
+    safe_extract(archive, build_root)
+    return _single_top_level_dir(build_root)
 DEFAULT_RECIPE_PREFIX = "/usr"
 _UNRESOLVED_TOKEN_RE = re.compile(r"@[A-Z][A-Z0-9_]*@")
 
@@ -2088,7 +2130,7 @@ def _recipe_steps(recipe: dict, paths: Paths, destdir: str) -> list[list[str]]:
     if not any(RECIPE_DESTDIR_TOKEN in arg for arg in make_install):
         make_install.append(f"DESTDIR={destdir}")
     steps = [
-        [arg.replace(RECIPE_PREFIX_TOKEN, prefix).replace(RECIPE_DESTDIR_TOKEN, destdir) for arg in step]
+        [_fill_tokens(arg, paths, prefix, destdir) for arg in step]
         for step in (build["configure"], build["make"], make_install)
     ]
     # The catalog is fetched separately from this engine (`alp update`), so it
@@ -2180,8 +2222,7 @@ def install_recipe(
     build_root = paths.cache_dir / f"build-{recipe['name']}-{recipe['version']}"
     if build_root.exists():
         shutil.rmtree(build_root)
-    safe_extract(archive, build_root)
-    src_dir = _single_top_level_dir(build_root)
+    src_dir = _unpack_source(recipe, archive, build_root)
 
     destdir = paths.cache_dir / f"destdir-{recipe['name']}-{recipe['version']}"
     if destdir.exists():
@@ -2251,8 +2292,7 @@ def upgrade_recipe(
     build_root = paths.cache_dir / f"upgrade-build-{recipe['name']}-{recipe['version']}"
     if build_root.exists():
         shutil.rmtree(build_root)
-    safe_extract(archive, build_root)
-    src_dir = _single_top_level_dir(build_root)
+    src_dir = _unpack_source(recipe, archive, build_root)
 
     destdir = paths.cache_dir / f"upgrade-destdir-{recipe['name']}-{recipe['version']}"
     if destdir.exists():

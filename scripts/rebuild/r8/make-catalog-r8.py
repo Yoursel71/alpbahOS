@@ -27,6 +27,28 @@ for name, rec in sorted(db["packages"].items()):
     if src.get("url"):
         e["source"] = {"url": src["url"], "sha256": src.get("sha256", "")}
     entries[name] = e
+# D165 (round 41): entries offered for installation from profiles/alp-catalog/offers.json (the nvidia recipe). Each
+# recipe file is copied next to index.json and pinned by recipe_sha256 (alp trust rule 4) before signing. An offer
+# replaces the database entry of the same name, so an installed recipe package keeps its recipe for reinstall/upgrade.
+import hashlib
+import shutil
+OFFERS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "profiles", "alp-catalog")
+offers_file = os.path.join(OFFERS, "offers.json")
+if os.path.isfile(offers_file):
+    offers = json.load(open(offers_file, encoding="utf-8"))
+    for name, offer in sorted(offers.items()):
+        if name.startswith("_"):
+            continue
+        rel = offer["recipe"]
+        src = os.path.join(OFFERS, rel)
+        dst = os.path.join(STAGE, "usr/share/alp", rel)
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+        shutil.copyfile(src, dst)
+        os.chmod(dst, 0o644)
+        e = dict(offer)
+        e["recipe_sha256"] = hashlib.sha256(open(dst, "rb").read()).hexdigest()
+        entries[name] = e
+        print("offer", name, e["version"], rel, e["recipe_sha256"][:16])
 index = {"schema_version": 1, "catalog": "AlpbahOS 0.9 Beta installed set", "entries": entries}
 p = os.path.join(STAGE, "usr/share/alp/index.json")
 os.makedirs(os.path.dirname(p), exist_ok=True)
