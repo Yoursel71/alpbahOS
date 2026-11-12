@@ -11,7 +11,8 @@ qt_add_executable(alpbah-hosgeldin main.cpp)
 qt_add_qml_module(alpbah-hosgeldin
     URI AlpbahHosgeldin
     VERSION 1.0
-    QML_FILES Main.qml OptionCard.qml
+    QML_FILES Main.qml OptionCard.qml Mantik.qml Dugme.qml Segment.qml BuyukKart.qml MasaustuOnizleme.qml
+              Sihirbaz.qml Ayna.qml Kompakt.qml Merkez.qml Vitrin.qml
     RESOURCES mark.png
 )
 target_link_libraries(alpbah-hosgeldin PRIVATE Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::QuickControls2 Qt6::Widgets)

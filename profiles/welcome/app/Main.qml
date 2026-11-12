@@ -12,6 +12,7 @@ Window {
     title: "Hoş Geldin"
     color: "#11171c"
 
+    required property var backend
     property var st: backend.durum()
     property string tema: st.tema || "alpbahos"
     property string gorunum: (st.gorunum === "glass" && st.glass_kullanilabilir) ? "glass" : "solid"
