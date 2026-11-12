@@ -382,7 +382,13 @@ cmd_kffill() { # installer up to the filled users page; the reviewer reads i-05 
   sleep 2; shot "$R" i-05-users-filled
 }
 cmd_kfgo() { local R=$D/KF i
-  q "$R" click 1007 637; sleep 3; shot "$R" i-06-summary
+  if [ "${DRIVERS_PAGE:-0}" = 1 ]; then  # D166 (round 43+): the "Sürücüler" page between users and summary
+    q "$R" click 1007 637; sleep 3; shot "$R" i-05b-drivers
+    local NY; NY=$(python3 "$W/find-button-y.py" "$R/i-05b-drivers.png" 1007 2>/dev/null) || NY=637
+    q "$R" click 1007 "$NY"; sleep 3; shot "$R" i-06-summary
+  else
+    q "$R" click 1007 637; sleep 3; shot "$R" i-06-summary
+  fi
   # the Kur button is found in the summary screenshot (find-button-y.py, round 41); 709 is the old fallback
   local KY; KY=$(python3 "$W/find-button-y.py" "$R/i-06-summary.png" 1002 2>/dev/null) || KY=709
   echo "kfgo: Kur button y=$KY"

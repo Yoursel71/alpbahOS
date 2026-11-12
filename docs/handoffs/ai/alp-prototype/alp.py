@@ -3659,6 +3659,16 @@ def _install_unknown(args: argparse.Namespace, paths: Paths) -> int:
                    f"'alp search {args.name}' ile denetleyin.")
 
 
+def _transaction_lock(paths: Paths, dry_run: bool):
+    """The writer lock for install/upgrade/remove/autoremove. A dry run by a user who is not root reads the database
+    without it (it changes nothing), so 'alp install --dry-run nvidia' works without sudo; everything else keeps the
+    lock and the Turkish 'needs sudo' message (ALP-LOCK-MSG-01)."""
+    if dry_run and not _is_root():
+        return contextlib.nullcontext()
+    paths.ensure()
+    return DbLock(paths.lock_file)
+
+
 def cmd_install(args: argparse.Namespace, paths: Paths, index: dict, index_dir: Path) -> int:
     if getattr(args, "kutu", False):
         return _install_from_kutu(args)
@@ -3667,8 +3677,7 @@ def cmd_install(args: argparse.Namespace, paths: Paths, index: dict, index_dir: 
             raise AlpError(f"Bilinmeyen paket: {args.name!r}. Önce 'alp search {args.name}' ile denetleyin.")
         return _install_unknown(args, paths)
 
-    paths.ensure()
-    with DbLock(paths.lock_file):
+    with _transaction_lock(paths, args.dry_run):
         _require_no_pending(paths)
         db = load_db(paths)
         installed = db["packages"]
@@ -3726,8 +3735,7 @@ def _drop_kept_back(index: dict, index_dir: Path, installed: dict, targets: list
 
 
 def cmd_upgrade(args: argparse.Namespace, paths: Paths, index: dict, index_dir: Path) -> int:
-    paths.ensure()
-    with DbLock(paths.lock_file):
+    with _transaction_lock(paths, args.dry_run):
         _require_no_pending(paths)
         db = load_db(paths)
         installed = db["packages"]
@@ -3813,8 +3821,7 @@ def cmd_remove(args: argparse.Namespace, paths: Paths, index: dict | None = None
             and args.name in _box_packages_of_caller()):
         return _remove_from_kutu(args)
     index = index or {"entries": {}}
-    paths.ensure()
-    with DbLock(paths.lock_file):
+    with _transaction_lock(paths, args.dry_run):
         _require_no_pending(paths)
         db = load_db(paths)
         installed = db["packages"]
@@ -3838,8 +3845,7 @@ def cmd_remove(args: argparse.Namespace, paths: Paths, index: dict | None = None
 
 
 def cmd_autoremove(args: argparse.Namespace, paths: Paths, index: dict) -> int:
-    paths.ensure()
-    with DbLock(paths.lock_file):
+    with _transaction_lock(paths, args.dry_run):
         _require_no_pending(paths)
         db = load_db(paths)
         installed = db["packages"]

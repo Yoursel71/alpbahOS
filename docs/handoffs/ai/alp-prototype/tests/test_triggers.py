@@ -117,3 +117,15 @@ def test_catalogue_with_an_unknown_trigger_is_refused(tmp_path, bad):
 def test_unknown_name_in_a_record_is_never_run(paths, ran):
     alp.run_triggers(paths, {"rm", "sh -c x"}, dry_run=False)
     assert ran == []
+
+
+def test_user_dry_run_needs_no_lock(paths, tmp_path, ran, monkeypatch, capsys):
+    """round 42 NVIDIA row: 'alp install --dry-run nvidia' as the test user asked for sudo (writer lock); a dry run
+    changes nothing, so a user's dry run reads without the lock. Root and real runs keep it."""
+    monkeypatch.setattr(alp, "_is_root", lambda: False)
+    monkeypatch.setattr(alp, "DbLock", lambda *a, **k: (_ for _ in ()).throw(AssertionError("lock taken")))
+    index = {"entries": {"lib": _core(tmp_path, "lib", ["ldconfig"])}}
+    assert alp.cmd_install(_args("lib", dry_run=True), paths, index, tmp_path) == 0
+    assert ran == [] and "[dry-run]" in capsys.readouterr().out
+    with pytest.raises(AssertionError, match="lock taken"):
+        alp.cmd_install(_args("lib"), paths, index, tmp_path)
