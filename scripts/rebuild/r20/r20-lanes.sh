@@ -100,8 +100,9 @@ net_checks() { # run-dir prefix ; Konsole is open
   run "$R" "systemctl is-active NetworkManager systemd-networkd systemd-resolved" 3 "$P-active"
   run "$R" "nmcli device" 3 "$P-nmcli"
   run "$R" "resolvectl dns" 3 "$P-resolvectl"
-  run "$R" "curl -sSI -m 20 -o h.txt ftp.gnu.org" 25 "$P-curl0"
-  run "$R" "head -3 h.txt" 3 "$P-curl"
+  # Round 44: the old "curl -sSI -o h.txt ftp.gnu.org; head -3 h.txt" left h.txt empty in rounds 42 and 43 (no error
+  # either); the response headers now go to the screen. Typed with tq, so no ':' or '%' (not mapped for the TR-Q keys).
+  run "$R" "curl -sSI -m 20 www.kernel.org" 25 "$P-curl"
   run "$R" "systemctl --failed" 4 "$P-failed"
 }
 

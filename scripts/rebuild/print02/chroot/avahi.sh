@@ -1,10 +1,13 @@
-# PRINT-01 step 2: BLFS 13.1 basicnet/avahi.html (the book's patch and options) plus --disable-gtk --disable-gtk3
+# PRINT-01 step 2: BLFS 13.1 basicnet/avahi.html (the book's options) plus --disable-gtk --disable-gtk3
 # (no bssh/bvnc/avahi-discover menu entries) and --disable-autoipd (NetworkManager does IPv4 link-local). The example
 # ssh/sftp-ssh service files are left out: they would announce an SSH server the image does not run. The avahi user
 # (uid/gid 84 as in the book) comes from sysusers.d; the book's resolved.conf.d/no-mdns.conf keeps systemd-resolved
 # off port 5353.
+# Round 45: the book's ipv6_race_condition_fix-1 patch is NOT applied. It makes every packet this host sent count as
+# "from a local interface", and avahi 0.9-rc5 caches responses only when that is false, so services and the host name
+# published by this machine were never found by itself (round 44 QEMU: avahi-publish established, avahi-browse and
+# avahi-resolve of the own name empty; zone dump full, every cache empty). Fedora and Arch do not apply it either.
 set -e
-patch -Np1 -i ../avahi-0.9-rc5-ipv6_race_condition_fix-1.patch
 autoreconf -fiv
 ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-static --disable-libevent --disable-mono \
     --disable-monodoc --disable-manpages --disable-python --disable-qt3 --disable-qt4 --disable-qt5 --disable-gtk \

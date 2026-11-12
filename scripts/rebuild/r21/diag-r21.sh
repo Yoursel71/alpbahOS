@@ -41,6 +41,13 @@ sudo install -m 755 "$WT/profiles/perf/collect_session_metrics.py" "$M/usr/local
 # The password goes into the copy only (deleted at the end); it is never written to the serial log.
 printf '%s\n' "$PW" | sudo tee "$M/root/.r21-pw" > /dev/null; sudo chmod 600 "$M/root/.r21-pw"
 echo "${FLATPAK:-0} ${NIC_NONE:-0}" | sudo tee "$M/root/.r21-mode" > /dev/null
+# Round 45: no automatic screen lock during the idle wait of this copy (round 44 B1 locked at the 5 minute mark and
+# kscreenlocker_greet, 318 MiB, was counted as idle memory). Test copy only; installed systems keep the KDE default.
+if [ -d "$M/home/testuser" ] && ! sudo grep -qs '^Autolock=' "$M/home/testuser/.config/kscreenlockerrc"; then
+  sudo install -d -o 1000 -g 1000 "$M/home/testuser/.config"
+  printf '\n[Daemon]\nAutolock=false\n' | sudo tee -a "$M/home/testuser/.config/kscreenlockerrc" > /dev/null
+  sudo chown 1000:1000 "$M/home/testuser/.config/kscreenlockerrc"
+fi
 [ -z "${DIAG_HOOK:-}" ] || sudo install -m 755 "$DIAG_HOOK" "$M/usr/local/sbin/r21-diag-hook"
 sudo tee "$M/usr/local/sbin/r21-diag" > /dev/null << 'EOF'
 #!/bin/sh

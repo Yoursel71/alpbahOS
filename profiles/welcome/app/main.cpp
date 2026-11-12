@@ -14,6 +14,7 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQuickWindow>
+#include <QSGRendererInterface>
 #include <QTimer>
 #include <QVariantMap>
 #include <pwd.h>
@@ -100,6 +101,10 @@ public:
 
 int main(int argc, char *argv[])
 {
+    // Round 45 (D135): Qt Quick's software renderer. This window is static (cards, text, images); with OpenGL it held
+    // about 210 MiB RSS on llvmpipe in QEMU (rounds 43/44 idle lists), most of it the GL context. Must be set before the
+    // first window exists.
+    QQuickWindow::setGraphicsApi(QSGRendererInterface::Software);
     QApplication app(argc, argv);
     app.setApplicationName(QStringLiteral("alpbah-hosgeldin"));
     app.setApplicationDisplayName(QStringLiteral("Hoş Geldin"));
