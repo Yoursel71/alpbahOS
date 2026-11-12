@@ -1,6 +1,5 @@
 #!/bin/bash
-# WELCOME-02 (round 44): five Hoş Geldin designs for the user to choose from (profiles/welcome/app: Sihirbaz, Ayna,
-# Kompakt, Merkez, Vitrin; Main is the current one). Builds the app in a WRITABLE btrfs snapshot of r4-root
+# WELCOME-02 (round 44; since 2026-11-12 only the chosen design 4, Main.qml, D177): the Hoş Geldin window. Builds the app in a WRITABLE btrfs snapshot of r4-root
 # (welcome02/root; r4-root itself is not touched), runs the qmltestrunner tests (tests/welcome) offscreen with a fake
 # backend, and saves screenshots of each design with a fake alpbah-hosgeldin-uygula (no settings are changed).
 # Output: scratch-lfs-bench/welcome02/{build.log,test.log,shots/}. Run as root on the host. Env KEEP=1 keeps the snapshot.
@@ -66,22 +65,12 @@ shot() {  # NAME TASARIM [env/ozellik ...]
     local n=$1 t=$2; shift 2
     local envs=() oz=()
     for a in "$@"; do case "$a" in SAHTE_*=*) envs+=("$a") ;; *) oz+=(--ozellik "$a") ;; esac; done
-    chroot "$R" "${E[@]}" "${envs[@]}" /tmp/hg-build/alpbah-hosgeldin --tasarim "$t" "${oz[@]}" \
+    chroot "$R" "${E[@]}" "${envs[@]}" /tmp/hg-build/alpbah-hosgeldin "${oz[@]}" \
         --ekran-goruntusu "/tmp/hg-shots/$n.png" > "$W/shot-$n.log" 2>&1 && echo "shot $n" || echo "shot $n FAILED rc=$?"
 }
-shot 0-mevcut Main
-shot 1-sihirbaz-1 Sihirbaz adim=0
-shot 1-sihirbaz-2 Sihirbaz adim=1
-shot 1-sihirbaz-3 Sihirbaz adim=2 SAHTE_TEMA=ataturk
-shot 1-sihirbaz-4 Sihirbaz adim=3 SAHTE_TEMA=ataturk SAHTE_GORUNUM=glass SAHTE_CUBUK=orta
-shot 2-ayna-1 Ayna
-shot 2-ayna-2 Ayna SAHTE_TEMA=ataturk SAHTE_GORUNUM=glass SAHTE_CUBUK=orta
-shot 3-kompakt-1 Kompakt
-shot 3-kompakt-2 Kompakt SAHTE_GLASS=0
-shot 4-merkez-1 Merkez ad=Bahadır
-shot 4-merkez-2 Merkez ad=Bahadır SAHTE_TEMA=ataturk
-shot 5-vitrin-1 Vitrin
-shot 5-vitrin-2 Vitrin SAHTE_TEMA=ataturk SAHTE_CUBUK=orta
+shot 1-alpbahos Main ad=Bahadır
+shot 2-ataturk Main ad=Bahadır SAHTE_TEMA=ataturk
+shot 3-glass-yok Main ad=Bahadır SAHTE_GLASS=0
 rm -rf "$W/shots"; cp -r "$R/tmp/hg-shots" "$W/shots"
 cp "$R/tmp/hg-sahte/log" "$W/sahte.log" 2>/dev/null || true
 chown -R yrslf: "$W/shots" "$W"/*.log

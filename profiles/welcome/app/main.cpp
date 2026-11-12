@@ -1,9 +1,8 @@
 // alpbahOS Hoş Geldin (WELCOME-01, D121): Qt 6 QML window; the settings logic lives in alpbah-hosgeldin-uygula.
 // --ilk-acilis (XDG autostart): exits at once unless "alpbah-hosgeldin-uygula ilk-acilis-mi" says this is the first
 // login of an installed user (no marker, not the live session).
-// WELCOME-02: --tasarim <Main|Sihirbaz|Ayna|Kompakt|Merkez|Vitrin> picks the window (default Main); every design gets
-// the backend as its required property "backend". --ozellik <ad=değer> (repeatable) sets other initial properties
-// (screenshots of one state, e.g. adim=3).
+// WELCOME-02 (D177): the window is design 4 "Başlangıç merkezi" (Main.qml); it gets the backend as its required
+// property "backend". --ozellik <ad=değer> (repeatable) sets other initial properties (screenshots, e.g. ad=Deniz).
 #include <QApplication>
 #include <QDir>
 #include <QFileInfo>
@@ -119,14 +118,9 @@ int main(int argc, char *argv[])
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed, &app, [] { QCoreApplication::exit(1); },
                      Qt::QueuedConnection);
     const QStringList args = app.arguments();
-    static const QStringList tasarimlar = {QStringLiteral("Main"), QStringLiteral("Sihirbaz"), QStringLiteral("Ayna"),
-                                           QStringLiteral("Kompakt"), QStringLiteral("Merkez"), QStringLiteral("Vitrin")};
-    QString tasarim = QStringLiteral("Main");
     QVariantMap initial{{QStringLiteral("backend"), QVariant::fromValue(static_cast<QObject *>(&backend))}};
     for (int i = 1; i + 1 < args.size(); ++i) {
-        if (args.at(i) == QLatin1String("--tasarim") && tasarimlar.contains(args.at(i + 1))) {
-            tasarim = args.at(i + 1);
-        } else if (args.at(i) == QLatin1String("--ozellik") && args.at(i + 1).contains(QLatin1Char('='))) {
+        if (args.at(i) == QLatin1String("--ozellik") && args.at(i + 1).contains(QLatin1Char('='))) {
             const QString key = args.at(i + 1).section(QLatin1Char('='), 0, 0);
             const QString value = args.at(i + 1).section(QLatin1Char('='), 1);
             bool isInt = false;
@@ -135,7 +129,7 @@ int main(int argc, char *argv[])
         }
     }
     engine.setInitialProperties(initial);
-    engine.loadFromModule("AlpbahHosgeldin", tasarim);
+    engine.loadFromModule("AlpbahHosgeldin", "Main");
     // --ekran-goruntusu <png> (tests and docs): save the window as an image after it is drawn, then quit.
     const int shotArg = app.arguments().indexOf(QStringLiteral("--ekran-goruntusu"));
     if (shotArg > 0 && shotArg + 1 < app.arguments().size() && !engine.rootObjects().isEmpty()) {

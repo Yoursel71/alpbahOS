@@ -1,10 +1,13 @@
-// alpbahOS Hoş Geldin window (WELCOME-01, D121; master task D3). Fixed 960x720, surface #11171c,
-// padding 36 px top/bottom and 44 px sides. Values from profiles/desktop/tokens.json. All text Turkish (D120).
+// alpbahOS Hoş Geldin window (WELCOME-01, D121), design 4 "Başlangıç merkezi" picked by the user on 2026-11-12
+// (WELCOME-02, D177): a greeting with the user's name over the chosen wallpaper,
+// the three desktop choices as segmented bars and six quick-start tiles that open the matching System Settings page
+// (network, printers, display, sound, shortcuts) or Info Center. The tiles keep this window open. 960x720.
 import QtQuick
 import QtQuick.Window
 
 Window {
     id: win
+    required property var backend
     width: 960; height: 720
     minimumWidth: 960; maximumWidth: 960
     minimumHeight: 720; maximumHeight: 720
@@ -12,239 +15,210 @@ Window {
     title: "Hoş Geldin"
     color: "#11171c"
 
-    required property var backend
-    property var st: backend.durum()
-    property string tema: st.tema || "alpbahos"
-    property string gorunum: (st.gorunum === "glass" && st.glass_kullanilabilir) ? "glass" : "solid"
-    property string cubuk: st.cubuk || "sol"
-    property bool glassOk: st.glass_kullanilabilir === true
-    property string glassWhy: st.glass_neden || ""
-    property string message: ""
-    property bool busy: false
+    Mantik { id: m; backend: win.backend }
+    property string ad: win.backend.kullanici()
+    readonly property string ikonlar: "file:///usr/share/icons/breeze-dark/"
 
-    function previewOf(key) {
-        return st.onizleme && st.onizleme[key] ? "file://" + st.onizleme[key] : "";
-    }
-    function apply() {
-        busy = true;
-        message = "Uygulanıyor…";
-        var r = backend.uygula(tema, gorunum, cubuk);
-        busy = false;
-        if (r.kod === 0) { Qt.quit(); }
-        else { message = r.hata !== "" ? r.hata : "Seçimler uygulanamadı."; }
+    // Greeting over the wallpaper
+    Item {
+        id: ust
+        width: parent.width; height: 210
+        clip: true
+        Image {
+            anchors.fill: parent
+            source: m.buyukResim(m.tema)
+            fillMode: Image.PreserveAspectCrop
+            verticalAlignment: Image.AlignTop      // the portrait's head and the empty sky stay in the band
+            asynchronous: true
+            sourceSize.width: 960
+        }
+        Rectangle {
+            anchors.fill: parent
+            gradient: Gradient {
+                orientation: Gradient.Horizontal
+                GradientStop { position: 0.0; color: "#f20b1014" }
+                GradientStop { position: 0.55; color: "#b30b1014" }
+                GradientStop { position: 1.0; color: "#260b1014" }
+            }
+        }
+        Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: "#29404f" }
+        Column {
+            x: 44; anchors.verticalCenter: parent.verticalCenter
+            spacing: 8
+            Image {
+                source: "mark.png"
+                width: 48; height: Math.round(48 * sourceSize.height / Math.max(1, sourceSize.width))
+                smooth: true; mipmap: true
+            }
+            Text {
+                text: win.ad !== "" ? "Merhaba, " + win.ad + "!" : "Merhaba!"
+                color: "#f4f8fb"
+                font.family: "Inter Variable"; font.pixelSize: 32; font.bold: true
+            }
+            Text {
+                textFormat: Text.StyledText
+                text: "alpbah<font color=\"#00aeef\">OS</font> kullanıma hazır. Masaüstünü seç, ihtiyacın olanı buradan aç."
+                color: "#d4e0e8"
+                font.family: "Inter Variable"; font.pixelSize: 15
+            }
+        }
     }
 
     Item {
-        anchors.fill: parent
-        anchors.topMargin: 36; anchors.bottomMargin: 36
-        anchors.leftMargin: 44; anchors.rightMargin: 44
+        anchors.top: ust.bottom; anchors.topMargin: 24
+        anchors.bottom: parent.bottom; anchors.bottomMargin: 30
+        anchors.left: parent.left; anchors.leftMargin: 44
+        anchors.right: parent.right; anchors.rightMargin: 44
 
-        // Header: mark 96 px wide, title with "OS" in cyan, subtitle.
+        Text {
+            id: b1
+            text: "Masaüstün"
+            color: "#f4f8fb"
+            font.family: "Inter Variable"; font.pixelSize: 17; font.weight: Font.DemiBold
+        }
         Row {
-            id: header
-            spacing: 22
-            Image {
-                source: "mark.png"
-                width: 96
-                height: Math.round(96 * sourceSize.height / sourceSize.width)
-                smooth: true; mipmap: true
-                anchors.verticalCenter: parent.verticalCenter
-            }
-            Column {
-                anchors.verticalCenter: parent.verticalCenter
-                spacing: 8
-                Text {
-                    textFormat: Text.StyledText
-                    text: "alpbah<font color=\"#00aeef\">OS</font>'a hoş geldin"
-                    color: "#f4f8fb"
-                    font.family: "Inter Variable"; font.pixelSize: 30; font.bold: true
-                }
-                Text {
-                    width: 650
-                    text: "Masaüstünü kendine göre ayarla. Hepsini sonra Sistem Ayarları'ndan değiştirebilirsin."
-                    color: "#a9bac6"
-                    font.family: "Inter Variable"; font.pixelSize: 15
-                    wrapMode: Text.WordWrap
-                }
-            }
-        }
-
-        Column {
-            id: rows
-            anchors.top: header.bottom; anchors.topMargin: 44
-            anchors.left: parent.left; anchors.right: parent.right
-            spacing: 30
-
-            // ---- Tema
-            Row {
-                width: parent.width; spacing: 16
+            id: secimler
+            anchors.top: b1.bottom; anchors.topMargin: 10
+            width: parent.width
+            spacing: 18
+            Repeater {
+                model: 3
                 Column {
-                    width: 150; spacing: 4
-                    anchors.verticalCenter: parent.verticalCenter
-                    Text { text: "Tema"; color: "#f4f8fb"; font.family: "Inter Variable"; font.pixelSize: 16; font.weight: Font.DemiBold }
-                    Text { width: 150; text: "Duvar kağıdı ve kilit ekranı"; color: "#a9bac6"; font.family: "Inter Variable"; font.pixelSize: 13; wrapMode: Text.WordWrap }
-                }
-                OptionCard {
-                    id: firstCard
-                    width: (parent.width - 150 - 32) / 2
-                    focus: true
-                    title: "alpbahOS"; text: "Dağ ve terminal, lacivert tonlar"
-                    selected: win.tema === "alpbahos"
-                    onChosen: win.tema = "alpbahos"
-                    preview: Component { Image { source: win.previewOf("alpbahos"); fillMode: Image.PreserveAspectCrop; clip: true; sourceSize.width: 168 } }
-                }
-                OptionCard {
-                    width: (parent.width - 150 - 32) / 2
-                    title: "Atatürk"; text: "Atatürk duvar kağıdı ve kilit ekranı"
-                    selected: win.tema === "ataturk"
-                    onChosen: win.tema = "ataturk"
-                    preview: Component { Image { source: win.previewOf("ataturk"); fillMode: Image.PreserveAspectCrop; clip: true; sourceSize.width: 168 } }
-                }
-            }
-
-            // ---- Görünüm
-            Row {
-                width: parent.width; spacing: 16
-                Column {
-                    width: 150; spacing: 4
-                    anchors.verticalCenter: parent.verticalCenter
-                    Text { text: "Görünüm"; color: "#f4f8fb"; font.family: "Inter Variable"; font.pixelSize: 16; font.weight: Font.DemiBold }
-                    Text { width: 150; text: "Pencere ve panel yüzeyleri"; color: "#a9bac6"; font.family: "Inter Variable"; font.pixelSize: 13; wrapMode: Text.WordWrap }
-                }
-                OptionCard {
-                    width: (parent.width - 150 - 32) / 2
-                    title: "Solid"; text: "Opak yüzeyler. Eski bilgisayarlarda hızlı."
-                    selected: win.gorunum === "solid"
-                    onChosen: win.gorunum = "solid"
-                    preview: Component {
-                        Rectangle {
-                            color: "#0b1014"; border.color: "#29404f"; border.width: 1
-                            Rectangle { x: 10; y: 8; width: 54; height: 30; color: "#16232d"; border.color: "#29404f" }
-                            Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 10; color: "#16232d" }
-                        }
+                    id: grup
+                    required property int index
+                    width: (secimler.width - 2 * secimler.spacing) / 3
+                    spacing: 6
+                    Text {
+                        text: ["Tema", "Görünüm", "Görev çubuğu"][grup.index]
+                        color: "#a9bac6"
+                        font.family: "Inter Variable"; font.pixelSize: 13
                     }
-                }
-                OptionCard {
-                    width: (parent.width - 150 - 32) / 2
-                    enabled: win.glassOk
-                    title: "Glass"
-                    text: win.glassOk ? "Saydam ve bulanık. Ekran kartı hızlandırması ister."
-                                      : "Kullanılamaz: " + win.glassWhy + "."
-                    selected: win.gorunum === "glass"
-                    onChosen: win.gorunum = "glass"
-                    preview: Component {
-                        Rectangle {
-                            gradient: Gradient { GradientStop { position: 0; color: "#1e5a8a" } GradientStop { position: 1; color: "#062746" } }
-                            border.color: "#29404f"; border.width: 1
-                            Rectangle { x: 10; y: 8; width: 54; height: 30; color: "#6654d6ff"; border.color: "#9954d6ff" }
-                            Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 10; color: "#8016232d" }
+                    Segment {
+                        width: parent.width
+                        onEk: ["tema", "gorunum", "cubuk"][grup.index]
+                        secilen: [m.tema, m.gorunum, m.cubuk][grup.index]
+                        secenekler: [
+                            [{ deger: "alpbahos", baslik: "alpbahOS" }, { deger: "ataturk", baslik: "Atatürk" }],
+                            [{ deger: "solid", baslik: "Solid" }, { deger: "glass", baslik: "Glass", etkin: m.glassOk }],
+                            [{ deger: "sol", baslik: "Solda" }, { deger: "orta", baslik: "Ortada" }]
+                        ][grup.index]
+                        onSecildi: (d) => {
+                            if (grup.index === 0) m.tema = d;
+                            else if (grup.index === 1) m.gorunumSec(d);
+                            else m.cubuk = d;
                         }
                     }
                 }
             }
+        }
 
-            // ---- Görev çubuğu
-            Row {
-                width: parent.width; spacing: 16
-                Column {
-                    width: 150; spacing: 4
-                    anchors.verticalCenter: parent.verticalCenter
-                    Text { text: "Görev çubuğu"; color: "#f4f8fb"; font.family: "Inter Variable"; font.pixelSize: 16; font.weight: Font.DemiBold }
-                    Text { width: 150; text: "Simgelerin yeri"; color: "#a9bac6"; font.family: "Inter Variable"; font.pixelSize: 13; wrapMode: Text.WordWrap }
-                }
-                OptionCard {
-                    width: (parent.width - 150 - 32) / 2
-                    title: "Solda"; text: "Başlat düğmesi sol köşede"
-                    selected: win.cubuk === "sol"
-                    onChosen: win.cubuk = "sol"
-                    preview: Component { TaskbarPreview { centered: false } }
-                }
-                OptionCard {
-                    width: (parent.width - 150 - 32) / 2
-                    title: "Ortada"; text: "Simgeler çubuğun ortasında"
-                    selected: win.cubuk === "orta"
-                    onChosen: win.cubuk = "orta"
-                    preview: Component { TaskbarPreview { centered: true } }
+        Text {
+            id: b2
+            anchors.top: secimler.bottom; anchors.topMargin: 24
+            text: "Hızlı başlangıç"
+            color: "#f4f8fb"
+            font.family: "Inter Variable"; font.pixelSize: 17; font.weight: Font.DemiBold
+        }
+        Grid {
+            id: kutular
+            anchors.top: b2.bottom; anchors.topMargin: 10
+            width: parent.width
+            columns: 3
+            spacing: 14
+            Repeater {
+                model: [
+                    { id: "ag", baslik: "İnternet ve Wi‑Fi", metin: "Ağa bağlan", ikon: "preferences/32/preferences-system-network.svg" },
+                    { id: "yazici", baslik: "Yazıcı", metin: "Yazıcı ekle veya ağda bul", ikon: "preferences/32/preferences-devices-printer.svg" },
+                    { id: "ekran", baslik: "Ekran", metin: "Çözünürlük ve ölçek", ikon: "preferences/32/preferences-desktop-display.svg" },
+                    { id: "ses", baslik: "Ses", metin: "Hoparlör ve mikrofon", ikon: "preferences/32/preferences-desktop-sound.svg" },
+                    { id: "kisayol", baslik: "Kısayollar", metin: "Win+E, Alt+Tab ve diğerleri", ikon: "devices/64/input-keyboard.svg" },
+                    { id: "bilgi", baslik: "Bu bilgisayar", metin: "Donanım ve sistem bilgisi", ikon: "actions/32/help-about.svg" }
+                ]
+                FocusScope {
+                    id: kutu
+                    required property var modelData
+                    objectName: "ac_" + modelData.id
+                    width: (kutular.width - 2 * kutular.spacing) / 3
+                    height: 70
+                    activeFocusOnTab: true
+                    Accessible.role: Accessible.Button
+                    Accessible.name: modelData.baslik + ". " + modelData.metin
+                    Keys.onSpacePressed: m.ac(modelData.id)
+                    Keys.onReturnPressed: m.ac(modelData.id)
+                    Keys.onEnterPressed: m.ac(modelData.id)
+                    Rectangle {
+                        anchors.fill: parent; anchors.margins: -4; radius: 15
+                        color: "transparent"; border.width: 2; border.color: "#ffc45d"
+                        visible: kutu.activeFocus
+                    }
+                    Rectangle {
+                        anchors.fill: parent; radius: 12
+                        color: tma.containsMouse ? "#1d2c38" : "#16232d"
+                        border.width: 1; border.color: "#29404f"
+                        Image {
+                            id: ik
+                            x: 16; anchors.verticalCenter: parent.verticalCenter
+                            width: 34; height: 34
+                            source: win.ikonlar + kutu.modelData.ikon
+                            sourceSize.width: 68; sourceSize.height: 68
+                        }
+                        Column {
+                            anchors.left: ik.right; anchors.leftMargin: 14
+                            anchors.right: ok.left; anchors.rightMargin: 8
+                            anchors.verticalCenter: parent.verticalCenter
+                            spacing: 3
+                            Text { width: parent.width; text: kutu.modelData.baslik; color: "#f4f8fb"; font.family: "Inter Variable"; font.pixelSize: 15; font.weight: Font.DemiBold; elide: Text.ElideRight }
+                            Text { width: parent.width; text: kutu.modelData.metin; color: "#a9bac6"; font.family: "Inter Variable"; font.pixelSize: 12; elide: Text.ElideRight }
+                        }
+                        Text {
+                            id: ok
+                            anchors.right: parent.right; anchors.rightMargin: 14
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: "›"; color: "#54d6ff"
+                            font.pixelSize: 22
+                        }
+                    }
+                    MouseArea {
+                        id: tma
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: { kutu.forceActiveFocus(); m.ac(kutu.modelData.id); }
+                    }
                 }
             }
         }
 
-        // Footer above a 1 px line: "Şimdilik geç" (outline, left), "Uygula ve başla" (cyan fill, right).
-        Rectangle { id: line; anchors.bottom: footer.top; anchors.bottomMargin: 20; width: parent.width; height: 1; color: "#29404f" }
+        Rectangle { id: cizgi; anchors.bottom: alt.top; anchors.bottomMargin: 18; width: parent.width; height: 1; color: "#29404f" }
         Item {
-            id: footer
+            id: alt
             anchors.bottom: parent.bottom
             width: parent.width; height: 44
-            FooterButton {
+            Dugme {
+                objectName: "gec"
                 anchors.left: parent.left
-                label: "Şimdilik geç"; filled: false
-                enabled: !win.busy
-                onActivated: { backend.gec(); Qt.quit(); }
+                label: "Şimdilik geç"
+                enabled: !m.mesgul
+                onActivated: m.gec()
             }
             Text {
+                objectName: "mesaj"
                 anchors.centerIn: parent
-                width: 380
+                width: 360
                 horizontalAlignment: Text.AlignHCenter
-                text: win.message
+                text: m.mesaj
                 color: "#ffc45d"
                 font.family: "Inter Variable"; font.pixelSize: 13
                 wrapMode: Text.WordWrap; maximumLineCount: 2; elide: Text.ElideRight
             }
-            FooterButton {
+            Dugme {
+                objectName: "uygula"
                 anchors.right: parent.right
-                label: "Uygula ve başla"; filled: true
-                enabled: !win.busy
-                onActivated: win.apply()
+                filled: true
+                label: "Uygula ve başla"
+                enabled: !m.mesgul
+                onActivated: m.uygula()
             }
         }
-    }
-
-    component TaskbarPreview: Rectangle {
-        property bool centered: false
-        color: "#0b1014"; border.color: "#29404f"; border.width: 1
-        Rectangle {
-            anchors.bottom: parent.bottom; anchors.bottomMargin: 1
-            x: 1; width: parent.width - 2; height: 14; color: "#16232d"
-            Row {
-                spacing: 4
-                anchors.verticalCenter: parent.verticalCenter
-                x: parent.parent.centered ? (parent.width - 3 * 8 - 2 * 4) / 2 : 4
-                Repeater { model: 3; Rectangle { width: 8; height: 8; radius: 2; color: index === 0 ? "#00aeef" : "#54d6ff" } }
-            }
-        }
-    }
-
-    component FooterButton: FocusScope {
-        id: fb
-        property string label
-        property bool filled: false
-        signal activated()
-        width: Math.max(150, txt.implicitWidth + 44); height: 44
-        activeFocusOnTab: enabled
-        Accessible.role: Accessible.Button
-        Accessible.name: label
-        Keys.onSpacePressed: if (enabled) activated()
-        Keys.onReturnPressed: if (enabled) activated()
-        Keys.onEnterPressed: if (enabled) activated()
-        Rectangle {
-            anchors.fill: parent; anchors.margins: -4; radius: 13
-            color: "transparent"; border.width: 2; border.color: "#ffc45d"
-            visible: fb.activeFocus
-        }
-        Rectangle {
-            anchors.fill: parent; radius: 10
-            color: fb.filled ? "#00aeef" : "transparent"
-            border.width: fb.filled ? 0 : 1
-            border.color: "#29404f"
-            opacity: fb.enabled ? 1 : 0.6
-        }
-        Text {
-            id: txt
-            anchors.centerIn: parent
-            text: fb.label
-            color: fb.filled ? "#0b1014" : "#d4e0e8"
-            font.family: "Inter Variable"; font.pixelSize: 15; font.weight: Font.DemiBold
-        }
-        MouseArea { anchors.fill: parent; enabled: fb.enabled; cursorShape: Qt.PointingHandCursor; onClicked: { fb.forceActiveFocus(); fb.activated(); } }
     }
 }

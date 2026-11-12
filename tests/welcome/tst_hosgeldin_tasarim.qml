@@ -1,5 +1,5 @@
-// WELCOME-02: every Hoş Geldin design does what its controls say (qmltestrunner, offscreen). A fake backend records
-// the calls the real one would turn into alpbah-hosgeldin-uygula runs and System Settings starts.
+// WELCOME-02 (D177): the Hoş Geldin window (design 4, Main.qml) does what its controls say (qmltestrunner, offscreen).
+// A fake backend records the calls the real one would turn into alpbah-hosgeldin-uygula runs and System Settings starts.
 // Run: QT_QPA_PLATFORM=offscreen qmltestrunner -import <dir with AlpbahHosgeldin/> -input tst_hosgeldin_tasarim.qml
 import QtQuick
 import QtTest
@@ -34,14 +34,8 @@ TestCase {
         }
     }
 
-    // Click path per design that picks Atatürk + Glass + Ortada and applies.
-    readonly property var yollar: ({
-        Sihirbaz: ["tema_ataturk", "ileri", "gorunum_glass", "ileri", "cubuk_orta", "ileri", "uygula"],
-        Ayna: ["tema_ataturk", "gorunum_glass", "cubuk_orta", "uygula"],
-        Kompakt: ["tema_ataturk", "gorunum_glass", "cubuk_orta", "uygula"],
-        Merkez: ["tema_ataturk", "gorunum_glass", "cubuk_orta", "uygula"],
-        Vitrin: ["tema_ataturk", "gorunum_glass", "cubuk_orta", "uygula"]
-    })
+    // Click path that picks Atatürk + Glass + Ortada and applies.
+    readonly property var yollar: ({ Main: ["tema_ataturk", "gorunum_glass", "cubuk_orta", "uygula"] })
 
     function olustur(ad, sahte) {
         var c = Qt.createComponent("AlpbahHosgeldin", ad);
@@ -64,7 +58,7 @@ TestCase {
     }
 
     function test_1_secip_uygula_data() {
-        return [{ tag: "Sihirbaz" }, { tag: "Ayna" }, { tag: "Kompakt" }, { tag: "Merkez" }, { tag: "Vitrin" }];
+        return [{ tag: "Main" }];
     }
     function test_1_secip_uygula(d) {
         var s = sahteC.createObject(tc);
@@ -137,23 +131,10 @@ TestCase {
         w.destroy();
     }
 
-    // Wizard: summary "Değiştir" jumps back to the step.
-    function test_6_sihirbaz_degistir() {
-        var s = sahteC.createObject(tc);
-        var w = olustur("Sihirbaz", s);
-        tikla(w, "ileri"); tikla(w, "ileri"); tikla(w, "ileri");
-        compare(w.adim, 3);
-        tikla(w, "degistir_gorunum");
-        compare(w.adim, 1);
-        tikla(w, "geri");
-        compare(w.adim, 0);
-        w.destroy();
-    }
-
     // Start centre: every tile asks the backend for its fixed action and the window stays open.
     function test_7_merkez_kutular() {
         var s = sahteC.createObject(tc);
-        var w = olustur("Merkez", s);
+        var w = olustur("Main", s);
         var ids = ["ag", "yazici", "ekran", "ses", "kisayol", "bilgi"];
         for (var i = 0; i < ids.length; ++i)
             tikla(w, "ac_" + ids[i]);
@@ -162,11 +143,4 @@ TestCase {
         w.destroy();
     }
 
-    // The current design still works with the backend as a required property.
-    function test_8_mevcut_main() {
-        var s = sahteC.createObject(tc);
-        var w = olustur("Main", s);
-        verify(w.visible);
-        w.destroy();
-    }
 }

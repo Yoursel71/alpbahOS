@@ -7,7 +7,7 @@ objdump -d --no-show-raw-insn "$f" | awk '
 { m=$2 }
 m ~ /^(addsubp[sd]|haddp[sd]|hsubp[sd]|lddqu|movddup|movshdup|movsldup)$/ { h[fn" sse3:"m]++ }
 m ~ /^(pshufb|phadd[wd]|phaddsw|phsub[wd]|phsubsw|pmaddubsw|pmulhrsw|psign[bwd]|pabs[bwd]|palignr)$/ { h[fn" ssse3:"m]++ }
-m ~ /^(pblendvb|blendvp[sd]|blendp[sd]|pblendw|ptest|pmovzx..|pmovsx..|pinsr[bdq]|pextr[bdq]|roundp[sd]|rounds[sd]|pmulld|pmuldq|pmin[us][bwd]|pmax[us][bwd]|pminsd|packusdw|pcmpeqq|dpp[sd]|mpsadbw|phminposuw|movntdqa|insertps|extractps)$/ { h[fn" sse4.1:"m]++ }
+m ~ /^(pblendvb|blendvp[sd]|blendp[sd]|pblendw|ptest|pmovzx..|pmovsx..|pinsr[bdq]|pextr[bdq]|roundp[sd]|rounds[sd]|pmulld|pmuldq|pminsb|pminsd|pminuw|pminud|pmaxsb|pmaxsd|pmaxuw|pmaxud|packusdw|pcmpeqq|dpp[sd]|mpsadbw|phminposuw|movntdqa|insertps|extractps)$/ { h[fn" sse4.1:"m]++ }
 m ~ /^(pcmp[ei]str[im]|pcmpgtq|crc32[bwlq]?)$/ { h[fn" sse4.2:"m]++ }
 m ~ /^popcnt/ { h[fn" popcnt"]++ }
 END { for (k in h) print k, h[k] }' | sort
