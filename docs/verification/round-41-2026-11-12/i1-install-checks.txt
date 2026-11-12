@@ -1,0 +1,7 @@
+gb206 -> gb202; bootloader-570.144.bin.zst fmc-570.144.bin.zst gsp-570.144.bin.zst 
+1
+lrwxrwxrwx 1 root root       27 Kas 11 21:50 /tmp/claude-1000/-home-yrslf/6428d99f-34b2-5d68-b8f9-e526a9e44bfd/scratchpa
+-rwxr-xr-x 1 root root 14634984 Kas 12 07:01 /tmp/claude-1000/-home-yrslf/6428d99f-34b2-5d68-b8f9-e526a9e44bfd/scratchpa
+# alpbahOS (D164): commands that 'alp install' exports from the Debian box are in ~/.local/bin. Appended to PATH, so a
+# system command of the same name always wins. Not for root.
+if [ -n "${HOME:-}" ] && [ "$(id -u)" != 0 ]; then
