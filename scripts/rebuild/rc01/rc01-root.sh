@@ -14,8 +14,8 @@ export LC_ALL=C
 [ "$(id -u)" -eq 0 ] || { echo "run as root"; exit 1; }
 SB=/home/yrslf/alpbahOS/scratch-lfs-bench
 WT=$(cd "$(dirname "$0")/../../.." && pwd)
-SNAP=$SB/r4-snapshots/r4-rc01-2026-11-12
-RC=$SB/rc01
+SNAP=${RC01_SNAP:-$SB/r4-snapshots/r4-rc01-2026-11-12}   # RC01_SNAP, RC01_RC: reused by rc02-root.sh
+RC=${RC01_RC:-$SB/rc01}
 LED=$RC/ledger
 ALP=$WT/docs/handoffs/claude/alp-prototype/alp.py
 LIB=$WT/scripts/rebuild/r4/r4_lib.py
