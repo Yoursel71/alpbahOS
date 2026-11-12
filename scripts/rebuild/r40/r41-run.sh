@@ -1,7 +1,9 @@
 #!/bin/bash
 # Round 41: the r40 fixes found after round 40 started: FW-DIRLINK-01 (linux-firmware-dirlinks), ALP-KUTU-01 (alp
 # Debian box, apt/dnf/pacman hint, ~/.local/bin on PATH: alp-kutu-r40b, alpbahos-pm-hint-r40) and INSTALLER-UI-01 r41
-# (summary strings in the future tense: calamares-r41), MESA-01 (libglvnd, Mesa with the Intel/AMD drivers: gpu-r41.sh).
+# (summary strings in the future tense: calamares-r41), MESA-01 (libglvnd, Mesa with the Intel/AMD drivers: gpu-r41.sh),
+# NETAVARK-01 (netavark, aardvark-dns: the rc01 KUTU failure of handoff 038) and the rc01 root steps (r41-root.sh:
+# plymouth 26.134.222-alp1 with the 037 patch, alp-r41 with ALP-LOCK-MSG-01, catalog 2026.11.12-v2).
 # Round 40's run stopped at I1 (the fixed Kur click missed the smaller installer's button; r20-lanes.sh now finds it in
 # the screenshot), so this round also covers every round 40 row: I1 and I2 installs with installer screenshots,
 # Welcome, timing, KSplash, the matrix APPS row (PIXBUF-01, PORTAL-01, ALP-FLATHUB-01, DISTROBOX-01), the KUTU row
