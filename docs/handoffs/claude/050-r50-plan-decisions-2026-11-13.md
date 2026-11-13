@@ -53,3 +53,17 @@ now installed, pcspkr, alpbahos-zram.service exit-code, plymouthd crash, bluetoo
 locale, CHROME-DECOR-01, LUKS (digits-only test passphrase), dual boot (QEMU disks only, never nvme0n1), Steam + Bottles
 (Flatpak Steam needs GL.nvidia-620-70-06 from Flathub: check), one ISO, matrix + long runs, real-PC proof, push.
 Note: rtkit-daemon/udisks2/upower are D-Bus activated; not yet started in a booted image (no row has proven it yet).
+
+Progress 2026-11-13 22:40 (everything below is in r4-root as alp records; ISO r50b/r50c built from it):
+- Tests on the r50 ISO (QEMU): L1, I2, I1, B2 PASS; NVIDIA row PASS (greeter on Wayland path, 0 weston failures); r50 row: root rw, 0 failed units,
+  udisks2/upower/rtkit/smartctl/nvme/regulatory.db/Adwaita Mono/no BLE MIDI errors/no tpm2_id errors; MirazParted opens (red warning, Turkish UI);
+  SAFE-GFX-01 proven end to end (counter x, xx, third start `alpbahos.safe=1`, greeter up, counter cleared).
+- New finds this evening: GRUB 2.14 was built without libdevmapper (record `grub-dm-2.14`, grub-install now works on /dev/mapper/luks-*);
+  `10_linux` wrote an empty `root=PARTUUID=` for a root without PARTUUID (record `alpbahos-grub10-r50`, GRUB-ROOT-01);
+  luks-build.sh once unpacked 12 GB into /tmp (tmpfs): work dirs are now under /home and the script checks mount points.
+- LUKS (INSTALL-LUKS-01): proven in QEMU on an image built by scripts/rebuild/r50/luks-build.sh (the Calamares modules' work done by hand, the real
+  repo scripts target-initramfs.sh/grub-install/grub-mkconfig run): one passphrase prompt at GRUB, key file unlocks in the initramfs, root rw, 0 failed units.
+  NOT proven: the Calamares GUI path (checkbox, dracutlukscfg, luksbootkeyfile order). Needs a lane that clicks the encrypt checkbox.
+- Steam/Bottles: only the menu entries are recorded; no `alp install steam` run yet. NVIDIA-FLATPAK-01 open.
+- Dual boot: not proven (os-prober loop probe gave no output in a chroot). Needs a QEMU disk with a fake Windows ESP + NTFS.
+- Real PC: nothing proven yet. The SSD install has two hand fixes (remount-fs link, sddm.conf weston line) and was not booted again after them.
