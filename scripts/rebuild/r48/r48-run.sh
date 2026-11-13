@@ -38,7 +38,7 @@ gate 1 25; log "matrix APPS3"; env MROUND=r48 bash scripts/rebuild/r21/matrix-r2
 gate 1 25; log "matrix PRINT"; env MROUND=r48 bash scripts/rebuild/r21/matrix-r21.sh print > "$MD/run-PRINT.out" 2>&1; gap
 R25() { ROUND=r48 bash scripts/rebuild/r25/run-r25.sh "$ISO" "$@" >> "$B/r48/run-r48.out" 2>&1; }
 gate 1; log "welcome"; R25 welcome; gap
-gate 1 25; log "B2"; R25 b2; gap
+gate 1 25; log "B2"; env MROUND=r48 bash scripts/rebuild/r21/matrix-r21.sh diag B2 > "$MD/run-B2.out" 2>&1; gap
 # sof/ipu6/thunderbolt confirmed already in r4-root (static check, see handoff 044); just record presence from the ISO tree
 mkdir -p "$B/r48"
 sudo bsdtar -xOf "$ISO" boot/grub/grub.cfg 2>/dev/null | grep -c 'modprobe.blacklist=nouveau' | sed 's/^/grub entries with nouveau blacklisted: /' | tee -a "$L/run.log"
