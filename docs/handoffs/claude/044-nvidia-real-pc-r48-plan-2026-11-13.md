@@ -100,3 +100,30 @@ docs the user may want; neither was in the user's 20-question approval, so left 
 - `/usr/share/doc`: 340 MiB
 - `.a` static libraries under `/usr/lib`: 688 MiB
 - 1400+ unstripped binaries/libraries found in a shallow (`-maxdepth 1`) scan of `/usr/bin` and `/usr/lib` alone (not a full recursive count)
+
+## Addendum 2026-11-13 (later still): strip attempt, a real incident, and why it stopped
+
+User approved ISO size reduction ("ilerde bi de bu çok alan kaplıyor azalt biraz istersen"). Measured first: 5517
+of 7069 ELF candidates in r4-root's `usr/{bin,lib,sbin,libexec}` were unstripped, 5.2 GiB of disk. Ran
+`chroot r4-root strip --strip-unneeded` over the list from inside a `chroot` (not the host `strip`, to match the
+target's binutils/libc). Two files were skipped as busy (`/usr/bin/strip`, `/usr/bin/bash`, expected: self-use).
+
+**Incident**: a rescan afterwards still showed 3889 unstripped, and running `strip`/`file` inside the chroot to
+investigate started failing with `error while loading shared libraries: /usr/lib/libc.so.6: file too short`.
+`usr/lib/libc.so.6` had been truncated to 0 bytes — almost certainly from running the strip loop and separate
+verification `file` scans concurrently against the chroot while `strip`, `bash` and `file` themselves were all
+dynamically linked against that same live file, racing the in-place rewrite. r4-root was unusable (nothing can
+exec without libc). Fixed immediately: copied the intact `usr/lib/libc.so.6` (12,256,360 bytes, matches round 47)
+back from the `lfs13-snapshots/r4-iso-src-2026-11-09-prev-r47` snapshot (btrfs, taken before today's changes).
+Verified after the copy: `chroot r4-root ldconfig -v` clean, `python3 -c "print(1)"`, `bash`, `strip --version`,
+`file` all run. No other 0-byte ELF files found afterwards (a 0-byte scan turned up only legitimately-empty files —
+`__init__.py`, `py.typed`, `.dist-info/REQUESTED`, test fixtures — unrelated to the strip).
+
+**Stopped here, on purpose.** ~1628 files were stripped safely before the race (5517 → 3889 unstripped); that
+partial win is kept. The remaining 3889 are NOT being stripped this session: doing it safely needs either (a) no
+process executing against r4-root at all while it runs (no concurrent verification scans, nothing else touching the
+chroot), or (b) following whatever safe-replace discipline the project's own per-package build scripts already use
+(most BLFS packages likely already strip during their own `make install`; this ad-hoc after-the-fact pass over an
+already-populated live root is the risky part). Next single action for whoever continues size work: do it
+single-threaded, with r4-root otherwise idle, and diff file sizes against a snapshot afterwards before trusting it,
+the way this incident was caught.
