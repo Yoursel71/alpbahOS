@@ -1,9 +1,10 @@
 #!/bin/sh
 # SAFE-GFX-01: a greeter or user graphical session that stays up for 8 s in a row confirms the start (counter cleared).
 # No such session within 150 s: the start stays unconfirmed (exit 1).
-GE=/usr/bin/grub-editenv; ENVF=/boot/grub/grubenv
+GE=${ALPBAHOS_GRUB_EDITENV:-/usr/bin/grub-editenv}; ENVF=${ALPBAHOS_GRUBENV:-/boot/grub/grubenv}
+T_MAX=${ALPBAHOS_OK_TIMEOUT:-150}; NEED=${ALPBAHOS_OK_STABLE:-8}; NAP=${ALPBAHOS_OK_SLEEP:-1}   # overridable for the unit test
 stable=0; t=0
-while [ "$t" -lt 150 ]; do
+while [ "$t" -lt "$T_MAX" ]; do
   ok=0
   for s in $(loginctl list-sessions --no-legend 2>/dev/null | awk '{print $1}'); do
     c=$(loginctl show-session "$s" -p Class --value 2>/dev/null); ty=$(loginctl show-session "$s" -p Type --value 2>/dev/null)
@@ -11,10 +12,10 @@ while [ "$t" -lt 150 ]; do
     case "$c:$ty:$st" in greeter:wayland:active|greeter:x11:active|user:wayland:active|user:wayland:online|user:x11:active|user:x11:online) ok=1 ;; esac
   done
   if [ "$ok" = 1 ]; then stable=$((stable+1)); else stable=0; fi
-  if [ "$stable" -ge 8 ]; then
+  if [ "$stable" -ge "$NEED" ]; then
     [ -x "$GE" ] && [ -f "$ENVF" ] && "$GE" "$ENVF" set alpbahos_tries=
     exit 0
   fi
-  sleep 1; t=$((t+1))
+  sleep "$NAP"; t=$((t+1))
 done
 exit 1

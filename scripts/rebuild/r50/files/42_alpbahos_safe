@@ -9,11 +9,12 @@
 # itself writes the counter).
 set -e
 . "$pkgdatadir/grub-mkconfig_lib"
-KERNEL=$(ls /boot/vmlinuz-* 2>/dev/null | sort -V | tail -n 1)
+BD=${ALPBAHOS_BOOT_DIR:-/boot}   # lookup directory (overridable for the unit test); the grub.cfg lines always say /boot
+KERNEL=$(ls "$BD"/vmlinuz-* 2>/dev/null | sort -V | tail -n 1)
 [ -n "$KERNEL" ] || exit 0
-VER=${KERNEL#/boot/vmlinuz-}
+VER=${KERNEL#"$BD"/vmlinuz-}; KERNEL=/boot/vmlinuz-$VER
 INITRD=""
-for i in "/boot/initramfs-$VER.img" "/boot/initrd.img-$VER" "/boot/initrd-$VER.img"; do [ -e "$i" ] && INITRD=$i && break; done
+for i in "initramfs-$VER.img" "initrd.img-$VER" "initrd-$VER.img"; do [ -e "$BD/$i" ] && INITRD=/boot/$i && break; done
 if [ -n "${GRUB_DEVICE_PARTUUID:-}" ] && [ "${GRUB_DISABLE_LINUX_PARTUUID:-true}" != true ]; then ROOTARG="root=PARTUUID=${GRUB_DEVICE_PARTUUID}"; else ROOTARG="root=${GRUB_DEVICE}"; fi
 cat <<'EOF'
 if [ "${alpbahos_tries}" = "xx" ]; then
