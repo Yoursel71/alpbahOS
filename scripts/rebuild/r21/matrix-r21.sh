@@ -541,10 +541,21 @@ cmd_luks() { # INSTALL-LUKS-01 (round 50): boots the image made by scripts/rebui
   vmquit "$R"; rm -f "$D/LUKS-disk.raw"; stamp "LUKS end (copy removed)"
 }
 
+cmd_dualboot() { # INSTALL-DUALBOOT-01 (round 50): the installed system booted with a second disk that looks like a Windows install; os-prober must
+  # find it and grub-mkconfig must give it a menu entry. Not covered: Calamares "install alongside" itself (the resize of the NTFS partition).
+  local R=$D/DUAL WIN=${WIN_IMG:-$B/images/fake-windows-r50.raw}; fresh "$D/DUAL-disk.raw" "$R" "$D/DUAL-win.raw"
+  [ -e "$WIN" ] || sudo bash "$WT/scripts/rebuild/r50/make-fake-windows-disk.sh" "$WIN"
+  cmd_mkcopy uefi DUAL-disk; cp --reflink=always "$WIN" "$D/DUAL-win.raw"; stamp "DUAL start"
+  EXTRA_ARGS="-drive file=$D/DUAL-win.raw,if=none,id=win,format=raw -device virtio-blk-pci,drive=win" NO_REBOOT=0 agent_start DUAL uefi DUAL-disk virtio 6G
+  greeter_login "$R" dual; sleep 15; shot "$R" dual-desktop
+  gsh "$R" 240 'echo "disks: $(lsblk -dno NAME,SIZE | tr "\n" ";")"; echo "os-prober: $(os-prober 2>&1 | tr "\n" ";" | cut -c1-300)"; grub-mkconfig -o /tmp/dual-grub.cfg 2>&1 | tail -n 4; echo "windows entries in grub.cfg: $(grep -ci windows /tmp/dual-grub.cfg)"; grep -iE "menuentry.*windows" /tmp/dual-grub.cfg | head -n 3 | cut -c1-200; echo "ntfsresize: $(ntfsresize --info -f /dev/vdb3 2>&1 | grep -E "You might" | head -n 1)"; echo "alpbahOS entries kept: $(grep -c "menuentry .alpbahOS" /tmp/dual-grub.cfg)"'
+  vmquit "$R"; rm -f "$D/DUAL-disk.raw" "$D/DUAL-win.raw"; stamp "DUAL end (copies removed)"
+}
+
 if [ "${MATRIX_LIB:-0}" != 1 ]; then
   c=${1:-}; shift || true
   case $c in
-    sha|live|diag|mkcopy|agent|check|s1|r1|fpgui|apps|apps2|apps3|drv|print|kutu|nvidia|r50|luks|type|enter|key|combo|click|shot|quit|run|recprep|reclive|recboot|kflive|kffill|kfgo|kfdisk|kfboot|kfagent|rofacts|f1|shutlines) "cmd_$c" "$@" ;;
+    sha|live|diag|mkcopy|agent|check|s1|r1|fpgui|apps|apps2|apps3|drv|print|kutu|nvidia|r50|luks|dualboot|type|enter|key|combo|click|shot|quit|run|recprep|reclive|recboot|kflive|kffill|kfgo|kfdisk|kfboot|kfagent|rofacts|f1|shutlines) "cmd_$c" "$@" ;;
     *) echo "usage: matrix-r21.sh sha|live|diag|mkcopy|agent|check|s1|r1|fpgui ..."; exit 2 ;;
   esac
 fi
