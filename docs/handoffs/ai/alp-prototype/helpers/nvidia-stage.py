@@ -80,6 +80,15 @@ c! /dev/nvidiactl 0666 root root - 195:255
 c! /dev/nvidia0 0666 root root - 195:0
 c! /dev/nvidia-modeset 0666 root root - 195:254
 """
+SDDM_WAYLAND = """# alpbahOS NVIDIA package (NVIDIA-SDDM-01): the NVIDIA recipe has no Xorg driver (the session is Wayland), so the
+# greeter must not run on X11 (it crashed with "Failed to create pixmap" on the real RTX 5060). weston is not in the
+# image: kwin_wayland is the greeter compositor. The image's /etc/sddm.conf has no DisplayServer line, so this wins.
+[General]
+DisplayServer=wayland
+
+[Wayland]
+CompositorCommand=kwin_wayland --drm --no-lockscreen --no-global-shortcuts --locale1
+"""
 
 
 class StageError(RuntimeError):
@@ -184,7 +193,8 @@ def stage(ext: Path, dest: Path, kver: str) -> list[str]:
     for rel, text in (("usr/lib/modprobe.d/nvidia-alpbahos.conf", MODPROBE),
                       ("usr/lib/modules-load.d/nvidia-alpbahos.conf", MODULES_LOAD),
                       ("usr/lib/udev/rules.d/60-nvidia-alpbahos.rules", UDEV),
-                      ("usr/lib/tmpfiles.d/alpbahos-nvidia.conf", TMPFILES)):
+                      ("usr/lib/tmpfiles.d/alpbahos-nvidia.conf", TMPFILES),
+                      ("etc/sddm.conf.d/10-alpbahos-nvidia-wayland.conf", SDDM_WAYLAND)):
         p = dest / rel
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(text)

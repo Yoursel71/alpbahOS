@@ -98,6 +98,8 @@ def test_stage_places_the_files(tmp_path):
     tmp = (dest / "usr/lib/tmpfiles.d/alpbahos-nvidia.conf").read_text()
     for node in ("nvidiactl 0666 root root - 195:255", "nvidia0 0666 root root - 195:0", "nvidia-modeset 0666 root root - 195:254"):
         assert f"c! /dev/{node}" in tmp
+    sd = (dest / "etc/sddm.conf.d/10-alpbahos-nvidia-wayland.conf").read_text()
+    assert "DisplayServer=wayland" in sd and "CompositorCommand=kwin_wayland --drm" in sd
 
 
 def test_stage_skips_glvnd_32bit_xorg_and_sources(tmp_path):
