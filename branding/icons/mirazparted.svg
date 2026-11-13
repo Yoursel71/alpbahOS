@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- MirazParted icon (alpbahOS navy palette): a disk with three partition segments -->
+  <rect x="6" y="14" width="52" height="36" rx="6" fill="#0f2747"/>
+  <rect x="6" y="14" width="52" height="36" rx="6" fill="none" stroke="#8ea2af" stroke-width="2"/>
+  <rect x="11" y="22" width="22" height="20" rx="2" fill="#2f6db5"/>
+  <rect x="35" y="22" width="11" height="20" rx="2" fill="#5fa0e0"/>
+  <rect x="48" y="22" width="5" height="20" rx="2" fill="#c8d6e2"/>
+  <circle cx="13" cy="46" r="1.6" fill="#8ea2af"/>
+</svg>
