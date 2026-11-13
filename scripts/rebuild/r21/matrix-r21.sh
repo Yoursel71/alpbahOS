@@ -552,10 +552,55 @@ cmd_dualboot() { # INSTALL-DUALBOOT-01 (round 50): the installed system booted w
   vmquit "$R"; rm -f "$D/DUAL-disk.raw" "$D/DUAL-win.raw"; stamp "DUAL end (copies removed)"
 }
 
+cmd_luksgui() { # INSTALL-LUKS-01 (round 50) through the real Calamares GUI: erase disk + "Sistemi şifrele" (digits-only passphrase), install,
+  # facts read from the unlocked disk, then a boot of the installed system (passphrase typed once at GRUB) with the test shell unit.
+  # Expected: root on /dev/mapper/luks-..., ONE passphrase prompt, 0 failed units, rd.luks.uuid on both GRUB entries.
+  local R=$D/LUKSG IMG=${LUKSG_IMG:-$B/images/inst-uefi-luks-$MR.raw} LP=123456 n i PW; PW=$(cat "$PWF")
+  fresh "$R" "$IMG" "$D/LUKSG-disk.raw"; truncate -s 30G "$IMG"; stamp "LUKSG start"
+  ACCEL=kvm bash "$W/vm-start.sh" uefi "$ISO" "$R" "$IMG" virtio 6G > /dev/null; sleep 100
+  q "$R" click 58 40; sleep 1; q "$R" key ret; sleep 40
+  for n in 1 2 3; do q "$R" click 1007 637; sleep 3; done; shot "$R" i-03-partition
+  q "$R" click 333 449; sleep 2; q "$R" click 550 449; sleep 1; q "$R" text "$LP"; q "$R" click 777 449; sleep 1; q "$R" text "$LP"; sleep 2; shot "$R" i-03c-pass
+  q "$R" click 1007 637; sleep 3
+  q "$R" click 424 181; sleep 1; clr "$R"; tq "$R" "Test User"
+  q "$R" click 424 245; sleep 1; clr "$R"; tq "$R" "testuser"
+  q "$R" click 424 309; sleep 1; clr "$R"; tq "$R" "alpbahos-luks"
+  q "$R" click 424 373; sleep 1; clr "$R"; tq "$R" "$PW"
+  q "$R" click 629 373; sleep 1; clr "$R"; tq "$R" "$PW"
+  sleep 2; shot "$R" i-05-users-filled
+  q "$R" click 1007 637; sleep 3; shot "$R" i-05b-drivers
+  local NY KY; NY=$(python3 "$W/find-button-y.py" "$R/i-05b-drivers.png" 1007 2>/dev/null) || NY=637
+  q "$R" click 1007 "$NY"; sleep 3; shot "$R" i-06-summary
+  KY=$(python3 "$W/find-button-y.py" "$R/i-06-summary.png" 1002 2>/dev/null) || KY=699
+  q "$R" click 1002 "$KY"; sleep 4; shot "$R" i-07-confirm; q "$R" click 748 455; sleep 5; shot "$R" i-08-running
+  for i in $(seq 1 120); do grep -aq "unmounting filesystem" "$R/serial.log" 2> /dev/null && break; sleep 20; done
+  sleep 20; shot "$R" i-09-done; vmquit "$R"; stamp "LUKSG install ended (unmount lines: $(grep -ac 'unmounting filesystem' "$R/serial.log"))"
+  # read the disk: unlock, facts, add the test shell unit
+  local LO MN=$D/mnt-luksg U P2; LO=$(sudo losetup -f -P --show "$IMG"); P2=${LO}p2; U=$(sudo cryptsetup luksUUID "$P2"); mkdir -p "$MN"
+  printf '%s' "$LP" | sudo cryptsetup open "$P2" "luks-$U" - && sudo mount "/dev/mapper/luks-$U" "$MN"
+  echo "luks version: $(sudo cryptsetup luksDump "$P2" | sed -n 's/^Version: *//p'); enabled key slots: $(sudo cryptsetup luksDump "$P2" | grep -c 'ENABLED')"
+  echo "crypttab: $(sudo grep -v '^#' "$MN/etc/crypttab" | tr -s ' ')"
+  echo "GRUB_ENABLE_CRYPTODISK: $(sudo grep -c '^GRUB_ENABLE_CRYPTODISK=y' "$MN/etc/default/grub")"
+  sudo grep -E '^\s+linux\s' "$MN/boot/grub/grub.cfg" | cut -c1-240 | sed 's/^/grub linux: /'
+  echo "linux lines with rd.luks.uuid: $(sudo grep -E '^\s+linux\s' "$MN/boot/grub/grub.cfg" | grep -c 'rd.luks.uuid=') of $(sudo grep -cE '^\s+linux\s' "$MN/boot/grub/grub.cfg")"
+  echo "empty root=PARTUUID= lines: $(sudo grep -c 'root=PARTUUID= ' "$MN/boot/grub/grub.cfg")"
+  sudo install -m 755 "$S/guest-agent-r21.sh" "$MN/usr/local/sbin/r21m-agent"; sudo install -m 755 "$S/guest-as-user-r21.sh" "$MN/usr/local/sbin/r21m-as-user"
+  sudo install -m 644 "$S/guest-agent-r21.service" "$MN/etc/systemd/system/r21m-agent.service"; sudo mkdir -p "$MN/etc/systemd/system/graphical.target.wants"
+  sudo ln -sf /etc/systemd/system/r21m-agent.service "$MN/etc/systemd/system/graphical.target.wants/r21m-agent.service"
+  sudo umount "$MN"; sudo cryptsetup close "luks-$U"; sudo losetup -d "$LO"; rmdir "$MN"
+  # boot it
+  cp --reflink=always "$IMG" "$D/LUKSG-disk.raw"; R=$D/LUKSGB; fresh "$R"
+  NO_REBOOT=0 agent_start LUKSGB uefi LUKSG-disk virtio 6G; sleep 14; shot "$R" b-1-grub; q "$R" text "$LP"; sleep 1; q "$R" key ret
+  for i in $(seq 1 100); do grep -aq "R21M begin" "$R/serial.log" 2> /dev/null && break; sleep 3; done
+  echo "boot lines in the serial log: $(grep -ac 'R21M begin' "$R/serial.log")"; sleep 25; shot "$R" b-2-up
+  gsh "$R" 40 'echo "root: $(findmnt -no SOURCE,FSTYPE,OPTIONS /)"; echo "crypt devices: $(dmsetup ls --target crypt 2>&1 | tr "\n" ";")"; echo "cmdline: $(cut -c1-240 /proc/cmdline)"; echo "failed units: $(systemctl --failed --no-legend | wc -l)"; echo "passphrase prompts in the journal: $(journalctl -b --no-pager | grep -ci "enter passphrase\|Please enter passphrase")"; echo "initqueue/crypt lines: $(journalctl -b --no-pager | grep -ciE "cryptsetup|luks")"'
+  vmquit "$R"; rm -f "$D/LUKSG-disk.raw"; stamp "LUKSG end (boot copy removed, install image kept: $IMG)"
+}
+
 if [ "${MATRIX_LIB:-0}" != 1 ]; then
   c=${1:-}; shift || true
   case $c in
-    sha|live|diag|mkcopy|agent|check|s1|r1|fpgui|apps|apps2|apps3|drv|print|kutu|nvidia|r50|luks|dualboot|type|enter|key|combo|click|shot|quit|run|recprep|reclive|recboot|kflive|kffill|kfgo|kfdisk|kfboot|kfagent|rofacts|f1|shutlines) "cmd_$c" "$@" ;;
+    sha|live|diag|mkcopy|agent|check|s1|r1|fpgui|apps|apps2|apps3|drv|print|kutu|nvidia|r50|luks|dualboot|luksgui|type|enter|key|combo|click|shot|quit|run|recprep|reclive|recboot|kflive|kffill|kfgo|kfdisk|kfboot|kfagent|rofacts|f1|shutlines) "cmd_$c" "$@" ;;
     *) echo "usage: matrix-r21.sh sha|live|diag|mkcopy|agent|check|s1|r1|fpgui ..."; exit 2 ;;
   esac
 fi
