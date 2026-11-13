@@ -1,0 +1,23 @@
+#!/bin/sh
+# Round 50 checks, run INSIDE an installed guest (through gsh.py by r50-rows.sh). Prints "KEY: value" lines; the reviewer reads them.
+echo "root-rw: $(findmnt -no OPTIONS / | tr ',' '\n' | grep -qx rw && echo yes || echo NO)"
+echo "machine-id-bytes: $(wc -c < /etc/machine-id)"
+echo "failed-units: $(systemctl --failed --no-legend | wc -l)"
+systemctl --failed --no-legend | cut -c1-100
+echo "greeter-compositor: $(journalctl -b -u sddm --no-pager 2>/dev/null | grep -m1 -oE 'kwin_wayland|weston|Xorg' || echo none)"
+echo "weston-error: $(journalctl -b --no-pager 2>/dev/null | grep -c 'Failed to start .weston')"
+echo "mirazparted: $(command -v mirazparted) desktop=$(ls /usr/share/applications/org.alpbahos.mirazparted.desktop 2>/dev/null | wc -l) kdialog=$(command -v kdialog)"
+echo "mirazparted-ldd-missing: $(ldd /usr/bin/partitionmanager 2>&1 | grep -c 'not found')"
+echo "fs-tools: cryptsetup=$(cryptsetup --version 2>&1 | head -1) btrfs=$(mkfs.btrfs --version 2>&1 | head -1) ntfs3g=$(ntfs-3g --version 2>&1 | head -1)"
+echo "services: udisks2=$(systemctl is-enabled udisks2 2>&1 | head -1)/$(busctl --system list 2>/dev/null | grep -c org.freedesktop.UDisks2) upower=$(busctl --system list 2>/dev/null | grep -c org.freedesktop.UPower) rtkit-user=$(getent passwd rtkit | cut -d: -f1)"
+echo "udisksctl: $(udisksctl status 2>&1 | head -3 | tr '\n' ' ' | cut -c1-120)"
+echo "upower: $(upower -e 2>&1 | head -2 | tr '\n' ' ')"
+echo "smartctl: $(smartctl --version 2>&1 | head -1) nvme: $(nvme version 2>&1 | head -1)"
+echo "regulatory.db: $(ls /usr/lib/firmware/regulatory.db 2>/dev/null) dmesg-regdb-fail: $(dmesg 2>/dev/null | grep -c 'regulatory.db failed')"
+echo "font-23bf: $(fc-list ':charset=23bf' family | head -1) font-23f5: $(fc-list ':charset=23f5' family | head -1)"
+echo "wireplumber-ble-midi-errors: $(journalctl -b --no-pager 2>/dev/null | grep -c 'BLE MIDI')"
+echo "boot-try-ok: tries='$(grub-editenv /boot/grub/grubenv list 2>/dev/null | sed -n 's/^alpbahos_tries=//p')' units=$(systemctl is-enabled alpbahos-boot-try alpbahos-boot-ok 2>&1 | tr '\n' ' ')"
+echo "grub-safe-entry: $(grep -c "alpbahos-safe" /boot/grub/grub.cfg)"
+echo "tpm2-id-errors: $(journalctl -b --no-pager 2>/dev/null | grep -c 'tpm2_id')"
+echo "zram-unit-failed: $(systemctl is-failed alpbahos-zram 2>&1)"
+echo "games-entries: $(ls /usr/share/applications/alpbahos-steam.desktop /usr/share/applications/alpbahos-bottles.desktop 2>/dev/null | wc -l)"

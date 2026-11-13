@@ -1,0 +1,19 @@
+#!/bin/sh
+# GAMES-01 (round 50, D182): Steam and Bottles come from Flathub through alp (D163). First start installs the Flatpak with
+# `alp install`, then starts it; later starts only start it. Usage: games-launch <alp-name> <flatpak-app-id>
+# NVIDIA: a Flatpak app needs the matching org.freedesktop.Platform.GL.nvidia-<version> extension for hardware OpenGL/Vulkan.
+# Flathub is behind the driver the nvidia package installs (NVIDIA-FLATPAK-01): when the extension does not exist the app
+# still starts, with Mesa software rendering, and the user is told.
+NAME=$1; APP=$2
+if ! flatpak info "$APP" >/dev/null 2>&1; then
+  echo "== $NAME ilk kez kuruluyor (internet gerekli, birkaç dakika sürebilir)..."
+  alp install --yes "$NAME" || { echo "Kurulum başarısız. Ağ bağlantısını kontrol edip tekrar dene."; printf 'Kapatmak için Enter...'; read -r _; exit 1; }
+fi
+if [ -r /proc/driver/nvidia/version ]; then
+  VER=$(sed -n 's/.*Kernel Module  *\([0-9][0-9.]*\).*/\1/p' /proc/driver/nvidia/version | head -n 1 | tr . -)
+  if [ -n "$VER" ] && ! flatpak info "org.freedesktop.Platform.GL.nvidia-$VER" >/dev/null 2>&1; then
+    flatpak install -y --noninteractive flathub "org.freedesktop.Platform.GL.nvidia-$VER" >/dev/null 2>&1 \
+      || echo "Not: Flathub'da NVIDIA $VER için GL eklentisi yok; $NAME yazılım render'ı ile çalışır (NVIDIA-FLATPAK-01)."
+  fi
+fi
+exec flatpak run "$APP"

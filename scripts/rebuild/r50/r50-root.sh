@@ -18,7 +18,9 @@
 #              ConfigurationDirectoryMode (555 vs the 755 /etc/bluetooth), alpbahos-zram.service stop failing the unit at shutdown
 #   desktopfix alpbahos-desktopfix-r50: AUDIO-WP-01 (the BLE MIDI monitor of WirePlumber is disabled: PipeWire has no bluez5/midi
 #              SPA plugin) and CHROME-DECOR-01 (Flatpak Chrome gets the system title bar by default, via /etc/skel)
-# Usage: r50-root.sh <snapshot|remount|sddm|rtkit-user|safegfx|bootclean|desktopfix|check|all>   (run as root, no chroot of r4-root may be active)
+#   games      alpbahos-games-r50: GAMES-01, Steam and Bottles menu entries that install the Flathub app through alp on the
+#              first start (D182; D129's native Steam is replaced by Flatpak Steam: multilib is not complete here)
+# Usage: r50-root.sh <snapshot|remount|sddm|rtkit-user|safegfx|bootclean|desktopfix|games|check|all>   (run as root, no chroot of r4-root may be active)
 export LC_ALL=C
 [ "$(id -u)" -eq 0 ] || { echo "run as root"; exit 1; }
 SB=/home/yrslf/alpbahOS/scratch-lfs-bench
@@ -152,6 +154,37 @@ EOF
   chmod 644 "$S/etc/wireplumber/wireplumber.conf.d/90-alpbahos-no-ble-midi.conf" "$S/etc/skel/.var/app/com.google.Chrome/config/google-chrome/Default/Preferences"
   record alpbahos-desktopfix-r50 0.9-r50 "$S"
 }
+step_games() {
+  local S F; S=$(fresh games); F=$WT/scripts/rebuild/r50/files
+  mkdir -p "$S/usr/libexec/alpbahos" "$S/usr/share/applications"
+  install -m 755 "$F/games-launch" "$S/usr/libexec/alpbahos/games-launch"
+  cat > "$S/usr/share/applications/alpbahos-steam.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Steam
+Comment=Game store and library (installs from Flathub on first start)
+Comment[tr]=Oyun mağazası ve kütüphanesi (ilk açılışta Flathub'dan kurulur)
+Exec=/usr/libexec/alpbahos/games-launch steam com.valvesoftware.Steam
+Icon=applications-games
+Terminal=true
+Categories=Game;
+Keywords=steam;game;oyun;
+EOF
+  cat > "$S/usr/share/applications/alpbahos-bottles.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Bottles
+Comment=Run Windows programs and games (installs from Flathub on first start)
+Comment[tr]=Windows programları ve oyunları çalıştır (ilk açılışta Flathub'dan kurulur)
+Exec=/usr/libexec/alpbahos/games-launch bottles com.usebottles.bottles
+Icon=wine
+Terminal=true
+Categories=Utility;Game;
+Keywords=wine;windows;exe;bottles;
+EOF
+  chmod 644 "$S"/usr/share/applications/alpbahos-*.desktop
+  record alpbahos-games-r50 0.9-r50 "$S"
+}
 step_check() {
   mount --bind /dev "$SNAP/dev"; mount -t proc proc "$SNAP/proc"
   for c in "check" "list"; do
@@ -162,7 +195,7 @@ step_check() {
   bash "$WT/scripts/rebuild/trust/iso-gate.sh" --auto "$SNAP" && log "iso-gate --auto: PASS"
 }
 case "${1:-}" in
-  snapshot|remount|sddm|rtkit-user|safegfx|bootclean|desktopfix|check) "step_${1//-/_}" ;;
-  all) step_snapshot; step_remount; step_sddm; step_rtkit_user; step_safegfx; step_bootclean; step_desktopfix; step_check ;;
-  *) die "usage: r50-root.sh snapshot|remount|sddm|rtkit-user|safegfx|bootclean|desktopfix|check|all" ;;
+  snapshot|remount|sddm|rtkit-user|safegfx|bootclean|desktopfix|games|check) "step_${1//-/_}" ;;
+  all) step_snapshot; step_remount; step_sddm; step_rtkit_user; step_safegfx; step_bootclean; step_desktopfix; step_games; step_check ;;
+  *) die "usage: r50-root.sh snapshot|remount|sddm|rtkit-user|safegfx|bootclean|desktopfix|games|check|all" ;;
 esac

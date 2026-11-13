@@ -33,7 +33,7 @@ menuentry 'alpbahOS (güvenli grafik)' --class alpbahos --class gnu-linux --clas
 EOF
 prepare_grub_to_access_device "${GRUB_DEVICE_BOOT}" | sed -e "s/^/\t/"
 cat <<EOF
-	linux	${KERNEL} ${ROOTARG} ro splash module_blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nvidia_peermem alpbahos.safe=1 systemd.setenv=__EGL_VENDOR_LIBRARY_FILENAMES=/usr/share/glvnd/egl_vendor.d/50_mesa.json systemd.setenv=KWIN_COMPOSE=Q
+	linux	${KERNEL} ${ROOTARG} ro ${GRUB_CMDLINE_LINUX} splash module_blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nvidia_peermem alpbahos.safe=1 systemd.setenv=__EGL_VENDOR_LIBRARY_FILENAMES=/usr/share/glvnd/egl_vendor.d/50_mesa.json systemd.setenv=KWIN_COMPOSE=Q
 EOF
 [ -n "$INITRD" ] && printf '\tinitrd\t%s\n' "$INITRD"
 echo "}"
