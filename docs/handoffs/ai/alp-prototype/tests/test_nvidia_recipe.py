@@ -95,6 +95,9 @@ def test_stage_places_the_files(tmp_path):
     assert "blacklist nouveau" in (dest / "usr/lib/modprobe.d/nvidia-alpbahos.conf").read_text()
     assert "nvidia-drm" in (dest / "usr/lib/modules-load.d/nvidia-alpbahos.conf").read_text()
     assert "nvidia-modprobe" in (dest / "usr/lib/udev/rules.d/60-nvidia-alpbahos.rules").read_text()
+    tmp = (dest / "usr/lib/tmpfiles.d/alpbahos-nvidia.conf").read_text()
+    for node in ("nvidiactl 0666 root root - 195:255", "nvidia0 0666 root root - 195:0", "nvidia-modeset 0666 root root - 195:254"):
+        assert f"c! /dev/{node}" in tmp
 
 
 def test_stage_skips_glvnd_32bit_xorg_and_sources(tmp_path):

@@ -72,6 +72,14 @@ UDEV = """# alpbahOS NVIDIA package: the /dev/nvidia* nodes (nvidia-modprobe run
 ACTION=="add|bind", ATTR{vendor}=="0x10de", ATTR{class}=="0x03[0-9]*", DRIVER=="nvidia", \\
     TEST!="/dev/nvidia-uvm", RUN+="/usr/bin/nvidia-modprobe", RUN+="/usr/bin/nvidia-modprobe -c0 -u"
 """
+TMPFILES = """# alpbahOS NVIDIA package (NVIDIA-DEVNODE-01): create the device nodes at boot, before udev starts the driver and
+# before SDDM. On the real RTX 5060 nvidia-modprobe from the udev rule returned 0 but made only nvidia-uvm*, so
+# /dev/nvidiactl and /dev/nvidia0 were missing and the greeter's kwin_wayland crashed. Major 195 is NVIDIA's fixed
+# frontend major. Single GPU (minor 0); add nvidiaN lines for more.
+c! /dev/nvidiactl 0666 root root - 195:255
+c! /dev/nvidia0 0666 root root - 195:0
+c! /dev/nvidia-modeset 0666 root root - 195:254
+"""
 
 
 class StageError(RuntimeError):
@@ -175,7 +183,8 @@ def stage(ext: Path, dest: Path, kver: str) -> list[str]:
         log.append(f"MODULE {ko.name}")
     for rel, text in (("usr/lib/modprobe.d/nvidia-alpbahos.conf", MODPROBE),
                       ("usr/lib/modules-load.d/nvidia-alpbahos.conf", MODULES_LOAD),
-                      ("usr/lib/udev/rules.d/60-nvidia-alpbahos.rules", UDEV)):
+                      ("usr/lib/udev/rules.d/60-nvidia-alpbahos.rules", UDEV),
+                      ("usr/lib/tmpfiles.d/alpbahos-nvidia.conf", TMPFILES)):
         p = dest / rel
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(text)
