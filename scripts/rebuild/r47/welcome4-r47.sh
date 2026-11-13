@@ -17,8 +17,11 @@ px() { python3 -c "from PIL import Image; print(*Image.open('$1').convert('RGB')
 app() { python3 -c "
 from PIL import Image
 im = Image.open('$1').convert('RGB')
-r, g, b = im.getpixel((1040, 703)); r2, g2, b2 = im.getpixel((640, 620))
-print('yes' if b > 180 and r < 80 and r2 + g2 + b2 < 120 else 'no')"; }
+# two points inside the 'Uygula ve başla' button, off its label: (1040, 703) hit the text when the button was in its
+# hover colour and gave a false 'no' on the reopened window (rounds 47x and 48)
+blue = any(b > 180 and r < 80 for r, g, b in (im.getpixel((940, 690)), im.getpixel((1060, 715))))
+r2, g2, b2 = im.getpixel((640, 620))
+print('yes' if blue and r2 + g2 + b2 < 120 else 'no')"; }
 [ -f "$IMG" ] || { log "W4: no BIOS install $IMG"; exit 1; }
 log "W4 (Welcome design 4, BIOS copy of $(basename "$IMG"))"
 G start bios "$IMG" "$R"
