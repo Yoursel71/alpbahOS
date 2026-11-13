@@ -6,8 +6,11 @@
 # still starts, with Mesa software rendering, and the user is told.
 NAME=$1; APP=$2
 if ! flatpak info "$APP" >/dev/null 2>&1; then
-  echo "== $NAME ilk kez kuruluyor (internet gerekli, birkaç dakika sürebilir)..."
-  alp install --yes "$NAME" || { echo "Kurulum başarısız. Ağ bağlantısını kontrol edip tekrar dene."; printf 'Kapatmak için Enter...'; read -r _; exit 1; }
+  echo "== $NAME ilk kez kuruluyor (internet gerekli, birkaç dakika sürebilir)."
+  echo "   Yönetici parolası istenebilir (sistem geneline kurulur)."
+  # alp needs root; flatpak search (alp's Flathub lookup) needs the Flathub AppStream data, absent on a fresh install
+  sudo flatpak update --appstream --noninteractive > /dev/null 2>&1 || true
+  sudo alp install --yes "$APP" || { echo "Kurulum başarısız. Ağ bağlantısını kontrol edip tekrar dene."; printf 'Kapatmak için Enter...'; read -r _; exit 1; }
 fi
 if [ -r /proc/driver/nvidia/version ]; then
   VER=$(sed -n 's/.*Kernel Module  *\([0-9][0-9.]*\).*/\1/p' /proc/driver/nvidia/version | head -n 1 | tr . -)
