@@ -6,7 +6,10 @@
 #              read-only: no journal, no /etc/machine-id, sddm/logind units failed, the real PC froze after "Reached
 #              Graphical Interface". Found by Codex 2026-11-13 on the real install (QEMU copy of the SSD), fixed there by
 #              exactly this symlink; this record puts it in the image.
-# Usage: r50-root.sh <snapshot|remount|check|all>   (run as root, no chroot of r4-root may be active)
+#   sddm       alpbahos-sddm-r50: /etc/sddm.conf without [Wayland] CompositorCommand=weston --shell=kiosk (SDDM-WESTON-01).
+#              weston is not in the image and /etc/sddm.conf is read last, so it beat the nvidia drop-in's kwin_wayland
+#              line: on the real PC the Wayland greeter failed ("Failed to start weston") and the screen stayed black.
+# Usage: r50-root.sh <snapshot|remount|sddm|check|all>   (run as root, no chroot of r4-root may be active)
 export LC_ALL=C
 [ "$(id -u)" -eq 0 ] || { echo "run as root"; exit 1; }
 SB=/home/yrslf/alpbahOS/scratch-lfs-bench
@@ -51,6 +54,14 @@ step_remount() {
   [ "$(readlink "$SNAP/etc/systemd/system/sysinit.target.wants/systemd-remount-fs.service")" = /usr/lib/systemd/system/systemd-remount-fs.service ] \
     && log "remount-fs is wired into sysinit.target"
 }
+step_sddm() {
+  local S; S=$(fresh sddm); mkdir -p "$S/etc"
+  grep -q '^CompositorCommand=weston --shell=kiosk$' "$SNAP/etc/sddm.conf" || die "no weston CompositorCommand line in /etc/sddm.conf"
+  sed '/^CompositorCommand=weston --shell=kiosk$/d' "$SNAP/etc/sddm.conf" > "$S/etc/sddm.conf"
+  chmod --reference="$SNAP/etc/sddm.conf" "$S/etc/sddm.conf"; chown --reference="$SNAP/etc/sddm.conf" "$S/etc/sddm.conf"
+  record alpbahos-sddm-r50 0.9-r50 "$S"
+  ! grep -q '^CompositorCommand' "$SNAP/etc/sddm.conf" && log "sddm.conf has no CompositorCommand line"
+}
 step_check() {
   mount --bind /dev "$SNAP/dev"; mount -t proc proc "$SNAP/proc"
   for c in "check" "list"; do
@@ -61,7 +72,7 @@ step_check() {
   bash "$WT/scripts/rebuild/trust/iso-gate.sh" --auto "$SNAP" && log "iso-gate --auto: PASS"
 }
 case "${1:-}" in
-  snapshot|remount|check) "step_$1" ;;
-  all) step_snapshot; step_remount; step_check ;;
-  *) die "usage: r50-root.sh snapshot|remount|check|all" ;;
+  snapshot|remount|sddm|check) "step_$1" ;;
+  all) step_snapshot; step_remount; step_sddm; step_check ;;
+  *) die "usage: r50-root.sh snapshot|remount|sddm|check|all" ;;
 esac
