@@ -28,7 +28,7 @@ GenericName=Partition Manager
 GenericName[tr]=Disk Bölümü Yöneticisi
 Comment=Create, resize, move and format disk partitions
 Comment[tr]=Disk bölümlerini oluştur, boyutlandır, taşı ve biçimlendir
-Exec=mirazparted %f
+Exec=/usr/libexec/alpbahos/mirazparted-launch %f
 Icon=mirazparted
 Terminal=false
 Categories=Qt;KDE;System;Filesystem;
@@ -38,6 +38,21 @@ StartupWMClass=partitionmanager
 EOF
 chmod 644 "$STAGE/usr/share/applications/org.alpbahos.mirazparted.desktop"
 install -m 644 /tmp/mirazparted.svg "$STAGE/usr/share/icons/hicolor/scalable/apps/mirazparted.svg"
-# launcher: asks before touching the disk the running system is on is done by the app's own device list; the red warning
-# for the mounted root is MIRAZPARTED-02 (kdialog wrapper)
 ln -s partitionmanager "$STAGE/usr/bin/mirazparted"
+# MIRAZPARTED-02 (decision 15): the menu entry starts a launcher that warns about the disk the running system is on and
+# asks for confirmation before the program opens
+install -d "$STAGE/usr/libexec/alpbahos"
+cat > "$STAGE/usr/libexec/alpbahos/mirazparted-launch" <<'EOF'
+#!/bin/sh
+# MIRAZPARTED-02: warning before MirazParted opens. The running system's own disk is in the list; changing or deleting its
+# partitions can make alpbahOS unbootable. The program itself refuses to change mounted partitions.
+ROOTDEV=$(findmnt -no SOURCE / 2>/dev/null)
+[ -n "$ROOTDEV" ] || ROOTDEV="?"
+if command -v kdialog >/dev/null 2>&1; then
+  kdialog --title "MirazParted" --warningcontinuecancel \
+    "<p><b><font color='#c0392b'>Dikkat: çalışan sistemin diskini görüyorsun.</font></b></p><p>alpbahOS şu an <b>$ROOTDEV</b> bölümünden çalışıyor. Bu diskteki bölümleri silmek, küçültmek veya taşımak sistemi açılamaz hale getirebilir. Emin değilsen bu diske dokunma; önemli verilerini yedekle.</p>" \
+    --continue-label "Anladım, devam et" --cancel-label "Vazgeç" || exit 0
+fi
+exec partitionmanager "$@"
+EOF
+chmod 755 "$STAGE/usr/libexec/alpbahos/mirazparted-launch"
