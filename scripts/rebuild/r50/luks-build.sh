@@ -12,7 +12,8 @@ SB=/home/yrslf/alpbahOS/scratch-lfs-bench
 WT=/home/yrslf/alpbahOS/wt-t2-kisayol
 PASS=123456
 [ ! -e "$OUT" ] || { echo "REFUSED: $OUT exists"; exit 2; }
-MNT=/tmp/luks-build-mnt; ISOM=/tmp/luks-build-iso
+# the work directories are under /home, not /tmp (tmpfs, 12 GB): a failed mount once unpacked 12 GB into RAM (2026-11-13)
+MNT=$SB/r50/luks-mnt; ISOM=$SB/r50/luks-iso
 mkdir -p "$MNT" "$ISOM"
 LOOP=""
 cleanup() { set +e
@@ -31,6 +32,7 @@ printf '%s' "$PASS" | cryptsetup open "${LOOP}p2" "$MAP" -
 mkfs.ext4 -q -L alpbahos "/dev/mapper/$MAP"
 mount "/dev/mapper/$MAP" "$MNT"; mkdir -p "$MNT/boot/efi"; mount "${LOOP}p1" "$MNT/boot/efi"
 mount -o loop,ro "$ISO" "$ISOM"
+for m in "$MNT" "$MNT/boot/efi" "$ISOM"; do mountpoint -q "$m" || { echo "REFUSED: $m is not a mount point"; exit 3; }; done
 echo "unsquashfs..."; unsquashfs -f -q -d "$MNT" "$ISOM/LiveOS/squashfs.img" > /dev/null
 EUUID=$(blkid -o value -s UUID "${LOOP}p1")
 # fstab module + crypttab
