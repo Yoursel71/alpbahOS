@@ -501,10 +501,33 @@ cmd_f1() { fresh "$D/F1" "$D/F1-boot" "$IMGF1"; stamp "F1 start"
   ROUND=$MR OUTD=$D IMGF=$IMGF1 F1NAME=F1 NOCLOBBER=1 FAILSHOTS=${FAILSHOTS:-20} bash "$WT/scripts/rebuild/r20/r20-lanes.sh" "$ISO" lane3
   stamp "F1 end"; cmd_rofacts "$IMGF1" F1 f1; }
 
+cmd_r50() { # round 50 row: guest checks (scripts/rebuild/r50/guest-checks.sh), MirazParted opened through its launcher, then
+  # the safe-graphics fallback (SAFE-GFX-01): the display manager is made to skip normal starts, three reboots; the third
+  # start must be the "alpbahos.safe=1" entry, bring up the greeter and clear alpbahos_tries.
+  local R=$D/R50 i n
+  fresh "$D/R50-disk.raw" "$R"; cmd_mkcopy uefi R50-disk
+  stamp "R50 start"; NO_REBOOT=0 agent_start R50 uefi R50-disk virtio 6G
+  greeter_login "$R" r50; sleep 20; shot "$R" r50-desktop
+  gsh "$R" 90 "$(cat "$WT/scripts/rebuild/r50/guest-checks.sh")"
+  gsh "$R" 20 'r21m-as-user sh -c "nohup /usr/libexec/alpbahos/mirazparted-launch > /tmp/mp.log 2>&1 &"; sleep 7; echo "mirazparted-launch running: $(pgrep -fc mirazparted-launch)  kdialog: $(pgrep -xc kdialog)"'
+  shot "$R" r50-miraz-warning; q "$R" key ret; sleep 9; shot "$R" r50-miraz-window
+  gsh "$R" 20 'echo "partitionmanager running: $(pgrep -xc partitionmanager)"; pkill -x partitionmanager; true'
+  gsh "$R" 60 'install -d /etc/systemd/system/display-manager.service.d; printf "[Unit]\nConditionKernelCommandLine=!alpbahos.safe\n" > /etc/systemd/system/display-manager.service.d/99-r50-break.conf; grub-mkconfig -o /boot/grub/grub.cfg 2>&1 | tail -n 2; echo "safe entry in grub.cfg: $(grep -c alpbahos-safe /boot/grub/grub.cfg)"; grub-editenv /boot/grub/grubenv set alpbahos_tries=; echo "tries now: [$(grub-editenv /boot/grub/grubenv list | sed -n s/^alpbahos_tries=//p)]"'
+  for n in 1 2 3; do
+    gsh "$R" 0 'systemctl reboot'
+    for i in $(seq 1 120); do [ "$(grep -ac 'R21M begin' "$R/serial.log")" -ge $((n + 1)) ] && break; sleep 2; done
+    sleep 25; shot "$R" "r50-reboot$n"
+    gsh "$R" 15 'echo "start after reboot '"$n"': tries=[$(grub-editenv /boot/grub/grubenv list | sed -n s/^alpbahos_tries=//p)] safe-cmdline=$(grep -c alpbahos.safe=1 /proc/cmdline) sddm-active=$(systemctl is-active sddm) greeter-sessions=$(loginctl list-sessions --no-legend | grep -c greeter)"'
+  done
+  sleep 20; shot "$R" r50-safe-greeter
+  gsh "$R" 15 'echo "after the safe start (20 s later): tries=[$(grub-editenv /boot/grub/grubenv list | sed -n s/^alpbahos_tries=//p)] cmdline: $(cut -c1-200 /proc/cmdline)"; systemctl status alpbahos-boot-ok --no-pager 2>&1 | head -n 4'
+  cat "$R/qmp-events.log" 2>/dev/null | tail -n 5; vmquit "$R"; rm -f "$D/R50-disk.raw"; stamp "R50 end (copy removed)"
+}
+
 if [ "${MATRIX_LIB:-0}" != 1 ]; then
   c=${1:-}; shift || true
   case $c in
-    sha|live|diag|mkcopy|agent|check|s1|r1|fpgui|apps|apps2|apps3|drv|print|kutu|nvidia|type|enter|key|combo|click|shot|quit|run|recprep|reclive|recboot|kflive|kffill|kfgo|kfdisk|kfboot|kfagent|rofacts|f1|shutlines) "cmd_$c" "$@" ;;
+    sha|live|diag|mkcopy|agent|check|s1|r1|fpgui|apps|apps2|apps3|drv|print|kutu|nvidia|r50|type|enter|key|combo|click|shot|quit|run|recprep|reclive|recboot|kflive|kffill|kfgo|kfdisk|kfboot|kfagent|rofacts|f1|shutlines) "cmd_$c" "$@" ;;
     *) echo "usage: matrix-r21.sh sha|live|diag|mkcopy|agent|check|s1|r1|fpgui ..."; exit 2 ;;
   esac
 fi
