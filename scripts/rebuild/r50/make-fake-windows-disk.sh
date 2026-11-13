@@ -1,6 +1,6 @@
 #!/bin/bash
 # INSTALL-DUALBOOT-01 (round 50): a raw disk shaped like a Windows 11 UEFI install, for the dual-boot row (cmd_dualboot of matrix-r21.sh):
-# GPT, 260 MiB ESP (vfat) with EFI/Microsoft/Boot/bootmgfw.efi, 16 MiB MSR, NTFS "Windows" partition with Windows/System32/config and
+# GPT, 260 MiB ESP (vfat) with EFI/Microsoft/Boot/bootmgfw.efi and BCD, 16 MiB MSR, NTFS "Windows" partition with Windows/System32/config and
 # about 3 GB of data. Nothing here touches a real disk (a sparse file and a loop device). Usage: make-fake-windows-disk.sh <out.raw> [size]
 # Run as root.
 set -euo pipefail
@@ -16,7 +16,8 @@ trap cleanup EXIT
 mkfs.vfat -F32 -n SYSTEM "${LOOP}p1" > /dev/null
 mkfs.ntfs -Q -L Windows "${LOOP}p3" > /dev/null
 mount "${LOOP}p1" "$ESP"; mkdir -p "$ESP/EFI/Microsoft/Boot"
-head -c 400000 /dev/urandom > "$ESP/EFI/Microsoft/Boot/bootmgfw.efi"; umount "$ESP"
+# os-prober (efi/20microsoft) wants BOTH bootmgfw.efi and a BCD file in EFI/Microsoft/Boot; a real Windows ESP has both
+head -c 400000 /dev/urandom > "$ESP/EFI/Microsoft/Boot/bootmgfw.efi"; head -c 262144 /dev/urandom > "$ESP/EFI/Microsoft/Boot/BCD"; umount "$ESP"
 mount -t ntfs3 "${LOOP}p3" "$NT" 2> /dev/null || ntfs-3g "${LOOP}p3" "$NT"
 mkdir -p "$NT/Windows/System32/config" "$NT/Users/test" "$NT/Program Files"
 head -c 3000000000 /dev/zero | tr '\0' 'x' > "$NT/Users/test/data.bin" 2> /dev/null || true
