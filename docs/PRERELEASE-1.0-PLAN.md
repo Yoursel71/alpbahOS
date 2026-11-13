@@ -6,6 +6,8 @@ Status words follow BACKLOG.md. Nothing here is decided by the plan: every relea
 
 ## 0. Decisions the owner must make first
 
+Answered 2026-11-13 (D182, "Hepsi dahil"): questions 3, 4 and 5 are all "in" (Steam, Bottles, LUKS, dual boot, Chrome supported). Questions 1 and 2 (first public release vs alpha, tag name) are still open.
+
 | # | Question | Why it matters |
 |---|---|---|
 | 1 | Is the 1.0 pre-release the first public release, replacing the planned ALPHA-01 (D108: repo public at the first alpha)? Or does an alpha come first? | BACKLOG ALPHA-01 is "Not started". The release plan and the visibility change (private to public) depend on this. Needs a new D-number. |
