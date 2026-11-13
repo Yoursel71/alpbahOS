@@ -15,6 +15,11 @@ KERNEL=$(ls "$BD"/vmlinuz-* 2>/dev/null | sort -V | tail -n 1)
 VER=${KERNEL#"$BD"/vmlinuz-}; KERNEL=/boot/vmlinuz-$VER
 INITRD=""
 for i in "initramfs-$VER.img" "initrd.img-$VER" "initrd-$VER.img"; do [ -e "$BD/$i" ] && INITRD=/boot/$i && break; done
+# Calamares puts rd.luks.uuid into GRUB_CMDLINE_LINUX_DEFAULT (10_linux adds both variables): take both, without quiet/splash
+EXTRA=""
+for w in ${GRUB_CMDLINE_LINUX:-} ${GRUB_CMDLINE_LINUX_DEFAULT:-}; do
+  case $w in quiet|splash) ;; *) EXTRA="$EXTRA $w" ;; esac
+done
 if [ -n "${GRUB_DEVICE_PARTUUID:-}" ] && [ "${GRUB_DISABLE_LINUX_PARTUUID:-true}" != true ]; then ROOTARG="root=PARTUUID=${GRUB_DEVICE_PARTUUID}"; else ROOTARG="root=${GRUB_DEVICE}"; fi
 cat <<'EOF'
 if [ "${alpbahos_tries}" = "xx" ]; then
@@ -34,7 +39,7 @@ menuentry 'alpbahOS (güvenli grafik)' --class alpbahos --class gnu-linux --clas
 EOF
 prepare_grub_to_access_device "${GRUB_DEVICE_BOOT}" | sed -e "s/^/\t/"
 cat <<EOF
-	linux	${KERNEL} ${ROOTARG} ro ${GRUB_CMDLINE_LINUX} splash module_blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nvidia_peermem alpbahos.safe=1 systemd.setenv=__EGL_VENDOR_LIBRARY_FILENAMES=/usr/share/glvnd/egl_vendor.d/50_mesa.json systemd.setenv=KWIN_COMPOSE=Q
+	linux	${KERNEL} ${ROOTARG} ro${EXTRA} splash module_blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nvidia_peermem alpbahos.safe=1 systemd.setenv=__EGL_VENDOR_LIBRARY_FILENAMES=/usr/share/glvnd/egl_vendor.d/50_mesa.json systemd.setenv=KWIN_COMPOSE=Q
 EOF
 [ -n "$INITRD" ] && printf '\tinitrd\t%s\n' "$INITRD"
 echo "}"

@@ -25,7 +25,10 @@ EOF
 LUKS=0
 if [ -s /etc/crypttab ] && grep -qv '^[[:space:]]*#' /etc/crypttab; then
     LUKS=1
-    printf '%s\n' '# alpbahOS (INSTALL-LUKS-01): encrypted root' 'add_dracutmodules+=" crypt "' 'add_drivers+=" dm_crypt "' > /etc/dracut.conf.d/91-alpbahos-luks.conf
+    # kernel_cmdline is stored in the initramfs: rd.luks.key makes the key file (luksbootkeyfile) unlock root, so the passphrase is
+    # asked once, at GRUB. Calamares adds rd.luks.key only for a separate unencrypted /boot; here /boot is inside the encrypted
+    # root (found 2026-11-14 on a real Calamares LUKS install: Plymouth asked "Password (/dev/vda2)" a second time).
+    printf '%s\n' '# alpbahOS (INSTALL-LUKS-01): encrypted root' 'add_dracutmodules+=" crypt "' 'add_drivers+=" dm_crypt "' 'kernel_cmdline+=" rd.luks.key=/crypto_keyfile.bin "' > /etc/dracut.conf.d/91-alpbahos-luks.conf
 fi
 
 DLOG=$(dracut --force --no-hostonly --kver "$KVER" \

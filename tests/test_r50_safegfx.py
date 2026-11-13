@@ -178,3 +178,13 @@ def test_grub_script_prints_nothing_without_a_kernel(tmp_path):
     e = dict(os.environ, pkgdatadir=str(lib), ALPBAHOS_BOOT_DIR=str(tmp_path / "boot"))
     r = subprocess.run(["sh", str(FILES / "42_alpbahos_safe")], env=e, capture_output=True, text=True, timeout=30)
     assert r.returncode == 0 and r.stdout == ""
+
+
+def test_grub_safe_entry_takes_calamares_luks_arguments_from_the_default_variable(grubdir):
+    # a real Calamares install puts rd.luks.uuid into GRUB_CMDLINE_LINUX_DEFAULT (not GRUB_CMDLINE_LINUX), together with quiet/splash
+    out = grub_output(grubdir, GRUB_DEVICE="/dev/mapper/luks-1234", GRUB_DEVICE_PARTUUID="",
+                      GRUB_CMDLINE_LINUX_DEFAULT="quiet rd.luks.uuid=1234 splash")
+    line = next(l for l in out.splitlines() if l.strip().startswith("linux"))
+    assert "rd.luks.uuid=1234" in line
+    assert " quiet" not in line                                    # the safe start is not quiet
+    assert line.count("splash") == 1                               # splash once (the script adds its own)
