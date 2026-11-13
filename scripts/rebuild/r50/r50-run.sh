@@ -28,4 +28,6 @@ gate 1 25; log "matrix nvidia"; env MROUND=$RT bash scripts/rebuild/r21/matrix-r
 gate 1 25; log "matrix B2 (needs the BIOS install: lane1 first)"; DRIVERS_PAGE=1 ROUND=$RT bash scripts/rebuild/r20/r20-lanes.sh "$ISO" lane1 > "$L/lane1.log" 2>&1; gap
 gate 1 25; env MROUND=$RT bash scripts/rebuild/r21/matrix-r21.sh diag B2 > "$MD/run-B2.out" 2>&1; gap
 gate 1 25; log "matrix r50 row (guest checks, MirazParted, safe graphics)"; env MROUND=$RT bash scripts/rebuild/r21/matrix-r21.sh r50 > "$MD/run-R50.out" 2>&1; gap
+gate 1 25; log "matrix dualboot (second disk that looks like Windows)"; env MROUND=$RT bash scripts/rebuild/r21/matrix-r21.sh dualboot > "$MD/run-DUAL.out" 2>&1; gap
+gate 1 40; log "matrix luksgui (Calamares encrypted install, then boot)"; env MROUND=$RT DRIVERS_PAGE=1 bash scripts/rebuild/r21/matrix-r21.sh luksgui > "$MD/run-LUKSG.out" 2>&1; gap
 log "r50 done"
