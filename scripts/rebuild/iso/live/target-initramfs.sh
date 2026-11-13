@@ -25,6 +25,9 @@ EOF
 LUKS=0
 if [ -s /etc/crypttab ] && grep -qv '^[[:space:]]*#' /etc/crypttab; then
     LUKS=1
+    # Calamares writes "none" as the key of the root entry: the initramfs then asks for the passphrase although luksbootkeyfile made a
+    # key file. Point the entries without a key at that file (it is in the initramfs through install_items of dracutlukscfg).
+    if [ -f /crypto_keyfile.bin ]; then sed -i -E '/^[[:space:]]*[^#[:space:]]/ s#^([^[:space:]]+[[:space:]]+[^[:space:]]+[[:space:]]+)none([[:space:]]|$)#\1/crypto_keyfile.bin\2#' /etc/crypttab; fi
     # kernel_cmdline is stored in the initramfs: rd.luks.key makes the key file (luksbootkeyfile) unlock root, so the passphrase is
     # asked once, at GRUB. Calamares adds rd.luks.key only for a separate unencrypted /boot; here /boot is inside the encrypted
     # root (found 2026-11-14 on a real Calamares LUKS install: Plymouth asked "Password (/dev/vda2)" a second time).
