@@ -37,3 +37,19 @@ Decisions (number = question):
 
 Risk: r50 now holds Steam, Bottles, LUKS and dual boot on top of MirazParted and the r49 leftovers; disk rule (>=30 GiB for the
 ISO build, delete r48 first). If time runs short, cut Steam/Bottles/LUKS/dual boot first, keep graphics fixes + MirazParted.
+
+Progress 2026-11-13 19:15 (user said "r50 hepsi ise basla"; the other session yrslf-1a was stopped on the user's order, its
+r50 ISO/lane2 run killed; the earlier r50.iso is now stale, it lacks everything below):
+- r4-root snapshots: r4-before-r50 (before remount/sddm records), r4-before-r50b (before the package chain).
+- Done as alp records: alpbahos-remount-r50, alpbahos-sddm-r50, alpbahos-rtkit-user-r50 (r50-root.sh); mirazparted 26.08.3
+  (matches kpmcore 26.08.3; shown as MirazParted, binary/D-Bus/polkit ids unchanged), lzo, cryptsetup 2.8.7, btrfs-progs v7.1,
+  ntfs-3g 2026.7.7 (its /bin,/sbin paths moved under /usr: records refuse paths below a symlink), libusb, upower, keyutils,
+  libbytesize, libnvme 1.16.2, libblockdev 3.5.0, udisks2 2.11.2, smartmontools 7.5, rtkit 0.13, wireless-regdb 2026.09.03,
+  nvme-cli 3.2 (r50-chain.sh; rows 466-481 in the chain; packages.tsv rows were appended by pkg-url-r11.sh). alp check 678 clean.
+- r48 ISO deleted from the disk (USB copy stays).
+Still to do (order by risk): graphics (safe-graphics fallback with a forceable failure, X11 fallback proof, greeter gate in
+the matrix), MirazParted red warning for the mounted root + first-run check in QEMU, boot-error cleanup (tpm2_id, regulatory.db
+now installed, pcspkr, alpbahos-zram.service exit-code, plymouthd crash, bluetooth dir mode), Adwaita Mono, BLE MIDI, D-Bus
+locale, CHROME-DECOR-01, LUKS (digits-only test passphrase), dual boot (QEMU disks only, never nvme0n1), Steam + Bottles
+(Flatpak Steam needs GL.nvidia-620-70-06 from Flathub: check), one ISO, matrix + long runs, real-PC proof, push.
+Note: rtkit-daemon/udisks2/upower are D-Bus activated; not yet started in a booted image (no row has proven it yet).
