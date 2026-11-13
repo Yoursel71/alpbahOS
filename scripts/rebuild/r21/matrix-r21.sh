@@ -509,10 +509,10 @@ cmd_r50() { # round 50 row: guest checks (scripts/rebuild/r50/guest-checks.sh), 
   stamp "R50 start"; NO_REBOOT=0 agent_start R50 uefi R50-disk virtio 6G
   greeter_login "$R" r50; sleep 20; shot "$R" r50-desktop
   gsh "$R" 90 "$(cat "$WT/scripts/rebuild/r50/guest-checks.sh")"
-  gsh "$R" 20 'r21m-as-user sh -c "nohup /usr/libexec/alpbahos/mirazparted-launch > /tmp/mp.log 2>&1 &"; sleep 7; echo "mirazparted-launch running: $(pgrep -fc mirazparted-launch)  kdialog: $(pgrep -xc kdialog)"'
+  gsh "$R" 20 'r21m-as-user --bg /usr/libexec/alpbahos/mirazparted-launch; sleep 7; echo "mirazparted-launch running: $(pgrep -fc mirazparted-launch)  kdialog: $(pgrep -xc kdialog)"'
   shot "$R" r50-miraz-warning; q "$R" key ret; sleep 9; shot "$R" r50-miraz-window
-  gsh "$R" 20 'echo "partitionmanager running: $(pgrep -xc partitionmanager)"; pkill -x partitionmanager; true'
-  gsh "$R" 60 'install -d /etc/systemd/system/display-manager.service.d; printf "[Unit]\nConditionKernelCommandLine=!alpbahos.safe\n" > /etc/systemd/system/display-manager.service.d/99-r50-break.conf; grub-mkconfig -o /boot/grub/grub.cfg 2>&1 | tail -n 2; echo "safe entry in grub.cfg: $(grep -c alpbahos-safe /boot/grub/grub.cfg)"; grub-editenv /boot/grub/grubenv set alpbahos_tries=; echo "tries now: [$(grub-editenv /boot/grub/grubenv list | sed -n s/^alpbahos_tries=//p)]"'
+  gsh "$R" 20 'echo "partitionmanager running: $(pgrep -fc /usr/bin/partitionmanager)"; pkill -f /usr/bin/partitionmanager; true'
+  gsh "$R" 60 'install -d /etc/systemd/system/sddm.service.d; printf "[Unit]\nConditionKernelCommandLine=alpbahos.safe\n" > /etc/systemd/system/sddm.service.d/99-r50-break.conf; grub-mkconfig -o /boot/grub/grub.cfg 2>&1 | tail -n 2; echo "safe entry in grub.cfg: $(grep -c alpbahos-safe /boot/grub/grub.cfg)"; grub-editenv /boot/grub/grubenv set alpbahos_tries=; echo "tries now: [$(grub-editenv /boot/grub/grubenv list | sed -n s/^alpbahos_tries=//p)]"'
   for n in 1 2 3; do
     gsh "$R" 0 'systemctl reboot'
     for i in $(seq 1 120); do [ "$(grep -ac 'R21M begin' "$R/serial.log")" -ge $((n + 1)) ] && break; sleep 2; done

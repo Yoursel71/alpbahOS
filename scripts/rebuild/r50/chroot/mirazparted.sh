@@ -11,6 +11,9 @@ grep -q '<application>MirazParted</application>' src/main.cpp
 # add a "derived from" line to the about dialog text (kept after the existing description, translated strings untouched)
 sed -i '0,/aboutData.setProductName/s||aboutData.setOtherText(QStringLiteral("MirazParted is alpbahOS'"'"'s name for KDE Partition Manager; derived from KDE Partition Manager, GPL-3.0-or-later."));\n    aboutData.setProductName|' src/main.cpp
 grep -q 'setOtherText' src/main.cpp
+# window titles (the .ui files carry the visible name; the config group and rc names stay)
+sed -i 's|>KDE Partition Manager</string>|>MirazParted</string>|' src/gui/mainwindowbase.ui src/gui/partitionmanagerwidgetbase.ui
+! grep -q '>KDE Partition Manager</string>' src/gui/mainwindowbase.ui
 mkdir build && cd build
 cmake -D CMAKE_INSTALL_PREFIX=/usr -D CMAKE_PREFIX_PATH=/opt/qt6 -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTING=OFF \
       -W no-author ..
