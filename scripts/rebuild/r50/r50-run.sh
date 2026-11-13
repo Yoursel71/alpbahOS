@@ -4,8 +4,9 @@
 set -u
 B=/home/yrslf/alpbahOS/scratch-lfs-bench
 WT=/home/yrslf/alpbahOS/wt-t2-kisayol
-L=$B/lfs13-logs/iso-beta-0.9/r50
-ISO=$B/images/alpbahos-beta-0.9-2026-11-09-r50.iso
+RT=${RT:-r50}   # round tag: r50b, r50c ... (ISO name, evidence directory, password file)
+L=$B/lfs13-logs/iso-beta-0.9/$RT
+ISO=$B/images/alpbahos-beta-0.9-2026-11-09-$RT.iso
 cd "$WT"; mkdir -p "$B/r50" "$L"
 log() { echo "[$(date +%T)] $*" | tee -a "$L/run.log"; }
 qn() { pgrep -c qemu-system; }
@@ -16,14 +17,15 @@ gate() { local n=0; until [ "$(qn)" -le "$1" ] && [ "$(avail)" -ge 9 ] && [ "$(d
 gap() { sleep 75; }
 if [ ! -s "$ISO" ]; then
     [ -e "$B/lfs13-snapshots/r4-iso-src-2026-11-09-prev-r49" ] || sudo mv "$B/lfs13-snapshots/r4-iso-src-2026-11-09" "$B/lfs13-snapshots/r4-iso-src-2026-11-09-prev-r49"
-    log "ISO build"; sudo nice -n 10 env TAG=r50 bash scripts/rebuild/iso/build-iso.sh > "$B/r50/build-r50.log" 2>&1 || { log "ISO build failed"; exit 1; }
+    log "ISO build"; sudo nice -n 10 env TAG=$RT bash scripts/rebuild/iso/build-iso.sh > "$B/r50/build-r50.log" 2>&1 || { log "ISO build failed"; exit 1; }
     log "ISO built: $(du -h "$ISO" | cut -f1)"
 fi
 MD=$L/matrix; mkdir -p "$MD"
 # the matrix rows type the password at the greeter: it must be the digits test password, not the generated one
-[ -e "$B/test-secrets/r50.pw" ] || (umask 077; cp "$B/test-secrets/r21.pw" "$B/test-secrets/r50.pw")
-gate 1 40; log "lane2"; DRIVERS_PAGE=1 ROUND=r50 bash scripts/rebuild/r20/r20-lanes.sh "$ISO" lane2 > "$L/lane2.log" 2>&1; gap
-gate 1 25; log "matrix nvidia"; env MROUND=r50 bash scripts/rebuild/r21/matrix-r21.sh nvidia > "$MD/run-NVIDIA.out" 2>&1; gap
-gate 1 25; log "matrix B2 (needs the BIOS install: lane1 first)"; DRIVERS_PAGE=1 ROUND=r50 bash scripts/rebuild/r20/r20-lanes.sh "$ISO" lane1 > "$L/lane1.log" 2>&1; gap
-gate 1 25; env MROUND=r50 bash scripts/rebuild/r21/matrix-r21.sh diag B2 > "$MD/run-B2.out" 2>&1; gap
+[ -e "$B/test-secrets/$RT.pw" ] || (umask 077; cp "$B/test-secrets/r21.pw" "$B/test-secrets/$RT.pw")
+gate 1 40; log "lane2"; DRIVERS_PAGE=1 ROUND=$RT bash scripts/rebuild/r20/r20-lanes.sh "$ISO" lane2 > "$L/lane2.log" 2>&1; gap
+gate 1 25; log "matrix nvidia"; env MROUND=$RT bash scripts/rebuild/r21/matrix-r21.sh nvidia > "$MD/run-NVIDIA.out" 2>&1; gap
+gate 1 25; log "matrix B2 (needs the BIOS install: lane1 first)"; DRIVERS_PAGE=1 ROUND=$RT bash scripts/rebuild/r20/r20-lanes.sh "$ISO" lane1 > "$L/lane1.log" 2>&1; gap
+gate 1 25; env MROUND=$RT bash scripts/rebuild/r21/matrix-r21.sh diag B2 > "$MD/run-B2.out" 2>&1; gap
+gate 1 25; log "matrix r50 row (guest checks, MirazParted, safe graphics)"; env MROUND=$RT bash scripts/rebuild/r21/matrix-r21.sh r50 > "$MD/run-R50.out" 2>&1; gap
 log "r50 done"
