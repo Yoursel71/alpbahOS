@@ -1,0 +1,26 @@
+#!/bin/sh
+# alpbahOS NVIDIA-DEVNODE-01 workaround: start SDDM only after /dev/nvidiactl and /dev/nvidia0 exist.
+# Without them the greeter's kwin_wayland crashed (2026-11-13). Always exits 0 so a broken GPU never blocks login.
+has_nvidia=0
+for d in /sys/bus/pci/devices/*; do
+    [ "$(cat "$d/vendor" 2>/dev/null)" = 0x10de ] || continue
+    case "$(cat "$d/class" 2>/dev/null)" in 0x03*) has_nvidia=1 ;; esac
+done
+[ "$has_nvidia" = 1 ] || exit 0
+[ -d /proc/driver/nvidia ] || { # driver not loaded yet: give udev a moment
+    i=0; while [ "$i" -lt 20 ] && [ ! -d /proc/driver/nvidia ]; do sleep 1; i=$((i+1)); done
+}
+[ -d /proc/driver/nvidia ] || { echo "alpbahos-nvidia-wait: nvidia driver not loaded, continuing" >&2; exit 0; }
+ok() { [ -c /dev/nvidiactl ] && [ -c /dev/nvidia0 ]; }
+i=0; while [ "$i" -lt 2 ] && ! ok; do sleep 1; i=$((i+1)); done
+ok && exit 0
+echo "alpbahos-nvidia-wait: nodes missing after 2 s, trying nvidia-modprobe" >&2
+/usr/bin/nvidia-modprobe -c0 -u 2>/dev/null
+ok && exit 0
+major=$(awk '$2=="nvidia-frontend" || $2=="nvidiactl" {print $1; exit}' /proc/devices)
+[ -n "$major" ] || major=195
+echo "alpbahos-nvidia-wait: creating nodes with major $major" >&2
+[ -c /dev/nvidiactl ] || mknod -m 666 /dev/nvidiactl c "$major" 255
+[ -c /dev/nvidia0 ] || mknod -m 666 /dev/nvidia0 c "$major" 0
+ok || echo "alpbahos-nvidia-wait: still no nodes, continuing" >&2
+exit 0

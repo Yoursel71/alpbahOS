@@ -1,0 +1,7 @@
+# alpbahOS NVIDIA-DEVNODE-01: nvidia-modprobe (udev rule 60-nvidia-alpbahos.rules) returns 0 but does not create
+# /dev/nvidiactl and /dev/nvidia0 on the booted system, so kwin_wayland of the SDDM greeter crashed. The NVIDIA
+# frontend major is fixed (195): control node minor 255, first GPU minor 0, modeset minor 254.
+# Type c! = create at boot only (--boot), early, before the driver loads.
+c! /dev/nvidiactl     0666 root root - 195:255
+c! /dev/nvidia0       0666 root root - 195:0
+c! /dev/nvidia-modeset 0666 root root - 195:254
