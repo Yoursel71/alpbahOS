@@ -20,7 +20,9 @@
 #              SPA plugin) and CHROME-DECOR-01 (Flatpak Chrome gets the system title bar by default, via /etc/skel)
 #   games      alpbahos-games-r50: GAMES-01, Steam and Bottles menu entries that install the Flathub app through alp on the
 #              first start (D182; D129's native Steam is replaced by Flatpak Steam: multilib is not complete here)
-# Usage: r50-root.sh <snapshot|remount|sddm|rtkit-user|safegfx|bootclean|desktopfix|games|check|all>   (run as root, no chroot of r4-root may be active)
+#   grubroot   alpbahos-grub10-r50: GRUB-ROOT-01, /etc/grub.d/10_linux writes root=PARTUUID= (empty) for a root without a PARTUUID
+#              (LUKS/dm-crypt: /dev/mapper/luks-...) when GRUB_DISABLE_LINUX_UUID=true; now falls back to the device path
+# Usage: r50-root.sh <snapshot|remount|sddm|rtkit-user|safegfx|bootclean|desktopfix|games|grubroot|check|all>   (run as root, no chroot of r4-root may be active)
 export LC_ALL=C
 [ "$(id -u)" -eq 0 ] || { echo "run as root"; exit 1; }
 SB=/home/yrslf/alpbahOS/scratch-lfs-bench
@@ -185,6 +187,21 @@ EOF
   chmod 644 "$S"/usr/share/applications/alpbahos-*.desktop
   record alpbahos-games-r50 0.9-r50 "$S"
 }
+step_grubroot() {
+  local S F; S=$(fresh grubroot); F=$SNAP/etc/grub.d/10_linux; mkdir -p "$S/etc/grub.d"
+  grep -q '^elif \[ "x${GRUB_DEVICE_UUID}" = "x" \]' "$F" || die "10_linux layout changed: the elif line was not found"
+  python3 - "$F" "$S/etc/grub.d/10_linux" <<'PY'
+import sys
+s = open(sys.argv[1]).read()
+old = 'elif [ "x${GRUB_DEVICE_UUID}" = "x" ] \\\n    || [ "x${GRUB_DISABLE_LINUX_UUID}" = "xtrue" ]; then\n  LINUX_ROOT_DEVICE=PARTUUID=${GRUB_DEVICE_PARTUUID}'
+new = '# alpbahOS (GRUB-ROOT-01): a root without a PARTUUID (dm-crypt, /dev/mapper/luks-...) must not get an empty "root=PARTUUID="\nelif [ "x${GRUB_DEVICE_PARTUUID}" = "x" ] && [ "x${GRUB_DISABLE_LINUX_UUID}" = "xtrue" ]; then\n  LINUX_ROOT_DEVICE=${GRUB_DEVICE}\n' + old
+assert s.count(old) == 1, "pattern not found exactly once"
+open(sys.argv[2], "w").write(s.replace(old, new))
+PY
+  chmod --reference="$F" "$S/etc/grub.d/10_linux"; chown --reference="$F" "$S/etc/grub.d/10_linux"; bash -n "$S/etc/grub.d/10_linux" || die "patched 10_linux does not parse"
+  record alpbahos-grub10-r50 0.9-r50 "$S"
+  grep -q 'GRUB-ROOT-01' "$SNAP/etc/grub.d/10_linux" && log "10_linux patched in r4-root"
+}
 step_check() {
   mount --bind /dev "$SNAP/dev"; mount -t proc proc "$SNAP/proc"
   for c in "check" "list"; do
@@ -195,7 +212,7 @@ step_check() {
   bash "$WT/scripts/rebuild/trust/iso-gate.sh" --auto "$SNAP" && log "iso-gate --auto: PASS"
 }
 case "${1:-}" in
-  snapshot|remount|sddm|rtkit-user|safegfx|bootclean|desktopfix|games|check) "step_${1//-/_}" ;;
-  all) step_snapshot; step_remount; step_sddm; step_rtkit_user; step_safegfx; step_bootclean; step_desktopfix; step_games; step_check ;;
-  *) die "usage: r50-root.sh snapshot|remount|sddm|rtkit-user|safegfx|bootclean|desktopfix|games|check|all" ;;
+  snapshot|remount|sddm|rtkit-user|safegfx|bootclean|desktopfix|games|grubroot|check) "step_${1//-/_}" ;;
+  all) step_snapshot; step_remount; step_sddm; step_rtkit_user; step_safegfx; step_bootclean; step_desktopfix; step_games; step_grubroot; step_check ;;
+  *) die "usage: r50-root.sh snapshot|remount|sddm|rtkit-user|safegfx|bootclean|desktopfix|games|grubroot|check|all" ;;
 esac

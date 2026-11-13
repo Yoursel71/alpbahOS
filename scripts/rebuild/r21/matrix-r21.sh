@@ -524,10 +524,25 @@ cmd_r50() { # round 50 row: guest checks (scripts/rebuild/r50/guest-checks.sh), 
   cat "$R/qmp-events.log" 2>/dev/null | tail -n 5; vmquit "$R"; rm -f "$D/R50-disk.raw"; stamp "R50 end (copy removed)"
 }
 
+cmd_luks() { # INSTALL-LUKS-01 (round 50): boots the image made by scripts/rebuild/r50/luks-build.sh (LUKS1 root, /boot inside,
+  # GRUB cryptodisk + key file in the initramfs). The passphrase (digits only) is typed once at GRUB; the initramfs must not ask again.
+  local SRC=${LUKS_IMG:-$B/images/luks-test-r50b.raw} R=$D/LUKS i; fresh "$D/LUKS-disk.raw" "$R"
+  [ -e "$SRC" ] || { echo "no image $SRC (run scripts/rebuild/r50/luks-build.sh first)"; exit 1; }
+  cp --reflink=always "$SRC" "$D/LUKS-disk.raw"; stamp "LUKS start"
+  NO_REBOOT=0 agent_start LUKS uefi LUKS-disk virtio 6G
+  sleep "${LUKS_DELAY:-14}"; shot "$R" luks-1-grub-prompt
+  q "$R" text 123456; sleep 1; shot "$R" luks-2-typed; q "$R" key ret; stamp "passphrase sent"
+  for i in $(seq 1 100); do grep -aq "R21M begin" "$R/serial.log" 2> /dev/null && break; [ $((i % 10)) -eq 0 ] && shot "$R" "luks-3-wait-$i"; sleep 3; done
+  echo "boot lines in the serial log: $(grep -ac 'R21M begin' "$R/serial.log")"; sleep 20; shot "$R" luks-4-booted
+  gsh "$R" 40 'echo "root: $(findmnt -no SOURCE,FSTYPE,OPTIONS /)"; echo "crypt devices: $(dmsetup ls --target crypt 2>&1 | tr "\n" ";")"; echo "cmdline: $(cut -c1-220 /proc/cmdline)"; echo "failed units: $(systemctl --failed --no-legend | wc -l)"; systemctl --failed --no-legend | cut -c1-90; echo "luks in journal: $(journalctl -b --no-pager | grep -ciE "cryptsetup|luks|crypt_")"; echo "passphrase prompts in initramfs/journal: $(journalctl -b --no-pager | grep -ci "enter passphrase")"; cat /etc/crypttab'
+  cat "$R/serial.log" | grep -aiE "luks|crypt|passphrase|rd\.luks" | head -n 12 | cut -c1-200
+  vmquit "$R"; rm -f "$D/LUKS-disk.raw"; stamp "LUKS end (copy removed)"
+}
+
 if [ "${MATRIX_LIB:-0}" != 1 ]; then
   c=${1:-}; shift || true
   case $c in
-    sha|live|diag|mkcopy|agent|check|s1|r1|fpgui|apps|apps2|apps3|drv|print|kutu|nvidia|r50|type|enter|key|combo|click|shot|quit|run|recprep|reclive|recboot|kflive|kffill|kfgo|kfdisk|kfboot|kfagent|rofacts|f1|shutlines) "cmd_$c" "$@" ;;
+    sha|live|diag|mkcopy|agent|check|s1|r1|fpgui|apps|apps2|apps3|drv|print|kutu|nvidia|r50|luks|type|enter|key|combo|click|shot|quit|run|recprep|reclive|recboot|kflive|kffill|kfgo|kfdisk|kfboot|kfagent|rofacts|f1|shutlines) "cmd_$c" "$@" ;;
     *) echo "usage: matrix-r21.sh sha|live|diag|mkcopy|agent|check|s1|r1|fpgui ..."; exit 2 ;;
   esac
 fi
