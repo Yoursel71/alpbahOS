@@ -1,0 +1,39 @@
+#!/bin/sh
+# alpbahOS (SAFE-GFX-01, round 50): "güvenli grafik" boot entry and the automatic fallback to it.
+# Real-PC lesson (2026-11-13): the installed system reached "Reached Graphical Interface" and showed a black screen
+# for two different reasons, both after the NVIDIA driver install. The fallback boots the same kernel with the NVIDIA
+# modules blacklisted (nouveau is blacklisted already), so the desktop runs on the firmware framebuffer (simpledrm)
+# with Mesa software rendering. alpbahos-boot-try.service adds an "x" to alpbahos_tries in grubenv at every normal
+# boot; alpbahos-boot-ok.service clears it once a greeter/user session has stayed up. Two unconfirmed boots in a row
+# ("xx") make this file select the safe entry for the next boot. Booting another OS never counts (only alpbahOS
+# itself writes the counter).
+set -e
+. "$pkgdatadir/grub-mkconfig_lib"
+KERNEL=$(ls /boot/vmlinuz-* 2>/dev/null | sort -V | tail -n 1)
+[ -n "$KERNEL" ] || exit 0
+VER=${KERNEL#/boot/vmlinuz-}
+INITRD=""
+for i in "/boot/initramfs-$VER.img" "/boot/initrd.img-$VER" "/boot/initrd-$VER.img"; do [ -e "$i" ] && INITRD=$i && break; done
+if [ -n "${GRUB_DEVICE_PARTUUID:-}" ] && [ "${GRUB_DISABLE_LINUX_PARTUUID:-true}" != true ]; then ROOTARG="root=PARTUUID=${GRUB_DEVICE_PARTUUID}"; else ROOTARG="root=${GRUB_DEVICE}"; fi
+cat <<'EOF'
+if [ "${alpbahos_tries}" = "xx" ]; then
+  set default="alpbahos-safe"
+  set alpbahos_tries=
+  save_env alpbahos_tries
+  echo "alpbahOS: the last two starts did not reach a desktop; starting in safe graphics mode."
+fi
+EOF
+cat <<EOF
+menuentry 'alpbahOS (güvenli grafik)' --class alpbahos --class gnu-linux --class gnu --class os \$menuentry_id_option 'alpbahos-safe' {
+	load_video
+	set gfxpayload=keep
+	insmod gzio
+	insmod part_gpt
+	insmod ext2
+EOF
+prepare_grub_to_access_device "${GRUB_DEVICE_BOOT}" | sed -e "s/^/\t/"
+cat <<EOF
+	linux	${KERNEL} ${ROOTARG} ro splash module_blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nvidia_peermem alpbahos.safe=1 systemd.setenv=__EGL_VENDOR_LIBRARY_FILENAMES=/usr/share/glvnd/egl_vendor.d/50_mesa.json systemd.setenv=KWIN_COMPOSE=Q
+EOF
+[ -n "$INITRD" ] && printf '\tinitrd\t%s\n' "$INITRD"
+echo "}"

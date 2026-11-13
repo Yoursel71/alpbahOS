@@ -11,7 +11,9 @@
 #              line: on the real PC the Wayland greeter failed ("Failed to start weston") and the screen stayed black.
 #   rtkit-user alpbahos-rtkit-user-r50: system user/group rtkit (172) for rtkit-daemon (its D-Bus policy names it; systemd's
 #              sysusers is built off here, so the account is written into /etc/passwd, group and shadow).
-# Usage: r50-root.sh <snapshot|remount|sddm|rtkit-user|check|all>   (run as root, no chroot of r4-root may be active)
+#   safegfx    alpbahos-safegfx-r50: SAFE-GFX-01, the "güvenli grafik" GRUB entry and the fallback to it after two unconfirmed
+#              starts (/etc/grub.d/42_alpbahos_safe, alpbahos-boot-try/-ok and their units, wired by .wants links)
+# Usage: r50-root.sh <snapshot|remount|sddm|rtkit-user|safegfx|check|all>   (run as root, no chroot of r4-root may be active)
 export LC_ALL=C
 [ "$(id -u)" -eq 0 ] || { echo "run as root"; exit 1; }
 SB=/home/yrslf/alpbahOS/scratch-lfs-bench
@@ -75,6 +77,45 @@ step_rtkit_user() {
   record alpbahos-rtkit-user-r50 0.9-r50 "$S"
   grep -q '^rtkit:' "$SNAP/etc/passwd" && log "rtkit user is in r4-root /etc/passwd"
 }
+step_safegfx() {
+  local S F; S=$(fresh safegfx); F=$WT/scripts/rebuild/r50/files
+  mkdir -p "$S/etc/grub.d" "$S/usr/libexec/alpbahos" "$S/usr/lib/systemd/system/multi-user.target.wants" "$S/usr/lib/systemd/system/graphical.target.wants"
+  install -m 755 "$F/42_alpbahos_safe" "$S/etc/grub.d/42_alpbahos_safe"
+  install -m 755 "$F/alpbahos-boot-try" "$F/alpbahos-boot-ok" "$S/usr/libexec/alpbahos/"
+  cat > "$S/usr/lib/systemd/system/alpbahos-boot-try.service" <<'EOF'
+[Unit]
+Description=alpbahOS start counter (safe graphics fallback)
+Documentation=file:///etc/grub.d/42_alpbahos_safe
+DefaultDependencies=no
+After=local-fs.target
+ConditionPathIsReadWrite=/boot/grub
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/alpbahos/alpbahos-boot-try
+
+[Install]
+WantedBy=multi-user.target
+EOF
+  cat > "$S/usr/lib/systemd/system/alpbahos-boot-ok.service" <<'EOF'
+[Unit]
+Description=alpbahOS start confirmation (a graphical session stayed up)
+After=display-manager.service systemd-logind.service
+ConditionPathIsReadWrite=/boot/grub
+
+[Service]
+Type=simple
+ExecStart=/usr/libexec/alpbahos/alpbahos-boot-ok
+
+[Install]
+WantedBy=graphical.target
+EOF
+  chmod 644 "$S"/usr/lib/systemd/system/alpbahos-boot-*.service
+  ln -s ../alpbahos-boot-try.service "$S/usr/lib/systemd/system/multi-user.target.wants/alpbahos-boot-try.service"
+  ln -s ../alpbahos-boot-ok.service "$S/usr/lib/systemd/system/graphical.target.wants/alpbahos-boot-ok.service"
+  record alpbahos-safegfx-r50 0.9-r50 "$S"
+  [ -L "$SNAP/usr/lib/systemd/system/graphical.target.wants/alpbahos-boot-ok.service" ] && log "boot-ok is wired into graphical.target"
+}
 step_check() {
   mount --bind /dev "$SNAP/dev"; mount -t proc proc "$SNAP/proc"
   for c in "check" "list"; do
@@ -85,7 +126,7 @@ step_check() {
   bash "$WT/scripts/rebuild/trust/iso-gate.sh" --auto "$SNAP" && log "iso-gate --auto: PASS"
 }
 case "${1:-}" in
-  snapshot|remount|sddm|rtkit-user|check) "step_${1//-/_}" ;;
-  all) step_snapshot; step_remount; step_sddm; step_rtkit_user; step_check ;;
-  *) die "usage: r50-root.sh snapshot|remount|sddm|rtkit-user|check|all" ;;
+  snapshot|remount|sddm|rtkit-user|safegfx|check) "step_${1//-/_}" ;;
+  all) step_snapshot; step_remount; step_sddm; step_rtkit_user; step_safegfx; step_check ;;
+  *) die "usage: r50-root.sh snapshot|remount|sddm|rtkit-user|safegfx|check|all" ;;
 esac

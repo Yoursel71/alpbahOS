@@ -1,0 +1,8 @@
+#!/bin/sh
+# SAFE-GFX-01: one more unconfirmed alpbahOS start. Skipped in safe mode (alpbahos.safe=1): that start is the recovery.
+grep -q 'alpbahos\.safe=1' /proc/cmdline && exit 0
+GE=/usr/bin/grub-editenv; ENVF=/boot/grub/grubenv
+[ -x "$GE" ] && [ -f "$ENVF" ] || exit 0
+cur=$("$GE" "$ENVF" list 2>/dev/null | sed -n 's/^alpbahos_tries=//p')
+case "$cur" in xx|xxx*) new=xx ;; *) new="${cur}x" ;; esac
+"$GE" "$ENVF" set "alpbahos_tries=$new"
