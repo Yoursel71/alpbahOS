@@ -80,3 +80,23 @@ Next single action: confirm with the user whether `system-config-printer` is sti
 build (not BLFS); in parallel, build a QEMU row (after checking the other session isn't using the one VM slot) that
 boots r4-root with the `/etc/avahi/services` fix and reproduces/refutes the `lpinfo --include-schemes dnssd -v`
 hypothesis above, before adding any more round-48 packages.
+
+## Addendum 2026-11-13 (later): round 48 launched, size-reduction data
+
+Launched `scripts/rebuild/r48/r48-run.sh` in the background (nohup, user approved 5 hours of unattended work):
+builds a round-48 ISO from the current r4-root (which now has the `/etc/avahi/services` fix) and reruns lane2
+(L1, I2), matrix APPS3 and PRINT, Welcome and B2 to catch regressions since r47/47x. No new BLFS packages this
+round (see BACKLOG DRIVERS-01 update: SOF/Thunderbolt/IPU6 were already present). `system-config-printer` held out
+per D181.
+
+Also resolved WELCOME-02's open "W4 does not reopen on a second login" by reading the source
+(`profiles/welcome/app/main.cpp` + `profiles/welcome/bin/alpbah-hosgeldin-uygula`): this is the intended first-login-
+only design (a marker file written by "Uygula ve başla" or "gec", checked by `ilk-acilis-mi`), not a bug.
+
+Round 47's open note "ISO size 6.4 GB: look at strip, static libs, docs and locales" — sizes in r4-root, not yet
+acted on (static libs are needed by `alp`'s own sandboxed builds; locale/doc trimming risks removing languages or
+docs the user may want; neither was in the user's 20-question approval, so left for an explicit decision):
+- `/usr/share/locale`: 510 MiB
+- `/usr/share/doc`: 340 MiB
+- `.a` static libraries under `/usr/lib`: 688 MiB
+- 1400+ unstripped binaries/libraries found in a shallow (`-maxdepth 1`) scan of `/usr/bin` and `/usr/lib` alone (not a full recursive count)
