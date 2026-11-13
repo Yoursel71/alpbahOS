@@ -53,4 +53,5 @@ w wireless-regdb && step wireless-regdb 2026.09.03 https://git.kernel.org/pub/sc
 w nvme-cli && bstep nvme-cli 3.2 $G/linux-nvme/nvme-cli/archive/refs/tags/v3.2.tar.gz nvme-cli-v3.2.tar.gz meson 481 e338c5112d32932891257ec669fad89a "upstream release v3.2 (no BLFS page; TOFU md5; builds its own libnvme)"
 w adwaita-fonts && step adwaita-fonts 51.0 https://download.gnome.org/sources/adwaita-fonts/51/adwaita-fonts-51.0.tar.xz adwaita-fonts-51.0.tar.xz 482 39ec1236312148f883915a14f1b01b59 "$A/adwaita-fonts.sh"
 w kdialog && step kdialog 26.08.3 $K/kdialog-26.08.3.tar.xz kdialog-26.08.3.tar.xz 483 6edf517a305021337957ebd06f29d931 "$A/kdialog.sh"
+w grub-dm && step grub-dm 2.14 https://ftpmirror.gnu.org/grub/grub-2.14.tar.xz grub-2.14.tar.xz 484 383f9effad01c235d2535357ff717543 "$A/grub-dm.sh"
 echo "r50 chain done $(date +%T)"

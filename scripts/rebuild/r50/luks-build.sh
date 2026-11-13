@@ -16,9 +16,9 @@ MNT=/tmp/luks-build-mnt; ISOM=/tmp/luks-build-iso
 mkdir -p "$MNT" "$ISOM"
 LOOP=""
 cleanup() { set +e
-  for t in run sys proc dev boot/efi; do umount "$MNT/$t" 2>/dev/null; done
+  for t in run/udev run sys proc dev boot/efi; do umount "$MNT/$t" 2>/dev/null; done
   umount "$MNT" 2>/dev/null; umount "$ISOM" 2>/dev/null
-  cryptsetup close luksbuild 2>/dev/null; [ -n "$LOOP" ] && losetup -d "$LOOP" 2>/dev/null
+  [ -n "${MAP:-}" ] && cryptsetup close "$MAP" 2>/dev/null; [ -n "$LOOP" ] && losetup -d "$LOOP" 2>/dev/null
   rmdir "$MNT" "$ISOM" 2>/dev/null; }
 trap cleanup EXIT
 truncate -s 30G "$OUT"
@@ -26,13 +26,13 @@ sgdisk -o -n1:2048:+512M -t1:ef00 -n2:0:0 -t2:8300 "$OUT" > /dev/null
 LOOP=$(losetup -fP --show "$OUT")
 mkfs.vfat -F32 "${LOOP}p1" > /dev/null
 printf '%s' "$PASS" | cryptsetup luksFormat --type luks1 -q "${LOOP}p2" -
-printf '%s' "$PASS" | cryptsetup open "${LOOP}p2" luksbuild -
-mkfs.ext4 -q -L alpbahos "/dev/mapper/luksbuild"
-mount /dev/mapper/luksbuild "$MNT"; mkdir -p "$MNT/boot/efi"; mount "${LOOP}p1" "$MNT/boot/efi"
+LUUID=$(cryptsetup luksUUID "${LOOP}p2"); MAP=luks-$LUUID   # the name the installed system would use (grub-install probes it)
+printf '%s' "$PASS" | cryptsetup open "${LOOP}p2" "$MAP" -
+mkfs.ext4 -q -L alpbahos "/dev/mapper/$MAP"
+mount "/dev/mapper/$MAP" "$MNT"; mkdir -p "$MNT/boot/efi"; mount "${LOOP}p1" "$MNT/boot/efi"
 mount -o loop,ro "$ISO" "$ISOM"
 echo "unsquashfs..."; unsquashfs -f -q -d "$MNT" "$ISOM/LiveOS/squashfs.img" > /dev/null
-LUUID=$(cryptsetup luksUUID "${LOOP}p2"); EUUID=$(blkid -o value -s UUID "${LOOP}p1")
-MAP=luks-$LUUID
+EUUID=$(blkid -o value -s UUID "${LOOP}p1")
 # fstab module + crypttab
 printf '# alpbahOS test\n/dev/mapper/%s / ext4 defaults 0 1\nUUID=%s /boot/efi vfat umask=0077 0 2\n' "$MAP" "$EUUID" > "$MNT/etc/fstab"
 printf '%s UUID=%s /crypto_keyfile.bin luks\n' "$MAP" "$LUUID" > "$MNT/etc/crypttab"
@@ -63,7 +63,7 @@ install -m 755 "$WT/scripts/rebuild/r21/guest-as-user-r21.sh" "$MNT/usr/local/sb
 install -m 644 "$WT/scripts/rebuild/r21/guest-agent-r21.service" "$MNT/etc/systemd/system/r21m-agent.service"
 mkdir -p "$MNT/etc/systemd/system/graphical.target.wants"; ln -sf /etc/systemd/system/r21m-agent.service "$MNT/etc/systemd/system/graphical.target.wants/r21m-agent.service"
 install -m 755 "$WT/scripts/rebuild/iso/live/target-initramfs.sh" "$MNT/tmp/target-initramfs.sh"
-mount --bind /dev "$MNT/dev"; mount -t proc proc "$MNT/proc"; mount -t sysfs sys "$MNT/sys"; mount -t tmpfs tmpfs "$MNT/run"
+mount --bind /dev "$MNT/dev"; mount -t proc proc "$MNT/proc"; mount -t sysfs sys "$MNT/sys"; mount -t tmpfs tmpfs "$MNT/run"; mkdir -p "$MNT/run/lock" "$MNT/run/udev"; mount --bind /run/udev "$MNT/run/udev"   # grub-probe reads the dm uuid (CRYPT-) through udev
 E_=/usr/bin/env\ -i; ENVV="PATH=/usr/bin:/usr/sbin:/bin:/sbin LC_ALL=C HOME=/root"
 echo "== target-initramfs.sh"; chroot "$MNT" env $ENVV sh /tmp/target-initramfs.sh 2>&1 | tail -n 4
 echo "== grub-install"; chroot "$MNT" env $ENVV grub-install --target=x86_64-efi --efi-directory=/boot/efi --removable --no-nvram 2>&1 | tail -n 3
