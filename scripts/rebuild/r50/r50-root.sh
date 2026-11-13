@@ -13,7 +13,12 @@
 #              sysusers is built off here, so the account is written into /etc/passwd, group and shadow).
 #   safegfx    alpbahos-safegfx-r50: SAFE-GFX-01, the "güvenli grafik" GRUB entry and the fallback to it after two unconfirmed
 #              starts (/etc/grub.d/42_alpbahos_safe, alpbahos-boot-try/-ok and their units, wired by .wants links)
-# Usage: r50-root.sh <snapshot|remount|sddm|rtkit-user|safegfx|check|all>   (run as root, no chroot of r4-root may be active)
+#   bootclean  alpbahos-bootclean-r50: errors of the real-PC boot journal (2026-11-13): udev rule calling the missing
+#              /usr/lib/udev/tpm2_id (masked), pcspkr/snd_pcsp double registration (blacklisted), bluetooth.service
+#              ConfigurationDirectoryMode (555 vs the 755 /etc/bluetooth), alpbahos-zram.service stop failing the unit at shutdown
+#   desktopfix alpbahos-desktopfix-r50: AUDIO-WP-01 (the BLE MIDI monitor of WirePlumber is disabled: PipeWire has no bluez5/midi
+#              SPA plugin) and CHROME-DECOR-01 (Flatpak Chrome gets the system title bar by default, via /etc/skel)
+# Usage: r50-root.sh <snapshot|remount|sddm|rtkit-user|safegfx|bootclean|desktopfix|check|all>   (run as root, no chroot of r4-root may be active)
 export LC_ALL=C
 [ "$(id -u)" -eq 0 ] || { echo "run as root"; exit 1; }
 SB=/home/yrslf/alpbahOS/scratch-lfs-bench
@@ -116,6 +121,37 @@ EOF
   record alpbahos-safegfx-r50 0.9-r50 "$S"
   [ -L "$SNAP/usr/lib/systemd/system/graphical.target.wants/alpbahos-boot-ok.service" ] && log "boot-ok is wired into graphical.target"
 }
+step_bootclean() {
+  local S; S=$(fresh bootclean)
+  mkdir -p "$S/etc/udev/rules.d" "$S/etc/modprobe.d" "$S/etc/systemd/system/bluetooth.service.d" "$S/usr/libexec/alpbahos"
+  # an empty file with the same name in /etc masks /usr/lib/udev/rules.d/60-tpm2-id.rules (tpm2_id is not built here)
+  printf '# alpbahOS (BOOT-CLEAN-01): systemd is built without tpm2_id; masks 60-tpm2-id.rules, which calls it.\n' > "$S/etc/udev/rules.d/60-tpm2-id.rules"
+  printf '# alpbahOS (BOOT-CLEAN-01): "Driver pcspkr is already registered, aborting" on the real PC; no PC speaker beeps wanted.\nblacklist pcspkr\nblacklist snd_pcsp\n' > "$S/etc/modprobe.d/alpbahos-pcspkr.conf"
+  printf '# alpbahOS (BOOT-CLEAN-01): /etc/bluetooth is 755 here; the unit default 555 was logged as a mismatch at every boot.\n[Service]\nConfigurationDirectoryMode=0755\n' > "$S/etc/systemd/system/bluetooth.service.d/10-alpbahos-mode.conf"
+  sed 's|swapoff "\$DEV" 2>/dev/null \|\| ! grep -q "^\$DEV " /proc/swaps \|\| { echo "swapoff \$DEV failed" >\&2; exit 1; }|swapoff "$DEV" 2>/dev/null \|\| ! grep -q "^$DEV " /proc/swaps \|\| echo "swapoff $DEV failed (systemd turns it off later at shutdown; not an error)" >\&2|' "$SNAP/usr/libexec/alpbahos/zram-swap" > "$S/usr/libexec/alpbahos/zram-swap"
+  grep -q 'not an error)' "$S/usr/libexec/alpbahos/zram-swap" || die "zram-swap patch did not apply"
+  chmod 755 "$S/usr/libexec/alpbahos/zram-swap"; chmod 644 "$S"/etc/udev/rules.d/60-tpm2-id.rules "$S"/etc/modprobe.d/alpbahos-pcspkr.conf "$S"/etc/systemd/system/bluetooth.service.d/10-alpbahos-mode.conf
+  record alpbahos-bootclean-r50 0.9-r50 "$S"
+  bash -n "$SNAP/usr/libexec/alpbahos/zram-swap" && log "bootclean recorded; zram-swap still parses"
+}
+step_desktopfix() {
+  local S; S=$(fresh desktopfix)
+  mkdir -p "$S/etc/wireplumber/wireplumber.conf.d" "$S/etc/skel/.var/app/com.google.Chrome/config/google-chrome/Default"
+  cat > "$S/etc/wireplumber/wireplumber.conf.d/90-alpbahos-no-ble-midi.conf" <<'EOF'
+# alpbahOS (AUDIO-WP-01): this PipeWire has no bluez5/midi SPA plugin, so the BLE MIDI monitor logged "can't create node"
+# at every session start. Switched off until PipeWire is built with Bluetooth support.
+wireplumber.profiles = {
+  main = {
+    monitor.bluez-midi = disabled
+  }
+}
+EOF
+  # Chrome (Flatpak) ignores the GTK decoration layout and draws a close-only frame; "Use system title bar and borders"
+  # is the Preference browser.custom_chrome_frame=false. A new user's home starts with it.
+  printf '{"browser":{"custom_chrome_frame":false}}\n' > "$S/etc/skel/.var/app/com.google.Chrome/config/google-chrome/Default/Preferences"
+  chmod 644 "$S/etc/wireplumber/wireplumber.conf.d/90-alpbahos-no-ble-midi.conf" "$S/etc/skel/.var/app/com.google.Chrome/config/google-chrome/Default/Preferences"
+  record alpbahos-desktopfix-r50 0.9-r50 "$S"
+}
 step_check() {
   mount --bind /dev "$SNAP/dev"; mount -t proc proc "$SNAP/proc"
   for c in "check" "list"; do
@@ -126,7 +162,7 @@ step_check() {
   bash "$WT/scripts/rebuild/trust/iso-gate.sh" --auto "$SNAP" && log "iso-gate --auto: PASS"
 }
 case "${1:-}" in
-  snapshot|remount|sddm|rtkit-user|safegfx|check) "step_${1//-/_}" ;;
-  all) step_snapshot; step_remount; step_sddm; step_rtkit_user; step_safegfx; step_check ;;
-  *) die "usage: r50-root.sh snapshot|remount|sddm|rtkit-user|safegfx|check|all" ;;
+  snapshot|remount|sddm|rtkit-user|safegfx|bootclean|desktopfix|check) "step_${1//-/_}" ;;
+  all) step_snapshot; step_remount; step_sddm; step_rtkit_user; step_safegfx; step_bootclean; step_desktopfix; step_check ;;
+  *) die "usage: r50-root.sh snapshot|remount|sddm|rtkit-user|safegfx|bootclean|desktopfix|check|all" ;;
 esac

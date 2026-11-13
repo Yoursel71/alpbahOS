@@ -51,4 +51,5 @@ w smartmontools && bstep smartmontools 7.5 $G/smartmontools/smartmontools/releas
 w rtkit && bstep rtkit 0.13 $G/heftig/rtkit/releases/download/v0.13/rtkit-0.13.tar.xz rtkit-0.13.tar.xz meson 479 90939b9886d1998fa5b15f6109bfd1ae "upstream release (no BLFS page; TOFU md5)"
 w wireless-regdb && step wireless-regdb 2026.09.03 https://git.kernel.org/pub/scm/linux/kernel/git/wens/wireless-regdb.git/snapshot/wireless-regdb-master-2026-09-03.tar.gz wireless-regdb-master-2026-09-03.tar.gz 480 ab87f48fcce17d9adf950800a9634cfa "$A/wireless-regdb.sh"
 w nvme-cli && bstep nvme-cli 3.2 $G/linux-nvme/nvme-cli/archive/refs/tags/v3.2.tar.gz nvme-cli-v3.2.tar.gz meson 481 e338c5112d32932891257ec669fad89a "upstream release v3.2 (no BLFS page; TOFU md5; builds its own libnvme)"
+w adwaita-fonts && step adwaita-fonts 51.0 https://download.gnome.org/sources/adwaita-fonts/51/adwaita-fonts-51.0.tar.xz adwaita-fonts-51.0.tar.xz 482 39ec1236312148f883915a14f1b01b59 "$A/adwaita-fonts.sh"
 echo "r50 chain done $(date +%T)"
