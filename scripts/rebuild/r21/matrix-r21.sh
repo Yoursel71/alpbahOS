@@ -509,6 +509,8 @@ cmd_r50() { # round 50 row: guest checks (scripts/rebuild/r50/guest-checks.sh), 
   stamp "R50 start"; NO_REBOOT=0 agent_start R50 uefi R50-disk virtio 6G
   greeter_login "$R" r50; sleep 20; shot "$R" r50-desktop
   gsh "$R" 90 "$(cat "$WT/scripts/rebuild/r50/guest-checks.sh")"
+  # GAMES-01: Flathub lookup by application id after the AppStream refresh (what games-launch does); dry run only, nothing installed
+  gsh "$R" 400 'flatpak update --appstream --noninteractive 2>&1 | tail -n 2 | sed "s/^/appstream: /"; for a in com.valvesoftware.Steam com.usebottles.bottles; do alp install --dry-run --yes $a 2>&1 | tail -n 5 | cut -c1-160 | sed "s|^|games dry-run $a: |"; done'
   gsh "$R" 20 'r21m-as-user --bg /usr/libexec/alpbahos/mirazparted-launch; sleep 7; echo "mirazparted-launch running: $(pgrep -fc mirazparted-launch)  kdialog: $(pgrep -xc kdialog)"'
   shot "$R" r50-miraz-warning; q "$R" key ret; sleep 9; shot "$R" r50-miraz-window
   gsh "$R" 20 'echo "partitionmanager running: $(pgrep -fc /usr/bin/partitionmanager)"; pkill -f /usr/bin/partitionmanager; true'
