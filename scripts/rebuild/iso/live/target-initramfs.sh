@@ -19,6 +19,15 @@ cat > /etc/dracut.conf.d/90-alpbahos-storage.conf << 'EOF'
 add_drivers+=" ahci ata_piix nvme sd_mod sr_mod virtio_blk virtio_pci virtio_scsi "
 EOF
 
+# INSTALL-LUKS-01 (round 50): an encrypted install has /etc/crypttab (fstab module). The shell initramfs then needs dracut's crypt
+# module and the dm_crypt driver (a no-hostonly image does not pick them by itself) and cryptsetup; the boot key file made
+# by the luksbootkeyfile module is in the image through install_items of dracutlukscfg.
+LUKS=0
+if [ -s /etc/crypttab ] && grep -qv '^[[:space:]]*#' /etc/crypttab; then
+    LUKS=1
+    printf '%s\n' '# alpbahOS (INSTALL-LUKS-01): encrypted root' 'add_dracutmodules+=" crypt "' 'add_drivers+=" dm_crypt "' > /etc/dracut.conf.d/91-alpbahos-luks.conf
+fi
+
 DLOG=$(dracut --force --no-hostonly --kver "$KVER" \
     --omit "systemd systemd-initrd dracut-systemd systemd-journald systemd-sysusers systemd-tmpfiles systemd-hwdb systemd-networkd systemd-battery-check" \
     "$IMG" "$KVER" 2>&1) || { echo "$DLOG"; echo "dracut failed"; exit 1; }
@@ -37,6 +46,10 @@ for m in ahci nvme sd_mod virtio_blk; do
     case "$LIST" in *"/$m.ko"*) continue ;; esac
     grep -q "/$m\.ko" "$BUILTIN" || { echo "initramfs lacks module $m"; exit 1; }
 done
+if [ "$LUKS" = 1 ]; then
+    case "$LIST" in *"/dm-crypt.ko"*|*"/dm_crypt.ko"*) ;; *) grep -q "/dm-crypt\.ko" "$BUILTIN" || { echo "initramfs lacks dm-crypt"; exit 1; } ;; esac
+    case "$LIST" in *cryptsetup*) ;; *) echo "initramfs lacks cryptsetup"; exit 1 ;; esac
+fi
 # PLYMOUTH-01 (D160): the boot splash daemon and the alpbahOS theme are in the image (dracut module 45plymouth).
 for f in usr/sbin/plymouthd usr/share/plymouth/themes/alpbahos/alpbahos.script usr/share/plymouth/themes/alpbahos/mark.png; do
     case "$LIST" in *" $f
