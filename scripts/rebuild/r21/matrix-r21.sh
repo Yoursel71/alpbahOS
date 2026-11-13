@@ -284,7 +284,7 @@ cmd_nvidia() { # NVIDIA-PKG-01 (D165, round 42+): `sudo alp install nvidia` as t
   for i in $(seq 1 150); do [ "$(grep -ac 'R21M begin' "$R/serial.log")" -ge 2 ] && break; sleep 2; done
   echo "boot lines in the serial log: $(grep -ac 'R21M begin' "$R/serial.log")"
   greeter_login "$R" nvidia2; sleep 20; shot "$R" nvidia-after-reboot
-  gsh "$R" 30 'lsmod | grep -c "^nouveau\|^nvidia" | sed "s/^/nouveau or nvidia loaded: /"; echo "failed units: $(systemctl --failed --no-legend | wc -l)"'
+  gsh "$R" 30 'lsmod | grep -c "^nouveau\|^nvidia" | sed "s/^/nouveau or nvidia loaded: /"; echo "failed units: $(systemctl --failed --no-legend | wc -l)"; echo "sddm greeter display server: $(journalctl -b -u sddm --no-pager | grep -m1 -oiE "Display server (starting|started)|Wayland|X11" | head -1); weston failures: $(journalctl -b -u sddm --no-pager | grep -ci "weston")"; echo "root rw: $(findmnt -no OPTIONS / | tr "," "\n" | grep -qx rw && echo yes || echo NO)"'
   gsh "$R" 300 'r21m-as-user sudo -n alp remove --yes nvidia 2>&1 | tail -n 2; ls /usr/lib/modules/*/extra 2>&1 | tail -n 1; ldconfig -p | grep -c nvidia_ | sed "s/^/nvidia libs left: /"; alp check 2>&1 | tail -n 1; echo "coredumps: $(ls /var/lib/systemd/coredump 2> /dev/null | wc -l)"'
   vmquit "$R"; rm -f "$D/NVIDIA-disk.raw"; stamp "NVIDIA end (copy removed)"
 }

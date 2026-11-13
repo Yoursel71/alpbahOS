@@ -33,6 +33,10 @@ sudo mount -o ro "$P" "$M"
   echo "login shell of uid 1000: $(awk -F: '$3==1000 {print $7}' "$M/etc/passwd")"
   echo "drivers marker: $(cat "$M/var/lib/alpbahos/install-drivers" 2>/dev/null || echo none); driver service enabled: $(test -L "$M/etc/systemd/system/multi-user.target.wants/alpbahos-install-drivers.service" && echo yes || echo no)"
   echo "print: avahi $(test -L "$M/etc/systemd/system/multi-user.target.wants/avahi-daemon.service" && echo yes || echo no), cups-browsed $(test -L "$M/etc/systemd/system/multi-user.target.wants/cups-browsed.service" && echo yes || echo no); $(grep '^hosts:' "$M/etc/nsswitch.conf"); mDNS rule: $(grep -c -- '--dport 5353' "$M/etc/alpbahos/firewall/rules.v4")"
+  # BOOT-RO-ROOT-01 / SDDM-WESTON-01 (round 50): the installed root must be remounted rw by systemd, and the greeter
+  # compositor must not be weston (not in the image; /etc/sddm.conf is read last and beats the nvidia drop-in)
+  rl=$(readlink "$M/etc/systemd/system/sysinit.target.wants/systemd-remount-fs.service" 2>/dev/null); echo "remount-fs in sysinit: $([ "$rl" = /usr/lib/systemd/system/systemd-remount-fs.service ] && [ -e "$M$rl" ] && echo yes || echo NO)"
+  echo "sddm.conf weston lines: $(grep -c "^CompositorCommand=.*weston" "$M/etc/sddm.conf")"
 } > "$D/disk-check-$NAME.txt" 2>&1
 sudo umount "$M"; sudo losetup -d "$LO"; rmdir "$M"
 cat "$D/disk-check-$NAME.txt"

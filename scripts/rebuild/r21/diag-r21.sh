@@ -114,6 +114,8 @@ if [ "$FLATPAK" = 1 ]; then
 fi
 [ -x /usr/local/sbin/r21-diag-hook ] && /usr/local/sbin/r21-diag-hook 2>&1 | while read -r l; do say "hook: $l"; done
 say "failed units: $(systemctl --failed --no-legend | wc -l)"
+say "root mount options: $(findmnt -no OPTIONS /) (BOOT-RO-ROOT-01: must be rw)"
+say "root is rw: $(findmnt -no OPTIONS / | tr "," "\n" | grep -qx rw && echo yes || echo NO); machine-id bytes: $(wc -c < /etc/machine-id)"
 systemctl --failed --no-legend 2>&1 | while read -r l; do say "failed: $l"; done
 journalctl -b -p err --no-pager 2>&1 | tail -n 15 | while read -r l; do say "journal err: $l"; done
 rm -f /root/.r21-pw
