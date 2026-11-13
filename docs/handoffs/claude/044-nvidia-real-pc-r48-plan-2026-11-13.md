@@ -33,10 +33,18 @@ Checks run and results:
   cups-filters one — `cups-filters` 2.0.1 is already installed, so the BACKLOG "missing: cups-filters" note is
   stale). `cupsd.conf` has `Browsing Yes` / `BrowseLocalProtocols dnssd`. Hypothesis for the open `lpinfo
   --include-schemes dnssd -v` empty result (round 45/47x): CUPS's dnssd backend in list-devices mode filters by
-  TXT-record keys it expects from a real printer-class service; the round's test printer is a bare `ippeveprinter`,
-  which `avahi-browse`/`ippfind` see unfiltered but `lpinfo` may not surface for that reason, or its discovery
-  window is too short inside the QEMU guest. Not reproduced in a VM this session (see Known issues); needs a live
-  boot to confirm or refute.
+  TXT-record keys it expects from a real printer-class service. Checked `scripts/rebuild/r21/matrix-r21.sh`
+  (`cmd_print`): the test already runs `timeout 40 lpinfo --include-schemes dnssd -v`, so a short internal timeout
+  is not the cause (CUPS's dnssd backend polls for a few seconds regardless of the outer timeout). The test printer
+  is CUPS's own `ippeveprinter` tool, which registers correct IPP Everywhere TXT records — not a malformed-TXT
+  problem either. Revised, more likely hypothesis: CUPS's dnssd backend in list-devices mode is known to skip
+  print services published by the same host it runs on (it discovers *remote* printers; a local loopback-published
+  service is filtered to avoid a client seeing itself as a printer). The round's test runs `ippeveprinter` on the
+  *same guest* that calls `lpinfo`, so an empty list may be a test-harness artifact of that single-host setup, not
+  a product bug — `avahi-browse`/`ippfind` are generic mDNS tools with no such self-exclusion, which is consistent
+  with them finding it while `lpinfo` does not. This needs a two-host check (a real LAN printer, or two QEMU guests
+  on a shared network instead of each behind its own user-mode NAT) to confirm; not reproduced in a VM this session
+  (see Known issues).
 - `system-config-printer`: checked BLFS (web search, current book and several past versions) — it is not a BLFS
   package at all; it is a separate GTK/Python project (OpenPrinting/system-config-printer) with its own dependency
   chain (pycups, pysmbc/pygobject, systemd polkit rules). The user picked "add it for real" in the 20-question
